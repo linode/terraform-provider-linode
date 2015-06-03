@@ -216,24 +216,9 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	linode := linodes.Linodes[0]
 
-	updates := make(map[string]interface{})
-
-	if d.Get("group").(string) != linode.LpmDisplayGroup {
-		updates["lpm_displayGroup"] = d.Get("group")
+	if err = changeLinodeSettings(client, linode, d); err != nil {
+		return err
 	}
-
-	if d.Get("name").(string) != linode.Label.String() {
-		updates["Label"] = d.Get("name")
-	}
-
-	if len(updates) > 0 {
-		_, err := client.Linode.Update(linode.LinodeId, updates)
-		if err != nil {
-			return fmt.Errorf("Failed to update the linode's group because %s", err)
-		}
-	}
-	d.SetPartial("group")
-	d.SetPartial("name")
 
 	ssh_key := d.Get("ssh_key").(string)
 	password := d.Get("root_password").(string)
@@ -300,23 +285,16 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to parse linode id %s as an int because %s", d.Id(), err)
 	}
 
-	updates := make(map[string]interface{})
-	if d.HasChange("name") {
-		updates["Label"] = d.Get("name").(string)
+	linodes, err := client.Linode.List(int(id))
+	if err != nil {
+		return fmt.Errorf("Failed to fetch data about the current linode because %s", err)
 	}
+	linode := linodes.Linodes[0]
 
-	if d.HasChange("group") {
-		updates["lpm_displayGroup"] = d.Get("group").(string)
-	}
-
-	if len(updates) > 1 {
-		_, err = client.Linode.Update(int(id), updates)
-		if err != nil {
-			return fmt.Errorf("Failed to update linode %s because %s", d.Id(), err)
+	if d.HasChange("name") || d.HasChange("group") {
+		if err = changeLinodeSettings(client, linode, d); err != nil {
+			return err
 		}
-		d.SetPartial("name")
-		d.SetPartial("group")
-
 	}
 
 	return resourceLinodeLinodeRead(d, meta)
@@ -640,4 +618,26 @@ func waitForJobsToComplete(client *linodego.Client, linodeId int) error {
 			return fmt.Errorf("Jobs for linode %d didn't complete in 5 minutes", linodeId)
 		}
 	}
+}
+
+// changeLinodeSettings changes linode level settings. This is things like the name or the group
+func changeLinodeSettings(client *linodego.Client, linode linodego.Linode,  d *schema.ResourceData) error {
+	updates := make(map[string]interface{})
+	if d.Get("group").(string) != linode.LpmDisplayGroup {
+		updates["lpm_displayGroup"] = d.Get("group")
+	}
+
+	if d.Get("name").(string) != linode.Label.String() {
+		updates["Label"] = d.Get("name")
+	}
+
+	if len(updates) > 0 {
+		_, err := client.Linode.Update(linode.LinodeId, updates)
+		if err != nil {
+			return fmt.Errorf("Failed to update the linode's group because %s", err)
+		}
+	}
+	d.SetPartial("group")
+	d.SetPartial("name")
+	return nil
 }
