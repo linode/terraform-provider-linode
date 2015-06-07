@@ -2,7 +2,6 @@ package linode
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -57,7 +56,7 @@ func resourceLinodeLinode() *schema.Resource {
 			"group": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				Default: "Linode",
+				Default:  "Linode",
 			},
 			"region": &schema.Schema{
 				Type:     schema.TypeString,
@@ -171,13 +170,6 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("kernel", kernelName)
 	d.SetPartial("kernel")
 
-	m, err := getMetadata(config)
-	if err != nil {
-		return fmt.Errorf("Failed to parse the comment section for linode %s because %s", d.Id(), err)
-	}
-	d.Set("ssh_key", m.key_hash)
-	d.SetPartial("ssh_key")
-
 	return nil
 }
 
@@ -236,7 +228,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to create disk for image %s because %s", d.Get("image"), err)
 	}
 
-	d.Set("ssh_key", hash_string(ssh_key_state(d.Get("ssh_key"))))
+	d.SetPartial("root_password")
 	d.SetPartial("ssh_key")
 
 	diskResp, err := client.Disk.List(linode.LinodeId, -1)
@@ -262,11 +254,6 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	confArgs["helper_network"] = "true"
 	confArgs["DiskList"] = fmt.Sprintf("%d,%d", rootDisk, swapDisk)
 	confArgs["RootDeviceNum"] = "1"
-	m, err := encodeMetadata(&metadata{key_hash: d.Get("ssh_key").(string)})
-	if err != nil {
-		return fmt.Errorf("Failed to set the metadata because %s", err)
-	}
-	confArgs["Comments"] = m
 	c, err := client.Config.Create(linode.LinodeId, kernelId, d.Get("image").(string), confArgs)
 	if err != nil {
 		log.Printf("diskList: %s", confArgs["DiskList"])
@@ -532,34 +519,17 @@ func getIps(client *linodego.Client, linodeId int) (publicIp string, privateIp s
 	return publicIp, privateIp, nil
 }
 
-type metadata struct {
-	key_hash string
-}
-
-// getMetadata parses the metadata from linode's comment field.
-func getMetadata(config linodego.LinodeConfig) (*metadata, error) {
-	m := &metadata{}
-	err := json.Unmarshal([]byte(config.Comments), m)
-	return m, err
-}
-
-func encodeMetadata(meta *metadata) (string, error) {
-	data, err := json.Marshal(meta)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
+// root_password_state hashes a string passed in as an interface
 func ssh_key_state(val interface{}) string {
 	return hash_string(val.(string))
 }
 
+// root_password_state hashes a string passed in as an interface
 func root_password_state(val interface{}) string {
 	return hash_string(val.(string))
 }
 
-// hash_ssh_key hashes the key
+// hash_string hashes a string
 func hash_string(key string) string {
 	hash := sha3.Sum256([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])
@@ -649,7 +619,7 @@ func waitForJobsToComplete(client *linodego.Client, linodeId int) error {
 }
 
 // changeLinodeSettings changes linode level settings. This is things like the name or the group
-func changeLinodeSettings(client *linodego.Client, linode linodego.Linode,  d *schema.ResourceData) error {
+func changeLinodeSettings(client *linodego.Client, linode linodego.Linode, d *schema.ResourceData) error {
 	updates := make(map[string]interface{})
 	if d.Get("group").(string) != linode.LpmDisplayGroup {
 		updates["lpm_displayGroup"] = d.Get("group")

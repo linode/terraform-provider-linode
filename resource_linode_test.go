@@ -39,8 +39,8 @@ func TestAccLinodeLinode_Basic(t *testing.T) {
 
 func TestAccLinodeLinode_Update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {testAccPreCheck(t)},
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeLinodeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -65,8 +65,8 @@ func TestAccLinodeLinode_Update(t *testing.T) {
 
 func TestAccLinodeLinode_PrivateNetworking(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {testAccPreCheck(t)},
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeLinodeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
