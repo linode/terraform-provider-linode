@@ -80,8 +80,6 @@ func resourceLinodeLinode() *schema.Resource {
 			"private_networking": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  false,
-				ForceNew: true,
 			},
 			"private_ip_address": &schema.Schema{
 				Type:     schema.TypeString,
@@ -208,6 +206,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to create a swap drive because %s", err)
 	}
 
+	// Load the basic data about the current linode
 	linodes, err := client.Linode.List(create.LinodeId.LinodeId)
 	if err != nil {
 		return fmt.Errorf("Failed to load data about the newly created linode because %s", err)
@@ -219,6 +218,16 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	if err = changeLinodeSettings(client, linode, d); err != nil {
 		return err
 	}
+
+	if d.Get("private_networking").(bool) {
+		resp, err := client.Ip.AddPrivate(linode.LinodeId)
+		if err != nil {
+			return fmt.Errorf("Failed to add a private ip address to linode %d because %s", linode.LinodeId, err)
+		}
+		d.Set("private_ip_address", resp.IPAddress.IPAddress)
+		d.SetPartial("private_ip_address")
+	}
+	d.SetPartial("private_networking")
 
 	ssh_key := d.Get("ssh_key").(string)
 	password := d.Get("root_password").(string)
@@ -294,6 +303,25 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 	if d.HasChange("name") || d.HasChange("group") {
 		if err = changeLinodeSettings(client, linode, d); err != nil {
 			return err
+		}
+	}
+
+	if d.HasChange("private_networking") {
+		if !d.Get("private_networking").(bool) {
+			return fmt.Errorf("Can't deactivate private networking for linode %s", d.Id())
+		} else {
+			_, err = client.Ip.AddPrivate(int(id))
+			if err != nil {
+				return fmt.Errorf("Failed to activate private networking on linode %s because %s", d.Id(), err)
+			}
+			_, err = client.Linode.Reboot(int(id), 0)
+			if err != nil {
+				return fmt.Errorf("Failed to reboot linode %s because %s", d.Id(), err)
+			}
+			err = waitForJobsToComplete(client, int(id))
+			if err != nil {
+				return fmt.Errorf("Failed while waiting for linode %s to finish rebooting because %s", d.Id(), err)
+			}
 		}
 	}
 
