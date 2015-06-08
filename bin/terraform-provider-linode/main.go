@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.tobolaski.com/btobolaski/terraform-linode"
+	"github.com/btobolaskiterraform-linode"
 	"github.com/hashicorp/terraform/plugin"
 )
 
