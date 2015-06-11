@@ -55,19 +55,21 @@ resource "linode_linode" "foobar" {
 }
 ```
 
-value                | Type     | Forces New | Value Type | Description
--------------------- | -------- | ---------- | ---------- | -----------
-`image`              | Required | yes        | string     | The image to use when creating the linode. [^1]
-`kernel`             | Required | no         | string     | The kernel to start the linode with. If you can specify `"Latest 64-bit" or `"Latest 32-bit"` for the most recent version of either that linode provices
-`name`               | Optional | no         | string     | The name of the linode
-`group`              | Optional | no         | string     | The group of the linode
-`region`             | Required | yes        | string     | The region that the linode will be created in
-`size`               | Required | yes        | int        | The amount of ram in the linode plan. i.e. 1024, 2048 or 4096
-`ip_address`         | Computed | n/a        | string     | The public ip address
-`private_networking` | Optional | sort of    | bool       | Whether or not to enable private networking. It can be enabled on an existing linode but it can't be disabled.
-`private_ip_address` | Computed | n/a        | string     | If private networking is enabled, it will be populated with the linode's private ip address
-`ssh_key`            | Required | yes        | string     | The full text of the public key to add to the root user
-`root_password`      | Required | yes        | string     | Unfortunately this is required by the linode api. You'll likely want to modify this on the server during provisioning (which won't force a new linode) and then disable password logins for ssh.
+value                             | Type     | Forces New | Value Type | Description
+--------------------------------- | -------- | ---------- | ---------- | -----------
+`image`                           | Required | yes        | string     | The image to use when creating the linode. [^1]
+`kernel`                          | Required | no         | string     | The kernel to start the linode with. If you can specify `"Latest 64-bit" or `"Latest 32-bit"` for the most recent version of either that linode provices
+`name`                            | Optional | no         | string     | The name of the linode
+`group`                           | Optional | no         | string     | The group of the linode
+`region`                          | Required | yes        | string     | The region that the linode will be created in
+`size`                            | Required | yes        | int        | The amount of ram in the linode plan. i.e. 1024, 2048 or 4096
+`ip_address`                      | Computed | n/a        | string     | The public ip address
+`private_networking`              | Optional | sort of    | bool       | Whether or not to enable private networking. It can be enabled on an existing linode but it can't be disabled.
+`private_ip_address`              | Computed | n/a        | string     | If private networking is enabled, it will be populated with the linode's private ip address
+`ssh_key`                         | Required | yes        | string     | The full text of the public key to add to the root user
+`root_password`                   | Required | yes        | string     | Unfortunately this is required by the linode api. You'll likely want to modify this on the server during provisioning (which won't force a new linode) and then disable password logins for ssh.
+`helper_distro`                   | Optional | no         | bool       | Enable the Distro filesystem helper. Corrects fstab and inittab/upstart entries depending on the kernel you're booting. You want this unless you're providing your own kernel.
+`manage_private_ip_automatically` | Optional | no         | bool       | Automatically creates network configuration files for your distro and places them into your filesystem. Will reboot your linode when enabled.
 
 [^1]: While these technically could be modified, it requires destroying the root volume and creating a new volume which is practically the same as creating a new instance.
 

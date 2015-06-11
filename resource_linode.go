@@ -96,6 +96,16 @@ func resourceLinodeLinode() *schema.Resource {
 				ForceNew:  true,
 				StateFunc: root_password_state,
 			},
+			"helper_distro": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
+			"manage_private_ip_automatically": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 		},
 	}
 }
@@ -162,6 +172,11 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("image", image)
 	d.SetPartial("image")
+
+	d.Set("helper_distro", boolToString(config.HelperDistro.Bool))
+	d.SetPartial("helper_distro")
+	d.Set("manage_private_ip_automatically", boolToString(config.HelperDistro.Bool))
+	d.SetPartial("manage_private_ip_automatically")
 
 	kernelName, err := getKernelName(client, config.KernelId)
 	if err != nil {
@@ -251,7 +266,16 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	confArgs := make(map[string]string)
-	confArgs["helper_network"] = "true"
+	if d.Get("manage_private_ip_automatically").(bool) {
+		confArgs["helper_network"] = "true"
+	} else {
+		confArgs["helper_network"] = "false"
+	}
+	if d.Get("helper_distro").(bool) {
+		confArgs["helper_distro"] = "true"
+	} else {
+		confArgs["helper_distro"] = "false"
+	}
 	confArgs["DiskList"] = fmt.Sprintf("%d,%d", rootDisk, swapDisk)
 	confArgs["RootDeviceNum"] = "1"
 	c, err := client.Config.Create(linode.LinodeId, kernelId, d.Get("image").(string), confArgs)
@@ -262,6 +286,8 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	confID := c.LinodeConfigId
 	d.SetPartial("image")
+	d.SetPartial("manage_private_ip_automatically")
+	d.SetPartial("helper_distro")
 	client.Linode.Boot(linode.LinodeId, confID.LinodeConfigId)
 
 	err = waitForJobsToComplete(client, linode.LinodeId)
@@ -293,6 +319,19 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
+	configResp, err := client.Config.List(int(id), -1)
+	if err != nil {
+		return fmt.Errorf("Failed to fetch the config for linode %d because %s", id, err)
+	}
+	if len(configResp.LinodeConfigs) != 1 {
+		return fmt.Errorf("Linode %d has an incorrect number of configs %d, this plugin can only handle 1", id, len(configResp.LinodeConfigs))
+	}
+	config := configResp.LinodeConfigs[0]
+
+	if err = changeLinodeConfig(client, config, d); err != nil {
+		return fmt.Errorf("Failed to update Linode %d config because %s", id, config)
+	}
+
 	if d.HasChange("private_networking") {
 		if !d.Get("private_networking").(bool) {
 			return fmt.Errorf("Can't deactivate private networking for linode %s", d.Id())
@@ -301,13 +340,15 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 			if err != nil {
 				return fmt.Errorf("Failed to activate private networking on linode %s because %s", d.Id(), err)
 			}
-			_, err = client.Linode.Reboot(int(id), 0)
-			if err != nil {
-				return fmt.Errorf("Failed to reboot linode %s because %s", d.Id(), err)
-			}
-			err = waitForJobsToComplete(client, int(id))
-			if err != nil {
-				return fmt.Errorf("Failed while waiting for linode %s to finish rebooting because %s", d.Id(), err)
+			if d.Get("manage_private_ip_automatically").(bool) {
+				_, err = client.Linode.Reboot(int(id), 0)
+				if err != nil {
+					return fmt.Errorf("Failed to reboot linode %s because %s", d.Id(), err)
+				}
+				err = waitForJobsToComplete(client, int(id))
+				if err != nil {
+					return fmt.Errorf("Failed while waiting for linode %s to finish rebooting because %s", d.Id(), err)
+				}
 			}
 		}
 	}
@@ -638,4 +679,33 @@ func changeLinodeSettings(client *linodego.Client, linode linodego.Linode, d *sc
 	d.SetPartial("group")
 	d.SetPartial("name")
 	return nil
+}
+
+// changeLinodeConfig changes Config level settings. This is things like the various helpers
+func changeLinodeConfig(client *linodego.Client, config linodego.LinodeConfig, d *schema.ResourceData) error {
+	updates := make(map[string]string)
+	if d.HasChange("helper_distro") {
+		updates["helper_distro"] = boolToString(d.Get("helper_distro").(bool))
+	}
+	if d.HasChange("manage_private_ip_automatically") {
+		updates["helper_network"] = boolToString(d.Get("manage_private_ip_automatically").(bool))
+	}
+
+	if len(updates) > 0 {
+		_, err := client.Config.Update(config.ConfigId, config.LinodeId, config.KernelId, updates)
+		if err != nil {
+			return fmt.Errorf("Failed to update the linode's config because %s", err)
+		}
+	}
+	d.SetPartial("helper_distro")
+	d.SetPartial("manage_private_ip_automatically")
+	return nil
+}
+
+// Converts a bool to a string
+func boolToString(val bool) string {
+	if val {
+		return "true"
+	}
+	return "false"
 }
