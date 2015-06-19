@@ -18,6 +18,22 @@ likely be tedious.
 
 * [`terraform`][2]
 
+## Installation
+
+1. Download the plugin from the [releases tab][3]
+2. Put it somewhere were it can permanently live, it doesn't need to be in your path.
+3. Create or modify your `~/.terraformrc` file. You'll need at least this:
+
+```
+providers {
+    linode = "terraform-provider-linode"
+}
+```
+
+If you didn't add terraform-provider-linode to your path, you'll need to put the full path to the location of the plugin.
+
+[3]:https://github.com/btobolaski/terraform-provider-linode/releases
+
 ## Usage
 
 ### Provider Configuration
