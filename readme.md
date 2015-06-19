@@ -62,10 +62,10 @@ resource "linode_linode" "foobar" {
 	group = "integration"
 	region = "Dallas, TX, USA"
 	size = 1024
-  status = "on"
-  ip_address = "8.8.8.8"
-  private_networking = true
-  private_ip_address = "192.168.10.50"
+	status = "on"
+	ip_address = "8.8.8.8"
+	private_networking = true
+	private_ip_address = "192.168.10.50"
 	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
 	root_password = "terraform-test"
 }
@@ -74,7 +74,7 @@ resource "linode_linode" "foobar" {
 value                             | Type     | Forces New | Value Type | Description
 --------------------------------- | -------- | ---------- | ---------- | -----------
 `image`                           | Required | yes        | string     | The image to use when creating the linode. [^1]
-`kernel`                          | Required | no         | string     | The kernel to start the linode with. If you can specify `"Latest 64-bit" or `"Latest 32-bit"` for the most recent version of either that linode provices
+`kernel`                          | Required | no         | string     | The kernel to start the linode with. If you can specify `"Latest 64-bit"` or `"Latest 32-bit"` for the most recent version of either that linode provices
 `name`                            | Optional | no         | string     | The name of the linode
 `group`                           | Optional | no         | string     | The group of the linode
 `region`                          | Required | yes        | string     | The region that the linode will be created in
