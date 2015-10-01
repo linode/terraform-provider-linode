@@ -66,7 +66,6 @@ func resourceLinodeLinode() *schema.Resource {
 			"size": &schema.Schema{
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: true,
 			},
 			"status": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -316,6 +315,15 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 	if d.HasChange("name") || d.HasChange("group") {
 		if err = changeLinodeSettings(client, linode, d); err != nil {
 			return err
+		}
+	}
+
+	if d.HasChange("size") {
+		if err = changeLinodeSize(client, linode, d); err != nil {
+			return err
+		}
+		if err = waitForJobsToComplete(client, int(id)); err != nil {
+			return fmt.Errorf("Failed while waiting for linode %s to finish resizing because %s", d.Id(), err)
 		}
 	}
 
@@ -659,6 +667,32 @@ func waitForJobsToComplete(client *linodego.Client, linodeId int) error {
 	}
 }
 
+// waitForJobsToCompleteWaitMinutes waits (waitMinutes) for all of the jobs on the specified linode to complete before returning.
+// It will timeout after (waitMinutes) has elapsed.
+func waitForJobsToCompleteWaitMinutes(client *linodego.Client, linodeId int, waitMinutes int) error {
+	start := time.Now()
+	for {
+		jobs, err := client.Job.List(linodeId, -1, false)
+		if err != nil {
+			return err
+		}
+		complete := true
+		for i := range jobs.Jobs {
+			if !jobs.Jobs[i].HostFinishDt.IsSet() {
+				complete = false
+			}
+		}
+		if complete {
+			return nil
+		}
+		time.Sleep(1 * time.Second)
+		if time.Since(start) > (time.Duration(waitMinutes) * time.Minute) {
+			return fmt.Errorf("Jobs for linode %d didn't complete in %d minute(s)", linodeId, waitMinutes)
+		}
+	}
+}
+
+
 // changeLinodeSettings changes linode level settings. This is things like the name or the group
 func changeLinodeSettings(client *linodego.Client, linode linodego.Linode, d *schema.ResourceData) error {
 	updates := make(map[string]interface{})
@@ -678,6 +712,34 @@ func changeLinodeSettings(client *linodego.Client, linode linodego.Linode, d *sc
 	}
 	d.SetPartial("group")
 	d.SetPartial("name")
+	return nil
+}
+
+// changeLinodeSize resizes the current linode
+func changeLinodeSize(client *linodego.Client, linode linodego.Linode, d *schema.ResourceData) error {
+	var resize bool
+	var newPlanID int
+	var waitMinutes int
+	if d.Get("size").(int) > linode.TotalRAM {
+		sizeId, err := getSizeId(client, d.Get("size").(int))
+		if err != nil {
+			return fmt.Errorf("Failed to find a size %d because %s", d.Get("size"), err)
+		}
+		newPlanID = sizeId
+		resize = true
+		// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
+		waitMinutes = ((linode.TotalHD/1024)*3)
+	}
+
+	if resize {
+		client.Linode.Resize(linode.LinodeId, newPlanID)
+		err := waitForJobsToCompleteWaitMinutes(client, linode.LinodeId, waitMinutes)
+		if err != nil {
+			return fmt.Errorf("Failed to wait for linode %d resize because %s", linode.LinodeId, err)
+	    }
+		client.Linode.Boot(linode.LinodeId, 0)
+	}
+	d.SetPartial("size")
 	return nil
 }
 
