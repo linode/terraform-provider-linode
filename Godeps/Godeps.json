@@ -1,9 +1,6 @@
 {
-	"ImportPath": "github.com/btobolaski/terraform-provider-linode",
-	"GoVersion": "go1.4.2",
-	"Packages": [
-		"github.com/btobolaski/terraform-provider-linode/..."
-	],
+	"ImportPath": "github.com/bdwyertech/terraform-provider-linode",
+	"GoVersion": "go1.5.1",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -12,7 +9,7 @@
 		},
 		{
 			"ImportPath": "github.com/btobolaski/linodego",
-			"Rev": "e42b03e28c7a3905c1bbfeb2041fcdb64f909fa0"
+			"Rev": "c77e7148c8ef754f82b130e472a873e2e7e02620"
 		},
 		{
 			"ImportPath": "github.com/hashicorp/errwrap",
