@@ -785,28 +785,37 @@ func changeLinodeSettings(client *linodego.Client, linode linodego.Linode, d *sc
 
 // changeLinodeSize resizes the current linode
 func changeLinodeSize(client *linodego.Client, linode linodego.Linode, d *schema.ResourceData) error {
-	var resize bool
 	var newPlanID int
 	var waitMinutes int
-	if d.Get("size").(int) > linode.TotalRAM {
-		sizeId, err := getSizeId(client, d.Get("size").(int))
-		if err != nil {
-			return fmt.Errorf("Failed to find a size %d because %s", d.Get("size"), err)
-		}
-		newPlanID = sizeId
-		resize = true
-		// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
-		waitMinutes = ((linode.TotalHD/1024)*3)
+
+	// Get the Linode Plan Size
+	sizeId, err := getSizeId(client, d.Get("size").(int))
+	if err != nil {
+		return fmt.Errorf("Failed to find a Plan with %d RAM because %s", d.Get("size"), err)
+	}
+	newPlanID = sizeId
+
+	// Check if we can safely resize, with Disk Size considered
+	currentDiskSize, err := getTotalDiskSize(client, linode.LinodeId)
+	newDiskSize, err := getPlanDiskSize(client, newPlanID)
+	if currentDiskSize > newDiskSize {
+		return fmt.Errorf("Cannot resize linode %d because currentDisk(%d GB) is bigger than newDisk(%d GB)", linode.LinodeId, currentDiskSize, newDiskSize)
 	}
 
-	if resize {
-		client.Linode.Resize(linode.LinodeId, newPlanID)
-		err := waitForJobsToCompleteWaitMinutes(client, linode.LinodeId, waitMinutes)
-		if err != nil {
-			return fmt.Errorf("Failed to wait for linode %d resize because %s", linode.LinodeId, err)
-	    }
-		client.Linode.Boot(linode.LinodeId, 0)
+	// Resize the Linode
+	client.Linode.Resize(linode.LinodeId, newPlanID)
+	// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
+	waitMinutes = ((linode.TotalHD/1024)*3)
+	// Wait for the Resize Operation to Complete
+	err = waitForJobsToCompleteWaitMinutes(client, linode.LinodeId, waitMinutes)
+	if err != nil {
+		return fmt.Errorf("Failed to wait for linode %d resize because %s", linode.LinodeId, err)
 	}
+
+	// Boot up the resized Linode
+	client.Linode.Boot(linode.LinodeId, 0)
+
+	// Return the new Linode size
 	d.SetPartial("size")
 	return nil
 }
