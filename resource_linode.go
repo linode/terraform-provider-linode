@@ -519,7 +519,7 @@ func getSizeId(client *linodego.Client, size int) (int, error) {
 			return s[i].PlanId, nil
 		}
 	}
-	return -1, fmt.Errorf("Unable to locate the plan for size %d", size)
+	return -1, fmt.Errorf("Unable to locate the plan with RAM %d", size)
 }
 
 // getSize gets the amount of ram from the plan id
@@ -592,6 +592,8 @@ const (
 // findImage finds the specified image. It checks the prebuilt images first and then any custom images. It returns both
 // the image type and the images id
 func findImage(client *linodego.Client, imageName string) (imageType, imageId int, err error) {
+
+	// Get Available Distributions
 	distResp, err := client.Avail.Distributions()
 	if err != nil {
 		return -1, -1, err
@@ -603,6 +605,7 @@ func findImage(client *linodego.Client, imageName string) (imageType, imageId in
 		}
 	}
 
+	// Get Available Client Images
 	custResp, err := client.Image.List()
 	if err != nil {
 		return -1, -1, err
@@ -610,6 +613,9 @@ func findImage(client *linodego.Client, imageName string) (imageType, imageId in
 	customImages := custResp.Images
 	for i := range customImages {
 		if customImages[i].Label.String() == imageName {
+			return CUSTOM_IMAGE, customImages[i].ImageId, nil
+		}
+		if strconv.Itoa(customImages[i].ImageId) == imageName {
 			return CUSTOM_IMAGE, customImages[i].ImageId, nil
 		}
 	}
