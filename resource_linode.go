@@ -71,6 +71,14 @@ func resourceLinodeLinode() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"plan_storage": &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"plan_storage_utilized": &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"ip_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -155,6 +163,24 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("status", linode.Status)
 	d.SetPartial("status")
+
+    sizeId, err := getSizeId(client, d.Get("size").(int))
+	if err != nil {
+		return err
+	}
+    plan_storage, err := getPlanDiskSize(client, sizeId)
+	if err != nil {
+		return err
+	}
+	d.Set("plan_storage", plan_storage)
+	d.SetPartial("plan_storage")
+
+	plan_storage_utilized, err := getTotalDiskSize(client, linode.LinodeId)
+	if err != nil {
+		return err
+	}
+	d.Set("plan_storage_utilized", plan_storage_utilized)
+	d.SetPartial("plan_storage_utilized")
 
 	configs, err := client.Config.List(int(id), -1)
 	if err != nil {
@@ -548,6 +574,42 @@ func getSizeList(client *linodego.Client) error {
 	}
 	sizeList = &resp.LinodePlans
 	return nil
+}
+
+// getPlanDiskSizeList gets the total available disk space for the given PlanID
+func getPlanDiskSize(client *linodego.Client, planID int) (int, error) {
+	if sizeList == nil {
+		if err := getSizeList(client); err != nil {
+			return -1, err
+		}
+	}
+
+	s := *sizeList
+	for i := range s {
+		if s[i].PlanId == planID {
+			// Return Plan Disk Size in Megabytes
+			return (s[i].Disk*1024), nil
+		}
+	}
+	return -1, fmt.Errorf("Unabled to find plan id %d", planID)
+}
+
+// getTotalDiskSize returns the number of disks and their total size.
+func getTotalDiskSize(client *linodego.Client, linodeID int) (int, error) {
+	var totalDiskSize int
+	diskList, err := client.Disk.List(linodeID, -1)
+	if err != nil {
+		return -1, err
+	}
+
+	totalDiskSize = 0
+	disks := diskList.Disks
+	for i := range disks {
+		totalDiskSize = totalDiskSize + disks[i].Size
+	}
+	// Convert to Gigabytes
+	// totalDiskSizeGB := (totalDiskSize/1024)
+	return totalDiskSize, nil
 }
 
 // getIps gets the ips assigned to the linode
