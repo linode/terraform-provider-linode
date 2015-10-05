@@ -113,6 +113,11 @@ func resourceLinodeLinode() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"disk_expansion": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -181,6 +186,9 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("plan_storage_utilized", plan_storage_utilized)
 	d.SetPartial("plan_storage_utilized")
+
+	d.Set("disk_expansion", boolToString(d.Get("disk_expansion").(bool)))
+	d.SetPartial("disk_expansion")
 
 	configs, err := client.Config.List(int(id), -1)
 	if err != nil {
@@ -605,11 +613,32 @@ func getTotalDiskSize(client *linodego.Client, linodeID int) (int, error) {
 	totalDiskSize = 0
 	disks := diskList.Disks
 	for i := range disks {
+		// Calculate Total Disk Size
 		totalDiskSize = totalDiskSize + disks[i].Size
 	}
-	// Convert to Gigabytes
-	// totalDiskSizeGB := (totalDiskSize/1024)
+
 	return totalDiskSize, nil
+}
+
+// getBiggestDisk returns the ID and Size of the largest disk attached to the Linode
+func getBiggestDisk(client *linodego.Client, linodeID int) (biggestDiskID int, biggestDiskSize int, err error) {
+	// Retrieve the Linode's list of disks
+	diskList, err := client.Disk.List(linodeID, -1)
+	if err != nil {
+		return -1, -1, err
+	}
+
+	biggestDiskID = 0
+	biggestDiskSize = 0
+	disks := diskList.Disks
+	for i := range disks {
+		// Find Biggest Disk ID & Size
+		if disks[i].Size > biggestDiskSize {
+			biggestDiskID = disks[i].DiskId
+			biggestDiskSize = disks[i].Size
+		}
+	}
+	return biggestDiskID, biggestDiskSize, nil
 }
 
 // getIps gets the ips assigned to the linode
@@ -810,6 +839,24 @@ func changeLinodeSize(client *linodego.Client, linode linodego.Linode, d *schema
 	err = waitForJobsToCompleteWaitMinutes(client, linode.LinodeId, waitMinutes)
 	if err != nil {
 		return fmt.Errorf("Failed to wait for linode %d resize because %s", linode.LinodeId, err)
+	}
+
+	if d.Get("disk_expansion").(bool) {
+		// Determine the biggestDisk ID and Size
+		biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, linode.LinodeId)
+		if err != nil {
+			return err
+		}
+		// Calculate new size, with other disks taken into consideration
+		expandedDiskSize := (newDiskSize - (currentDiskSize - biggestDiskSize))
+
+		// Resize the Disk
+		client.Disk.Resize(linode.LinodeId, biggestDiskID, expandedDiskSize)
+		// Wait for the Disk Resize Operation to Complete
+		err = waitForJobsToCompleteWaitMinutes(client, linode.LinodeId, waitMinutes)
+		if err != nil {
+			return fmt.Errorf("Failed to wait for resize of Disk %d for Linode %d because %s", biggestDiskID, linode.LinodeId, err)
+		}
 	}
 
 	// Boot up the resized Linode

@@ -97,6 +97,32 @@ func TestAccLinodeLinode_Resize(t *testing.T) {
 	})
 }
 
+func TestAccLinodeLinode_ExpandDisk(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeLinodeDestroy,
+		Steps: []resource.TestStep{
+			// Start off with a Linode 1024
+			resource.TestStep{
+				Config: testAccCheckLinodeLinodeConfig_Upsize_small,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+				),
+			},
+			// Bump it to a 2048, and expand the disk
+			resource.TestStep{
+				Config: testAccCheckLinodeLinodeConfig_Upsize_expand_disk,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccLinodeLinode_PrivateNetworking(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -260,6 +286,7 @@ resource "linode_linode" "foobar" {
 	name = "foobar_expanded"
 	group = "integration"
 	size = 2048
+	disk_expansion = true
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
