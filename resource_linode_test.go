@@ -31,6 +31,7 @@ func TestAccLinodeLinode_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("linode_linode.foobar", "region", "Dallas, TX, USA"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "kernel", "Latest 64 bit"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "swap_size", "256"),
 				),
 			},
 		},
@@ -75,6 +76,7 @@ func TestAccLinodeLinode_Resize(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "24576"),
 				),
 			},
 			// Bump it to a 2048, but don't expand the disk
@@ -83,6 +85,7 @@ func TestAccLinodeLinode_Resize(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "24576"),
 				),
 			},
 			// Go back down to a 1024
@@ -109,6 +112,7 @@ func TestAccLinodeLinode_ExpandDisk(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "24576"),
 				),
 			},
 			// Bump it to a 2048, and expand the disk
@@ -117,6 +121,7 @@ func TestAccLinodeLinode_ExpandDisk(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "49152"),
 				),
 			},
 		},

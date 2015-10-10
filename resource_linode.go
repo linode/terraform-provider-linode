@@ -118,6 +118,11 @@ func resourceLinodeLinode() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"swap_size": &schema.Schema{
+				Type: schema.TypeInt,
+				Optional: true,
+				Default: 256,
+			},
 		},
 	}
 }
@@ -190,6 +195,21 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("disk_expansion", boolToString(d.Get("disk_expansion").(bool)))
 	d.SetPartial("disk_expansion")
 
+	diskResp, err := client.Disk.List(linode.LinodeId, -1)
+	if err != nil {
+		return fmt.Errorf("Failed to get the disks for the linode because %s", err)
+	}
+
+	// Determine if swap exists and the size.  If it does not exist, swap_size=0
+	swap_size := 0
+	for i := range diskResp.Disks {
+		if strings.EqualFold(diskResp.Disks[i].Type, "swap") {
+			swap_size = diskResp.Disks[i].Size
+		}
+	}
+	d.Set("swap_size", swap_size)
+	d.SetPartial("swap_size")
+
 	configs, err := client.Config.List(int(id), -1)
 	if err != nil {
 		log.Printf("Configs: %v", configs)
@@ -199,12 +219,15 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	config := configs.LinodeConfigs[0]
 
-	image, err := getImage(client, int(id))
-	if err != nil {
-		return fmt.Errorf("Failed to get the image because %s", image)
-	}
-	d.Set("image", image)
-	d.SetPartial("image")
+// This doesn't really tell us much.  This will flunk if an ImageName is used to deploy, since getImage will return
+// an imageID.  Trying to derive the imageName from an imageID could be bad if the image happens to be deleted, which would
+// likely occur in an environment where base image's are lifecycled. 
+//	image, err := getImage(client, int(id))
+//	if err != nil {
+//		return fmt.Errorf("Failed to get the image because %s", err)
+//	}
+//	d.Set("image", image)
+//	d.SetPartial("image")
 
 	d.Set("helper_distro", boolToString(config.HelperDistro.Bool))
 	d.SetPartial("helper_distro")
@@ -240,11 +263,15 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetPartial("region")
 	d.SetPartial("size")
 
-	emptyArgs := make(map[string]string)
-	_, err = client.Disk.Create(create.LinodeId.LinodeId, "swap", "swap", 512, emptyArgs)
-	if err != nil {
-		return fmt.Errorf("Failed to create a swap drive because %s", err)
+	// Create the Swap Partition
+	if d.Get("swap_size").(int) > 0 {
+		emptyArgs := make(map[string]string)
+		_, err = client.Disk.Create(create.LinodeId.LinodeId, "swap", "swap", d.Get("swap_size").(int), emptyArgs)
+		if err != nil {
+			return fmt.Errorf("Failed to create a swap drive because %s", err)
+		}
 	}
+	d.SetPartial("swap_size")
 
 	// Load the basic data about the current linode
 	linodes, err := client.Linode.List(create.LinodeId.LinodeId)
@@ -271,7 +298,8 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 
 	ssh_key := d.Get("ssh_key").(string)
 	password := d.Get("root_password").(string)
-	err = deployImage(client, linode, d.Get("image").(string), ssh_key, password)
+	disk_size := (linode.TotalHD - d.Get("swap_size").(int))
+	err = deployImage(client, linode, d.Get("image").(string), disk_size, ssh_key, password)
 	if err != nil {
 		return fmt.Errorf("Failed to create disk for image %s because %s", d.Get("image"), err)
 	}
@@ -286,10 +314,10 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	var rootDisk int
 	var swapDisk int
 	for i := range diskResp.Disks {
-		if strings.HasSuffix(diskResp.Disks[i].Label.String(), "Disk") {
-			rootDisk = diskResp.Disks[i].DiskId
-		} else {
+		if strings.EqualFold(diskResp.Disks[i].Type, "swap") {
 			swapDisk = diskResp.Disks[i].DiskId
+		} else {
+			rootDisk = diskResp.Disks[i].DiskId
 		}
 	}
 
@@ -309,7 +337,11 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	} else {
 		confArgs["helper_distro"] = "false"
 	}
-	confArgs["DiskList"] = fmt.Sprintf("%d,%d", rootDisk, swapDisk)
+	if d.Get("swap_size").(int) > 0 {
+		confArgs["DiskList"] = fmt.Sprintf("%d,%d", rootDisk, swapDisk)
+	} else {
+		confArgs["DiskList"] = fmt.Sprintf("%d", rootDisk)
+	}
 	confArgs["RootDeviceNum"] = "1"
 	c, err := client.Config.Create(linode.LinodeId, kernelId, d.Get("image").(string), confArgs)
 	if err != nil {
@@ -433,8 +465,16 @@ func getImage(client *linodego.Client, id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// Assumes disk naming convention of Root(LINODEID)__Base(IMAGEID)
+	grabId := regexp.MustCompile(`Base\(([0-9]+)\)`)
 	for i := range disks {
-		if strings.HasSuffix(disks[i], " Disk") {
+		// Check if we match the pattern at all
+		if grabId.MatchString(disks[i]) {
+			// Print out the first group match
+			return grabId.FindStringSubmatch(disks[i])[1], nil
+
+		// Keep the old method for backward compatibility
+		} else if strings.HasSuffix(disks[i], " Disk") {
 			return disks[i][:(len(disks[i]) - 5)], nil
 		}
 	}
@@ -715,26 +755,32 @@ func findImage(client *linodego.Client, imageName string) (imageType, imageId in
 }
 
 // deployImage deploys the specified image
-func deployImage(client *linodego.Client, linode linodego.Linode, imageName string, key, password string) error {
-	t, id, err := findImage(client, imageName)
+// DiskLabel has 50 characters maximum!!!
+func deployImage(client *linodego.Client, linode linodego.Linode, imageName string, diskSize int, key, password string) error {
+	imageType, imageId, err := findImage(client, imageName)
 	if err != nil {
 		return err
 	}
 	args := make(map[string]string)
 	args["rootSSHKey"] = key
 	args["rootPass"] = password
-	if t == PREBUILT {
-		_, err = client.Disk.CreateFromDistribution(id, linode.LinodeId, fmt.Sprintf("%s Disk", imageName), linode.TotalHD-512, args)
+	diskLabel := fmt.Sprintf("Root(%d)__Base(%d)", linode.LinodeId, imageId)
+	if imageType == PREBUILT {
+		_, err = client.Disk.CreateFromDistribution(imageId, linode.LinodeId, diskLabel, diskSize, args)
 		if err != nil {
 			return err
 		}
-	} else if t == CUSTOM_IMAGE {
-		_, err = client.Disk.CreateFromImage(id, linode.LinodeId, fmt.Sprintf("%s Disk", imageName), linode.TotalHD-512, args)
+	} else if imageType == CUSTOM_IMAGE {
+		_, err = client.Disk.CreateFromImage(imageId, linode.LinodeId, diskLabel, diskSize, args)
 		if err != nil {
 			return err
 		}
 	} else {
 		panic("Invalid image type returned")
+	}
+	err = waitForJobsToComplete(client, linode.LinodeId)
+	if err != nil {
+		return fmt.Errorf("Image %d failed to thaw for linode %d because %s", imageId, linode.LinodeId, err)
 	}
 	return nil
 }
@@ -777,6 +823,8 @@ func waitForJobsToCompleteWaitMinutes(client *linodego.Client, linodeId int, wai
 		for i := range jobs.Jobs {
 			if !jobs.Jobs[i].HostFinishDt.IsSet() {
 				complete = false
+				// MAKEME: log.Printf("[INFO] JOB:(%s) %s", jobs.Jobs[i].Label, jobs.Jobs[i].HostMessage)
+				// Can't figure out how to print this to the console. This would give the pending job status and ETA.
 			}
 		}
 		if complete {
