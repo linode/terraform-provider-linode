@@ -258,6 +258,9 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to find a size %s because %s", d.Get("size"), err)
 	}
 	create, err := client.Linode.Create(regionId, sizeId, 1)
+	if err != nil {
+		return fmt.Errorf("Failed to create a linode in region %s of size %d because %s", d.Get("region"), d.Get("size"), err)
+	}
 
 	d.SetId(fmt.Sprintf("%d", create.LinodeId.LinodeId))
 	d.SetPartial("region")
