@@ -121,7 +121,7 @@ func resourceLinodeLinode() *schema.Resource {
 			"swap_size": &schema.Schema{
 				Type: schema.TypeInt,
 				Optional: true,
-				Default: 256,
+				Default: 512,
 			},
 		},
 	}
