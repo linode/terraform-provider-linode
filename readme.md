@@ -92,10 +92,10 @@ value                             | Type     | Forces New | Value Type | Descrip
 ## Contributing
 
 1. Fork the repo
-2. Use [godep][3] to get the correct versions of the dependencies
+2. Use [godep][4] to get the correct versions of the dependencies
 3. Make your changes
 4. Apply `go fmt` to all of the files
 5. Verify that the tests still pass
 6. Submit a pull request
 
-[3]:https://github.com/tools/godep
+[4]:https://github.com/tools/godep
