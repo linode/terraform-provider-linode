@@ -26,12 +26,12 @@ func TestAccLinodeLinode_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", "foobar"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "Ubuntu 14.04 LTS"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "region", "Dallas, TX, USA"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "kernel", "Latest 64 bit"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "swap_size", "256"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "swap_size", "512"),
 				),
 			},
 		},
@@ -70,30 +70,30 @@ func TestAccLinodeLinode_Resize(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeLinodeDestroy,
 		Steps: []resource.TestStep{
-			// Start off with a Linode 1024
+			// Start off with a Linode 2048
 			resource.TestStep{
 				Config: testAccCheckLinodeLinodeConfig_Upsize_small,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "24576"),
-				),
-			},
-			// Bump it to a 2048, but don't expand the disk
-			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfig_Upsize_bigger,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "24576"),
 				),
 			},
-			// Go back down to a 1024
+			// Bump it to a 4096, but don't expand the disk
+			resource.TestStep{
+				Config: testAccCheckLinodeLinodeConfig_Upsize_bigger,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "4096"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "24576"),
+				),
+			},
+			// Go back down to a 2048
 			resource.TestStep{
 				Config: testAccCheckLinodeLinodeConfig_Downsize,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
 				),
 			},
 		},
@@ -106,21 +106,21 @@ func TestAccLinodeLinode_ExpandDisk(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeLinodeDestroy,
 		Steps: []resource.TestStep{
-			// Start off with a Linode 1024
+			// Start off with a Linode 2048
 			resource.TestStep{
 				Config: testAccCheckLinodeLinodeConfig_Upsize_small,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "24576"),
 				),
 			},
-			// Bump it to a 2048, and expand the disk
+			// Bump it to a 4096, and expand the disk
 			resource.TestStep{
 				Config: testAccCheckLinodeLinodeConfig_Upsize_expand_disk,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "4096"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "49152"),
 				),
 			},
@@ -230,7 +230,7 @@ const testAccCheckLinodeLinodeConfig_basic = `
 resource "linode_linode" "foobar" {
 	name = "foobar"
 	group = "testing"
-	size = 1024
+	size = 2048
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
@@ -242,7 +242,7 @@ const testAccCheckLinodeLinodeConfig_updates = `
 resource "linode_linode" "foobar" {
 	name = "foobaz"
 	group = "integration"
-	size = 1024
+	size = 2048
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
@@ -254,7 +254,7 @@ const testAccCheckLinodeLinodeConfig_Upsize_small = `
 resource "linode_linode" "foobar" {
 	name = "foobar_small"
 	group = "integration"
-	size = 1024
+	size = 2048
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
@@ -266,7 +266,7 @@ const testAccCheckLinodeLinodeConfig_Upsize_bigger = `
 resource "linode_linode" "foobar" {
 	name = "foobar_upsized"
 	group = "integration"
-	size = 2048
+	size = 4096
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
@@ -278,7 +278,7 @@ const testAccCheckLinodeLinodeConfig_Downsize = `
 resource "linode_linode" "foobar" {
 	name = "foobar_downsized"
 	group = "integration"
-	size = 1024
+	size = 2048
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
@@ -290,7 +290,7 @@ const testAccCheckLinodeLinodeConfig_Upsize_expand_disk = `
 resource "linode_linode" "foobar" {
 	name = "foobar_expanded"
 	group = "integration"
-	size = 2048
+	size = 4096
 	disk_expansion = true
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
@@ -303,7 +303,7 @@ const testAccCheckLinodeLinodeConfig_PrivateNetworking = `
 resource "linode_linode" "foobar" {
 	name = "foobaz"
 	group = "integration"
-	size = 1024
+	size = 2048
 	image = "Ubuntu 14.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"

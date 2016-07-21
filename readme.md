@@ -61,7 +61,7 @@ resource "linode_linode" "foobar" {
 	name = "foobaz"
 	group = "integration"
 	region = "Dallas, TX, USA"
-	size = 1024
+	size = 2048
 	status = "on"
 	swap_size = 256
 	ip_address = "8.8.8.8"
@@ -81,7 +81,7 @@ value                             | Type     | Forces New | Value Type | Descrip
 `name`                            | Optional | no         | string     | The name of the linode
 `group`                           | Optional | no         | string     | The group of the linode
 `region`                          | Required | yes        | string     | The region that the linode will be created in
-`size`                            | Required | no         | int        | The amount of ram in the linode plan. i.e. 1024, 2048 or 4096
+`size`                            | Required | no         | int        | The amount of ram in the linode plan. i.e. 2048, 4096, or 8192
 `ip_address`                      | Computed | n/a        | string     | The public ip address
 `private_networking`              | Optional | sort of    | bool       | Whether or not to enable private networking. It can be enabled on an existing linode but it can't be disabled.
 `private_ip_address`              | Computed | n/a        | string     | If private networking is enabled, it will be populated with the linode's private ip address
