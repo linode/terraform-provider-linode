@@ -143,36 +143,34 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failed to get the ips for linode %s because %s", d.Id(), err)
 	}
 	d.Set("ip_address", public)
-	d.SetPartial("ip_address")
 	if private != "" {
 		d.Set("private_networking", true)
 		d.Set("private_ip_address", private)
 	} else {
 		d.Set("private_networking", false)
 	}
-	d.SetPartial("private_networking")
+
+	d.SetConnInfo(map[string]string{
+		"type": "ssh",
+		"host": public,
+	})
 
 	d.Set("name", linode.Label)
-	d.SetPartial("name")
 	d.Set("group", linode.LpmDisplayGroup)
-	d.SetPartial("group")
 
 	regionName, err := getRegionName(client, linode.DataCenterId)
 	if err != nil {
 		return err
 	}
 	d.Set("region", regionName)
-	d.SetPartial("region")
 
 	size, err := getSize(client, linode.PlanId)
 	if err != nil {
 		return fmt.Errorf("Failed to find the size for linode %s because %s", d.Id(), err)
 	}
 	d.Set("size", size)
-	d.SetPartial("size")
 
 	d.Set("status", linode.Status)
-	d.SetPartial("status")
 
     sizeId, err := getSizeId(client, d.Get("size").(int))
 	if err != nil {
@@ -183,17 +181,14 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	d.Set("plan_storage", plan_storage)
-	d.SetPartial("plan_storage")
 
 	plan_storage_utilized, err := getTotalDiskSize(client, linode.LinodeId)
 	if err != nil {
 		return err
 	}
 	d.Set("plan_storage_utilized", plan_storage_utilized)
-	d.SetPartial("plan_storage_utilized")
 
 	d.Set("disk_expansion", boolToString(d.Get("disk_expansion").(bool)))
-	d.SetPartial("disk_expansion")
 
 	diskResp, err := client.Disk.List(linode.LinodeId, -1)
 	if err != nil {
@@ -208,7 +203,6 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	d.Set("swap_size", swap_size)
-	d.SetPartial("swap_size")
 
 	configs, err := client.Config.List(int(id), -1)
 	if err != nil {
@@ -230,16 +224,13 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 //	d.SetPartial("image")
 
 	d.Set("helper_distro", boolToString(config.HelperDistro.Bool))
-	d.SetPartial("helper_distro")
 	d.Set("manage_private_ip_automatically", boolToString(config.HelperDistro.Bool))
-	d.SetPartial("manage_private_ip_automatically")
 
 	kernelName, err := getKernelName(client, config.KernelId)
 	if err != nil {
 		return fmt.Errorf("Failed to find the kernel for linode %s because %s", d.Id(), err)
 	}
 	d.Set("kernel", kernelName)
-	d.SetPartial("kernel")
 
 	return nil
 }
@@ -358,6 +349,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetPartial("helper_distro")
 	client.Linode.Boot(linode.LinodeId, confID.LinodeConfigId)
 
+	d.Partial(false)
 	err = waitForJobsToComplete(client, linode.LinodeId)
 	if err != nil {
 		return fmt.Errorf("Failed to wait for linode %d to boot because %s", linode.LinodeId, err)
