@@ -3,9 +3,9 @@ package linode
 import (
 	"fmt"
 
-	"github.com/btobolaski/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/taoh/linodego"
 )
 
 func Provider() terraform.ResourceProvider {
