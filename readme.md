@@ -32,7 +32,7 @@ providers {
 
 If you didn't add terraform-provider-linode to your path, you'll need to put the full path to the location of the plugin.
 
-[3]:https://github.com/btobolaski/terraform-provider-linode/releases
+[3]:https://github.com/RainbowHackerHorse/terraform-provider-linode/releases
 
 ## Usage
 
@@ -92,10 +92,24 @@ value                             | Type     | Forces New | Value Type | Descrip
 ## Contributing
 
 1. Fork the repo
-2. Use [godep][3] to get the correct versions of the dependencies
+2. Use [godep][3] to get the correct versions of the dependencies, via `godep get`
 3. Make your changes
 4. Apply `go fmt` to all of the files
 5. Verify that the tests still pass
 6. Submit a pull request
 
 [3]:https://github.com/tools/godep
+
+## Building
+If you're unfamiliar with building go or terraform plugins, please visit the following links first:
+https://golang.org/pkg/go/build/
+https://golang.org/doc/install
+https://www.terraform.io/guides/writing-custom-terraform-providers.html
+
+1. Set up your GOPATH. A good default is $HOME/go. You can quickly set it by running `export GOPATH=$HOME/go`
+2. cd to your new GOPATH.
+3. Run `go get github.com/RainbowHackerHorse/terraform-provider-linode`
+4. `cd $GOPATH/src/github.com/RainbowHackerHorse/terraform-provider-linode`
+5. `go build -o terraform-provider-linode`
+6. Copy the resulting package from the ./pkg dir to wherever you want on your filesystem.
+7. Follow the above instructions for using it.
