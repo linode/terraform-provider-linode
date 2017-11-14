@@ -21,6 +21,7 @@ likely be tedious.
 ## Installation
 
 1. Download the plugin from the [releases tab][3]
+Both Linux and FreeBSD binaries are available.
 2. Put it somewhere were it can permanently live, it doesn't need to be in your path.
 3. Create or modify your `~/.terraformrc` file. You'll need at least this:
 
