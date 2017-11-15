@@ -115,6 +115,6 @@ https://www.terraform.io/guides/writing-custom-terraform-providers.html
 6. Copy the resulting package to wherever you want on your filesystem.
 7. Follow the above instructions for using it.
 
-If you need more information about how to install or use this plugin, do not hesitate to read this article: [How to Build your Infrastructure Using Terraform and Linode][4]
+If you need more information about how to install or use this plugin, do not hesitate to read this article: [Using Terraform to Provision Linode Environments][4]
 
 [4]:https://www.linode.com/docs/platform/how-to-build-your-infrastructure-using-Terraform-and-Linode
