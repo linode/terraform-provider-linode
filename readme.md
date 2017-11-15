@@ -110,7 +110,7 @@ https://www.terraform.io/guides/writing-custom-terraform-providers.html
 1. Set up your GOPATH. A good default is $HOME/go. You can quickly set it by running `export GOPATH=$HOME/go`
 2. cd to your new GOPATH.
 3. Run `go get github.com/RainbowHackerHorse/terraform-provider-linode`
-4. `cd $GOPATH/src/github.com/RainbowHackerHorse/terraform-provider-linode`
-5. `go build -o terraform-provider-linode`
-6. Copy the resulting package from the ./pkg dir to wherever you want on your filesystem.
+4. `cd $GOPATH/src/github.com/RainbowHackerHorse/terraform-provider-linode/bin/terraform-provider-linode`
+5. `go build -o terraform-provider-linode` (To cross-compile for freebsd, run `GOOS=freebsd GOARCH=amd64 build -o terraform-provider-linode`)
+6. Copy the resulting package to wherever you want on your filesystem.
 7. Follow the above instructions for using it.
