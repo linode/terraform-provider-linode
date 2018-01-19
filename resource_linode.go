@@ -4,15 +4,15 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/btobolaski/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/taoh/linodego"
 	"golang.org/x/crypto/sha3"
-	"log"
 )
 
 const (
@@ -119,9 +119,9 @@ func resourceLinodeLinode() *schema.Resource {
 				Default:  false,
 			},
 			"swap_size": &schema.Schema{
-				Type: schema.TypeInt,
+				Type:     schema.TypeInt,
 				Optional: true,
-				Default: 512,
+				Default:  512,
 			},
 		},
 	}
@@ -136,6 +136,17 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	linodes, err := client.Linode.List(int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to find the specified linode because %s", err)
+	}
+	if len(linodes.Errors) != 0 {
+		var output = ""
+		for _, value := range linodes.Errors {
+			output = fmt.Sprintf("%s\n%s", output, value)
+		}
+		return fmt.Errorf("Failed to find the specified linode. The following errors occured: %s", output)
+	}
+	if len(linodes.Linodes) != 1 {
+		d.SetId("")
+		return nil
 	}
 	linode := linodes.Linodes[0]
 	public, private, err := getIps(client, int(id))
@@ -172,11 +183,12 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("status", linode.Status)
 
-    sizeId, err := getSizeId(client, d.Get("size").(int))
+	sizeId, err := getSizeId(client, d.Get("size").(int))
 	if err != nil {
 		return err
 	}
-    plan_storage, err := getPlanDiskSize(client, sizeId)
+
+	plan_storage, err := getPlanDiskSize(client, sizeId)
 	if err != nil {
 		return err
 	}
@@ -213,15 +225,17 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	config := configs.LinodeConfigs[0]
 
-// This doesn't really tell us much.  This will flunk if an ImageName is used to deploy, since getImage will return
-// an imageID.  Trying to derive the imageName from an imageID could be bad if the image happens to be deleted, which would
-// likely occur in an environment where base image's are lifecycled. 
-//	image, err := getImage(client, int(id))
-//	if err != nil {
-//		return fmt.Errorf("Failed to get the image because %s", err)
-//	}
-//	d.Set("image", image)
-//	d.SetPartial("image")
+	/**
+	// This doesn't really tell us much.  This will flunk if an ImageName is used to deploy, since getImage will return
+	// an imageID.  Trying to derive the imageName from an imageID could be bad if the image happens to be deleted, which would
+	// likely occur in an environment where base image's are lifecycled.
+	image, err := getImage(client, int(id))
+	if err != nil {
+		return fmt.Errorf("Failed to get the image because %s", err)
+	}
+	d.Set("image", image)
+	d.SetPartial("image")
+	**/
 
 	d.Set("helper_distro", boolToString(config.HelperDistro.Bool))
 	d.Set("manage_private_ip_automatically", boolToString(config.HelperDistro.Bool))
@@ -336,6 +350,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	} else {
 		confArgs["DiskList"] = fmt.Sprintf("%d", rootDisk)
 	}
+
 	confArgs["RootDeviceNum"] = "1"
 	c, err := client.Config.Create(linode.LinodeId, kernelId, d.Get("image").(string), confArgs)
 	if err != nil {
@@ -398,7 +413,7 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 	config := configResp.LinodeConfigs[0]
 
 	if err = changeLinodeConfig(client, config, d); err != nil {
-		return fmt.Errorf("Failed to update Linode %d config because %s", id, config)
+		return fmt.Errorf("Failed to update Linode %d config because %s", id, err)
 	}
 
 	if d.HasChange("private_networking") {
@@ -429,7 +444,7 @@ func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(*linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse linode id %s as int", id)
+		return fmt.Errorf("Failed to parse linode id %d as int", d.Id())
 	}
 	_, err = client.Linode.Delete(int(id), true)
 	if err != nil {
@@ -460,16 +475,17 @@ func getImage(client *linodego.Client, id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	// Assumes disk naming convention of Root(LINODEID)__Base(IMAGEID)
 	grabId := regexp.MustCompile(`Base\(([0-9]+)\)`)
+
 	for i := range disks {
 		// Check if we match the pattern at all
 		if grabId.MatchString(disks[i]) {
 			// Print out the first group match
 			return grabId.FindStringSubmatch(disks[i])[1], nil
-
-		// Keep the old method for backward compatibility
 		} else if strings.HasSuffix(disks[i], " Disk") {
+			// Keep the old method for backward compatibility
 			return disks[i][:(len(disks[i]) - 5)], nil
 		}
 	}
@@ -631,7 +647,7 @@ func getPlanDiskSize(client *linodego.Client, planID int) (int, error) {
 	for i := range s {
 		if s[i].PlanId == planID {
 			// Return Plan Disk Size in Megabytes
-			return (s[i].Disk*1024), nil
+			return (s[i].Disk * 1024), nil
 		}
 	}
 	return -1, fmt.Errorf("Unabled to find plan id %d", planID)
@@ -718,7 +734,6 @@ const (
 // findImage finds the specified image. It checks the prebuilt images first and then any custom images. It returns both
 // the image type and the images id
 func findImage(client *linodego.Client, imageName string) (imageType, imageId int, err error) {
-
 	// Get Available Distributions
 	distResp, err := client.Avail.Distributions()
 	if err != nil {
@@ -832,7 +847,6 @@ func waitForJobsToCompleteWaitMinutes(client *linodego.Client, linodeId int, wai
 	}
 }
 
-
 // changeLinodeSettings changes linode level settings. This is things like the name or the group
 func changeLinodeSettings(client *linodego.Client, linode linodego.Linode, d *schema.ResourceData) error {
 	updates := make(map[string]interface{})
@@ -877,7 +891,7 @@ func changeLinodeSize(client *linodego.Client, linode linodego.Linode, d *schema
 	// Resize the Linode
 	client.Linode.Resize(linode.LinodeId, newPlanID)
 	// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
-	waitMinutes = ((linode.TotalHD/1024)*3)
+	waitMinutes = ((linode.TotalHD / 1024) * 3)
 	// Wait for the Resize Operation to Complete
 	err = waitForJobsToCompleteWaitMinutes(client, linode.LinodeId, waitMinutes)
 	if err != nil {
