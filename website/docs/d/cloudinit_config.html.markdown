@@ -31,7 +31,7 @@ data "template_cloudinit_config" "config" {
   # Setup hello world script to be called by the cloud-config
   part {
     filename     = "init.cfg"
-    content_type = "text/part-handler"
+    content_type = "text/cloud-config"
     content      = "${data.template_file.script.rendered}"
   }
 
