@@ -22,8 +22,8 @@ Usage
 ---------------------
 
 ```
-# For example, restrict template version in 0.1.x
-provider "template" {
+# For example, restrict linode version in 0.1.x
+provider "linode" {
   version = "~> 0.1"
 }
 ```
@@ -47,7 +47,9 @@ $ make build
 
 Using the provider
 ----------------------
-## Fill in for each provider
+See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.
+
+Additional documentation and examples are provided in the Linode Guide, [Using Terraform to Provision Linode Environments](https://linode.com/docs/platform/how-to-build-your-infrastructure-using-terraform-and-linode/).
 
 Developing the Provider
 ---------------------------
