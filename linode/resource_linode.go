@@ -39,6 +39,9 @@ func resourceLinodeLinode() *schema.Resource {
 		Read:   resourceLinodeLinodeRead,
 		Update: resourceLinodeLinodeUpdate,
 		Delete: resourceLinodeLinodeDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"image": &schema.Schema{
 				Type:     schema.TypeString,
