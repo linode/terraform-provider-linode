@@ -1,58 +1,36 @@
 ---
-layout: "template"
-page_title: "Provider: Template"
-sidebar_current: "docs-template-index"
+layout: "linode"
+page_title: "Provider: Linode"
+sidebar_current: "docs-linode-index"
 description: |-
-  The Template provider is used to template strings for other Terraform resources.
+  The Linode provider is used to interact with Linode services. The provider needs to be configured with the proper credentials before it can be used.
 ---
 
-# Template Provider
+# Linode Provider
 
-The template provider exposes data sources to use templates to generate
-strings for other Terraform resources or outputs.
+The Linode provider exposes data sources to interact with [Linode services](https://www.linode.com/).
+The provider needs to be configured with the proper credentials before it can be used.
 
 Use the navigation to the left to read about the available data sources.
 
 ## Example Usage
 
 ```hcl
-# Template for initial configuration bash script
-data "template_file" "init" {
-  template = "${file("init.tpl")}"
-
-  vars {
-    consul_address = "${aws_instance.consul.private_ip}"
-  }
+# Configure the Linode provider
+provider "linode" {
+  key = "$LINODE_API_KEY"
 }
 
-# Create a web server
-resource "aws_instance" "web" {
+resource "linode_linode" "foobar" {
   # ...
-
-  user_data = "${data.template_file.init.rendered}"
 }
 ```
 
-Or using an inline template:
+## Configuration Reference
 
-```hcl
-# Template for initial configuration bash script
-data "template_file" "init" {
-  template = "$${consul_address}:1234"
+The following keys can be used to configure the provider.
 
-  vars {
-    consul_address = "${aws_instance.consul.private_ip}"
-  }
-}
+* `key` - (Required) This is your [Linode APIv3 Key](https://linode.com/docs/platform/api/api-key/).
 
-# Create a web server
-resource "aws_instance" "web" {
-  # ...
+   The Linode API key can also be specified using the `LINODE_API_KEY` environment variable.
 
-  user_data = "${data.template_file.init.rendered}"
-}
-```
-
--> **Note:** Inline templates must escape their interpolations (as seen
-by the double `$` above). Unescaped interpolations will be processed
-_before_ the template.
