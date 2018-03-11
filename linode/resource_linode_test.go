@@ -16,6 +16,10 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 
 	var instance linodego.Linode
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -23,12 +27,12 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLinodeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigBasic(instanceName),
+				Config: testAccCheckLinodeLinodeConfigBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "Ubuntu 14.04 LTS"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "Ubuntu 16.04 LTS"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "region", "Dallas, TX, USA"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "kernel", "Latest 64 bit"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
@@ -38,17 +42,28 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 			resource.TestStep{
 				ResourceName:  "linode_linode.foobar",
 				ImportState:   true,
-				ImportStateId: fmt.Sprintf("%s", instance.LinodeId),
+				ImportStateId: fmt.Sprintf("%d", instance.LinodeId),
+				// ImportStateId: getId(instance),
 			},
 		},
 	})
 }
 
+/* @TODO I'm not getting the id of the instance. why not?
+func getId(instance linodego.Linode) string {
+	fmt.Printf("What did you do? %+v\n", instance)
+	return fmt.Sprintf("%d", instance.LinodeId)
+}
+*/
 func TestAccLinodeLinodeUpdate(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Linode
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -56,15 +71,15 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLinodeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigBasic(instanceName),
+				Config: testAccCheckLinodeLinodeConfigBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "name", fmt.Sprintf(instanceName)),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpdates(instanceName),
+				Config: testAccCheckLinodeLinodeConfigUpdates(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", fmt.Sprintf("%s_renamed", instanceName)),
@@ -80,6 +95,10 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 
 	var instance linodego.Linode
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -88,7 +107,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName),
+				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
@@ -97,7 +116,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 			},
 			// Bump it to a 2048, but don't expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeBigger(instanceName),
+				Config: testAccCheckLinodeLinodeConfigUpsizeBigger(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
@@ -106,7 +125,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 			},
 			// Go back down to a 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigDownsize(instanceName),
+				Config: testAccCheckLinodeLinodeConfigDownsize(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
@@ -121,6 +140,10 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 
 	var instance linodego.Linode
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -129,7 +152,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName),
+				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
@@ -138,7 +161,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 			},
 			// Bump it to a 2048, and expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instanceName),
+				Config: testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
@@ -154,6 +177,10 @@ func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 
 	var instance linodego.Linode
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -161,7 +188,7 @@ func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLinodeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigPrivateNetworking(instanceName),
+				Config: testAccCheckLinodeLinodeConfigPrivateNetworking(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					testAccCheckLinodeLinodeAttributesPrivateNetworking("linode_linode.foobar"),
@@ -180,16 +207,19 @@ func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
 			continue
 		}
 
-		id, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
+		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Failed to parse %s as int", rs.Primary.ID)
+			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
 		}
 
-		fmt.Println("Going to look for linode %s", id)
-		response, err := client.Linode.List(int(id))
-		fmt.Println(response)
-		if err == nil {
-			return fmt.Errorf("Linode still exists %s", err)
+		linodes, err := client.Linode.List(id)
+
+		if err != nil {
+			return fmt.Errorf("Failed to get Linode list with %d id", id)
+		} else if len(linodes.Linodes) > 0 {
+			return fmt.Errorf("Linode still exists %+v", linodes)
+		} else {
+			return nil
 		}
 	}
 
@@ -200,7 +230,7 @@ func testAccCheckLinodeLinodeExists(n string, instance *linodego.Linode) resourc
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found %s", rs)
+			return fmt.Errorf("Not found %+v", rs)
 		}
 
 		if rs.Primary.ID == "" {
@@ -208,14 +238,16 @@ func testAccCheckLinodeLinodeExists(n string, instance *linodego.Linode) resourc
 		}
 
 		client := testAccProvider.Meta().(*linodego.Client)
-		id, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
+		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
 		}
 
-		linodes, err := client.Linode.List(int(id))
+		linodes, err := client.Linode.List(id)
 		if err != nil {
 			return err
+		} else if len(linodes.Linodes) != 1 {
+			return fmt.Errorf("Unexpected linode list response for %d: %+v", id, linodes)
 		}
 
 		*instance = linodes.Linodes[0]
@@ -228,18 +260,18 @@ func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.Test
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found %s", rs)
+			return fmt.Errorf("Not found %+v", rs)
 		}
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Linode id set")
 		}
 
 		client := testAccProvider.Meta().(*linodego.Client)
-		id, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
+		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
 		}
-		_, err = client.Linode.List(int(id))
+		_, err = client.Linode.List(id)
 		if err != nil {
 			return err
 		}
@@ -256,109 +288,109 @@ func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.Test
 	}
 }
 
-func testAccCheckLinodeLinodeConfigBasic(instance string) string {
+func testAccCheckLinodeLinodeConfigBasic(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s"
 	group = "testing"
 	size = 1024
-	image = "Ubuntu 14.04 LTS"
+	image = "Ubuntu 16.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
-}`, instance)
+	ssh_key = "%s"
+}`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpdates(instance string) string {
+func testAccCheckLinodeLinodeConfigUpdates(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_renamed"
 	group = "integration"
 	size = 1024
-	image = "Ubuntu 14.04 LTS"
+	image = "Ubuntu 16.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
-}`, instance)
+	ssh_key = "%s"
+}`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpsizeSmall(instance string) string {
+func testAccCheckLinodeLinodeConfigUpsizeSmall(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s"
 	group = "integration"
 	size = 1024
-	image = "Ubuntu 14.04 LTS"
+	image = "Ubuntu 16.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
-}`, instance)
+	ssh_key = "%s"
+}`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpsizeBigger(instance string) string {
+func testAccCheckLinodeLinodeConfigUpsizeBigger(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_upsized"
 	group = "integration"
 	size = 2048
-	image = "Ubuntu 14.04 LTS"
+	image = "Ubuntu 16.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
-}`, instance)
+	ssh_key = "%s"
+}`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigDownsize(instance string) string {
+func testAccCheckLinodeLinodeConfigDownsize(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_downsized"
 	group = "integration"
 	size = 1024
-	image = "Ubuntu 14.04 LTS"
+	image = "Ubuntu 16.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
-}`, instance)
+	ssh_key = "%s"
+}`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instance string) string {
+func testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_expanded"
 	group = "integration"
 	size = 2048
 	disk_expansion = true
-	image = "Ubuntu 14.04 LTS"
+	image = "Ubuntu 16.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
-}`, instance)
+	ssh_key = "%s"
+}`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigPrivateNetworking(instance string) string {
+func testAccCheckLinodeLinodeConfigPrivateNetworking(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s"
 	group = "integration"
 	size = 1024
-	image = "Ubuntu 14.04 LTS"
+	image = "Ubuntu 16.04 LTS"
 	region = "Dallas, TX, USA"
 	kernel = "Latest 64 bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	private_networking = true
-	ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxtdizvJzTT38y2oXuoLUXbLUf9V0Jy9KsM0bgIvjUCSEbuLWCXKnWqgBmkv7iTKGZg3fx6JA10hiufdGHD7at5YaRUitGP2mvC2I68AYNZmLCGXh0hYMrrUB01OEXHaYhpSmXIBc9zUdTreL5CvYe3PAYzuBA0/lGFTnNsHosSd+suA4xfJWMr/Fr4/uxrpcy8N8BE16pm4kci5tcMh6rGUGtDEj6aE9k8OI4SRmSZJsNElsu/Z/K4zqCpkW/U06vOnRrE98j3NE07nxVOTqdAMZqopFiMP0MXWvd6XyS2/uKU+COLLc0+hVsgj+dVMTWfy8wZ58OJDsIKk/cI/7yF+GZz89Js+qYx7u9mNhpEgD4UrcRHpitlRgVhA8p6R4oBqb0m/rpKBd2BAFdcty3GIP9CWsARtsCbN6YDLJ1JN3xI34jSGC1ROktVHg27bEEiT5A75w3WJl96BlSo5zJsIZDTWlaqnr26YxNHba4ILdVLKigQtQpf8WFsnB9YzmDdb9K3w9szf5lAkb/SFXw+e+yPS9habkpOncL0oCsgag5wUGCEmZ7wpiY8QgARhuwsQUkxv1aUi/Nn7b7sAkKSkxtBI3LBXZ+vcUxZTH0ut4pe9rbrEed3ktAOF5FafjA1VtarPqqZ+g46xVO9llgpXcl3rVglFtXzTcUy09hGw== btobolaski@Brendans-MacBook-Pro.local"
-}`, instance)
+	ssh_key = "%s"
+}`, instance, pubkey)
 }
