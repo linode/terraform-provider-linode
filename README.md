@@ -10,7 +10,7 @@ Terraform Provider
 Maintainers
 -----------
 
-This provider plugin is maintained by the Terraform team at [HashiCorp](https://www.hashicorp.com/).
+This work-in-progress provider plugin is maintained by the Marques Johansson (for now).
 
 Requirements
 ------------
