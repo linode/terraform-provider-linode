@@ -47,6 +47,14 @@ $ make build
 
 Using the provider
 ----------------------
+
+See the docs included in the website/docs directory:
+
+- https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/index.html.md
+- https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/r/linode.html.md
+
+*The following links will not work until this repo is accepted by terraform-providers*
+
 See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.
 
 Additional documentation and examples are provided in the Linode Guide, [Using Terraform to Provision Linode Environments](https://linode.com/docs/platform/how-to-build-your-infrastructure-using-terraform-and-linode/).
