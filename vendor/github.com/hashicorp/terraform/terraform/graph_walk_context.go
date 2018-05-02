@@ -1,9 +1,7 @@
 package terraform
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/hashicorp/errwrap"
@@ -16,9 +14,8 @@ type ContextGraphWalker struct {
 	NullGraphWalker
 
 	// Configurable values
-	Context     *Context
-	Operation   walkOperation
-	StopContext context.Context
+	Context   *Context
+	Operation walkOperation
 
 	// Outputs, do not set these. Do not read these while the graph
 	// is being walked.
@@ -29,7 +26,7 @@ type ContextGraphWalker struct {
 	once                sync.Once
 	contexts            map[string]*BuiltinEvalContext
 	contextLock         sync.Mutex
-	interpolaterVars    map[string]map[string]interface{}
+	interpolaterVars    map[string]map[string]string
 	interpolaterVarLock sync.Mutex
 	providerCache       map[string]ResourceProvider
 	providerConfigCache map[string]*ResourceConfig
@@ -51,7 +48,7 @@ func (w *ContextGraphWalker) EnterPath(path []string) EvalContext {
 	}
 
 	// Setup the variables for this interpolater
-	variables := make(map[string]interface{})
+	variables := make(map[string]string)
 	if len(path) <= 1 {
 		for k, v := range w.Context.variables {
 			variables[k] = v
@@ -67,15 +64,15 @@ func (w *ContextGraphWalker) EnterPath(path []string) EvalContext {
 	w.interpolaterVarLock.Unlock()
 
 	ctx := &BuiltinEvalContext{
-		StopContext:         w.StopContext,
 		PathValue:           path,
 		Hooks:               w.Context.hooks,
 		InputValue:          w.Context.uiInput,
-		Components:          w.Context.components,
+		Providers:           w.Context.providers,
 		ProviderCache:       w.providerCache,
 		ProviderConfigCache: w.providerConfigCache,
 		ProviderInputConfig: w.Context.providerInputConfig,
 		ProviderLock:        &w.providerLock,
+		Provisioners:        w.Context.provisioners,
 		ProvisionerCache:    w.provisionerCache,
 		ProvisionerLock:     &w.provisionerLock,
 		DiffValue:           w.Context.diff,
@@ -83,13 +80,11 @@ func (w *ContextGraphWalker) EnterPath(path []string) EvalContext {
 		StateValue:          w.Context.state,
 		StateLock:           &w.Context.stateLock,
 		Interpolater: &Interpolater{
-			Operation:          w.Operation,
-			Meta:               w.Context.meta,
-			Module:             w.Context.module,
-			State:              w.Context.state,
-			StateLock:          &w.Context.stateLock,
-			VariableValues:     variables,
-			VariableValuesLock: &w.interpolaterVarLock,
+			Operation: w.Operation,
+			Module:    w.Context.module,
+			State:     w.Context.state,
+			StateLock: &w.Context.stateLock,
+			Variables: variables,
 		},
 		InterpolaterVars:    w.interpolaterVars,
 		InterpolaterVarLock: &w.interpolaterVarLock,
@@ -100,9 +95,6 @@ func (w *ContextGraphWalker) EnterPath(path []string) EvalContext {
 }
 
 func (w *ContextGraphWalker) EnterEvalTree(v dag.Vertex, n EvalNode) EvalNode {
-	log.Printf("[TRACE] [%s] Entering eval tree: %s",
-		w.Operation, dag.VertexName(v))
-
 	// Acquire a lock on the semaphore
 	w.Context.parallelSem.Acquire()
 
@@ -113,9 +105,6 @@ func (w *ContextGraphWalker) EnterEvalTree(v dag.Vertex, n EvalNode) EvalNode {
 
 func (w *ContextGraphWalker) ExitEvalTree(
 	v dag.Vertex, output interface{}, err error) error {
-	log.Printf("[TRACE] [%s] Exiting eval tree: %s",
-		w.Operation, dag.VertexName(v))
-
 	// Release the semaphore
 	w.Context.parallelSem.Release()
 
@@ -153,5 +142,5 @@ func (w *ContextGraphWalker) init() {
 	w.providerCache = make(map[string]ResourceProvider, 5)
 	w.providerConfigCache = make(map[string]*ResourceConfig, 5)
 	w.provisionerCache = make(map[string]ResourceProvisioner, 5)
-	w.interpolaterVars = make(map[string]map[string]interface{}, 5)
+	w.interpolaterVars = make(map[string]map[string]string, 5)
 }

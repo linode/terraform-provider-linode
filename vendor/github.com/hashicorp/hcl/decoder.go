@@ -8,29 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/hcl/hcl/ast"
-	"github.com/hashicorp/hcl/hcl/parser"
-	"github.com/hashicorp/hcl/hcl/token"
+	"github.com/hashicorp/hcl/hcl"
 )
 
 // This is the tag to use with structures to have settings for HCL
 const tagName = "hcl"
-
-var (
-	// nodeType holds a reference to the type of ast.Node
-	nodeType reflect.Type = findNodeType()
-)
-
-// Unmarshal accepts a byte slice as input and writes the
-// data to the value pointed to by v.
-func Unmarshal(bs []byte, v interface{}) error {
-	root, err := parse(bs)
-	if err != nil {
-		return err
-	}
-
-	return DecodeObject(v, root)
-}
 
 // Decode reads the given input and decodes it into the structure
 // given by `out`.
@@ -45,15 +27,10 @@ func Decode(out interface{}, in string) error {
 
 // DecodeObject is a lower-level version of Decode. It decodes a
 // raw Object into the given output.
-func DecodeObject(out interface{}, n ast.Node) error {
+func DecodeObject(out interface{}, n *hcl.Object) error {
 	val := reflect.ValueOf(out)
 	if val.Kind() != reflect.Ptr {
 		return errors.New("result must be a pointer")
-	}
-
-	// If we have the file, we really decode the root node
-	if f, ok := n.(*ast.File); ok {
-		n = f.Node
 	}
 
 	var d decoder
@@ -64,7 +41,7 @@ type decoder struct {
 	stack []reflect.Kind
 }
 
-func (d *decoder) decode(name string, node ast.Node, result reflect.Value) error {
+func (d *decoder) decode(name string, o *hcl.Object, result reflect.Value) error {
 	k := result
 
 	// If we have an interface with a valid value, we use that
@@ -88,130 +65,78 @@ func (d *decoder) decode(name string, node ast.Node, result reflect.Value) error
 
 	switch k.Kind() {
 	case reflect.Bool:
-		return d.decodeBool(name, node, result)
+		return d.decodeBool(name, o, result)
 	case reflect.Float64:
-		return d.decodeFloat(name, node, result)
-	case reflect.Int, reflect.Int32, reflect.Int64:
-		return d.decodeInt(name, node, result)
+		return d.decodeFloat(name, o, result)
+	case reflect.Int:
+		return d.decodeInt(name, o, result)
 	case reflect.Interface:
 		// When we see an interface, we make our own thing
-		return d.decodeInterface(name, node, result)
+		return d.decodeInterface(name, o, result)
 	case reflect.Map:
-		return d.decodeMap(name, node, result)
+		return d.decodeMap(name, o, result)
 	case reflect.Ptr:
-		return d.decodePtr(name, node, result)
+		return d.decodePtr(name, o, result)
 	case reflect.Slice:
-		return d.decodeSlice(name, node, result)
+		return d.decodeSlice(name, o, result)
 	case reflect.String:
-		return d.decodeString(name, node, result)
+		return d.decodeString(name, o, result)
 	case reflect.Struct:
-		return d.decodeStruct(name, node, result)
+		return d.decodeStruct(name, o, result)
 	default:
-		return &parser.PosError{
-			Pos: node.Pos(),
-			Err: fmt.Errorf("%s: unknown kind to decode into: %s", name, k.Kind()),
-		}
+		return fmt.Errorf(
+			"%s: unknown kind to decode into: %s", name, k.Kind())
 	}
+
+	return nil
 }
 
-func (d *decoder) decodeBool(name string, node ast.Node, result reflect.Value) error {
-	switch n := node.(type) {
-	case *ast.LiteralType:
-		if n.Token.Type == token.BOOL {
-			v, err := strconv.ParseBool(n.Token.Text)
-			if err != nil {
-				return err
-			}
-
-			result.Set(reflect.ValueOf(v))
-			return nil
-		}
+func (d *decoder) decodeBool(name string, o *hcl.Object, result reflect.Value) error {
+	switch o.Type {
+	case hcl.ValueTypeBool:
+		result.Set(reflect.ValueOf(o.Value.(bool)))
+	default:
+		return fmt.Errorf("%s: unknown type %v", name, o.Type)
 	}
 
-	return &parser.PosError{
-		Pos: node.Pos(),
-		Err: fmt.Errorf("%s: unknown type %T", name, node),
-	}
+	return nil
 }
 
-func (d *decoder) decodeFloat(name string, node ast.Node, result reflect.Value) error {
-	switch n := node.(type) {
-	case *ast.LiteralType:
-		if n.Token.Type == token.FLOAT {
-			v, err := strconv.ParseFloat(n.Token.Text, 64)
-			if err != nil {
-				return err
-			}
-
-			result.Set(reflect.ValueOf(v))
-			return nil
-		}
+func (d *decoder) decodeFloat(name string, o *hcl.Object, result reflect.Value) error {
+	switch o.Type {
+	case hcl.ValueTypeFloat:
+		result.Set(reflect.ValueOf(o.Value.(float64)))
+	default:
+		return fmt.Errorf("%s: unknown type %v", name, o.Type)
 	}
 
-	return &parser.PosError{
-		Pos: node.Pos(),
-		Err: fmt.Errorf("%s: unknown type %T", name, node),
-	}
+	return nil
 }
 
-func (d *decoder) decodeInt(name string, node ast.Node, result reflect.Value) error {
-	switch n := node.(type) {
-	case *ast.LiteralType:
-		switch n.Token.Type {
-		case token.NUMBER:
-			v, err := strconv.ParseInt(n.Token.Text, 0, 0)
-			if err != nil {
-				return err
-			}
-
-			if result.Kind() == reflect.Interface {
-				result.Set(reflect.ValueOf(int(v)))
-			} else {
-				result.SetInt(v)
-			}
-			return nil
-		case token.STRING:
-			v, err := strconv.ParseInt(n.Token.Value().(string), 0, 0)
-			if err != nil {
-				return err
-			}
-
-			if result.Kind() == reflect.Interface {
-				result.Set(reflect.ValueOf(int(v)))
-			} else {
-				result.SetInt(v)
-			}
-			return nil
+func (d *decoder) decodeInt(name string, o *hcl.Object, result reflect.Value) error {
+	switch o.Type {
+	case hcl.ValueTypeInt:
+		result.Set(reflect.ValueOf(o.Value.(int)))
+	case hcl.ValueTypeString:
+		v, err := strconv.ParseInt(o.Value.(string), 0, 0)
+		if err != nil {
+			return err
 		}
+
+		result.SetInt(int64(v))
+	default:
+		return fmt.Errorf("%s: unknown type %v", name, o.Type)
 	}
 
-	return &parser.PosError{
-		Pos: node.Pos(),
-		Err: fmt.Errorf("%s: unknown type %T", name, node),
-	}
+	return nil
 }
 
-func (d *decoder) decodeInterface(name string, node ast.Node, result reflect.Value) error {
-	// When we see an ast.Node, we retain the value to enable deferred decoding.
-	// Very useful in situations where we want to preserve ast.Node information
-	// like Pos
-	if result.Type() == nodeType && result.CanSet() {
-		result.Set(reflect.ValueOf(node))
-		return nil
-	}
-
+func (d *decoder) decodeInterface(name string, o *hcl.Object, result reflect.Value) error {
 	var set reflect.Value
 	redecode := true
 
-	// For testing types, ObjectType should just be treated as a list. We
-	// set this to a temporary var because we want to pass in the real node.
-	testNode := node
-	if ot, ok := node.(*ast.ObjectType); ok {
-		testNode = ot.List
-	}
-
-	switch n := testNode.(type) {
-	case *ast.ObjectList:
+	switch o.Type {
+	case hcl.ValueTypeObject:
 		// If we're at the root or we're directly within a slice, then we
 		// decode objects into map[string]interface{}, otherwise we decode
 		// them into lists.
@@ -228,58 +153,30 @@ func (d *decoder) decodeInterface(name string, node ast.Node, result reflect.Val
 			var temp []map[string]interface{}
 			tempVal := reflect.ValueOf(temp)
 			result := reflect.MakeSlice(
-				reflect.SliceOf(tempVal.Type().Elem()), 0, len(n.Items))
+				reflect.SliceOf(tempVal.Type().Elem()), 0, int(o.Len()))
 			set = result
 		}
-	case *ast.ObjectType:
-		// If we're at the root or we're directly within a slice, then we
-		// decode objects into map[string]interface{}, otherwise we decode
-		// them into lists.
-		if len(d.stack) == 0 || d.stack[len(d.stack)-1] == reflect.Slice {
-			var temp map[string]interface{}
-			tempVal := reflect.ValueOf(temp)
-			result := reflect.MakeMap(
-				reflect.MapOf(
-					reflect.TypeOf(""),
-					tempVal.Type().Elem()))
-
-			set = result
-		} else {
-			var temp []map[string]interface{}
-			tempVal := reflect.ValueOf(temp)
-			result := reflect.MakeSlice(
-				reflect.SliceOf(tempVal.Type().Elem()), 0, 1)
-			set = result
-		}
-	case *ast.ListType:
+	case hcl.ValueTypeList:
 		var temp []interface{}
 		tempVal := reflect.ValueOf(temp)
 		result := reflect.MakeSlice(
 			reflect.SliceOf(tempVal.Type().Elem()), 0, 0)
 		set = result
-	case *ast.LiteralType:
-		switch n.Token.Type {
-		case token.BOOL:
-			var result bool
-			set = reflect.Indirect(reflect.New(reflect.TypeOf(result)))
-		case token.FLOAT:
-			var result float64
-			set = reflect.Indirect(reflect.New(reflect.TypeOf(result)))
-		case token.NUMBER:
-			var result int
-			set = reflect.Indirect(reflect.New(reflect.TypeOf(result)))
-		case token.STRING, token.HEREDOC:
-			set = reflect.Indirect(reflect.New(reflect.TypeOf("")))
-		default:
-			return &parser.PosError{
-				Pos: node.Pos(),
-				Err: fmt.Errorf("%s: cannot decode into interface: %T", name, node),
-			}
-		}
+	case hcl.ValueTypeBool:
+		var result bool
+		set = reflect.Indirect(reflect.New(reflect.TypeOf(result)))
+	case hcl.ValueTypeFloat:
+		var result float64
+		set = reflect.Indirect(reflect.New(reflect.TypeOf(result)))
+	case hcl.ValueTypeInt:
+		var result int
+		set = reflect.Indirect(reflect.New(reflect.TypeOf(result)))
+	case hcl.ValueTypeString:
+		set = reflect.Indirect(reflect.New(reflect.TypeOf("")))
 	default:
 		return fmt.Errorf(
 			"%s: cannot decode into interface: %T",
-			name, node)
+			name, o)
 	}
 
 	// Set the result to what its supposed to be, then reset
@@ -289,7 +186,7 @@ func (d *decoder) decodeInterface(name string, node ast.Node, result reflect.Val
 	if redecode {
 		// Revisit the node so that we can use the newly instantiated
 		// thing and populate it.
-		if err := d.decode(name, node, result); err != nil {
+		if err := d.decode(name, o, result); err != nil {
 			return err
 		}
 	}
@@ -297,21 +194,9 @@ func (d *decoder) decodeInterface(name string, node ast.Node, result reflect.Val
 	return nil
 }
 
-func (d *decoder) decodeMap(name string, node ast.Node, result reflect.Value) error {
-	if item, ok := node.(*ast.ObjectItem); ok {
-		node = &ast.ObjectList{Items: []*ast.ObjectItem{item}}
-	}
-
-	if ot, ok := node.(*ast.ObjectType); ok {
-		node = ot.List
-	}
-
-	n, ok := node.(*ast.ObjectList)
-	if !ok {
-		return &parser.PosError{
-			Pos: node.Pos(),
-			Err: fmt.Errorf("%s: not an object type for map (%T)", name, node),
-		}
+func (d *decoder) decodeMap(name string, o *hcl.Object, result reflect.Value) error {
+	if o.Type != hcl.ValueTypeObject {
+		return fmt.Errorf("%s: not an object type for map (%v)", name, o.Type)
 	}
 
 	// If we have an interface, then we can address the interface,
@@ -325,10 +210,8 @@ func (d *decoder) decodeMap(name string, node ast.Node, result reflect.Value) er
 	resultElemType := resultType.Elem()
 	resultKeyType := resultType.Key()
 	if resultKeyType.Kind() != reflect.String {
-		return &parser.PosError{
-			Pos: node.Pos(),
-			Err: fmt.Errorf("%s: map must have string keys", name),
-		}
+		return fmt.Errorf(
+			"%s: map must have string keys", name)
 	}
 
 	// Make a map if it is nil
@@ -339,56 +222,33 @@ func (d *decoder) decodeMap(name string, node ast.Node, result reflect.Value) er
 	}
 
 	// Go through each element and decode it.
-	done := make(map[string]struct{})
-	for _, item := range n.Items {
-		if item.Val == nil {
+	for _, o := range o.Elem(false) {
+		if o.Value == nil {
 			continue
 		}
 
-		// github.com/hashicorp/terraform/issue/5740
-		if len(item.Keys) == 0 {
-			return &parser.PosError{
-				Pos: node.Pos(),
-				Err: fmt.Errorf("%s: map must have string keys", name),
+		for _, o := range o.Elem(true) {
+			// Make the field name
+			fieldName := fmt.Sprintf("%s.%s", name, o.Key)
+
+			// Get the key/value as reflection values
+			key := reflect.ValueOf(o.Key)
+			val := reflect.Indirect(reflect.New(resultElemType))
+
+			// If we have a pre-existing value in the map, use that
+			oldVal := resultMap.MapIndex(key)
+			if oldVal.IsValid() {
+				val.Set(oldVal)
 			}
+
+			// Decode!
+			if err := d.decode(fieldName, o, val); err != nil {
+				return err
+			}
+
+			// Set the value on the map
+			resultMap.SetMapIndex(key, val)
 		}
-
-		// Get the key we're dealing with, which is the first item
-		keyStr := item.Keys[0].Token.Value().(string)
-
-		// If we've already processed this key, then ignore it
-		if _, ok := done[keyStr]; ok {
-			continue
-		}
-
-		// Determine the value. If we have more than one key, then we
-		// get the objectlist of only these keys.
-		itemVal := item.Val
-		if len(item.Keys) > 1 {
-			itemVal = n.Filter(keyStr)
-			done[keyStr] = struct{}{}
-		}
-
-		// Make the field name
-		fieldName := fmt.Sprintf("%s.%s", name, keyStr)
-
-		// Get the key/value as reflection values
-		key := reflect.ValueOf(keyStr)
-		val := reflect.Indirect(reflect.New(resultElemType))
-
-		// If we have a pre-existing value in the map, use that
-		oldVal := resultMap.MapIndex(key)
-		if oldVal.IsValid() {
-			val.Set(oldVal)
-		}
-
-		// Decode!
-		if err := d.decode(fieldName, itemVal, val); err != nil {
-			return err
-		}
-
-		// Set the value on the map
-		resultMap.SetMapIndex(key, val)
 	}
 
 	// Set the final map if we can
@@ -396,13 +256,13 @@ func (d *decoder) decodeMap(name string, node ast.Node, result reflect.Value) er
 	return nil
 }
 
-func (d *decoder) decodePtr(name string, node ast.Node, result reflect.Value) error {
+func (d *decoder) decodePtr(name string, o *hcl.Object, result reflect.Value) error {
 	// Create an element of the concrete (non pointer) type and decode
 	// into that. Then set the value of the pointer to this type.
 	resultType := result.Type()
 	resultElemType := resultType.Elem()
 	val := reflect.New(resultElemType)
-	if err := d.decode(name, node, reflect.Indirect(val)); err != nil {
+	if err := d.decode(name, o, reflect.Indirect(val)); err != nil {
 		return err
 	}
 
@@ -410,13 +270,14 @@ func (d *decoder) decodePtr(name string, node ast.Node, result reflect.Value) er
 	return nil
 }
 
-func (d *decoder) decodeSlice(name string, node ast.Node, result reflect.Value) error {
+func (d *decoder) decodeSlice(name string, o *hcl.Object, result reflect.Value) error {
 	// If we have an interface, then we can address the interface,
 	// but not the slice itself, so get the element but set the interface
 	set := result
 	if result.Kind() == reflect.Interface {
 		result = result.Elem()
 	}
+
 	// Create the slice if it isn't nil
 	resultType := result.Type()
 	resultElemType := resultType.Elem()
@@ -426,143 +287,52 @@ func (d *decoder) decodeSlice(name string, node ast.Node, result reflect.Value) 
 			resultSliceType, 0, 0)
 	}
 
-	// Figure out the items we'll be copying into the slice
-	var items []ast.Node
-	switch n := node.(type) {
-	case *ast.ObjectList:
-		items = make([]ast.Node, len(n.Items))
-		for i, item := range n.Items {
-			items[i] = item
-		}
-	case *ast.ObjectType:
-		items = []ast.Node{n}
-	case *ast.ListType:
-		items = n.List
+	// Determine how we're doing this
+	expand := true
+	switch o.Type {
+	case hcl.ValueTypeObject:
+		expand = false
 	default:
-		return &parser.PosError{
-			Pos: node.Pos(),
-			Err: fmt.Errorf("unknown slice type: %T", node),
-		}
+		// Array or anything else: we expand values and take it all
 	}
 
-	for i, item := range items {
+	i := 0
+	for _, o := range o.Elem(expand) {
 		fieldName := fmt.Sprintf("%s[%d]", name, i)
 
 		// Decode
 		val := reflect.Indirect(reflect.New(resultElemType))
-
-		// if item is an object that was decoded from ambiguous JSON and
-		// flattened, make sure it's expanded if it needs to decode into a
-		// defined structure.
-		item := expandObject(item, val)
-
-		if err := d.decode(fieldName, item, val); err != nil {
+		if err := d.decode(fieldName, o, val); err != nil {
 			return err
 		}
 
 		// Append it onto the slice
 		result = reflect.Append(result, val)
+
+		i += 1
 	}
 
 	set.Set(result)
 	return nil
 }
 
-// expandObject detects if an ambiguous JSON object was flattened to a List which
-// should be decoded into a struct, and expands the ast to properly deocode.
-func expandObject(node ast.Node, result reflect.Value) ast.Node {
-	item, ok := node.(*ast.ObjectItem)
-	if !ok {
-		return node
-	}
-
-	elemType := result.Type()
-
-	// our target type must be a struct
-	switch elemType.Kind() {
-	case reflect.Ptr:
-		switch elemType.Elem().Kind() {
-		case reflect.Struct:
-			//OK
-		default:
-			return node
-		}
-	case reflect.Struct:
-		//OK
+func (d *decoder) decodeString(name string, o *hcl.Object, result reflect.Value) error {
+	switch o.Type {
+	case hcl.ValueTypeInt:
+		result.Set(reflect.ValueOf(
+			strconv.FormatInt(int64(o.Value.(int)), 10)).Convert(result.Type()))
+	case hcl.ValueTypeString:
+		result.Set(reflect.ValueOf(o.Value.(string)).Convert(result.Type()))
 	default:
-		return node
+		return fmt.Errorf("%s: unknown type to string: %v", name, o.Type)
 	}
 
-	// A list value will have a key and field name. If it had more fields,
-	// it wouldn't have been flattened.
-	if len(item.Keys) != 2 {
-		return node
-	}
-
-	keyToken := item.Keys[0].Token
-	item.Keys = item.Keys[1:]
-
-	// we need to un-flatten the ast enough to decode
-	newNode := &ast.ObjectItem{
-		Keys: []*ast.ObjectKey{
-			&ast.ObjectKey{
-				Token: keyToken,
-			},
-		},
-		Val: &ast.ObjectType{
-			List: &ast.ObjectList{
-				Items: []*ast.ObjectItem{item},
-			},
-		},
-	}
-
-	return newNode
+	return nil
 }
 
-func (d *decoder) decodeString(name string, node ast.Node, result reflect.Value) error {
-	switch n := node.(type) {
-	case *ast.LiteralType:
-		switch n.Token.Type {
-		case token.NUMBER:
-			result.Set(reflect.ValueOf(n.Token.Text).Convert(result.Type()))
-			return nil
-		case token.STRING, token.HEREDOC:
-			result.Set(reflect.ValueOf(n.Token.Value()).Convert(result.Type()))
-			return nil
-		}
-	}
-
-	return &parser.PosError{
-		Pos: node.Pos(),
-		Err: fmt.Errorf("%s: unknown type for string %T", name, node),
-	}
-}
-
-func (d *decoder) decodeStruct(name string, node ast.Node, result reflect.Value) error {
-	var item *ast.ObjectItem
-	if it, ok := node.(*ast.ObjectItem); ok {
-		item = it
-		node = it.Val
-	}
-
-	if ot, ok := node.(*ast.ObjectType); ok {
-		node = ot.List
-	}
-
-	// Handle the special case where the object itself is a literal. Previously
-	// the yacc parser would always ensure top-level elements were arrays. The new
-	// parser does not make the same guarantees, thus we need to convert any
-	// top-level literal elements into a list.
-	if _, ok := node.(*ast.LiteralType); ok && item != nil {
-		node = &ast.ObjectList{Items: []*ast.ObjectItem{item}}
-	}
-
-	list, ok := node.(*ast.ObjectList)
-	if !ok {
-		return &parser.PosError{
-			Pos: node.Pos(),
-			Err: fmt.Errorf("%s: not an object type for struct (%T)", name, node),
-		}
+func (d *decoder) decodeStruct(name string, o *hcl.Object, result reflect.Value) error {
+	if o.Type != hcl.ValueTypeObject {
+		return fmt.Errorf("%s: not an object type for struct (%v)", name, o.Type)
 	}
 
 	// This slice will keep track of all the structs we'll be decoding.
@@ -581,26 +351,19 @@ func (d *decoder) decodeStruct(name string, node ast.Node, result reflect.Value)
 		structType := structVal.Type()
 		for i := 0; i < structType.NumField(); i++ {
 			fieldType := structType.Field(i)
-			tagParts := strings.Split(fieldType.Tag.Get(tagName), ",")
-
-			// Ignore fields with tag name "-"
-			if tagParts[0] == "-" {
-				continue
-			}
 
 			if fieldType.Anonymous {
 				fieldKind := fieldType.Type.Kind()
 				if fieldKind != reflect.Struct {
-					return &parser.PosError{
-						Pos: node.Pos(),
-						Err: fmt.Errorf("%s: unsupported type to struct: %s",
-							fieldType.Name, fieldKind),
-					}
+					return fmt.Errorf(
+						"%s: unsupported type to struct: %s",
+						fieldType.Name, fieldKind)
 				}
 
 				// We have an embedded field. We "squash" the fields down
 				// if specified in the tag.
 				squash := false
+				tagParts := strings.Split(fieldType.Tag.Get(tagName), ",")
 				for _, tag := range tagParts[1:] {
 					if tag == "squash" {
 						squash = true
@@ -638,23 +401,21 @@ func (d *decoder) decodeStruct(name string, node ast.Node, result reflect.Value)
 
 		fieldName := fieldType.Name
 
+		// This is whether or not we expand the object into its children
+		// later.
+		expand := false
+
 		tagValue := fieldType.Tag.Get(tagName)
 		tagParts := strings.SplitN(tagValue, ",", 2)
 		if len(tagParts) >= 2 {
 			switch tagParts[1] {
+			case "expand":
+				expand = true
 			case "decodedFields":
 				decodedFieldsVal = append(decodedFieldsVal, field)
 				continue
 			case "key":
-				if item == nil {
-					return &parser.PosError{
-						Pos: node.Pos(),
-						Err: fmt.Errorf("%s: %s asked for 'key', impossible",
-							name, fieldName),
-					}
-				}
-
-				field.SetString(item.Keys[0].Token.Value().(string))
+				field.SetString(o.Key)
 				continue
 			case "unusedKeys":
 				unusedKeysVal = append(unusedKeysVal, field)
@@ -666,14 +427,9 @@ func (d *decoder) decodeStruct(name string, node ast.Node, result reflect.Value)
 			fieldName = tagParts[0]
 		}
 
-		// Determine the element we'll use to decode. If it is a single
-		// match (only object with the field), then we decode it exactly.
-		// If it is a prefix match, then we decode the matches.
-		filter := list.Filter(fieldName)
-
-		prefixMatches := filter.Children()
-		matches := filter.Elem()
-		if len(matches.Items) == 0 && len(prefixMatches.Items) == 0 {
+		// Find the element matching this name
+		obj := o.Get(fieldName, true)
+		if obj == nil {
 			continue
 		}
 
@@ -683,18 +439,8 @@ func (d *decoder) decodeStruct(name string, node ast.Node, result reflect.Value)
 		// Create the field name and decode. We range over the elements
 		// because we actually want the value.
 		fieldName = fmt.Sprintf("%s.%s", name, fieldName)
-		if len(prefixMatches.Items) > 0 {
-			if err := d.decode(fieldName, prefixMatches, field); err != nil {
-				return err
-			}
-		}
-		for _, match := range matches.Items {
-			var decodeNode ast.Node = match.Val
-			if ot, ok := decodeNode.(*ast.ObjectType); ok {
-				decodeNode = &ast.ObjectList{Items: ot.List.Items}
-			}
-
-			if err := d.decode(fieldName, decodeNode, field); err != nil {
+		for _, obj := range obj.Elem(expand) {
+			if err := d.decode(fieldName, obj, field); err != nil {
 				return err
 			}
 		}
@@ -711,14 +457,27 @@ func (d *decoder) decodeStruct(name string, node ast.Node, result reflect.Value)
 		}
 	}
 
-	return nil
-}
+	// If we want to know what keys are unused, compile that
+	if len(unusedKeysVal) > 0 {
+		/*
+			unusedKeys := make([]string, 0, int(obj.Len())-len(usedKeys))
 
-// findNodeType returns the type of ast.Node
-func findNodeType() reflect.Type {
-	var nodeContainer struct {
-		Node ast.Node
+			for _, elem := range obj.Elem {
+				k := elem.Key()
+				if _, ok := usedKeys[k]; !ok {
+					unusedKeys = append(unusedKeys, k)
+				}
+			}
+
+			if len(unusedKeys) == 0 {
+				unusedKeys = nil
+			}
+
+			for _, v := range unusedKeysVal {
+				v.Set(reflect.ValueOf(unusedKeys))
+			}
+		*/
 	}
-	value := reflect.ValueOf(nodeContainer).FieldByName("Node")
-	return value.Type()
+
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	golinode "github.com/chiefy/go-linode"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -14,7 +15,7 @@ import (
 func TestAccLinodeLinodeBasic(t *testing.T) {
 	t.Parallel()
 
-	var instance linodego.Linode
+	var instance golinode.LinodeInstance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -58,7 +59,7 @@ func getId(instance linodego.Linode) string {
 func TestAccLinodeLinodeUpdate(t *testing.T) {
 	t.Parallel()
 
-	var instance linodego.Linode
+	var instance golinode.LinodeInstance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -93,7 +94,7 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 func TestAccLinodeLinodeResize(t *testing.T) {
 	t.Parallel()
 
-	var instance linodego.Linode
+	var instance golinode.LinodeInstance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -138,7 +139,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 	t.Parallel()
 
-	var instance linodego.Linode
+	var instance golinode.LinodeInstance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -175,7 +176,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 	t.Parallel()
 
-	var instance linodego.Linode
+	var instance golinode.LinodeInstance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {

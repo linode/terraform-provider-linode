@@ -1,53 +1,19 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"github.com/hashicorp/hcl"
 )
 
-// ErrNoConfigsFound is the error returned by LoadDir if no
-// Terraform configuration files were found in the given directory.
-type ErrNoConfigsFound struct {
-	Dir string
-}
-
-func (e ErrNoConfigsFound) Error() string {
-	return fmt.Sprintf(
-		"No Terraform configuration files found in directory: %s",
-		e.Dir)
-}
-
-// LoadJSON loads a single Terraform configuration from a given JSON document.
-//
-// The document must be a complete Terraform configuration. This function will
-// NOT try to load any additional modules so only the given document is loaded.
-func LoadJSON(raw json.RawMessage) (*Config, error) {
-	obj, err := hcl.Parse(string(raw))
-	if err != nil {
-		return nil, fmt.Errorf(
-			"Error parsing JSON document as HCL: %s", err)
-	}
-
-	// Start building the result
-	hclConfig := &hclConfigurable{
-		Root: obj,
-	}
-
-	return hclConfig.Config()
-}
-
-// LoadFile loads the Terraform configuration from a given file.
+// Load loads the Terraform configuration from a given file.
 //
 // This file can be any format that Terraform recognizes, and import any
 // other format that Terraform recognizes.
-func LoadFile(path string) (*Config, error) {
+func Load(path string) (*Config, error) {
 	importTree, err := loadTree(path)
 	if err != nil {
 		return nil, err
@@ -81,7 +47,9 @@ func LoadDir(root string) (*Config, error) {
 		return nil, err
 	}
 	if len(files) == 0 {
-		return nil, &ErrNoConfigsFound{Dir: root}
+		return nil, fmt.Errorf(
+			"No Terraform configuration files found in directory: %s",
+			root)
 	}
 
 	// Determine the absolute path to the directory.
@@ -98,7 +66,7 @@ func LoadDir(root string) (*Config, error) {
 
 	// Load all the regular files, append them to each other.
 	for _, f := range files {
-		c, err := LoadFile(f)
+		c, err := Load(f)
 		if err != nil {
 			return nil, err
 		}
@@ -115,7 +83,7 @@ func LoadDir(root string) (*Config, error) {
 
 	// Load all the overrides, and merge them into the config
 	for _, f := range overrides {
-		c, err := LoadFile(f)
+		c, err := Load(f)
 		if err != nil {
 			return nil, err
 		}
@@ -194,7 +162,7 @@ func dirFiles(dir string) ([]string, []string, error) {
 			// Only care about files that are valid to load
 			name := fi.Name()
 			extValue := ext(name)
-			if extValue == "" || IsIgnoredFile(name) {
+			if extValue == "" || isIgnoredFile(name) {
 				continue
 			}
 
@@ -215,10 +183,10 @@ func dirFiles(dir string) ([]string, []string, error) {
 	return files, overrides, nil
 }
 
-// IsIgnoredFile returns true or false depending on whether the
+// isIgnoredFile returns true or false depending on whether the
 // provided file name is a file that should be ignored.
-func IsIgnoredFile(name string) bool {
+func isIgnoredFile(name string) bool {
 	return strings.HasPrefix(name, ".") || // Unix-like hidden files
 		strings.HasSuffix(name, "~") || // vim
-		strings.HasPrefix(name, "#") && strings.HasSuffix(name, "#") // emacs
+		(strings.HasPrefix(name, "#") && strings.HasSuffix(name, "#")) // emacs
 }

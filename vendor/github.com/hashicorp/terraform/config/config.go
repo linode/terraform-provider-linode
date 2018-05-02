@@ -8,17 +8,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/hil"
-	"github.com/hashicorp/hil/ast"
-	"github.com/hashicorp/terraform/helper/hilmapstructure"
-	"github.com/hashicorp/terraform/plugin/discovery"
+	"github.com/hashicorp/terraform/config/lang"
+	"github.com/hashicorp/terraform/config/lang/ast"
+	"github.com/hashicorp/terraform/flatmap"
+	"github.com/hashicorp/terraform/helper/multierror"
+	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/reflectwalk"
 )
 
 // NameRegexp is the regular expression that all names (modules, providers,
 // resources, etc.) must follow.
-var NameRegexp = regexp.MustCompile(`(?i)\A[A-Z0-9_][A-Z0-9\-\_]*\z`)
+var NameRegexp = regexp.MustCompile(`\A[A-Za-z0-9\-\_]+\z`)
 
 // Config is the configuration that comes from loading a collection
 // of Terraform templates.
@@ -28,7 +28,6 @@ type Config struct {
 	// any meaningful directory.
 	Dir string
 
-	Terraform       *Terraform
 	Atlas           *AtlasConfig
 	Modules         []*Module
 	ProviderConfigs []*ProviderConfig
@@ -65,16 +64,13 @@ type Module struct {
 type ProviderConfig struct {
 	Name      string
 	Alias     string
-	Version   string
 	RawConfig *RawConfig
 }
 
 // A resource represents a single Terraform resource in the configuration.
-// A Terraform resource is something that supports some or all of the
-// usual "create, read, update, delete" operations, depending on
-// the given Mode.
+// A Terraform resource is something that represents some component that
+// can be created and managed, and has some properties associated with it.
 type Resource struct {
-	Mode         ResourceMode // which operations the resource supports
 	Name         string
 	Type         string
 	RawCount     *RawConfig
@@ -85,45 +81,11 @@ type Resource struct {
 	Lifecycle    ResourceLifecycle
 }
 
-// Copy returns a copy of this Resource. Helpful for avoiding shared
-// config pointers across multiple pieces of the graph that need to do
-// interpolation.
-func (r *Resource) Copy() *Resource {
-	n := &Resource{
-		Mode:         r.Mode,
-		Name:         r.Name,
-		Type:         r.Type,
-		RawCount:     r.RawCount.Copy(),
-		RawConfig:    r.RawConfig.Copy(),
-		Provisioners: make([]*Provisioner, 0, len(r.Provisioners)),
-		Provider:     r.Provider,
-		DependsOn:    make([]string, len(r.DependsOn)),
-		Lifecycle:    *r.Lifecycle.Copy(),
-	}
-	for _, p := range r.Provisioners {
-		n.Provisioners = append(n.Provisioners, p.Copy())
-	}
-	copy(n.DependsOn, r.DependsOn)
-	return n
-}
-
 // ResourceLifecycle is used to store the lifecycle tuning parameters
 // to allow customized behavior
 type ResourceLifecycle struct {
-	CreateBeforeDestroy bool     `mapstructure:"create_before_destroy"`
-	PreventDestroy      bool     `mapstructure:"prevent_destroy"`
-	IgnoreChanges       []string `mapstructure:"ignore_changes"`
-}
-
-// Copy returns a copy of this ResourceLifecycle
-func (r *ResourceLifecycle) Copy() *ResourceLifecycle {
-	n := &ResourceLifecycle{
-		CreateBeforeDestroy: r.CreateBeforeDestroy,
-		PreventDestroy:      r.PreventDestroy,
-		IgnoreChanges:       make([]string, len(r.IgnoreChanges)),
-	}
-	copy(n.IgnoreChanges, r.IgnoreChanges)
-	return n
+	CreateBeforeDestroy bool `hcl:"create_before_destroy"`
+	PreventDestroy      bool `hcl:"prevent_destroy"`
 }
 
 // Provisioner is a configured provisioner step on a resource.
@@ -131,40 +93,20 @@ type Provisioner struct {
 	Type      string
 	RawConfig *RawConfig
 	ConnInfo  *RawConfig
-
-	When      ProvisionerWhen
-	OnFailure ProvisionerOnFailure
-}
-
-// Copy returns a copy of this Provisioner
-func (p *Provisioner) Copy() *Provisioner {
-	return &Provisioner{
-		Type:      p.Type,
-		RawConfig: p.RawConfig.Copy(),
-		ConnInfo:  p.ConnInfo.Copy(),
-		When:      p.When,
-		OnFailure: p.OnFailure,
-	}
 }
 
 // Variable is a variable defined within the configuration.
 type Variable struct {
-	Name         string
-	DeclaredType string `mapstructure:"type"`
-	Default      interface{}
-	Description  string
+	Name        string
+	Default     interface{}
+	Description string
 }
 
 // Output is an output defined within the configuration. An output is
-// resulting data that is highlighted by Terraform when finished. An
-// output marked Sensitive will be output in a masked form following
-// application, but will still be available in state.
+// resulting data that is highlighted by Terraform when finished.
 type Output struct {
-	Name        string
-	DependsOn   []string
-	Description string
-	Sensitive   bool
-	RawConfig   *RawConfig
+	Name      string
+	RawConfig *RawConfig
 }
 
 // VariableType is the type of value a variable is holding, and returned
@@ -174,22 +116,8 @@ type VariableType byte
 const (
 	VariableTypeUnknown VariableType = iota
 	VariableTypeString
-	VariableTypeList
 	VariableTypeMap
 )
-
-func (v VariableType) Printable() string {
-	switch v {
-	case VariableTypeString:
-		return "string"
-	case VariableTypeMap:
-		return "map"
-	case VariableTypeList:
-		return "list"
-	default:
-		return "unknown"
-	}
-}
 
 // ProviderConfigName returns the name of the provider configuration in
 // the given mapping that maps to the proper provider configuration
@@ -213,14 +141,7 @@ func (r *Module) Id() string {
 
 // Count returns the count of this resource.
 func (r *Resource) Count() (int, error) {
-	raw := r.RawCount.Value()
-	count, ok := r.RawCount.Value().(string)
-	if !ok {
-		return 0, fmt.Errorf(
-			"expected count to be a string or int, got %T", raw)
-	}
-
-	v, err := strconv.ParseInt(count, 0, 0)
+	v, err := strconv.ParseInt(r.RawCount.Value().(string), 0, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -230,41 +151,7 @@ func (r *Resource) Count() (int, error) {
 
 // A unique identifier for this resource.
 func (r *Resource) Id() string {
-	switch r.Mode {
-	case ManagedResourceMode:
-		return fmt.Sprintf("%s.%s", r.Type, r.Name)
-	case DataResourceMode:
-		return fmt.Sprintf("data.%s.%s", r.Type, r.Name)
-	default:
-		panic(fmt.Errorf("unknown resource mode %s", r.Mode))
-	}
-}
-
-// ProviderFullName returns the full name of the provider for this resource,
-// which may either be specified explicitly using the "provider" meta-argument
-// or implied by the prefix on the resource type name.
-func (r *Resource) ProviderFullName() string {
-	return ResourceProviderFullName(r.Type, r.Provider)
-}
-
-// ResourceProviderFullName returns the full (dependable) name of the
-// provider for a hypothetical resource with the given resource type and
-// explicit provider string. If the explicit provider string is empty then
-// the provider name is inferred from the resource type name.
-func ResourceProviderFullName(resourceType, explicitProvider string) string {
-	if explicitProvider != "" {
-		return explicitProvider
-	}
-
-	idx := strings.IndexRune(resourceType, '_')
-	if idx == -1 {
-		// If no underscores, the resource name is assumed to be
-		// also the provider name, e.g. if the provider exposes
-		// only a single resource of each type.
-		return resourceType
-	}
-
-	return resourceType[:idx]
+	return fmt.Sprintf("%s.%s", r.Type, r.Name)
 }
 
 // Validate does some basic semantic checking of the configuration.
@@ -280,49 +167,23 @@ func (c *Config) Validate() error {
 			"Unknown root level key: %s", k))
 	}
 
-	// Validate the Terraform config
-	if tf := c.Terraform; tf != nil {
-		errs = append(errs, c.Terraform.Validate()...)
-	}
-
 	vars := c.InterpolatedVariables()
 	varMap := make(map[string]*Variable)
 	for _, v := range c.Variables {
-		if _, ok := varMap[v.Name]; ok {
-			errs = append(errs, fmt.Errorf(
-				"Variable '%s': duplicate found. Variable names must be unique.",
-				v.Name))
-		}
-
 		varMap[v.Name] = v
-	}
-
-	for k, _ := range varMap {
-		if !NameRegexp.MatchString(k) {
-			errs = append(errs, fmt.Errorf(
-				"variable %q: variable name must match regular expresion %s",
-				k, NameRegexp))
-		}
 	}
 
 	for _, v := range c.Variables {
 		if v.Type() == VariableTypeUnknown {
 			errs = append(errs, fmt.Errorf(
-				"Variable '%s': must be a string or a map",
+				"Variable '%s': must be string or mapping",
 				v.Name))
 			continue
 		}
 
 		interp := false
-		fn := func(n ast.Node) (interface{}, error) {
-			// LiteralNode is a literal string (outside of a ${ ... } sequence).
-			// interpolationWalker skips most of these. but in particular it
-			// visits those that have escaped sequences (like $${foo}) as a
-			// signal that *some* processing is required on this string. For
-			// our purposes here though, this is fine and not an interpolation.
-			if _, ok := n.(*ast.LiteralNode); !ok {
-				interp = true
-			}
+		fn := func(ast.Node) (string, error) {
+			interp = true
 			return "", nil
 		}
 
@@ -378,8 +239,7 @@ func (c *Config) Validate() error {
 		}
 	}
 
-	// Check that providers aren't declared multiple times and that their
-	// version constraints, where present, are syntactically valid.
+	// Check that providers aren't declared multiple times.
 	providerSet := make(map[string]struct{})
 	for _, p := range c.ProviderConfigs {
 		name := p.FullName()
@@ -388,16 +248,6 @@ func (c *Config) Validate() error {
 				"provider.%s: declared multiple times, you can only declare a provider once",
 				name))
 			continue
-		}
-
-		if p.Version != "" {
-			_, err := discovery.ConstraintStr(p.Version).Parse()
-			if err != nil {
-				errs = append(errs, fmt.Errorf(
-					"provider.%s: invalid version constraint %q: %s",
-					name, p.Version, err,
-				))
-			}
 		}
 
 		providerSet[name] = struct{}{}
@@ -445,30 +295,16 @@ func (c *Config) Validate() error {
 				m.Id()))
 		}
 
-		// Check that the configuration can all be strings, lists or maps
+		// Check that the configuration can all be strings
 		raw := make(map[string]interface{})
 		for k, v := range m.RawConfig.Raw {
 			var strVal string
-			if err := hilmapstructure.WeakDecode(v, &strVal); err == nil {
-				raw[k] = strVal
-				continue
+			if err := mapstructure.WeakDecode(v, &strVal); err != nil {
+				errs = append(errs, fmt.Errorf(
+					"%s: variable %s must be a string value",
+					m.Id(), k))
 			}
-
-			var mapVal map[string]interface{}
-			if err := hilmapstructure.WeakDecode(v, &mapVal); err == nil {
-				raw[k] = mapVal
-				continue
-			}
-
-			var sliceVal []interface{}
-			if err := hilmapstructure.WeakDecode(v, &sliceVal); err == nil {
-				raw[k] = sliceVal
-				continue
-			}
-
-			errs = append(errs, fmt.Errorf(
-				"%s: variable %s must be a string, list or map value",
-				m.Id(), k))
+			raw[k] = strVal
 		}
 
 		// Check for invalid count variables
@@ -539,38 +375,36 @@ func (c *Config) Validate() error {
 					"%s: resource count can't reference count variable: %s",
 					n,
 					v.FullKey()))
-			case *SimpleVariable:
+			case *ModuleVariable:
 				errs = append(errs, fmt.Errorf(
-					"%s: resource count can't reference variable: %s",
+					"%s: resource count can't reference module variable: %s",
 					n,
 					v.FullKey()))
-
-			// Good
-			case *ModuleVariable:
 			case *ResourceVariable:
-			case *TerraformVariable:
-			case *UserVariable:
-
-			default:
 				errs = append(errs, fmt.Errorf(
-					"Internal error. Unknown type in count var in %s: %T",
-					n, v))
+					"%s: resource count can't reference resource variable: %s",
+					n,
+					v.FullKey()))
+			case *UserVariable:
+				// Good
+			default:
+				panic("Unknown type in count var: " + n)
 			}
 		}
 
 		// Interpolate with a fixed number to verify that its a number.
-		r.RawCount.interpolate(func(root ast.Node) (interface{}, error) {
+		r.RawCount.interpolate(func(root ast.Node) (string, error) {
 			// Execute the node but transform the AST so that it returns
 			// a fixed value of "5" for all interpolations.
-			result, err := hil.Eval(
-				hil.FixedValueTransform(
+			out, _, err := lang.Eval(
+				lang.FixedValueTransform(
 					root, &ast.LiteralNode{Value: "5", Typex: ast.TypeString}),
 				nil)
 			if err != nil {
 				return "", err
 			}
 
-			return result.Value, nil
+			return out.(string), nil
 		})
 		_, err := strconv.ParseInt(r.RawCount.Value().(string), 0, 0)
 		if err != nil {
@@ -580,12 +414,38 @@ func (c *Config) Validate() error {
 		}
 		r.RawCount.init()
 
-		// Validate DependsOn
-		errs = append(errs, c.validateDependsOn(n, r.DependsOn, resources, modules)...)
+		// Verify depends on points to resources that all exist
+		for _, d := range r.DependsOn {
+			// Check if we contain interpolations
+			rc, err := NewRawConfig(map[string]interface{}{
+				"value": d,
+			})
+			if err == nil && len(rc.Variables) > 0 {
+				errs = append(errs, fmt.Errorf(
+					"%s: depends on value cannot contain interpolations: %s",
+					n, d))
+				continue
+			}
 
-		// Verify provisioners
+			if _, ok := resources[d]; !ok {
+				errs = append(errs, fmt.Errorf(
+					"%s: resource depends on non-existent resource '%s'",
+					n, d))
+			}
+		}
+
+		// Verify provider points to a provider that is configured
+		if r.Provider != "" {
+			if _, ok := providerSet[r.Provider]; !ok {
+				errs = append(errs, fmt.Errorf(
+					"%s: resource depends on non-configured provider '%s'",
+					n, r.Provider))
+			}
+		}
+
+		// Verify provisioners don't contain any splats
 		for _, p := range r.Provisioners {
-			// This validation checks that there are no splat variables
+			// This validation checks that there are now splat variables
 			// referencing ourself. This currently is not allowed.
 
 			for _, v := range p.ConnInfo.Variables {
@@ -615,49 +475,6 @@ func (c *Config) Validate() error {
 					break
 				}
 			}
-
-			// Check for invalid when/onFailure values, though this should be
-			// picked up by the loader we check here just in case.
-			if p.When == ProvisionerWhenInvalid {
-				errs = append(errs, fmt.Errorf(
-					"%s: provisioner 'when' value is invalid", n))
-			}
-			if p.OnFailure == ProvisionerOnFailureInvalid {
-				errs = append(errs, fmt.Errorf(
-					"%s: provisioner 'on_failure' value is invalid", n))
-			}
-		}
-
-		// Verify ignore_changes contains valid entries
-		for _, v := range r.Lifecycle.IgnoreChanges {
-			if strings.Contains(v, "*") && v != "*" {
-				errs = append(errs, fmt.Errorf(
-					"%s: ignore_changes does not support using a partial string "+
-						"together with a wildcard: %s", n, v))
-			}
-		}
-
-		// Verify ignore_changes has no interpolations
-		rc, err := NewRawConfig(map[string]interface{}{
-			"root": r.Lifecycle.IgnoreChanges,
-		})
-		if err != nil {
-			errs = append(errs, fmt.Errorf(
-				"%s: lifecycle ignore_changes error: %s",
-				n, err))
-		} else if len(rc.Interpolations) > 0 {
-			errs = append(errs, fmt.Errorf(
-				"%s: lifecycle ignore_changes cannot contain interpolations",
-				n))
-		}
-
-		// If it is a data source then it can't have provisioners
-		if r.Mode == DataResourceMode {
-			if _, ok := r.RawConfig.Raw["provisioner"]; ok {
-				errs = append(errs, fmt.Errorf(
-					"%s: data sources cannot have provisioners",
-					n))
-			}
 		}
 	}
 
@@ -668,7 +485,7 @@ func (c *Config) Validate() error {
 				continue
 			}
 
-			id := rv.ResourceId()
+			id := fmt.Sprintf("%s.%s", rv.Type, rv.Name)
 			if _, ok := resources[id]; !ok {
 				errs = append(errs, fmt.Errorf(
 					"%s: unknown resource '%s' referenced in variable %s",
@@ -681,67 +498,35 @@ func (c *Config) Validate() error {
 	}
 
 	// Check that all outputs are valid
-	{
-		found := make(map[string]struct{})
-		for _, o := range c.Outputs {
-			// Verify the output is new
-			if _, ok := found[o.Name]; ok {
+	for _, o := range c.Outputs {
+		invalid := false
+		for k, _ := range o.RawConfig.Raw {
+			if k != "value" {
+				invalid = true
+				break
+			}
+		}
+		if invalid {
+			errs = append(errs, fmt.Errorf(
+				"%s: output should only have 'value' field", o.Name))
+		}
+
+		for _, v := range o.RawConfig.Variables {
+			if _, ok := v.(*CountVariable); ok {
 				errs = append(errs, fmt.Errorf(
-					"%s: duplicate output. output names must be unique.",
-					o.Name))
-				continue
+					"%s: count variables are only valid within resources", o.Name))
 			}
-			found[o.Name] = struct{}{}
+		}
+	}
 
-			var invalidKeys []string
-			valueKeyFound := false
-			for k := range o.RawConfig.Raw {
-				if k == "value" {
-					valueKeyFound = true
-					continue
-				}
-				if k == "sensitive" {
-					if sensitive, ok := o.RawConfig.config[k].(bool); ok {
-						if sensitive {
-							o.Sensitive = true
-						}
-						continue
-					}
-
-					errs = append(errs, fmt.Errorf(
-						"%s: value for 'sensitive' must be boolean",
-						o.Name))
-					continue
-				}
-				if k == "description" {
-					if desc, ok := o.RawConfig.config[k].(string); ok {
-						o.Description = desc
-						continue
-					}
-
-					errs = append(errs, fmt.Errorf(
-						"%s: value for 'description' must be string",
-						o.Name))
-					continue
-				}
-				invalidKeys = append(invalidKeys, k)
-			}
-			if len(invalidKeys) > 0 {
-				errs = append(errs, fmt.Errorf(
-					"%s: output has invalid keys: %s",
-					o.Name, strings.Join(invalidKeys, ", ")))
-			}
-			if !valueKeyFound {
-				errs = append(errs, fmt.Errorf(
-					"%s: output is missing required 'value' key", o.Name))
-			}
-
-			for _, v := range o.RawConfig.Variables {
-				if _, ok := v.(*CountVariable); ok {
-					errs = append(errs, fmt.Errorf(
-						"%s: count variables are only valid within resources", o.Name))
-				}
-			}
+	// Check that all variables are in the proper context
+	for source, rc := range c.rawConfigs() {
+		walker := &interpolationWalker{
+			ContextF: c.validateVarContextFn(source, &errs),
+		}
+		if err := reflectwalk.Walk(rc.Raw, walker); err != nil {
+			errs = append(errs, fmt.Errorf(
+				"%s: error reading config: %s", source, err))
 		}
 	}
 
@@ -816,46 +601,54 @@ func (c *Config) rawConfigs() map[string]*RawConfig {
 	return result
 }
 
-func (c *Config) validateDependsOn(
-	n string,
-	v []string,
-	resources map[string]*Resource,
-	modules map[string]*Module) []error {
-	// Verify depends on points to resources that all exist
-	var errs []error
-	for _, d := range v {
-		// Check if we contain interpolations
-		rc, err := NewRawConfig(map[string]interface{}{
-			"value": d,
-		})
-		if err == nil && len(rc.Variables) > 0 {
-			errs = append(errs, fmt.Errorf(
-				"%s: depends on value cannot contain interpolations: %s",
-				n, d))
-			continue
+func (c *Config) validateVarContextFn(
+	source string, errs *[]error) interpolationWalkerContextFunc {
+	return func(loc reflectwalk.Location, node ast.Node) {
+		// If we're in a slice element, then its fine, since you can do
+		// anything in there.
+		if loc == reflectwalk.SliceElem {
+			return
 		}
 
-		// If it is a module, verify it is a module
-		if strings.HasPrefix(d, "module.") {
-			name := d[len("module."):]
-			if _, ok := modules[name]; !ok {
-				errs = append(errs, fmt.Errorf(
-					"%s: resource depends on non-existent module '%s'",
-					n, name))
+		// Otherwise, let's check if there is a splat resource variable
+		// at the top level in here. We do this by doing a transform that
+		// replaces everything with a noop node unless its a variable
+		// access or concat. This should turn the AST into a flat tree
+		// of Concat(Noop, ...). If there are any variables left that are
+		// multi-access, then its still broken.
+		node = node.Accept(func(n ast.Node) ast.Node {
+			// If it is a concat or variable access, we allow it.
+			switch n.(type) {
+			case *ast.Concat:
+				return n
+			case *ast.VariableAccess:
+				return n
 			}
 
-			continue
+			// Otherwise, noop
+			return &noopNode{}
+		})
+
+		vars, err := DetectVariables(node)
+		if err != nil {
+			// Ignore it since this will be caught during parse. This
+			// actually probably should never happen by the time this
+			// is called, but its okay.
+			return
 		}
 
-		// Check resources
-		if _, ok := resources[d]; !ok {
-			errs = append(errs, fmt.Errorf(
-				"%s: resource depends on non-existent resource '%s'",
-				n, d))
+		for _, v := range vars {
+			rv, ok := v.(*ResourceVariable)
+			if !ok {
+				return
+			}
+
+			if rv.Multi && rv.Index == -1 {
+				*errs = append(*errs, fmt.Errorf(
+					"%s: multi-variable must be in a slice", source))
+			}
 		}
 	}
-
-	return errs
 }
 
 func (m *Module) mergerName() string {
@@ -885,16 +678,9 @@ func (o *Output) mergerMerge(m merger) merger {
 
 	result := *o
 	result.Name = o2.Name
-	result.Description = o2.Description
 	result.RawConfig = result.RawConfig.merge(o2.RawConfig)
-	result.Sensitive = o2.Sensitive
-	result.DependsOn = o2.DependsOn
 
 	return &result
-}
-
-func (c *ProviderConfig) GoString() string {
-	return fmt.Sprintf("*%#v", *c)
 }
 
 func (c *ProviderConfig) FullName() string {
@@ -916,22 +702,17 @@ func (c *ProviderConfig) mergerMerge(m merger) merger {
 	result.Name = c2.Name
 	result.RawConfig = result.RawConfig.merge(c2.RawConfig)
 
-	if c2.Alias != "" {
-		result.Alias = c2.Alias
-	}
-
 	return &result
 }
 
 func (r *Resource) mergerName() string {
-	return r.Id()
+	return fmt.Sprintf("%s.%s", r.Type, r.Name)
 }
 
 func (r *Resource) mergerMerge(m merger) merger {
 	r2 := m.(*Resource)
 
 	result := *r
-	result.Mode = r2.Mode
 	result.Name = r2.Name
 	result.Type = r2.Type
 	result.RawConfig = result.RawConfig.merge(r2.RawConfig)
@@ -947,6 +728,28 @@ func (r *Resource) mergerMerge(m merger) merger {
 	return &result
 }
 
+// DefaultsMap returns a map of default values for this variable.
+func (v *Variable) DefaultsMap() map[string]string {
+	if v.Default == nil {
+		return nil
+	}
+
+	n := fmt.Sprintf("var.%s", v.Name)
+	switch v.Type() {
+	case VariableTypeString:
+		return map[string]string{n: v.Default.(string)}
+	case VariableTypeMap:
+		result := flatmap.Flatten(map[string]interface{}{
+			n: v.Default.(map[string]string),
+		})
+		result[n] = v.Name
+
+		return result
+	default:
+		return nil
+	}
+}
+
 // Merge merges two variables to create a new third variable.
 func (v *Variable) Merge(v2 *Variable) *Variable {
 	// Shallow copy the variable
@@ -955,9 +758,6 @@ func (v *Variable) Merge(v2 *Variable) *Variable {
 	// The names should be the same, but the second name always wins.
 	result.Name = v2.Name
 
-	if v2.DeclaredType != "" {
-		result.DeclaredType = v2.DeclaredType
-	}
 	if v2.Default != nil {
 		result.Default = v2.Default
 	}
@@ -968,56 +768,25 @@ func (v *Variable) Merge(v2 *Variable) *Variable {
 	return &result
 }
 
-var typeStringMap = map[string]VariableType{
-	"string": VariableTypeString,
-	"map":    VariableTypeMap,
-	"list":   VariableTypeList,
-}
-
-// Type returns the type of variable this is.
+// Type returns the type of varialbe this is.
 func (v *Variable) Type() VariableType {
-	if v.DeclaredType != "" {
-		declaredType, ok := typeStringMap[v.DeclaredType]
-		if !ok {
-			return VariableTypeUnknown
-		}
-
-		return declaredType
+	if v.Default == nil {
+		return VariableTypeString
 	}
 
-	return v.inferTypeFromDefault()
-}
-
-// ValidateTypeAndDefault ensures that default variable value is compatible
-// with the declared type (if one exists), and that the type is one which is
-// known to Terraform
-func (v *Variable) ValidateTypeAndDefault() error {
-	// If an explicit type is declared, ensure it is valid
-	if v.DeclaredType != "" {
-		if _, ok := typeStringMap[v.DeclaredType]; !ok {
-			validTypes := []string{}
-			for k := range typeStringMap {
-				validTypes = append(validTypes, k)
-			}
-			return fmt.Errorf(
-				"Variable '%s' type must be one of [%s] - '%s' is not a valid type",
-				v.Name,
-				strings.Join(validTypes, ", "),
-				v.DeclaredType,
-			)
-		}
+	var strVal string
+	if err := mapstructure.WeakDecode(v.Default, &strVal); err == nil {
+		v.Default = strVal
+		return VariableTypeString
 	}
 
-	if v.DeclaredType == "" || v.Default == nil {
-		return nil
+	var m map[string]string
+	if err := mapstructure.WeakDecode(v.Default, &m); err == nil {
+		v.Default = m
+		return VariableTypeMap
 	}
 
-	if v.inferTypeFromDefault() != v.Type() {
-		return fmt.Errorf("'%s' has a default value which is not of type '%s' (got '%s')",
-			v.Name, v.DeclaredType, v.inferTypeFromDefault().Printable())
-	}
-
-	return nil
+	return VariableTypeUnknown
 }
 
 func (v *Variable) mergerName() string {
@@ -1031,44 +800,4 @@ func (v *Variable) mergerMerge(m merger) merger {
 // Required tests whether a variable is required or not.
 func (v *Variable) Required() bool {
 	return v.Default == nil
-}
-
-// inferTypeFromDefault contains the logic for the old method of inferring
-// variable types - we can also use this for validating that the declared
-// type matches the type of the default value
-func (v *Variable) inferTypeFromDefault() VariableType {
-	if v.Default == nil {
-		return VariableTypeString
-	}
-
-	var s string
-	if err := hilmapstructure.WeakDecode(v.Default, &s); err == nil {
-		v.Default = s
-		return VariableTypeString
-	}
-
-	var m map[string]interface{}
-	if err := hilmapstructure.WeakDecode(v.Default, &m); err == nil {
-		v.Default = m
-		return VariableTypeMap
-	}
-
-	var l []interface{}
-	if err := hilmapstructure.WeakDecode(v.Default, &l); err == nil {
-		v.Default = l
-		return VariableTypeList
-	}
-
-	return VariableTypeUnknown
-}
-
-func (m ResourceMode) Taintable() bool {
-	switch m {
-	case ManagedResourceMode:
-		return true
-	case DataResourceMode:
-		return false
-	default:
-		panic(fmt.Errorf("unsupported ResourceMode value %s", m))
-	}
 }

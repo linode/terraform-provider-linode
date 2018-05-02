@@ -2,8 +2,6 @@ package terraform
 
 import "github.com/hashicorp/terraform/dag"
 
-const rootNodeName = "root"
-
 // RootTransformer is a GraphTransformer that adds a root to the graph.
 type RootTransformer struct{}
 
@@ -34,5 +32,9 @@ func (t *RootTransformer) Transform(g *Graph) error {
 type graphNodeRoot struct{}
 
 func (n graphNodeRoot) Name() string {
-	return rootNodeName
+	return "root"
+}
+
+func (n graphNodeRoot) Flatten(p []string) (dag.Vertex, error) {
+	return n, nil
 }

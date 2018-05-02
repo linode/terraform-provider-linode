@@ -5,10 +5,14 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/hashicorp/hil"
-	"github.com/hashicorp/hil/ast"
+	"github.com/hashicorp/terraform/config/lang"
+	"github.com/hashicorp/terraform/config/lang/ast"
 	"github.com/mitchellh/reflectwalk"
 )
+
+// InterpSplitDelim is the delimeter that is looked for to split when
+// it is returned.
+const InterpSplitDelim = `B780FFEC-B661-4EB8-9236-A01737AD98B6`
 
 // interpolationWalker implements interfaces for the reflectwalk package
 // (github.com/mitchellh/reflectwalk) that can be used to automatically
@@ -32,7 +36,7 @@ type interpolationWalker struct {
 	cs          []reflect.Value
 	csKey       []reflect.Value
 	csData      interface{}
-	sliceIndex  []int
+	sliceIndex  int
 	unknownKeys []string
 }
 
@@ -42,7 +46,7 @@ type interpolationWalker struct {
 //
 // If Replace is set to false in interpolationWalker, then the replace
 // value can be anything as it will have no effect.
-type interpolationWalkerFunc func(ast.Node) (interface{}, error)
+type interpolationWalkerFunc func(ast.Node) (string, error)
 
 // interpolationWalkerContextFunc is called by interpolationWalk if
 // ContextF is set. This receives both the interpolation and the location
@@ -72,7 +76,6 @@ func (w *interpolationWalker) Exit(loc reflectwalk.Location) error {
 		w.cs = w.cs[:len(w.cs)-1]
 	case reflectwalk.SliceElem:
 		w.csKey = w.csKey[:len(w.csKey)-1]
-		w.sliceIndex = w.sliceIndex[:len(w.sliceIndex)-1]
 	}
 
 	return nil
@@ -86,13 +89,7 @@ func (w *interpolationWalker) Map(m reflect.Value) error {
 func (w *interpolationWalker) MapElem(m, k, v reflect.Value) error {
 	w.csData = k
 	w.csKey = append(w.csKey, k)
-
-	if l := len(w.sliceIndex); l > 0 {
-		w.key = append(w.key, fmt.Sprintf("%d.%s", w.sliceIndex[l-1], k.String()))
-	} else {
-		w.key = append(w.key, k.String())
-	}
-
+	w.key = append(w.key, k.String())
 	w.lastValue = v
 	return nil
 }
@@ -104,7 +101,7 @@ func (w *interpolationWalker) Slice(s reflect.Value) error {
 
 func (w *interpolationWalker) SliceElem(i int, elem reflect.Value) error {
 	w.csKey = append(w.csKey, reflect.ValueOf(i))
-	w.sliceIndex = append(w.sliceIndex, i)
+	w.sliceIndex = i
 	return nil
 }
 
@@ -120,20 +117,14 @@ func (w *interpolationWalker) Primitive(v reflect.Value) error {
 		return nil
 	}
 
-	astRoot, err := hil.Parse(v.String())
+	astRoot, err := lang.Parse(v.String())
 	if err != nil {
 		return err
 	}
 
-	// If the AST we got is just a literal string value with the same
-	// value then we ignore it. We have to check if its the same value
-	// because it is possible to input a string, get out a string, and
-	// have it be different. For example: "foo-$${bar}" turns into
-	// "foo-${bar}"
-	if n, ok := astRoot.(*ast.LiteralNode); ok {
-		if s, ok := n.Value.(string); ok && s == v.String() {
-			return nil
-		}
+	// If the AST we got is just a literal string value, then we ignore it
+	if _, ok := astRoot.(*ast.LiteralNode); ok {
+		return nil
 	}
 
 	if w.ContextF != nil {
@@ -158,22 +149,19 @@ func (w *interpolationWalker) Primitive(v reflect.Value) error {
 		// splitting (in a SliceElem) or not.
 		remove := false
 		if w.loc == reflectwalk.SliceElem {
-			switch typedReplaceVal := replaceVal.(type) {
-			case string:
-				if typedReplaceVal == UnknownVariableValue {
+			parts := strings.Split(replaceVal, InterpSplitDelim)
+			for _, p := range parts {
+				if p == UnknownVariableValue {
 					remove = true
-				}
-			case []interface{}:
-				if hasUnknownValue(typedReplaceVal) {
-					remove = true
+					break
 				}
 			}
 		} else if replaceVal == UnknownVariableValue {
 			remove = true
 		}
-
 		if remove {
-			w.unknownKeys = append(w.unknownKeys, strings.Join(w.key, "."))
+			w.removeCurrent()
+			return nil
 		}
 
 		resultVal := reflect.ValueOf(replaceVal)
@@ -205,13 +193,28 @@ func (w *interpolationWalker) Primitive(v reflect.Value) error {
 	return nil
 }
 
-func (w *interpolationWalker) replaceCurrent(v reflect.Value) {
-	// if we don't have at least 2 values, we're not going to find a map, but
-	// we could panic.
-	if len(w.cs) < 2 {
-		return
+func (w *interpolationWalker) removeCurrent() {
+	// Append the key to the unknown keys
+	w.unknownKeys = append(w.unknownKeys, strings.Join(w.key, "."))
+
+	for i := 1; i <= len(w.cs); i++ {
+		c := w.cs[len(w.cs)-i]
+		switch c.Kind() {
+		case reflect.Map:
+			// Zero value so that we delete the map key
+			var val reflect.Value
+
+			// Get the key and delete it
+			k := w.csData.(reflect.Value)
+			c.SetMapIndex(k, val)
+			return
+		}
 	}
 
+	panic("No container found for removeCurrent")
+}
+
+func (w *interpolationWalker) replaceCurrent(v reflect.Value) {
 	c := w.cs[len(w.cs)-2]
 	switch c.Kind() {
 	case reflect.Map:
@@ -221,63 +224,58 @@ func (w *interpolationWalker) replaceCurrent(v reflect.Value) {
 	}
 }
 
-func hasUnknownValue(variable []interface{}) bool {
-	for _, value := range variable {
-		if strVal, ok := value.(string); ok {
-			if strVal == UnknownVariableValue {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 func (w *interpolationWalker) splitSlice() {
-	raw := w.cs[len(w.cs)-1]
-
+	// Get the []interface{} slice so we can do some operations on
+	// it without dealing with reflection. We'll document each step
+	// here to be clear.
 	var s []interface{}
+	raw := w.cs[len(w.cs)-1]
 	switch v := raw.Interface().(type) {
 	case []interface{}:
 		s = v
 	case []map[string]interface{}:
 		return
+	default:
+		panic("Unknown kind: " + raw.Kind().String())
 	}
 
+	// Check if we have any elements that we need to split. If not, then
+	// just return since we're done.
 	split := false
-	for _, val := range s {
-		if varVal, ok := val.(ast.Variable); ok && varVal.Type == ast.TypeList {
-			split = true
+	for _, v := range s {
+		sv, ok := v.(string)
+		if !ok {
+			continue
 		}
-		if _, ok := val.([]interface{}); ok {
+		if idx := strings.Index(sv, InterpSplitDelim); idx >= 0 {
 			split = true
+			break
 		}
 	}
-
 	if !split {
 		return
 	}
 
-	result := make([]interface{}, 0)
+	// Make a new result slice that is twice the capacity to fit our growth.
+	result := make([]interface{}, 0, len(s)*2)
+
+	// Go over each element of the original slice and start building up
+	// the resulting slice by splitting where we have to.
 	for _, v := range s {
-		switch val := v.(type) {
-		case ast.Variable:
-			switch val.Type {
-			case ast.TypeList:
-				elements := val.Value.([]ast.Variable)
-				for _, element := range elements {
-					result = append(result, element.Value)
-				}
-			default:
-				result = append(result, val.Value)
-			}
-		case []interface{}:
-			for _, element := range val {
-				result = append(result, element)
-			}
-		default:
+		sv, ok := v.(string)
+		if !ok {
+			// Not a string, so just set it
 			result = append(result, v)
+			continue
+		}
+
+		// Split on the delimiter
+		for _, p := range strings.Split(sv, InterpSplitDelim) {
+			result = append(result, p)
 		}
 	}
 
+	// Our slice is now done, we have to replace the slice now
+	// with this new one that we have.
 	w.replaceCurrent(reflect.ValueOf(result))
 }

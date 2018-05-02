@@ -1,40 +1,41 @@
 package resource
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"fmt"
 	"strings"
-	"sync"
-	"time"
 )
 
 const UniqueIdPrefix = `terraform-`
 
-// idCounter is a monotonic counter for generating ordered unique ids.
-var idMutex sync.Mutex
-var idCounter uint32
-
-// Helper for a resource to generate a unique identifier w/ default prefix
+// Helper for a resource to generate a unique identifier
+//
+// This uses a simple RFC 4122 v4 UUID with some basic cosmetic filters
+// applied (base32, remove padding, downcase) to make visually distinguishing
+// identifiers easier.
 func UniqueId() string {
-	return PrefixedUniqueId(UniqueIdPrefix)
+	return fmt.Sprintf("%s%s", UniqueIdPrefix,
+		strings.ToLower(
+			strings.Replace(
+				base32.StdEncoding.EncodeToString(uuidV4()),
+				"=", "", -1)))
 }
 
-// Helper for a resource to generate a unique identifier w/ given prefix
-//
-// After the prefix, the ID consists of an incrementing 26 digit value (to match
-// previous timestamp output).  After the prefix, the ID consists of a timestamp
-// and an incrementing 8 hex digit value The timestamp means that multiple IDs
-// created with the same prefix will sort in the order of their creation, even
-// across multiple terraform executions, as long as the clock is not turned back
-// between calls, and as long as any given terraform execution generates fewer
-// than 4 billion IDs.
-func PrefixedUniqueId(prefix string) string {
-	// Be precise to 4 digits of fractional seconds, but remove the dot before the
-	// fractional seconds.
-	timestamp := strings.Replace(
-		time.Now().UTC().Format("20060102150405.0000"), ".", "", 1)
+func uuidV4() []byte {
+	var uuid [16]byte
 
-	idMutex.Lock()
-	defer idMutex.Unlock()
-	idCounter++
-	return fmt.Sprintf("%s%s%08x", prefix, timestamp, idCounter)
+	// Set all the other bits to randomly (or pseudo-randomly) chosen
+	// values.
+	rand.Read(uuid[:])
+
+	// Set the two most significant bits (bits 6 and 7) of the
+	// clock_seq_hi_and_reserved to zero and one, respectively.
+	uuid[8] = (uuid[8] | 0x80) & 0x8f
+
+	// Set the four most significant bits (bits 12 through 15) of the
+	// time_hi_and_version field to the 4-bit version number from Section 4.1.3.
+	uuid[6] = (uuid[6] | 0x40) & 0x4f
+
+	return uuid[:]
 }

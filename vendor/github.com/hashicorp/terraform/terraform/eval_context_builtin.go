@@ -1,7 +1,6 @@
 package terraform
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -13,9 +12,6 @@ import (
 // BuiltinEvalContext is an EvalContext implementation that is used by
 // Terraform by default.
 type BuiltinEvalContext struct {
-	// StopContext is the context used to track whether we're complete
-	StopContext context.Context
-
 	// PathValue is the Path that this context is operating within.
 	PathValue []string
 
@@ -27,16 +23,17 @@ type BuiltinEvalContext struct {
 	// as the Interpolater itself, it is protected by InterpolaterVarLock
 	// which must be locked during any access to the map.
 	Interpolater        *Interpolater
-	InterpolaterVars    map[string]map[string]interface{}
+	InterpolaterVars    map[string]map[string]string
 	InterpolaterVarLock *sync.Mutex
 
-	Components          contextComponentFactory
 	Hooks               []Hook
 	InputValue          UIInput
+	Providers           map[string]ResourceProviderFactory
 	ProviderCache       map[string]ResourceProvider
 	ProviderConfigCache map[string]*ResourceConfig
 	ProviderInputConfig map[string]map[string]interface{}
 	ProviderLock        *sync.Mutex
+	Provisioners        map[string]ResourceProvisionerFactory
 	ProvisionerCache    map[string]ResourceProvisioner
 	ProvisionerLock     *sync.Mutex
 	DiffValue           *Diff
@@ -45,15 +42,6 @@ type BuiltinEvalContext struct {
 	StateLock           *sync.RWMutex
 
 	once sync.Once
-}
-
-func (ctx *BuiltinEvalContext) Stopped() <-chan struct{} {
-	// This can happen during tests. During tests, we just block forever.
-	if ctx.StopContext == nil {
-		return nil
-	}
-
-	return ctx.StopContext.Done()
 }
 
 func (ctx *BuiltinEvalContext) Hook(fn func(Hook) (HookAction, error)) error {
@@ -93,18 +81,23 @@ func (ctx *BuiltinEvalContext) InitProvider(n string) (ResourceProvider, error) 
 	ctx.ProviderLock.Lock()
 	defer ctx.ProviderLock.Unlock()
 
-	providerPath := make([]string, len(ctx.Path())+1)
-	copy(providerPath, ctx.Path())
-	providerPath[len(providerPath)-1] = n
-	key := PathCacheKey(providerPath)
-
 	typeName := strings.SplitN(n, ".", 2)[0]
-	p, err := ctx.Components.ResourceProvider(typeName, key)
+
+	f, ok := ctx.Providers[typeName]
+	if !ok {
+		return nil, fmt.Errorf("Provider '%s' not found", typeName)
+	}
+
+	p, err := f()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.ProviderCache[key] = p
+	providerPath := make([]string, len(ctx.Path())+1)
+	copy(providerPath, ctx.Path())
+	providerPath[len(providerPath)-1] = n
+
+	ctx.ProviderCache[PathCacheKey(providerPath)] = p
 	return p, nil
 }
 
@@ -119,28 +112,6 @@ func (ctx *BuiltinEvalContext) Provider(n string) ResourceProvider {
 	providerPath[len(providerPath)-1] = n
 
 	return ctx.ProviderCache[PathCacheKey(providerPath)]
-}
-
-func (ctx *BuiltinEvalContext) CloseProvider(n string) error {
-	ctx.once.Do(ctx.init)
-
-	ctx.ProviderLock.Lock()
-	defer ctx.ProviderLock.Unlock()
-
-	providerPath := make([]string, len(ctx.Path())+1)
-	copy(providerPath, ctx.Path())
-	providerPath[len(providerPath)-1] = n
-
-	var provider interface{}
-	provider = ctx.ProviderCache[PathCacheKey(providerPath)]
-	if provider != nil {
-		if p, ok := provider.(ResourceProviderCloser); ok {
-			delete(ctx.ProviderCache, PathCacheKey(providerPath))
-			return p.Close()
-		}
-	}
-
-	return nil
 }
 
 func (ctx *BuiltinEvalContext) ConfigureProvider(
@@ -175,32 +146,14 @@ func (ctx *BuiltinEvalContext) ProviderInput(n string) map[string]interface{} {
 	ctx.ProviderLock.Lock()
 	defer ctx.ProviderLock.Unlock()
 
-	// Make a copy of the path so we can safely edit it
-	path := ctx.Path()
-	pathCopy := make([]string, len(path)+1)
-	copy(pathCopy, path)
-
-	// Go up the tree.
-	for i := len(path) - 1; i >= 0; i-- {
-		pathCopy[i+1] = n
-		k := PathCacheKey(pathCopy[:i+2])
-		if v, ok := ctx.ProviderInputConfig[k]; ok {
-			return v
-		}
-	}
-
-	return nil
+	return ctx.ProviderInputConfig[n]
 }
 
 func (ctx *BuiltinEvalContext) SetProviderInput(n string, c map[string]interface{}) {
-	providerPath := make([]string, len(ctx.Path())+1)
-	copy(providerPath, ctx.Path())
-	providerPath[len(providerPath)-1] = n
-
-	// Save the configuration
 	ctx.ProviderLock.Lock()
-	ctx.ProviderInputConfig[PathCacheKey(providerPath)] = c
-	ctx.ProviderLock.Unlock()
+	defer ctx.ProviderLock.Unlock()
+
+	ctx.ProviderInputConfig[n] = c
 }
 
 func (ctx *BuiltinEvalContext) ParentProviderConfig(n string) *ResourceConfig {
@@ -238,17 +191,21 @@ func (ctx *BuiltinEvalContext) InitProvisioner(
 	ctx.ProvisionerLock.Lock()
 	defer ctx.ProvisionerLock.Unlock()
 
-	provPath := make([]string, len(ctx.Path())+1)
-	copy(provPath, ctx.Path())
-	provPath[len(provPath)-1] = n
-	key := PathCacheKey(provPath)
+	f, ok := ctx.Provisioners[n]
+	if !ok {
+		return nil, fmt.Errorf("Provisioner '%s' not found", n)
+	}
 
-	p, err := ctx.Components.ResourceProvisioner(n, key)
+	p, err := f()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.ProvisionerCache[key] = p
+	provPath := make([]string, len(ctx.Path())+1)
+	copy(provPath, ctx.Path())
+	provPath[len(provPath)-1] = n
+
+	ctx.ProvisionerCache[PathCacheKey(provPath)] = p
 	return p, nil
 }
 
@@ -265,28 +222,6 @@ func (ctx *BuiltinEvalContext) Provisioner(n string) ResourceProvisioner {
 	return ctx.ProvisionerCache[PathCacheKey(provPath)]
 }
 
-func (ctx *BuiltinEvalContext) CloseProvisioner(n string) error {
-	ctx.once.Do(ctx.init)
-
-	ctx.ProvisionerLock.Lock()
-	defer ctx.ProvisionerLock.Unlock()
-
-	provPath := make([]string, len(ctx.Path())+1)
-	copy(provPath, ctx.Path())
-	provPath[len(provPath)-1] = n
-
-	var prov interface{}
-	prov = ctx.ProvisionerCache[PathCacheKey(provPath)]
-	if prov != nil {
-		if p, ok := prov.(ResourceProvisionerCloser); ok {
-			delete(ctx.ProvisionerCache, PathCacheKey(provPath))
-			return p.Close()
-		}
-	}
-
-	return nil
-}
-
 func (ctx *BuiltinEvalContext) Interpolate(
 	cfg *config.RawConfig, r *Resource) (*ResourceConfig, error) {
 	if cfg != nil {
@@ -294,7 +229,6 @@ func (ctx *BuiltinEvalContext) Interpolate(
 			Path:     ctx.Path(),
 			Resource: r,
 		}
-
 		vs, err := ctx.Interpolater.Values(scope, cfg.Variables)
 		if err != nil {
 			return nil, err
@@ -315,7 +249,7 @@ func (ctx *BuiltinEvalContext) Path() []string {
 	return ctx.PathValue
 }
 
-func (ctx *BuiltinEvalContext) SetVariables(n string, vs map[string]interface{}) {
+func (ctx *BuiltinEvalContext) SetVariables(n string, vs map[string]string) {
 	ctx.InterpolaterVarLock.Lock()
 	defer ctx.InterpolaterVarLock.Unlock()
 
@@ -326,7 +260,7 @@ func (ctx *BuiltinEvalContext) SetVariables(n string, vs map[string]interface{})
 
 	vars := ctx.InterpolaterVars[key]
 	if vars == nil {
-		vars = make(map[string]interface{})
+		vars = make(map[string]string)
 		ctx.InterpolaterVars[key] = vars
 	}
 
@@ -344,4 +278,9 @@ func (ctx *BuiltinEvalContext) State() (*State, *sync.RWMutex) {
 }
 
 func (ctx *BuiltinEvalContext) init() {
+	// We nil-check the things below because they're meant to be configured,
+	// and we just default them to non-nil.
+	if ctx.Providers == nil {
+		ctx.Providers = make(map[string]ResourceProviderFactory)
+	}
 }

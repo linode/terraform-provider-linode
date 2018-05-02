@@ -76,7 +76,7 @@ func (r *DiffFieldReader) readMap(
 		if !strings.HasPrefix(k, prefix) {
 			continue
 		}
-		if strings.HasPrefix(k, prefix+"%") {
+		if strings.HasPrefix(k, prefix+"#") {
 			// Ignore the count field
 			continue
 		}
@@ -90,11 +90,6 @@ func (r *DiffFieldReader) readMap(
 		}
 
 		result[k] = v.New
-	}
-
-	err = mapValuesToPrimitive(result, schema)
-	if err != nil {
-		return FieldReadResult{}, nil
 	}
 
 	var resultVal interface{}
@@ -146,14 +141,10 @@ func (r *DiffFieldReader) readSet(
 	prefix := strings.Join(address, ".") + "."
 
 	// Create the set that will be our result
-	set := schema.ZeroValue().(*Set)
+	set := &Set{F: schema.Set}
 
 	// Go through the map and find all the set items
-	for k, d := range r.Diff.Attributes {
-		if d.NewRemoved {
-			// If the field is removed, we always ignore it
-			continue
-		}
+	for k, _ := range r.Diff.Attributes {
 		if !strings.HasPrefix(k, prefix) {
 			continue
 		}
@@ -188,16 +179,6 @@ func (r *DiffFieldReader) readSet(
 		// "0" to "" breaking us (if that were to happen).
 		if _, ok := r.Diff.Attributes[prefix+"#"]; ok {
 			exists = true
-		}
-	}
-
-	if !exists {
-		result, err := r.Source.ReadField(address)
-		if err != nil {
-			return FieldReadResult{}, err
-		}
-		if result.Exists {
-			return result, nil
 		}
 	}
 

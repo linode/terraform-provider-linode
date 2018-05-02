@@ -15,7 +15,7 @@ func ProviderEvalTree(n string, config *config.RawConfig) EvalNode {
 
 	// Input stuff
 	seq = append(seq, &EvalOpFilter{
-		Ops: []walkOperation{walkInput, walkImport},
+		Ops: []walkOperation{walkInput},
 		Node: &EvalSequence{
 			Nodes: []EvalNode{
 				&EvalGetProvider{
@@ -40,8 +40,9 @@ func ProviderEvalTree(n string, config *config.RawConfig) EvalNode {
 		},
 	})
 
+	// Apply stuff
 	seq = append(seq, &EvalOpFilter{
-		Ops: []walkOperation{walkValidate},
+		Ops: []walkOperation{walkValidate, walkRefresh, walkPlan, walkApply},
 		Node: &EvalSequence{
 			Nodes: []EvalNode{
 				&EvalGetProvider{
@@ -61,46 +62,6 @@ func ProviderEvalTree(n string, config *config.RawConfig) EvalNode {
 					Provider: &provider,
 					Config:   &resourceConfig,
 				},
-				&EvalSetProviderConfig{
-					Provider: n,
-					Config:   &resourceConfig,
-				},
-			},
-		},
-	})
-
-	// Apply stuff
-	seq = append(seq, &EvalOpFilter{
-		Ops: []walkOperation{walkRefresh, walkPlan, walkApply, walkDestroy, walkImport},
-		Node: &EvalSequence{
-			Nodes: []EvalNode{
-				&EvalGetProvider{
-					Name:   n,
-					Output: &provider,
-				},
-				&EvalInterpolate{
-					Config: config,
-					Output: &resourceConfig,
-				},
-				&EvalBuildProviderConfig{
-					Provider: n,
-					Config:   &resourceConfig,
-					Output:   &resourceConfig,
-				},
-				&EvalSetProviderConfig{
-					Provider: n,
-					Config:   &resourceConfig,
-				},
-			},
-		},
-	})
-
-	// We configure on everything but validate, since validate may
-	// not have access to all the variables.
-	seq = append(seq, &EvalOpFilter{
-		Ops: []walkOperation{walkRefresh, walkPlan, walkApply, walkDestroy, walkImport},
-		Node: &EvalSequence{
-			Nodes: []EvalNode{
 				&EvalConfigProvider{
 					Provider: n,
 					Config:   &resourceConfig,
@@ -110,10 +71,4 @@ func ProviderEvalTree(n string, config *config.RawConfig) EvalNode {
 	})
 
 	return &EvalSequence{Nodes: seq}
-}
-
-// CloseProviderEvalTree returns the evaluation tree for closing
-// provider connections that aren't needed anymore.
-func CloseProviderEvalTree(n string) EvalNode {
-	return &EvalCloseProvider{Name: n}
 }

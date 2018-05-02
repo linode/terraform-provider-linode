@@ -9,9 +9,6 @@ import (
 // MockEvalContext is a mock version of EvalContext that can be used
 // for tests.
 type MockEvalContext struct {
-	StoppedCalled bool
-	StoppedValue  <-chan struct{}
-
 	HookCalled bool
 	HookHook   Hook
 	HookError  error
@@ -27,10 +24,6 @@ type MockEvalContext struct {
 	ProviderCalled   bool
 	ProviderName     string
 	ProviderProvider ResourceProvider
-
-	CloseProviderCalled   bool
-	CloseProviderName     string
-	CloseProviderProvider ResourceProvider
 
 	ProviderInputCalled bool
 	ProviderInputName   string
@@ -62,10 +55,6 @@ type MockEvalContext struct {
 	ProvisionerName        string
 	ProvisionerProvisioner ResourceProvisioner
 
-	CloseProvisionerCalled      bool
-	CloseProvisionerName        string
-	CloseProvisionerProvisioner ResourceProvisioner
-
 	InterpolateCalled       bool
 	InterpolateConfig       *config.RawConfig
 	InterpolateResource     *Resource
@@ -77,7 +66,7 @@ type MockEvalContext struct {
 
 	SetVariablesCalled    bool
 	SetVariablesModule    string
-	SetVariablesVariables map[string]interface{}
+	SetVariablesVariables map[string]string
 
 	DiffCalled bool
 	DiffDiff   *Diff
@@ -86,11 +75,6 @@ type MockEvalContext struct {
 	StateCalled bool
 	StateState  *State
 	StateLock   *sync.RWMutex
-}
-
-func (c *MockEvalContext) Stopped() <-chan struct{} {
-	c.StoppedCalled = true
-	return c.StoppedValue
 }
 
 func (c *MockEvalContext) Hook(fn func(Hook) (HookAction, error)) error {
@@ -119,12 +103,6 @@ func (c *MockEvalContext) Provider(n string) ResourceProvider {
 	c.ProviderCalled = true
 	c.ProviderName = n
 	return c.ProviderProvider
-}
-
-func (c *MockEvalContext) CloseProvider(n string) error {
-	c.CloseProviderCalled = true
-	c.CloseProviderName = n
-	return nil
 }
 
 func (c *MockEvalContext) ConfigureProvider(n string, cfg *ResourceConfig) error {
@@ -172,12 +150,6 @@ func (c *MockEvalContext) Provisioner(n string) ResourceProvisioner {
 	return c.ProvisionerProvisioner
 }
 
-func (c *MockEvalContext) CloseProvisioner(n string) error {
-	c.CloseProvisionerCalled = true
-	c.CloseProvisionerName = n
-	return nil
-}
-
 func (c *MockEvalContext) Interpolate(
 	config *config.RawConfig, resource *Resource) (*ResourceConfig, error) {
 	c.InterpolateCalled = true
@@ -191,7 +163,7 @@ func (c *MockEvalContext) Path() []string {
 	return c.PathPath
 }
 
-func (c *MockEvalContext) SetVariables(n string, vs map[string]interface{}) {
+func (c *MockEvalContext) SetVariables(n string, vs map[string]string) {
 	c.SetVariablesCalled = true
 	c.SetVariablesModule = n
 	c.SetVariablesVariables = vs

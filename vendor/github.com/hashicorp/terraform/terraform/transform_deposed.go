@@ -72,7 +72,7 @@ func (n *graphNodeDeposedResource) EvalTree() EvalNode {
 	seq := &EvalSequence{Nodes: make([]EvalNode, 0, 5)}
 
 	// Build instance info
-	info := &InstanceInfo{Id: n.Name(), Type: n.ResourceType}
+	info := &InstanceInfo{Id: n.ResourceName, Type: n.ResourceType}
 	seq.Nodes = append(seq.Nodes, &EvalInstanceInfo{Info: info})
 
 	// Refresh the resource
@@ -110,7 +110,7 @@ func (n *graphNodeDeposedResource) EvalTree() EvalNode {
 	var diff *InstanceDiff
 	var err error
 	seq.Nodes = append(seq.Nodes, &EvalOpFilter{
-		Ops: []walkOperation{walkApply, walkDestroy},
+		Ops: []walkOperation{walkApply},
 		Node: &EvalSequence{
 			Nodes: []EvalNode{
 				&EvalGetProvider{
@@ -126,12 +126,6 @@ func (n *graphNodeDeposedResource) EvalTree() EvalNode {
 					Info:   info,
 					State:  &state,
 					Output: &diff,
-				},
-				// Call pre-apply hook
-				&EvalApplyPre{
-					Info:  info,
-					State: &state,
-					Diff:  &diff,
 				},
 				&EvalApply{
 					Info:     info,
@@ -150,11 +144,6 @@ func (n *graphNodeDeposedResource) EvalTree() EvalNode {
 					Provider:     n.Provider,
 					State:        &state,
 					Index:        n.Index,
-				},
-				&EvalApplyPost{
-					Info:  info,
-					State: &state,
-					Error: &err,
 				},
 				&EvalReturnError{
 					Error: &err,

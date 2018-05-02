@@ -18,12 +18,10 @@ type ConfigFieldReader struct {
 	Config *terraform.ResourceConfig
 	Schema map[string]*Schema
 
-	indexMaps map[string]map[string]int
-	once      sync.Once
+	lock sync.Mutex
 }
 
 func (r *ConfigFieldReader) ReadField(address []string) (FieldReadResult, error) {
-	r.once.Do(func() { r.indexMaps = make(map[string]map[string]int) })
 	return r.readField(address, false)
 }
 
@@ -57,18 +55,20 @@ func (r *ConfigFieldReader) readField(
 				continue
 			}
 
-			indexMap, ok := r.indexMaps[strings.Join(address[:i+1], ".")]
-			if !ok {
-				// Get the set so we can get the index map that tells us the
-				// mapping of the hash code to the list index
-				_, err := r.readSet(address[:i+1], v)
-				if err != nil {
-					return FieldReadResult{}, err
-				}
-				indexMap = r.indexMaps[strings.Join(address[:i+1], ".")]
+			// Get the code
+			code, err := strconv.ParseInt(address[i+1], 0, 0)
+			if err != nil {
+				return FieldReadResult{}, err
 			}
 
-			index, ok := indexMap[address[i+1]]
+			// Get the set so we can get the index map that tells us the
+			// mapping of the hash code to the list index
+			_, indexMap, err := r.readSet(address[:i+1], v)
+			if err != nil {
+				return FieldReadResult{}, err
+			}
+
+			index, ok := indexMap[int(code)]
 			if !ok {
 				return FieldReadResult{}, nil
 			}
@@ -79,40 +79,16 @@ func (r *ConfigFieldReader) readField(
 
 	k := strings.Join(address, ".")
 	schema := schemaList[len(schemaList)-1]
-
-	// If we're getting the single element of a promoted list, then
-	// check to see if we have a single element we need to promote.
-	if address[len(address)-1] == "0" && len(schemaList) > 1 {
-		lastSchema := schemaList[len(schemaList)-2]
-		if lastSchema.Type == TypeList && lastSchema.PromoteSingle {
-			k := strings.Join(address[:len(address)-1], ".")
-			result, err := r.readPrimitive(k, schema)
-			if err == nil {
-				return result, nil
-			}
-		}
-	}
-
 	switch schema.Type {
 	case TypeBool, TypeFloat, TypeInt, TypeString:
 		return r.readPrimitive(k, schema)
 	case TypeList:
-		// If we support promotion then we first check if we have a lone
-		// value that we must promote.
-		// a value that is alone.
-		if schema.PromoteSingle {
-			result, err := r.readPrimitive(k, schema.Elem.(*Schema))
-			if err == nil && result.Exists {
-				result.Value = []interface{}{result.Value}
-				return result, nil
-			}
-		}
-
 		return readListField(&nestedConfigFieldReader{r}, address, schema)
 	case TypeMap:
-		return r.readMap(k, schema)
+		return r.readMap(k)
 	case TypeSet:
-		return r.readSet(address, schema)
+		result, _, err := r.readSet(address, schema)
+		return result, err
 	case typeObject:
 		return readObjectField(
 			&nestedConfigFieldReader{r},
@@ -122,52 +98,21 @@ func (r *ConfigFieldReader) readField(
 	}
 }
 
-func (r *ConfigFieldReader) readMap(k string, schema *Schema) (FieldReadResult, error) {
+func (r *ConfigFieldReader) readMap(k string) (FieldReadResult, error) {
 	// We want both the raw value and the interpolated. We use the interpolated
 	// to store actual values and we use the raw one to check for
-	// computed keys. Actual values are obtained in the switch, depending on
-	// the type of the raw value.
+	// computed keys.
 	mraw, ok := r.Config.GetRaw(k)
 	if !ok {
-		// check if this is from an interpolated field by seeing if it exists
-		// in the config
-		_, ok := r.Config.Get(k)
-		if !ok {
-			// this really doesn't exist
-			return FieldReadResult{}, nil
-		}
-
-		// We couldn't fetch the value from a nested data structure, so treat the
-		// raw value as an interpolation string. The mraw value is only used
-		// for the type switch below.
-		mraw = "${INTERPOLATED}"
+		return FieldReadResult{}, nil
 	}
 
 	result := make(map[string]interface{})
 	computed := false
 	switch m := mraw.(type) {
-	case string:
-		// This is a map which has come out of an interpolated variable, so we
-		// can just get the value directly from config. Values cannot be computed
-		// currently.
-		v, _ := r.Config.Get(k)
-
-		// If this isn't a map[string]interface, it must be computed.
-		mapV, ok := v.(map[string]interface{})
-		if !ok {
-			return FieldReadResult{
-				Exists:   true,
-				Computed: true,
-			}, nil
-		}
-
-		// Otherwise we can proceed as usual.
-		for i, iv := range mapV {
-			result[i] = iv
-		}
 	case []interface{}:
 		for i, innerRaw := range m {
-			for ik := range innerRaw.(map[string]interface{}) {
+			for ik, _ := range innerRaw.(map[string]interface{}) {
 				key := fmt.Sprintf("%s.%d.%s", k, i, ik)
 				if r.Config.IsComputed(key) {
 					computed = true
@@ -180,7 +125,7 @@ func (r *ConfigFieldReader) readMap(k string, schema *Schema) (FieldReadResult, 
 		}
 	case []map[string]interface{}:
 		for i, innerRaw := range m {
-			for ik := range innerRaw {
+			for ik, _ := range innerRaw {
 				key := fmt.Sprintf("%s.%d.%s", k, i, ik)
 				if r.Config.IsComputed(key) {
 					computed = true
@@ -192,7 +137,7 @@ func (r *ConfigFieldReader) readMap(k string, schema *Schema) (FieldReadResult, 
 			}
 		}
 	case map[string]interface{}:
-		for ik := range m {
+		for ik, _ := range m {
 			key := fmt.Sprintf("%s.%s", k, ik)
 			if r.Config.IsComputed(key) {
 				computed = true
@@ -204,11 +149,6 @@ func (r *ConfigFieldReader) readMap(k string, schema *Schema) (FieldReadResult, 
 		}
 	default:
 		panic(fmt.Sprintf("unknown type: %#v", mraw))
-	}
-
-	err := mapValuesToPrimitive(result, schema)
-	if err != nil {
-		return FieldReadResult{}, nil
 	}
 
 	var value interface{}
@@ -258,17 +198,17 @@ func (r *ConfigFieldReader) readPrimitive(
 }
 
 func (r *ConfigFieldReader) readSet(
-	address []string, schema *Schema) (FieldReadResult, error) {
-	indexMap := make(map[string]int)
+	address []string, schema *Schema) (FieldReadResult, map[int]int, error) {
+	indexMap := make(map[int]int)
 	// Create the set that will be our result
-	set := schema.ZeroValue().(*Set)
+	set := &Set{F: schema.Set}
 
 	raw, err := readListField(&nestedConfigFieldReader{r}, address, schema)
 	if err != nil {
-		return FieldReadResult{}, err
+		return FieldReadResult{}, indexMap, err
 	}
 	if !raw.Exists {
-		return FieldReadResult{Value: set}, nil
+		return FieldReadResult{Value: set}, indexMap, nil
 	}
 
 	// If the list is computed, the set is necessarilly computed
@@ -277,7 +217,7 @@ func (r *ConfigFieldReader) readSet(
 			Value:    set,
 			Exists:   true,
 			Computed: raw.Computed,
-		}, nil
+		}, indexMap, nil
 	}
 
 	// Build up the set from the list elements
@@ -286,16 +226,19 @@ func (r *ConfigFieldReader) readSet(
 		computed := r.hasComputedSubKeys(
 			fmt.Sprintf("%s.%d", strings.Join(address, "."), i), schema)
 
-		code := set.add(v, computed)
+		code := set.add(v)
 		indexMap[code] = i
+		if computed {
+			set.m[-code] = set.m[code]
+			delete(set.m, code)
+			code = -code
+		}
 	}
-
-	r.indexMaps[strings.Join(address, ".")] = indexMap
 
 	return FieldReadResult{
 		Value:  set,
 		Exists: true,
-	}, nil
+	}, indexMap, nil
 }
 
 // hasComputedSubKeys walks through a schema and returns whether or not the

@@ -52,11 +52,7 @@ func EvalRaw(n EvalNode, ctx EvalContext) (interface{}, error) {
 	log.Printf("[DEBUG] %s: eval: %T", path, n)
 	output, err := n.Eval(ctx)
 	if err != nil {
-		if _, ok := err.(EvalEarlyExitError); ok {
-			log.Printf("[DEBUG] %s: eval: %T, err: %s", path, n, err)
-		} else {
-			log.Printf("[ERROR] %s: eval: %T, err: %s", path, n, err)
-		}
+		log.Printf("[ERROR] %s: eval: %T, err: %s", path, n, err)
 	}
 
 	return output, err
