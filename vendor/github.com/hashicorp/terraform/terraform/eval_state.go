@@ -17,31 +17,6 @@ func (n *EvalReadState) Eval(ctx EvalContext) (interface{}, error) {
 	})
 }
 
-// EvalReadStateTainted is an EvalNode implementation that reads a
-// tainted InstanceState for a specific resource out of the state
-type EvalReadStateTainted struct {
-	Name   string
-	Output **InstanceState
-	// Index indicates which instance in the Tainted list to target, or -1 for
-	// the last item.
-	Index int
-}
-
-func (n *EvalReadStateTainted) Eval(ctx EvalContext) (interface{}, error) {
-	return readInstanceFromState(ctx, n.Name, n.Output, func(rs *ResourceState) (*InstanceState, error) {
-		// Get the index. If it is negative, then we get the last one
-		idx := n.Index
-		if idx < 0 {
-			idx = len(rs.Tainted) - 1
-		}
-		if idx >= 0 && idx < len(rs.Tainted) {
-			return rs.Tainted[idx], nil
-		} else {
-			return nil, fmt.Errorf("bad tainted index: %d, for resource: %#v", idx, rs)
-		}
-	})
-}
-
 // EvalReadStateDeposed is an EvalNode implementation that reads the
 // deposed InstanceState for a specific resource out of the state
 type EvalReadStateDeposed struct {
@@ -134,9 +109,10 @@ type EvalUpdateStateHook struct{}
 func (n *EvalUpdateStateHook) Eval(ctx EvalContext) (interface{}, error) {
 	state, lock := ctx.State()
 
-	// Get a read lock so it doesn't change while we're calling this
-	lock.RLock()
-	defer lock.RUnlock()
+	// Get a full lock. Even calling something like WriteState can modify
+	// (prune) the state, so we need the full lock.
+	lock.Lock()
+	defer lock.Unlock()
 
 	// Call the hook
 	err := ctx.Hook(func(h Hook) (HookAction, error) {
@@ -163,33 +139,6 @@ func (n *EvalWriteState) Eval(ctx EvalContext) (interface{}, error) {
 	return writeInstanceToState(ctx, n.Name, n.ResourceType, n.Provider, n.Dependencies,
 		func(rs *ResourceState) error {
 			rs.Primary = *n.State
-			return nil
-		},
-	)
-}
-
-// EvalWriteStateTainted is an EvalNode implementation that writes
-// an InstanceState out to the Tainted list of a resource in the state.
-type EvalWriteStateTainted struct {
-	Name         string
-	ResourceType string
-	Provider     string
-	Dependencies []string
-	State        **InstanceState
-	// Index indicates which instance in the Tainted list to target, or -1 to append.
-	Index int
-}
-
-// EvalWriteStateTainted is an EvalNode implementation that writes the
-// one of the tainted InstanceStates for a specific resource out of the state.
-func (n *EvalWriteStateTainted) Eval(ctx EvalContext) (interface{}, error) {
-	return writeInstanceToState(ctx, n.Name, n.ResourceType, n.Provider, n.Dependencies,
-		func(rs *ResourceState) error {
-			if n.Index == -1 {
-				rs.Tainted = append(rs.Tainted, *n.State)
-			} else {
-				rs.Tainted[n.Index] = *n.State
-			}
 			return nil
 		},
 	)
@@ -265,37 +214,6 @@ func writeInstanceToState(
 	return nil, nil
 }
 
-// EvalClearPrimaryState is an EvalNode implementation that clears the primary
-// instance from a resource state.
-type EvalClearPrimaryState struct {
-	Name string
-}
-
-func (n *EvalClearPrimaryState) Eval(ctx EvalContext) (interface{}, error) {
-	state, lock := ctx.State()
-
-	// Get a read lock so we can access this instance
-	lock.RLock()
-	defer lock.RUnlock()
-
-	// Look for the module state. If we don't have one, then it doesn't matter.
-	mod := state.ModuleByPath(ctx.Path())
-	if mod == nil {
-		return nil, nil
-	}
-
-	// Look for the resource state. If we don't have one, then it is okay.
-	rs := mod.Resources[n.Name]
-	if rs == nil {
-		return nil, nil
-	}
-
-	// Clear primary from the resource state
-	rs.Primary = nil
-
-	return nil, nil
-}
-
 // EvalDeposeState is an EvalNode implementation that takes the primary
 // out of a state and makes it Deposed. This is done at the beginning of
 // create-before-destroy calls so that the create can create while preserving
@@ -339,7 +257,8 @@ func (n *EvalDeposeState) Eval(ctx EvalContext) (interface{}, error) {
 // EvalUndeposeState is an EvalNode implementation that reads the
 // InstanceState for a specific resource out of the state.
 type EvalUndeposeState struct {
-	Name string
+	Name  string
+	State **InstanceState
 }
 
 // TODO: test
@@ -370,7 +289,7 @@ func (n *EvalUndeposeState) Eval(ctx EvalContext) (interface{}, error) {
 	// Undepose
 	idx := len(rs.Deposed) - 1
 	rs.Primary = rs.Deposed[idx]
-	rs.Deposed[idx] = nil
+	rs.Deposed[idx] = *n.State
 
 	return nil, nil
 }

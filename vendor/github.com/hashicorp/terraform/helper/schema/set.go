@@ -1,9 +1,11 @@
 package schema
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"sync"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
@@ -15,12 +17,34 @@ func HashString(v interface{}) int {
 	return hashcode.String(v.(string))
 }
 
+// HashResource hashes complex structures that are described using
+// a *Resource. This is the default set implementation used when a set's
+// element type is a full resource.
+func HashResource(resource *Resource) SchemaSetFunc {
+	return func(v interface{}) int {
+		var buf bytes.Buffer
+		SerializeResourceForHash(&buf, v, resource)
+		return hashcode.String(buf.String())
+	}
+}
+
+// HashSchema hashes values that are described using a *Schema. This is the
+// default set implementation used when a set's element type is a single
+// schema.
+func HashSchema(schema *Schema) SchemaSetFunc {
+	return func(v interface{}) int {
+		var buf bytes.Buffer
+		SerializeValueForHash(&buf, v, schema)
+		return hashcode.String(buf.String())
+	}
+}
+
 // Set is a set data structure that is returned for elements of type
 // TypeSet.
 type Set struct {
 	F SchemaSetFunc
 
-	m    map[int]interface{}
+	m    map[string]interface{}
 	once sync.Once
 }
 
@@ -42,7 +66,7 @@ func CopySet(otherSet *Set) *Set {
 
 // Add adds an item to the set if it isn't already in the set.
 func (s *Set) Add(item interface{}) {
-	s.add(item)
+	s.add(item, false)
 }
 
 // Remove removes an item if it's already in the set. Idempotent.
@@ -129,18 +153,47 @@ func (s *Set) Equal(raw interface{}) bool {
 	return reflect.DeepEqual(s.m, other.m)
 }
 
+// HashEqual simply checks to the keys the top-level map to the keys in the
+// other set's top-level map to see if they are equal. This obviously assumes
+// you have a properly working hash function - use HashResource if in doubt.
+func (s *Set) HashEqual(raw interface{}) bool {
+	other, ok := raw.(*Set)
+	if !ok {
+		return false
+	}
+
+	ks1 := make([]string, 0)
+	ks2 := make([]string, 0)
+
+	for k := range s.m {
+		ks1 = append(ks1, k)
+	}
+	for k := range other.m {
+		ks2 = append(ks2, k)
+	}
+
+	sort.Strings(ks1)
+	sort.Strings(ks2)
+
+	return reflect.DeepEqual(ks1, ks2)
+}
+
 func (s *Set) GoString() string {
 	return fmt.Sprintf("*Set(%#v)", s.m)
 }
 
 func (s *Set) init() {
-	s.m = make(map[int]interface{})
+	s.m = make(map[string]interface{})
 }
 
-func (s *Set) add(item interface{}) int {
+func (s *Set) add(item interface{}, computed bool) string {
 	s.once.Do(s.init)
 
 	code := s.hash(item)
+	if computed {
+		code = "~" + code
+	}
+
 	if _, ok := s.m[code]; !ok {
 		s.m[code] = item
 	}
@@ -148,34 +201,34 @@ func (s *Set) add(item interface{}) int {
 	return code
 }
 
-func (s *Set) hash(item interface{}) int {
+func (s *Set) hash(item interface{}) string {
 	code := s.F(item)
 	// Always return a nonnegative hashcode.
 	if code < 0 {
-		return -code
+		code = -code
 	}
-	return code
+	return strconv.Itoa(code)
 }
 
-func (s *Set) remove(item interface{}) int {
+func (s *Set) remove(item interface{}) string {
 	s.once.Do(s.init)
 
-	code := s.F(item)
+	code := s.hash(item)
 	delete(s.m, code)
 
 	return code
 }
 
 func (s *Set) index(item interface{}) int {
-	return sort.SearchInts(s.listCode(), s.hash(item))
+	return sort.SearchStrings(s.listCode(), s.hash(item))
 }
 
-func (s *Set) listCode() []int {
+func (s *Set) listCode() []string {
 	// Sort the hash codes so the order of the list is deterministic
-	keys := make([]int, 0, len(s.m))
-	for k, _ := range s.m {
+	keys := make([]string, 0, len(s.m))
+	for k := range s.m {
 		keys = append(keys, k)
 	}
-	sort.Sort(sort.IntSlice(keys))
+	sort.Sort(sort.StringSlice(keys))
 	return keys
 }

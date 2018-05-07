@@ -10,8 +10,9 @@ import (
 // error if a resource has PreventDestroy configured and the diff
 // would destroy the resource.
 type EvalCheckPreventDestroy struct {
-	Resource *config.Resource
-	Diff     **InstanceDiff
+	Resource   *config.Resource
+	ResourceId string
+	Diff       **InstanceDiff
 }
 
 func (n *EvalCheckPreventDestroy) Eval(ctx EvalContext) (interface{}, error) {
@@ -22,11 +23,16 @@ func (n *EvalCheckPreventDestroy) Eval(ctx EvalContext) (interface{}, error) {
 	diff := *n.Diff
 	preventDestroy := n.Resource.Lifecycle.PreventDestroy
 
-	if diff.Destroy && preventDestroy {
-		return nil, fmt.Errorf(preventDestroyErrStr, n.Resource.Id())
+	if diff.GetDestroy() && preventDestroy {
+		resourceId := n.ResourceId
+		if resourceId == "" {
+			resourceId = n.Resource.Id()
+		}
+
+		return nil, fmt.Errorf(preventDestroyErrStr, resourceId)
 	}
 
 	return nil, nil
 }
 
-const preventDestroyErrStr = `%s: plan would destroy, but resource has prevent_destroy set. To avoid this error, either disable prevent_destroy, or change your config so the plan does not destroy this resource.`
+const preventDestroyErrStr = `%s: the plan would destroy this resource, but it currently has lifecycle.prevent_destroy set to true. To avoid this error and continue with the plan, either disable lifecycle.prevent_destroy or adjust the scope of the plan using the -target flag.`

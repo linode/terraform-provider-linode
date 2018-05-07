@@ -49,10 +49,14 @@ func EvalRaw(n EvalNode, ctx EvalContext) (interface{}, error) {
 		path = strings.Join(ctx.Path(), ".")
 	}
 
-	log.Printf("[DEBUG] %s: eval: %T", path, n)
+	log.Printf("[TRACE] %s: eval: %T", path, n)
 	output, err := n.Eval(ctx)
 	if err != nil {
-		log.Printf("[ERROR] %s: eval: %T, err: %s", path, n, err)
+		if _, ok := err.(EvalEarlyExitError); ok {
+			log.Printf("[TRACE] %s: eval: %T, err: %s", path, n, err)
+		} else {
+			log.Printf("[ERROR] %s: eval: %T, err: %s", path, n, err)
+		}
 	}
 
 	return output, err

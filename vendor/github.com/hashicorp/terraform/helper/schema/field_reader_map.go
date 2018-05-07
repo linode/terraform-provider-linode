@@ -26,7 +26,7 @@ func (r *MapFieldReader) ReadField(address []string) (FieldReadResult, error) {
 	case TypeList:
 		return readListField(r, address, schema)
 	case TypeMap:
-		return r.readMap(k)
+		return r.readMap(k, schema)
 	case TypeSet:
 		return r.readSet(address, schema)
 	case typeObject:
@@ -36,7 +36,7 @@ func (r *MapFieldReader) ReadField(address []string) (FieldReadResult, error) {
 	}
 }
 
-func (r *MapFieldReader) readMap(k string) (FieldReadResult, error) {
+func (r *MapFieldReader) readMap(k string, schema *Schema) (FieldReadResult, error) {
 	result := make(map[string]interface{})
 	resultSet := false
 
@@ -53,13 +53,18 @@ func (r *MapFieldReader) readMap(k string) (FieldReadResult, error) {
 			resultSet = true
 
 			key := k[len(prefix):]
-			if key != "#" {
+			if key != "%" && key != "#" {
 				result[key] = v
 			}
 		}
 
 		return true
 	})
+
+	err := mapValuesToPrimitive(k, result, schema)
+	if err != nil {
+		return FieldReadResult{}, nil
+	}
 
 	var resultVal interface{}
 	if resultSet {
@@ -105,7 +110,7 @@ func (r *MapFieldReader) readSet(
 	}
 
 	// Create the set that will be our result
-	set := &Set{F: schema.Set}
+	set := schema.ZeroValue().(*Set)
 
 	// If we have an empty list, then return an empty list
 	if countRaw.Computed || countRaw.Value.(int) == 0 {

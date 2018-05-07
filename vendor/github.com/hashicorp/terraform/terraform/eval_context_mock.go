@@ -9,6 +9,9 @@ import (
 // MockEvalContext is a mock version of EvalContext that can be used
 // for tests.
 type MockEvalContext struct {
+	StoppedCalled bool
+	StoppedValue  <-chan struct{}
+
 	HookCalled bool
 	HookHook   Hook
 	HookError  error
@@ -25,6 +28,10 @@ type MockEvalContext struct {
 	ProviderName     string
 	ProviderProvider ResourceProvider
 
+	CloseProviderCalled   bool
+	CloseProviderName     string
+	CloseProviderProvider ResourceProvider
+
 	ProviderInputCalled bool
 	ProviderInputName   string
 	ProviderInputConfig map[string]interface{}
@@ -38,14 +45,6 @@ type MockEvalContext struct {
 	ConfigureProviderConfig *ResourceConfig
 	ConfigureProviderError  error
 
-	SetProviderConfigCalled bool
-	SetProviderConfigName   string
-	SetProviderConfigConfig *ResourceConfig
-
-	ParentProviderConfigCalled bool
-	ParentProviderConfigName   string
-	ParentProviderConfigConfig *ResourceConfig
-
 	InitProvisionerCalled      bool
 	InitProvisionerName        string
 	InitProvisionerProvisioner ResourceProvisioner
@@ -55,18 +54,28 @@ type MockEvalContext struct {
 	ProvisionerName        string
 	ProvisionerProvisioner ResourceProvisioner
 
+	CloseProvisionerCalled      bool
+	CloseProvisionerName        string
+	CloseProvisionerProvisioner ResourceProvisioner
+
 	InterpolateCalled       bool
 	InterpolateConfig       *config.RawConfig
 	InterpolateResource     *Resource
 	InterpolateConfigResult *ResourceConfig
 	InterpolateError        error
 
+	InterpolateProviderCalled       bool
+	InterpolateProviderConfig       *config.ProviderConfig
+	InterpolateProviderResource     *Resource
+	InterpolateProviderConfigResult *ResourceConfig
+	InterpolateProviderError        error
+
 	PathCalled bool
 	PathPath   []string
 
 	SetVariablesCalled    bool
 	SetVariablesModule    string
-	SetVariablesVariables map[string]string
+	SetVariablesVariables map[string]interface{}
 
 	DiffCalled bool
 	DiffDiff   *Diff
@@ -75,6 +84,11 @@ type MockEvalContext struct {
 	StateCalled bool
 	StateState  *State
 	StateLock   *sync.RWMutex
+}
+
+func (c *MockEvalContext) Stopped() <-chan struct{} {
+	c.StoppedCalled = true
+	return c.StoppedValue
 }
 
 func (c *MockEvalContext) Hook(fn func(Hook) (HookAction, error)) error {
@@ -93,7 +107,7 @@ func (c *MockEvalContext) Input() UIInput {
 	return c.InputInput
 }
 
-func (c *MockEvalContext) InitProvider(n string) (ResourceProvider, error) {
+func (c *MockEvalContext) InitProvider(t, n string) (ResourceProvider, error) {
 	c.InitProviderCalled = true
 	c.InitProviderName = n
 	return c.InitProviderProvider, c.InitProviderError
@@ -105,25 +119,17 @@ func (c *MockEvalContext) Provider(n string) ResourceProvider {
 	return c.ProviderProvider
 }
 
+func (c *MockEvalContext) CloseProvider(n string) error {
+	c.CloseProviderCalled = true
+	c.CloseProviderName = n
+	return nil
+}
+
 func (c *MockEvalContext) ConfigureProvider(n string, cfg *ResourceConfig) error {
 	c.ConfigureProviderCalled = true
 	c.ConfigureProviderName = n
 	c.ConfigureProviderConfig = cfg
 	return c.ConfigureProviderError
-}
-
-func (c *MockEvalContext) SetProviderConfig(
-	n string, cfg *ResourceConfig) error {
-	c.SetProviderConfigCalled = true
-	c.SetProviderConfigName = n
-	c.SetProviderConfigConfig = cfg
-	return nil
-}
-
-func (c *MockEvalContext) ParentProviderConfig(n string) *ResourceConfig {
-	c.ParentProviderConfigCalled = true
-	c.ParentProviderConfigName = n
-	return c.ParentProviderConfigConfig
 }
 
 func (c *MockEvalContext) ProviderInput(n string) map[string]interface{} {
@@ -150,6 +156,12 @@ func (c *MockEvalContext) Provisioner(n string) ResourceProvisioner {
 	return c.ProvisionerProvisioner
 }
 
+func (c *MockEvalContext) CloseProvisioner(n string) error {
+	c.CloseProvisionerCalled = true
+	c.CloseProvisionerName = n
+	return nil
+}
+
 func (c *MockEvalContext) Interpolate(
 	config *config.RawConfig, resource *Resource) (*ResourceConfig, error) {
 	c.InterpolateCalled = true
@@ -158,12 +170,20 @@ func (c *MockEvalContext) Interpolate(
 	return c.InterpolateConfigResult, c.InterpolateError
 }
 
+func (c *MockEvalContext) InterpolateProvider(
+	config *config.ProviderConfig, resource *Resource) (*ResourceConfig, error) {
+	c.InterpolateProviderCalled = true
+	c.InterpolateProviderConfig = config
+	c.InterpolateProviderResource = resource
+	return c.InterpolateProviderConfigResult, c.InterpolateError
+}
+
 func (c *MockEvalContext) Path() []string {
 	c.PathCalled = true
 	return c.PathPath
 }
 
-func (c *MockEvalContext) SetVariables(n string, vs map[string]string) {
+func (c *MockEvalContext) SetVariables(n string, vs map[string]interface{}) {
 	c.SetVariablesCalled = true
 	c.SetVariablesModule = n
 	c.SetVariablesVariables = vs

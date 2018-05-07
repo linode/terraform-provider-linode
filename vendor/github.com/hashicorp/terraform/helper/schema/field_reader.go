@@ -38,15 +38,7 @@ func (r *FieldReadResult) ValueOrZero(s *Schema) interface{} {
 		return r.Value
 	}
 
-	result := s.Type.Zero()
-
-	// The zero value of a set is nil, but we want it
-	// to actually be an empty set object...
-	if set, ok := result.(*Set); ok && set.F == nil {
-		set.F = s.Set
-	}
-
-	return result
+	return s.ZeroValue()
 }
 
 // addrToSchema finds the final element schema for the given address
@@ -83,6 +75,8 @@ func addrToSchema(addr []string, schemaMap map[string]*Schema) []*Schema {
 				return nil
 			}
 		case TypeList, TypeSet:
+			isIndex := len(addr) > 0 && addr[0] == "#"
+
 			switch v := current.Elem.(type) {
 			case *Resource:
 				current = &Schema{
@@ -91,20 +85,54 @@ func addrToSchema(addr []string, schemaMap map[string]*Schema) []*Schema {
 				}
 			case *Schema:
 				current = v
+			case ValueType:
+				current = &Schema{Type: v}
 			default:
+				// we may not know the Elem type and are just looking for the
+				// index
+				if isIndex {
+					break
+				}
+
+				if len(addr) == 0 {
+					// we've processed the address, so return what we've
+					// collected
+					return result
+				}
+
+				if len(addr) == 1 {
+					if _, err := strconv.Atoi(addr[0]); err == nil {
+						// we're indexing a value without a schema. This can
+						// happen if the list is nested in another schema type.
+						// Default to a TypeString like we do with a map
+						current = &Schema{Type: TypeString}
+						break
+					}
+				}
+
 				return nil
 			}
 
 			// If we only have one more thing and the next thing
 			// is a #, then we're accessing the index which is always
 			// an int.
-			if len(addr) > 0 && addr[0] == "#" {
+			if isIndex {
 				current = &Schema{Type: TypeInt}
 				break
 			}
+
 		case TypeMap:
 			if len(addr) > 0 {
-				current = &Schema{Type: TypeString}
+				switch v := current.Elem.(type) {
+				case ValueType:
+					current = &Schema{Type: v}
+				case *Schema:
+					current, _ = current.Elem.(*Schema)
+				default:
+					// maps default to string values. This is all we can have
+					// if this is nested in another list or map.
+					current = &Schema{Type: TypeString}
+				}
 			}
 		case typeObject:
 			// If we're already in the object, then we want to handle Sets
@@ -222,6 +250,32 @@ func readObjectField(
 	}, nil
 }
 
+// convert map values to the proper primitive type based on schema.Elem
+func mapValuesToPrimitive(k string, m map[string]interface{}, schema *Schema) error {
+	elemType, err := getValueType(k, schema)
+	if err != nil {
+		return err
+	}
+
+	switch elemType {
+	case TypeInt, TypeFloat, TypeBool:
+		for k, v := range m {
+			vs, ok := v.(string)
+			if !ok {
+				continue
+			}
+
+			v, err := stringToPrimitive(vs, false, &Schema{Type: elemType})
+			if err != nil {
+				return err
+			}
+
+			m[k] = v
+		}
+	}
+	return nil
+}
+
 func stringToPrimitive(
 	value string, computed bool, schema *Schema) (interface{}, error) {
 	var returnVal interface{}
@@ -229,6 +283,9 @@ func stringToPrimitive(
 	case TypeBool:
 		if value == "" {
 			returnVal = false
+			break
+		}
+		if computed {
 			break
 		}
 

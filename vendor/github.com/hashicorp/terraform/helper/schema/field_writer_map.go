@@ -29,6 +29,29 @@ func (w *MapFieldWriter) Map() map[string]string {
 	return w.result
 }
 
+func (w *MapFieldWriter) unsafeWriteField(addr string, value string) {
+	w.lock.Lock()
+	defer w.lock.Unlock()
+	if w.result == nil {
+		w.result = make(map[string]string)
+	}
+
+	w.result[addr] = value
+}
+
+// clearTree clears a field and any sub-fields of the given address out of the
+// map. This should be used to reset some kind of complex structures (namely
+// sets) before writing to make sure that any conflicting data is removed (for
+// example, if the set was previously written to the writer's layer).
+func (w *MapFieldWriter) clearTree(addr []string) {
+	prefix := strings.Join(addr, ".") + "."
+	for k := range w.result {
+		if strings.HasPrefix(k, prefix) {
+			delete(w.result, k)
+		}
+	}
+}
+
 func (w *MapFieldWriter) WriteField(addr []string, value interface{}) error {
 	w.lock.Lock()
 	defer w.lock.Unlock()
@@ -105,6 +128,14 @@ func (w *MapFieldWriter) setList(
 		return fmt.Errorf("%s: %s", k, err)
 	}
 
+	// Wipe the set from the current writer prior to writing if it exists.
+	// Multiple writes to the same layer is a lot safer for lists than sets due
+	// to the fact that indexes are always deterministic and the length will
+	// always be updated with the current length on the last write, but making
+	// sure we have a clean namespace removes any chance for edge cases to pop up
+	// and ensures that the last write to the set is the correct value.
+	w.clearTree(addr)
+
 	// Set the entire list.
 	var err error
 	for i, elem := range vs {
@@ -152,6 +183,10 @@ func (w *MapFieldWriter) setMap(
 		vs[mk.String()] = mv.Interface()
 	}
 
+	// Wipe this address tree. The contents of the map should always reflect the
+	// last write made to it.
+	w.clearTree(addr)
+
 	// Remove the pure key since we're setting the full map value
 	delete(w.result, k)
 
@@ -165,7 +200,7 @@ func (w *MapFieldWriter) setMap(
 	}
 
 	// Set the count
-	w.result[k+".#"] = strconv.Itoa(len(vs))
+	w.result[k+".%"] = strconv.Itoa(len(vs))
 
 	return nil
 }
@@ -207,7 +242,8 @@ func (w *MapFieldWriter) setPrimitive(
 	k := strings.Join(addr, ".")
 
 	if v == nil {
-		delete(w.result, k)
+		// The empty string here means the value is removed.
+		w.result[k] = ""
 		return nil
 	}
 
@@ -276,7 +312,7 @@ func (w *MapFieldWriter) setSet(
 		// not the `value` directly is because this forces all types
 		// to become []interface{} (generic) instead of []string, which
 		// most hash functions are expecting.
-		s := &Set{F: schema.Set}
+		s := schema.ZeroValue().(*Set)
 		tempR := &MapFieldReader{
 			Map:    BasicMapReader(tempW.Map()),
 			Schema: tempSchemaMap,
@@ -297,9 +333,15 @@ func (w *MapFieldWriter) setSet(
 		value = s
 	}
 
+	// Clear any keys that match the set address first. This is necessary because
+	// it's always possible and sometimes may be necessary to write to a certain
+	// writer layer more than once with different set data each time, which will
+	// lead to different keys being inserted, which can lead to determinism
+	// problems when the old data isn't wiped first.
+	w.clearTree(addr)
+
 	for code, elem := range value.(*Set).m {
-		codeStr := strconv.FormatInt(int64(code), 10)
-		if err := w.set(append(addrCopy, codeStr), elem); err != nil {
+		if err := w.set(append(addrCopy, code), elem); err != nil {
 			return err
 		}
 	}

@@ -1,5 +1,7 @@
 # HCL
 
+[![GoDoc](https://godoc.org/github.com/hashicorp/hcl?status.png)](https://godoc.org/github.com/hashicorp/hcl) [![Build Status](https://travis-ci.org/hashicorp/hcl.svg?branch=master)](https://travis-ci.org/hashicorp/hcl)
+
 HCL (HashiCorp Configuration Language) is a configuration language built
 by HashiCorp. The goal of HCL is to build a structured configuration language
 that is both human and machine friendly for use with command-line tools, but
@@ -27,7 +29,7 @@ and some people wanted machine-friendly languages.
 JSON fits a nice balance in this, but is fairly verbose and most
 importantly doesn't support comments. With YAML, we found that beginners
 had a really hard time determining what the actual structure was, and
-ended up guessing more than not whether to use a hyphen, colon, etc.
+ended up guessing more often than not whether to use a hyphen, colon, etc.
 in order to represent some configuration key.
 
 Full programming languages such as Ruby enable complex behavior
@@ -46,14 +48,14 @@ and JSON as the interoperability layer.
 
 ## Syntax
 
-The complete grammar
-[can be found here](https://github.com/hashicorp/hcl/blob/master/hcl/parse.y),
-if you're more comfortable reading specifics, but a high-level overview
-of the syntax and grammar are listed here.
+For a complete grammar, please see the parser itself. A high-level overview
+of the syntax and grammar is listed here.
 
   * Single line comments start with `#` or `//`
 
-  * Multi-line comments are wrapped in `/*` and `*/`
+  * Multi-line comments are wrapped in `/*` and `*/`. Nested block comments
+    are not allowed. A multi-line comment (also known as a block comment)
+    terminates at the first `*/` found.
 
   * Values are assigned with the syntax `key = value` (whitespace doesn't
     matter). The value can be any primitive: a string, number, boolean,
@@ -62,6 +64,16 @@ of the syntax and grammar are listed here.
   * Strings are double-quoted and can contain any UTF-8 characters.
     Example: `"Hello, World"`
 
+  * Multi-line strings start with `<<EOF` at the end of a line, and end
+    with `EOF` on its own line ([here documents](https://en.wikipedia.org/wiki/Here_document)).
+    Any text may be used in place of `EOF`. Example:
+```
+<<FOO
+hello
+world
+FOO
+```
+
   * Numbers are assumed to be base 10. If you prefix a number with 0x,
     it is treated as a hexadecimal. If it is prefixed with 0, it is
     treated as an octal. Numbers can be in scientific notation: "1e10".
@@ -69,9 +81,20 @@ of the syntax and grammar are listed here.
   * Boolean values: `true`, `false`
 
   * Arrays can be made by wrapping it in `[]`. Example:
-    `["foo", "bar", 42]`. Arrays can contain primitives
-    and other arrays, but cannot contain objects. Objects must
-    use the block syntax shown below.
+    `["foo", "bar", 42]`. Arrays can contain primitives,
+    other arrays, and objects. As an alternative, lists
+    of objects can be created with repeated blocks, using
+    this structure:
+
+    ```hcl
+    service {
+        key = "value"
+    }
+
+    service {
+        key = "value"
+    }
+    ```
 
 Objects and nested objects are created using the structure shown below:
 
@@ -80,3 +103,23 @@ variable "ami" {
     description = "the AMI to use"
 }
 ```
+This would be equivalent to the following json:
+``` json
+{
+  "variable": {
+      "ami": {
+          "description": "the AMI to use"
+        }
+    }
+}
+```
+
+## Thanks
+
+Thanks to:
+
+  * [@vstakhov](https://github.com/vstakhov) - The original libucl parser
+    and syntax that HCL was based off of.
+
+  * [@fatih](https://github.com/fatih) - The rewritten HCL parser
+    in pure Go (no goyacc) and support for a printer.

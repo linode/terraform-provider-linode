@@ -32,6 +32,16 @@ func Merge(c1, c2 *Config) (*Config, error) {
 		c.Atlas = c2.Atlas
 	}
 
+	// Merge the Terraform configuration
+	if c1.Terraform != nil {
+		c.Terraform = c1.Terraform
+		if c2.Terraform != nil {
+			c.Terraform.Merge(c2.Terraform)
+		}
+	} else {
+		c.Terraform = c2.Terraform
+	}
+
 	// NOTE: Everything below is pretty gross. Due to the lack of generics
 	// in Go, there is some hoop-jumping involved to make this merging a
 	// little more test-friendly and less repetitive. Ironically, making it
@@ -125,6 +135,17 @@ func Merge(c1, c2 *Config) (*Config, error) {
 		for i, v := range mresult {
 			c.Variables[i] = v.(*Variable)
 		}
+	}
+
+	// Local Values
+	// These are simpler than the other config elements because they are just
+	// flat values and so no deep merging is required.
+	if localsCount := len(c1.Locals) + len(c2.Locals); localsCount != 0 {
+		// Explicit length check above because we want c.Locals to remain
+		// nil if the result would be empty.
+		c.Locals = make([]*Local, 0, len(c1.Locals)+len(c2.Locals))
+		c.Locals = append(c.Locals, c1.Locals...)
+		c.Locals = append(c.Locals, c2.Locals...)
 	}
 
 	return c, nil
