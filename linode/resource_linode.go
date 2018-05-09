@@ -2,9 +2,11 @@ package linode
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	golinode "github.com/chiefy/go-linode"
@@ -34,7 +36,7 @@ var (
 	kernelList        []*golinode.LinodeKernel
 	kernelListMap     map[string]*golinode.LinodeKernel
 	regionList        []*golinode.Region
-	regionListMap     map[string]*golinode.LinodeRegion
+	regionListMap     map[string]*golinode.Region
 	typeList          []*golinode.LinodeType
 	typeListMap       map[string]*golinode.LinodeType
 	latestKernelStrip *regexp.Regexp
@@ -137,7 +139,7 @@ func resourceLinodeLinode() *schema.Resource {
 				Description:   "The public keys to be used for accessing the root account via ssh.",
 				Required:      true,
 				ForceNew:      true,
-				StateFunc:     ssh_key_state,
+				StateFunc:     sshKeyState,
 				PromoteSingle: true,
 			},
 			"root_password": &schema.Schema{
@@ -145,7 +147,7 @@ func resourceLinodeLinode() *schema.Resource {
 				Description: "The password that will be initialially assigned to the 'root' user account.",
 				Required:    true,
 				ForceNew:    true,
-				StateFunc:   root_password_state,
+				StateFunc:   rootPasswordState,
 			},
 			"helper_distro": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -185,7 +187,7 @@ func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool,
 		return false, fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
 	}
 
-	instance, err := client.GetInstance(int(id))
+	_, err = client.GetInstance(int(id))
 	if err != nil {
 		return false, fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
 	}
@@ -432,16 +434,12 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	var ok bool
+	rebootInstance := false
+
 	if d.HasChange("type") {
-		if ok, err = client.ResizeInstance(instance.ID, d.Get("type").(string)); err != nil {
+		err = changeLinodeSize(client, instance, d)
+		if err != nil {
 			return err
-		}
-		if !ok {
-			return fmt.Errorf("Failed resizing linode %d because %s", instance.ID, err)
-		}
-		if err = waitForInstanceStatus(client, instance.ID, InstanceOffline, WaitTimeout); err != nil {
-			return fmt.Errorf("Failed while waiting for linode %d to finish resizing because %s", instance.ID, err)
 		}
 	}
 
@@ -458,6 +456,7 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		d.SetPartial("private_networking")
 		d.Set("private_ip_address", resp.Address)
 		d.SetPartial("private_ip_address")
+		rebootInstance = true
 	}
 
 	configs, err := client.ListInstanceConfigs(int(id), nil)
@@ -465,26 +464,47 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to fetch the config for linode %d because %s", id, err)
 	}
 	if len(configs) != 1 {
-		return fmt.Errorf("Linode %d has an incorrect number of configs %d, this plugin can only handle 1", id, len(configResp.LinodeConfigs))
+		return fmt.Errorf("Linode %d has an incorrect number of configs %d, this plugin can only handle 1", id, len(configs))
 	}
-	config := configs[0]
-	config.(InstanceConfigUpdateOptions)
-	if err = update(client, config, d); err != nil {
-		return fmt.Errorf("Failed to update Linode %d config because %s", id, err)
+	config := configs[0].GetUpdateOptions()
+	updateConfig := false
+	if d.HasChange("helper_distro") {
+		updateConfig = true
+		config.Helpers.Distro = d.Get("helper_distro").(bool)
 	}
-
-	if d.Get("helper_network").(bool) {
-		_, err = client.RebootInstance(int(id), 0)
-		if err != nil {
-			return fmt.Errorf("Failed to reboot linode %s because %s", d.Id(), err)
-		}
-		err = waitForJobsToComplete(client, int(id))
-		if err != nil {
-			return fmt.Errorf("Failed while waiting for linode %s to finish rebooting because %s", d.Id(), err)
-		}
+	if d.HasChange("helper_network") {
+		updateConfig = true
+		config.Helpers.Network = d.Get("helper_network").(bool)
+	}
+	if d.HasChange("kernel") {
+		updateConfig = true
+		config.Kernel = d.Get("kernel").(string)
 	}
 
-	return resourceLinodeLinodeRead(d, meta)
+	if updateConfig {
+		_, err := client.UpdateInstanceConfig(instance.ID, configs[0].ID, config)
+		if err != nil {
+			return fmt.Errorf("Failed to update Linode %d config because %s", instance.ID, err)
+		}
+		d.SetPartial("helper_distro")
+		d.SetPartial("helper_network")
+		d.SetPartial("kernel")
+
+		rebootInstance = true
+	}
+
+	if rebootInstance {
+		_, err = client.RebootInstance(instance.ID, configs[0].ID)
+		if err != nil {
+			return fmt.Errorf("Failed to reboot Linode instance %d because %s", instance.ID, err)
+		}
+		err = waitForEventComplete(client, int(id), "linode_reboot", WaitTimeout)
+		if err != nil {
+			return fmt.Errorf("Failed while waiting for Linode instance %d to finish rebooting because %s", instance.ID, err)
+		}
+	}
+
+	return nil // resourceLinodeLinodeRead(d, meta)
 }
 
 func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error {
@@ -501,14 +521,14 @@ func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 // getKernel gets the kernel from the id of the kernel
-func getKernel(client *golinode.Client, kernelID string) (golinode.LinodeKernel, error) {
-	if KernelList == nil {
+func getKernel(client *golinode.Client, kernelID string) (*golinode.LinodeKernel, error) {
+	if kernelList == nil {
 		if err := getKernelList(client); err != nil {
 			return nil, err
 		}
 	}
 
-	if t, ok := KernelListMap[kernelID]; ok {
+	if t, ok := kernelListMap[kernelID]; ok {
 		return t, nil
 	}
 	return nil, fmt.Errorf("Unabled to find Linode Kernel %s", kernelID)
@@ -523,7 +543,7 @@ func getKernelList(client *golinode.Client) error {
 			return err
 		}
 
-		for t := range kernelList {
+		for _, t := range kernelList {
 			kernelListMap[t.ID] = t
 		}
 	}
@@ -532,14 +552,14 @@ func getKernelList(client *golinode.Client) error {
 }
 
 // getRegion gets the region from the id of the region
-func getRegion(client *golinode.Client, regionID string) (golinode.Region, error) {
-	if RegionList == nil {
+func getRegion(client *golinode.Client, regionID string) (*golinode.Region, error) {
+	if regionList == nil {
 		if err := getRegionList(client); err != nil {
 			return nil, err
 		}
 	}
 
-	if t, ok := RegionListMap[regionID]; ok {
+	if t, ok := regionListMap[regionID]; ok {
 		return t, nil
 	}
 	return nil, fmt.Errorf("Unabled to find Linode Region %s", regionID)
@@ -549,11 +569,12 @@ func getRegion(client *golinode.Client, regionID string) (golinode.Region, error
 // requests required as it is unlikely that the available regions will change during a single terraform run.
 func getRegionList(client *golinode.Client) error {
 	if regionList == nil {
+		var err error
 		if regionList, err = client.ListRegions(nil); err != nil {
 			return err
 		}
 
-		for t := range regionList {
+		for _, t := range regionList {
 			regionListMap[t.ID] = t
 		}
 	}
@@ -562,7 +583,7 @@ func getRegionList(client *golinode.Client) error {
 }
 
 // getType gets the amount of ram from the plan id
-func getType(client *golinode.Client, typeID string) (golinode.LinodeType, error) {
+func getType(client *golinode.Client, typeID string) (*golinode.LinodeType, error) {
 	if typeList == nil {
 		if err := getTypeList(client); err != nil {
 			return nil, err
@@ -580,13 +601,14 @@ func getType(client *golinode.Client, typeID string) (golinode.LinodeType, error
 // the plans will change during a single terraform run.
 func getTypeList(client *golinode.Client) error {
 	if typeList == nil {
+		var err error
 		typeList, err = client.ListTypes(nil)
 
 		if err != nil {
 			return err
 		}
 
-		for t := range types {
+		for _, t := range typeList {
 			typeListMap[t.ID] = t
 		}
 	}
@@ -595,18 +617,14 @@ func getTypeList(client *golinode.Client) error {
 }
 
 // getTotalDiskSize returns the number of disks and their total size.
-func getTotalDiskSize(client *golinode.Client, linodeID int) (int, error) {
-	var totalDiskSize int
-	diskList, err := client.Disk.List(linodeID, -1)
+func getTotalDiskSize(client *golinode.Client, linodeID int) (totalDiskSize int, err error) {
+	disks, err := client.ListInstanceDisks(linodeID, nil)
 	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
-	totalDiskSize = 0
-	disks := diskList.Disks
-	for i := range disks {
-		// Calculate Total Disk Size
-		totalDiskSize = totalDiskSize + disks[i].Size
+	for _, disk := range disks {
+		totalDiskSize += disk.Size
 	}
 
 	return totalDiskSize, nil
@@ -614,55 +632,34 @@ func getTotalDiskSize(client *golinode.Client, linodeID int) (int, error) {
 
 // getBiggestDisk returns the ID and Size of the largest disk attached to the Linode
 func getBiggestDisk(client *golinode.Client, linodeID int) (biggestDiskID int, biggestDiskSize int, err error) {
-	// Retrieve the Linode's list of disks
-	diskList, err := client.Disk.List(linodeID, -1)
+	diskFilter := "{\"+order_by\": \"size\", \"+order\": \"desc\"}"
+	disks, err := client.ListInstanceDisks(linodeID, golinode.NewListOptions(1, diskFilter))
 	if err != nil {
-		return -1, -1, err
+		return 0, 0, err
 	}
 
-	biggestDiskID = 0
-	biggestDiskSize = 0
-	disks := diskList.Disks
-	for i := range disks {
+	for _, disk := range disks {
 		// Find Biggest Disk ID & Size
-		if disks[i].Size > biggestDiskSize {
-			biggestDiskID = disks[i].DiskId
-			biggestDiskSize = disks[i].Size
+		if disk.Size > biggestDiskSize {
+			biggestDiskID = disk.ID
+			biggestDiskSize = disk.Size
 		}
 	}
 	return biggestDiskID, biggestDiskSize, nil
 }
 
-// getIps gets the ips assigned to the linode
-func getIps(client *golinode.Client, linodeId int) (publicIp string, privateIp string, err error) {
-	resp, err := client.Ip.List(linodeId, -1)
-	if err != nil {
-		return "", "", err
-	}
-	ips := resp.FullIPAddresses
-	for i := range ips {
-		if ips[i].IsPublic == 1 {
-			publicIp = ips[i].IPAddress
-		} else {
-			privateIp = ips[i].IPAddress
-		}
-	}
-
-	return publicIp, privateIp, nil
-}
-
 // ssh_key_state hashes a string passed in as an interface
-func ssh_key_state(val interface{}) string {
-	return hash_string(strings.join(val.([]string), "\n"))
+func sshKeyState(val interface{}) string {
+	return hashString(strings.Join(val.([]string), "\n"))
 }
 
 // root_password_state hashes a string passed in as an interface
-func root_password_state(val interface{}) string {
-	return hash_string(val.(string))
+func rootPasswordState(val interface{}) string {
+	return hashString(val.(string))
 }
 
 // hash_string hashes a string
-func hash_string(key string) string {
+func hashString(key string) string {
 	hash := sha3.Sum512([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
@@ -683,85 +680,96 @@ func waitForInstanceStatus(client *golinode.Client, linodeID int, status string,
 		}
 
 		time.Sleep(1 * time.Second)
-		if time.Since(start) > timeoutSeconds*time.Second {
-			return fmt.Errorf("Linode %d didn't reach '%s' status in %d seconds", linodeId, status, timeoutSeconds)
+		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
+			return fmt.Errorf("Linode %d didn't reach '%s' status in %d seconds", linodeID, status, timeoutSeconds)
+		}
+	}
+}
+
+// waitForInstanceStatus waits for the Linode instance to reach the desired state
+// before returning. It will timeout with an error after timeoutSeconds.
+func waitForEventComplete(client *golinode.Client, linodeID int, action string, timeoutSeconds int) error {
+	start := time.Now()
+	for {
+		filter, err := json.Marshal(map[string]interface{}{
+			"entity": map[string]interface{}{
+				"id":   linodeID,
+				"type": "linode",
+			},
+			"action":    action,
+			"+order_by": "created",
+			"+order":    "desc",
+		})
+
+		listOptions := golinode.NewListOptions(0, string(filter))
+		events, err := client.ListEvents(listOptions)
+		if err != nil {
+			return err
+		}
+
+		// If there are events for this instance + action, inspect them
+		if len(events) > 0 {
+			if events[0].Status == "failed" {
+				return fmt.Errorf("Linode %d action %s failed", linodeID, action)
+			}
+			if events[0].Status == "finished" {
+				return nil
+			}
+		}
+		// otherwise, there are no events. Either pushed out of the list
+		// or they haven't been spawned.  @TODO filter by > created date
+		time.Sleep(1 * time.Second)
+		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
+			return fmt.Errorf("Did not find 'finish' status of Linode %d action '%s' within %d seconds", linodeID, action, timeoutSeconds)
 		}
 	}
 }
 
 // changeLinodeSize resizes the current linode
-func changeLinodeSize(client *golinode.Client, linode golinode.Instance, d *schema.ResourceData) error {
-	var newPlanID int
+func changeLinodeSize(client *golinode.Client, instance *golinode.Instance, d *schema.ResourceData) error {
 	var waitMinutes int
 
-	// Get the Linode Plan Size
-	sizeID, err := getSizeId(client, d.Get("size").(int))
-	if err != nil {
-		return fmt.Errorf("Failed to find a Plan with %d RAM because %s", d.Get("size"), err)
-	}
-	newPlanID = sizeId
+	newSize, ok := typeListMap[d.Get("type").(string)]
 
-	// Check if we can safely resize, with Disk Size considered
-	currentDiskSize, err := getTotalDiskSize(client, linode.LinodeId)
-	newDiskSize, err := getPlanDiskSize(client, newPlanID)
-	if currentDiskSize > newDiskSize {
-		return fmt.Errorf("Cannot resize linode %d because currentDisk(%d GB) is bigger than newDisk(%d GB)", linode.LinodeId, currentDiskSize, newDiskSize)
+	if !ok {
+		return fmt.Errorf("Failed to find the Linode type %s", d.Get("type").(string))
 	}
 
-	// Resize the Linode
-	client.Linode.Resize(linode.LinodeId, newPlanID)
-	// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
-	waitMinutes = ((linode.TotalHD / 1024) * 3)
-	// Wait for the Resize Operation to Complete
-	err = waitForInstanceStatus(client, linode.LinodeId, "offline", WAIT_TIMEOUT)
-	if err != nil {
-		return fmt.Errorf("Failed to wait for linode %d resize because %s", linode.LinodeId, err)
+	//biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
+
+	//currentDiskSize, err := getTotalDiskSize(client, instance.ID)
+
+	if ok, err := client.ResizeInstance(instance.ID, newSize.ID); err != nil || !ok {
+		return fmt.Errorf("Failed resizing linode %d because %s", instance.ID, err)
 	}
 
-	if d.Get("disk_expansion").(bool) {
+	if err := waitForInstanceStatus(client, instance.ID, InstanceOffline, WaitTimeout); err != nil {
+		return fmt.Errorf("Failed while waiting for linode %d to finish resizing because %s", instance.ID, err)
+	}
+
+	if d.Get("disk_expansion").(bool) && instance.Specs.Disk > newSize.Disk {
 		// Determine the biggestDisk ID and Size
-		biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, linode.LinodeId)
+		biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
 		if err != nil {
 			return err
 		}
 		// Calculate new size, with other disks taken into consideration
-		expandedDiskSize := (newDiskSize - (currentDiskSize - biggestDiskSize))
+		expandedDiskSize := biggestDiskSize + newSize.Disk - instance.Specs.Disk
 
 		// Resize the Disk
-		client.Disk.Resize(linode.LinodeId, biggestDiskID, expandedDiskSize)
+		client.ResizeInstanceDisk(instance.ID, biggestDiskID, expandedDiskSize)
+		// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
+		waitMinutes = ((instance.Specs.Disk / 1024) * 3)
+
 		// Wait for the Disk Resize Operation to Complete
-		err = waitForJobsToCompleteWaitMinutes(client, linode.LinodeId, waitMinutes)
+		err = waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
 		if err != nil {
-			return fmt.Errorf("Failed to wait for resize of Disk %d for Linode %d because %s", biggestDiskID, linode.LinodeId, err)
+			return fmt.Errorf("Failed to wait for resize of Disk %d for Linode %d because %s", biggestDiskID, instance.ID, err)
 		}
 	}
-
-	// Boot up the resized Linode
-	client.Linode.Boot(linode.LinodeId, 0)
 
 	// Return the new Linode size
-	d.SetPartial("size")
-	return nil
-}
-
-// changeLinodeConfig changes Config level settings. This is things like the various helpers
-func changeLinodeConfig(client *golinode.Client, config golinode.InstanceConfig, d *schema.ResourceData) error {
-	updates := make(map[string]string)
-	if d.HasChange("helper_distro") {
-		updates["helper_distro"] = boolToString(d.Get("helper_distro").(bool))
-	}
-	if d.HasChange("manage_private_ip_automatically") {
-		updates["helper_network"] = boolToString(d.Get("manage_private_ip_automatically").(bool))
-	}
-
-	if len(updates) > 0 {
-		_, err := client.Config.Update(config.ConfigId, config.LinodeId, config.KernelId, updates)
-		if err != nil {
-			return fmt.Errorf("Failed to update the linode's config because %s", err)
-		}
-	}
-	d.SetPartial("helper_distro")
-	d.SetPartial("manage_private_ip_automatically")
+	d.SetPartial("type")
 	return nil
 }
 

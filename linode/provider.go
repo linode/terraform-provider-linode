@@ -28,11 +28,15 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	client := golinode.NewClient(d.Get("key").(string), nil)
-
-	_, err := client.ListKernels()
+	client, err := golinode.NewClient(d.Get("key").(*string), nil)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to the linode api because %s", err)
+		return nil, fmt.Errorf("Failed to connect to the Linode API because %s", err)
+	}
+
+	// Ping the API for an empty response to verify the configuration works
+	_, err = client.ListTypes(golinode.NewListOptions(100, ""))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to connect to the Linode API because %s", err)
 	}
 
 	return client, nil

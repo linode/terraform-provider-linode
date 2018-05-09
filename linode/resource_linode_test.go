@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/taoh/linodego"
 )
 
 func TestAccLinodeLinodeBasic(t *testing.T) {
@@ -51,7 +50,7 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 }
 
 /* @TODO I'm not getting the id of the instance. why not?
-func getId(instance linodego.Linode) string {
+func getId(instance golinode.Linode) string {
 	fmt.Printf("What did you do? %+v\n", instance)
 	return fmt.Sprintf("%d", instance.LinodeId)
 }
@@ -176,7 +175,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 	t.Parallel()
 
-	var instance golinode.LinodeInstance
+	var instance golinode.Instance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -201,7 +200,7 @@ func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 }
 
 func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*linodego.Client)
+	client := testAccProvider.Meta().(*golinode.Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_linode" {
@@ -213,7 +212,7 @@ func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
 			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
 		}
 
-		linodes, err := client.Linode.List(id)
+		instance, err := client.GetInstance(id)
 
 		if err != nil {
 			return fmt.Errorf("Failed to get Linode list with %d id", id)
@@ -227,7 +226,7 @@ func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeLinodeExists(n string, instance *linodego.Linode) resource.TestCheckFunc {
+func testAccCheckLinodeLinodeExists(n string, instance *golinode.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -238,20 +237,16 @@ func testAccCheckLinodeLinodeExists(n string, instance *linodego.Linode) resourc
 			return fmt.Errorf("No Linode id set")
 		}
 
-		client := testAccProvider.Meta().(*linodego.Client)
+		client := testAccProvider.Meta().(*golinode.Client)
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
 		}
 
-		linodes, err := client.Linode.List(id)
+		*instance, err = client.GetInstance(id)
 		if err != nil {
-			return err
-		} else if len(linodes.Linodes) != 1 {
-			return fmt.Errorf("Unexpected linode list response for %d: %+v", id, linodes)
+			return fmt.Errorf("Unexpected linode list response for %d: %s", id, err)
 		}
-
-		*instance = linodes.Linodes[0]
 
 		return nil
 	}
@@ -267,7 +262,7 @@ func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.Test
 			return fmt.Errorf("No Linode id set")
 		}
 
-		client := testAccProvider.Meta().(*linodego.Client)
+		client := testAccProvider.Meta().(*golinode.Client)
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
