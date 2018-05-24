@@ -227,10 +227,10 @@
 			"revisionTime": "2018-05-03T10:44:00Z"
 		},
 		{
-			"checksumSHA1": "MuHDKOfd5b8N8VzCARXPmTY2rsk=",
-			"path": "github.com/chiefy/go-linode",
-			"revision": "2689f85e2e0a02d169022cbf3b11138908671305",
-			"revisionTime": "2018-05-09T12:07:18Z"
+			"checksumSHA1": "GUnXfIb8ed5rdj4KJwsMFdr2JuE=",
+			"path": "github.com/chiefy/linodego",
+			"revision": "27d4d2aaff00dbe7fc33dddb82368c72965ebf06",
+			"revisionTime": "2018-05-24T01:34:47Z"
 		},
 		{
 			"checksumSHA1": "/5cvgU+J4l7EhMXTK76KaCAfOuU=",
@@ -771,12 +771,6 @@
 			"path": "github.com/sirupsen/logrus",
 			"revision": "d682213848ed68c0a260ca37d6dd5ace8423f5ba",
 			"revisionTime": "2017-12-05T20:32:29Z"
-		},
-		{
-			"checksumSHA1": "3gWSHA7UUXH+jPEFSNXfvKj0jpw=",
-			"path": "github.com/taoh/linodego",
-			"revision": "92aa6f0b0e3d687190a44670c24c7c5acc8f8912",
-			"revisionTime": "2017-11-09T08:51:10Z"
 		},
 		{
 			"checksumSHA1": "qgMa75aMGbkFY0jIqqqgVnCUoNA=",
