@@ -3,6 +3,184 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "archive/tar",
+			"revision": ""
+		},
+		{
+			"path": "archive/zip",
+			"revision": ""
+		},
+		{
+			"path": "bufio",
+			"revision": ""
+		},
+		{
+			"path": "bytes",
+			"revision": ""
+		},
+		{
+			"path": "compress/bzip2",
+			"revision": ""
+		},
+		{
+			"path": "compress/flate",
+			"revision": ""
+		},
+		{
+			"path": "compress/gzip",
+			"revision": ""
+		},
+		{
+			"path": "compress/zlib",
+			"revision": ""
+		},
+		{
+			"path": "container/list",
+			"revision": ""
+		},
+		{
+			"path": "context",
+			"revision": ""
+		},
+		{
+			"path": "crypto",
+			"revision": ""
+		},
+		{
+			"path": "crypto/aes",
+			"revision": ""
+		},
+		{
+			"path": "crypto/cipher",
+			"revision": ""
+		},
+		{
+			"path": "crypto/des",
+			"revision": ""
+		},
+		{
+			"path": "crypto/dsa",
+			"revision": ""
+		},
+		{
+			"path": "crypto/ecdsa",
+			"revision": ""
+		},
+		{
+			"path": "crypto/elliptic",
+			"revision": ""
+		},
+		{
+			"path": "crypto/hmac",
+			"revision": ""
+		},
+		{
+			"path": "crypto/md5",
+			"revision": ""
+		},
+		{
+			"path": "crypto/rand",
+			"revision": ""
+		},
+		{
+			"path": "crypto/rc4",
+			"revision": ""
+		},
+		{
+			"path": "crypto/rsa",
+			"revision": ""
+		},
+		{
+			"path": "crypto/sha1",
+			"revision": ""
+		},
+		{
+			"path": "crypto/sha256",
+			"revision": ""
+		},
+		{
+			"path": "crypto/sha512",
+			"revision": ""
+		},
+		{
+			"path": "crypto/subtle",
+			"revision": ""
+		},
+		{
+			"path": "crypto/tls",
+			"revision": ""
+		},
+		{
+			"path": "crypto/x509",
+			"revision": ""
+		},
+		{
+			"path": "crypto/x509/pkix",
+			"revision": ""
+		},
+		{
+			"path": "database/sql/driver",
+			"revision": ""
+		},
+		{
+			"path": "encoding",
+			"revision": ""
+		},
+		{
+			"path": "encoding/asn1",
+			"revision": ""
+		},
+		{
+			"path": "encoding/base64",
+			"revision": ""
+		},
+		{
+			"path": "encoding/binary",
+			"revision": ""
+		},
+		{
+			"path": "encoding/csv",
+			"revision": ""
+		},
+		{
+			"path": "encoding/gob",
+			"revision": ""
+		},
+		{
+			"path": "encoding/hex",
+			"revision": ""
+		},
+		{
+			"path": "encoding/json",
+			"revision": ""
+		},
+		{
+			"path": "encoding/pem",
+			"revision": ""
+		},
+		{
+			"path": "encoding/xml",
+			"revision": ""
+		},
+		{
+			"path": "errors",
+			"revision": ""
+		},
+		{
+			"path": "flag",
+			"revision": ""
+		},
+		{
+			"path": "fmt",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "jc/kgOJNacek94rHKuFgIsjWwZw=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "ea8897e79973357ba785ac2533559a6297e83c44",
+			"revisionTime": "2018-05-23T07:42:43Z"
+		},
+		{
 			"checksumSHA1": "jQh1fnoKPKMURvKkpdRjN695nAQ=",
 			"origin": "github.com/hashicorp/terraform/vendor/github.com/agext/levenshtein",
 			"path": "github.com/agext/levenshtein",
@@ -227,10 +405,10 @@
 			"revisionTime": "2018-05-03T10:44:00Z"
 		},
 		{
-			"checksumSHA1": "GUnXfIb8ed5rdj4KJwsMFdr2JuE=",
+			"checksumSHA1": "RzrcPkkoSBx5eTvsANVI+m2XAIc=",
 			"path": "github.com/chiefy/linodego",
-			"revision": "27d4d2aaff00dbe7fc33dddb82368c72965ebf06",
-			"revisionTime": "2018-05-24T01:34:47Z"
+			"revision": "704d0ed2fdfdc42dc8e28eb827ea3556ed88cc69",
+			"revisionTime": "2018-05-24T12:49:08Z"
 		},
 		{
 			"checksumSHA1": "/5cvgU+J4l7EhMXTK76KaCAfOuU=",
@@ -238,6 +416,10 @@
 			"path": "github.com/davecgh/go-spew/spew",
 			"revision": "0cc9e050ecd4a46ba6448758c2edc0b29bef5695",
 			"revisionTime": "2018-05-03T10:44:00Z"
+		},
+		{
+			"path": "github.com/displague/terraform-provider-linode/linode",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "1K+xrZ1PBez190iGt5OnMtGdih4=",
@@ -767,10 +949,18 @@
 			"revisionTime": "2018-05-03T10:44:00Z"
 		},
 		{
-			"checksumSHA1": "ySaT8G3I3y4MmnoXOYAAX0rC+p8=",
+			"checksumSHA1": "5fRTP+zI9WQqNzyHbi2qarMGauQ=",
 			"path": "github.com/sirupsen/logrus",
-			"revision": "d682213848ed68c0a260ca37d6dd5ace8423f5ba",
-			"revisionTime": "2017-12-05T20:32:29Z"
+			"revision": "ea8897e79973357ba785ac2533559a6297e83c44",
+			"revisionTime": "2018-05-23T07:42:43Z"
+		},
+		{
+			"path": "github.com/terraform-providers/terraform-provider-linode",
+			"revision": ""
+		},
+		{
+			"path": "github.com/terraform-providers/terraform-provider-linode/linode",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "qgMa75aMGbkFY0jIqqqgVnCUoNA=",
@@ -948,10 +1138,10 @@
 			"revisionTime": "2018-05-03T10:44:00Z"
 		},
 		{
-			"checksumSHA1": "iNE2KX9BQzCptlQC2DdQEVmn4R4=",
+			"checksumSHA1": "LN1V2pZQwKnoDwcsgXpzG4+Vges=",
 			"path": "golang.org/x/crypto/sha3",
-			"revision": "13931e22f9e72ea58bb73048bc752b48c6d4d4ac",
-			"revisionTime": "2018-01-11T11:10:38Z"
+			"revision": "159ae71589f303f9fbfd7528413e0fe944b9c1cb",
+			"revisionTime": "2018-05-24T11:38:20Z"
 		},
 		{
 			"checksumSHA1": "ZK4HWtg3hJzayz0RRcc6qHpkums=",
@@ -961,10 +1151,10 @@
 			"revisionTime": "2018-05-03T10:44:00Z"
 		},
 		{
-			"checksumSHA1": "X1NTlfcau2XcV6WtAHF6b/DECOA=",
+			"checksumSHA1": "BGm8lKZmvJbf/YOJLeL1rw2WVjA=",
 			"path": "golang.org/x/crypto/ssh/terminal",
-			"revision": "13931e22f9e72ea58bb73048bc752b48c6d4d4ac",
-			"revisionTime": "2018-01-11T11:10:38Z"
+			"revision": "159ae71589f303f9fbfd7528413e0fe944b9c1cb",
+			"revisionTime": "2018-05-24T11:38:20Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
@@ -1037,16 +1227,16 @@
 			"revisionTime": "2018-05-03T10:44:00Z"
 		},
 		{
-			"checksumSHA1": "wCun4HkCtoCLRdvzjCUxpb9WtqM=",
+			"checksumSHA1": "fEIELu/1dDpT+M6DC9soU9+gA1Q=",
 			"path": "golang.org/x/sys/unix",
-			"revision": "2c42eef0765b9837fbdab12011af7830f55f88f0",
-			"revisionTime": "2018-01-16T19:39:04Z"
+			"revision": "e2c7578ad1a9fc1a9166e96605d4790a88030ece",
+			"revisionTime": "2018-05-24T07:26:19Z"
 		},
 		{
-			"checksumSHA1": "eQq+ZoTWPjyizS9XalhZwfGjQao=",
+			"checksumSHA1": "m5QCvoZ2KaoLTG9VWjYNonM08b8=",
 			"path": "golang.org/x/sys/windows",
-			"revision": "2c42eef0765b9837fbdab12011af7830f55f88f0",
-			"revisionTime": "2018-01-16T19:39:04Z"
+			"revision": "e2c7578ad1a9fc1a9166e96605d4790a88030ece",
+			"revisionTime": "2018-05-24T07:26:19Z"
 		},
 		{
 			"checksumSHA1": "tltivJ/uj/lqLk05IqGfCv2F/E8=",
@@ -1201,6 +1391,194 @@
 			"path": "google.golang.org/grpc/transport",
 			"revision": "0cc9e050ecd4a46ba6448758c2edc0b29bef5695",
 			"revisionTime": "2018-05-03T10:44:00Z"
+		},
+		{
+			"path": "hash",
+			"revision": ""
+		},
+		{
+			"path": "hash/crc32",
+			"revision": ""
+		},
+		{
+			"path": "hash/crc64",
+			"revision": ""
+		},
+		{
+			"path": "hash/fnv",
+			"revision": ""
+		},
+		{
+			"path": "html/template",
+			"revision": ""
+		},
+		{
+			"path": "image",
+			"revision": ""
+		},
+		{
+			"path": "image/jpeg",
+			"revision": ""
+		},
+		{
+			"path": "io",
+			"revision": ""
+		},
+		{
+			"path": "io/ioutil",
+			"revision": ""
+		},
+		{
+			"path": "log",
+			"revision": ""
+		},
+		{
+			"path": "math",
+			"revision": ""
+		},
+		{
+			"path": "math/big",
+			"revision": ""
+		},
+		{
+			"path": "math/rand",
+			"revision": ""
+		},
+		{
+			"path": "mime",
+			"revision": ""
+		},
+		{
+			"path": "mime/multipart",
+			"revision": ""
+		},
+		{
+			"path": "net",
+			"revision": ""
+		},
+		{
+			"path": "net/http",
+			"revision": ""
+		},
+		{
+			"path": "net/http/cookiejar",
+			"revision": ""
+		},
+		{
+			"path": "net/http/httptrace",
+			"revision": ""
+		},
+		{
+			"path": "net/http/httputil",
+			"revision": ""
+		},
+		{
+			"path": "net/rpc",
+			"revision": ""
+		},
+		{
+			"path": "net/textproto",
+			"revision": ""
+		},
+		{
+			"path": "net/url",
+			"revision": ""
+		},
+		{
+			"path": "os",
+			"revision": ""
+		},
+		{
+			"path": "os/exec",
+			"revision": ""
+		},
+		{
+			"path": "os/signal",
+			"revision": ""
+		},
+		{
+			"path": "os/user",
+			"revision": ""
+		},
+		{
+			"path": "path",
+			"revision": ""
+		},
+		{
+			"path": "path/filepath",
+			"revision": ""
+		},
+		{
+			"path": "reflect",
+			"revision": ""
+		},
+		{
+			"path": "regexp",
+			"revision": ""
+		},
+		{
+			"path": "runtime",
+			"revision": ""
+		},
+		{
+			"path": "runtime/debug",
+			"revision": ""
+		},
+		{
+			"path": "sort",
+			"revision": ""
+		},
+		{
+			"path": "strconv",
+			"revision": ""
+		},
+		{
+			"path": "strings",
+			"revision": ""
+		},
+		{
+			"path": "sync",
+			"revision": ""
+		},
+		{
+			"path": "sync/atomic",
+			"revision": ""
+		},
+		{
+			"path": "syscall",
+			"revision": ""
+		},
+		{
+			"path": "testing",
+			"revision": ""
+		},
+		{
+			"path": "text/tabwriter",
+			"revision": ""
+		},
+		{
+			"path": "text/template",
+			"revision": ""
+		},
+		{
+			"path": "time",
+			"revision": ""
+		},
+		{
+			"path": "unicode",
+			"revision": ""
+		},
+		{
+			"path": "unicode/utf16",
+			"revision": ""
+		},
+		{
+			"path": "unicode/utf8",
+			"revision": ""
+		},
+		{
+			"path": "unsafe",
+			"revision": ""
 		}
 	],
 	"rootPath": "github.com/terraform-providers/terraform-provider-linode"
