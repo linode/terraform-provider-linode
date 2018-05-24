@@ -191,7 +191,7 @@ func resourceLinodeLinode() *schema.Resource {
 }
 
 func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(*linodego.Client)
+	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return false, fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
@@ -205,7 +205,7 @@ func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool,
 }
 
 func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*linodego.Client)
+	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
@@ -521,7 +521,7 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*linodego.Client)
+	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Failed to parse linode id %s as int", d.Id())
@@ -556,6 +556,7 @@ func getKernelList(client *linodego.Client) error {
 			return err
 		}
 
+		kernelListMap = make(map[string]*linodego.LinodeKernel)
 		for _, t := range kernelList {
 			kernelListMap[t.ID] = t
 		}
@@ -587,6 +588,7 @@ func getRegionList(client *linodego.Client) error {
 			return err
 		}
 
+		regionListMap = make(map[string]*linodego.Region)
 		for _, t := range regionList {
 			regionListMap[t.ID] = t
 		}
@@ -620,7 +622,7 @@ func getTypeList(client *linodego.Client) error {
 		if err != nil {
 			return err
 		}
-
+		typeListMap = make(map[string]*linodego.LinodeType)
 		for _, t := range typeList {
 			typeListMap[t.ID] = t
 		}
