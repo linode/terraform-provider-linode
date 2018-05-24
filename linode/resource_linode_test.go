@@ -200,7 +200,7 @@ func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 }
 
 func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*linodego.Client)
+	client := testAccProvider.Meta().(linodego.Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_linode" {
@@ -240,7 +240,7 @@ func testAccCheckLinodeLinodeExists(n string, instance *linodego.Instance) resou
 			return fmt.Errorf("No Linode id set")
 		}
 
-		client := testAccProvider.Meta().(*linodego.Client)
+		client := testAccProvider.Meta().(linodego.Client)
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
@@ -265,7 +265,7 @@ func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.Test
 			return fmt.Errorf("No Linode id set")
 		}
 
-		client := testAccProvider.Meta().(*linodego.Client)
+		client := testAccProvider.Meta().(linodego.Client)
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
