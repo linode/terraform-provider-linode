@@ -18,7 +18,7 @@ Use the navigation to the left to read about the available data sources.
 ```hcl
 # Configure the Linode provider
 provider "linode" {
-  key = "$LINODE_API_KEY"
+  token = "$LINODE_TOKEN"
 }
 
 resource "linode_linode" "foobar" {
@@ -30,7 +30,6 @@ resource "linode_linode" "foobar" {
 
 The following keys can be used to configure the provider.
 
-* `key` - (Required) This is your [Linode APIv3 Key](https://linode.com/docs/platform/api/api-key/).
+* `token` - (Required) This is your [Linode APIv4 Token](https://developers.linode.com/api/v4#section/Personal-Access-Token).
 
-   The Linode API key can also be specified using the `LINODE_API_KEY` environment variable.
-
+   The Linode Token can also be specified using the `LINODE_TOKEN` environment variable.

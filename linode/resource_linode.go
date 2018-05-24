@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	golinode "github.com/chiefy/go-linode"
+	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
 	"golang.org/x/crypto/sha3"
 )
@@ -33,12 +33,12 @@ const (
 const WaitTimeout = 600
 
 var (
-	kernelList        []*golinode.LinodeKernel
-	kernelListMap     map[string]*golinode.LinodeKernel
-	regionList        []*golinode.Region
-	regionListMap     map[string]*golinode.Region
-	typeList          []*golinode.LinodeType
-	typeListMap       map[string]*golinode.LinodeType
+	kernelList        []*linodego.LinodeKernel
+	kernelListMap     map[string]*linodego.LinodeKernel
+	regionList        []*linodego.Region
+	regionListMap     map[string]*linodego.Region
+	typeList          []*linodego.LinodeType
+	typeListMap       map[string]*linodego.LinodeType
 	latestKernelStrip *regexp.Regexp
 )
 
@@ -65,10 +65,10 @@ func resourceLinodeLinode() *schema.Resource {
 				InputDefault: "linode/debian9",
 			},
 			"kernel": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The kernel used at boot by the Linode Config. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
-				Required:    true,
-				Default:     "linode/direct-disk",
+				Type:         schema.TypeString,
+				Description:  "The kernel used at boot by the Linode Config. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
+				Required:     true,
+				InputDefault: "linode/direct-disk",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -76,7 +76,9 @@ func resourceLinodeLinode() *schema.Resource {
 				Optional:    true,
 			},
 			"group": &schema.Schema{
-				Removed: "See 'tags'",
+				Type:     schema.TypeString,
+				Optional: true,
+				Removed:  "See 'tags'",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
@@ -92,12 +94,14 @@ func resourceLinodeLinode() *schema.Resource {
 				InputDefault: "us-east-1a",
 			},
 			"size": &schema.Schema{
-				Removed: "See 'type'",
+				Type:     schema.TypeInt,
+				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Removed:  "See 'type'",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The type of instance to be deployed, determining the price and size.",
-				Required:    true,
+				Optional:    true,
 				Default:     "g5-standard-1",
 			},
 			"status": &schema.Schema{
@@ -106,7 +110,9 @@ func resourceLinodeLinode() *schema.Resource {
 				Computed:    true,
 			},
 			"plan_storage": &schema.Schema{
-				Removed: "See 'storage'",
+				Type:     schema.TypeInt,
+				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Removed:  "See 'storage'",
 			},
 			"storage": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -114,7 +120,9 @@ func resourceLinodeLinode() *schema.Resource {
 				Computed:    true,
 			},
 			"plan_storage_utilized": &schema.Schema{
-				Removed: "See 'storage_utilized'",
+				Type:     schema.TypeInt,
+				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Removed:  "See 'storage_utilized'",
 			},
 			"storage_utilized": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -156,7 +164,9 @@ func resourceLinodeLinode() *schema.Resource {
 				Default:     true,
 			},
 			"manage_private_ip_automatically": &schema.Schema{
-				Removed: "See 'helper_network'",
+				Type:     schema.TypeBool,
+				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Removed:  "See 'helper_network'",
 			},
 			"helper_network": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -181,7 +191,7 @@ func resourceLinodeLinode() *schema.Resource {
 }
 
 func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(*golinode.Client)
+	client := meta.(*linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return false, fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
@@ -195,7 +205,7 @@ func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool,
 }
 
 func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*golinode.Client)
+	client := meta.(*linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
@@ -291,19 +301,22 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*golinode.Client)
+	client, ok := meta.(linodego.Client)
+	if !ok {
+		return fmt.Errorf("Invalid Client when creating Linode Instance")
+	}
 	d.Partial(true)
 
-	region, err := getRegion(client, d.Get("region").(string))
+	region, err := getRegion(&client, d.Get("region").(string))
 	if err != nil {
 		return fmt.Errorf("Failed to locate region %s because %s", d.Get("region").(string), err)
 	}
 
-	linodetype, err := getType(client, d.Get("type").(string))
+	linodetype, err := getType(&client, d.Get("type").(string))
 	if err != nil {
 		return fmt.Errorf("Failed to find a Linode type %s because %s", d.Get("type"), err)
 	}
-	createOpts := golinode.InstanceCreateOptions{
+	createOpts := linodego.InstanceCreateOptions{
 		Region: region.ID,
 		Type:   linodetype.ID,
 		Label:  d.Get("name").(string),
@@ -322,11 +335,11 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetPartial("group")
 
 	swapSize := 0
-	var swapDisk *golinode.InstanceDisk
+	var swapDisk *linodego.InstanceDisk
 
 	// Create the Swap Partition
 	if swapSize = d.Get("swap_size").(int); swapSize > 0 {
-		swapOpts := golinode.InstanceDiskCreateOptions{
+		swapOpts := linodego.InstanceDiskCreateOptions{
 			Filesystem: "swap",
 			Size:       swapSize,
 		}
@@ -347,7 +360,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		storageSize = instance.Specs.Disk - d.Get("swap_size").(int)
 	}
 
-	diskOpts := golinode.InstanceDiskCreateOptions{
+	diskOpts := linodego.InstanceDiskCreateOptions{
 		Filesystem: "ext4",
 		Size:       storageSize,
 	}
@@ -382,17 +395,17 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		d.SetPartial("private_ip_address")
 	}
 
-	configDevices := &golinode.InstanceConfigDeviceMap{
-		SDA: &golinode.InstanceConfigDevice{DiskID: storageDisk.ID},
+	configDevices := &linodego.InstanceConfigDeviceMap{
+		SDA: &linodego.InstanceConfigDevice{DiskID: storageDisk.ID},
 	}
 
 	if swapDisk.ID > 0 {
-		configDevices.SDB = &golinode.InstanceConfigDevice{DiskID: swapDisk.ID}
+		configDevices.SDB = &linodego.InstanceConfigDevice{DiskID: swapDisk.ID}
 	}
 
-	configOpts := golinode.InstanceConfigCreateOptions{
+	configOpts := linodego.InstanceConfigCreateOptions{
 		Kernel: d.Get("kernel").(string),
-		Helpers: &golinode.InstanceConfigHelpers{
+		Helpers: &linodego.InstanceConfigHelpers{
 			Distro:  d.Get("helper_distro").(bool),
 			Network: d.Get("helper_network").(bool),
 		},
@@ -407,7 +420,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	client.BootInstance(instance.ID, config.ID)
 
 	d.Partial(false)
-	if err = waitForInstanceStatus(client, instance.ID, InstanceRunning, WaitTimeout); err != nil {
+	if err = waitForInstanceStatus(&client, instance.ID, InstanceRunning, WaitTimeout); err != nil {
 		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot because %s", instance.ID, err)
 	}
 
@@ -415,7 +428,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*golinode.Client)
+	client := meta.(*linodego.Client)
 	d.Partial(true)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -508,10 +521,10 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*golinode.Client)
+	client := meta.(*linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse linode id %d as int", d.Id())
+		return fmt.Errorf("Failed to parse linode id %s as int", d.Id())
 	}
 	err = client.DeleteInstance(int(id))
 	if err != nil {
@@ -521,7 +534,7 @@ func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 // getKernel gets the kernel from the id of the kernel
-func getKernel(client *golinode.Client, kernelID string) (*golinode.LinodeKernel, error) {
+func getKernel(client *linodego.Client, kernelID string) (*linodego.LinodeKernel, error) {
 	if kernelList == nil {
 		if err := getKernelList(client); err != nil {
 			return nil, err
@@ -536,7 +549,7 @@ func getKernel(client *golinode.Client, kernelID string) (*golinode.LinodeKernel
 
 // getKernelList populates kernelList with the available kernels. kernelList is used to reduce the number of api
 // requests required as it is unlikely that the available kernels will change during a single terraform run.
-func getKernelList(client *golinode.Client) error {
+func getKernelList(client *linodego.Client) error {
 	var err error
 	if kernelList == nil {
 		if kernelList, err = client.ListKernels(nil); err != nil {
@@ -552,7 +565,7 @@ func getKernelList(client *golinode.Client) error {
 }
 
 // getRegion gets the region from the id of the region
-func getRegion(client *golinode.Client, regionID string) (*golinode.Region, error) {
+func getRegion(client *linodego.Client, regionID string) (*linodego.Region, error) {
 	if regionList == nil {
 		if err := getRegionList(client); err != nil {
 			return nil, err
@@ -567,7 +580,7 @@ func getRegion(client *golinode.Client, regionID string) (*golinode.Region, erro
 
 // getRegionList populates regionList with the available regions. regionList is used to reduce the number of api
 // requests required as it is unlikely that the available regions will change during a single terraform run.
-func getRegionList(client *golinode.Client) error {
+func getRegionList(client *linodego.Client) error {
 	if regionList == nil {
 		var err error
 		if regionList, err = client.ListRegions(nil); err != nil {
@@ -583,7 +596,7 @@ func getRegionList(client *golinode.Client) error {
 }
 
 // getType gets the amount of ram from the plan id
-func getType(client *golinode.Client, typeID string) (*golinode.LinodeType, error) {
+func getType(client *linodego.Client, typeID string) (*linodego.LinodeType, error) {
 	if typeList == nil {
 		if err := getTypeList(client); err != nil {
 			return nil, err
@@ -599,7 +612,7 @@ func getType(client *golinode.Client, typeID string) (*golinode.LinodeType, erro
 // getTypeList populates typeList and typeListMap. typeList is used to reduce
 //  the number of api requests required as its unlikely that
 // the plans will change during a single terraform run.
-func getTypeList(client *golinode.Client) error {
+func getTypeList(client *linodego.Client) error {
 	if typeList == nil {
 		var err error
 		typeList, err = client.ListTypes(nil)
@@ -617,7 +630,7 @@ func getTypeList(client *golinode.Client) error {
 }
 
 // getTotalDiskSize returns the number of disks and their total size.
-func getTotalDiskSize(client *golinode.Client, linodeID int) (totalDiskSize int, err error) {
+func getTotalDiskSize(client *linodego.Client, linodeID int) (totalDiskSize int, err error) {
 	disks, err := client.ListInstanceDisks(linodeID, nil)
 	if err != nil {
 		return 0, err
@@ -631,9 +644,9 @@ func getTotalDiskSize(client *golinode.Client, linodeID int) (totalDiskSize int,
 }
 
 // getBiggestDisk returns the ID and Size of the largest disk attached to the Linode
-func getBiggestDisk(client *golinode.Client, linodeID int) (biggestDiskID int, biggestDiskSize int, err error) {
+func getBiggestDisk(client *linodego.Client, linodeID int) (biggestDiskID int, biggestDiskSize int, err error) {
 	diskFilter := "{\"+order_by\": \"size\", \"+order\": \"desc\"}"
-	disks, err := client.ListInstanceDisks(linodeID, golinode.NewListOptions(1, diskFilter))
+	disks, err := client.ListInstanceDisks(linodeID, linodego.NewListOptions(1, diskFilter))
 	if err != nil {
 		return 0, 0, err
 	}
@@ -666,7 +679,7 @@ func hashString(key string) string {
 
 // waitForInstanceStatus waits for the Linode instance to reach the desired state
 // before returning. It will timeout with an error after timeoutSeconds.
-func waitForInstanceStatus(client *golinode.Client, linodeID int, status string, timeoutSeconds int) error {
+func waitForInstanceStatus(client *linodego.Client, linodeID int, status string, timeoutSeconds int) error {
 	start := time.Now()
 	for {
 		linode, err := client.GetInstance(linodeID)
@@ -688,7 +701,7 @@ func waitForInstanceStatus(client *golinode.Client, linodeID int, status string,
 
 // waitForInstanceStatus waits for the Linode instance to reach the desired state
 // before returning. It will timeout with an error after timeoutSeconds.
-func waitForEventComplete(client *golinode.Client, linodeID int, action string, timeoutSeconds int) error {
+func waitForEventComplete(client *linodego.Client, linodeID int, action string, timeoutSeconds int) error {
 	start := time.Now()
 	for {
 		filter, err := json.Marshal(map[string]interface{}{
@@ -701,7 +714,7 @@ func waitForEventComplete(client *golinode.Client, linodeID int, action string, 
 			"+order":    "desc",
 		})
 
-		listOptions := golinode.NewListOptions(0, string(filter))
+		listOptions := linodego.NewListOptions(0, string(filter))
 		events, err := client.ListEvents(listOptions)
 		if err != nil {
 			return err
@@ -726,7 +739,7 @@ func waitForEventComplete(client *golinode.Client, linodeID int, action string, 
 }
 
 // changeLinodeSize resizes the current linode
-func changeLinodeSize(client *golinode.Client, instance *golinode.Instance, d *schema.ResourceData) error {
+func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *schema.ResourceData) error {
 	var waitMinutes int
 
 	newSize, ok := typeListMap[d.Get("type").(string)]

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	golinode "github.com/chiefy/go-linode"
+	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -14,7 +14,7 @@ import (
 func TestAccLinodeLinodeBasic(t *testing.T) {
 	t.Parallel()
 
-	var instance golinode.LinodeInstance
+	var instance linodego.Instance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -31,18 +31,18 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "Ubuntu 16.04 LTS"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "linode/ubuntu-18.04"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "region", "Dallas, TX, USA"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "kernel", "Latest 64 bit"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
+					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "swap_size", "256"),
 				),
 			},
 			resource.TestStep{
 				ResourceName:  "linode_linode.foobar",
 				ImportState:   true,
-				ImportStateId: fmt.Sprintf("%d", instance.LinodeId),
+				ImportStateId: fmt.Sprintf("%d", instance.ID),
 				// ImportStateId: getId(instance),
 			},
 		},
@@ -50,7 +50,7 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 }
 
 /* @TODO I'm not getting the id of the instance. why not?
-func getId(instance golinode.Linode) string {
+func getId(instance linodego.Linode) string {
 	fmt.Printf("What did you do? %+v\n", instance)
 	return fmt.Sprintf("%d", instance.LinodeId)
 }
@@ -58,7 +58,7 @@ func getId(instance golinode.Linode) string {
 func TestAccLinodeLinodeUpdate(t *testing.T) {
 	t.Parallel()
 
-	var instance golinode.LinodeInstance
+	var instance linodego.Instance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -75,7 +75,7 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
+					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
 				),
 			},
 			resource.TestStep{
@@ -83,7 +83,7 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", fmt.Sprintf("%s_renamed", instanceName)),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "group", "integration"),
+					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "integration"),
 				),
 			},
 		},
@@ -93,7 +93,7 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 func TestAccLinodeLinodeResize(t *testing.T) {
 	t.Parallel()
 
-	var instance golinode.LinodeInstance
+	var instance linodego.Instance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -138,7 +138,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 	t.Parallel()
 
-	var instance golinode.LinodeInstance
+	var instance linodego.Instance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -155,7 +155,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "20480"),
 				),
 			},
@@ -164,7 +164,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "20480"),
 				),
 			},
@@ -175,7 +175,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 	t.Parallel()
 
-	var instance golinode.Instance
+	var instance linodego.Instance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -200,7 +200,7 @@ func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 }
 
 func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*golinode.Client)
+	client := testAccProvider.Meta().(*linodego.Client)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_linode" {
@@ -215,18 +215,21 @@ func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
 		instance, err := client.GetInstance(id)
 
 		if err != nil {
-			return fmt.Errorf("Failed to get Linode list with %d id", id)
-		} else if len(linodes.Linodes) > 0 {
-			return fmt.Errorf("Linode still exists %+v", linodes)
-		} else {
-			return nil
+			if apiErr, ok := err.(linodego.Error); ok {
+				if apiErr.Code == 404 {
+					return nil
+				}
+				return fmt.Errorf("Failed to get Linode with %d id", id)
+			}
+			return fmt.Errorf("Failed to get Linode with %d id", id)
 		}
+		return fmt.Errorf("Linode still exists %+v", instance)
 	}
 
 	return nil
 }
 
-func testAccCheckLinodeLinodeExists(n string, instance *golinode.Instance) resource.TestCheckFunc {
+func testAccCheckLinodeLinodeExists(n string, instance *linodego.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -237,13 +240,13 @@ func testAccCheckLinodeLinodeExists(n string, instance *golinode.Instance) resou
 			return fmt.Errorf("No Linode id set")
 		}
 
-		client := testAccProvider.Meta().(*golinode.Client)
+		client := testAccProvider.Meta().(*linodego.Client)
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
 		}
 
-		*instance, err = client.GetInstance(id)
+		instance, err = client.GetInstance(id)
 		if err != nil {
 			return fmt.Errorf("Unexpected linode list response for %d: %s", id, err)
 		}
@@ -262,22 +265,16 @@ func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.Test
 			return fmt.Errorf("No Linode id set")
 		}
 
-		client := testAccProvider.Meta().(*golinode.Client)
+		client := testAccProvider.Meta().(*linodego.Client)
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			panic(err)
 		}
-		_, err = client.Linode.List(id)
+		instanceIPs, err := client.GetInstanceIPAddresses(id)
 		if err != nil {
 			return err
 		}
-
-		_, privateIP, err := getIps(client, int(id))
-		if err != nil {
-			return err
-		}
-
-		if privateIP == "" {
+		if len(instanceIPs.IPv4.Private) == 0 {
 			return fmt.Errorf("Private Ip is not set")
 		}
 		return nil
@@ -288,11 +285,10 @@ func testAccCheckLinodeLinodeConfigBasic(instance string, pubkey string) string 
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s"
-	group = "testing"
-	size = 1024
-	image = "Ubuntu 16.04 LTS"
-	region = "Dallas, TX, USA"
-	kernel = "Latest 64 bit"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu-18.04"
+	region = "us-east"
+	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
@@ -303,11 +299,10 @@ func testAccCheckLinodeLinodeConfigUpdates(instance string, pubkey string) strin
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_renamed"
-	group = "integration"
-	size = 1024
-	image = "Ubuntu 16.04 LTS"
-	region = "Dallas, TX, USA"
-	kernel = "Latest 64 bit"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu-18.04"
+	region = "us-east"
+	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
@@ -318,11 +313,10 @@ func testAccCheckLinodeLinodeConfigUpsizeSmall(instance string, pubkey string) s
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s"
-	group = "integration"
-	size = 1024
-	image = "Ubuntu 16.04 LTS"
-	region = "Dallas, TX, USA"
-	kernel = "Latest 64 bit"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu-18.04"
+	region = "us-east"
+	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
@@ -333,11 +327,10 @@ func testAccCheckLinodeLinodeConfigUpsizeBigger(instance string, pubkey string) 
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_upsized"
-	group = "integration"
-	size = 2048
-	image = "Ubuntu 16.04 LTS"
-	region = "Dallas, TX, USA"
-	kernel = "Latest 64 bit"
+	type = "g6-standard-1"
+	image = "linode/ubuntu-18.04"
+	region = "us-east"
+	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
@@ -348,11 +341,10 @@ func testAccCheckLinodeLinodeConfigDownsize(instance string, pubkey string) stri
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_downsized"
-	group = "integration"
-	size = 1024
-	image = "Ubuntu 16.04 LTS"
-	region = "Dallas, TX, USA"
-	kernel = "Latest 64 bit"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu-18.04"
+	region = "us-east"
+	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
@@ -363,12 +355,11 @@ func testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instance string, pubkey stri
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s_expanded"
-	group = "integration"
-	size = 2048
+	type = "g6-standard-1"
 	disk_expansion = true
-	image = "Ubuntu 16.04 LTS"
-	region = "Dallas, TX, USA"
-	kernel = "Latest 64 bit"
+	image = "linode/ubuntu-18.04"
+	region = "us-east"
+	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
@@ -379,11 +370,10 @@ func testAccCheckLinodeLinodeConfigPrivateNetworking(instance string, pubkey str
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
 	name = "%s"
-	group = "integration"
-	size = 1024
-	image = "Ubuntu 16.04 LTS"
-	region = "Dallas, TX, USA"
-	kernel = "Latest 64 bit"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu-18.04"
+	region = "us-east"
+	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
 	private_networking = true

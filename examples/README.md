@@ -1,13 +1,13 @@
 # Linode launch and setting the Domain records at Linode.
 
-The example launches an Ubuntu 14.04, runs apt-get update and installs nginx.
+The example launches an Ubuntu 18.04 LTS, runs apt-get update and installs nginx.
 
 To run, configure your Linode provider as described in https://www.terraform.io/docs/providers/linode/index.html
 
 ## Prerequisites
 You need to export your Linode API Key as an environment variable
 
-    export LINODE_API_KEY="Put Your API Key Here" 
+    export LINODE_TOKEN="Put Your Linode Token Here" 
 
 ## Run this example using:
 

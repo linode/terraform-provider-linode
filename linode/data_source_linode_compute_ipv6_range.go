@@ -3,7 +3,7 @@ package linode
 import (
 	"fmt"
 
-	golinode "github.com/chiefy/go-linode"
+	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -26,7 +26,7 @@ func dataSourceLinodeComputeIPv6Range() *schema.Resource {
 }
 
 func dataSourceLinodeComputeIPv6RangeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*golinode.Client)
+	client := meta.(*linodego.Client)
 
 	ranges, err := client.ListIPv6Ranges(nil)
 	if err != nil {

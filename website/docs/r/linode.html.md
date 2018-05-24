@@ -20,7 +20,7 @@ The following example shows how one might use this resource to configure a Linod
 
 ```hcl
 resource "linode_linode" "web" {
-	image = "Ubuntu 14.04 LTS"
+	image = "linode/ubuntu-18.04"
 	kernel = "Latest 64 bit"
 	region = "Dallas, TX, USA"
 	size = 2048
@@ -44,13 +44,13 @@ resource "linode_linode" "web" {
 
 The following arguments are supported:
 
-* `image` - (Required) The image to use when creating the linode.  This can also be an ImageID.  *Changing `image` forces the creation of a new Linode.*
+* `image` - (Required) The image to use when creating the Linode's disks. Examples are `"linode/debian9"`, `"linode/fedora28"`, and `"linode/arch"`. *Changing `image` forces the creation of a new Linode.*
 
-* `kernel` - (Required) The kernel to start the linode with. Specify `"Latest 64-bit"` or `"Latest 32-bit"` for the most recent Linode provided kernel.
+* `kernel` - (Required) The kernel to start the linode with. Specify `"linode/latest-64bit"` or `"linode/latest-32bit""` for the most recent Linode provided kernel. "linode/direct-disk" can be used to boot the raw disk and "linode/grub2" will boot to the Grub config on the disk.
 
 * `region` - (Required) The region that the linode will be created in *Changing `region` forces the creation of a new Linode.*
 
-* `size` - (Required) The Linode plan size in terms of MB of RAM (e.g. 2048, 4096, 8192.  A plan will be chosen that matches this amount.)
+* `type` - (Required) The Linode type defines the pricing, CPU, disk, and RAM specs of the instance.  Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, etc.)
 
 * `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode.*
 

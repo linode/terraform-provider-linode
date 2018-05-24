@@ -25,7 +25,7 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("LINODE_API_KEY"); v == "" {
-		t.Fatal("LINODE_API_KEY must be set for acceptance tests")
+	if v := os.Getenv("LINODE_TOKEN"); v == "" {
+		t.Fatal("LINODE_TOKEN must be set for acceptance tests")
 	}
 }
