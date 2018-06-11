@@ -2,7 +2,7 @@ resource "linode_linode" "foobar" {
   image              = "linode/ubuntu-18.04"
   kernel             = "linode/latest-64bit"
   name               = "foobaz"
-  group              = "integration"
+  # group              = "integration"
   region             = "${var.region}"
   type               = "g6-nanode-1"
   private_networking = true

@@ -11,6 +11,9 @@ You need to export your Linode API Key as an environment variable
 
 ## Run this example using:
 
+From the examples directory,
+
     TF_LINODE_PASS=$(openssl rand -base64 32); echo "Password: $TF_LINODE_PASS"
+    terraform init -plugin-dir=../
     terraform plan -var root_password="${TF_LINODE_PASS}" -var ssh_key="$(cat ~/.ssh/id_rsa.pub)"
     terraform apply -var root_password="${TF_LINODE_PASS}" -var ssh_key="$(cat ~/.ssh/id_rsa.pub)"
