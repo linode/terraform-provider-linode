@@ -38,29 +38,29 @@ type NodeBalancerConfigsPagedResponse struct {
 	Data []*NodeBalancerConfig
 }
 
-// Endpoint gets the endpoint URL for NodeBalancerConfig
-func (NodeBalancerConfigsPagedResponse) EndpointWithID(c *Client, id int) string {
-	endpoint, err := c.NodeBalancerConfigs.EndpointWithID(id)
+// endpoint gets the endpoint URL for NodeBalancerConfig
+func (NodeBalancerConfigsPagedResponse) endpointWithID(c *Client, id int) string {
+	endpoint, err := c.NodeBalancerConfigs.endpointWithID(id)
 	if err != nil {
 		panic(err)
 	}
 	return endpoint
 }
 
-// AppendData appends NodeBalancerConfigs when processing paginated NodeBalancerConfig responses
-func (resp *NodeBalancerConfigsPagedResponse) AppendData(r *NodeBalancerConfigsPagedResponse) {
+// appendData appends NodeBalancerConfigs when processing paginated NodeBalancerConfig responses
+func (resp *NodeBalancerConfigsPagedResponse) appendData(r *NodeBalancerConfigsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of NodeBalancerConfig
-func (NodeBalancerConfigsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of NodeBalancerConfig
+func (NodeBalancerConfigsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(NodeBalancerConfigsPagedResponse{})
 }
 
 // ListNodeBalancerConfigs lists NodeBalancerConfigs
 func (c *Client) ListNodeBalancerConfigs(nodebalancerID int, opts *ListOptions) ([]*NodeBalancerConfig, error) {
 	response := NodeBalancerConfigsPagedResponse{}
-	err := c.ListHelperWithID(&response, nodebalancerID, opts)
+	err := c.listHelperWithID(&response, nodebalancerID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -77,7 +77,7 @@ func (v *NodeBalancerConfig) fixDates() *NodeBalancerConfig {
 
 // GetNodeBalancerConfig gets the template with the provided ID
 func (c *Client) GetNodeBalancerConfig(nodebalancerID int, configID int) (*NodeBalancerConfig, error) {
-	e, err := c.NodeBalancerConfigs.EndpointWithID(nodebalancerID)
+	e, err := c.NodeBalancerConfigs.endpointWithID(nodebalancerID)
 	if err != nil {
 		return nil, err
 	}

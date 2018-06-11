@@ -104,29 +104,29 @@ func (i InstanceConfig) GetUpdateOptions() InstanceConfigUpdateOptions {
 	}
 }
 
-// EndpointWithID gets the endpoint URL for InstanceConfigs of a given Instance
-func (InstanceConfigsPagedResponse) EndpointWithID(c *Client, id int) string {
-	endpoint, err := c.InstanceConfigs.EndpointWithID(id)
+// endpointWithID gets the endpoint URL for InstanceConfigs of a given Instance
+func (InstanceConfigsPagedResponse) endpointWithID(c *Client, id int) string {
+	endpoint, err := c.InstanceConfigs.endpointWithID(id)
 	if err != nil {
 		panic(err)
 	}
 	return endpoint
 }
 
-// AppendData appends InstanceConfigs when processing paginated InstanceConfig responses
-func (resp *InstanceConfigsPagedResponse) AppendData(r *InstanceConfigsPagedResponse) {
+// appendData appends InstanceConfigs when processing paginated InstanceConfig responses
+func (resp *InstanceConfigsPagedResponse) appendData(r *InstanceConfigsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of InstanceConfig
-func (InstanceConfigsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of InstanceConfig
+func (InstanceConfigsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(InstanceConfigsPagedResponse{})
 }
 
 // ListInstanceConfigs lists InstanceConfigs
 func (c *Client) ListInstanceConfigs(linodeID int, opts *ListOptions) ([]*InstanceConfig, error) {
 	response := InstanceConfigsPagedResponse{}
-	err := c.ListHelperWithID(&response, linodeID, opts)
+	err := c.listHelperWithID(&response, linodeID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -145,7 +145,7 @@ func (v *InstanceConfig) fixDates() *InstanceConfig {
 
 // GetInstanceConfig gets the template with the provided ID
 func (c *Client) GetInstanceConfig(linodeID int, configID int) (*InstanceConfig, error) {
-	e, err := c.InstanceConfigs.EndpointWithID(linodeID)
+	e, err := c.InstanceConfigs.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (c *Client) GetInstanceConfig(linodeID int, configID int) (*InstanceConfig,
 // CreateInstanceConfig creates a new InstanceConfig for the given Instance
 func (c *Client) CreateInstanceConfig(linodeID int, createOpts InstanceConfigCreateOptions) (*InstanceConfig, error) {
 	var body string
-	e, err := c.InstanceConfigs.EndpointWithID(linodeID)
+	e, err := c.InstanceConfigs.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func (c *Client) CreateInstanceConfig(linodeID int, createOpts InstanceConfigCre
 // UpdateInstanceConfig update an InstanceConfig for the given Instance
 func (c *Client) UpdateInstanceConfig(linodeID int, configID int, updateOpts InstanceConfigUpdateOptions) (*InstanceConfig, error) {
 	var body string
-	e, err := c.InstanceConfigs.EndpointWithID(linodeID)
+	e, err := c.InstanceConfigs.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +220,7 @@ func (c *Client) RenameInstanceConfig(linodeID int, configID int, label string) 
 
 // DeleteInstanceConfig deletes a Linode InstanceConfig
 func (c *Client) DeleteInstanceConfig(id int) error {
-	e, err := c.InstanceConfigs.EndpointWithID(id)
+	e, err := c.InstanceConfigs.endpointWithID(id)
 	if err != nil {
 		return err
 	}

@@ -115,8 +115,8 @@ func (r Resource) render(data interface{}) (string, error) {
 	return buf.String(), nil
 }
 
-// EndpointWithID will return the rendered endpoint string for the resource with provided id
-func (r Resource) EndpointWithID(id int) (string, error) {
+// endpointWithID will return the rendered endpoint string for the resource with provided id
+func (r Resource) endpointWithID(id int) (string, error) {
 	if !r.isTemplate {
 		return r.endpoint, nil
 	}

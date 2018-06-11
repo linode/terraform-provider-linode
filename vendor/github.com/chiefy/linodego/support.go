@@ -44,7 +44,7 @@ type TicketsPagedResponse struct {
 	Data []*Ticket
 }
 
-func (TicketsPagedResponse) Endpoint(c *Client) string {
+func (TicketsPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Tickets.Endpoint()
 	if err != nil {
 		panic(err)
@@ -52,11 +52,11 @@ func (TicketsPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-func (resp *TicketsPagedResponse) AppendData(r *TicketsPagedResponse) {
+func (resp *TicketsPagedResponse) appendData(r *TicketsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-func (TicketsPagedResponse) SetResult(r *resty.Request) {
+func (TicketsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(TicketsPagedResponse{})
 }
 
@@ -66,7 +66,7 @@ func (TicketsPagedResponse) SetResult(r *resty.Request) {
 // on the Account, with open tickets returned first.
 func (c *Client) ListTickets(opts *ListOptions) ([]*Ticket, error) {
 	response := TicketsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}

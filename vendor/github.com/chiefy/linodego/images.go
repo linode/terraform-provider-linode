@@ -37,7 +37,7 @@ type ImagesPagedResponse struct {
 	Data []*Image
 }
 
-func (ImagesPagedResponse) Endpoint(c *Client) string {
+func (ImagesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Images.Endpoint()
 	if err != nil {
 		panic(err)
@@ -45,18 +45,18 @@ func (ImagesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-func (resp *ImagesPagedResponse) AppendData(r *ImagesPagedResponse) {
+func (resp *ImagesPagedResponse) appendData(r *ImagesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-func (ImagesPagedResponse) SetResult(r *resty.Request) {
+func (ImagesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(ImagesPagedResponse{})
 }
 
 // ListImages lists Images
 func (c *Client) ListImages(opts *ListOptions) ([]*Image, error) {
 	response := ImagesPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

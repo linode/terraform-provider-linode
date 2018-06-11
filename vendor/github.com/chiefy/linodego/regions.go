@@ -18,8 +18,8 @@ type RegionsPagedResponse struct {
 	Data []*Region
 }
 
-// Endpoint gets the endpoint URL for Region
-func (RegionsPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for Region
+func (RegionsPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Regions.Endpoint()
 	if err != nil {
 		panic(err)
@@ -27,20 +27,20 @@ func (RegionsPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends Regions when processing paginated Region responses
-func (resp *RegionsPagedResponse) AppendData(r *RegionsPagedResponse) {
+// appendData appends Regions when processing paginated Region responses
+func (resp *RegionsPagedResponse) appendData(r *RegionsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of Region
-func (RegionsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of Region
+func (RegionsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(RegionsPagedResponse{})
 }
 
 // ListRegions lists Regions
 func (c *Client) ListRegions(opts *ListOptions) ([]*Region, error) {
 	response := RegionsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

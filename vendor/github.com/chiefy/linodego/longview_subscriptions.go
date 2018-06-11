@@ -22,8 +22,8 @@ type LongviewSubscriptionsPagedResponse struct {
 	Data []*LongviewSubscription
 }
 
-// Endpoint gets the endpoint URL for LongviewSubscription
-func (LongviewSubscriptionsPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for LongviewSubscription
+func (LongviewSubscriptionsPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.LongviewSubscriptions.Endpoint()
 	if err != nil {
 		panic(err)
@@ -31,20 +31,20 @@ func (LongviewSubscriptionsPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends LongviewSubscriptions when processing paginated LongviewSubscription responses
-func (resp *LongviewSubscriptionsPagedResponse) AppendData(r *LongviewSubscriptionsPagedResponse) {
+// appendData appends LongviewSubscriptions when processing paginated LongviewSubscription responses
+func (resp *LongviewSubscriptionsPagedResponse) appendData(r *LongviewSubscriptionsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of LongviewSubscription
-func (LongviewSubscriptionsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of LongviewSubscription
+func (LongviewSubscriptionsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(LongviewSubscriptionsPagedResponse{})
 }
 
 // ListLongviewSubscriptions lists LongviewSubscriptions
 func (c *Client) ListLongviewSubscriptions(opts *ListOptions) ([]*LongviewSubscription, error) {
 	response := LongviewSubscriptionsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

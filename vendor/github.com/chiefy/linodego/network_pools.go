@@ -12,8 +12,8 @@ type IPv6PoolsPagedResponse struct {
 	Data []*IPv6Range
 }
 
-// Endpoint gets the endpoint URL for IPv6Pool
-func (IPv6PoolsPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for IPv6Pool
+func (IPv6PoolsPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.IPv6Pools.Endpoint()
 	if err != nil {
 		panic(err)
@@ -21,20 +21,20 @@ func (IPv6PoolsPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends IPv6Pools when processing paginated IPv6Pool responses
-func (resp *IPv6PoolsPagedResponse) AppendData(r *IPv6PoolsPagedResponse) {
+// appendData appends IPv6Pools when processing paginated IPv6Pool responses
+func (resp *IPv6PoolsPagedResponse) appendData(r *IPv6PoolsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of IPv6Pool
-func (IPv6PoolsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of IPv6Pool
+func (IPv6PoolsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(IPv6PoolsPagedResponse{})
 }
 
 // ListIPv6Pools lists IPv6Pools
 func (c *Client) ListIPv6Pools(opts *ListOptions) ([]*IPv6Range, error) {
 	response := IPv6PoolsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}

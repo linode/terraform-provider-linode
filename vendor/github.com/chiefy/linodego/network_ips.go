@@ -12,8 +12,8 @@ type IPAddressesPagedResponse struct {
 	Data []*InstanceIP
 }
 
-// Endpoint gets the endpoint URL for IPAddress
-func (IPAddressesPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for IPAddress
+func (IPAddressesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.IPAddresses.Endpoint()
 	if err != nil {
 		panic(err)
@@ -21,20 +21,20 @@ func (IPAddressesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends IPAddresses when processing paginated InstanceIPAddress responses
-func (resp *IPAddressesPagedResponse) AppendData(r *IPAddressesPagedResponse) {
+// appendData appends IPAddresses when processing paginated InstanceIPAddress responses
+func (resp *IPAddressesPagedResponse) appendData(r *IPAddressesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of IPAddress
-func (IPAddressesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of IPAddress
+func (IPAddressesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(IPAddressesPagedResponse{})
 }
 
 // ListIPAddresses lists IPAddresses
 func (c *Client) ListIPAddresses(opts *ListOptions) ([]*InstanceIP, error) {
 	response := IPAddressesPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}

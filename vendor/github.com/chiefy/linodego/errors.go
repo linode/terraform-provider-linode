@@ -64,7 +64,7 @@ func (e APIError) Error() string {
 	for _, msg := range e.Errors {
 		x = append(x, msg.Error())
 	}
-	return strings.Join(x, "\n")
+	return strings.Join(x, "; ")
 }
 
 func (g Error) Error() string {

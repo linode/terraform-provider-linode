@@ -92,11 +92,11 @@
 
 - `/linode/stackscripts`
   - [x] `GET`
-  - [ ] `POST`
+  - [X] `POST`
 - `/linode/stackscripts/$id`
   - [x] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
+  - [X] `PUT`
+  - [X] `DELETE`
 
 ### Stats
 

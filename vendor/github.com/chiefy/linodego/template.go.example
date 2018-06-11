@@ -19,8 +19,8 @@ type TemplatesPagedResponse struct {
 	Data []*Template
 }
 
-// Endpoint gets the endpoint URL for Template
-func (TemplatesPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for Template
+func (TemplatesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Templates.Endpoint()
 	if err != nil {
 		panic(err)
@@ -28,20 +28,20 @@ func (TemplatesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends Templates when processing paginated Template responses
-func (resp *TemplatesPagedResponse) AppendData(r *TemplatesPagedResponse) {
+// appendData appends Templates when processing paginated Template responses
+func (resp *TemplatesPagedResponse) appendData(r *TemplatesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of Template
-func (TemplatesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of Template
+func (TemplatesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(TemplatesPagedResponse{})
 }
 
 // ListTemplates lists Templates
 func (c *Client) ListTemplates(opts *ListOptions) ([]*Template, error) {
 	response := TemplatesPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -70,4 +70,74 @@ func (c *Client) GetTemplate(id string) (*Template, error) {
 		return nil, err
 	}
 	return r.Result().(*Template).fixDates(), nil
+}
+
+
+// CreateTemplate creates a Template
+func (c *Client) CreateTemplate(Template *TemplateCreateOptions) (*Template, error) {
+	var body string
+	e, err := c.Templates.Endpoint()
+	if err != nil {
+		return nil, err
+	}
+
+	req := c.R().SetResult(&Template{})
+
+	if bodyData, err := json.Marshal(template); err == nil {
+		body = string(bodyData)
+	} else {
+		return nil, NewError(err)
+	}
+
+	r, err := coupleAPIErrors(req.
+		SetHeader("Content-Type", "application/json").
+		SetBody(body).
+		Post(e))
+
+	if err != nil {
+		return nil, err
+	}
+	return r.Result().(*Template).fixDates(), nil
+}
+
+// UpdateTemplate updates the Template with the specified id
+func (c *Client) UpdateTemplate(id int, updateOpts TemplateUpdateOptions) (*Template, error) {
+	var body string
+	e, err := c.Templates.Endpoint()
+	if err != nil {
+		return nil, err
+	}
+	e = fmt.Sprintf("%s/%d", e, id)
+
+	req := c.R().SetResult(&Template{})
+
+	if bodyData, err := json.Marshal(template); err == nil {
+		body = string(bodyData)
+	} else {
+		return nil, NewError(err)
+	}
+
+	r, err := coupleAPIErrors(req.
+		SetBody(body).
+		Put(e))
+
+	if err != nil {
+		return nil, err
+	}
+	return r.Result().(*Template).fixDates(), nil
+}
+
+// DeleteTemplate deletes the Template with the specified id
+func (c *Client) DeleteTemplate(id int) error {
+	e, err := c.Templates.Endpoint()
+	if err != nil {
+		return err
+	}
+	e = fmt.Sprintf("%s/%d", e, id)
+
+	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
+		return err
+	}
+
+	return nil
 }

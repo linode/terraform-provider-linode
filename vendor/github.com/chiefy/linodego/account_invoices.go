@@ -37,8 +37,8 @@ type InvoicesPagedResponse struct {
 	Data []*Invoice
 }
 
-// Endpoint gets the endpoint URL for Invoice
-func (InvoicesPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for Invoice
+func (InvoicesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Invoices.Endpoint()
 	if err != nil {
 		panic(err)
@@ -46,20 +46,20 @@ func (InvoicesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends Invoices when processing paginated Invoice responses
-func (resp *InvoicesPagedResponse) AppendData(r *InvoicesPagedResponse) {
+// appendData appends Invoices when processing paginated Invoice responses
+func (resp *InvoicesPagedResponse) appendData(r *InvoicesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of Invoice
-func (InvoicesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of Invoice
+func (InvoicesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(InvoicesPagedResponse{})
 }
 
 // ListInvoices gets a paginated list of Invoices against the Account
 func (c *Client) ListInvoices(opts *ListOptions) ([]*Invoice, error) {
 	response := InvoicesPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -103,29 +103,29 @@ type InvoiceItemsPagedResponse struct {
 	Data []*InvoiceItem
 }
 
-// EndpointWithID gets the endpoint URL for InvoiceItems associated with a specific Invoice
-func (InvoiceItemsPagedResponse) EndpointWithID(c *Client, id int) string {
-	endpoint, err := c.InvoiceItems.EndpointWithID(id)
+// endpointWithID gets the endpoint URL for InvoiceItems associated with a specific Invoice
+func (InvoiceItemsPagedResponse) endpointWithID(c *Client, id int) string {
+	endpoint, err := c.InvoiceItems.endpointWithID(id)
 	if err != nil {
 		panic(err)
 	}
 	return endpoint
 }
 
-// AppendData appends InvoiceItems when processing paginated Invoice Item responses
-func (resp *InvoiceItemsPagedResponse) AppendData(r *InvoiceItemsPagedResponse) {
+// appendData appends InvoiceItems when processing paginated Invoice Item responses
+func (resp *InvoiceItemsPagedResponse) appendData(r *InvoiceItemsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of InvoiceItems
-func (InvoiceItemsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of InvoiceItems
+func (InvoiceItemsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(InvoiceItemsPagedResponse{})
 }
 
 // ListInvoiceItems gets the invoice items associated with a specific Invoice
 func (c *Client) ListInvoiceItems(id int, opts *ListOptions) ([]*InvoiceItem, error) {
 	response := InvoiceItemsPagedResponse{}
-	err := c.ListHelperWithID(&response, id, opts)
+	err := c.listHelperWithID(&response, id, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

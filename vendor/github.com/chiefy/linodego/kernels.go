@@ -19,21 +19,21 @@ type LinodeKernel struct {
 
 // LinodeKernelsPagedResponse represents a linode kernels API response for listing
 type LinodeKernelsPagedResponse struct {
-	*PagedResponse
+	*PageOptions
 	Data []*LinodeKernel
 }
 
 // ListKernels lists linode kernels
 func (c *Client) ListKernels(opts *ListOptions) ([]*LinodeKernel, error) {
 	response := LinodeKernelsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}
 	return response.Data, nil
 }
 
-func (LinodeKernelsPagedResponse) Endpoint(c *Client) string {
+func (LinodeKernelsPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Kernels.Endpoint()
 	if err != nil {
 		panic(err)
@@ -41,11 +41,11 @@ func (LinodeKernelsPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-func (resp *LinodeKernelsPagedResponse) AppendData(r *LinodeKernelsPagedResponse) {
+func (resp *LinodeKernelsPagedResponse) appendData(r *LinodeKernelsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-func (LinodeKernelsPagedResponse) SetResult(r *resty.Request) {
+func (LinodeKernelsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(LinodeKernelsPagedResponse{})
 }
 

@@ -34,8 +34,8 @@ type VolumesPagedResponse struct {
 	Data []*Volume
 }
 
-// Endpoint gets the endpoint URL for Volume
-func (VolumesPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for Volume
+func (VolumesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Volumes.Endpoint()
 	if err != nil {
 		panic(err)
@@ -43,20 +43,20 @@ func (VolumesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends Volumes when processing paginated Volume responses
-func (resp *VolumesPagedResponse) AppendData(r *VolumesPagedResponse) {
+// appendData appends Volumes when processing paginated Volume responses
+func (resp *VolumesPagedResponse) appendData(r *VolumesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of Volume
-func (VolumesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of Volume
+func (VolumesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(VolumesPagedResponse{})
 }
 
 // ListVolumes lists Volumes
 func (c *Client) ListVolumes(opts *ListOptions) ([]*Volume, error) {
 	response := VolumesPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

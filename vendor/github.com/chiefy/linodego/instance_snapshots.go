@@ -43,29 +43,29 @@ type InstanceSnapshotsPagedResponse struct {
 	Data []*InstanceSnapshot
 }
 
-// Endpoint gets the endpoint URL for InstanceSnapshot
-func (InstanceSnapshotsPagedResponse) EndpointWithID(c *Client, id int) string {
-	endpoint, err := c.InstanceSnapshots.EndpointWithID(id)
+// endpoint gets the endpoint URL for InstanceSnapshot
+func (InstanceSnapshotsPagedResponse) endpointWithID(c *Client, id int) string {
+	endpoint, err := c.InstanceSnapshots.endpointWithID(id)
 	if err != nil {
 		panic(err)
 	}
 	return endpoint
 }
 
-// AppendData appends InstanceSnapshots when processing paginated InstanceSnapshot responses
-func (resp *InstanceSnapshotsPagedResponse) AppendData(r *InstanceSnapshotsPagedResponse) {
+// appendData appends InstanceSnapshots when processing paginated InstanceSnapshot responses
+func (resp *InstanceSnapshotsPagedResponse) appendData(r *InstanceSnapshotsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of InstanceSnapshot
-func (InstanceSnapshotsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of InstanceSnapshot
+func (InstanceSnapshotsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(InstanceSnapshotsPagedResponse{})
 }
 
 // ListInstanceSnapshots lists InstanceSnapshots
 func (c *Client) ListInstanceSnapshots(linodeID int, opts *ListOptions) ([]*InstanceSnapshot, error) {
 	response := InstanceSnapshotsPagedResponse{}
-	err := c.ListHelperWithID(&response, linodeID, opts)
+	err := c.listHelperWithID(&response, linodeID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -77,7 +77,7 @@ func (c *Client) ListInstanceSnapshots(linodeID int, opts *ListOptions) ([]*Inst
 
 // GetInstanceSnapshot gets the snapshot with the provided ID
 func (c *Client) GetInstanceSnapshot(linodeID int, snapshotID int) (*InstanceSnapshot, error) {
-	e, err := c.InstanceSnapshots.EndpointWithID(linodeID)
+	e, err := c.InstanceSnapshots.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}

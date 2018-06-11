@@ -12,29 +12,29 @@ type InstanceVolumesPagedResponse struct {
 	Data []*Volume
 }
 
-// Endpoint gets the endpoint URL for InstanceVolume
-func (InstanceVolumesPagedResponse) EndpointWithID(c *Client, id int) string {
-	endpoint, err := c.InstanceVolumes.EndpointWithID(id)
+// endpoint gets the endpoint URL for InstanceVolume
+func (InstanceVolumesPagedResponse) endpointWithID(c *Client, id int) string {
+	endpoint, err := c.InstanceVolumes.endpointWithID(id)
 	if err != nil {
 		panic(err)
 	}
 	return endpoint
 }
 
-// AppendData appends InstanceVolumes when processing paginated InstanceVolume responses
-func (resp *InstanceVolumesPagedResponse) AppendData(r *InstanceVolumesPagedResponse) {
+// appendData appends InstanceVolumes when processing paginated InstanceVolume responses
+func (resp *InstanceVolumesPagedResponse) appendData(r *InstanceVolumesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of InstanceVolume
-func (InstanceVolumesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of InstanceVolume
+func (InstanceVolumesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(InstanceVolumesPagedResponse{})
 }
 
 // ListInstanceVolumes lists InstanceVolumes
 func (c *Client) ListInstanceVolumes(linodeID int, opts *ListOptions) ([]*Volume, error) {
 	response := InstanceVolumesPagedResponse{}
-	err := c.ListHelperWithID(&response, linodeID, opts)
+	err := c.listHelperWithID(&response, linodeID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -46,7 +46,7 @@ func (c *Client) ListInstanceVolumes(linodeID int, opts *ListOptions) ([]*Volume
 
 // GetInstanceVolume gets the snapshot with the provided ID
 func (c *Client) GetInstanceVolume(linodeID int, snapshotID int) (*Volume, error) {
-	e, err := c.InstanceVolumes.EndpointWithID(linodeID)
+	e, err := c.InstanceVolumes.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}

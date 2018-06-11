@@ -1,10 +1,13 @@
 package linodego
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/go-resty/resty"
 )
@@ -20,6 +23,8 @@ const (
 	Version = "1.0.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
+	// APIPollsPerSecond how frequently to poll for new Events
+	APISecondsPerPoll = 10
 )
 
 var userAgent = fmt.Sprintf("linodego %s https://github.com/chiefy/linodego", Version)
@@ -72,6 +77,7 @@ func (c *Client) SetUserAgent(ua string) *Client {
 // R wraps resty's R method
 func (c *Client) R() *resty.Request {
 	return c.resty.R().
+		SetHeader("Content-Type", "application/json").
 		SetError(APIError{})
 }
 
@@ -136,6 +142,7 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 		nodebalancernodesName:     NewResource(&client, nodebalancernodesName, nodebalancernodesEndpoint, true, NodeBalancerNode{}, NodeBalancerNodesPagedResponse{}),
 		ticketsName:               NewResource(&client, ticketsName, ticketsEndpoint, false, Ticket{}, TicketsPagedResponse{}),
 		accountName:               NewResource(&client, accountName, accountEndpoint, false, Account{}, nil), // really?
+		eventsName:                NewResource(&client, eventsName, eventsEndpoint, false, Event{}, EventsPagedResponse{}),
 		invoicesName:              NewResource(&client, invoicesName, invoicesEndpoint, false, Invoice{}, InvoicesPagedResponse{}),
 		invoiceItemsName:          NewResource(&client, invoiceItemsName, invoiceItemsEndpoint, true, InvoiceItem{}, InvoiceItemsPagedResponse{}),
 		profileName:               NewResource(&client, profileName, profileEndpoint, false, nil, nil), // really?
@@ -169,8 +176,115 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 	client.NodeBalancerNodes = resources[nodebalancernodesName]
 	client.Tickets = resources[ticketsName]
 	client.Account = resources[accountName]
+	client.Events = resources[eventsName]
 	client.Invoices = resources[invoicesName]
 	client.Profile = resources[profileName]
 	client.Managed = resources[managedName]
 	return
+}
+
+// WaitForEventFinished waits for an entity action to reach the 'finished' state
+// before returning. It will timeout with an error after timeoutSeconds.
+func (c Client) WaitForEventFinished(id interface{}, entityType EntityType, action EventAction, minStart time.Time, timeoutSeconds int) (*Event, error) {
+	start := time.Now()
+	for {
+		filter, err := json.Marshal(map[string]interface{}{
+			// Entity is not filtered by the API
+			// Perhaps one day they will permit Entity ID/Type filtering.
+			// We'll have to verify these values manually, for now.
+			//"entity": map[string]interface{}{
+			//	"id":   fmt.Sprintf("%v", id),
+			//	"type": entityType,
+			//},
+
+			// Nor is action
+			//"action": action,
+
+			// Created is not correctly filtered by the API
+			// We'll have to verify these values manually, for now.
+			//"created": map[string]interface{}{
+			//	"+gte": minStart.Format(time.RFC3339),
+			//},
+
+			// With potentially 1000+ events coming back, we should filter on something
+			"seen": false,
+
+			// Float the latest events to page 1
+			"+order_by": "created",
+			"+order":    "desc",
+		})
+
+		// Optimistically restrict results to page 1.  We should remove this when more
+		// precise filtering options exist.
+		listOptions := NewListOptions(1, string(filter))
+		events, err := c.ListEvents(listOptions)
+		if err != nil {
+			return nil, err
+		}
+
+		log.Printf("waiting %ds for %s events since %v for %s %v", timeoutSeconds, action, minStart, entityType, id)
+
+		// If there are events for this instance + action, inspect them
+		for _, event := range events {
+			if event.Action != action {
+				continue
+			}
+			if event.Entity.Type != entityType {
+				continue
+			}
+
+			var entID string
+
+			switch event.Entity.ID.(type) {
+			case float64, float32:
+				entID = fmt.Sprintf("%.f", event.Entity.ID)
+			case int:
+				entID = strconv.Itoa(event.Entity.ID.(int))
+			default:
+				entID = fmt.Sprintf("%v", event.Entity.ID)
+			}
+
+			var findID string
+			switch id.(type) {
+			case float64, float32:
+				findID = fmt.Sprintf("%.f", id)
+			case int:
+				findID = strconv.Itoa(id.(int))
+			default:
+				findID = fmt.Sprintf("%v", id)
+			}
+
+			if entID != findID {
+				// just noise..
+				// log.Println(entID, "is not", id)
+				continue
+			} else {
+				log.Println("Found event for entity.", entID, "is", id)
+			}
+
+			if *event.Created != minStart && !event.Created.After(minStart) {
+				// Not the event we were looking for
+				log.Println(event.Created, "is not >=", minStart)
+				continue
+
+			}
+
+			if event.Status == EventFailed {
+				return nil, fmt.Errorf("%s %v action %s failed", entityType, id, action)
+			} else if event.Status == EventScheduled {
+				log.Printf("%s %v action %s is scheduled", entityType, id, action)
+			} else if event.Status == EventFinished {
+				log.Printf("%s %v action %s is finished", entityType, id, action)
+				return event, nil
+			} else {
+				log.Printf("%s %v action %s is in state %s", entityType, id, action, event.Status)
+			}
+		}
+
+		// Either pushed out of the event list or hasn't been added to the list yet
+		time.Sleep(time.Second * APISecondsPerPoll)
+		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
+			return nil, fmt.Errorf("Did not find '%s' status of %s %v action '%s' within %d seconds", EventFinished, entityType, id, action, timeoutSeconds)
+		}
+	}
 }

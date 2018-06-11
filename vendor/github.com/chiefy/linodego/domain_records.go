@@ -27,29 +27,29 @@ type DomainRecordsPagedResponse struct {
 	Data []*DomainRecord
 }
 
-// Endpoint gets the endpoint URL for InstanceConfig
-func (DomainRecordsPagedResponse) EndpointWithID(c *Client, id int) string {
-	endpoint, err := c.DomainRecords.EndpointWithID(id)
+// endpoint gets the endpoint URL for InstanceConfig
+func (DomainRecordsPagedResponse) endpointWithID(c *Client, id int) string {
+	endpoint, err := c.DomainRecords.endpointWithID(id)
 	if err != nil {
 		panic(err)
 	}
 	return endpoint
 }
 
-// AppendData appends DomainRecords when processing paginated DomainRecord responses
-func (resp *DomainRecordsPagedResponse) AppendData(r *DomainRecordsPagedResponse) {
+// appendData appends DomainRecords when processing paginated DomainRecord responses
+func (resp *DomainRecordsPagedResponse) appendData(r *DomainRecordsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of DomainRecord
-func (DomainRecordsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of DomainRecord
+func (DomainRecordsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(DomainRecordsPagedResponse{})
 }
 
 // ListDomainRecords lists DomainRecords
 func (c *Client) ListDomainRecords(opts *ListOptions) ([]*DomainRecord, error) {
 	response := DomainRecordsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}

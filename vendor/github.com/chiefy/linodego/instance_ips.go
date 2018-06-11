@@ -41,7 +41,7 @@ type IPv6Range struct {
 
 // GetInstanceIPAddresses gets the IPAddresses for a Linode instance
 func (c *Client) GetInstanceIPAddresses(linodeID int) (*InstanceIPAddressResponse, error) {
-	e, err := c.InstanceIPs.EndpointWithID(linodeID)
+	e, err := c.InstanceIPs.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (c *Client) GetInstanceIPAddresses(linodeID int) (*InstanceIPAddressRespons
 
 // GetInstanceIPAddress gets the IPAddress for a Linode instance matching a supplied IP address
 func (c *Client) GetInstanceIPAddress(linodeID int, ipaddress string) (*InstanceIP, error) {
-	e, err := c.InstanceIPs.EndpointWithID(linodeID)
+	e, err := c.InstanceIPs.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (c *Client) GetInstanceIPAddress(linodeID int, ipaddress string) (*Instance
 // AddInstanceIPAddress adds a public or private IP to a Linode instance
 func (c *Client) AddInstanceIPAddress(linodeID int, public bool) (*InstanceIP, error) {
 	var body string
-	e, err := c.InstanceIPs.EndpointWithID(linodeID)
+	e, err := c.InstanceIPs.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}

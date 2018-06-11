@@ -34,8 +34,8 @@ type NotificationsPagedResponse struct {
 	Data []*Notification
 }
 
-// Endpoint gets the endpoint URL for Notification
-func (NotificationsPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for Notification
+func (NotificationsPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Notifications.Endpoint()
 	if err != nil {
 		panic(err)
@@ -43,13 +43,13 @@ func (NotificationsPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends Notifications when processing paginated Notification responses
-func (resp *NotificationsPagedResponse) AppendData(r *NotificationsPagedResponse) {
+// appendData appends Notifications when processing paginated Notification responses
+func (resp *NotificationsPagedResponse) appendData(r *NotificationsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of Notifications
-func (NotificationsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of Notifications
+func (NotificationsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(NotificationsPagedResponse{})
 }
 
@@ -60,7 +60,7 @@ func (NotificationsPagedResponse) SetResult(r *resty.Request) {
 // to the Ticket will dismiss the Notification.
 func (c *Client) ListNotifications(opts *ListOptions) ([]*Notification, error) {
 	response := NotificationsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

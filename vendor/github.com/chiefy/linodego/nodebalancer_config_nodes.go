@@ -23,29 +23,29 @@ type NodeBalancerNodesPagedResponse struct {
 	Data []*NodeBalancerNode
 }
 
-// Endpoint gets the endpoint URL for NodeBalancerNode
-func (NodeBalancerNodesPagedResponse) EndpointWithID(c *Client, id int) string {
-	endpoint, err := c.NodeBalancerNodes.EndpointWithID(id)
+// endpoint gets the endpoint URL for NodeBalancerNode
+func (NodeBalancerNodesPagedResponse) endpointWithID(c *Client, id int) string {
+	endpoint, err := c.NodeBalancerNodes.endpointWithID(id)
 	if err != nil {
 		panic(err)
 	}
 	return endpoint
 }
 
-// AppendData appends NodeBalancerNodes when processing paginated NodeBalancerNode responses
-func (resp *NodeBalancerNodesPagedResponse) AppendData(r *NodeBalancerNodesPagedResponse) {
+// appendData appends NodeBalancerNodes when processing paginated NodeBalancerNode responses
+func (resp *NodeBalancerNodesPagedResponse) appendData(r *NodeBalancerNodesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of NodeBalancerNode
-func (NodeBalancerNodesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of NodeBalancerNode
+func (NodeBalancerNodesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(NodeBalancerNodesPagedResponse{})
 }
 
 // ListNodeBalancerNodes lists NodeBalancerNodes
 func (c *Client) ListNodeBalancerNodes(nodebalancerID int, configID int, opts *ListOptions) ([]*NodeBalancerNode, error) {
 	response := NodeBalancerNodesPagedResponse{}
-	err := c.ListHelperWithID(&response, nodebalancerID, opts)
+	err := c.listHelperWithID(&response, nodebalancerID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -62,7 +62,7 @@ func (v *NodeBalancerNode) fixDates() *NodeBalancerNode {
 
 // GetNodeBalancerNode gets the template with the provided ID
 func (c *Client) GetNodeBalancerNode(nodebalancerID int, configID int, nodeID int) (*NodeBalancerNode, error) {
-	e, err := c.NodeBalancerConfigs.EndpointWithID(nodebalancerID)
+	e, err := c.NodeBalancerConfigs.endpointWithID(nodebalancerID)
 	if err != nil {
 		return nil, err
 	}

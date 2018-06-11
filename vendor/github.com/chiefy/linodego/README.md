@@ -7,8 +7,8 @@ Go client for [Linode REST v4 API](https://developers.linode.com/v4/introduction
 
 ## Installation
 
-```
-$ go get -u github.com/chiefy/linodego
+```sh
+go get -u github.com/chiefy/linodego
 ```
 
 ## API Support
@@ -63,6 +63,7 @@ func main() {
 ```
 
 ### Pagination
+
 #### Auto-Pagination Requests
 
 ```go
@@ -89,6 +90,7 @@ stackscripts, err := linodego.ListStackscripts(opts)
 ```
 
 ### Error Handling
+
 #### Getting Single Entities
 
 ```go
@@ -122,9 +124,7 @@ linodes, err := linodego.ListLinodes(NewListOptions(9999, ""))
 When performing a `POST` or `PUT` request, multiple field related errors will be returned as a single error, currently like:
 
 ```go
-// err.Error() == "[400] [field1] the problem reported by the API
-// [field2] the problem reported by the API
-// [field3] the problem reported by the API"
+// err.Error() == "[400] [field1] foo problem; [field2] bar problem; [field3] baz problem"
 ```
 
 ## Discussion / Help

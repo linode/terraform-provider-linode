@@ -28,7 +28,7 @@ type NodeBalancersPagedResponse struct {
 	Data []*NodeBalancer
 }
 
-func (NodeBalancersPagedResponse) Endpoint(c *Client) string {
+func (NodeBalancersPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.NodeBalancers.Endpoint()
 	if err != nil {
 		panic(err)
@@ -36,18 +36,18 @@ func (NodeBalancersPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-func (resp *NodeBalancersPagedResponse) AppendData(r *NodeBalancersPagedResponse) {
+func (resp *NodeBalancersPagedResponse) appendData(r *NodeBalancersPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-func (NodeBalancersPagedResponse) SetResult(r *resty.Request) {
+func (NodeBalancersPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(NodeBalancersPagedResponse{})
 }
 
 // ListNodeBalancers lists NodeBalancers
 func (c *Client) ListNodeBalancers(opts *ListOptions) ([]*NodeBalancer, error) {
 	response := NodeBalancersPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}

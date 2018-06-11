@@ -12,8 +12,8 @@ type IPv6RangesPagedResponse struct {
 	Data []*IPv6Range
 }
 
-// Endpoint gets the endpoint URL for IPv6Range
-func (IPv6RangesPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for IPv6Range
+func (IPv6RangesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.IPv6Ranges.Endpoint()
 	if err != nil {
 		panic(err)
@@ -21,20 +21,20 @@ func (IPv6RangesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends IPv6Ranges when processing paginated IPv6Range responses
-func (resp *IPv6RangesPagedResponse) AppendData(r *IPv6RangesPagedResponse) {
+// appendData appends IPv6Ranges when processing paginated IPv6Range responses
+func (resp *IPv6RangesPagedResponse) appendData(r *IPv6RangesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of IPv6Range
-func (IPv6RangesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of IPv6Range
+func (IPv6RangesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(IPv6RangesPagedResponse{})
 }
 
 // ListIPv6Ranges lists IPv6Ranges
 func (c *Client) ListIPv6Ranges(opts *ListOptions) ([]*IPv6Range, error) {
 	response := IPv6RangesPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -42,7 +42,7 @@ type LinodeTypesPagedResponse struct {
 	Data []*LinodeType
 }
 
-func (LinodeTypesPagedResponse) Endpoint(c *Client) string {
+func (LinodeTypesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Types.Endpoint()
 	if err != nil {
 		panic(err)
@@ -50,18 +50,18 @@ func (LinodeTypesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-func (resp *LinodeTypesPagedResponse) AppendData(r *LinodeTypesPagedResponse) {
+func (resp *LinodeTypesPagedResponse) appendData(r *LinodeTypesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-func (LinodeTypesPagedResponse) SetResult(r *resty.Request) {
+func (LinodeTypesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(LinodeTypesPagedResponse{})
 }
 
 // ListTypes lists linode types
 func (c *Client) ListTypes(opts *ListOptions) ([]*LinodeType, error) {
 	response := LinodeTypesPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	if err != nil {
 		return nil, err
 	}

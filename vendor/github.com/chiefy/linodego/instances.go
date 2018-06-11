@@ -110,8 +110,8 @@ type InstancesPagedResponse struct {
 	Data []*Instance
 }
 
-// Endpoint gets the endpoint URL for Instance
-func (InstancesPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for Instance
+func (InstancesPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.Instances.Endpoint()
 	if err != nil {
 		panic(err)
@@ -119,13 +119,13 @@ func (InstancesPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends Instances when processing paginated Instance responses
-func (resp *InstancesPagedResponse) AppendData(r *InstancesPagedResponse) {
+// appendData appends Instances when processing paginated Instance responses
+func (resp *InstancesPagedResponse) appendData(r *InstancesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of Instance
-func (InstancesPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of Instance
+func (InstancesPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(InstancesPagedResponse{})
 }
 

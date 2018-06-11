@@ -19,8 +19,8 @@ type LongviewClientsPagedResponse struct {
 	Data []*LongviewClient
 }
 
-// Endpoint gets the endpoint URL for LongviewClient
-func (LongviewClientsPagedResponse) Endpoint(c *Client) string {
+// endpoint gets the endpoint URL for LongviewClient
+func (LongviewClientsPagedResponse) endpoint(c *Client) string {
 	endpoint, err := c.LongviewClients.Endpoint()
 	if err != nil {
 		panic(err)
@@ -28,20 +28,20 @@ func (LongviewClientsPagedResponse) Endpoint(c *Client) string {
 	return endpoint
 }
 
-// AppendData appends LongviewClients when processing paginated LongviewClient responses
-func (resp *LongviewClientsPagedResponse) AppendData(r *LongviewClientsPagedResponse) {
+// appendData appends LongviewClients when processing paginated LongviewClient responses
+func (resp *LongviewClientsPagedResponse) appendData(r *LongviewClientsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// SetResult sets the Resty response type of LongviewClient
-func (LongviewClientsPagedResponse) SetResult(r *resty.Request) {
+// setResult sets the Resty response type of LongviewClient
+func (LongviewClientsPagedResponse) setResult(r *resty.Request) {
 	r.SetResult(LongviewClientsPagedResponse{})
 }
 
 // ListLongviewClients lists LongviewClients
 func (c *Client) ListLongviewClients(opts *ListOptions) ([]*LongviewClient, error) {
 	response := LongviewClientsPagedResponse{}
-	err := c.ListHelper(&response, opts)
+	err := c.listHelper(&response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
