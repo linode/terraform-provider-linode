@@ -1,5 +1,5 @@
 resource "linode_linode" "foobar" {
-  image              = "linode/ubuntu-18.04"
+  image              = "linode/ubuntu18.04"
   kernel             = "linode/latest-64bit"
   name               = "foobaz"
   # group              = "integration"

@@ -153,6 +153,16 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 	client.resty = restyClient
 	client.resources = resources
 
+	// Wether or not we will enable Resty debugging output
+	if envDebug, apiOk := os.LookupEnv("LINODE_DEBUG"); apiOk {
+		if apiDebug, err := strconv.Atoi(envDebug); err == nil {
+			log.Println("LINODE_DEBUG being set to", apiDebug > 0)
+			client.SetDebug(apiDebug > 0)
+		} else {
+			log.Println("LINODE_DEBUG should be an integer, 0 or 1")
+		}
+	}
+
 	client.Images = resources[imagesName]
 	client.StackScripts = resources[stackscriptsName]
 	client.Instances = resources[instancesName]

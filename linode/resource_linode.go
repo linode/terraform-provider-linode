@@ -423,20 +423,30 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	configOpts := linodego.InstanceConfigCreateOptions{
-		Kernel: d.Get("kernel").(string),
+		Label:      fmt.Sprintf("linode%d-config", instance.ID),
+		Kernel:     d.Get("kernel").(string),
+		RootDevice: "/dev/sda",
+		RunLevel:   "default",
+		VirtMode:   "paravirt",
 		Helpers: &linodego.InstanceConfigHelpers{
 			Distro:  d.Get("helper_distro").(bool),
 			Network: d.Get("helper_network").(bool),
 		},
-		Devices:    configDevices,
-		RootDevice: "sda",
+		Devices: configDevices,
 	}
 
 	config, err := client.CreateInstanceConfig(instance.ID, configOpts)
+	if err != nil {
+		return fmt.Errorf("Failed to create Linode instance %d config because %s", instance.ID, err)
+	}
+
 	d.SetPartial("helper_network")
 	d.SetPartial("helper_distro")
 
-	client.BootInstance(instance.ID, config.ID)
+	booted, err := client.BootInstance(instance.ID, config.ID)
+	if !booted {
+		return fmt.Errorf("Failed to boot Linode instance %d because %s", instance.ID, err)
+	}
 
 	d.Partial(false)
 	if err = waitForInstanceStatus(&client, instance.ID, InstanceRunning, WaitTimeout); err != nil {

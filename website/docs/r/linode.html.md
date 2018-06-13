@@ -20,7 +20,7 @@ The following example shows how one might use this resource to configure a Linod
 
 ```hcl
 resource "linode_linode" "web" {
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	kernel = "Latest 64 bit"
 	region = "Dallas, TX, USA"
 	size = 2048

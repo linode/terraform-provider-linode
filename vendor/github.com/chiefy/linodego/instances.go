@@ -276,7 +276,6 @@ func (c *Client) BootInstance(id int, configID int) (bool, error) {
 
 	e = fmt.Sprintf("%s/%d/boot", e, id)
 	r, err := coupleAPIErrors(c.R().
-		SetHeader("Content-Type", "application/json").
 		SetBody(bodyStr).
 		Post(e))
 
@@ -301,7 +300,6 @@ func (c *Client) CloneInstance(id int, options *InstanceCloneOptions) (*Instance
 	}
 
 	r, err := coupleAPIErrors(req.
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
 
@@ -324,7 +322,6 @@ func (c *Client) RebootInstance(id int, configID int) (bool, error) {
 	e = fmt.Sprintf("%s/%d/reboot", e, id)
 
 	r, err := coupleAPIErrors(c.R().
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
 
@@ -367,7 +364,6 @@ func (c *Client) RebuildInstance(id int, opts *RebuildInstanceOptions) (*Instanc
 	}
 	e = fmt.Sprintf("%s/%d/rebuild", e, id)
 	r, err := coupleAPIErrors(c.R().
-		SetHeader("Content-Type", "application/json").
 		SetBody(b).
 		SetResult(&Instance{}).
 		Post(e))
@@ -388,7 +384,6 @@ func (c *Client) ResizeInstance(id int, linodeType string) (bool, error) {
 	e = fmt.Sprintf("%s/%d/resize", e, id)
 
 	r, err := coupleAPIErrors(c.R().
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
 

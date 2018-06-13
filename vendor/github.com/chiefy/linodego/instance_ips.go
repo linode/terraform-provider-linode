@@ -79,7 +79,7 @@ func (c *Client) AddInstanceIPAddress(linodeID int, public bool) (*InstanceIP, e
 	instanceipRequest := struct {
 		Type   string `json:"type"`
 		Public bool   `json:"public"`
-	}{"ipv4", true}
+	}{"ipv4", public}
 
 	if bodyData, err := json.Marshal(instanceipRequest); err == nil {
 		body = string(bodyData)

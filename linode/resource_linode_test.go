@@ -32,7 +32,7 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "linode/ubuntu-18.04"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "region", "Dallas, TX, USA"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "kernel", "Latest 64 bit"),
 					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
@@ -286,7 +286,7 @@ func testAccCheckLinodeLinodeConfigBasic(instance string, pubkey string) string 
 resource "linode_linode" "foobar" {
 	name = "%s"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	region = "us-east"
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
@@ -300,7 +300,7 @@ func testAccCheckLinodeLinodeConfigUpdates(instance string, pubkey string) strin
 resource "linode_linode" "foobar" {
 	name = "%s_renamed"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	region = "us-east"
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
@@ -314,7 +314,7 @@ func testAccCheckLinodeLinodeConfigUpsizeSmall(instance string, pubkey string) s
 resource "linode_linode" "foobar" {
 	name = "%s"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	region = "us-east"
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
@@ -328,7 +328,7 @@ func testAccCheckLinodeLinodeConfigUpsizeBigger(instance string, pubkey string) 
 resource "linode_linode" "foobar" {
 	name = "%s_upsized"
 	type = "g6-standard-1"
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	region = "us-east"
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
@@ -342,7 +342,7 @@ func testAccCheckLinodeLinodeConfigDownsize(instance string, pubkey string) stri
 resource "linode_linode" "foobar" {
 	name = "%s_downsized"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	region = "us-east"
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
@@ -357,7 +357,7 @@ resource "linode_linode" "foobar" {
 	name = "%s_expanded"
 	type = "g6-standard-1"
 	disk_expansion = true
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	region = "us-east"
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
@@ -371,7 +371,7 @@ func testAccCheckLinodeLinodeConfigPrivateNetworking(instance string, pubkey str
 resource "linode_linode" "foobar" {
 	name = "%s"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu-18.04"
+	image = "linode/ubuntu18.04"
 	region = "us-east"
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
