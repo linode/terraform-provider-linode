@@ -380,10 +380,16 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 
 		diskOpts.RootPass = d.Get("root_password").(string)
 
-		if sshKeys, ok := d.GetOk("ssh_authorized_keys"); ok {
-			diskOpts.AuthorizedKeys = sshKeys.([]string)
+		if sshKeys, ok := d.GetOk("ssh_key"); ok {
+			if sshKeysArr, ok := sshKeys.([]interface{}); ok {
+				diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
+				for k, v := range sshKeys.([]interface{}) {
+					if val, ok := v.(string); ok {
+						diskOpts.AuthorizedKeys[k] = val
+					}
+				}
+			}
 		}
-
 	}
 
 	storageDisk, err := client.CreateInstanceDisk(instance.ID, diskOpts)
@@ -398,7 +404,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 
 	d.SetPartial("image")
 	d.SetPartial("root_password")
-	d.SetPartial("ssh_authorized_keys")
+	d.SetPartial("ssh_key")
 
 	if err != nil {
 		return fmt.Errorf("Failed to create Linode instance %d disk because %s", instance.ID, err)
@@ -423,11 +429,11 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	configOpts := linodego.InstanceConfigCreateOptions{
-		Label:      fmt.Sprintf("linode%d-config", instance.ID),
-		Kernel:     d.Get("kernel").(string),
-		RootDevice: "/dev/sda",
-		RunLevel:   "default",
-		VirtMode:   "paravirt",
+		Label:  fmt.Sprintf("linode%d-config", instance.ID),
+		Kernel: d.Get("kernel").(string),
+		// RootDevice: "/dev/sda",
+		// RunLevel:   "default",
+		// VirtMode:   "paravirt",
 		Helpers: &linodego.InstanceConfigHelpers{
 			Distro:  d.Get("helper_distro").(bool),
 			Network: d.Get("helper_network").(bool),
@@ -692,17 +698,17 @@ func getBiggestDisk(client *linodego.Client, linodeID int) (biggestDiskID int, b
 	return biggestDiskID, biggestDiskSize, nil
 }
 
-// ssh_key_state hashes a string passed in as an interface
+// sshKeyState hashes a string passed in as an interface
 func sshKeyState(val interface{}) string {
 	return hashString(strings.Join(val.([]string), "\n"))
 }
 
-// root_password_state hashes a string passed in as an interface
+// rootPasswordState hashes a string passed in as an interface
 func rootPasswordState(val interface{}) string {
 	return hashString(val.(string))
 }
 
-// hash_string hashes a string
+// hashString hashes a string
 func hashString(key string) string {
 	hash := sha3.Sum512([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])

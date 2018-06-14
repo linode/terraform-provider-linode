@@ -56,7 +56,7 @@ The following arguments are supported:
 
 * `root_password` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode.*
 
-  A `root_password` is required by Linode APIv3. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
+  A `root_password` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
 
 - - -
 
