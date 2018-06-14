@@ -46,7 +46,7 @@ type InstanceDiskCreateOptions struct {
 // InstanceDiskUpdateOptions are InstanceDisk settings that can be used in updates
 type InstanceDiskUpdateOptions struct {
 	Label    string `json:"label"`
-	ReadOnly bool   `json:"read_only,omitempty"`
+	ReadOnly bool   `json:"read_only"`
 }
 
 // endpointWithID gets the endpoint URL for InstanceDisks of a given Instance
@@ -123,7 +123,6 @@ func (c *Client) CreateInstanceDisk(linodeID int, createOpts InstanceDiskCreateO
 	}
 
 	r, err := coupleAPIErrors(req.
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
 
@@ -152,7 +151,6 @@ func (c *Client) UpdateInstanceDisk(linodeID int, diskID int, updateOpts Instanc
 	}
 
 	r, err := coupleAPIErrors(req.
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Put(e))
 
@@ -189,7 +187,6 @@ func (c *Client) ResizeInstanceDisk(linodeID int, diskID int, size int) (*Instan
 	}
 
 	r, err := coupleAPIErrors(req.
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
 
@@ -199,12 +196,13 @@ func (c *Client) ResizeInstanceDisk(linodeID int, diskID int, size int) (*Instan
 	return r.Result().(*InstanceDisk).fixDates(), nil
 }
 
-// DeleteInstanceDisk deletes a Linode InstanceDisk
-func (c *Client) DeleteInstanceDisk(id int) error {
-	e, err := c.InstanceDisks.endpointWithID(id)
+// DeleteInstanceDisk deletes a Linode Instance Disk
+func (c *Client) DeleteInstanceDisk(linodeID int, diskID int) error {
+	e, err := c.InstanceDisks.endpointWithID(linodeID)
 	if err != nil {
 		return err
 	}
+	e = fmt.Sprintf("%s/%d", e, diskID)
 
 	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
 		return err

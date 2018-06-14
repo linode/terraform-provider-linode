@@ -261,7 +261,7 @@ func (c *Client) BootInstance(id int, configID int) (bool, error) {
 	bodyStr := ""
 
 	if configID != 0 {
-		bodyMap := map[string]string{"config_id": string(configID)}
+		bodyMap := map[string]int{"config_id": configID}
 		bodyJSON, err := json.Marshal(bodyMap)
 		if err != nil {
 			return false, NewError(err)

@@ -195,6 +195,7 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 
 // WaitForEventFinished waits for an entity action to reach the 'finished' state
 // before returning. It will timeout with an error after timeoutSeconds.
+// If the event indicates a failure both the failed event and the error will be returned.
 func (c Client) WaitForEventFinished(id interface{}, entityType EntityType, action EventAction, minStart time.Time, timeoutSeconds int) (*Event, error) {
 	start := time.Now()
 	for {
@@ -280,15 +281,14 @@ func (c Client) WaitForEventFinished(id interface{}, entityType EntityType, acti
 			}
 
 			if event.Status == EventFailed {
-				return nil, fmt.Errorf("%s %v action %s failed", entityType, id, action)
+				return event, fmt.Errorf("%s %v action %s failed", entityType, id, action)
 			} else if event.Status == EventScheduled {
 				log.Printf("%s %v action %s is scheduled", entityType, id, action)
 			} else if event.Status == EventFinished {
 				log.Printf("%s %v action %s is finished", entityType, id, action)
 				return event, nil
-			} else {
-				log.Printf("%s %v action %s is in state %s", entityType, id, action, event.Status)
 			}
+			log.Printf("%s %v action %s is in state %s", entityType, id, action, event.Status)
 		}
 
 		// Either pushed out of the event list or hasn't been added to the list yet
