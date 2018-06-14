@@ -3,19 +3,19 @@ package linode
 import (
 	"fmt"
 
+	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/taoh/linodego"
 )
 
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"key": &schema.Schema{
+			"token": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_API_KEY", nil),
-				Description: "The api key that allows you access to your linode account",
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_TOKEN", nil),
+				Description: "The token that allows you access to your Linode account",
 			},
 		},
 
@@ -28,11 +28,16 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	client := linodego.NewClient(d.Get("key").(string), nil)
+	token, ok := d.Get("token").(string)
+	if !ok {
+		return nil, fmt.Errorf("The Linode API Token was not valid")
+	}
+	client := linodego.NewClient(&token, nil)
 
-	_, err := client.Avail.Kernels()
+	// Ping the API for an empty response to verify the configuration works
+	_, err := client.ListTypes(linodego.NewListOptions(100, ""))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to the linode api because %s", err)
+		return nil, fmt.Errorf("Failed to connect to the Linode API because %s", err)
 	}
 
 	return client, nil
