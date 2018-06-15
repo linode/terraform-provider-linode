@@ -110,23 +110,26 @@ func resourceLinodeLinode() *schema.Resource {
 				Computed:    true,
 			},
 			"plan_storage": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Type: schema.TypeInt,
+				// Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Computed: true,
 				Removed:  "See 'storage'",
 			},
 			"storage": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The total amount of disk space (MB) available to this Linode instance.",
+				Type: schema.TypeInt,
+				// Optional:    true, // @TODO seems a bug that Optional is required when Removed is set
 				Computed:    true,
+				Description: "The total amount of local disk space (MB) available to this Linode instance.",
 			},
 			"plan_storage_utilized": &schema.Schema{
 				Type:     schema.TypeInt,
-				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
-				Removed:  "See 'storage_utilized'",
+				Computed: true,
+				// Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Removed: "See 'storage_utilized'",
 			},
 			"storage_utilized": &schema.Schema{
 				Type:        schema.TypeInt,
-				Description: "The total ",
+				Description: "The total amount of local disk space (MB) utilized by this Linode instance.",
 				Computed:    true,
 			},
 			"ip_address": &schema.Schema{
@@ -182,7 +185,7 @@ func resourceLinodeLinode() *schema.Resource {
 			},
 			"swap_size": &schema.Schema{
 				Type:        schema.TypeInt,
-				Description: "Storage (MB) to dedicate to swap disk (memory) space.",
+				Description: "Storage (MB) to dedicate to local swap disk (memory) space.",
 				Optional:    true,
 				Default:     512,
 			},
@@ -250,6 +253,7 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 
 	planStorage := instance.Specs.Disk
 	d.Set("plan_storage", planStorage)
+	d.Set("storage", planStorage)
 
 	instanceDisks, err := client.ListInstanceDisks(int(id), nil)
 
@@ -270,6 +274,7 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("plan_storage_utilized", planStorageUtilized)
+	d.Set("storage_utilized", planStorageUtilized)
 
 	d.Set("disk_expansion", boolToString(d.Get("disk_expansion").(bool)))
 
@@ -463,7 +468,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*linodego.Client)
+	client := meta.(linodego.Client)
 	d.Partial(true)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -485,7 +490,7 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 	rebootInstance := false
 
 	if d.HasChange("type") {
-		err = changeLinodeSize(client, instance, d)
+		err = changeLinodeSize(&client, instance, d)
 		if err != nil {
 			return err
 		}
@@ -546,7 +551,7 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		if err != nil {
 			return fmt.Errorf("Failed to reboot Linode instance %d because %s", instance.ID, err)
 		}
-		err = waitForEventComplete(client, int(id), "linode_reboot", WaitTimeout)
+		err = waitForEventComplete(&client, int(id), "linode_reboot", WaitTimeout)
 		if err != nil {
 			return fmt.Errorf("Failed while waiting for Linode instance %d to finish rebooting because %s", instance.ID, err)
 		}
@@ -579,7 +584,7 @@ func getKernel(client *linodego.Client, kernelID string) (*linodego.LinodeKernel
 	if t, ok := kernelListMap[kernelID]; ok {
 		return t, nil
 	}
-	return nil, fmt.Errorf("Unabled to find Linode Kernel %s", kernelID)
+	return nil, fmt.Errorf("Unable to find Linode Kernel %s", kernelID)
 }
 
 // getKernelList populates kernelList with the available kernels. kernelList is used to reduce the number of api
@@ -611,7 +616,7 @@ func getRegion(client *linodego.Client, regionID string) (*linodego.Region, erro
 	if t, ok := regionListMap[regionID]; ok {
 		return t, nil
 	}
-	return nil, fmt.Errorf("Unabled to find Linode Region %s", regionID)
+	return nil, fmt.Errorf("Unable to find Linode Region %s", regionID)
 }
 
 // getRegionList populates regionList with the available regions. regionList is used to reduce the number of api
@@ -643,7 +648,7 @@ func getType(client *linodego.Client, typeID string) (*linodego.LinodeType, erro
 	if t, ok := typeListMap[typeID]; ok {
 		return t, nil
 	}
-	return nil, fmt.Errorf("Unabled to find Linode Type %s", typeID)
+	return nil, fmt.Errorf("Unable to find Linode Type %s", typeID)
 }
 
 // getTypeList populates typeList and typeListMap. typeList is used to reduce

@@ -33,8 +33,8 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "image", "linode/ubuntu18.04"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "region", "Dallas, TX, USA"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "kernel", "Latest 64 bit"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "region", "us-east"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "kernel", "linode/latest-64bit"),
 					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "swap_size", "256"),
 				),
@@ -110,8 +110,10 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "20480"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "storage", "25600"),
 				),
 			},
 			// Bump it to a 2048, but don't expand the disk
@@ -119,8 +121,10 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigUpsizeBigger(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "2048"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "20480"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-standard-2"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "storage", "25600"),
 				),
 			},
 			// Go back down to a 1024
@@ -128,7 +132,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigDownsize(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "size", "1024"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
 				),
 			},
 		},
@@ -156,7 +160,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "20480"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
 				),
 			},
 			// Bump it to a 2048, and expand the disk
@@ -165,7 +169,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists("linode_linode.foobar", &instance),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-standard-1"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "20480"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
 				),
 			},
 		},
@@ -200,8 +204,10 @@ func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 }
 
 func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(linodego.Client)
-
+	client, ok := testAccProvider.Meta().(linodego.Client)
+	if !ok {
+		return fmt.Errorf("Failed to get Linode client")
+	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_linode" {
 			continue
