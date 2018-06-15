@@ -217,6 +217,7 @@ func (c *Client) UpdateInstance(id int, instance *InstanceUpdateOptions) (*Insta
 	if err != nil {
 		return nil, err
 	}
+	e = fmt.Sprintf("%s/%d", e, id)
 
 	req := c.R().SetResult(&Instance{})
 
