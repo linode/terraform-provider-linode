@@ -790,17 +790,21 @@ func waitForEventComplete(client *linodego.Client, linodeID int, action string, 
 func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *schema.ResourceData) error {
 	waitSeconds := 180
 
-	newSize, ok := typeListMap[d.Get("type").(string)]
-
+	typeID, ok := d.Get("type").(string)
 	if !ok {
-		return fmt.Errorf("Failed to find the instance type %s", d.Get("type").(string))
+		return fmt.Errorf("Unexpected value for type %v", d.Get("type"))
+	}
+
+	targetType, err := getType(client, typeID)
+	if err != nil {
+		return fmt.Errorf("Failed to find the instance type %s", typeID)
 	}
 
 	//biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
 
 	//currentDiskSize, err := getTotalDiskSize(client, instance.ID)
 
-	if ok, err := client.ResizeInstance(instance.ID, newSize.ID); err != nil || !ok {
+	if ok, err := client.ResizeInstance(instance.ID, typeID); err != nil || !ok {
 		return fmt.Errorf("Failed resizing instance %d because %s", instance.ID, err)
 	}
 
@@ -810,14 +814,14 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 		return fmt.Errorf("Failed while waiting for instance %d to finish resizing because %s", instance.ID, err)
 	}
 
-	if d.Get("disk_expansion").(bool) && instance.Specs.Disk > newSize.Disk {
+	if d.Get("disk_expansion").(bool) && instance.Specs.Disk > targetType.Disk {
 		// Determine the biggestDisk ID and Size
 		biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
 		if err != nil {
 			return err
 		}
 		// Calculate new size, with other disks taken into consideration
-		expandedDiskSize := biggestDiskSize + newSize.Disk - instance.Specs.Disk
+		expandedDiskSize := biggestDiskSize + targetType.Disk - instance.Specs.Disk
 
 		// Resize the Disk
 		client.ResizeInstanceDisk(instance.ID, biggestDiskID, expandedDiskSize)
