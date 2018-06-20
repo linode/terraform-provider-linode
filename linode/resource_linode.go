@@ -313,6 +313,8 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.Partial(true)
 
+	/**
+	// we used to translate these, now we expect the linode api ids
 	region, err := getRegion(&client, d.Get("region").(string))
 	if err != nil {
 		return fmt.Errorf("Failed to locate region %s because %s", d.Get("region").(string), err)
@@ -322,9 +324,13 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return fmt.Errorf("Failed to find a Linode type %s because %s", d.Get("type"), err)
 	}
+	**/
+
 	createOpts := linodego.InstanceCreateOptions{
-		Region: region.ID,
-		Type:   linodetype.ID,
+		// Region: region.ID,
+		// Type:   linodetype.ID,
+		Region: d.Get("region").(string),
+		Type:   d.Get("type").(string),
 		Label:  d.Get("name").(string),
 		Group:  d.Get("group").(string),
 	}
