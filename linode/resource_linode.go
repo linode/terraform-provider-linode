@@ -276,7 +276,8 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("plan_storage_utilized", planStorageUtilized)
 	d.Set("storage_utilized", planStorageUtilized)
 
-	d.Set("disk_expansion", boolToString(d.Get("disk_expansion").(bool)))
+	//diskExpansion := d.Get("disk_expansion").(bool)
+	//d.Set("disk_expansion", diskExpansion)
 
 	configs, err := client.ListInstanceConfigs(int(id), nil)
 	if err != nil {
@@ -491,6 +492,8 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		if instance, err = client.RenameInstance(instance.ID, d.Get("name").(string)); err != nil {
 			return err
 		}
+		d.Set("name", instance.Label)
+		d.SetPartial("name")
 	}
 
 	rebootInstance := false
@@ -788,8 +791,6 @@ func waitForEventComplete(client *linodego.Client, linodeID int, action string, 
 
 // changeLinodeSize resizes the current linode
 func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *schema.ResourceData) error {
-	waitSeconds := 180
-
 	typeID, ok := d.Get("type").(string)
 	if !ok {
 		return fmt.Errorf("Unexpected value for type %v", d.Get("type"))
@@ -808,7 +809,11 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 		return fmt.Errorf("Failed resizing instance %d because %s", instance.ID, err)
 	}
 
-	// waitForInstanceStatus(client, instance.ID, InstanceOffline, WaitTimeout)
+	// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
+	// This delay should be expected for both the host migration of the Linode,
+	// and the filesystem expansion
+	waitSeconds := ((instance.Specs.Disk / 1024) * 180)
+
 	event, err := client.WaitForEventFinished(instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, waitSeconds)
 	if err != nil {
 		return fmt.Errorf("Failed while waiting for instance %d to finish resizing because %s", instance.ID, err)
@@ -825,8 +830,6 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 
 		// Resize the Disk
 		client.ResizeInstanceDisk(instance.ID, biggestDiskID, expandedDiskSize)
-		// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
-		waitSeconds = ((instance.Specs.Disk / 1024) * 180)
 
 		// Wait for the Disk Resize Operation to Complete
 		// waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
@@ -837,6 +840,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 	}
 
 	// Return the new Linode size
+	d.SetPartial("disk_expansion")
 	d.SetPartial("type")
 	return nil
 }

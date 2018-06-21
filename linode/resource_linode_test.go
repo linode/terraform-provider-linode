@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccLinodeLinodeBasic(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	resName := "linode_linode.foobar"
 	//var instance linodego.Instance
@@ -52,7 +52,7 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 }
 
 func TestAccLinodeLinodeUpdate(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
@@ -86,7 +86,7 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 }
 
 func TestAccLinodeLinodeResize(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
@@ -115,7 +115,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigUpsizeBigger(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-standard-2"),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "storage_utilized", "25600"),
 					resource.TestCheckResourceAttr("linode_linode.foobar", "storage", "25600"),
@@ -134,7 +134,7 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 }
 
 func TestAccLinodeLinodeExpandDisk(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
@@ -170,7 +170,7 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 }
 
 func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
