@@ -2,48 +2,28 @@ package linode
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
 	"golang.org/x/crypto/sha3"
 )
 
-// Instance.Status values
-const (
-	InstanceBooting      = "booting"
-	InstanceRunning      = "running"
-	InstanceOffline      = "offline"
-	InstanceShuttingDown = "shutting_down"
-	InstanceRebooting    = "rebooting"
-	InstanceProvisioning = "provisioning"
-	InstanceDeleting     = "deleting"
-	InstanceMigrating    = "migrating"
-	InstanceRebuilding   = "rebuilding"
-	InstanceCloning      = "cloning"
-	InstanceRestoring    = "restoring"
-)
-
 // WaitTimeout is the default number of seconds to wait for Linode instance status changes
 const WaitTimeout = 600
 
 var (
-	kernelList        []*linodego.LinodeKernel
-	kernelListMap     map[string]*linodego.LinodeKernel
-	regionList        []*linodego.Region
-	regionListMap     map[string]*linodego.Region
-	typeList          []*linodego.LinodeType
-	typeListMap       map[string]*linodego.LinodeType
-	latestKernelStrip *regexp.Regexp
+	kernelList    []*linodego.LinodeKernel
+	kernelListMap map[string]*linodego.LinodeKernel
+	regionList    []*linodego.Region
+	regionListMap map[string]*linodego.Region
+	typeList      []*linodego.LinodeType
+	typeListMap   map[string]*linodego.LinodeType
 )
 
 func init() {
-	latestKernelStrip = regexp.MustCompile("\\s*\\(.*\\)\\s*")
 }
 
 func resourceLinodeLinode() *schema.Resource {
@@ -105,7 +85,7 @@ func resourceLinodeLinode() *schema.Resource {
 				Default:     "g5-standard-1",
 			},
 			"status": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Description: "The status of the instance, indicating the current readiness state.",
 				Computed:    true,
 			},
@@ -467,7 +447,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	d.Partial(false)
-	if err = waitForInstanceStatus(&client, instance.ID, InstanceRunning, WaitTimeout); err != nil {
+	if err = linodego.WaitForInstanceStatus(&client, instance.ID, linodego.InstanceRunning, WaitTimeout); err != nil {
 		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot because %s", instance.ID, err)
 	}
 
@@ -560,7 +540,7 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		if err != nil {
 			return fmt.Errorf("Failed to reboot Linode instance %d because %s", instance.ID, err)
 		}
-		err = waitForEventComplete(&client, int(id), "linode_reboot", WaitTimeout)
+		_, err = client.WaitForEventFinished(id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, WaitTimeout)
 		if err != nil {
 			return fmt.Errorf("Failed while waiting for Linode instance %d to finish rebooting because %s", instance.ID, err)
 		}
@@ -726,67 +706,6 @@ func rootPasswordState(val interface{}) string {
 func hashString(key string) string {
 	hash := sha3.Sum512([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])
-}
-
-// waitForInstanceStatus waits for the Linode instance to reach the desired state
-// before returning. It will timeout with an error after timeoutSeconds.
-func waitForInstanceStatus(client *linodego.Client, linodeID int, status string, timeoutSeconds int) error {
-	start := time.Now()
-	for {
-		linode, err := client.GetInstance(linodeID)
-		if err != nil {
-			return err
-		}
-		complete := (linode.Status == status)
-
-		if complete {
-			return nil
-		}
-
-		time.Sleep(1 * time.Second)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Linode %d didn't reach '%s' status in %d seconds", linodeID, status, timeoutSeconds)
-		}
-	}
-}
-
-// waitForInstanceStatus waits for the Linode instance to reach the desired state
-// before returning. It will timeout with an error after timeoutSeconds.
-func waitForEventComplete(client *linodego.Client, linodeID int, action string, timeoutSeconds int) error {
-	start := time.Now()
-	for {
-		filter, err := json.Marshal(map[string]interface{}{
-			"entity": map[string]interface{}{
-				"id":   linodeID,
-				"type": linodego.EntityLinode,
-			},
-			"action":    action,
-			"+order_by": "created",
-			"+order":    "desc",
-		})
-
-		listOptions := linodego.NewListOptions(0, string(filter))
-		events, err := client.ListEvents(listOptions)
-		if err != nil {
-			return err
-		}
-
-		// If there are events for this instance + action, inspect them
-		if len(events) > 0 {
-			if events[0].Status == linodego.EventFailed {
-				return fmt.Errorf("Instance %d action %s failed", linodeID, action)
-			}
-			if events[0].Status == linodego.EventFinished {
-				return nil
-			}
-		}
-		// otherwise, there are no events. Either pushed out of the list
-		// or they haven't been spawned.  @TODO filter by > created date
-		time.Sleep(1 * time.Second)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Did not find 'finish' status of instance %d action '%s' within %d seconds", linodeID, action, timeoutSeconds)
-		}
-	}
 }
 
 // changeLinodeSize resizes the current linode

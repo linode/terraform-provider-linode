@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -15,6 +16,22 @@ type NodeBalancerNode struct {
 	Mode           string
 	ConfigID       int `json:"config_id"`
 	NodeBalancerID int `json:"nodebalancer_id"`
+}
+
+type NodeBalancerNodeCreateOptions struct {
+	Address        string `json:"address"`
+	Label          string `json:"label"`
+	Weight         int    `json:"weight"`
+	Mode           string `json:"mode"`
+	ConfigID       int    `json:"config_id"`
+	NodeBalancerID int    `json:"nodebalancer_id"`
+}
+
+type NodeBalancerNodeUpdateOptions struct {
+	Address string `json:"address"`
+	Label   string `json:"label"`
+	Weight  int    `json:"weight"`
+	Mode    string `json:"mode"`
 }
 
 // NodeBalancerNodesPagedResponse represents a paginated NodeBalancerNode API response
@@ -72,4 +89,73 @@ func (c *Client) GetNodeBalancerNode(nodebalancerID int, configID int, nodeID in
 		return nil, err
 	}
 	return r.Result().(*NodeBalancerNode).fixDates(), nil
+}
+
+// CreateNodeBalancerNode creates a NodeBalancerNode
+func (c *Client) CreateNodeBalancerNode(nodebalancerID int, configID int, createOpts *NodeBalancerNodeCreateOptions) (*NodeBalancerNode, error) {
+	var body string
+	e, err := c.NodeBalancerNodes.endpointWithID(nodebalancerID)
+	if err != nil {
+		return nil, err
+	}
+	e = fmt.Sprintf("%s/%d/nodes/", e, configID)
+
+	req := c.R().SetResult(&NodeBalancerNode{})
+
+	if bodyData, err := json.Marshal(createOpts); err == nil {
+		body = string(bodyData)
+	} else {
+		return nil, NewError(err)
+	}
+
+	r, err := coupleAPIErrors(req.
+		SetBody(body).
+		Post(e))
+
+	if err != nil {
+		return nil, err
+	}
+	return r.Result().(*NodeBalancerNode).fixDates(), nil
+}
+
+// UpdateNodeBalancerNode updates the NodeBalancerNode with the specified id
+func (c *Client) UpdateNodeBalancerNode(id int, nodeId int, updateOpts NodeBalancerNodeUpdateOptions) (*NodeBalancerNode, error) {
+	var body string
+	e, err := c.NodeBalancerNodes.endpointWithID(id)
+	if err != nil {
+		return nil, err
+	}
+	e = fmt.Sprintf("%s/nodes/%d", e, nodeId)
+
+	req := c.R().SetResult(&NodeBalancerNode{})
+
+	if bodyData, err := json.Marshal(updateOpts); err == nil {
+		body = string(bodyData)
+	} else {
+		return nil, NewError(err)
+	}
+
+	r, err := coupleAPIErrors(req.
+		SetBody(body).
+		Put(e))
+
+	if err != nil {
+		return nil, err
+	}
+	return r.Result().(*NodeBalancerNode).fixDates(), nil
+}
+
+// DeleteNodeBalancerNode deletes the NodeBalancerNode with the specified id
+func (c *Client) DeleteNodeBalancerNode(id int) error {
+	e, err := c.NodeBalancerNodes.Endpoint()
+	if err != nil {
+		return err
+	}
+	e = fmt.Sprintf("%s/%d", e, id)
+
+	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
+		return err
+	}
+
+	return nil
 }
