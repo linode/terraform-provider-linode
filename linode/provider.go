@@ -20,7 +20,8 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_linode": resourceLinodeLinode(),
+			"linode_linode":       resourceLinodeLinode(),
+			"linode_nodebalancer": resourceLinodeNodeBalancer(),
 		},
 
 		ConfigureFunc: providerConfigure,
