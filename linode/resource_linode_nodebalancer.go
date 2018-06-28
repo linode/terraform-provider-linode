@@ -8,9 +8,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func init() {
-}
-
 func resourceLinodeNodeBalancer() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeNodeBalancerCreate,
@@ -22,9 +19,9 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"label": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "The name (or label) of the Linode NodeBalancer.",
+				Description: "The label of the Linode NodeBalancer.",
 				Optional:    true,
 			},
 			"region": &schema.Schema{

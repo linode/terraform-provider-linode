@@ -41,11 +41,12 @@ type NodeBalancerNodesPagedResponse struct {
 }
 
 // endpoint gets the endpoint URL for NodeBalancerNode
-func (NodeBalancerNodesPagedResponse) endpointWithID(c *Client, id int) string {
-	endpoint, err := c.NodeBalancerNodes.endpointWithID(id)
+func (NodeBalancerNodesPagedResponse) endpointWithTwoIDs(c *Client, nodebalancerID int, configID int) string {
+	endpoint, err := c.NodeBalancerConfigs.endpointWithID(nodebalancerID)
 	if err != nil {
 		panic(err)
 	}
+	endpoint = fmt.Sprintf("%s/%d/nodes/", endpoint, configID)
 	return endpoint
 }
 
@@ -84,7 +85,7 @@ func (c *Client) GetNodeBalancerNode(nodebalancerID int, configID int, nodeID in
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d/nodes/%d", e, configID, nodeID)
-	r, err := c.R().SetResult(&NodeBalancerNode{}).Get(e)
+	r, err := coupleAPIErrors(c.R().SetResult(&NodeBalancerNode{}).Get(e))
 	if err != nil {
 		return nil, err
 	}
@@ -119,13 +120,13 @@ func (c *Client) CreateNodeBalancerNode(nodebalancerID int, configID int, create
 }
 
 // UpdateNodeBalancerNode updates the NodeBalancerNode with the specified id
-func (c *Client) UpdateNodeBalancerNode(id int, nodeId int, updateOpts NodeBalancerNodeUpdateOptions) (*NodeBalancerNode, error) {
+func (c *Client) UpdateNodeBalancerNode(nodebalancerID int, configID int, nodeID int, updateOpts NodeBalancerNodeUpdateOptions) (*NodeBalancerNode, error) {
 	var body string
-	e, err := c.NodeBalancerNodes.endpointWithID(id)
+	e, err := c.NodeBalancers.endpointWithID(nodebalancerID)
 	if err != nil {
 		return nil, err
 	}
-	e = fmt.Sprintf("%s/nodes/%d", e, nodeId)
+	e = fmt.Sprintf("%s/configs/%d/nodes/%d", e, configID, nodeID)
 
 	req := c.R().SetResult(&NodeBalancerNode{})
 
@@ -146,12 +147,12 @@ func (c *Client) UpdateNodeBalancerNode(id int, nodeId int, updateOpts NodeBalan
 }
 
 // DeleteNodeBalancerNode deletes the NodeBalancerNode with the specified id
-func (c *Client) DeleteNodeBalancerNode(id int) error {
-	e, err := c.NodeBalancerNodes.Endpoint()
+func (c *Client) DeleteNodeBalancerNode(nodebalancerID int, configID int, nodeID int) error {
+	e, err := c.NodeBalancers.endpointWithID(nodebalancerID)
 	if err != nil {
 		return err
 	}
-	e = fmt.Sprintf("%s/%d", e, id)
+	e = fmt.Sprintf("%s/configs/%d/nodes/%d", e, configID, nodeID)
 
 	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
 		return err

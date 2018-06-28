@@ -19,9 +19,16 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 
+		DataSourcesMap: map[string]*schema.Resource{
+			"linode_ipv6_pool":  dataSourceLinodeComputeIPv6Pool(),
+			"linode_ipv6_range": dataSourceLinodeComputeIPv6Range(),
+		},
+
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_linode":       resourceLinodeLinode(),
-			"linode_nodebalancer": resourceLinodeNodeBalancer(),
+			"linode_linode":              resourceLinodeLinode(),
+			"linode_nodebalancer":        resourceLinodeNodeBalancer(),
+			"linode_nodebalancer_config": resourceLinodeNodeBalancerConfig(),
+			"linode_nodebalancer_node":   resourceLinodeNodeBalancerNode(),
 		},
 
 		ConfigureFunc: providerConfigure,
