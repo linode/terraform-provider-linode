@@ -14,8 +14,8 @@ import (
 func TestAccLinodeNodeBalancerNodeBasic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_nodebalancer.foobar"
-	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	resName := "linode_nodebalancer_node.foonode"
+	nodeName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -23,16 +23,15 @@ func TestAccLinodeNodeBalancerNodeBasic(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodebalancerName),
+				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
-					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
-					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "label", nodeName),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.0.1"),
 
-					resource.TestCheckResourceAttrSet(resName, "hostname"),
-					resource.TestCheckResourceAttrSet(resName, "ipv4"),
-					resource.TestCheckResourceAttrSet(resName, "ipv6"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttr(resName, "mode", "accept"),
+					resource.TestCheckResourceAttr(resName, "weight", "1"),
 				),
 			},
 
@@ -47,8 +46,8 @@ func TestAccLinodeNodeBalancerNodeBasic(t *testing.T) {
 func TestAccLinodeNodeBalancerNodeUpdate(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_nodebalancer.foobar"
-	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	resName := "linode_nodebalancer_node.foonode"
+	nodeName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -56,19 +55,19 @@ func TestAccLinodeNodeBalancerNodeUpdate(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodebalancerName),
+				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
-					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
+					resource.TestCheckResourceAttr(resName, "label", nodeName),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.0.1"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeNodeBalancerNodeUpdates(nodebalancerName),
+				Config: testAccCheckLinodeNodeBalancerNodeUpdates(nodeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", nodebalancerName)),
-					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", nodeName)),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.0.1"),
 				),
 			},
 		},
@@ -79,15 +78,17 @@ func testAccCheckLinodeNodeBalancerNodeExists(s *terraform.State) error {
 	client := testAccProvider.Meta().(linodego.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_nodebalancer" {
+		if rs.Type != "linode_nodebalancer_node" {
 			continue
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
+		configID, err := strconv.Atoi(rs.Primary.Attributes["config_id"])
 
-		_, err = client.GetNodeBalancer(id)
+		_, err = client.GetNodeBalancerNode(nodebalancerID, configID, id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of NodeBalancer %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf("Error retrieving state of NodeBalancer Node %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 
@@ -100,11 +101,14 @@ func testAccCheckLinodeNodeBalancerNodeDestroy(s *terraform.State) error {
 		return fmt.Errorf("Failed to get Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_nodebalancer" {
+		if rs.Type != "linode_nodebalancer_node" {
 			continue
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
+		configID, err := strconv.Atoi(rs.Primary.Attributes["config_id"])
+
 		if err != nil {
 			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
 		}
@@ -113,34 +117,58 @@ func testAccCheckLinodeNodeBalancerNodeDestroy(s *terraform.State) error {
 
 		}
 
-		_, err = client.GetNodeBalancer(id)
+		_, err = client.GetNodeBalancerNode(nodebalancerID, configID, id)
 
 		if err == nil {
-			return fmt.Errorf("NodeBalancer with id %d still exists", id)
+			return fmt.Errorf("NodeBalancer Node with id %d still exists", id)
 		}
 
 		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request NodeBalancer with id %d", id)
+			return fmt.Errorf("Failed to request NodeBalancer Node with id %d", id)
 		}
 	}
 
 	return nil
 }
-func testAccCheckLinodeNodeBalancerNodeBasic(nodebalancer string) string {
+func testAccCheckLinodeNodeBalancerNodeBasic(label string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
 	label = "%s"
 	region = "us-east"
 	client_conn_throttle = 20
 }
-`, nodebalancer)
+
+resource "linode_nodebalancer_config" "foofig" {
+	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 }
 
-func testAccCheckLinodeNodeBalancerNodeUpdates(nodebalancer string) string {
+resource "linode_nodebalancer_config" "foonode" {
+	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+	config_id = "${linode_nodebalancer_config.foofig.id}"
+	address = "192.168.0.1"
+	label = "%s"
+}
+`, label, label)
+}
+
+func testAccCheckLinodeNodeBalancerNodeUpdates(label string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
-	label = "%s_renamed"
+	label = "%s"
 	region = "us-east"
-	client_conn_throttle = 0
-}`, nodebalancer)
+	client_conn_throttle = 20
+}
+
+resource "linode_nodebalancer_config" "foofig" {
+	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+}
+
+resource "linode_nodebalancer_config" "foonode" {
+	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+	config_id = "${linode_nodebalancer_config.foofig.id}"
+	address = "192.168.0.1"
+	label = "%s_renamed"
+}
+
+`, label, label)
 }

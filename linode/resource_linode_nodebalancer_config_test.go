@@ -26,7 +26,7 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerConfigExists,
-					resource.TestCheckResourceAttr(resName, "name", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 
@@ -59,7 +59,7 @@ func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "name", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 				),
 			},
@@ -67,8 +67,7 @@ func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerConfigUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "name", fmt.Sprintf("%s_renamed", nodebalancerName)),
-					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
+					resource.TestCheckResourceAttr(resName, "algorithm", "source"),
 				),
 			},
 		},
@@ -79,15 +78,16 @@ func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
 	client := testAccProvider.Meta().(linodego.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_nodebalancer" {
+		if rs.Type != "linode_nodebalancer_config" {
 			continue
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
 
-		_, err = client.GetNodeBalancer(id)
+		_, err = client.GetNodeBalancerConfig(nodebalancerID, id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of NodeBalancer %s: %s", rs.Primary.Attributes["name"], err)
+			return fmt.Errorf("Error retrieving state of NodeBalancer Config %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 
@@ -100,11 +100,13 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 		return fmt.Errorf("Failed to get Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_nodebalancer" {
+		if rs.Type != "linode_nodebalancer_config" {
 			continue
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
+
 		if err != nil {
 			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
 		}
@@ -113,10 +115,10 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 
 		}
 
-		_, err = client.GetNodeBalancer(id)
+		_, err = client.GetNodeBalancerConfig(nodebalancerID, id)
 
 		if err == nil {
-			return fmt.Errorf("NodeBalancer with id %d still exists", id)
+			return fmt.Errorf("NodeBalancer Config with id %d still exists", id)
 		}
 
 		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
@@ -129,7 +131,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 func testAccCheckLinodeNodeBalancerConfigBasic(nodebalancer string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
-	name = "%s"
+	label = "%s"
 	region = "us-east"
 	client_conn_throttle = 20
 }
@@ -143,8 +145,15 @@ resource "linode_nodebalancer_config" "foofig" {
 func testAccCheckLinodeNodeBalancerConfigUpdates(nodebalancer string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
-	name = "%s_renamed"
+	label = "%s"
 	region = "us-east"
-	client_conn_throttle = 0
-}`, nodebalancer)
+	client_conn_throttle = 20
+}
+		
+resource "linode_nodebalancer_config" "foofig" {
+	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+	algorithm = "source"
+}
+
+`, nodebalancer)
 }
