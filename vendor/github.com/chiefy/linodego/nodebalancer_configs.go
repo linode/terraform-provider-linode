@@ -75,26 +75,59 @@ type NodeBalancerNodeStatus struct {
 
 // NodeBalancerConfigUpdateOptions are permitted by CreateNodeBalancerConfig
 type NodeBalancerConfigCreateOptions struct {
-	NodeBalancerID int              `json:"nodebalancer_id"`
-	Port           int              `json:"port"`
-	Protocol       ConfigProtocol   `json:"protocol"`
-	Algorithm      ConfigAlgorithm  `json:"algorithm"`
-	Stickiness     ConfigStickiness `json:"stickiness"`
-	Check          ConfigCheck      `json:"check"`
-	CheckInterval  int              `json:"check_interval"`
-	CheckAttempts  int              `json:"check_attempts"`
-	CheckPath      string           `json:"check_path"`
-	CheckBody      string           `json:"check_body"`
-	CheckPassive   bool             `json:"check_passive"`
-	CipherSuite    ConfigCipher     `json:"cipher_suite"`
-	SSLCommonName  string           `json:"ssl_commonname"`
-	SSLFingerprint string           `json:"ssl_fingerprint"`
-	SSLCert        string           `json:"ssl_cert"`
-	SSLKey         string           `json:"ssl_key"`
+	Port          int              `json:"port"`
+	Protocol      ConfigProtocol   `json:"protocol"`
+	Algorithm     ConfigAlgorithm  `json:"algorithm"`
+	Stickiness    ConfigStickiness `json:"stickiness"`
+	Check         ConfigCheck      `json:"check"`
+	CheckInterval int              `json:"check_interval"`
+	CheckAttempts int              `json:"check_attempts"`
+	CheckPath     string           `json:"check_path"`
+	CheckBody     string           `json:"check_body"`
+	CheckPassive  bool             `json:"check_passive"`
+	CipherSuite   ConfigCipher     `json:"cipher_suite"`
+	SSLCert       string           `json:"ssl_cert"`
+	SSLKey        string           `json:"ssl_key"`
 }
 
 // NodeBalancerConfigUpdateOptions are permitted by UpdateNodeBalancerConfig
 type NodeBalancerConfigUpdateOptions NodeBalancerConfigCreateOptions
+
+func (i NodeBalancerConfig) GetCreateOptions() NodeBalancerConfigCreateOptions {
+	return NodeBalancerConfigCreateOptions{
+		Port:          i.Port,
+		Protocol:      i.Protocol,
+		Algorithm:     i.Algorithm,
+		Stickiness:    i.Stickiness,
+		Check:         i.Check,
+		CheckInterval: i.CheckInterval,
+		CheckAttempts: i.CheckAttempts,
+		CheckPath:     i.CheckPath,
+		CheckBody:     i.CheckBody,
+		CheckPassive:  i.CheckPassive,
+		CipherSuite:   i.CipherSuite,
+		SSLCert:       i.SSLCert,
+		SSLKey:        i.SSLKey,
+	}
+}
+
+func (i NodeBalancerConfig) GetUpdateOptions() NodeBalancerConfigUpdateOptions {
+	return NodeBalancerConfigUpdateOptions{
+		Port:          i.Port,
+		Protocol:      i.Protocol,
+		Algorithm:     i.Algorithm,
+		Stickiness:    i.Stickiness,
+		Check:         i.Check,
+		CheckInterval: i.CheckInterval,
+		CheckAttempts: i.CheckAttempts,
+		CheckPath:     i.CheckPath,
+		CheckBody:     i.CheckBody,
+		CheckPassive:  i.CheckPassive,
+		CipherSuite:   i.CipherSuite,
+		SSLCert:       i.SSLCert,
+		SSLKey:        i.SSLKey,
+	}
+}
 
 // NodeBalancerConfigsPagedResponse represents a paginated NodeBalancerConfig API response
 type NodeBalancerConfigsPagedResponse struct {
@@ -154,9 +187,9 @@ func (c *Client) GetNodeBalancerConfig(nodebalancerID int, configID int) (*NodeB
 }
 
 // CreateNodeBalancerConfig creates a NodeBalancerConfig
-func (c *Client) CreateNodeBalancerConfig(nodebalancerConfig *NodeBalancerConfigCreateOptions) (*NodeBalancerConfig, error) {
+func (c *Client) CreateNodeBalancerConfig(nodebalancerID int, nodebalancerConfig *NodeBalancerConfigCreateOptions) (*NodeBalancerConfig, error) {
 	var body string
-	e, err := c.NodeBalancerConfigs.Endpoint()
+	e, err := c.NodeBalancerConfigs.endpointWithID(nodebalancerID)
 	if err != nil {
 		return nil, err
 	}

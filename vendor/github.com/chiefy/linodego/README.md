@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/chiefy/linodego.svg?branch=master)](https://travis-ci.org/chiefy/linodego)
 [![GoDoc](https://godoc.org/github.com/chiefy/linodego?status.svg)](https://godoc.org/github.com/chiefy/linodego)
+[![Go Report Card](https://goreportcard.com/badge/github.com/chiefy/linodego)](https://goreportcard.com/report/github.com/chiefy/linodego)
+[![codecov](https://codecov.io/gh/chiefy/linodego/branch/master/graph/badge.svg)](https://codecov.io/gh/chiefy/linodego)
 
 Go client for [Linode REST v4 API](https://developers.linode.com/v4/introduction)
 
@@ -126,6 +128,25 @@ When performing a `POST` or `PUT` request, multiple field related errors will be
 ```go
 // err.Error() == "[400] [field1] foo problem; [field2] bar problem; [field3] baz problem"
 ```
+
+## Tests
+
+Run `make test` to run the unit tests.  This is the same as running `go test` except that `make test` will
+execute the tests while playing back API response fixtures that were recorded during a previous development build.
+
+`go test` can be used without the fixtures, so long as `LINODE_TEST_INSTANCE` and `LINODE_TEST_VOLUME` are set
+to an instance ID and volume ID that exists on your account.  The Linode instance must have a backup and a snapshot to
+match the test expectations. Copy `env.sample` to `.env` and configure your persistent test settings, including an API token.
+
+`go test -short` can be used to run live API tests that do not require an account token.
+
+This will be simplified in future versions.
+
+To update the test fixtures, run `make fixtures`.  This will record the API responses into the `fixtures/` directory.
+Be careful about committing any sensitive account details.  An attempt has been made to sanitize IP addresses and
+dates, but no automated sanitization will be performed against `fixtures/*Account*.yaml`, for example.
+
+To prevent disrupting unaffected fixtures, target fixture generation like so: `make ARGS="-run TestListVolumes" fixtures`.
 
 ## Discussion / Help
 

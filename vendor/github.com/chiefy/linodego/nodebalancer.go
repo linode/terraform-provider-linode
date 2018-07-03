@@ -15,7 +15,7 @@ type NodeBalancer struct {
 	// This NodeBalancer's unique ID.
 	ID int
 	// This NodeBalancer's label. These must be unique on your Account.
-	Label string
+	Label *string
 	// The Region where this NodeBalancer is located. NodeBalancers only support backends in the same Region.
 	Region string
 	// This NodeBalancer's hostname, ending with .nodebalancer.linode.com
@@ -53,6 +53,21 @@ type NodeBalancerCreateOptions struct {
 type NodeBalancerUpdateOptions struct {
 	Label              *string `json:"label,omitempty"`
 	ClientConnThrottle *int    `json:"client_conn_throttle,omitempty"`
+}
+
+func (i NodeBalancer) GetCreateOptions() NodeBalancerCreateOptions {
+	return NodeBalancerCreateOptions{
+		Label:              i.Label,
+		Region:             i.Region,
+		ClientConnThrottle: &i.ClientConnThrottle,
+	}
+}
+
+func (i NodeBalancer) GetUpdateOptions() NodeBalancerUpdateOptions {
+	return NodeBalancerUpdateOptions{
+		Label:              i.Label,
+		ClientConnThrottle: &i.ClientConnThrottle,
+	}
 }
 
 // NodeBalancersPagedResponse represents a paginated NodeBalancer API response

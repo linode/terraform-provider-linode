@@ -1,8 +1,6 @@
 package linodego
 
 import (
-	"fmt"
-
 	"github.com/go-resty/resty"
 )
 
@@ -42,18 +40,4 @@ func (c *Client) ListInstanceVolumes(linodeID int, opts *ListOptions) ([]*Volume
 		return nil, err
 	}
 	return response.Data, nil
-}
-
-// GetInstanceVolume gets the snapshot with the provided ID
-func (c *Client) GetInstanceVolume(linodeID int, snapshotID int) (*Volume, error) {
-	e, err := c.InstanceVolumes.endpointWithID(linodeID)
-	if err != nil {
-		return nil, err
-	}
-	e = fmt.Sprintf("%s/%d", e, snapshotID)
-	r, err := coupleAPIErrors(c.R().SetResult(&Volume{}).Get(e))
-	if err != nil {
-		return nil, err
-	}
-	return r.Result().(*Volume).fixDates(), nil
 }
