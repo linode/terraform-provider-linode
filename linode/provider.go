@@ -2,10 +2,13 @@ package linode
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/chiefy/linodego"
+	"github.com/displague/terraform/helper/logging"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform/version"
 )
 
 func Provider() terraform.ResourceProvider {
@@ -40,7 +43,15 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("The Linode API Token was not valid")
 	}
-	client := linodego.NewClient(&token, nil)
+	var httpTransport http.Transport
+	transport := logging.NewTransport("Linode", &httpTransport)
+	client := linodego.NewClient(&token, transport)
+
+	projectURL := "https://www.terraform.io"
+	userAgent := fmt.Sprintf("Terraform/%s (+%s)",
+		version.String(), projectURL)
+
+	client.SetUserAgent(userAgent)
 
 	// Ping the API for an empty response to verify the configuration works
 	_, err := client.ListTypes(linodego.NewListOptions(100, ""))
