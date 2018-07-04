@@ -26,11 +26,10 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				ForceNew:    true,
 			},
 			"protocol": &schema.Schema{
-				Type:         schema.TypeString,
-				Description:  "The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key.",
-				Required:     true,
-				InputDefault: "us-east",
-				Default:      linodego.ProtocolHTTP,
+				Type:        schema.TypeString,
+				Description: "The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key.",
+				Optional:    true,
+				Default:     linodego.ProtocolHTTP,
 			},
 			"port": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -181,24 +180,25 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Invalid Client when creating Linode NodeBalancerConfig")
 	}
 
+	nodebalancerID := d.Get("nodebalancer_id").(int)
+
 	createOpts := linodego.NodeBalancerConfigCreateOptions{
-		NodeBalancerID: d.Get("nodebalancer_id").(int),
-		Algorithm:      d.Get("algorithm").(linodego.ConfigAlgorithm),
-		Check:          d.Get("check").(linodego.ConfigCheck),
-		CheckAttempts:  d.Get("check_attempts").(int),
-		CheckBody:      d.Get("check_body").(string),
-		CheckInterval:  d.Get("check_interval").(int),
-		CheckPassive:   d.Get("check_passive").(bool),
-		CheckPath:      d.Get("check_path").(string),
-		Port:           d.Get("port").(int),
-		Protocol:       d.Get("protocol").(linodego.ConfigProtocol),
-		SSLCert:        d.Get("ssl_cert").(string),
-		SSLKey:         d.Get("ssl_key").(string),
+		Algorithm:     linodego.ConfigAlgorithm(d.Get("algorithm").(string)),
+		Check:         linodego.ConfigCheck(d.Get("check").(string)),
+		CheckAttempts: d.Get("check_attempts").(int),
+		CheckBody:     d.Get("check_body").(string),
+		CheckInterval: d.Get("check_interval").(int),
+		CheckPassive:  d.Get("check_passive").(bool),
+		CheckPath:     d.Get("check_path").(string),
+		Port:          d.Get("port").(int),
+		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
+		SSLCert:       d.Get("ssl_cert").(string),
+		SSLKey:        d.Get("ssl_key").(string),
 	}
 
-	config, err := client.CreateNodeBalancerConfig(&createOpts)
+	config, err := client.CreateNodeBalancerConfig(nodebalancerID, &createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode NodeBalancerConfig in because %s", err)
+		return fmt.Errorf("Failed to create a Linode NodeBalancerConfig because %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", config.ID))
 
@@ -224,18 +224,17 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 	}
 
 	updateOpts := linodego.NodeBalancerConfigUpdateOptions{
-		NodeBalancerID: int(nodebalancerID),
-		Algorithm:      d.Get("algorithm").(linodego.ConfigAlgorithm),
-		Check:          d.Get("check").(linodego.ConfigCheck),
-		CheckAttempts:  d.Get("check_attempts").(int),
-		CheckBody:      d.Get("check_body").(string),
-		CheckInterval:  d.Get("check_interval").(int),
-		CheckPassive:   d.Get("check_passive").(bool),
-		CheckPath:      d.Get("check_path").(string),
-		Port:           d.Get("port").(int),
-		Protocol:       d.Get("protocol").(linodego.ConfigProtocol),
-		SSLCert:        d.Get("ssl_cert").(string),
-		SSLKey:         d.Get("ssl_key").(string),
+		Algorithm:     linodego.ConfigAlgorithm(d.Get("algorithm").(string)),
+		Check:         linodego.ConfigCheck(d.Get("check").(string)),
+		CheckAttempts: d.Get("check_attempts").(int),
+		CheckBody:     d.Get("check_body").(string),
+		CheckInterval: d.Get("check_interval").(int),
+		CheckPassive:  d.Get("check_passive").(bool),
+		CheckPath:     d.Get("check_path").(string),
+		Port:          d.Get("port").(int),
+		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
+		SSLCert:       d.Get("ssl_cert").(string),
+		SSLKey:        d.Get("ssl_key").(string),
 	}
 
 	if config, err = client.UpdateNodeBalancerConfig(int(nodebalancerID), int(id), updateOpts); err != nil {
