@@ -21,7 +21,7 @@ provider "linode" {
   token = "$LINODE_TOKEN"
 }
 
-resource "linode_linode" "foobar" {
+resource "linode_instance" "foobar" {
   # ...
 }
 ```

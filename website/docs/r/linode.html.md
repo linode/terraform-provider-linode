@@ -1,12 +1,12 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_linode"
+page_title: "Linode: linode_instance"
 sidebar_current: "docs-linode-resource-linode"
 description: |-
   Manages a Linode instance.
 ---
 
-# linode\_linode
+# linode\_instance
 
 Provides a Linode instance resource.  This can be used to create,
 modify, and delete Linodes. For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/)
@@ -19,7 +19,7 @@ Linodes also support `[provisioning](/docs/provisioners/index.html).
 The following example shows how one might use this resource to configure a Linode instance.
 
 ```hcl
-resource "linode_linode" "web" {
+resource "linode_instance" "web" {
     image = "linode/ubuntu18.04"
     kernel = "Latest 64 bit"
     region = "Dallas, TX, USA"
@@ -44,17 +44,17 @@ resource "linode_linode" "web" {
 
 The following arguments are supported:
 
-* `image` - (Required) The image to use when creating the Linode's disks. Examples are `"linode/debian9"`, `"linode/fedora28"`, and `"linode/arch"`. *Changing `image` forces the creation of a new Linode.*
+* `image` - (Required) The image to use when creating the Linode's disks. Examples are `"linode/debian9"`, `"linode/fedora28"`, and `"linode/arch"`. *Changing `image` forces the creation of a new Linode Instance.*
 
 * `kernel` - (Required) The kernel to start the linode with. Specify `"linode/latest-64bit"` or `"linode/latest-32bit""` for the most recent Linode provided kernel. "linode/direct-disk" can be used to boot the raw disk and "linode/grub2" will boot to the Grub config on the disk.
 
-* `region` - (Required) The region that the linode will be created in *Changing `region` forces the creation of a new Linode.*
+* `region` - (Required) The region that the linode will be created in.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc.  *Changing `region` forces the creation of a new Linode Instance.*.
 
-* `type` - (Required) The Linode type defines the pricing, CPU, disk, and RAM specs of the instance.  Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, etc.)
+* `type` - (Required) The Linode type defines the pricing, CPU, disk, and RAM specs of the instance.  Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, etc.
 
-* `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode.*
+* `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
-* `root_password` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode.*
+* `root_password` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
   A `root_password` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
 
@@ -90,8 +90,8 @@ This resource exports the following attributes:
 
 ## Import
 
-Linodes can be imported using the Linode `id`, e.g.
+Linodes Instances can be imported using the Linode `id`, e.g.
 
 ```sh
-terraform import linode_linode.mylinode 1234567
+terraform import linode_instance.mylinode 1234567
 ```

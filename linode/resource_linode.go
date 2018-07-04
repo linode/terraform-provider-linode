@@ -26,13 +26,13 @@ var (
 func init() {
 }
 
-func resourceLinodeLinode() *schema.Resource {
+func resourceLinodeInstance() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeLinodeCreate,
-		Read:   resourceLinodeLinodeRead,
-		Update: resourceLinodeLinodeUpdate,
-		Delete: resourceLinodeLinodeDelete,
-		Exists: resourceLinodeLinodeExists,
+		Create: resourceLinodeInstanceCreate,
+		Read:   resourceLinodeInstanceRead,
+		Update: resourceLinodeInstanceUpdate,
+		Delete: resourceLinodeInstanceDelete,
+		Exists: resourceLinodeInstanceExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -178,7 +178,7 @@ func resourceLinodeLinode() *schema.Resource {
 	}
 }
 
-func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -192,7 +192,7 @@ func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool,
 	return true, nil
 }
 
-func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -291,7 +291,7 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	waitSeconds := 180
 	client, ok := meta.(linodego.Client)
 	if !ok {
@@ -456,10 +456,10 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot because %s", instance.ID, err)
 	}
 
-	return resourceLinodeLinodeRead(d, meta)
+	return resourceLinodeInstanceRead(d, meta)
 }
 
-func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	d.Partial(true)
 
@@ -551,10 +551,10 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	return nil // resourceLinodeLinodeRead(d, meta)
+	return nil // resourceLinodeInstanceRead(d, meta)
 }
 
-func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
