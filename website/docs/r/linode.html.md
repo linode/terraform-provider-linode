@@ -10,7 +10,7 @@ description: |-
 
 Provides a Linode instance resource.  This can be used to create,
 modify, and delete Linodes. For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/)
-and [Linode APIv3 docs](https://www.linode.com/api).
+and [Linode APIv4 docs](https://development.linode.com/).
 
 Linodes also support `[provisioning](/docs/provisioners/index.html).
 
@@ -20,23 +20,23 @@ The following example shows how one might use this resource to configure a Linod
 
 ```hcl
 resource "linode_linode" "web" {
-	image = "linode/ubuntu18.04"
-	kernel = "Latest 64 bit"
-	region = "Dallas, TX, USA"
-	size = 2048
-	ssh_key = "ssh-rsa AAAA...Gw== user@example.local"
-	root_password = "terraform-test"
+    image = "linode/ubuntu18.04"
+    kernel = "Latest 64 bit"
+    region = "Dallas, TX, USA"
+    type = "g6-standard-1"
+    ssh_key = "ssh-rsa AAAA...Gw== user@example.local"
+    root_password = "terraform-test"
 
-	name = "foobaz"
-	group = "integration"
-	status = "on"
-	swap_size = 256
-	private_networking = true
+    label = "foobaz"
+    group = "integration"
+    status = "on"
+    swap_size = 256
+    private_networking = true
 
-	// ip_address = "8.8.8.8"
-	// plan_storage = 24576
-	// plan_storage_utilized = 24576
-	// private_ip_address = "192.168.10.50"
+    // ip_address = "8.8.8.8"
+    // plan_storage = 24576
+    // plan_storage_utilized = 24576
+    // private_ip_address = "192.168.10.50"
 }
 ```
 
@@ -60,7 +60,7 @@ The following arguments are supported:
 
 - - -
 
-* `name` - (Optional) The name of the Linode.
+* `label` - (Optional) The label of the Linode.
 
 * `group` - (Optional) The group of the Linode.
 
@@ -73,7 +73,6 @@ The following arguments are supported:
 * `disk_expansion` - (Optional) A boolean that when true will automatically expand the root volume if the size of the Linode plan is increased.  Setting this value will prevent downsizing without manually shrinking the volume prior to decreasing the size.
 
 * `swap_size` - (Optional) Sets the size of the swap partition on a Linode in MB.  At this time, this cannot be modified by Terraform after initial provisioning.  If manually modified via the Web GUI, this value will reflect such modification.  This value can be set to 0 to create a Linode without a swap partition.  Defaults to 256.
-
 
 ## Attributes
 
@@ -89,11 +88,10 @@ This resource exports the following attributes:
 
 * `plan_storage_utilized` - An integer sum of the size of all the Linode's disks, given in MB.
 
-
 ## Import
 
 Linodes can be imported using the Linode `id`, e.g.
 
-```
+```sh
 terraform import linode_linode.mylinode 1234567
 ```

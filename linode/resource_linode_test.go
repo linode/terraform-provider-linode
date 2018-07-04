@@ -33,7 +33,7 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 					//testAccCheckLinodeLinodeExists(&instance),
 
 					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr(resName, "name", instanceName),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -69,7 +69,7 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "label", instanceName),
 					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
 				),
 			},
@@ -77,7 +77,7 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 				Config: testAccCheckLinodeLinodeConfigUpdates(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "name", fmt.Sprintf("%s_renamed", instanceName)),
+					resource.TestCheckResourceAttr("linode_linode.foobar", "label", fmt.Sprintf("%s_renamed", instanceName)),
 					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "integration"),
 				),
 			},
@@ -207,7 +207,7 @@ func testAccCheckLinodeLinodeExists(s *terraform.State) error {
 
 		_, err = client.GetInstance(id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["name"], err)
+			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 
@@ -276,7 +276,7 @@ func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.Test
 func testAccCheckLinodeLinodeConfigBasic(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
-	name = "%s"
+	label = "%s"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -290,7 +290,7 @@ resource "linode_linode" "foobar" {
 func testAccCheckLinodeLinodeConfigUpdates(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
-	name = "%s_renamed"
+	label = "%s_renamed"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -304,7 +304,7 @@ resource "linode_linode" "foobar" {
 func testAccCheckLinodeLinodeConfigUpsizeSmall(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
-	name = "%s"
+	label = "%s"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -318,7 +318,7 @@ resource "linode_linode" "foobar" {
 func testAccCheckLinodeLinodeConfigUpsizeBigger(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
-	name = "%s_upsized"
+	label = "%s_upsized"
 	type = "g6-standard-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -332,7 +332,7 @@ resource "linode_linode" "foobar" {
 func testAccCheckLinodeLinodeConfigDownsize(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
-	name = "%s_downsized"
+	label = "%s_downsized"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -346,7 +346,7 @@ resource "linode_linode" "foobar" {
 func testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
-	name = "%s_expanded"
+	label = "%s_expanded"
 	type = "g6-standard-1"
 	disk_expansion = true
 	image = "linode/ubuntu18.04"
@@ -361,7 +361,7 @@ resource "linode_linode" "foobar" {
 func testAccCheckLinodeLinodeConfigPrivateNetworking(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_linode" "foobar" {
-	name = "%s"
+	label = "%s"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"

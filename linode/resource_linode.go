@@ -51,8 +51,13 @@ func resourceLinodeLinode() *schema.Resource {
 				InputDefault: "linode/direct-disk",
 			},
 			"name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Removed:  "See 'label'",
+			},
+			"label": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "The name (or label) of the Linode instance.",
+				Description: "The label of the Linode instance.",
 				Optional:    true,
 			},
 			"group": &schema.Schema{
@@ -82,7 +87,7 @@ func resourceLinodeLinode() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The type of instance to be deployed, determining the price and size.",
 				Optional:    true,
-				Default:     "g5-standard-1",
+				Default:     "g6-standard-1",
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
@@ -224,7 +229,7 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("private_networking", false)
 	}
 
-	d.Set("name", instance.Label)
+	d.Set("label", instance.Label)
 	d.Set("status", instance.Status)
 	d.Set("type", instance.Type)
 	d.Set("region", instance.Region)
@@ -312,7 +317,7 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		// Type:   linodetype.ID,
 		Region: d.Get("region").(string),
 		Type:   d.Get("type").(string),
-		Label:  d.Get("name").(string),
+		Label:  d.Get("label").(string),
 		Group:  d.Get("group").(string),
 	}
 	instance, err := client.CreateInstance(&createOpts)
@@ -320,11 +325,11 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to create a Linode instance in region %s of type %d because %s", d.Get("region"), d.Get("type"), err)
 	}
 	d.SetId(fmt.Sprintf("%d", instance.ID))
-	d.Set("name", instance.Label)
+	d.Set("label", instance.Label)
 
 	d.SetPartial("region")
 	d.SetPartial("type")
-	d.SetPartial("name")
+	d.SetPartial("label")
 	d.SetPartial("group")
 
 	swapSize := 0
@@ -468,12 +473,12 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to fetch data about the current linode because %s", err)
 	}
 
-	if d.HasChange("name") {
-		if instance, err = client.RenameInstance(instance.ID, d.Get("name").(string)); err != nil {
+	if d.HasChange("label") {
+		if instance, err = client.RenameInstance(instance.ID, d.Get("label").(string)); err != nil {
 			return err
 		}
-		d.Set("name", instance.Label)
-		d.SetPartial("name")
+		d.Set("label", instance.Label)
+		d.SetPartial("label")
 	}
 
 	rebootInstance := false

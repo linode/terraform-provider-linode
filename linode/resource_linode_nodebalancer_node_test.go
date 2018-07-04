@@ -142,7 +142,7 @@ resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 }
 
-resource "linode_nodebalancer_config" "foonode" {
+resource "linode_nodebalancer_node" "foonode" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"
 	address = "192.168.0.1"
@@ -163,7 +163,7 @@ resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 }
 
-resource "linode_nodebalancer_config" "foonode" {
+resource "linode_nodebalancer_node" "foonode" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"
 	address = "192.168.0.1"

@@ -26,7 +26,7 @@ func TestAccLinodeNodeBalancerBasic(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "name", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 
@@ -59,7 +59,7 @@ func TestAccLinodeNodeBalancerUpdate(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "name", nodebalancerName),
+					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 				),
 			},
@@ -67,7 +67,7 @@ func TestAccLinodeNodeBalancerUpdate(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "name", fmt.Sprintf("%s_renamed", nodebalancerName)),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", nodebalancerName)),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
 				),
 			},
@@ -87,7 +87,7 @@ func testAccCheckLinodeNodeBalancerExists(s *terraform.State) error {
 
 		_, err = client.GetNodeBalancer(id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of NodeBalancer %s: %s", rs.Primary.Attributes["name"], err)
+			return fmt.Errorf("Error retrieving state of NodeBalancer %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 
@@ -129,7 +129,7 @@ func testAccCheckLinodeNodeBalancerDestroy(s *terraform.State) error {
 func testAccCheckLinodeNodeBalancerBasic(nodebalancer string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
-	name = "%s"
+	label = "%s"
 	region = "us-east"
 	client_conn_throttle = 20
 }`, nodebalancer)
@@ -138,7 +138,7 @@ resource "linode_nodebalancer" "foobar" {
 func testAccCheckLinodeNodeBalancerUpdates(nodebalancer string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
-	name = "%s_renamed"
+	label = "%s_renamed"
 	region = "us-east"
 	client_conn_throttle = 0
 }`, nodebalancer)

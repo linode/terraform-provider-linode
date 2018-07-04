@@ -71,7 +71,7 @@ func resourceLinodeNodeBalancerExists(d *schema.ResourceData, meta interface{}) 
 }
 
 func syncResourceData(d *schema.ResourceData, nodebalancer *linodego.NodeBalancer) {
-	d.Set("name", nodebalancer.Label)
+	d.Set("label", nodebalancer.Label)
 	d.Set("hostname", nodebalancer.Hostname)
 	d.Set("region", nodebalancer.Region)
 	d.Set("ipv4", nodebalancer.IPv4)
@@ -102,12 +102,12 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 	if !ok {
 		return fmt.Errorf("Invalid Client when creating Linode NodeBalancer")
 	}
-	name := d.Get("name").(string)
+	label := d.Get("label").(string)
 	clientConnThrottle := d.Get("client_conn_throttle").(int)
 
 	createOpts := linodego.NodeBalancerCreateOptions{
 		Region:             d.Get("region").(string),
-		Label:              &name,
+		Label:              &label,
 		ClientConnThrottle: &clientConnThrottle,
 	}
 	nodebalancer, err := client.CreateNodeBalancer(&createOpts)
@@ -134,12 +134,12 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Failed to fetch data about the current NodeBalancer because %s", err)
 	}
 
-	if d.HasChange("name") || d.HasChange("client_conn_throttle") {
-		name := d.Get("name").(string)
+	if d.HasChange("label") || d.HasChange("client_conn_throttle") {
+		label := d.Get("label").(string)
 		clientConnThrottle := d.Get("client_conn_throttle").(int)
 		// @TODO nodebalancer.GetUpdateOptions, avoid clobbering client_conn_throttle
 		updateOpts := linodego.NodeBalancerUpdateOptions{
-			Label:              &name,
+			Label:              &label,
 			ClientConnThrottle: &clientConnThrottle,
 		}
 		if nodebalancer, err = client.UpdateNodeBalancer(nodebalancer.ID, updateOpts); err != nil {
