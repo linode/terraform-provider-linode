@@ -8,13 +8,13 @@
     "cassette",
     "recorder"
   ]
-  revision = "f8a7e8b9c630b486df74145bb887793a1b85459b"
+  revision = "8b144be0744f013a1b44386058f1fcb3ba98177d"
 
 [[projects]]
   name = "github.com/go-resty/resty"
   packages = ["."]
-  revision = "f0976a825c7520308909ce5a9e8b4f8675fdd6de"
-  version = "v1.5"
+  revision = "fccc498aed22c31ff3768bcac00795f94149a21d"
+  version = "v1.7.0"
 
 [[projects]]
   branch = "master"
@@ -23,7 +23,7 @@
     "idna",
     "publicsuffix"
   ]
-  revision = "57065200b4b034a1c8ad54ff77069408c2218ae6"
+  revision = "292b43bbf7cb8d35ddf40f8d5100ef3837cced3f"
 
 [[projects]]
   name = "golang.org/x/text"
