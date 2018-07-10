@@ -14,7 +14,42 @@ import (
 func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_nodebalancer_config.foobar"
+	resName := "linode_nodebalancer_config.foofig"
+	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	config := testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName)
+	resource.Test(t, resource.TestCase{
+		PreventPostDestroyRefresh: true,
+		PreCheck:                  func() { testAccPreCheck(t) },
+		Providers:                 testAccProviders,
+		CheckDestroy:              testAccCheckLinodeNodeBalancerDestroy,
+		Steps: []resource.TestStep{
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				Config:            config,
+			},
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeNodeBalancerConfigExists,
+					resource.TestCheckResourceAttr(resName, "port", "8080"),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
+					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
+					resource.TestCheckResourceAttr(resName, "check_path", "/"),
+
+					resource.TestCheckResourceAttrSet(resName, "stickiness"),
+					resource.TestCheckResourceAttrSet(resName, "check_attempts"),
+					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 
 	resource.Test(t, resource.TestCase{
@@ -26,48 +61,28 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerConfigExists,
-					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
-					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
-					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "port", "8080"),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
+					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
+					resource.TestCheckResourceAttr(resName, "check_path", "/"),
 
-					resource.TestCheckResourceAttrSet(resName, "hostname"),
-					resource.TestCheckResourceAttrSet(resName, "ipv4"),
-					resource.TestCheckResourceAttrSet(resName, "ipv6"),
-				),
-			},
-
-			resource.TestStep{
-				ResourceName: resName,
-				ImportState:  true,
-			},
-		},
-	})
-}
-
-func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
-	t.Parallel()
-
-	resName := "linode_nodebalancer.foobar"
-	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
-					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
+					resource.TestCheckResourceAttrSet(resName, "stickiness"),
+					resource.TestCheckResourceAttrSet(resName, "check_attempts"),
+					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeNodeBalancerConfigUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "algorithm", "source"),
+					testAccCheckLinodeNodeBalancerConfigExists,
+					resource.TestCheckResourceAttr(resName, "port", "8088"),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
+					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
+					resource.TestCheckResourceAttr(resName, "check_path", "/foo"),
+					resource.TestCheckResourceAttr(resName, "check_attempts", "3"),
+					resource.TestCheckResourceAttr(resName, "check_timeout", "30"),
+
+					resource.TestCheckResourceAttr(resName, "stickiness", string(linodego.StickinessHTTPCookie)),
 				),
 			},
 		},
@@ -129,31 +144,30 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 	return nil
 }
 func testAccCheckLinodeNodeBalancerConfigBasic(nodebalancer string) string {
-	return fmt.Sprintf(`
-resource "linode_nodebalancer" "foobar" {
-	label = "%s"
-	region = "us-east"
-	client_conn_throttle = 20
-}
-
+	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + `
 resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+	port = 8080
+	protocol = "http"
+	check = "http"
+	check_path = "/"
 }
-`, nodebalancer)
+`
 }
 
 func testAccCheckLinodeNodeBalancerConfigUpdates(nodebalancer string) string {
-	return fmt.Sprintf(`
-resource "linode_nodebalancer" "foobar" {
-	label = "%s"
-	region = "us-east"
-	client_conn_throttle = 20
-}
-		
+	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + `
 resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+	port = 8088
+	protocol = "http"
+	check = "http"
+	check_path = "/foo"
+	check_attempts = 3
+	check_timeout = 30
+	stickiness = "http_cookie"
 	algorithm = "source"
 }
 
-`, nodebalancer)
+`
 }

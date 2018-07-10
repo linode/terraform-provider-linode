@@ -322,7 +322,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	instance, err := client.CreateInstance(&createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode instance in region %s of type %d because %s", d.Get("region"), d.Get("type"), err)
+		return fmt.Errorf("Failed to create a Linode instance in region %s of type %s because %s", d.Get("region"), d.Get("type"), err)
 	}
 	d.SetId(fmt.Sprintf("%d", instance.ID))
 	d.Set("label", instance.Label)

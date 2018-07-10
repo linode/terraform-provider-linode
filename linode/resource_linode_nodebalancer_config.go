@@ -41,59 +41,61 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "How often, in seconds, to check that backends are up and serving requests.",
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 			},
 			"check_timeout": &schema.Schema{
 				Type:        schema.TypeInt,
-				Description: "How long, in seconds, to wait for a check attempt before considering it failed.",
+				Description: "How long, in seconds, to wait for a check attempt before considering it failed. (1-30)",
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 			},
 			"check_attempts": &schema.Schema{
 				Type:        schema.TypeInt,
-				Description: "How many times to attempt a check before considering a backend to be down.",
+				Description: "How many times to attempt a check before considering a backend to be down. (1-30)",
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 			},
 			"algorithm": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "What algorithm this NodeBalancer should use for routing traffic to backends: roundrobin, leastconn, source",
 				Optional:    true,
-				Default:     linodego.AlgorithmRoundRobin,
+				Computed:    true,
 			},
 			"stickiness": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Controls how session stickiness is handled on this port: 'none', 'table', 'http_cookie'",
 				Optional:    true,
-				Default:     linodego.StickinessNone,
+				Computed:    true,
 			},
 			"check": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. If none no check is performed. connection requires only a connection to the backend to succeed. http and http_body rely on the backend serving HTTP, and that the response returned matches what is expected.",
 				Optional:    true,
-				Default:     linodego.CheckHTTP,
+				Computed:    true,
 			},
 			"check_path": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The URL path to check on each backend. If the backend does not respond to this request it is considered to be down.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"check_body": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "This value must be present in the response body of the check in order for it to pass. If this value is not present in the response body of a check request, the backend is considered to be down",
 				Optional:    true,
+				Computed:    true,
 			},
 			"check_passive": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "If true, any response from this backend with a 5xx status code will be enough for it to be considered unhealthy and taken out of rotation.",
 				Optional:    true,
-				Default:     true,
+				Computed:    true,
 			},
 			"cipher_suite": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "What ciphers to use for SSL connections served by this NodeBalancer. legacy is considered insecure and should only be used if necessary.",
+				Description: "What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary.",
 				Optional:    true,
-				Default:     linodego.CipherRecommended,
+				Computed:    true,
 			},
 			"ssl_commonname": &schema.Schema{
 				Type:        schema.TypeString,
@@ -126,9 +128,9 @@ func resourceLinodeNodeBalancerConfigExists(d *schema.ResourceData, meta interfa
 	if err != nil {
 		return false, fmt.Errorf("Failed to parse Linode NodeBalancerConfig ID %s as int because %s", d.Id(), err)
 	}
-	nodebalancerID, err := strconv.ParseInt(d.Get("nodebalancer_id").(string), 10, 64)
-	if err != nil {
-		return false, fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int because %s", d.Get("nodebalancer"), err)
+	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
+	if !ok {
+		return false, fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer"))
 	}
 
 	_, err = client.GetNodeBalancerConfig(int(nodebalancerID), int(id))
@@ -140,10 +142,12 @@ func resourceLinodeNodeBalancerConfigExists(d *schema.ResourceData, meta interfa
 
 func syncConfigResourceData(d *schema.ResourceData, config *linodego.NodeBalancerConfig) {
 	d.Set("algorithm", config.Algorithm)
+	d.Set("stickiness", config.Stickiness)
 	d.Set("check", config.Check)
 	d.Set("check_attempts", config.CheckAttempts)
 	d.Set("check_body", config.CheckBody)
 	d.Set("check_interval", config.CheckInterval)
+	d.Set("check_timeout", config.CheckTimeout)
 	d.Set("check_passive", config.CheckPassive)
 	d.Set("check_path", config.CheckPath)
 	d.Set("port", config.Port)
@@ -158,9 +162,9 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode NodeBalancerConfig ID %s as int because %s", d.Id(), err)
 	}
-	nodebalancerID, err := strconv.ParseInt(d.Get("nodebalancer_id").(string), 10, 64)
-	if err != nil {
-		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int because %s", d.Get("nodebalancer"), err)
+	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
+	if !ok {
+		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer"))
 	}
 
 	nodebalancer, err := client.GetNodeBalancerConfig(int(nodebalancerID), int(id))
@@ -185,15 +189,21 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 	createOpts := linodego.NodeBalancerConfigCreateOptions{
 		Algorithm:     linodego.ConfigAlgorithm(d.Get("algorithm").(string)),
 		Check:         linodego.ConfigCheck(d.Get("check").(string)),
+		Stickiness:    linodego.ConfigStickiness(d.Get("stickiness").(string)),
 		CheckAttempts: d.Get("check_attempts").(int),
 		CheckBody:     d.Get("check_body").(string),
 		CheckInterval: d.Get("check_interval").(int),
-		CheckPassive:  d.Get("check_passive").(bool),
 		CheckPath:     d.Get("check_path").(string),
+		CheckTimeout:  d.Get("check_timeout").(int),
 		Port:          d.Get("port").(int),
 		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
 		SSLCert:       d.Get("ssl_cert").(string),
 		SSLKey:        d.Get("ssl_key").(string),
+	}
+
+	if checkPassive, ok := d.GetOk("check_passive"); ok {
+		checkPassive := checkPassive.(bool)
+		createOpts.CheckPassive = &checkPassive
 	}
 
 	config, err := client.CreateNodeBalancerConfig(nodebalancerID, &createOpts)
@@ -213,12 +223,12 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode NodeBalancerConfig ID %s as int because %s", d.Id(), err)
 	}
-	nodebalancerID, err := strconv.ParseInt(d.Get("nodebalancer_id").(string), 10, 64)
-	if err != nil {
-		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int because %s", d.Get("nodebalancer"), err)
+	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
+	if !ok {
+		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int", d.Get("nodebalancer"))
 	}
 
-	config, err := client.GetNodeBalancerConfig(int(nodebalancerID), int(id))
+	config, err := client.GetNodeBalancerConfig(nodebalancerID, int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to fetch data about the current NodeBalancerConfig because %s", err)
 	}
@@ -226,15 +236,20 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 	updateOpts := linodego.NodeBalancerConfigUpdateOptions{
 		Algorithm:     linodego.ConfigAlgorithm(d.Get("algorithm").(string)),
 		Check:         linodego.ConfigCheck(d.Get("check").(string)),
+		Stickiness:    linodego.ConfigStickiness(d.Get("stickiness").(string)),
 		CheckAttempts: d.Get("check_attempts").(int),
 		CheckBody:     d.Get("check_body").(string),
 		CheckInterval: d.Get("check_interval").(int),
-		CheckPassive:  d.Get("check_passive").(bool),
 		CheckPath:     d.Get("check_path").(string),
 		Port:          d.Get("port").(int),
 		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
 		SSLCert:       d.Get("ssl_cert").(string),
 		SSLKey:        d.Get("ssl_key").(string),
+	}
+
+	if checkPassive, ok := d.GetOk("check_passive"); ok {
+		checkPassive := checkPassive.(bool)
+		updateOpts.CheckPassive = &checkPassive
 	}
 
 	if config, err = client.UpdateNodeBalancerConfig(int(nodebalancerID), int(id), updateOpts); err != nil {
@@ -251,9 +266,9 @@ func resourceLinodeNodeBalancerConfigDelete(d *schema.ResourceData, meta interfa
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode NodeBalancerConfig ID %s as int because %s", d.Id(), err)
 	}
-	nodebalancerID, err := strconv.ParseInt(d.Get("nodebalancer_id").(string), 10, 64)
-	if err != nil {
-		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int because %s", d.Get("nodebalancer"), err)
+	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
+	if !ok {
+		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer"))
 	}
 	err = client.DeleteNodeBalancerConfig(int(nodebalancerID), int(id))
 	if err != nil {

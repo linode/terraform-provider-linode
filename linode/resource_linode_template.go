@@ -76,11 +76,11 @@ func resourceLinodeTemplateCreate(d *schema.ResourceData, meta interface{}) erro
 	d.Partial(true)
 
 	createOpts := linodego.TemplateCreateOptions{
-		Label:  d.Get("label").(string),
+		Label: d.Get("label").(string),
 	}
 	template, err := client.CreateTemplate(&createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode Template in because %s", err)
+		return fmt.Errorf("Failed to create a Linode Template because %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", template.ID))
 	d.Set("label", template.Label)

@@ -16,22 +16,29 @@ func TestAccLinodeNodeBalancerNodeBasic(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	config := testAccCheckLinodeNodeBalancerNodeBasic(nodeName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		PreventPostDestroyRefresh: true,
+		PreCheck:                  func() { testAccPreCheck(t) },
+		Providers:                 testAccProviders,
+		CheckDestroy:              testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodeName),
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				Config:            config,
+			},
+			{
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
+					testAccCheckLinodeNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
-					resource.TestCheckResourceAttr(resName, "address", "192.168.0.1"),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.200.1:80"),
 
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttr(resName, "mode", "accept"),
-					resource.TestCheckResourceAttr(resName, "weight", "1"),
+					resource.TestCheckResourceAttr(resName, "weight", "50"),
 				),
 			},
 
@@ -57,17 +64,19 @@ func TestAccLinodeNodeBalancerNodeUpdate(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
+					testAccCheckLinodeNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
-					resource.TestCheckResourceAttr(resName, "address", "192.168.0.1"),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.200.1:80"),
+					resource.TestCheckResourceAttr(resName, "weight", "50"),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeNodeBalancerNodeUpdates(nodeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
+					testAccCheckLinodeNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", nodeName)),
-					resource.TestCheckResourceAttr(resName, "address", "192.168.0.1"),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.200.1:8080"),
+					resource.TestCheckResourceAttr(resName, "weight", "200"),
 				),
 			},
 		},
@@ -131,44 +140,26 @@ func testAccCheckLinodeNodeBalancerNodeDestroy(s *terraform.State) error {
 	return nil
 }
 func testAccCheckLinodeNodeBalancerNodeBasic(label string) string {
-	return fmt.Sprintf(`
-resource "linode_nodebalancer" "foobar" {
-	label = "%s"
-	region = "us-east"
-	client_conn_throttle = 20
-}
-
-resource "linode_nodebalancer_config" "foofig" {
-	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
-}
-
+	return testAccCheckLinodeNodeBalancerConfigBasic(label) + fmt.Sprintf(`
 resource "linode_nodebalancer_node" "foonode" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"
-	address = "192.168.0.1"
+	address = "192.168.200.1:80"
 	label = "%s"
+	weight = 50
 }
-`, label, label)
+`, label)
 }
 
 func testAccCheckLinodeNodeBalancerNodeUpdates(label string) string {
-	return fmt.Sprintf(`
-resource "linode_nodebalancer" "foobar" {
-	label = "%s"
-	region = "us-east"
-	client_conn_throttle = 20
-}
-
-resource "linode_nodebalancer_config" "foofig" {
-	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
-}
-
+	return testAccCheckLinodeNodeBalancerConfigBasic(label) + fmt.Sprintf(`
 resource "linode_nodebalancer_node" "foonode" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"
-	address = "192.168.0.1"
+	address = "192.168.200.1:8080"
 	label = "%s_renamed"
+	weight = 200
 }
 
-`, label, label)
+`, label)
 }

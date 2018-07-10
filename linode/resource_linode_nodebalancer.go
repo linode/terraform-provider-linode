@@ -112,7 +112,7 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	nodebalancer, err := client.CreateNodeBalancer(&createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode NodeBalancer in because %s", err)
+		return fmt.Errorf("Failed to create a Linode NodeBalancer because %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", nodebalancer.ID))
 
