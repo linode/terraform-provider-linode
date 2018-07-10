@@ -19,6 +19,7 @@ type NodeBalancerConfig struct {
 	CheckPath      string                  `json:"check_path"`
 	CheckBody      string                  `json:"check_body"`
 	CheckPassive   bool                    `json:"check_passive"`
+	CheckTimeout   int                     `json:"check_timeout"`
 	CipherSuite    ConfigCipher            `json:"cipher_suite"`
 	NodeBalancerID int                     `json:"nodebalancer_id"`
 	SSLCommonName  string                  `json:"ssl_commonname"`
@@ -76,18 +77,19 @@ type NodeBalancerNodeStatus struct {
 // NodeBalancerConfigUpdateOptions are permitted by CreateNodeBalancerConfig
 type NodeBalancerConfigCreateOptions struct {
 	Port          int              `json:"port"`
-	Protocol      ConfigProtocol   `json:"protocol"`
-	Algorithm     ConfigAlgorithm  `json:"algorithm"`
-	Stickiness    ConfigStickiness `json:"stickiness"`
-	Check         ConfigCheck      `json:"check"`
-	CheckInterval int              `json:"check_interval"`
-	CheckAttempts int              `json:"check_attempts"`
-	CheckPath     string           `json:"check_path"`
-	CheckBody     string           `json:"check_body"`
-	CheckPassive  bool             `json:"check_passive"`
-	CipherSuite   ConfigCipher     `json:"cipher_suite"`
-	SSLCert       string           `json:"ssl_cert"`
-	SSLKey        string           `json:"ssl_key"`
+	Protocol      ConfigProtocol   `json:"protocol,omitempty"`
+	Algorithm     ConfigAlgorithm  `json:"algorithm,omitempty"`
+	Stickiness    ConfigStickiness `json:"stickiness,omitempty"`
+	Check         ConfigCheck      `json:"check,omitempty"`
+	CheckInterval int              `json:"check_interval,omitempty"`
+	CheckAttempts int              `json:"check_attempts,omitempty"`
+	CheckPath     string           `json:"check_path,omitempty"`
+	CheckBody     string           `json:"check_body,omitempty"`
+	CheckPassive  *bool            `json:"check_passive,omitempty"`
+	CheckTimeout  int              `json:"check_timeout,omitempty"`
+	CipherSuite   ConfigCipher     `json:"cipher_suite,omitempty"`
+	SSLCert       string           `json:"ssl_cert,omitempty"`
+	SSLKey        string           `json:"ssl_key,omitempty"`
 }
 
 // NodeBalancerConfigUpdateOptions are permitted by UpdateNodeBalancerConfig
@@ -102,9 +104,10 @@ func (i NodeBalancerConfig) GetCreateOptions() NodeBalancerConfigCreateOptions {
 		Check:         i.Check,
 		CheckInterval: i.CheckInterval,
 		CheckAttempts: i.CheckAttempts,
+		CheckTimeout:  i.CheckTimeout,
 		CheckPath:     i.CheckPath,
 		CheckBody:     i.CheckBody,
-		CheckPassive:  i.CheckPassive,
+		CheckPassive:  &i.CheckPassive,
 		CipherSuite:   i.CipherSuite,
 		SSLCert:       i.SSLCert,
 		SSLKey:        i.SSLKey,
@@ -122,7 +125,8 @@ func (i NodeBalancerConfig) GetUpdateOptions() NodeBalancerConfigUpdateOptions {
 		CheckAttempts: i.CheckAttempts,
 		CheckPath:     i.CheckPath,
 		CheckBody:     i.CheckBody,
-		CheckPassive:  i.CheckPassive,
+		CheckPassive:  &i.CheckPassive,
+		CheckTimeout:  i.CheckTimeout,
 		CipherSuite:   i.CipherSuite,
 		SSLCert:       i.SSLCert,
 		SSLKey:        i.SSLKey,
@@ -135,7 +139,7 @@ type NodeBalancerConfigsPagedResponse struct {
 	Data []*NodeBalancerConfig
 }
 
-// endpoint gets the endpoint URL for NodeBalancerConfig
+// endpointWithID gets the endpoint URL for NodeBalancerConfig
 func (NodeBalancerConfigsPagedResponse) endpointWithID(c *Client, id int) string {
 	endpoint, err := c.NodeBalancerConfigs.endpointWithID(id)
 	if err != nil {
@@ -190,6 +194,7 @@ func (c *Client) GetNodeBalancerConfig(nodebalancerID int, configID int) (*NodeB
 func (c *Client) CreateNodeBalancerConfig(nodebalancerID int, nodebalancerConfig *NodeBalancerConfigCreateOptions) (*NodeBalancerConfig, error) {
 	var body string
 	e, err := c.NodeBalancerConfigs.endpointWithID(nodebalancerID)
+
 	if err != nil {
 		return nil, err
 	}
@@ -216,11 +221,11 @@ func (c *Client) CreateNodeBalancerConfig(nodebalancerID int, nodebalancerConfig
 // UpdateNodeBalancerConfig updates the NodeBalancerConfig with the specified id
 func (c *Client) UpdateNodeBalancerConfig(nodebalancerID int, configID int, updateOpts NodeBalancerConfigUpdateOptions) (*NodeBalancerConfig, error) {
 	var body string
-	e, err := c.NodeBalancers.endpointWithID(nodebalancerID)
+	e, err := c.NodeBalancerConfigs.endpointWithID(nodebalancerID)
 	if err != nil {
 		return nil, err
 	}
-	e = fmt.Sprintf("%s/configs/%d", e, configID)
+	e = fmt.Sprintf("%s/%d", e, configID)
 
 	req := c.R().SetResult(&NodeBalancerConfig{})
 
@@ -242,11 +247,11 @@ func (c *Client) UpdateNodeBalancerConfig(nodebalancerID int, configID int, upda
 
 // DeleteNodeBalancerConfig deletes the NodeBalancerConfig with the specified id
 func (c *Client) DeleteNodeBalancerConfig(nodebalancerID int, configID int) error {
-	e, err := c.NodeBalancers.endpointWithID(nodebalancerID)
+	e, err := c.NodeBalancerConfigs.endpointWithID(nodebalancerID)
 	if err != nil {
 		return err
 	}
-	e = fmt.Sprintf("%s/configs/%d", e, configID)
+	e = fmt.Sprintf("%s/%d", e, configID)
 
 	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
 		return err

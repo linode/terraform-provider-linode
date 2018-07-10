@@ -92,6 +92,7 @@ type InstanceCreateOptions struct {
 	BackupID        int               `json:"backup_id,omitempty"`
 	Image           string            `json:"image,omitempty"`
 	BackupsEnabled  bool              `json:"backups_enabled,omitempty"`
+	SwapSize        *int              `json:"swap_size,omitempty"`
 	Booted          bool              `json:"booted,omitempty"`
 }
 
@@ -274,7 +275,8 @@ func (c *Client) DeleteInstance(id int) error {
 	return nil
 }
 
-// BootInstance will boot a new linode instance
+// BootInstance will boot a Linode instance
+// A configID of 0 will cause Linode to choose the last/best config
 func (c *Client) BootInstance(id int, configID int) (bool, error) {
 	bodyStr := ""
 
@@ -329,8 +331,18 @@ func (c *Client) CloneInstance(id int, options *InstanceCloneOptions) (*Instance
 }
 
 // RebootInstance reboots a Linode instance
+// A configID of 0 will cause Linode to choose the last/best config
 func (c *Client) RebootInstance(id int, configID int) (bool, error) {
-	body := fmt.Sprintf("{\"config_id\":\"%d\"}", configID)
+	bodyStr := "{}"
+
+	if configID != 0 {
+		bodyMap := map[string]int{"config_id": configID}
+		bodyJSON, err := json.Marshal(bodyMap)
+		if err != nil {
+			return false, NewError(err)
+		}
+		bodyStr = string(bodyJSON)
+	}
 
 	e, err := c.Instances.Endpoint()
 	if err != nil {
@@ -340,7 +352,7 @@ func (c *Client) RebootInstance(id int, configID int) (bool, error) {
 	e = fmt.Sprintf("%s/%d/reboot", e, id)
 
 	r, err := coupleAPIErrors(c.R().
-		SetBody(body).
+		SetBody(bodyStr).
 		Post(e))
 
 	return settleBoolResponseOrError(r, err)
