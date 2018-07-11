@@ -61,17 +61,21 @@ const (
 	longviewEndpoint              = "longview"
 	longviewclientsEndpoint       = "longview/clients"
 	longviewsubscriptionsEndpoint = "longview/subscriptions"
-	nodebalancersEndpoint         = "nodebalancer"
-	nodebalancerconfigsEndpoint   = "nodebalancer/{{ .NodeBalancerID }}/configs"
-	nodebalancernodesEndpoint     = "nodebalancer/{{ .NodeBalancerID }}/configs/{{ .ConfigID }}/nodes"
-	ticketsEndpoint               = "support/tickets"
-	accountEndpoint               = "account"
-	eventsEndpoint                = "account/events"
-	invoicesEndpoint              = "account/invoices"
-	invoiceItemsEndpoint          = "account/invoices/{{ .ID }}/items"
-	notificationsEndpoint         = "account/notifications"
-	profileEndpoint               = "profile"
-	managedEndpoint               = "managed"
+	nodebalancersEndpoint         = "nodebalancers"
+	// @TODO we can't use these nodebalancer endpoints unless we include these templated fields
+	// The API seems inconsistent about including parent IDs in objects, (compare instance configs to nb configs)
+	// Parent IDs would be immutable for updates and are ignored in create requests ..
+	// Should we include these fields in CreateOpts and UpdateOpts?
+	nodebalancerconfigsEndpoint = "nodebalancers/{{ .ID }}/configs"
+	nodebalancernodesEndpoint   = "nodebalancers/{{ .ID }}/configs/{{ .SecondID }}/nodes"
+	ticketsEndpoint             = "support/tickets"
+	accountEndpoint             = "account"
+	eventsEndpoint              = "account/events"
+	invoicesEndpoint            = "account/invoices"
+	invoiceItemsEndpoint        = "account/invoices/{{ .ID }}/items"
+	notificationsEndpoint       = "account/notifications"
+	profileEndpoint             = "profile"
+	managedEndpoint             = "managed"
 )
 
 // Resource represents a linode API resource
@@ -103,24 +107,40 @@ func NewResource(client *Client, name string, endpoint string, useTemplate bool,
 	return &Resource{name, endpoint, useTemplate, tmpl, r, pr}
 }
 
-func (r Resource) render(data interface{}) (string, error) {
+func (r Resource) render(data ...interface{}) (string, error) {
 	if data == nil {
 		return "", NewError("Cannot template endpoint with <nil> data")
 	}
 	out := ""
 	buf := bytes.NewBufferString(out)
-	if err := r.endpointTemplate.Execute(buf, struct{ ID interface{} }{data}); err != nil {
+
+	var substitutions interface{}
+	if len(data) == 1 {
+		substitutions = struct{ ID interface{} }{data[0]}
+	} else if len(data) == 2 {
+		substitutions = struct {
+			ID       interface{}
+			SecondID interface{}
+		}{data[0], data[1]}
+	} else {
+		return "", NewError("Too many arguments to render template (expected 1 or 2)")
+	}
+	if err := r.endpointTemplate.Execute(buf, substitutions); err != nil {
 		return "", NewError(err)
 	}
 	return buf.String(), nil
 }
 
 // endpointWithID will return the rendered endpoint string for the resource with provided id
-func (r Resource) endpointWithID(id int) (string, error) {
+func (r Resource) endpointWithID(id ...int) (string, error) {
 	if !r.isTemplate {
 		return r.endpoint, nil
 	}
-	return r.render(id)
+	data := make([]interface{}, len(id))
+	for i, v := range id {
+		data[i] = v
+	}
+	return r.render(data...)
 }
 
 // Endpoint will return the non-templated endpoint string for resource

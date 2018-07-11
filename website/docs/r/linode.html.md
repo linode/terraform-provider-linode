@@ -1,16 +1,16 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_linode"
+page_title: "Linode: linode_instance"
 sidebar_current: "docs-linode-resource-linode"
 description: |-
   Manages a Linode instance.
 ---
 
-# linode\_linode
+# linode\_instance
 
 Provides a Linode instance resource.  This can be used to create,
 modify, and delete Linodes. For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/)
-and [Linode APIv3 docs](https://www.linode.com/api).
+and [Linode APIv4 docs](https://development.linode.com/).
 
 Linodes also support `[provisioning](/docs/provisioners/index.html).
 
@@ -19,24 +19,24 @@ Linodes also support `[provisioning](/docs/provisioners/index.html).
 The following example shows how one might use this resource to configure a Linode instance.
 
 ```hcl
-resource "linode_linode" "web" {
-	image = "linode/ubuntu18.04"
-	kernel = "Latest 64 bit"
-	region = "Dallas, TX, USA"
-	size = 2048
-	ssh_key = "ssh-rsa AAAA...Gw== user@example.local"
-	root_password = "terraform-test"
+resource "linode_instance" "web" {
+    image = "linode/ubuntu18.04"
+    kernel = "Latest 64 bit"
+    region = "Dallas, TX, USA"
+    type = "g6-standard-1"
+    ssh_key = "ssh-rsa AAAA...Gw== user@example.local"
+    root_password = "terraform-test"
 
-	name = "foobaz"
-	group = "integration"
-	status = "on"
-	swap_size = 256
-	private_networking = true
+    label = "foobaz"
+    group = "integration"
+    status = "on"
+    swap_size = 256
+    private_networking = true
 
-	// ip_address = "8.8.8.8"
-	// plan_storage = 24576
-	// plan_storage_utilized = 24576
-	// private_ip_address = "192.168.10.50"
+    // ip_address = "8.8.8.8"
+    // plan_storage = 24576
+    // plan_storage_utilized = 24576
+    // private_ip_address = "192.168.10.50"
 }
 ```
 
@@ -44,23 +44,23 @@ resource "linode_linode" "web" {
 
 The following arguments are supported:
 
-* `image` - (Required) The image to use when creating the Linode's disks. Examples are `"linode/debian9"`, `"linode/fedora28"`, and `"linode/arch"`. *Changing `image` forces the creation of a new Linode.*
+* `image` - (Required) The image to use when creating the Linode's disks. Examples are `"linode/debian9"`, `"linode/fedora28"`, and `"linode/arch"`. *Changing `image` forces the creation of a new Linode Instance.*
 
 * `kernel` - (Required) The kernel to start the linode with. Specify `"linode/latest-64bit"` or `"linode/latest-32bit""` for the most recent Linode provided kernel. "linode/direct-disk" can be used to boot the raw disk and "linode/grub2" will boot to the Grub config on the disk.
 
-* `region` - (Required) The region that the linode will be created in *Changing `region` forces the creation of a new Linode.*
+* `region` - (Required) The region that the linode will be created in.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc.  *Changing `region` forces the creation of a new Linode Instance.*.
 
-* `type` - (Required) The Linode type defines the pricing, CPU, disk, and RAM specs of the instance.  Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, etc.)
+* `type` - (Required) The Linode type defines the pricing, CPU, disk, and RAM specs of the instance.  Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, etc.
 
-* `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode.*
+* `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
-* `root_password` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode.*
+* `root_password` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
   A `root_password` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
 
 - - -
 
-* `name` - (Optional) The name of the Linode.
+* `label` - (Optional) The label of the Linode.
 
 * `group` - (Optional) The group of the Linode.
 
@@ -73,7 +73,6 @@ The following arguments are supported:
 * `disk_expansion` - (Optional) A boolean that when true will automatically expand the root volume if the size of the Linode plan is increased.  Setting this value will prevent downsizing without manually shrinking the volume prior to decreasing the size.
 
 * `swap_size` - (Optional) Sets the size of the swap partition on a Linode in MB.  At this time, this cannot be modified by Terraform after initial provisioning.  If manually modified via the Web GUI, this value will reflect such modification.  This value can be set to 0 to create a Linode without a swap partition.  Defaults to 256.
-
 
 ## Attributes
 
@@ -89,11 +88,10 @@ This resource exports the following attributes:
 
 * `plan_storage_utilized` - An integer sum of the size of all the Linode's disks, given in MB.
 
-
 ## Import
 
-Linodes can be imported using the Linode `id`, e.g.
+Linodes Instances can be imported using the Linode `id`, e.g.
 
-```
-terraform import linode_linode.mylinode 1234567
+```sh
+terraform import linode_instance.mylinode 1234567
 ```

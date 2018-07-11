@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccLinodeLinodeBasic(t *testing.T) {
+func TestAccLinodeInstanceBasic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_linode.foobar"
+	resName := "linode_instance.foobar"
 	//var instance linodego.Instance
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
@@ -25,15 +25,15 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLinodeDestroy,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigBasic(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					//testAccCheckLinodeLinodeExists(&instance),
+					//testAccCheckLinodeInstanceExists(&instance),
 
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr(resName, "name", instanceName),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -51,7 +51,7 @@ func TestAccLinodeLinodeBasic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeLinodeUpdate(t *testing.T) {
+func TestAccLinodeInstanceUpdate(t *testing.T) {
 	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
@@ -63,29 +63,29 @@ func TestAccLinodeLinodeUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLinodeDestroy,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigBasic(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "name", instanceName),
-					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "testing"),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr("linode_instance.foobar", "label", instanceName),
+					//resource.TestCheckResourceAttr("linode_instance.foobar", "group", "testing"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpdates(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigUpdates(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "name", fmt.Sprintf("%s_renamed", instanceName)),
-					//resource.TestCheckResourceAttr("linode_linode.foobar", "group", "integration"),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr("linode_instance.foobar", "label", fmt.Sprintf("%s_renamed", instanceName)),
+					//resource.TestCheckResourceAttr("linode_instance.foobar", "group", "integration"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeLinodeResize(t *testing.T) {
+func TestAccLinodeInstanceResize(t *testing.T) {
 	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
@@ -97,43 +97,43 @@ func TestAccLinodeLinodeResize(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLinodeDestroy,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "storage_utilized", "25600"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "storage", "25600"),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr("linode_instance.foobar", "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "plan_storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "storage", "25600"),
 				),
 			},
 			// Bump it to a 2048, but don't expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeBigger(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigUpsizeBigger(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-standard-1"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "storage_utilized", "25600"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "storage", "25600"),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr("linode_instance.foobar", "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "plan_storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "storage_utilized", "25600"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "storage", "25600"),
 				),
 			},
 			// Go back down to a 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigDownsize(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigDownsize(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr("linode_instance.foobar", "type", "g6-nanode-1"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeLinodeExpandDisk(t *testing.T) {
+func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
@@ -145,31 +145,31 @@ func TestAccLinodeLinodeExpandDisk(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLinodeDestroy,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeSmall(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr("linode_instance.foobar", "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "plan_storage_utilized", "25600"),
 				),
 			},
 			// Bump it to a 2048, and expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigUpsizeExpandDisk(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					resource.TestCheckResourceAttr("linode_linode.foobar", "type", "g6-standard-1"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "plan_storage_utilized", "25600"),
+					testAccCheckLinodeInstanceExists,
+					resource.TestCheckResourceAttr("linode_instance.foobar", "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "plan_storage_utilized", "25600"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
+func TestAccLinodeInstancePrivateNetworking(t *testing.T) {
 	t.Parallel()
 
 	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
@@ -181,25 +181,25 @@ func TestAccLinodeLinodePrivateNetworking(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLinodeDestroy,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckLinodeLinodeConfigPrivateNetworking(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigPrivateNetworking(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLinodeExists,
-					testAccCheckLinodeLinodeAttributesPrivateNetworking("linode_linode.foobar"),
-					resource.TestCheckResourceAttr("linode_linode.foobar", "private_networking", "true"),
+					testAccCheckLinodeInstanceExists,
+					testAccCheckLinodeInstanceAttributesPrivateNetworking("linode_instance.foobar"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "private_networking", "true"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckLinodeLinodeExists(s *terraform.State) error {
+func testAccCheckLinodeInstanceExists(s *terraform.State) error {
 	client := testAccProvider.Meta().(linodego.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_linode" {
+		if rs.Type != "linode_instance" {
 			continue
 		}
 
@@ -207,20 +207,20 @@ func testAccCheckLinodeLinodeExists(s *terraform.State) error {
 
 		_, err = client.GetInstance(id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["name"], err)
+			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
+func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
 		return fmt.Errorf("Failed to get Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_linode" {
+		if rs.Type != "linode_instance" {
 			continue
 		}
 
@@ -247,7 +247,7 @@ func testAccCheckLinodeLinodeDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.TestCheckFunc {
+func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -273,10 +273,10 @@ func testAccCheckLinodeLinodeAttributesPrivateNetworking(n string) resource.Test
 	}
 }
 
-func testAccCheckLinodeLinodeConfigBasic(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceConfigBasic(instance string, pubkey string) string {
 	return fmt.Sprintf(`
-resource "linode_linode" "foobar" {
-	name = "%s"
+resource "linode_instance" "foobar" {
+	label = "%s"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -287,10 +287,10 @@ resource "linode_linode" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpdates(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceConfigUpdates(instance string, pubkey string) string {
 	return fmt.Sprintf(`
-resource "linode_linode" "foobar" {
-	name = "%s_renamed"
+resource "linode_instance" "foobar" {
+	label = "%s_renamed"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -301,10 +301,10 @@ resource "linode_linode" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpsizeSmall(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceConfigUpsizeSmall(instance string, pubkey string) string {
 	return fmt.Sprintf(`
-resource "linode_linode" "foobar" {
-	name = "%s"
+resource "linode_instance" "foobar" {
+	label = "%s"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -315,10 +315,10 @@ resource "linode_linode" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpsizeBigger(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceConfigUpsizeBigger(instance string, pubkey string) string {
 	return fmt.Sprintf(`
-resource "linode_linode" "foobar" {
-	name = "%s_upsized"
+resource "linode_instance" "foobar" {
+	label = "%s_upsized"
 	type = "g6-standard-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -329,10 +329,10 @@ resource "linode_linode" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigDownsize(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceConfigDownsize(instance string, pubkey string) string {
 	return fmt.Sprintf(`
-resource "linode_linode" "foobar" {
-	name = "%s_downsized"
+resource "linode_instance" "foobar" {
+	label = "%s_downsized"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
@@ -343,10 +343,10 @@ resource "linode_linode" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigUpsizeExpandDisk(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceConfigUpsizeExpandDisk(instance string, pubkey string) string {
 	return fmt.Sprintf(`
-resource "linode_linode" "foobar" {
-	name = "%s_expanded"
+resource "linode_instance" "foobar" {
+	label = "%s_expanded"
 	type = "g6-standard-1"
 	disk_expansion = true
 	image = "linode/ubuntu18.04"
@@ -358,10 +358,10 @@ resource "linode_linode" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeLinodeConfigPrivateNetworking(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceConfigPrivateNetworking(instance string, pubkey string) string {
 	return fmt.Sprintf(`
-resource "linode_linode" "foobar" {
-	name = "%s"
+resource "linode_instance" "foobar" {
+	label = "%s"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"

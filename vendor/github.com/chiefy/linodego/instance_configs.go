@@ -150,7 +150,7 @@ func (c *Client) GetInstanceConfig(linodeID int, configID int) (*InstanceConfig,
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, configID)
-	r, err := c.R().SetResult(&InstanceConfig{}).Get(e)
+	r, err := coupleAPIErrors(c.R().SetResult(&InstanceConfig{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

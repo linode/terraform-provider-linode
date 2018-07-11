@@ -23,11 +23,12 @@ const (
 	Version = "1.0.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
-	// APIPollsPerSecond how frequently to poll for new Events
+	// APISecondsPerPoll how frequently to poll for new Events
 	APISecondsPerPoll = 10
 )
 
 var userAgent = fmt.Sprintf("linodego %s https://github.com/chiefy/linodego", Version)
+var envDebug = false
 
 // Client is a wrapper around the Resty client
 type Client struct {
@@ -66,6 +67,18 @@ type Client struct {
 	Notifications         *Resource
 	Profile               *Resource
 	Managed               *Resource
+}
+
+func init() {
+	// Wether or not we will enable Resty debugging output
+	if envDebug, ok := os.LookupEnv("LINODE_DEBUG"); ok {
+		if apiDebug, err := strconv.ParseBool(envDebug); err == nil {
+			log.Println("[INFO] LINODE_DEBUG being set to", apiDebug)
+		} else {
+			log.Println("[WARN] LINODE_DEBUG should be an integer, 0 or 1")
+		}
+	}
+
 }
 
 // SetUserAgent sets a custom user-agent for HTTP requests
@@ -153,16 +166,7 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 	client.resty = restyClient
 	client.resources = resources
 
-	// Wether or not we will enable Resty debugging output
-	if envDebug, apiOk := os.LookupEnv("LINODE_DEBUG"); apiOk {
-		if apiDebug, err := strconv.Atoi(envDebug); err == nil {
-			log.Println("LINODE_DEBUG being set to", apiDebug > 0)
-			client.SetDebug(apiDebug > 0)
-		} else {
-			log.Println("LINODE_DEBUG should be an integer, 0 or 1")
-		}
-	}
-
+	client.SetDebug(envDebug)
 	client.Images = resources[imagesName]
 	client.StackScripts = resources[stackscriptsName]
 	client.Instances = resources[instancesName]
@@ -191,6 +195,28 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 	client.Profile = resources[profileName]
 	client.Managed = resources[managedName]
 	return
+}
+
+// waitForInstanceStatus waits for the Linode instance to reach the desired state
+// before returning. It will timeout with an error after timeoutSeconds.
+func WaitForInstanceStatus(client *Client, instanceID int, status InstanceStatus, timeoutSeconds int) error {
+	start := time.Now()
+	for {
+		instance, err := client.GetInstance(instanceID)
+		if err != nil {
+			return err
+		}
+		complete := (instance.Status == status)
+
+		if complete {
+			return nil
+		}
+
+		time.Sleep(1 * time.Second)
+		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
+			return fmt.Errorf("Instance %d didn't reach '%s' status in %d seconds", instanceID, status, timeoutSeconds)
+		}
+	}
 }
 
 // WaitForEventFinished waits for an entity action to reach the 'finished' state

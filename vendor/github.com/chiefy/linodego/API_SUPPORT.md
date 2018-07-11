@@ -7,20 +7,18 @@
   - [X] `POST`
 - `/linode/instances/$id`
   - [x] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
+  - [X] `PUT`
+  - [X] `DELETE`
 - `/linode/instances/$id/boot`
   - [x] `POST`
 - `/linode/instances/$id/clone`
   - [x] `POST`
-- `/linode/instances/$id/kvmify`
-  - [ ] `POST`
 - `/linode/instances/$id/mutate`
-  - [ ] `POST`
+  - [X] `POST`
 - `/linode/instances/$id/reboot`
   - [x] `POST`
 - `/linode/instances/$id/rebuild`
-  - [ ] `POST`
+  - [X] `POST`
 - `/linode/instances/$id/rescue`
   - [ ] `POST`
 - `/linode/instances/$id/resize`
@@ -46,28 +44,28 @@
 
 - `/linode/instances/$id/configs`
   - [X] `GET`
-  - [ ] `POST`
+  - [X] `POST`
 - `/linode/instances/$id/configs/$id`
   - [X] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
+  - [X] `PUT`
+  - [X] `DELETE`
 
 ### Disks
 
 - `/linode/instances/$id/disks`
   - [X] `GET`
-  - [ ] `POST`
+  - [X] `POST`
 - `/linode/instances/$id/disks/$id`
   - [X] `GET`
-  - [ ] `PUT`
-  - [ ] `POST`
-  - [ ] `DELETE`
+  - [X] `PUT`
+  - [X] `POST`
+  - [X] `DELETE`
 - `/linode/instances/$id/disks/$id/imagize`
   - [ ] `POST`
 - `/linode/instances/$id/disks/$id/password`
   - [ ] `POST`
 - `/linode/instances/$id/disks/$id/resize`
-  - [ ] `POST`
+  - [X] `POST`
 
 ### IPs
 
@@ -115,29 +113,29 @@
 ## Domains
 
 - `/domains`
-  - [ ] `GET`
-  - [ ] `POST`
+  - [X] `GET`
+  - [X] `POST`
 - `/domains/$id`
-  - [ ] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
+  - [X] `GET`
+  - [X] `PUT`
+  - [X] `DELETE`
 - `/domains/$id/clone`
   - [ ] `POST`
 - `/domains/$id/records`
-  - [ ] `GET`
+  - [X] `GET`
   - [ ] `POST`
 - `/domains/$id/records/$id`
-  - [ ] `GET`
+  - [X] `GET`
   - [ ] `PUT`
   - [ ] `DELETE`
 
 ## Longview
 
 - `/longview/clients`
-  - [ ] `GET`
+  - [X] `GET`
   - [ ] `POST`
 - `/longview/clients/$id`
-  - [ ] `GET`
+  - [X] `GET`
   - [ ] `PUT`
   - [ ] `DELETE`
 
@@ -151,50 +149,52 @@
 ### NodeBalancers
 
 - `/nodebalancers`
-  - [ ] `GET`
-  - [ ] `POST`
+  - [X] `GET`
+  - [X] `POST`
 - `/nodebalancers/$id`
-  - [ ] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
+  - [X] `GET`
+  - [X] `PUT`
+  - [X] `DELETE`
 
-### Configs
+### NodeBalancer Configs
 
 - `/nodebalancers/$id/configs`
-  - [ ] `GET`
-  - [ ] `POST`
+  - [X] `GET`
+  - [X] `POST`
 - `/nodebalancers/$id/configs/$id`
-  - [ ] `GET`
-  - [ ] `DELETE`
+  - [X] `GET`
+  - [X] `DELETE`
 - `/nodebalancers/$id/configs/$id/nodes`
-  - [ ] `GET`
-  - [ ] `POST`
+  - [X] `GET`
+  - [X] `POST`
 - `/nodebalancers/$id/configs/$id/nodes/$id`
-  - [ ] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
-- `/nodebalancers/$id/configs/$id/ssl`
-  - [ ] `POST`
+  - [X] `GET`
+  - [X] `PUT`
+  - [X] `DELETE`
 
 ## Networking
 
 - `/networking/ip-assign`
   - [ ] `POST`
-- `/networking/ipv4`
-  - [ ] `GET`
+- `/networking/ips`
+  - [X] `GET`
   - [ ] `POST`
-- `/networking/ipv4/$address`
-  - [ ] `GET`
+- `/networking/ips/$address`
+  - [X] `GET`
   - [ ] `PUT`
   - [ ] `DELETE`
 
 ### IPv6
 
-- `/networking/ipv6`
-  - [ ] `GET`
-- `/networking/ipv6/$address`
-  - [ ] `GET`
+- `/networking/ips`
+  - [X] `GET`
+- `/networking/ips/$address`
+  - [X] `GET`
   - [ ] `PUT`
+- /networking/ipv6/ranges
+  - [X] `GET`
+- /networking/ipv6/pools
+  - [X] `GET`
 
 ## Regions
 
@@ -206,10 +206,10 @@
 ## Support
 
 - `/support/tickets`
-  - [ ] `GET`
+  - [X] `GET`
   - [ ] `POST`
 - `/support/tickets/$id`
-  - [ ] `GET`
+  - [X] `GET`
 - `/support/tickets/$id/attachments`
   - [ ] `POST`
 - `/support/tickets/$id/replies`
@@ -221,27 +221,27 @@
 ### Events
 
 - `/account/events`
-  - [ ] `GET`
+  - [X] `GET`
 - `/account/events/$id`
-  - [ ] `GET`
+  - [X] `GET`
 - `/account/events/$id/read`
-  - [ ] `POST`
+  - [X] `POST`
 - `/account/events/$id/seen`
-  - [ ] `POST`
+  - [X] `POST`
 
 ### Invoices
 
 - `/account/invoices/`
-  - [ ] `GET`
+  - [X] `GET`
 - `/account/invoices/$id`
-  - [ ] `GET`
+  - [X] `GET`
 - `/account/invoices/$id/items`
-  - [ ] `GET`
+  - [X] `GET`
 
 ### Notifications
 
 - `/account/notifications`
-  - [ ] `GET`
+  - [X] `GET`
 
 ### OAuth Clients
 

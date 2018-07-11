@@ -186,6 +186,20 @@ func (c *Client) ListEvents(opts *ListOptions) ([]*Event, error) {
 	return response.Data, nil
 }
 
+// GetEvent gets the Event with the Event ID
+func (c *Client) GetEvent(id int) (*Event, error) {
+	e, err := c.Events.Endpoint()
+	if err != nil {
+		return nil, err
+	}
+	e = fmt.Sprintf("%s/%d", e, id)
+	r, err := c.R().SetResult(&Event{}).Get(e)
+	if err != nil {
+		return nil, err
+	}
+	return r.Result().(*Event).fixDates(), nil
+}
+
 // fixDates converts JSON timestamps to Go time.Time values
 func (v *Event) fixDates() *Event {
 	v.Created, _ = parseDates(v.CreatedStr)

@@ -2,57 +2,37 @@ package linode
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
 	"golang.org/x/crypto/sha3"
 )
 
-// Instance.Status values
-const (
-	InstanceBooting      = "booting"
-	InstanceRunning      = "running"
-	InstanceOffline      = "offline"
-	InstanceShuttingDown = "shutting_down"
-	InstanceRebooting    = "rebooting"
-	InstanceProvisioning = "provisioning"
-	InstanceDeleting     = "deleting"
-	InstanceMigrating    = "migrating"
-	InstanceRebuilding   = "rebuilding"
-	InstanceCloning      = "cloning"
-	InstanceRestoring    = "restoring"
-)
-
 // WaitTimeout is the default number of seconds to wait for Linode instance status changes
 const WaitTimeout = 600
 
 var (
-	kernelList        []*linodego.LinodeKernel
-	kernelListMap     map[string]*linodego.LinodeKernel
-	regionList        []*linodego.Region
-	regionListMap     map[string]*linodego.Region
-	typeList          []*linodego.LinodeType
-	typeListMap       map[string]*linodego.LinodeType
-	latestKernelStrip *regexp.Regexp
+	kernelList    []*linodego.LinodeKernel
+	kernelListMap map[string]*linodego.LinodeKernel
+	regionList    []*linodego.Region
+	regionListMap map[string]*linodego.Region
+	typeList      []*linodego.LinodeType
+	typeListMap   map[string]*linodego.LinodeType
 )
 
 func init() {
-	latestKernelStrip = regexp.MustCompile("\\s*\\(.*\\)\\s*")
 }
 
-func resourceLinodeLinode() *schema.Resource {
+func resourceLinodeInstance() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeLinodeCreate,
-		Read:   resourceLinodeLinodeRead,
-		Update: resourceLinodeLinodeUpdate,
-		Delete: resourceLinodeLinodeDelete,
-		Exists: resourceLinodeLinodeExists,
+		Create: resourceLinodeInstanceCreate,
+		Read:   resourceLinodeInstanceRead,
+		Update: resourceLinodeInstanceUpdate,
+		Delete: resourceLinodeInstanceDelete,
+		Exists: resourceLinodeInstanceExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -71,8 +51,13 @@ func resourceLinodeLinode() *schema.Resource {
 				InputDefault: "linode/direct-disk",
 			},
 			"name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
+				Removed:  "See 'label'",
+			},
+			"label": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "The name (or label) of the Linode instance.",
+				Description: "The label of the Linode instance.",
 				Optional:    true,
 			},
 			"group": &schema.Schema{
@@ -102,10 +87,10 @@ func resourceLinodeLinode() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The type of instance to be deployed, determining the price and size.",
 				Optional:    true,
-				Default:     "g5-standard-1",
+				Default:     "g6-standard-1",
 			},
 			"status": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Description: "The status of the instance, indicating the current readiness state.",
 				Computed:    true,
 			},
@@ -193,7 +178,7 @@ func resourceLinodeLinode() *schema.Resource {
 	}
 }
 
-func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -207,7 +192,7 @@ func resourceLinodeLinodeExists(d *schema.ResourceData, meta interface{}) (bool,
 	return true, nil
 }
 
-func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -244,7 +229,7 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("private_networking", false)
 	}
 
-	d.Set("name", instance.Label)
+	d.Set("label", instance.Label)
 	d.Set("status", instance.Status)
 	d.Set("type", instance.Type)
 	d.Set("region", instance.Region)
@@ -306,7 +291,7 @@ func resourceLinodeLinodeRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 	waitSeconds := 180
 	client, ok := meta.(linodego.Client)
 	if !ok {
@@ -332,19 +317,19 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 		// Type:   linodetype.ID,
 		Region: d.Get("region").(string),
 		Type:   d.Get("type").(string),
-		Label:  d.Get("name").(string),
+		Label:  d.Get("label").(string),
 		Group:  d.Get("group").(string),
 	}
 	instance, err := client.CreateInstance(&createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode instance in region %s of type %d because %s", d.Get("region"), d.Get("type"), err)
+		return fmt.Errorf("Failed to create a Linode instance in region %s of type %s because %s", d.Get("region"), d.Get("type"), err)
 	}
 	d.SetId(fmt.Sprintf("%d", instance.ID))
-	d.Set("name", instance.Label)
+	d.Set("label", instance.Label)
 
 	d.SetPartial("region")
 	d.SetPartial("type")
-	d.SetPartial("name")
+	d.SetPartial("label")
 	d.SetPartial("group")
 
 	swapSize := 0
@@ -467,14 +452,14 @@ func resourceLinodeLinodeCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	d.Partial(false)
-	if err = waitForInstanceStatus(&client, instance.ID, InstanceRunning, WaitTimeout); err != nil {
+	if err = linodego.WaitForInstanceStatus(&client, instance.ID, linodego.InstanceRunning, WaitTimeout); err != nil {
 		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot because %s", instance.ID, err)
 	}
 
-	return resourceLinodeLinodeRead(d, meta)
+	return resourceLinodeInstanceRead(d, meta)
 }
 
-func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	d.Partial(true)
 
@@ -488,12 +473,12 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Failed to fetch data about the current linode because %s", err)
 	}
 
-	if d.HasChange("name") {
-		if instance, err = client.RenameInstance(instance.ID, d.Get("name").(string)); err != nil {
+	if d.HasChange("label") {
+		if instance, err = client.RenameInstance(instance.ID, d.Get("label").(string)); err != nil {
 			return err
 		}
-		d.Set("name", instance.Label)
-		d.SetPartial("name")
+		d.Set("label", instance.Label)
+		d.SetPartial("label")
 	}
 
 	rebootInstance := false
@@ -560,16 +545,16 @@ func resourceLinodeLinodeUpdate(d *schema.ResourceData, meta interface{}) error 
 		if err != nil {
 			return fmt.Errorf("Failed to reboot Linode instance %d because %s", instance.ID, err)
 		}
-		err = waitForEventComplete(&client, int(id), "linode_reboot", WaitTimeout)
+		_, err = client.WaitForEventFinished(id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, WaitTimeout)
 		if err != nil {
 			return fmt.Errorf("Failed while waiting for Linode instance %d to finish rebooting because %s", instance.ID, err)
 		}
 	}
 
-	return nil // resourceLinodeLinodeRead(d, meta)
+	return nil // resourceLinodeInstanceRead(d, meta)
 }
 
-func resourceLinodeLinodeDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -726,67 +711,6 @@ func rootPasswordState(val interface{}) string {
 func hashString(key string) string {
 	hash := sha3.Sum512([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])
-}
-
-// waitForInstanceStatus waits for the Linode instance to reach the desired state
-// before returning. It will timeout with an error after timeoutSeconds.
-func waitForInstanceStatus(client *linodego.Client, linodeID int, status string, timeoutSeconds int) error {
-	start := time.Now()
-	for {
-		linode, err := client.GetInstance(linodeID)
-		if err != nil {
-			return err
-		}
-		complete := (linode.Status == status)
-
-		if complete {
-			return nil
-		}
-
-		time.Sleep(1 * time.Second)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Linode %d didn't reach '%s' status in %d seconds", linodeID, status, timeoutSeconds)
-		}
-	}
-}
-
-// waitForInstanceStatus waits for the Linode instance to reach the desired state
-// before returning. It will timeout with an error after timeoutSeconds.
-func waitForEventComplete(client *linodego.Client, linodeID int, action string, timeoutSeconds int) error {
-	start := time.Now()
-	for {
-		filter, err := json.Marshal(map[string]interface{}{
-			"entity": map[string]interface{}{
-				"id":   linodeID,
-				"type": linodego.EntityLinode,
-			},
-			"action":    action,
-			"+order_by": "created",
-			"+order":    "desc",
-		})
-
-		listOptions := linodego.NewListOptions(0, string(filter))
-		events, err := client.ListEvents(listOptions)
-		if err != nil {
-			return err
-		}
-
-		// If there are events for this instance + action, inspect them
-		if len(events) > 0 {
-			if events[0].Status == linodego.EventFailed {
-				return fmt.Errorf("Instance %d action %s failed", linodeID, action)
-			}
-			if events[0].Status == linodego.EventFinished {
-				return nil
-			}
-		}
-		// otherwise, there are no events. Either pushed out of the list
-		// or they haven't been spawned.  @TODO filter by > created date
-		time.Sleep(1 * time.Second)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Did not find 'finish' status of instance %d action '%s' within %d seconds", linodeID, action, timeoutSeconds)
-		}
-	}
 }
 
 // changeLinodeSize resizes the current linode

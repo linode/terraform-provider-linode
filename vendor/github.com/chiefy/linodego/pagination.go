@@ -394,3 +394,62 @@ func (c *Client) listHelperWithID(i interface{}, id int, opts *ListOptions) erro
 
 	return nil
 }
+
+// listHelperWithTwoIDs abstracts fetching and pagination for GET endpoints that
+// require twos IDs (third level endpoints).
+// When opts (or opts.Page) is nil, all pages will be fetched and
+// returned in a single (endpoint-specific)PagedResponse
+// opts.results and opts.pages will be updated from the API response
+func (c *Client) listHelperWithTwoIDs(i interface{}, firstID, secondID int, opts *ListOptions) error {
+	req := c.R()
+	if opts != nil && opts.Page > 0 {
+		req.SetQueryParam("page", strconv.Itoa(opts.Page))
+	}
+
+	var (
+		err     error
+		pages   int
+		results int
+		r       *resty.Response
+	)
+
+	if opts != nil && len(opts.Filter) > 0 {
+		req.SetHeader("X-Filter", opts.Filter)
+	}
+
+	switch v := i.(type) {
+	case *NodeBalancerNodesPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(NodeBalancerNodesPagedResponse{}).Get(v.endpointWithTwoIDs(c, firstID, secondID))); err == nil {
+			pages = r.Result().(*NodeBalancerNodesPagedResponse).Pages
+			results = r.Result().(*NodeBalancerNodesPagedResponse).Results
+			v.appendData(r.Result().(*NodeBalancerNodesPagedResponse))
+		}
+
+	default:
+		log.Fatalf("Unknown listHelperWithTwoIDs interface{} %T used", i)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if opts == nil {
+		for page := 2; page <= pages; page = page + 1 {
+			c.listHelper(i, &ListOptions{PageOptions: &PageOptions{Page: page}})
+		}
+	} else {
+		if opts.PageOptions == nil {
+			opts.PageOptions = &PageOptions{}
+		}
+		if opts.Page == 0 {
+			for page := 2; page <= pages; page = page + 1 {
+				opts.Page = page
+				c.listHelper(i, opts)
+			}
+		}
+		opts.Results = results
+		opts.Pages = pages
+	}
+
+	return nil
+}
