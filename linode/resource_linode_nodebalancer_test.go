@@ -132,7 +132,8 @@ resource "linode_nodebalancer" "foobar" {
 	label = "%s"
 	region = "us-east"
 	client_conn_throttle = 20
-}`, nodebalancer)
+}
+`, nodebalancer)
 }
 
 func testAccCheckLinodeNodeBalancerUpdates(nodebalancer string) string {
@@ -141,5 +142,6 @@ resource "linode_nodebalancer" "foobar" {
 	label = "%s_renamed"
 	region = "us-east"
 	client_conn_throttle = 0
-}`, nodebalancer)
+}
+`, nodebalancer)
 }

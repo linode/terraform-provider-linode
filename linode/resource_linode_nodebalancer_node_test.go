@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccLinodeNodeBalancerNodeBasic(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
@@ -25,9 +25,10 @@ func TestAccLinodeNodeBalancerNodeBasic(t *testing.T) {
 		CheckDestroy:              testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				Config:            config,
+				ResourceName: resName,
+				// ImportState:  true,
+				// ImportStateVerify: true,
+				Config: config,
 			},
 			{
 				Config: config,
@@ -40,11 +41,6 @@ func TestAccLinodeNodeBalancerNodeBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "mode", "accept"),
 					resource.TestCheckResourceAttr(resName, "weight", "50"),
 				),
-			},
-
-			resource.TestStep{
-				ResourceName: resName,
-				ImportState:  true,
 			},
 		},
 	})

@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
@@ -21,16 +21,14 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { testAccPreCheck(t) },
 		Providers:                 testAccProviders,
-		CheckDestroy:              testAccCheckLinodeNodeBalancerDestroy,
+		CheckDestroy:              testAccCheckLinodeNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
-			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				Config:            config,
-			},
-			{
-				Config: config,
-				Check: resource.ComposeTestCheckFunc(
+			resource.TestStep{
+				//ImportState:       true,
+				//ImportStateVerify: true,
+				Config:       config,
+				ResourceName: resName,
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckLinodeNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
@@ -57,7 +55,7 @@ func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerConfigExists,
@@ -71,7 +69,7 @@ func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeNodeBalancerConfigUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerConfigExists,
@@ -137,7 +135,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 		}
 
 		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request NodeBalancer with id %d", id)
+			return fmt.Errorf("Failed to request NodeBalancer Config with id %d", id)
 		}
 	}
 

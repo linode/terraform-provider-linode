@@ -130,7 +130,7 @@ func resourceLinodeNodeBalancerConfigExists(d *schema.ResourceData, meta interfa
 	}
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return false, fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer"))
+		return false, fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 
 	_, err = client.GetNodeBalancerConfig(int(nodebalancerID), int(id))
@@ -164,7 +164,7 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 	}
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer"))
+		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 
 	nodebalancer, err := client.GetNodeBalancerConfig(int(nodebalancerID), int(id))
@@ -225,7 +225,7 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 	}
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int", d.Get("nodebalancer"))
+		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int", d.Get("nodebalancer_id"))
 	}
 
 	config, err := client.GetNodeBalancerConfig(nodebalancerID, int(id))
@@ -268,9 +268,9 @@ func resourceLinodeNodeBalancerConfigDelete(d *schema.ResourceData, meta interfa
 	}
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer"))
+		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
-	err = client.DeleteNodeBalancerConfig(int(nodebalancerID), int(id))
+	err = client.DeleteNodeBalancerConfig(nodebalancerID, int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to delete Linode NodeBalancerConfig %d because %s", id, err)
 	}
