@@ -40,15 +40,16 @@ func resourceLinodeInstance() *schema.Resource {
 			"image": &schema.Schema{
 				Type:         schema.TypeString,
 				Description:  "The image to deploy to the disk.",
-				Required:     true,
+				Optional:     true,
 				ForceNew:     true,
 				InputDefault: "linode/debian9",
 			},
 			"kernel": &schema.Schema{
 				Type:         schema.TypeString,
 				Description:  "The kernel used at boot by the Linode Config. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
-				Required:     true,
-				InputDefault: "linode/direct-disk",
+				Optional:     true,
+				InputDefault: "linode/grub2",
+				Computed:     true,
 			},
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -59,6 +60,7 @@ func resourceLinodeInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The label of the Linode instance.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"group": &schema.Schema{
 				Type:     schema.TypeString,
@@ -133,7 +135,7 @@ func resourceLinodeInstance() *schema.Resource {
 				Type:          schema.TypeList,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Description:   "The public keys to be used for accessing the root account via ssh.",
-				Required:      true,
+				Optional:      true,
 				ForceNew:      true,
 				StateFunc:     sshKeyState,
 				PromoteSingle: true,
