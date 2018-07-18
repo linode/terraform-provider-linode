@@ -32,6 +32,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_nodebalancer":        resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config": resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":   resourceLinodeNodeBalancerNode(),
+			"linode_volume":              resourceLinodeVolume(),
 		},
 
 		ConfigureFunc: providerConfigure,
