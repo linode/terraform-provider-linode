@@ -405,10 +405,10 @@
 			"revisionTime": "2018-07-10T00:45:13Z"
 		},
 		{
-			"checksumSHA1": "kLjpVhUEXq7qukXhCQg8nJnCMqU=",
+			"checksumSHA1": "HfsrJyLaagBp6+ow09fpugZ+pD0=",
 			"path": "github.com/chiefy/linodego",
-			"revision": "482106b5e29734ad263c99294039d8852807664b",
-			"revisionTime": "2018-07-10T19:04:58Z"
+			"revision": "1c1608317cd6be126cadbf24832be5dd9cbbc7be",
+			"revisionTime": "2018-07-18T19:23:02Z"
 		},
 		{
 			"checksumSHA1": "/5cvgU+J4l7EhMXTK76KaCAfOuU=",
@@ -429,11 +429,11 @@
 			"revisionTime": "2018-07-10T00:45:13Z"
 		},
 		{
-			"checksumSHA1": "uI8W1u85PnWWgU7DgsYz5NB7wEQ=",
+			"checksumSHA1": "KzofIc7OdR3BCibMtfXR4g3b1tc=",
 			"origin": "github.com/chiefy/go-linode/vendor/github.com/go-resty/resty",
 			"path": "github.com/go-resty/resty",
-			"revision": "5c07f747c3c360ff2a77bfb50d8a8469369accfd",
-			"revisionTime": "2018-05-04T02:17:11Z"
+			"revision": "fccc498aed22c31ff3768bcac00795f94149a21d",
+			"revisionTime": "2018-07-04T18:53:29Z"
 		},
 		{
 			"checksumSHA1": "q3Bc7JpLWBqhZ4M7oreGo34RSkc=",
@@ -1213,11 +1213,11 @@
 			"revisionTime": "2018-07-10T00:45:13Z"
 		},
 		{
-			"checksumSHA1": "Q165MxF3KQE3AaU3GGPsKFLEFCU=",
+			"checksumSHA1": "meNMSoP52+2Us6q5QH7KHbnSNfU=",
 			"origin": "github.com/chiefy/go-linode/vendor/golang.org/x/net/publicsuffix",
 			"path": "golang.org/x/net/publicsuffix",
-			"revision": "5c07f747c3c360ff2a77bfb50d8a8469369accfd",
-			"revisionTime": "2018-05-04T02:17:11Z"
+			"revision": "d0887baf81f4598189d4e12a37c6da86f0bba4d0",
+			"revisionTime": "2018-07-12T19:54:13Z"
 		},
 		{
 			"checksumSHA1": "GQHKESPeCcAsnerZPtHadvKUIzs=",

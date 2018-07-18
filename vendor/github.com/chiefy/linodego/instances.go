@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"strconv"
 	"time"
 
 	"github.com/go-resty/resty"
@@ -149,40 +148,15 @@ func (InstancesPagedResponse) setResult(r *resty.Request) {
 
 // ListInstances lists linode instances
 func (c *Client) ListInstances(opts *ListOptions) ([]*Instance, error) {
-	e, err := c.Instances.Endpoint()
-	if err != nil {
-		return nil, err
-	}
-
-	req := c.R().SetResult(&InstancesPagedResponse{})
-
-	if opts != nil {
-		req.SetQueryParam("page", strconv.Itoa(opts.Page))
-	}
-
-	r, err := req.Get(e)
-	if err != nil {
-		return nil, err
-	}
-
-	data := r.Result().(*InstancesPagedResponse).Data
-	pages := r.Result().(*InstancesPagedResponse).Pages
-	results := r.Result().(*InstancesPagedResponse).Results
-
-	for _, el := range data {
+	response := InstancesPagedResponse{}
+	err := c.listHelper(&response, opts)
+	for _, el := range response.Data {
 		el.fixDates()
 	}
-
-	if opts == nil {
-		for page := 2; page <= pages; page = page + 1 {
-			next, _ := c.ListInstances(&ListOptions{PageOptions: &PageOptions{Page: page}})
-			data = append(data, next...)
-		}
-	} else {
-		opts.Results = results
+	if err != nil {
+		return nil, err
 	}
-
-	return data, nil
+	return response.Data, nil
 }
 
 // GetInstance gets the instance with the provided ID

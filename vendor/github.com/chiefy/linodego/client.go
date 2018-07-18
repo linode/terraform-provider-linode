@@ -219,6 +219,28 @@ func WaitForInstanceStatus(client *Client, instanceID int, status InstanceStatus
 	}
 }
 
+// WaitForVolumeStatus waits for the Volume to reach the desired state
+// before returning. It will timeout with an error after timeoutSeconds.
+func WaitForVolumeStatus(client *Client, volumeID int, status VolumeStatus, timeoutSeconds int) error {
+	start := time.Now()
+	for {
+		volume, err := client.GetVolume(volumeID)
+		if err != nil {
+			return err
+		}
+		complete := (volume.Status == status)
+
+		if complete {
+			return nil
+		}
+
+		time.Sleep(1 * time.Second)
+		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
+			return fmt.Errorf("Instance %d didn't reach '%s' status in %d seconds", volumeID, status, timeoutSeconds)
+		}
+	}
+}
+
 // WaitForEventFinished waits for an entity action to reach the 'finished' state
 // before returning. It will timeout with an error after timeoutSeconds.
 // If the event indicates a failure both the failed event and the error will be returned.
