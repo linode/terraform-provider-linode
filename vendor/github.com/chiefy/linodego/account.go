@@ -1,5 +1,7 @@
 package linodego
 
+import "context"
+
 // Account associated with the token in use
 type Account struct {
 	FirstName  string `json:"first_name"`
@@ -29,12 +31,12 @@ func (v *Account) fixDates() *Account {
 }
 
 // GetAccount gets the contact and billing information related to the Account
-func (c *Client) GetAccount() (*Account, error) {
+func (c *Client) GetAccount(ctx context.Context) (*Account, error) {
 	e, err := c.Account.Endpoint()
 	if err != nil {
 		return nil, err
 	}
-	r, err := coupleAPIErrors(c.R().SetResult(&Account{}).Get(e))
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Account{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

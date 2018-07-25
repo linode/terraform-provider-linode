@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -20,20 +21,20 @@ const (
 	// APIProto connect to API with http(s)
 	APIProto = "https"
 	// Version of linodego
-	Version = "1.0.0"
+	Version = "0.1.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events
 	APISecondsPerPoll = 10
 )
 
-var userAgent = fmt.Sprintf("linodego %s https://github.com/chiefy/linodego", Version)
+var DefaultUserAgent = fmt.Sprintf("linodego %s https://github.com/chiefy/linodego", Version)
 var envDebug = false
 
 // Client is a wrapper around the Resty client
 type Client struct {
-	apiToken  string
 	resty     *resty.Client
+	userAgent string
 	resources map[string]*Resource
 
 	Images                *Resource
@@ -83,20 +84,28 @@ func init() {
 
 // SetUserAgent sets a custom user-agent for HTTP requests
 func (c *Client) SetUserAgent(ua string) *Client {
-	userAgent = ua
+	c.userAgent = ua
+	c.resty.SetHeader("User-Agent", c.userAgent)
+
 	return c
 }
 
 // R wraps resty's R method
-func (c *Client) R() *resty.Request {
+func (c *Client) R(ctx context.Context) *resty.Request {
 	return c.resty.R().
 		SetHeader("Content-Type", "application/json").
+		SetContext(ctx).
 		SetError(APIError{})
 }
 
 // SetDebug sets the debug on resty's client
 func (c *Client) SetDebug(debug bool) *Client {
 	c.resty.SetDebug(debug)
+	return c
+}
+
+func (c *Client) SetBaseURL(url string) *Client {
+	c.resty.SetHostURL(url)
 	return c
 }
 
@@ -110,24 +119,11 @@ func (c Client) Resource(resourceName string) *Resource {
 }
 
 // NewClient factory to create new Client struct
-func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client) {
-	linodeAPIToken := ""
-
-	if codeAPIToken != nil {
-		linodeAPIToken = *codeAPIToken
-	} else if envAPIToken, ok := os.LookupEnv(APIEnvVar); ok {
-		linodeAPIToken = envAPIToken
-	}
-
-	if len(linodeAPIToken) == 0 || linodeAPIToken == "" {
-		log.Print("Could not find LINODE_TOKEN, authenticated endpoints will fail.")
-	}
-
-	restyClient := resty.New().
-		SetHostURL(fmt.Sprintf("%s://%s/%s", APIProto, APIHost, APIVersion)).
-		SetAuthToken(linodeAPIToken).
-		SetTransport(transport).
-		SetHeader("User-Agent", userAgent)
+func NewClient(hc *http.Client) (client Client) {
+	restyClient := resty.NewWithClient(hc)
+	client.resty = restyClient
+	client.SetUserAgent(DefaultUserAgent)
+	client.SetBaseURL(fmt.Sprintf("%s://%s/%s", APIProto, APIHost, APIVersion))
 
 	resources := map[string]*Resource{
 		stackscriptsName:          NewResource(&client, stackscriptsName, stackscriptsEndpoint, false, Stackscript{}, StackscriptsPagedResponse{}),
@@ -162,8 +158,6 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 		managedName:               NewResource(&client, managedName, managedEndpoint, false, nil, nil), // really?
 	}
 
-	client.apiToken = linodeAPIToken
-	client.resty = restyClient
 	client.resources = resources
 
 	client.SetDebug(envDebug)
@@ -199,10 +193,10 @@ func NewClient(codeAPIToken *string, transport http.RoundTripper) (client Client
 
 // waitForInstanceStatus waits for the Linode instance to reach the desired state
 // before returning. It will timeout with an error after timeoutSeconds.
-func WaitForInstanceStatus(client *Client, instanceID int, status InstanceStatus, timeoutSeconds int) error {
+func WaitForInstanceStatus(ctx context.Context, client *Client, instanceID int, status InstanceStatus, timeoutSeconds int) error {
 	start := time.Now()
 	for {
-		instance, err := client.GetInstance(instanceID)
+		instance, err := client.GetInstance(ctx, instanceID)
 		if err != nil {
 			return err
 		}
@@ -221,10 +215,10 @@ func WaitForInstanceStatus(client *Client, instanceID int, status InstanceStatus
 
 // WaitForVolumeStatus waits for the Volume to reach the desired state
 // before returning. It will timeout with an error after timeoutSeconds.
-func WaitForVolumeStatus(client *Client, volumeID int, status VolumeStatus, timeoutSeconds int) error {
+func WaitForVolumeStatus(ctx context.Context, client *Client, volumeID int, status VolumeStatus, timeoutSeconds int) error {
 	start := time.Now()
 	for {
-		volume, err := client.GetVolume(volumeID)
+		volume, err := client.GetVolume(ctx, volumeID)
 		if err != nil {
 			return err
 		}
@@ -236,7 +230,34 @@ func WaitForVolumeStatus(client *Client, volumeID int, status VolumeStatus, time
 
 		time.Sleep(1 * time.Second)
 		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Instance %d didn't reach '%s' status in %d seconds", volumeID, status, timeoutSeconds)
+			return fmt.Errorf("Volume %d didn't reach '%s' status in %d seconds", volumeID, status, timeoutSeconds)
+		}
+	}
+}
+
+// WaitForVolumeLinodeID waits for the Volume to match the desired LinodeID
+// before returning. An active Instance will not immediately attach or detach a volume, so the
+// the LinodeID must be polled to determine volume readiness from the API.
+// WaitForVolumeLinodeID will timeout with an error after timeoutSeconds.
+func WaitForVolumeLinodeID(ctx context.Context, client *Client, volumeID int, linodeID *int, timeoutSeconds int) error {
+	start := time.Now()
+	for {
+		volume, err := client.GetVolume(ctx, volumeID)
+		if err != nil {
+			return err
+		}
+
+		if linodeID == nil && volume.LinodeID == nil {
+			return nil
+		} else if linodeID == nil || volume.LinodeID == nil {
+			// continue waiting
+		} else if *volume.LinodeID == *linodeID {
+			return nil
+		}
+
+		time.Sleep(1 * time.Second)
+		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
+			return fmt.Errorf("Volume %d didn't match LinodeID %d in %d seconds", volumeID, linodeID, timeoutSeconds)
 		}
 	}
 }
@@ -244,7 +265,7 @@ func WaitForVolumeStatus(client *Client, volumeID int, status VolumeStatus, time
 // WaitForEventFinished waits for an entity action to reach the 'finished' state
 // before returning. It will timeout with an error after timeoutSeconds.
 // If the event indicates a failure both the failed event and the error will be returned.
-func (c Client) WaitForEventFinished(id interface{}, entityType EntityType, action EventAction, minStart time.Time, timeoutSeconds int) (*Event, error) {
+func (c Client) WaitForEventFinished(ctx context.Context, id interface{}, entityType EntityType, action EventAction, minStart time.Time, timeoutSeconds int) (*Event, error) {
 	start := time.Now()
 	for {
 		filter, err := json.Marshal(map[string]interface{}{
@@ -276,7 +297,7 @@ func (c Client) WaitForEventFinished(id interface{}, entityType EntityType, acti
 		// Optimistically restrict results to page 1.  We should remove this when more
 		// precise filtering options exist.
 		listOptions := NewListOptions(1, string(filter))
-		events, err := c.ListEvents(listOptions)
+		events, err := c.ListEvents(ctx, listOptions)
 		if err != nil {
 			return nil, err
 		}

@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -63,9 +64,9 @@ func (InstanceSnapshotsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListInstanceSnapshots lists InstanceSnapshots
-func (c *Client) ListInstanceSnapshots(linodeID int, opts *ListOptions) ([]*InstanceSnapshot, error) {
+func (c *Client) ListInstanceSnapshots(ctx context.Context, linodeID int, opts *ListOptions) ([]*InstanceSnapshot, error) {
 	response := InstanceSnapshotsPagedResponse{}
-	err := c.listHelperWithID(&response, linodeID, opts)
+	err := c.listHelperWithID(ctx, &response, linodeID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -76,13 +77,13 @@ func (c *Client) ListInstanceSnapshots(linodeID int, opts *ListOptions) ([]*Inst
 }
 
 // GetInstanceSnapshot gets the snapshot with the provided ID
-func (c *Client) GetInstanceSnapshot(linodeID int, snapshotID int) (*InstanceSnapshot, error) {
+func (c *Client) GetInstanceSnapshot(ctx context.Context, linodeID int, snapshotID int) (*InstanceSnapshot, error) {
 	e, err := c.InstanceSnapshots.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, snapshotID)
-	r, err := coupleAPIErrors(c.R().SetResult(&InstanceSnapshot{}).Get(e))
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&InstanceSnapshot{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

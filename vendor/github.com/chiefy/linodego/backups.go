@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -16,13 +17,13 @@ type InstanceBackupSnapshotResponse struct {
 }
 
 // GetInstanceBackups gets the Instance's available Backups
-func (c *Client) GetInstanceBackups(linodeID int) (*InstanceBackupsResponse, error) {
+func (c *Client) GetInstanceBackups(ctx context.Context, linodeID int) (*InstanceBackupsResponse, error) {
 	e, err := c.Instances.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d/backups", e, linodeID)
-	r, err := coupleAPIErrors(c.R().
+	r, err := coupleAPIErrors(c.R(ctx).
 		SetResult(&InstanceBackupsResponse{}).
 		Get(e))
 	if err != nil {

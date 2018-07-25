@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -47,9 +48,9 @@ func (DomainRecordsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListDomainRecords lists DomainRecords
-func (c *Client) ListDomainRecords(opts *ListOptions) ([]*DomainRecord, error) {
+func (c *Client) ListDomainRecords(ctx context.Context, opts *ListOptions) ([]*DomainRecord, error) {
 	response := DomainRecordsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -57,13 +58,13 @@ func (c *Client) ListDomainRecords(opts *ListOptions) ([]*DomainRecord, error) {
 }
 
 // GetDomainRecord gets the template with the provided ID
-func (c *Client) GetDomainRecord(id string) (*DomainRecord, error) {
+func (c *Client) GetDomainRecord(ctx context.Context, id string) (*DomainRecord, error) {
 	e, err := c.DomainRecords.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&DomainRecord{}).Get(e)
+	r, err := c.R(ctx).SetResult(&DomainRecord{}).Get(e)
 	if err != nil {
 		return nil, err
 	}

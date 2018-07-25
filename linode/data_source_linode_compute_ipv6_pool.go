@@ -1,6 +1,7 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/chiefy/linodego"
@@ -28,7 +29,7 @@ func dataSourceLinodeComputeIPv6Pool() *schema.Resource {
 func dataSourceLinodeComputeIPv6PoolRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*linodego.Client)
 
-	pools, err := client.ListIPv6Pools(nil)
+	pools, err := client.ListIPv6Pools(context.TODO(), nil)
 	if err != nil {
 		return fmt.Errorf("Error listing pools: %s", err)
 	}

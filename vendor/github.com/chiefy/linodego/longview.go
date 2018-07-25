@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -39,9 +40,9 @@ func (LongviewClientsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListLongviewClients lists LongviewClients
-func (c *Client) ListLongviewClients(opts *ListOptions) ([]*LongviewClient, error) {
+func (c *Client) ListLongviewClients(ctx context.Context, opts *ListOptions) ([]*LongviewClient, error) {
 	response := LongviewClientsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -59,13 +60,13 @@ func (v *LongviewClient) fixDates() *LongviewClient {
 }
 
 // GetLongviewClient gets the template with the provided ID
-func (c *Client) GetLongviewClient(id string) (*LongviewClient, error) {
+func (c *Client) GetLongviewClient(ctx context.Context, id string) (*LongviewClient, error) {
 	e, err := c.LongviewClients.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&LongviewClient{}).Get(e)
+	r, err := c.R(ctx).SetResult(&LongviewClient{}).Get(e)
 	if err != nil {
 		return nil, err
 	}

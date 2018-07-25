@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -38,9 +39,9 @@ func (RegionsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListRegions lists Regions
-func (c *Client) ListRegions(opts *ListOptions) ([]*Region, error) {
+func (c *Client) ListRegions(ctx context.Context, opts *ListOptions) ([]*Region, error) {
 	response := RegionsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -56,13 +57,13 @@ func (v *Region) fixDates() *Region {
 }
 
 // GetRegion gets the template with the provided ID
-func (c *Client) GetRegion(id string) (*Region, error) {
+func (c *Client) GetRegion(ctx context.Context, id string) (*Region, error) {
 	e, err := c.Regions.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&Region{}).Get(e)
+	r, err := c.R(ctx).SetResult(&Region{}).Get(e)
 	if err != nil {
 		return nil, err
 	}

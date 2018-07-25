@@ -1,6 +1,7 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -109,13 +110,15 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists,
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
+					resource.TestCheckNoResourceAttr("linode_volume.foobar", "linode_id"),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists,
-					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"), // @TODO how to get foobars linode id
+					resource.TestCheckResourceAttrSet("linode_instance.foobar", "id"),
+					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 				),
 			},
 		},
@@ -137,7 +140,7 @@ func TestAccLinodeVolumeDetached(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists,
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
-					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
+					resource.TestCheckResourceAttrPair("linode_instance.foobar", "id", "linode_volume.foobar", "linode_id"),
 				),
 			},
 			resource.TestStep{
@@ -173,7 +176,7 @@ func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 				Config: testAccCheckLinodeVolumeConfigReattachedBetweenInstances(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists,
-					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"), // @TODO how to test that it is now on foobaz's linodeid
+					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
 				),
 			},
 		},
@@ -190,7 +193,7 @@ func testAccCheckLinodeVolumeExists(s *terraform.State) error {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 
-		_, err = client.GetVolume(id)
+		_, err = client.GetVolume(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of Volume %s: %s", rs.Primary.Attributes["label"], err)
 		}
@@ -218,7 +221,7 @@ func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
 
 		}
 
-		_, err = client.GetVolume(id)
+		_, err = client.GetVolume(context.Background(), id)
 
 		if err == nil {
 			return fmt.Errorf("Linode Volume with id %d still exists", id)
@@ -279,6 +282,7 @@ resource "linode_instance" "foobar" {
 }
 
 resource "linode_instance" "foobaz" {
+	root_password = "%s"
 	region = "us-west"
 }
 	
@@ -286,5 +290,5 @@ resource "linode_volume" "foobar" {
 	label = "%s"
 	region = "us-west"
 	linode_id = "${linode_instance.foobaz.id}"
-}`, volume, volume)
+}`, volume, volume, volume)
 }

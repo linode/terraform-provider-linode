@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -32,9 +33,9 @@ func (IPAddressesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListIPAddresses lists IPAddresses
-func (c *Client) ListIPAddresses(opts *ListOptions) ([]*InstanceIP, error) {
+func (c *Client) ListIPAddresses(ctx context.Context, opts *ListOptions) ([]*InstanceIP, error) {
 	response := IPAddressesPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -42,13 +43,13 @@ func (c *Client) ListIPAddresses(opts *ListOptions) ([]*InstanceIP, error) {
 }
 
 // GetIPAddress gets the template with the provided ID
-func (c *Client) GetIPAddress(id string) (*InstanceIP, error) {
+func (c *Client) GetIPAddress(ctx context.Context, id string) (*InstanceIP, error) {
 	e, err := c.IPAddresses.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&InstanceIP{}).Get(e)
+	r, err := c.R(ctx).SetResult(&InstanceIP{}).Get(e)
 	if err != nil {
 		return nil, err
 	}

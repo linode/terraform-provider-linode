@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -57,9 +58,9 @@ func (InvoicesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListInvoices gets a paginated list of Invoices against the Account
-func (c *Client) ListInvoices(opts *ListOptions) ([]*Invoice, error) {
+func (c *Client) ListInvoices(ctx context.Context, opts *ListOptions) ([]*Invoice, error) {
 	response := InvoicesPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -83,14 +84,14 @@ func (v *InvoiceItem) fixDates() *InvoiceItem {
 }
 
 // GetInvoice gets the a single Invoice matching the provided ID
-func (c *Client) GetInvoice(id int) (*Invoice, error) {
+func (c *Client) GetInvoice(ctx context.Context, id int) (*Invoice, error) {
 	e, err := c.Invoices.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 
 	e = fmt.Sprintf("%s/%d", e, id)
-	r, err := coupleAPIErrors(c.R().SetResult(&Invoice{}).Get(e))
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Invoice{}).Get(e))
 	if err != nil {
 		return nil, err
 	}
@@ -123,9 +124,9 @@ func (InvoiceItemsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListInvoiceItems gets the invoice items associated with a specific Invoice
-func (c *Client) ListInvoiceItems(id int, opts *ListOptions) ([]*InvoiceItem, error) {
+func (c *Client) ListInvoiceItems(ctx context.Context, id int, opts *ListOptions) ([]*InvoiceItem, error) {
 	response := InvoiceItemsPagedResponse{}
-	err := c.listHelperWithID(&response, id, opts)
+	err := c.listHelperWithID(ctx, &response, id, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -51,8 +52,8 @@ type VolumeCreateOptions struct {
 }
 
 type VolumeAttachOptions struct {
-	LinodeID int
-	ConfigID int
+	LinodeID int `json:"linode_id"`
+	ConfigID int `json:"config_id,omitempty"`
 }
 
 // VolumesPagedResponse represents a linode API response for listing of volumes
@@ -81,9 +82,9 @@ func (VolumesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListVolumes lists Volumes
-func (c *Client) ListVolumes(opts *ListOptions) ([]*Volume, error) {
+func (c *Client) ListVolumes(ctx context.Context, opts *ListOptions) ([]*Volume, error) {
 	response := VolumesPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -105,13 +106,13 @@ func (v *Volume) fixDates() *Volume {
 }
 
 // GetVolume gets the template with the provided ID
-func (c *Client) GetVolume(id int) (*Volume, error) {
+func (c *Client) GetVolume(ctx context.Context, id int) (*Volume, error) {
 	e, err := c.Volumes.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
-	r, err := coupleAPIErrors(c.R().SetResult(&Volume{}).Get(e))
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Volume{}).Get(e))
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +120,7 @@ func (c *Client) GetVolume(id int) (*Volume, error) {
 }
 
 // AttachVolume attaches volume to linode instance
-func (c *Client) AttachVolume(id int, options *VolumeAttachOptions) (bool, error) {
+func (c *Client) AttachVolume(ctx context.Context, id int, options *VolumeAttachOptions) (bool, error) {
 	body := ""
 	if bodyData, err := json.Marshal(options); err == nil {
 		body = string(bodyData)
@@ -133,7 +134,7 @@ func (c *Client) AttachVolume(id int, options *VolumeAttachOptions) (bool, error
 	}
 
 	e = fmt.Sprintf("%s/%d/attach", e, id)
-	resp, err := coupleAPIErrors(c.R().
+	resp, err := coupleAPIErrors(c.R(ctx).
 		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
@@ -142,7 +143,7 @@ func (c *Client) AttachVolume(id int, options *VolumeAttachOptions) (bool, error
 }
 
 // CreateVolume creates a Linode Volume
-func (c *Client) CreateVolume(createOpts VolumeCreateOptions) (*Volume, error) {
+func (c *Client) CreateVolume(ctx context.Context, createOpts VolumeCreateOptions) (*Volume, error) {
 	body := ""
 	if bodyData, err := json.Marshal(createOpts); err == nil {
 		body = string(bodyData)
@@ -155,7 +156,7 @@ func (c *Client) CreateVolume(createOpts VolumeCreateOptions) (*Volume, error) {
 		return nil, NewError(err)
 	}
 
-	resp, err := coupleAPIErrors(c.R().
+	resp, err := coupleAPIErrors(c.R(ctx).
 		SetResult(&Volume{}).
 		SetBody(body).
 		Post(e))
@@ -169,7 +170,7 @@ func (c *Client) CreateVolume(createOpts VolumeCreateOptions) (*Volume, error) {
 
 // RenameVolume renames the label of a Linode volume
 // There is no UpdateVolume because the label is the only alterable field.
-func (c *Client) RenameVolume(id int, label string) (*Volume, error) {
+func (c *Client) RenameVolume(ctx context.Context, id int, label string) (*Volume, error) {
 	body, _ := json.Marshal(map[string]string{"label": label})
 
 	e, err := c.Volumes.Endpoint()
@@ -178,7 +179,7 @@ func (c *Client) RenameVolume(id int, label string) (*Volume, error) {
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	resp, err := coupleAPIErrors(c.R().
+	resp, err := coupleAPIErrors(c.R(ctx).
 		SetResult(&Volume{}).
 		SetBody(body).
 		Put(e))
@@ -191,7 +192,7 @@ func (c *Client) RenameVolume(id int, label string) (*Volume, error) {
 }
 
 // CloneVolume clones a Linode volume
-func (c *Client) CloneVolume(id int, label string) (*Volume, error) {
+func (c *Client) CloneVolume(ctx context.Context, id int, label string) (*Volume, error) {
 	body := fmt.Sprintf("{\"label\":\"%s\"}", label)
 
 	e, err := c.Volumes.Endpoint()
@@ -200,7 +201,7 @@ func (c *Client) CloneVolume(id int, label string) (*Volume, error) {
 	}
 	e = fmt.Sprintf("%s/%d/clone", e, id)
 
-	resp, err := coupleAPIErrors(c.R().
+	resp, err := coupleAPIErrors(c.R(ctx).
 		SetResult(&Volume{}).
 		SetBody(body).
 		Post(e))
@@ -213,7 +214,7 @@ func (c *Client) CloneVolume(id int, label string) (*Volume, error) {
 }
 
 // DetachVolume detaches a Linode volume
-func (c *Client) DetachVolume(id int) (bool, error) {
+func (c *Client) DetachVolume(ctx context.Context, id int) (bool, error) {
 	body := ""
 
 	e, err := c.Volumes.Endpoint()
@@ -223,7 +224,7 @@ func (c *Client) DetachVolume(id int) (bool, error) {
 
 	e = fmt.Sprintf("%s/%d/detach", e, id)
 
-	resp, err := coupleAPIErrors(c.R().
+	resp, err := coupleAPIErrors(c.R(ctx).
 		SetBody(body).
 		Post(e))
 
@@ -231,7 +232,7 @@ func (c *Client) DetachVolume(id int) (bool, error) {
 }
 
 // ResizeVolume resizes an instance to new Linode type
-func (c *Client) ResizeVolume(id int, size int) (bool, error) {
+func (c *Client) ResizeVolume(ctx context.Context, id int, size int) (bool, error) {
 	body := fmt.Sprintf("{\"size\": %d}", size)
 
 	e, err := c.Volumes.Endpoint()
@@ -240,7 +241,7 @@ func (c *Client) ResizeVolume(id int, size int) (bool, error) {
 	}
 	e = fmt.Sprintf("%s/%d/resize", e, id)
 
-	resp, err := coupleAPIErrors(c.R().
+	resp, err := coupleAPIErrors(c.R(ctx).
 		SetBody(body).
 		Post(e))
 
@@ -248,14 +249,14 @@ func (c *Client) ResizeVolume(id int, size int) (bool, error) {
 }
 
 // DeleteVolume deletes the Volume with the specified id
-func (c *Client) DeleteVolume(id int) error {
+func (c *Client) DeleteVolume(ctx context.Context, id int) error {
 	e, err := c.Volumes.Endpoint()
 	if err != nil {
 		return err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
+	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
 		return err
 	}
 

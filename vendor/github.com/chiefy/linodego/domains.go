@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -135,9 +136,9 @@ func (DomainsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListDomains lists Domains
-func (c *Client) ListDomains(opts *ListOptions) ([]*Domain, error) {
+func (c *Client) ListDomains(ctx context.Context, opts *ListOptions) ([]*Domain, error) {
 	response := DomainsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -155,13 +156,13 @@ func (v *Domain) fixDates() *Domain {
 }
 
 // GetDomain gets the domain with the provided ID
-func (c *Client) GetDomain(id string) (*Domain, error) {
+func (c *Client) GetDomain(ctx context.Context, id string) (*Domain, error) {
 	e, err := c.Domains.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&Domain{}).Get(e)
+	r, err := c.R(ctx).SetResult(&Domain{}).Get(e)
 	if err != nil {
 		return nil, err
 	}
@@ -169,14 +170,14 @@ func (c *Client) GetDomain(id string) (*Domain, error) {
 }
 
 // CreateDomain creates a Domain
-func (c *Client) CreateDomain(domain *DomainCreateOptions) (*Domain, error) {
+func (c *Client) CreateDomain(ctx context.Context, domain *DomainCreateOptions) (*Domain, error) {
 	var body string
 	e, err := c.Domains.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 
-	req := c.R().SetResult(&Domain{})
+	req := c.R(ctx).SetResult(&Domain{})
 
 	if bodyData, err := json.Marshal(domain); err == nil {
 		body = string(bodyData)
@@ -195,7 +196,7 @@ func (c *Client) CreateDomain(domain *DomainCreateOptions) (*Domain, error) {
 }
 
 // UpdateDomain updates the Domain with the specified id
-func (c *Client) UpdateDomain(id int, domain DomainUpdateOptions) (*Domain, error) {
+func (c *Client) UpdateDomain(ctx context.Context, id int, domain DomainUpdateOptions) (*Domain, error) {
 	var body string
 	e, err := c.Domains.Endpoint()
 	if err != nil {
@@ -203,7 +204,7 @@ func (c *Client) UpdateDomain(id int, domain DomainUpdateOptions) (*Domain, erro
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	req := c.R().SetResult(&Domain{})
+	req := c.R(ctx).SetResult(&Domain{})
 
 	if bodyData, err := json.Marshal(domain); err == nil {
 		body = string(bodyData)
@@ -222,14 +223,14 @@ func (c *Client) UpdateDomain(id int, domain DomainUpdateOptions) (*Domain, erro
 }
 
 // DeleteDomain deletes the Domain with the specified id
-func (c *Client) DeleteDomain(id int) error {
+func (c *Client) DeleteDomain(ctx context.Context, id int) error {
 	e, err := c.Domains.Endpoint()
 	if err != nil {
 		return err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
+	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
 		return err
 	}
 

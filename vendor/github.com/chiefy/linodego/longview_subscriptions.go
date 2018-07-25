@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -42,9 +43,9 @@ func (LongviewSubscriptionsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListLongviewSubscriptions lists LongviewSubscriptions
-func (c *Client) ListLongviewSubscriptions(opts *ListOptions) ([]*LongviewSubscription, error) {
+func (c *Client) ListLongviewSubscriptions(ctx context.Context, opts *ListOptions) ([]*LongviewSubscription, error) {
 	response := LongviewSubscriptionsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -62,13 +63,13 @@ func (v *LongviewSubscription) fixDates() *LongviewSubscription {
 }
 
 // GetLongviewSubscription gets the template with the provided ID
-func (c *Client) GetLongviewSubscription(id string) (*LongviewSubscription, error) {
+func (c *Client) GetLongviewSubscription(ctx context.Context, id string) (*LongviewSubscription, error) {
 	e, err := c.LongviewSubscriptions.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&LongviewSubscription{}).Get(e)
+	r, err := c.R(ctx).SetResult(&LongviewSubscription{}).Get(e)
 	if err != nil {
 		return nil, err
 	}

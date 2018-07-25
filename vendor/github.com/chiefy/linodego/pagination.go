@@ -5,6 +5,7 @@ package linodego
  */
 
 import (
+	"context"
 	"log"
 	"strconv"
 
@@ -48,8 +49,8 @@ func NewListOptions(Page int, Filter string) *ListOptions {
 // When opts (or opts.Page) is nil, all pages will be fetched and
 // returned in a single (endpoint-specific)PagedResponse
 // opts.results and opts.pages will be updated from the API response
-func (c *Client) listHelper(i interface{}, opts *ListOptions) error {
-	req := c.R()
+func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOptions) error {
+	req := c.R(ctx)
 	if opts != nil && opts.PageOptions != nil && opts.Page > 0 {
 		req.SetQueryParam("page", strconv.Itoa(opts.Page))
 	}
@@ -263,7 +264,7 @@ func (c *Client) listHelper(i interface{}, opts *ListOptions) error {
 
 	if opts == nil {
 		for page := 2; page <= pages; page = page + 1 {
-			c.listHelper(i, &ListOptions{PageOptions: &PageOptions{Page: page}})
+			c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}})
 		}
 	} else {
 		if opts.PageOptions == nil {
@@ -273,7 +274,7 @@ func (c *Client) listHelper(i interface{}, opts *ListOptions) error {
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelper(i, opts)
+				c.listHelper(ctx, i, opts)
 			}
 		}
 		opts.Results = results
@@ -288,8 +289,8 @@ func (c *Client) listHelper(i interface{}, opts *ListOptions) error {
 // When opts (or opts.Page) is nil, all pages will be fetched and
 // returned in a single (endpoint-specific)PagedResponse
 // opts.results and opts.pages will be updated from the API response
-func (c *Client) listHelperWithID(i interface{}, id int, opts *ListOptions) error {
-	req := c.R()
+func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, opts *ListOptions) error {
+	req := c.R(ctx)
 	if opts != nil && opts.Page > 0 {
 		req.SetQueryParam("page", strconv.Itoa(opts.Page))
 	}
@@ -376,7 +377,7 @@ func (c *Client) listHelperWithID(i interface{}, id int, opts *ListOptions) erro
 
 	if opts == nil {
 		for page := 2; page <= pages; page = page + 1 {
-			c.listHelper(i, &ListOptions{PageOptions: &PageOptions{Page: page}})
+			c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}})
 		}
 	} else {
 		if opts.PageOptions == nil {
@@ -385,7 +386,7 @@ func (c *Client) listHelperWithID(i interface{}, id int, opts *ListOptions) erro
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelper(i, opts)
+				c.listHelper(ctx, i, opts)
 			}
 		}
 		opts.Results = results
@@ -400,8 +401,8 @@ func (c *Client) listHelperWithID(i interface{}, id int, opts *ListOptions) erro
 // When opts (or opts.Page) is nil, all pages will be fetched and
 // returned in a single (endpoint-specific)PagedResponse
 // opts.results and opts.pages will be updated from the API response
-func (c *Client) listHelperWithTwoIDs(i interface{}, firstID, secondID int, opts *ListOptions) error {
-	req := c.R()
+func (c *Client) listHelperWithTwoIDs(ctx context.Context, i interface{}, firstID, secondID int, opts *ListOptions) error {
+	req := c.R(ctx)
 	if opts != nil && opts.Page > 0 {
 		req.SetQueryParam("page", strconv.Itoa(opts.Page))
 	}
@@ -435,7 +436,7 @@ func (c *Client) listHelperWithTwoIDs(i interface{}, firstID, secondID int, opts
 
 	if opts == nil {
 		for page := 2; page <= pages; page = page + 1 {
-			c.listHelper(i, &ListOptions{PageOptions: &PageOptions{Page: page}})
+			c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}})
 		}
 	} else {
 		if opts.PageOptions == nil {
@@ -444,7 +445,7 @@ func (c *Client) listHelperWithTwoIDs(i interface{}, firstID, secondID int, opts
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelper(i, opts)
+				c.listHelper(ctx, i, opts)
 			}
 		}
 		opts.Results = results

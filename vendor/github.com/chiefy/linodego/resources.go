@@ -2,6 +2,7 @@ package linodego
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"text/template"
 
@@ -84,8 +85,8 @@ type Resource struct {
 	endpoint         string
 	isTemplate       bool
 	endpointTemplate *template.Template
-	R                func() *resty.Request
-	PR               func() *resty.Request
+	R                func(ctx context.Context) *resty.Request
+	PR               func(ctx context.Context) *resty.Request
 }
 
 // NewResource is the factory to create a new Resource struct. If it has a template string the useTemplate bool must be set.
@@ -96,12 +97,12 @@ func NewResource(client *Client, name string, endpoint string, useTemplate bool,
 		tmpl = template.Must(template.New(name).Parse(endpoint))
 	}
 
-	r := func() *resty.Request {
-		return client.R().SetResult(singleType)
+	r := func(ctx context.Context) *resty.Request {
+		return client.R(ctx).SetResult(singleType)
 	}
 
-	pr := func() *resty.Request {
-		return client.R().SetResult(pagedType)
+	pr := func(ctx context.Context) *resty.Request {
+		return client.R(ctx).SetResult(pagedType)
 	}
 
 	return &Resource{name, endpoint, useTemplate, tmpl, r, pr}

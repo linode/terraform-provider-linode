@@ -38,11 +38,13 @@ A brief summary of the features offered in this API client are shown here.
 package main
 
 import (
+  "context"
   "fmt"
   "log"
   "os"
 
   "github.com/chiefy/linodego"
+  "golang.org/x/oauth2"
 )
 
 func main() {
@@ -50,17 +52,24 @@ func main() {
   if !ok {
     log.Fatal("Could not find LINODE_TOKEN, please assert it is set.")
   }
-  linodeClient, err := linodego.NewClient(apiKey)
+  tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: apiKey})
+
+  oauth2Client := &http.Client{
+    Transport: &oauth2.Transport{
+      Source: tokenSource,
+    },
+  }
+
+  linodeClient, err := linodego.NewClient(oauth2Client)
   if err != nil {
     log.Fatal(err)
   }
   linodeClient.SetDebug(true)
-  res, err := linodeClient.GetInstance(4090913)
+  res, err := linodeClient.GetInstance(context.Background(), 4090913)
   if err != nil {
     log.Fatal(err)
   }
   fmt.Printf("%v", res)
-
 }
 ```
 
@@ -78,7 +87,7 @@ kernels, err := linodego.ListKernels(nil)
 ```go
 opts := NewListOptions(2,"")
 // or opts := ListOptions{PageOptions: &PageOptions: {Page: 2 }}
-kernels, err := linodego.ListKernels(opts)
+kernels, err := linodego.ListKernels(context.Background(), opts)
 // len(kernels) == 100
 // opts.Results == 218
 ```
@@ -88,7 +97,7 @@ kernels, err := linodego.ListKernels(opts)
 ```go
 opts := ListOptions{Filter: "{\"mine\":true}"}
 // or opts := NewListOptions(0, "{\"mine\":true}")
-stackscripts, err := linodego.ListStackscripts(opts)
+stackscripts, err := linodego.ListStackscripts(context.Background(), opts)
 ```
 
 ### Error Handling
@@ -96,7 +105,7 @@ stackscripts, err := linodego.ListStackscripts(opts)
 #### Getting Single Entities
 
 ```go
-linode, err := linodego.GetLinode(555) // any Linode ID that does not exist or is not yours
+linode, err := linodego.GetLinode(context.Background(), 555) // any Linode ID that does not exist or is not yours
 // linode == nil: true
 // err.Error() == "[404] Not Found"
 // err.Code == "404"
@@ -108,7 +117,7 @@ linode, err := linodego.GetLinode(555) // any Linode ID that does not exist or i
 For lists, the list is still returned as `[]`, but `err` works the same way as on the `Get` request.
 
 ```go
-linodes, err := linodego.ListLinodes(NewListOptions(0, "{\"foo\":bar}"))
+linodes, err := linodego.ListLinodes(context.Background(), NewListOptions(0, "{\"foo\":bar}"))
 // linodes == []
 // err.Error() == "[400] [X-Filter] Cannot filter on foo"
 ```
@@ -116,7 +125,7 @@ linodes, err := linodego.ListLinodes(NewListOptions(0, "{\"foo\":bar}"))
 Otherwise sane requests beyond the last page do not trigger an error, just an empty result:
 
 ```go
-linodes, err := linodego.ListLinodes(NewListOptions(9999, ""))
+linodes, err := linodego.ListLinodes(context.Background(), NewListOptions(9999, ""))
 // linodes == []
 // err = nil
 ```
