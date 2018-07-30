@@ -1,7 +1,7 @@
 Terraform Provider
 ==================
 
-- Website: https://www.terraform.io
+- Website: <https://www.terraform.io>
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
@@ -15,13 +15,13 @@ This work-in-progress provider plugin is maintained by the Marques Johansson (fo
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
--	[Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 0.10.x
+- [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
 
 Usage
 ---------------------
 
-```
+```tf
 # For example, restrict linode version in 0.1.x
 provider "linode" {
   version = "~> 0.1"
@@ -34,15 +34,16 @@ Building The Provider
 Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-linode`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-linode
+mkdir -p $GOPATH/src/github.com/terraform-providers
+cd $GOPATH/src/github.com/terraform-providers
+git clone git@github.com:terraform-providers/terraform-provider-linode
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-linode
-$ make build
+cd $GOPATH/src/github.com/terraform-providers/terraform-provider-linode
+make build
 ```
 
 Using the provider
@@ -50,8 +51,8 @@ Using the provider
 
 See the docs included in the website/docs directory:
 
-- https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/index.html.md
-- https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/r/linode.html.md
+- <https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/index.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/r/linode.html.md>
 
 *The following links will not work until this repo is accepted by terraform-providers*
 
@@ -76,7 +77,7 @@ $ $GOPATH/bin/terraform-provider-linode
 In order to test the provider, you can simply run `make test`.
 
 ```sh
-$ make test
+make test
 ```
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
@@ -84,5 +85,9 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
 ```sh
-$ make testacc
+make testacc
+```
+
+```sh
+TESTARGS="-run TestAccLinodeVolume* -count=1"  make testacc
 ```

@@ -1,10 +1,10 @@
 package linodego
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
-	"strconv"
 	"time"
 
 	"github.com/go-resty/resty"
@@ -106,14 +106,14 @@ type InstanceUpdateOptions struct {
 
 // InstanceCloneOptions is an options struct when sending a clone request to the API
 type InstanceCloneOptions struct {
-	Region         string
-	Type           string
-	LinodeID       int
-	Label          string
-	Group          string
-	BackupsEnabled bool
-	Disks          []string
-	Configs        []string
+	Region         string   `json:"region"`
+	Type           string   `json:"type"`
+	LinodeID       int      `json:"linode_id"`
+	Label          string   `json:"label"`
+	Group          string   `json:"group"`
+	BackupsEnabled bool     `json:"backups_enabled"`
+	Disks          []string `json:"disks"`
+	Configs        []string `json:"configs"`
 }
 
 func (l *Instance) fixDates() *Instance {
@@ -148,51 +148,26 @@ func (InstancesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListInstances lists linode instances
-func (c *Client) ListInstances(opts *ListOptions) ([]*Instance, error) {
-	e, err := c.Instances.Endpoint()
-	if err != nil {
-		return nil, err
-	}
-
-	req := c.R().SetResult(&InstancesPagedResponse{})
-
-	if opts != nil {
-		req.SetQueryParam("page", strconv.Itoa(opts.Page))
-	}
-
-	r, err := req.Get(e)
-	if err != nil {
-		return nil, err
-	}
-
-	data := r.Result().(*InstancesPagedResponse).Data
-	pages := r.Result().(*InstancesPagedResponse).Pages
-	results := r.Result().(*InstancesPagedResponse).Results
-
-	for _, el := range data {
+func (c *Client) ListInstances(ctx context.Context, opts *ListOptions) ([]*Instance, error) {
+	response := InstancesPagedResponse{}
+	err := c.listHelper(ctx, &response, opts)
+	for _, el := range response.Data {
 		el.fixDates()
 	}
-
-	if opts == nil {
-		for page := 2; page <= pages; page = page + 1 {
-			next, _ := c.ListInstances(&ListOptions{PageOptions: &PageOptions{Page: page}})
-			data = append(data, next...)
-		}
-	} else {
-		opts.Results = results
+	if err != nil {
+		return nil, err
 	}
-
-	return data, nil
+	return response.Data, nil
 }
 
 // GetInstance gets the instance with the provided ID
-func (c *Client) GetInstance(linodeID int) (*Instance, error) {
+func (c *Client) GetInstance(ctx context.Context, linodeID int) (*Instance, error) {
 	e, err := c.Instances.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, linodeID)
-	r, err := coupleAPIErrors(c.R().
+	r, err := coupleAPIErrors(c.R(ctx).
 		SetResult(Instance{}).
 		Get(e))
 	if err != nil {
@@ -202,14 +177,14 @@ func (c *Client) GetInstance(linodeID int) (*Instance, error) {
 }
 
 // CreateInstance creates a Linode instance
-func (c *Client) CreateInstance(instance *InstanceCreateOptions) (*Instance, error) {
+func (c *Client) CreateInstance(ctx context.Context, instance *InstanceCreateOptions) (*Instance, error) {
 	var body string
 	e, err := c.Instances.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 
-	req := c.R().SetResult(&Instance{})
+	req := c.R(ctx).SetResult(&Instance{})
 
 	if bodyData, err := json.Marshal(instance); err == nil {
 		body = string(bodyData)
@@ -218,7 +193,6 @@ func (c *Client) CreateInstance(instance *InstanceCreateOptions) (*Instance, err
 	}
 
 	r, err := coupleAPIErrors(req.
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
 
@@ -229,7 +203,7 @@ func (c *Client) CreateInstance(instance *InstanceCreateOptions) (*Instance, err
 }
 
 // UpdateInstance creates a Linode instance
-func (c *Client) UpdateInstance(id int, instance *InstanceUpdateOptions) (*Instance, error) {
+func (c *Client) UpdateInstance(ctx context.Context, id int, instance *InstanceUpdateOptions) (*Instance, error) {
 	var body string
 	e, err := c.Instances.Endpoint()
 	if err != nil {
@@ -237,7 +211,7 @@ func (c *Client) UpdateInstance(id int, instance *InstanceUpdateOptions) (*Insta
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	req := c.R().SetResult(&Instance{})
+	req := c.R(ctx).SetResult(&Instance{})
 
 	if bodyData, err := json.Marshal(instance); err == nil {
 		body = string(bodyData)
@@ -256,19 +230,19 @@ func (c *Client) UpdateInstance(id int, instance *InstanceUpdateOptions) (*Insta
 }
 
 // RenameInstance renames an Instance
-func (c *Client) RenameInstance(linodeID int, label string) (*Instance, error) {
-	return c.UpdateInstance(linodeID, &InstanceUpdateOptions{Label: label})
+func (c *Client) RenameInstance(ctx context.Context, linodeID int, label string) (*Instance, error) {
+	return c.UpdateInstance(ctx, linodeID, &InstanceUpdateOptions{Label: label})
 }
 
 // DeleteInstance deletes a Linode instance
-func (c *Client) DeleteInstance(id int) error {
+func (c *Client) DeleteInstance(ctx context.Context, id int) error {
 	e, err := c.Instances.Endpoint()
 	if err != nil {
 		return err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
+	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
 		return err
 	}
 
@@ -277,7 +251,7 @@ func (c *Client) DeleteInstance(id int) error {
 
 // BootInstance will boot a Linode instance
 // A configID of 0 will cause Linode to choose the last/best config
-func (c *Client) BootInstance(id int, configID int) (bool, error) {
+func (c *Client) BootInstance(ctx context.Context, id int, configID int) (bool, error) {
 	bodyStr := ""
 
 	if configID != 0 {
@@ -295,7 +269,7 @@ func (c *Client) BootInstance(id int, configID int) (bool, error) {
 	}
 
 	e = fmt.Sprintf("%s/%d/boot", e, id)
-	r, err := coupleAPIErrors(c.R().
+	r, err := coupleAPIErrors(c.R(ctx).
 		SetBody(bodyStr).
 		Post(e))
 
@@ -303,7 +277,7 @@ func (c *Client) BootInstance(id int, configID int) (bool, error) {
 }
 
 // CloneInstance clones a Linode instance
-func (c *Client) CloneInstance(id int, options *InstanceCloneOptions) (*Instance, error) {
+func (c *Client) CloneInstance(ctx context.Context, id int, options *InstanceCloneOptions) (*Instance, error) {
 	var body string
 	e, err := c.Instances.Endpoint()
 	if err != nil {
@@ -311,7 +285,7 @@ func (c *Client) CloneInstance(id int, options *InstanceCloneOptions) (*Instance
 	}
 	e = fmt.Sprintf("%s/%d/clone", e, id)
 
-	req := c.R().SetResult(&Instance{})
+	req := c.R(ctx).SetResult(&Instance{})
 
 	if bodyData, err := json.Marshal(options); err == nil {
 		body = string(bodyData)
@@ -332,7 +306,7 @@ func (c *Client) CloneInstance(id int, options *InstanceCloneOptions) (*Instance
 
 // RebootInstance reboots a Linode instance
 // A configID of 0 will cause Linode to choose the last/best config
-func (c *Client) RebootInstance(id int, configID int) (bool, error) {
+func (c *Client) RebootInstance(ctx context.Context, id int, configID int) (bool, error) {
 	bodyStr := "{}"
 
 	if configID != 0 {
@@ -351,7 +325,7 @@ func (c *Client) RebootInstance(id int, configID int) (bool, error) {
 
 	e = fmt.Sprintf("%s/%d/reboot", e, id)
 
-	r, err := coupleAPIErrors(c.R().
+	r, err := coupleAPIErrors(c.R(ctx).
 		SetBody(bodyStr).
 		Post(e))
 
@@ -359,30 +333,30 @@ func (c *Client) RebootInstance(id int, configID int) (bool, error) {
 }
 
 // MutateInstance Upgrades a Linode to its next generation.
-func (c *Client) MutateInstance(id int) (bool, error) {
+func (c *Client) MutateInstance(ctx context.Context, id int) (bool, error) {
 	e, err := c.Instances.Endpoint()
 	if err != nil {
 		return false, err
 	}
 	e = fmt.Sprintf("%s/%d/mutate", e, id)
 
-	r, err := coupleAPIErrors(c.R().Post(e))
+	r, err := coupleAPIErrors(c.R(ctx).Post(e))
 	return settleBoolResponseOrError(r, err)
 }
 
 // RebuildInstanceOptions is a struct representing the options to send to the rebuild linode endpoint
 type RebuildInstanceOptions struct {
-	Image           string
-	RootPass        string
-	AuthorizedKeys  []string
-	StackscriptID   int
-	StackscriptData map[string]string
-	Booted          bool
+	Image           string            `json:"image"`
+	RootPass        string            `json:"root_pass"`
+	AuthorizedKeys  []string          `json:"authorized_keys"`
+	StackscriptID   int               `json:"stackscript_id"`
+	StackscriptData map[string]string `json:"stackscript_data"`
+	Booted          bool              `json:"booted"`
 }
 
 // RebuildInstance Deletes all Disks and Configs on this Linode,
 // then deploys a new Image to this Linode with the given attributes.
-func (c *Client) RebuildInstance(id int, opts *RebuildInstanceOptions) (*Instance, error) {
+func (c *Client) RebuildInstance(ctx context.Context, id int, opts *RebuildInstanceOptions) (*Instance, error) {
 	o, err := json.Marshal(opts)
 	if err != nil {
 		return nil, NewError(err)
@@ -393,7 +367,7 @@ func (c *Client) RebuildInstance(id int, opts *RebuildInstanceOptions) (*Instanc
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d/rebuild", e, id)
-	r, err := coupleAPIErrors(c.R().
+	r, err := coupleAPIErrors(c.R(ctx).
 		SetBody(b).
 		SetResult(&Instance{}).
 		Post(e))
@@ -404,7 +378,7 @@ func (c *Client) RebuildInstance(id int, opts *RebuildInstanceOptions) (*Instanc
 }
 
 // ResizeInstance resizes an instance to new Linode type
-func (c *Client) ResizeInstance(id int, linodeType string) (bool, error) {
+func (c *Client) ResizeInstance(ctx context.Context, id int, linodeType string) (bool, error) {
 	body := fmt.Sprintf("{\"type\":\"%s\"}", linodeType)
 
 	e, err := c.Instances.Endpoint()
@@ -413,7 +387,7 @@ func (c *Client) ResizeInstance(id int, linodeType string) (bool, error) {
 	}
 	e = fmt.Sprintf("%s/%d/resize", e, id)
 
-	r, err := coupleAPIErrors(c.R().
+	r, err := coupleAPIErrors(c.R(ctx).
 		SetBody(body).
 		Post(e))
 
@@ -421,13 +395,13 @@ func (c *Client) ResizeInstance(id int, linodeType string) (bool, error) {
 }
 
 // ShutdownInstance - Shutdown an instance
-func (c *Client) ShutdownInstance(id int) (bool, error) {
+func (c *Client) ShutdownInstance(ctx context.Context, id int) (bool, error) {
 	e, err := c.Instances.Endpoint()
 	if err != nil {
 		return false, err
 	}
 	e = fmt.Sprintf("%s/%d/shutdown", e, id)
-	return settleBoolResponseOrError(coupleAPIErrors(c.R().Post(e)))
+	return settleBoolResponseOrError(coupleAPIErrors(c.R(ctx).Post(e)))
 }
 
 func settleBoolResponseOrError(resp *resty.Response, err error) (bool, error) {

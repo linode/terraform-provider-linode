@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -174,9 +175,9 @@ func (EventsPagedResponse) setResult(r *resty.Request) {
 // ListEvents gets a collection of Event objects representing actions taken
 // on the Account. The Events returned depend on the token grants and the grants
 // of the associated user.
-func (c *Client) ListEvents(opts *ListOptions) ([]*Event, error) {
+func (c *Client) ListEvents(ctx context.Context, opts *ListOptions) ([]*Event, error) {
 	response := EventsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -187,13 +188,13 @@ func (c *Client) ListEvents(opts *ListOptions) ([]*Event, error) {
 }
 
 // GetEvent gets the Event with the Event ID
-func (c *Client) GetEvent(id int) (*Event, error) {
+func (c *Client) GetEvent(ctx context.Context, id int) (*Event, error) {
 	e, err := c.Events.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
-	r, err := c.R().SetResult(&Event{}).Get(e)
+	r, err := c.R(ctx).SetResult(&Event{}).Get(e)
 	if err != nil {
 		return nil, err
 	}
@@ -207,11 +208,11 @@ func (v *Event) fixDates() *Event {
 }
 
 // MarkEventRead marks a single Event as read.
-func (c *Client) MarkEventRead(event *Event) error {
+func (c *Client) MarkEventRead(ctx context.Context, event *Event) error {
 	e := event.endpointWithID(c)
 	e = fmt.Sprintf("%s/read", e)
 
-	if _, err := coupleAPIErrors(c.R().Post(e)); err != nil {
+	if _, err := coupleAPIErrors(c.R(ctx).Post(e)); err != nil {
 		return err
 	}
 
@@ -219,11 +220,11 @@ func (c *Client) MarkEventRead(event *Event) error {
 }
 
 // MarkEventsSeen marks all Events up to and including this Event by ID as seen.
-func (c *Client) MarkEventsSeen(event *Event) error {
+func (c *Client) MarkEventsSeen(ctx context.Context, event *Event) error {
 	e := event.endpointWithID(c)
 	e = fmt.Sprintf("%s/seen", e)
 
-	if _, err := coupleAPIErrors(c.R().Post(e)); err != nil {
+	if _, err := coupleAPIErrors(c.R(ctx).Post(e)); err != nil {
 		return err
 	}
 

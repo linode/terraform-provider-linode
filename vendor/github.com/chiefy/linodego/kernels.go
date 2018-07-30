@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -24,9 +25,9 @@ type LinodeKernelsPagedResponse struct {
 }
 
 // ListKernels lists linode kernels
-func (c *Client) ListKernels(opts *ListOptions) ([]*LinodeKernel, error) {
+func (c *Client) ListKernels(ctx context.Context, opts *ListOptions) ([]*LinodeKernel, error) {
 	response := LinodeKernelsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -50,13 +51,13 @@ func (LinodeKernelsPagedResponse) setResult(r *resty.Request) {
 }
 
 // GetKernel gets the kernel with the provided ID
-func (c *Client) GetKernel(kernelID string) (*LinodeKernel, error) {
+func (c *Client) GetKernel(ctx context.Context, kernelID string) (*LinodeKernel, error) {
 	e, err := c.Kernels.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, kernelID)
-	r, err := c.R().
+	r, err := c.R(ctx).
 		SetResult(&LinodeKernel{}).
 		Get(e)
 	if err != nil {

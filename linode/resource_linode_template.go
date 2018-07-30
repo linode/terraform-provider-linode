@@ -1,5 +1,13 @@
 // +build ignore
 
+/**
+ * Using this template:
+ * - Copy resource_linode_template.go and resource_linode_template_test.go
+ *   - Remove "// +build ignore"
+ *   - Replace "Template" with Linode Resource Name
+ *   - Replace "template" with Linode resource name
+ * - Add Resource to provider.go
+ */
 package linode
 
 import (

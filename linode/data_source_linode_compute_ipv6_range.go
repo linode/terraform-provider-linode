@@ -1,6 +1,7 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/chiefy/linodego"
@@ -28,7 +29,7 @@ func dataSourceLinodeComputeIPv6Range() *schema.Resource {
 func dataSourceLinodeComputeIPv6RangeRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*linodego.Client)
 
-	ranges, err := client.ListIPv6Ranges(nil)
+	ranges, err := client.ListIPv6Ranges(context.TODO(), nil)
 	if err != nil {
 		return fmt.Errorf("Error listing ranges: %s", err)
 	}

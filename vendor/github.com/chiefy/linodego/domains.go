@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -16,13 +17,13 @@ type Domain struct {
 	Domain string
 
 	// If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).
-	Type string // Enum:"master" "slave"
+	Type DomainType // Enum:"master" "slave"
 
 	// Deprecated: The group this Domain belongs to. This is for display purposes only.
 	Group string
 
 	// Used to control whether this Domain is currently being rendered.
-	Status string // Enum:"disabled" "active" "edit_mode" "has_errors"
+	Status DomainStatus // Enum:"disabled" "active" "edit_mode" "has_errors"
 
 	// A description for this Domain. This is for display purposes only.
 	Description string
@@ -50,22 +51,20 @@ type Domain struct {
 	TTLSec int `json:"ttl_sec"`
 }
 
-type DomainCreateOptions DomainUpdateOptions
-
-type DomainUpdateOptions struct {
+type DomainCreateOptions struct {
 	// The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.
-	Domain string `json:"domain,omitempty"`
+	Domain string `json:"domain"`
 
 	// If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).
 	// Enum:"master" "slave"
-	Type string `json:"type,omitempty"`
+	Type DomainType `json:"type"`
 
 	// Deprecated: The group this Domain belongs to. This is for display purposes only.
 	Group string `json:"group,omitempty"`
 
 	// Used to control whether this Domain is currently being rendered.
 	// Enum:"disabled" "active" "edit_mode" "has_errors"
-	Status string `json:"status,omitempty"`
+	Status DomainStatus `json:"status,omitempty"`
 
 	// A description for this Domain. This is for display purposes only.
 	Description string `json:"description,omitempty"`
@@ -92,6 +91,63 @@ type DomainUpdateOptions struct {
 	// "Time to Live" - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
 	TTLSec int `json:"ttl_sec,omitempty"`
 }
+
+type DomainUpdateOptions struct {
+	// The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.
+	Domain string `json:"domain,omitempty"`
+
+	// If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).
+	// Enum:"master" "slave"
+	Type DomainType `json:"type,omitempty"`
+
+	// Deprecated: The group this Domain belongs to. This is for display purposes only.
+	Group string `json:"group,omitempty"`
+
+	// Used to control whether this Domain is currently being rendered.
+	// Enum:"disabled" "active" "edit_mode" "has_errors"
+	Status DomainStatus `json:"status,omitempty"`
+
+	// A description for this Domain. This is for display purposes only.
+	Description string `json:"description,omitempty"`
+
+	// Start of Authority email address. This is required for master Domains.
+	SOAEmail string `json:"soa_email,omitempty"`
+
+	// The interval, in seconds, at which a failed refresh should be retried.
+	// Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
+	RetrySec int `json:"retry_sec,omitempty"`
+
+	// The IP addresses representing the master DNS for this Domain.
+	MasterIPs []string `json:"master_ips,omitempty"`
+
+	// The list of IPs that may perform a zone transfer for this Domain. This is potentially dangerous, and should be set to an empty list unless you intend to use it.
+	AXfrIPs []string `json:"axfr_ips,omitempty"`
+
+	// The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
+	ExpireSec int `json:"expire_sec,omitempty"`
+
+	// The amount of time in seconds before this Domain should be refreshed. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
+	RefreshSec int `json:"refresh_sec,omitempty"`
+
+	// "Time to Live" - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
+	TTLSec int `json:"ttl_sec,omitempty"`
+}
+
+type DomainType string
+
+const (
+	DomainTypeMaster DomainType = "master"
+	DomainTypeSlave  DomainType = "slave"
+)
+
+type DomainStatus string
+
+const (
+	DomainStatusDisabled  DomainStatus = "disabled"
+	DomainStatusActive    DomainStatus = "active"
+	DomainStatusEditMode  DomainStatus = "edit_mode"
+	DomainStatusHasErrors DomainStatus = "has_errors"
+)
 
 func (d Domain) GetUpdateOptions() (du DomainUpdateOptions) {
 	du.Domain = d.Domain
@@ -135,12 +191,9 @@ func (DomainsPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListDomains lists Domains
-func (c *Client) ListDomains(opts *ListOptions) ([]*Domain, error) {
+func (c *Client) ListDomains(ctx context.Context, opts *ListOptions) ([]*Domain, error) {
 	response := DomainsPagedResponse{}
-	err := c.listHelper(&response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
-	}
+	err := c.listHelper(ctx, &response, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -149,19 +202,17 @@ func (c *Client) ListDomains(opts *ListOptions) ([]*Domain, error) {
 
 // fixDates converts JSON timestamps to Go time.Time values
 func (v *Domain) fixDates() *Domain {
-	// v.Created, _ = parseDates(v.CreatedStr)
-	// v.Updated, _ = parseDates(v.UpdatedStr)
 	return v
 }
 
 // GetDomain gets the domain with the provided ID
-func (c *Client) GetDomain(id string) (*Domain, error) {
+func (c *Client) GetDomain(ctx context.Context, id int) (*Domain, error) {
 	e, err := c.Domains.Endpoint()
 	if err != nil {
 		return nil, err
 	}
-	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&Domain{}).Get(e)
+	e = fmt.Sprintf("%s/%d", e, id)
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Domain{}).Get(e))
 	if err != nil {
 		return nil, err
 	}
@@ -169,14 +220,14 @@ func (c *Client) GetDomain(id string) (*Domain, error) {
 }
 
 // CreateDomain creates a Domain
-func (c *Client) CreateDomain(domain *DomainCreateOptions) (*Domain, error) {
+func (c *Client) CreateDomain(ctx context.Context, domain *DomainCreateOptions) (*Domain, error) {
 	var body string
 	e, err := c.Domains.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 
-	req := c.R().SetResult(&Domain{})
+	req := c.R(ctx).SetResult(&Domain{})
 
 	if bodyData, err := json.Marshal(domain); err == nil {
 		body = string(bodyData)
@@ -195,7 +246,7 @@ func (c *Client) CreateDomain(domain *DomainCreateOptions) (*Domain, error) {
 }
 
 // UpdateDomain updates the Domain with the specified id
-func (c *Client) UpdateDomain(id int, domain DomainUpdateOptions) (*Domain, error) {
+func (c *Client) UpdateDomain(ctx context.Context, id int, domain DomainUpdateOptions) (*Domain, error) {
 	var body string
 	e, err := c.Domains.Endpoint()
 	if err != nil {
@@ -203,7 +254,7 @@ func (c *Client) UpdateDomain(id int, domain DomainUpdateOptions) (*Domain, erro
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	req := c.R().SetResult(&Domain{})
+	req := c.R(ctx).SetResult(&Domain{})
 
 	if bodyData, err := json.Marshal(domain); err == nil {
 		body = string(bodyData)
@@ -222,14 +273,14 @@ func (c *Client) UpdateDomain(id int, domain DomainUpdateOptions) (*Domain, erro
 }
 
 // DeleteDomain deletes the Domain with the specified id
-func (c *Client) DeleteDomain(id int) error {
+func (c *Client) DeleteDomain(ctx context.Context, id int) error {
 	e, err := c.Domains.Endpoint()
 	if err != nil {
 		return err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
+	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
 		return err
 	}
 

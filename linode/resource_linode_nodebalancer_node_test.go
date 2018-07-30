@@ -1,6 +1,7 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -91,7 +92,7 @@ func testAccCheckLinodeNodeBalancerNodeExists(s *terraform.State) error {
 		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
 		configID, err := strconv.Atoi(rs.Primary.Attributes["config_id"])
 
-		_, err = client.GetNodeBalancerNode(nodebalancerID, configID, id)
+		_, err = client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, id)
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of NodeBalancer Node %s: %s", rs.Primary.Attributes["label"], err)
 		}
@@ -122,7 +123,7 @@ func testAccCheckLinodeNodeBalancerNodeDestroy(s *terraform.State) error {
 
 		}
 
-		_, err = client.GetNodeBalancerNode(nodebalancerID, configID, id)
+		_, err = client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, id)
 
 		if err == nil {
 			return fmt.Errorf("NodeBalancer Node with id %d still exists", id)

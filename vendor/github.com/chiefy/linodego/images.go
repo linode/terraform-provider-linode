@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -54,9 +55,9 @@ func (ImagesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListImages lists Images
-func (c *Client) ListImages(opts *ListOptions) ([]*Image, error) {
+func (c *Client) ListImages(ctx context.Context, opts *ListOptions) ([]*Image, error) {
 	response := ImagesPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -68,13 +69,13 @@ func (c *Client) ListImages(opts *ListOptions) ([]*Image, error) {
 }
 
 // GetImage gets the Image with the provided ID
-func (c *Client) GetImage(id string) (*Image, error) {
+func (c *Client) GetImage(ctx context.Context, id string) (*Image, error) {
 	e, err := c.Images.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := coupleAPIErrors(c.Images.R().Get(e))
+	r, err := coupleAPIErrors(c.Images.R(ctx).Get(e))
 	if err != nil {
 		return nil, err
 	}

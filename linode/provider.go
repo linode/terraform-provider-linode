@@ -1,6 +1,7 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/hashicorp/terraform/version"
+	"golang.org/x/oauth2"
 )
 
 func Provider() terraform.ResourceProvider {
@@ -32,6 +34,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_nodebalancer":        resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config": resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":   resourceLinodeNodeBalancerNode(),
+			"linode_volume":              resourceLinodeVolume(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -43,9 +46,17 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("The Linode API Token was not valid")
 	}
-	var httpTransport http.Transport
-	transport := logging.NewTransport("Linode", &httpTransport)
-	client := linodego.NewClient(&token, transport)
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+
+	oauthTransport := &oauth2.Transport{
+		Source: tokenSource,
+	}
+	loggingTransport := logging.NewTransport("Linode", oauthTransport)
+	oauth2Client := &http.Client{
+		Transport: loggingTransport,
+	}
+
+	client := linodego.NewClient(oauth2Client)
 
 	projectURL := "https://www.terraform.io"
 	userAgent := fmt.Sprintf("Terraform/%s (+%s)",
@@ -54,7 +65,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	client.SetUserAgent(userAgent)
 
 	// Ping the API for an empty response to verify the configuration works
-	_, err := client.ListTypes(linodego.NewListOptions(100, ""))
+	_, err := client.ListTypes(context.TODO(), linodego.NewListOptions(100, ""))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to the Linode API because %s", err)
 	}

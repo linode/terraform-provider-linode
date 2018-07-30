@@ -1,6 +1,7 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -205,7 +206,7 @@ func testAccCheckLinodeInstanceExists(s *terraform.State) error {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 
-		_, err = client.GetInstance(id)
+		_, err = client.GetInstance(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
 		}
@@ -233,7 +234,7 @@ func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
 
 		}
 
-		_, err = client.GetInstance(id)
+		_, err = client.GetInstance(context.Background(), id)
 
 		if err == nil {
 			return fmt.Errorf("Linode with id %d still exists", id)
@@ -262,7 +263,7 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 		if err != nil {
 			panic(err)
 		}
-		instanceIPs, err := client.GetInstanceIPAddresses(id)
+		instanceIPs, err := client.GetInstanceIPAddresses(context.Background(), id)
 		if err != nil {
 			return err
 		}

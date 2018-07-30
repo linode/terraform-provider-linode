@@ -1,7 +1,7 @@
 ---
 layout: "linode"
 page_title: "Linode: linode_instance"
-sidebar_current: "docs-linode-resource-linode"
+sidebar_current: "docs-linode-resource-instance"
 description: |-
   Manages a Linode instance.
 ---
@@ -21,8 +21,8 @@ The following example shows how one might use this resource to configure a Linod
 ```hcl
 resource "linode_instance" "web" {
     image = "linode/ubuntu18.04"
-    kernel = "Latest 64 bit"
-    region = "Dallas, TX, USA"
+    kernel = "linode/latest-64"
+    region = "us-central"
     type = "g6-standard-1"
     ssh_key = "ssh-rsa AAAA...Gw== user@example.local"
     root_password = "terraform-test"

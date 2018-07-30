@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -69,9 +70,9 @@ func (InstanceDisksPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListInstanceDisks lists InstanceDisks
-func (c *Client) ListInstanceDisks(linodeID int, opts *ListOptions) ([]*InstanceDisk, error) {
+func (c *Client) ListInstanceDisks(ctx context.Context, linodeID int, opts *ListOptions) ([]*InstanceDisk, error) {
 	response := InstanceDisksPagedResponse{}
-	err := c.listHelperWithID(&response, linodeID, opts)
+	err := c.listHelperWithID(ctx, &response, linodeID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -93,13 +94,13 @@ func (v *InstanceDisk) fixDates() *InstanceDisk {
 }
 
 // GetInstanceDisk gets the template with the provided ID
-func (c *Client) GetInstanceDisk(linodeID int, configID int) (*InstanceDisk, error) {
+func (c *Client) GetInstanceDisk(ctx context.Context, linodeID int, configID int) (*InstanceDisk, error) {
 	e, err := c.InstanceDisks.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, configID)
-	r, err := coupleAPIErrors(c.R().SetResult(&InstanceDisk{}).Get(e))
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&InstanceDisk{}).Get(e))
 	if err != nil {
 		return nil, err
 	}
@@ -107,14 +108,14 @@ func (c *Client) GetInstanceDisk(linodeID int, configID int) (*InstanceDisk, err
 }
 
 // CreateInstanceDisk creates a new InstanceDisk for the given Instance
-func (c *Client) CreateInstanceDisk(linodeID int, createOpts InstanceDiskCreateOptions) (*InstanceDisk, error) {
+func (c *Client) CreateInstanceDisk(ctx context.Context, linodeID int, createOpts InstanceDiskCreateOptions) (*InstanceDisk, error) {
 	var body string
 	e, err := c.InstanceDisks.endpointWithID(linodeID)
 	if err != nil {
 		return nil, err
 	}
 
-	req := c.R().SetResult(&InstanceDisk{})
+	req := c.R(ctx).SetResult(&InstanceDisk{})
 
 	if bodyData, err := json.Marshal(createOpts); err == nil {
 		body = string(bodyData)
@@ -134,7 +135,7 @@ func (c *Client) CreateInstanceDisk(linodeID int, createOpts InstanceDiskCreateO
 }
 
 // UpdateInstanceDisk creates a new InstanceDisk for the given Instance
-func (c *Client) UpdateInstanceDisk(linodeID int, diskID int, updateOpts InstanceDiskUpdateOptions) (*InstanceDisk, error) {
+func (c *Client) UpdateInstanceDisk(ctx context.Context, linodeID int, diskID int, updateOpts InstanceDiskUpdateOptions) (*InstanceDisk, error) {
 	var body string
 	e, err := c.InstanceDisks.endpointWithID(linodeID)
 	if err != nil {
@@ -142,7 +143,7 @@ func (c *Client) UpdateInstanceDisk(linodeID int, diskID int, updateOpts Instanc
 	}
 	e = fmt.Sprintf("%s/%d", e, diskID)
 
-	req := c.R().SetResult(&InstanceDisk{})
+	req := c.R(ctx).SetResult(&InstanceDisk{})
 
 	if bodyData, err := json.Marshal(updateOpts); err == nil {
 		body = string(bodyData)
@@ -162,12 +163,12 @@ func (c *Client) UpdateInstanceDisk(linodeID int, diskID int, updateOpts Instanc
 }
 
 // RenameInstanceDisk renames an InstanceDisk
-func (c *Client) RenameInstanceDisk(linodeID int, diskID int, label string) (*InstanceDisk, error) {
-	return c.UpdateInstanceDisk(linodeID, diskID, InstanceDiskUpdateOptions{Label: label})
+func (c *Client) RenameInstanceDisk(ctx context.Context, linodeID int, diskID int, label string) (*InstanceDisk, error) {
+	return c.UpdateInstanceDisk(ctx, linodeID, diskID, InstanceDiskUpdateOptions{Label: label})
 }
 
 // ResizeInstanceDisk resizes the size of the Instance disk
-func (c *Client) ResizeInstanceDisk(linodeID int, diskID int, size int) (*InstanceDisk, error) {
+func (c *Client) ResizeInstanceDisk(ctx context.Context, linodeID int, diskID int, size int) (*InstanceDisk, error) {
 	var body string
 	e, err := c.InstanceDisks.endpointWithID(linodeID)
 	if err != nil {
@@ -175,7 +176,7 @@ func (c *Client) ResizeInstanceDisk(linodeID int, diskID int, size int) (*Instan
 	}
 	e = fmt.Sprintf("%s/%d", e, diskID)
 
-	req := c.R().SetResult(&InstanceDisk{})
+	req := c.R(ctx).SetResult(&InstanceDisk{})
 	updateOpts := map[string]interface{}{
 		"size": size,
 	}
@@ -197,14 +198,14 @@ func (c *Client) ResizeInstanceDisk(linodeID int, diskID int, size int) (*Instan
 }
 
 // DeleteInstanceDisk deletes a Linode Instance Disk
-func (c *Client) DeleteInstanceDisk(linodeID int, diskID int) error {
+func (c *Client) DeleteInstanceDisk(ctx context.Context, linodeID int, diskID int) error {
 	e, err := c.InstanceDisks.endpointWithID(linodeID)
 	if err != nil {
 		return err
 	}
 	e = fmt.Sprintf("%s/%d", e, diskID)
 
-	if _, err := coupleAPIErrors(c.R().Delete(e)); err != nil {
+	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
 		return err
 	}
 	return nil

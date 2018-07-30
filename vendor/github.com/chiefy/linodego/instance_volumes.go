@@ -1,6 +1,8 @@
 package linodego
 
 import (
+	"context"
+
 	"github.com/go-resty/resty"
 )
 
@@ -30,9 +32,9 @@ func (InstanceVolumesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListInstanceVolumes lists InstanceVolumes
-func (c *Client) ListInstanceVolumes(linodeID int, opts *ListOptions) ([]*Volume, error) {
+func (c *Client) ListInstanceVolumes(ctx context.Context, linodeID int, opts *ListOptions) ([]*Volume, error) {
 	response := InstanceVolumesPagedResponse{}
-	err := c.listHelperWithID(&response, linodeID, opts)
+	err := c.listHelperWithID(ctx, &response, linodeID, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

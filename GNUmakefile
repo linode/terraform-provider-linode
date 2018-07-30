@@ -1,4 +1,5 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
+TESTARGS?=$("-parallel=2","-timeout=120m")
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode
@@ -11,10 +12,10 @@ build: fmtcheck
 test: fmtcheck
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=2
+		xargs -t -n4 go test -parallel=2 -timeout=30s
 
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m -parallel=2
+	TF_ACC=1 go test -v $(TEST) $(TESTARGS)
 
 vet:
 	@echo "go vet ."

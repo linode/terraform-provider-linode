@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -59,9 +60,9 @@ func (LinodeTypesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListTypes lists linode types
-func (c *Client) ListTypes(opts *ListOptions) ([]*LinodeType, error) {
+func (c *Client) ListTypes(ctx context.Context, opts *ListOptions) ([]*LinodeType, error) {
 	response := LinodeTypesPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -69,14 +70,14 @@ func (c *Client) ListTypes(opts *ListOptions) ([]*LinodeType, error) {
 }
 
 // GetType gets the type with the provided ID
-func (c *Client) GetType(typeID string) (*LinodeType, error) {
+func (c *Client) GetType(ctx context.Context, typeID string) (*LinodeType, error) {
 	e, err := c.Types.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, typeID)
 
-	r, err := coupleAPIErrors(c.Types.R().Get(e))
+	r, err := coupleAPIErrors(c.Types.R(ctx).Get(e))
 	if err != nil {
 		return nil, err
 	}

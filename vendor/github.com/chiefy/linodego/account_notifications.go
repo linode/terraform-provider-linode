@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-resty/resty"
@@ -58,9 +59,9 @@ func (NotificationsPagedResponse) setResult(r *resty.Request) {
 // Notifications, and a Notification will disappear when the circumstances causing it
 // have been resolved. For example, if the account has an important Ticket open, a response
 // to the Ticket will dismiss the Notification.
-func (c *Client) ListNotifications(opts *ListOptions) ([]*Notification, error) {
+func (c *Client) ListNotifications(ctx context.Context, opts *ListOptions) ([]*Notification, error) {
 	response := NotificationsPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}

@@ -1,6 +1,7 @@
 package linodego
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-resty/resty"
@@ -32,9 +33,9 @@ func (IPv6RangesPagedResponse) setResult(r *resty.Request) {
 }
 
 // ListIPv6Ranges lists IPv6Ranges
-func (c *Client) ListIPv6Ranges(opts *ListOptions) ([]*IPv6Range, error) {
+func (c *Client) ListIPv6Ranges(ctx context.Context, opts *ListOptions) ([]*IPv6Range, error) {
 	response := IPv6RangesPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -42,13 +43,13 @@ func (c *Client) ListIPv6Ranges(opts *ListOptions) ([]*IPv6Range, error) {
 }
 
 // GetIPv6Range gets the template with the provided ID
-func (c *Client) GetIPv6Range(id string) (*IPv6Range, error) {
+func (c *Client) GetIPv6Range(ctx context.Context, id string) (*IPv6Range, error) {
 	e, err := c.IPv6Ranges.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R().SetResult(&IPv6Range{}).Get(e)
+	r, err := c.R(ctx).SetResult(&IPv6Range{}).Get(e)
 	if err != nil {
 		return nil, err
 	}

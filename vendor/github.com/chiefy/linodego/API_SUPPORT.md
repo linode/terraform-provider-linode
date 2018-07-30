@@ -304,11 +304,11 @@
 
 - `/volumes`
   - [X] `GET`
-  - [ ] `POST`
+  - [X] `POST`
 - `/volumes/$id`
   - [X] `GET`
-  - [ ] `POST`
-  - [ ] `DELETE`
+  - [X] `PUT`
+  - [X] `DELETE`
 - `/volumes/$id/attach`
   - [X] `POST`
 - `/volumes/$id/clone`
