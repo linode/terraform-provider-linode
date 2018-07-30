@@ -1,5 +1,19 @@
 # Change Log
 
+<a name="v0.1.1"></a>
+## [v0.1.1](https://github.com/chiefy/linodego/compare/v0.0.1...v0.1.0) (2018-07-30)
+
+Adds more Domain handling
+
+### Fixed
+
+- go-resty doesnt pass errors when content-type is not set
+- Domain, DomainRecords, tests and fixtures
+
+### Added
+
+- add CreateDomainRecord, UpdateDomainRecord, and DeleteDomainRecord
+
 <a name="v0.1.0"></a>
 ## [v0.1.0](https://github.com/chiefy/linodego/compare/v0.0.1...v0.1.0) (2018-07-23)
 

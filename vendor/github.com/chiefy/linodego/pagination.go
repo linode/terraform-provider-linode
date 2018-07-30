@@ -109,6 +109,12 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 			results = r.Result().(*VolumesPagedResponse).Results
 			v.appendData(r.Result().(*VolumesPagedResponse))
 		}
+	case *DomainsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(DomainsPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*DomainsPagedResponse).Pages
+			results = r.Result().(*DomainsPagedResponse).Results
+			v.appendData(r.Result().(*DomainsPagedResponse))
+		}
 	case *EventsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(EventsPagedResponse{}).Get(v.endpoint(c))); err == nil {
 			pages = r.Result().(*EventsPagedResponse).Pages

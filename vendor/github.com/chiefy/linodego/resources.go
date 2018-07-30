@@ -58,7 +58,7 @@ const (
 	kernelsEndpoint               = "linode/kernels"
 	typesEndpoint                 = "linode/types"
 	domainsEndpoint               = "domains"
-	domainRecordsEndpoint         = "domains/{{ .DomainID }}/records"
+	domainRecordsEndpoint         = "domains/{{ .ID }}/records"
 	longviewEndpoint              = "longview"
 	longviewclientsEndpoint       = "longview/clients"
 	longviewsubscriptionsEndpoint = "longview/subscriptions"

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -21,7 +22,7 @@ const (
 	// APIProto connect to API with http(s)
 	APIProto = "https"
 	// Version of linodego
-	Version = "0.1.0"
+	Version = "0.1.1"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events
@@ -36,6 +37,7 @@ type Client struct {
 	resty     *resty.Client
 	userAgent string
 	resources map[string]*Resource
+	debug     bool
 
 	Images                *Resource
 	InstanceDisks         *Resource
@@ -71,10 +73,13 @@ type Client struct {
 }
 
 func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	// Wether or not we will enable Resty debugging output
-	if envDebug, ok := os.LookupEnv("LINODE_DEBUG"); ok {
-		if apiDebug, err := strconv.ParseBool(envDebug); err == nil {
-			log.Println("[INFO] LINODE_DEBUG being set to", apiDebug)
+	if apiDebug, ok := os.LookupEnv("LINODE_DEBUG"); ok {
+		if parsed, err := strconv.ParseBool(apiDebug); err == nil {
+			envDebug = parsed
+			log.Println("[INFO] LINODE_DEBUG being set to", envDebug)
 		} else {
 			log.Println("[WARN] LINODE_DEBUG should be an integer, 0 or 1")
 		}
@@ -93,6 +98,7 @@ func (c *Client) SetUserAgent(ua string) *Client {
 // R wraps resty's R method
 func (c *Client) R(ctx context.Context) *resty.Request {
 	return c.resty.R().
+		ExpectContentType("application/json").
 		SetHeader("Content-Type", "application/json").
 		SetContext(ctx).
 		SetError(APIError{})
@@ -100,6 +106,7 @@ func (c *Client) R(ctx context.Context) *resty.Request {
 
 // SetDebug sets the debug on resty's client
 func (c *Client) SetDebug(debug bool) *Client {
+	c.debug = debug
 	c.resty.SetDebug(debug)
 	return c
 }
@@ -177,6 +184,7 @@ func NewClient(hc *http.Client) (client Client) {
 	client.Kernels = resources[kernelsName]
 	client.Types = resources[typesName]
 	client.Domains = resources[domainsName]
+	client.DomainRecords = resources[domainRecordsName]
 	client.Longview = resources[longviewName]
 	client.LongviewSubscriptions = resources[longviewsubscriptionsName]
 	client.NodeBalancers = resources[nodebalancersName]
@@ -191,7 +199,7 @@ func NewClient(hc *http.Client) (client Client) {
 	return
 }
 
-// waitForInstanceStatus waits for the Linode instance to reach the desired state
+// WaitForInstanceStatus waits for the Linode instance to reach the desired state
 // before returning. It will timeout with an error after timeoutSeconds.
 func WaitForInstanceStatus(ctx context.Context, client *Client, instanceID int, status InstanceStatus, timeoutSeconds int) error {
 	start := time.Now()
