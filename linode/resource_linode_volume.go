@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/chiefy/linodego"
@@ -193,35 +194,50 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 		linodeID = &lidInt
 	}
 
-	//if d.HasChange("linode_id") {
-	if linodeID == nil {
-		if ok, err := client.DetachVolume(context.TODO(), volume.ID); err != nil {
-			return err
-		} else if !ok {
-			return fmt.Errorf("Failed to detach Linode Volume %d", volume.ID)
+	// We can't use d.HasChange("linode_id") - see https://github.com/hashicorp/terraform/pull/1445
+	// compare nils to ints cautiously
+
+	if detectVolumeIDChange(linodeID, volume.LinodeID) {
+		if linodeID == nil || volume.LinodeID != nil {
+			log.Printf("[INFO] Detaching Linode Volume %d", volume.ID)
+			if ok, err := client.DetachVolume(context.TODO(), volume.ID); err != nil {
+				return err
+			} else if !ok {
+				return fmt.Errorf("Failed to detach Linode Volume %d", volume.ID)
+			}
+
+			log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volume.ID)
+			if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
+				return err
+			}
 		}
-	} else {
-		attachOptions := linodego.VolumeAttachOptions{
-			LinodeID: *linodeID,
-			ConfigID: 0,
+
+		if linodeID != nil {
+			attachOptions := linodego.VolumeAttachOptions{
+				LinodeID: *linodeID,
+				ConfigID: 0,
+			}
+
+			log.Printf("[INFO] Attaching Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
+
+			if ok, err := client.AttachVolume(context.TODO(), volume.ID, &attachOptions); err != nil {
+				return err
+			} else if !ok {
+				return fmt.Errorf("Failed to attach Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
+			}
+
+			log.Printf("[INFO] Waiting for Linode Volume %d to attach ...", volume.ID)
+			if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+				return err
+			}
 		}
-		if ok, err := client.AttachVolume(context.TODO(), volume.ID, &attachOptions); err != nil {
-			return err
-		} else if !ok {
-			return fmt.Errorf("Failed to attach Linode Volume %d to Linode %d", volume.ID, linodeID)
-		}
+
+		d.Set("linode_id", linodeID)
+		d.SetPartial("linode_id")
+		d.Partial(false)
 	}
 
-	if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
-		return err
-	}
-	//}
-
-	d.Set("linode_id", linodeID)
-	d.SetPartial("linode_id")
-	d.Partial(false)
-
-	return nil
+	return resourceLinodeVolumeRead(d, meta)
 }
 
 func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error {
@@ -236,4 +252,16 @@ func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.SetId("")
 	return nil
+}
+
+func detectVolumeIDChange(have *int, want *int) (changed bool) {
+	if have == nil && want == nil {
+		changed = false
+	} else {
+		// attach or detach
+		changed = (have == nil && want != nil) || (have != nil && want == nil)
+		// reattach (linode id changed)
+		changed = changed || (*have != *want)
+	}
+	return changed
 }

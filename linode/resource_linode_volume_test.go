@@ -12,6 +12,27 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
+func TestDetectVolumeIDChange(t *testing.T) {
+	t.Parallel()
+	var have, want *int
+	var one, two *int
+	oneValue, twoValue := 1, 2
+	one, two = &oneValue, &twoValue
+
+	if have, want = nil, nil; detectVolumeIDChange(have, want) {
+		t.Errorf("should not detect change when both are nil")
+	}
+	if have, want = nil, one; !detectVolumeIDChange(have, want) {
+		t.Errorf("should detect change when have is nil and want is not nil")
+	}
+	if have, want = one, nil; !detectVolumeIDChange(have, want) {
+		t.Errorf("should detect change when want is nil and have is not nil")
+	}
+	if have, want = one, two; !detectVolumeIDChange(have, want) {
+		t.Errorf("should detect change when values differ")
+	}
+}
+
 func TestAccLinodeVolumeBasic(t *testing.T) {
 	t.Parallel()
 
