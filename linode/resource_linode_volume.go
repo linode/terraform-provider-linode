@@ -24,8 +24,7 @@ func resourceLinodeVolume() *schema.Resource {
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The label of the Linode Volume.",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -47,7 +46,7 @@ func resourceLinodeVolume() *schema.Resource {
 			},
 			"linode_id": &schema.Schema{
 				Type:        schema.TypeInt,
-				Description: "If a Volume is attached to a specific Linode, the ID of that Linode will be displayed here.",
+				Description: "The Linode ID where the Volume should be attached.",
 				Optional:    true,
 			},
 			"filesystem_path": &schema.Schema{

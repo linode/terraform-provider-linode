@@ -1,7 +1,7 @@
 ---
 layout: "linode"
 page_title: "Linode: linode_instance"
-sidebar_current: "docs-linode-resource-linode"
+sidebar_current: "docs-linode-resource-instance"
 description: |-
   Manages a Linode instance.
 ---
