@@ -119,6 +119,16 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 			},
+			"node_status_up": &schema.Schema{
+				Type:        schema.TypeInt,
+				Description: "The number of backends considered to be 'UP' and healthy, and that are serving requests.",
+				Computed:    true,
+			},
+			"node_status_down": &schema.Schema{
+				Type:        schema.TypeInt,
+				Description: "The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -155,6 +165,8 @@ func syncConfigResourceData(d *schema.ResourceData, config *linodego.NodeBalance
 	d.Set("protocol", config.Protocol)
 	d.Set("ssl_fingerprint", config.SSLFingerprint)
 	d.Set("ssl_commonname", config.SSLCommonName)
+	d.Set("node_status_up", config.NodesStatus.Up)
+	d.Set("node_status_down", config.NodesStatus.Down)
 }
 
 func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface{}) error {
