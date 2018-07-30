@@ -241,10 +241,24 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id64, err := strconv.ParseInt(d.Id(), 10, 64)
+	id := int(id64)
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode Volume id %s as int", d.Id())
 	}
+
+	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
+	if ok, err := client.DetachVolume(context.TODO(), id); err != nil {
+		return err
+	} else if !ok {
+		return fmt.Errorf("Failed to detach Linode Volume %d", id)
+	}
+
+	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
+	if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, id, nil, int(d.Timeout("update").Seconds())); err != nil {
+		return err
+	}
+
 	err = client.DeleteVolume(context.TODO(), int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to delete Linode Volume %d because %s", id, err)
