@@ -1,8 +1,7 @@
 output "Public IP" {
-  value = "${linode_instance.foobar.ip_address}"
+  value = "${linode_instance.nginx.*.ip_address}"
 }
 
 output "Name" {
-  value = "${linode_instance.foobar.name}"
+  value = "${linode_instance.nginx.*.label}"
 }
-
