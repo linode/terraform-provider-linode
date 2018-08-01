@@ -203,7 +203,7 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 		RetrySec:    d.Get("retry_sec").(int),
 		ExpireSec:   d.Get("expire_sec").(int),
 		RefreshSec:  d.Get("refresh_sec").(int),
-		TTLSec:      d.Get("ttls_sec").(int),
+		TTLSec:      d.Get("ttl_sec").(int),
 	}
 
 	if v, ok := d.GetOk("master_ips"); ok {
