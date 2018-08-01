@@ -10,7 +10,7 @@ description: |-
 
 Provides a Linode instance resource.  This can be used to create,
 modify, and delete Linodes. For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/)
-and [Linode APIv4 docs](https://development.linode.com/).
+and [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createLinodeInstance).
 
 Linodes also support `[provisioning](/docs/provisioners/index.html).
 

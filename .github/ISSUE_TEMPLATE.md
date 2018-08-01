@@ -7,8 +7,13 @@ Run `terraform -v` to show the version. If you are not running the latest versio
 
 ### Affected Resource(s)
 Please list the resources as a list, for example:
-- linode_linode
-- linode_domain
+- linode\_instance
+- linode\_domain
+- linode\_domain\_record
+- linode\_nodebalancer
+- linode\_nodebalancer\_config
+- linode\_nodebalancer\_node
+- linode\_volume
 
 If this issue appears to affect multiple resources, it may be an issue with Terraform's core, so please mention this.
 

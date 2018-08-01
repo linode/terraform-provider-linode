@@ -71,7 +71,7 @@ func resourceLinodeNodeBalancerExists(d *schema.ResourceData, meta interface{}) 
 	return true, nil
 }
 
-func syncResourceData(d *schema.ResourceData, nodebalancer *linodego.NodeBalancer) {
+func syncNodeBalancerData(d *schema.ResourceData, nodebalancer *linodego.NodeBalancer) {
 	d.Set("label", nodebalancer.Label)
 	d.Set("hostname", nodebalancer.Hostname)
 	d.Set("region", nodebalancer.Region)
@@ -93,7 +93,7 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Failed to find the specified Linode NodeBalancer because %s", err)
 	}
 
-	syncResourceData(d, nodebalancer)
+	syncNodeBalancerData(d, nodebalancer)
 
 	return nil
 }
@@ -117,7 +117,7 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetId(fmt.Sprintf("%d", nodebalancer.ID))
 
-	syncResourceData(d, nodebalancer)
+	syncNodeBalancerData(d, nodebalancer)
 
 	return nil
 }
@@ -146,7 +146,7 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		if nodebalancer, err = client.UpdateNodeBalancer(context.TODO(), nodebalancer.ID, updateOpts); err != nil {
 			return err
 		}
-		syncResourceData(d, nodebalancer)
+		syncNodeBalancerData(d, nodebalancer)
 	}
 
 	return nil
