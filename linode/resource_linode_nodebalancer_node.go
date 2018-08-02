@@ -84,6 +84,11 @@ func resourceLinodeNodeBalancerNodeExists(d *schema.ResourceData, meta interface
 
 	_, err = client.GetNodeBalancerNode(context.TODO(), nodebalancerID, configID, int(id))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			d.SetId("")
+			return false, nil
+		}
+
 		return false, fmt.Errorf("Failed to get Linode NodeBalancerNode ID %s because %s", d.Id(), err)
 	}
 	return true, nil

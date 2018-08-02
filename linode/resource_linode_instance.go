@@ -190,7 +190,7 @@ func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (boo
 
 	_, err = client.GetInstance(context.TODO(), int(id))
 	if err != nil {
-		if lerr, ok := err.(linodego.Error); ok && lerr.Code == 404 {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			d.SetId("")
 			return false, nil
 		}

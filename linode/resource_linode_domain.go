@@ -116,6 +116,11 @@ func resourceLinodeDomainExists(d *schema.ResourceData, meta interface{}) (bool,
 
 	_, err = client.GetDomain(context.Background(), int(id))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			d.SetId("")
+			return false, nil
+		}
+
 		return false, fmt.Errorf("Failed to get Linode Domain ID %s because %s", d.Id(), err)
 	}
 	return true, nil
