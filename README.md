@@ -51,8 +51,8 @@ Using the provider
 
 See the docs included in the website/docs directory:
 
-- <https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/index.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/terraform-provider-linode/website/docs/r/linode.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/index.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/linode.html.md>
 
 *The following links will not work until this repo is accepted by terraform-providers*
 
