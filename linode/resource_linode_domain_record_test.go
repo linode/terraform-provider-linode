@@ -16,7 +16,7 @@ func TestAccLinodeDomainRecordBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_domain_record.foobar"
-	var domainRecordName = fmt.Sprintf("tf-test-%s", acctest.RandString(10))
+	var domainRecordName = acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -64,7 +64,7 @@ func testAccStateIdDomainRecord(s *terraform.State) (string, error) {
 func TestAccLinodeDomainRecordUpdate(t *testing.T) {
 	t.Parallel()
 
-	var domainRecordName = fmt.Sprintf("tf-test-%s", acctest.RandString(10))
+	var domainRecordName = acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

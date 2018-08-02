@@ -16,7 +16,7 @@ func TestAccLinodeDomainBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_domain.foobar"
-	var domainName = fmt.Sprintf("tf-test-%s.example", acctest.RandString(10))
+	var domainName = acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -45,7 +45,7 @@ func TestAccLinodeDomainBasic(t *testing.T) {
 func TestAccLinodeDomainUpdate(t *testing.T) {
 	t.Parallel()
 
-	var domainName = fmt.Sprintf("tf-test-%s", acctest.RandString(10))
+	var domainName = acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

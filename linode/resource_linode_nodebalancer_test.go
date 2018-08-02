@@ -16,7 +16,7 @@ func TestAccLinodeNodeBalancerBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
-	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -49,7 +49,7 @@ func TestAccLinodeNodeBalancerUpdate(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
-	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
