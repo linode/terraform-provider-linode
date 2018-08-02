@@ -64,9 +64,9 @@ func resourceLinodeInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"group": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Removed:  "See 'tags'",
+				Type:        schema.TypeString,
+				Description: "The display group of the Linode instance.",
+				Optional:    true,
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,

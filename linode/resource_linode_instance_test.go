@@ -39,7 +39,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					// resource.TestCheckResourceAttr(resName, "group", "testing"),
+					resource.TestCheckResourceAttr(resName, "group", "testing"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 				),
 			},
@@ -285,6 +285,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -299,6 +300,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -313,6 +315,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -327,6 +330,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -341,6 +345,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -356,6 +361,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -371,5 +377,6 @@ resource "linode_instance" "foobar" {
 	swap_size = 256
 	private_networking = true
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
