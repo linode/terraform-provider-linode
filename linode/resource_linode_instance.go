@@ -144,6 +144,7 @@ func resourceLinodeInstance() *schema.Resource {
 			"root_password": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The password that will be initialially assigned to the 'root' user account.",
+				Sensitive:   true,
 				Required:    true,
 				ForceNew:    true,
 				StateFunc:   rootPasswordState,
