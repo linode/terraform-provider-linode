@@ -27,7 +27,7 @@ func resourceLinodeVolume() *schema.Resource {
 				Required:    true,
 			},
 			"status": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Description: "The status of the volume, indicating the current readiness state.",
 				Computed:    true,
 			},
@@ -67,6 +67,11 @@ func resourceLinodeVolumeExists(d *schema.ResourceData, meta interface{}) (bool,
 
 	_, err = client.GetVolume(context.TODO(), int(id))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			d.SetId("")
+			return false, nil
+		}
+
 		return false, fmt.Errorf("Failed to get Linode Volume ID %s because %s", d.Id(), err)
 	}
 	return true, nil
@@ -242,10 +247,10 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id64, err := strconv.ParseInt(d.Id(), 10, 64)
-	id := int(id64)
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode Volume id %s as int", d.Id())
 	}
+	id := int(id64)
 
 	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
 	if ok, err := client.DetachVolume(context.TODO(), id); err != nil {

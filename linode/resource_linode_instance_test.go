@@ -16,8 +16,8 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
-	//var instance linodego.Instance
-	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+
+	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
@@ -39,7 +39,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					// resource.TestCheckResourceAttr(resName, "group", "testing"),
+					resource.TestCheckResourceAttr(resName, "group", "testing"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 				),
 			},
@@ -55,7 +55,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 func TestAccLinodeInstanceUpdate(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
@@ -89,7 +89,7 @@ func TestAccLinodeInstanceUpdate(t *testing.T) {
 func TestAccLinodeInstanceResize(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
@@ -137,7 +137,7 @@ func TestAccLinodeInstanceResize(t *testing.T) {
 func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
@@ -173,7 +173,7 @@ func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 func TestAccLinodeInstancePrivateNetworking(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
@@ -240,7 +240,7 @@ func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
 			return fmt.Errorf("Linode with id %d still exists", id)
 		}
 
-		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
 			return fmt.Errorf("Failed to request Linode with id %d", id)
 		}
 	}
@@ -285,6 +285,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -299,6 +300,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -313,6 +315,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -327,6 +330,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -341,6 +345,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -356,6 +361,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -371,5 +377,6 @@ resource "linode_instance" "foobar" {
 	swap_size = 256
 	private_networking = true
 	ssh_key = "%s"
+	group = "testing"
 }`, instance, pubkey)
 }

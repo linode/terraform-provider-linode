@@ -10,7 +10,7 @@ description: |-
 
 Provides a Linode volume resource.  This can be used to create,
 modify, and delete Linodes Volumes. For more information, see [How to Use Block Storage with Your Linode](https://www.linode.com/docs/platform/block-storage/how-to-use-block-storage-with-your-linode/)
-and the [Linode APIv4 docs](https://development.linode.com/).
+and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createVolume).
 
 ## Example Usage
 

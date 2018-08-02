@@ -31,6 +31,8 @@ func Provider() terraform.ResourceProvider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"linode_instance":            resourceLinodeInstance(),
+			"linode_domain":              resourceLinodeDomain(),
+			"linode_domain_record":       resourceLinodeDomainRecord(),
 			"linode_nodebalancer":        resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config": resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":   resourceLinodeNodeBalancerNode(),

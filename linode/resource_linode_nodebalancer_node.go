@@ -49,6 +49,7 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 			"mode": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it.",
+				Optional:    true,
 				Computed:    true,
 			},
 			"address": &schema.Schema{
@@ -83,6 +84,11 @@ func resourceLinodeNodeBalancerNodeExists(d *schema.ResourceData, meta interface
 
 	_, err = client.GetNodeBalancerNode(context.TODO(), nodebalancerID, configID, int(id))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			d.SetId("")
+			return false, nil
+		}
+
 		return false, fmt.Errorf("Failed to get Linode NodeBalancerNode ID %s because %s", d.Id(), err)
 	}
 	return true, nil

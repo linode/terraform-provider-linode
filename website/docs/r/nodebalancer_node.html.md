@@ -10,7 +10,7 @@ description: |-
 
 Provides a Linode nodebalancer_node resource.  This can be used to create,
 modify, and delete Linodes NodeBalancer Nodes. For more information, see [Getting Started with NodeBalancers](https://www.linode.com/docs/platform/nodebalancer/getting-started-with-nodebalancers/)
-and the [Linode APIv4 docs](https://development.linode.com/).
+and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createNodeBalancerNode).
 
 ## Example Usage
 
@@ -81,11 +81,3 @@ This resource exports the following attributes:
 * `config_id` - The ID of the NodeBalancerConfig this NodeBalancerNode is attached to.
 
 * `nodebalancer_id` - The ID of the NodeBalancer this NodeBalancerNode is attached to.
-
-## Import
-
-Linodes NodeBalancer Nodes can be imported using the Linode NodeBalancer Node `id`, e.g.
-
-```sh
-terraform import linode_nodebalancer_node.mynodebalancer_node 1234567
-```

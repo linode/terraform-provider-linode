@@ -16,7 +16,7 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 	// t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
-	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
 	config := testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName)
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -49,7 +49,7 @@ func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
-	nodebalancerName := fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -135,7 +135,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 			return fmt.Errorf("NodeBalancer Config with id %d still exists", id)
 		}
 
-		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
 			return fmt.Errorf("Failed to request NodeBalancer Config with id %d", id)
 		}
 	}

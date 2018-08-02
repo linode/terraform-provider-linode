@@ -64,12 +64,12 @@ func resourceLinodeInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"group": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Removed:  "See 'tags'",
+				Type:        schema.TypeString,
+				Description: "The display group of the Linode instance.",
+				Optional:    true,
 			},
 			"tags": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The tags to apply to the Linode instance.",
 				Optional:    true,
@@ -144,6 +144,7 @@ func resourceLinodeInstance() *schema.Resource {
 			"root_password": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The password that will be initialially assigned to the 'root' user account.",
+				Sensitive:   true,
 				Required:    true,
 				ForceNew:    true,
 				StateFunc:   rootPasswordState,
@@ -190,7 +191,7 @@ func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (boo
 
 	_, err = client.GetInstance(context.TODO(), int(id))
 	if err != nil {
-		if lerr, ok := err.(linodego.Error); ok && lerr.Code == 404 {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			d.SetId("")
 			return false, nil
 		}

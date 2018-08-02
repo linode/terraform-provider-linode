@@ -17,7 +17,7 @@ func TestAccLinodeTemplateBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_template.foobar"
-	var templateName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	var templateName = acctest.RandomWithPrefix("tf_test_")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -43,7 +43,7 @@ func TestAccLinodeTemplateBasic(t *testing.T) {
 func TestAccLinodeTemplateUpdate(t *testing.T) {
 	t.Parallel()
 
-	var templateName = fmt.Sprintf("tf_test_%s", acctest.RandString(10))
+	var templateName = acctest.RandomWithPrefix("tf_test_")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -112,7 +112,7 @@ func testAccCheckLinodeTemplateDestroy(s *terraform.State) error {
 			return fmt.Errorf("Linode Template with id %d still exists", id)
 		}
 
-		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
 			return fmt.Errorf("Failed to request Linode Template with id %d", id)
 		}
 	}

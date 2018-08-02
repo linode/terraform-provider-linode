@@ -36,11 +36,11 @@ type NodeBalancer struct {
 
 type NodeBalancerTransfer struct {
 	// The total transfer, in MB, used by this NodeBalancer this month.
-	Total *int
+	Total *float64
 	// The total inbound transfer, in MB, used for this NodeBalancer this month.
-	Out *int
+	Out *float64
 	// The total outbound transfer, in MB, used for this NodeBalancer this month.
-	In *int
+	In *float64
 }
 
 // NodeBalancerCreateOptions are the options permitted for CreateNodeBalancer
