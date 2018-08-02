@@ -69,7 +69,7 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"tags": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The tags to apply to the Linode instance.",
 				Optional:    true,
