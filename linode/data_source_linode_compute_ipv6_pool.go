@@ -34,7 +34,7 @@ func dataSourceLinodeComputeIPv6PoolRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error listing pools: %s", err)
 	}
 
-	reqPool := d.Get("").(string)
+	reqPool := d.Get("range").(string)
 
 	for _, pool := range pools {
 		if pool.Range == reqPool {
