@@ -221,7 +221,7 @@ func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Failed to parse Linode DomainRecord id %s as an int because %s", d.Id(), err)
 	}
 	updateOpts := linodego.DomainRecordUpdateOptions{
-		Type:     d.Get("record_type").(linodego.DomainRecordType),
+		Type:     linodego.DomainRecordType(d.Get("record_type").(string)),
 		Name:     d.Get("name").(string),
 		Priority: resourceDataIntOrNil(d, "priority"),
 		Target:   d.Get("target").(string),
@@ -235,7 +235,7 @@ func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) 
 
 	domainRecord, err := client.UpdateDomainRecord(context.Background(), domainID, int(id), updateOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to fetch data about the current linode because %s", err)
+		return fmt.Errorf("Failed to update Domain Record because %s", err)
 	}
 
 	syncDomainRecordData(d, *domainRecord)
