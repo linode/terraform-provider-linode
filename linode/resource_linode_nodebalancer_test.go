@@ -120,7 +120,7 @@ func testAccCheckLinodeNodeBalancerDestroy(s *terraform.State) error {
 			return fmt.Errorf("NodeBalancer with id %d still exists", id)
 		}
 
-		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
 			return fmt.Errorf("Failed to request NodeBalancer with id %d", id)
 		}
 	}

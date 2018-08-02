@@ -112,7 +112,7 @@ func testAccCheckLinodeTemplateDestroy(s *terraform.State) error {
 			return fmt.Errorf("Linode Template with id %d still exists", id)
 		}
 
-		if apiErr, ok := err.(linodego.Error); ok && apiErr.Code != 404 {
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
 			return fmt.Errorf("Failed to request Linode Template with id %d", id)
 		}
 	}
