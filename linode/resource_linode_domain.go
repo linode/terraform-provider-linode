@@ -230,6 +230,9 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	domain, err := client.UpdateDomain(context.Background(), int(id), updateOpts)
+	if err != nil {
+		return fmt.Errorf("Failed to update Linode Domain %d because %s", id, err)
+	}
 	syncResourceData(d, domain)
 
 	return nil
