@@ -1,14 +1,18 @@
-resource "linode_nodebalancer" "kahoni-nb" {
-  label                = "kahoni-com"
+variable "nginx_count" {
+  default = 3
+}
+
+resource "linode_nodebalancer" "foo-nb" {
+  label                = "${var.project_name}"
   region               = "${var.region}"
   client_conn_throttle = 0
 
-  # group              = "kahoni"
+  # group              = "foo"
 }
 
-resource "linode_nodebalancer_config" "kahoni-https" {
+resource "linode_nodebalancer_config" "foo-https" {
   port            = 443
-  nodebalancer_id = "${linode_nodebalancer.kahoni-nb.id}"
+  nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
   protocol        = "http"
   algorithm       = "roundrobin"
   stickiness      = "http_cookie"
@@ -26,9 +30,9 @@ resource "linode_nodebalancer_config" "kahoni-https" {
   # https://opencredo.com/letsencrypt-terraform/
 }
 
-resource "linode_nodebalancer_config" "kahoni-http" {
+resource "linode_nodebalancer_config" "foo-http" {
   port            = 80
-  nodebalancer_id = "${linode_nodebalancer.kahoni-nb.id}"
+  nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
   protocol        = "http"
   algorithm       = "roundrobin"
   stickiness      = "http_cookie"
@@ -41,89 +45,120 @@ resource "linode_nodebalancer_config" "kahoni-http" {
   check_passive   = true
 }
 
-resource "linode_nodebalancer_node" "kahoni-80-www" {
-  # LABEL becomes kahoni-80-www
-  nodebalancer_id = "${linode_nodebalancer.kahoni-nb.id}"
-  config_id       = "${linode_nodebalancer_config.kahoni-http.id}"
-  address         = "${linode_instance.nginx.*.private_ip_address}"
-  weight          = 50
-  mode            = "accept"
+resource "linode_nodebalancer_node" "foo-http-www" {
+  # LABEL becomes foo-80-www
+  count           = "${var.nginx_count}"
+  nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
+  config_id       = "${linode_nodebalancer_config.foo-https.id}"
+  label           = "${var.project_name}_nbnode_http_${var.nginx_count}"
+
+  address = "${element(linode_instance.nginx.*.private_ip_address, count.index)}:80"
+  weight  = 50
+  mode    = "accept"
 }
 
-resource "linode_domain" "kahoni-com" {
+resource "linode_nodebalancer_node" "foo-https-www" {
+  # LABEL becomes foo-80-www
+  count           = "${var.nginx_count}"
+  nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
+  config_id       = "${linode_nodebalancer_config.foo-http.id}"
+  label           = "${var.project_name}_nbnode_https_${var.nginx_count}"
+
+  address = "${element(linode_instance.nginx.*.private_ip_address, count.index)}:80"
+  weight  = 50
+  mode    = "accept"
+}
+
+resource "linode_domain" "foo-com" {
   # the default type = "master" .. call it domain_type?
-  soa_email   = "admin@kahoni.com"
+  soa_email   = "${var.project_name}@${substr(uuid(),0,8)}example.com"
   ttl_sec     = "30"
   expire_sec  = "30"
   refresh_sec = "30"
-  domain      = "kahoni.com"
+  domain      = "${var.project_name}${substr(uuid(),0,8)}example.com"
   domain_type = "master"
 
-  # group              = "kahoni"
+  # group              = "foo"
   # interesting that the bare address "@" could be set this way..
   # but terraform would have to do this behind the scenes
   # ip_address = "${linode_instance.haproxy-www.ipv4_address}"
 }
 
 resource "linode_domain_record" "A-root" {
-  domain_id   = "${linode_domain.kahoni-com.id}"
+  domain_id   = "${linode_domain.foo-com.id}"
   record_type = "A"
   name        = ""
-  target      = "${linode_nodebalancer.kahoni-nb.ipv4}"
+  target      = "${linode_nodebalancer.foo-nb.ipv4}"
 }
 
 resource "linode_domain_record" "A-nginx" {
-  domain_id   = "${linode_domain.kahoni-com.id}"
-  name        = "${linode_instance.nginx.*.label}"
+  count       = "${var.nginx_count}"
+  domain_id   = "${linode_domain.foo-com.id}"
+  name        = "${element(linode_instance.nginx.*.label, count.index)}"
   record_type = "A"
-  target      = "${linode_instance.nginx.*.ip_address}"
+  target      = "${element(linode_instance.nginx.*.ip_address, count.index)}"
 }
 
 resource "linode_domain_record" "AAAA-root" {
-  domain_id   = "${linode_domain.kahoni-com.id}"
+  domain_id   = "${linode_domain.foo-com.id}"
   record_type = "AAAA"
   name        = ""
-  target      = "${linode_nodebalancer.kahoni-nb.ipv6}"
+  target      = "${linode_nodebalancer.foo-nb.ipv6}"
 }
 
 resource "linode_domain_record" "CNAME-www" {
-  domain_id   = "${linode_domain.kahoni-com.id}"
+  domain_id   = "${linode_domain.foo-com.id}"
   record_type = "CNAME"
   name        = "www"
-  target      = ""                               # should get auto-upgraded to array, can "value" be an alias to values?
+  target      = "${linode_domain.foo-com.domain}"
 }
 
-resource "linode_volume" "vol" {
-  region    = "${linode_nodebalancer.kahoni-nb.region}"
+resource "linode_volume" "nginx-vol" {
+  count     = "${var.nginx_count}"
+  region    = "${linode_nodebalancer.foo-nb.region}"
   size      = 10
-  label     = "vol-${count.index}"
-  linode_id = "${linode_instance.nginx.*.id}"
-}
+  linode_id = "${element(linode_instance.nginx.*.id, count.index)}"
+  label     = "nginx-vol-${count.index}"
 
-resource "linode_instance" "nginx" {
-  count  = 3
-  image  = "linode/ubuntu18.04"
-  kernel = "linode/latest-64bit"
-  label  = "kahoni-nginx-${count.index + 1}"
-
-  # group              = "kahoni"
-  region             = "${linode_nodebalancer.kahoni-nb.region}"
-  type               = "g6-nanode-1"
-  private_networking = true
-  ssh_key            = "${var.ssh_key}"
-  root_password      = "${var.root_password}"
+  connection {
+    // user        = "root"
+    // private_key = "${pathexpand(replace(var.ssh_key, ".pub", ""))}"
+    host = "${element(linode_instance.nginx.*.ip_address,count.index)}"
+  }
 
   provisioner "remote-exec" {
     inline = [
       "export PATH=$PATH:/usr/bin",
-
-      # install nginx
-      "sudo apt-get update",
-
-      "sudo apt-get -y install nginx",
-      "sudo mkfs ${element(linode_volume.vol.*,filesystem_path, self.index)}",
-      "sudo mount ${element(linode_volume.vol.*.filesystem_path, self.index)} /srv/www",
+      "ls /dev/disk/by-id/",
+      "sudo mkfs /dev/disk/by-id/scsi-0Linode_Volume_nginx-vol-${count.index}",
+      "mkdir -p /srv/www",
+      "echo /dev/disk/by-id/scsi-0Linode_Volume_nginx-vol-${count.index} /srv/www ext4 defaults 0 2 | sudo tee -a /etc/fstab",
+      "mount -a",
       "echo it works node ${count.index + 1} > /srv/www/index.html",
+    ]
+  }
+}
+
+resource "linode_instance" "nginx" {
+  count  = "${var.nginx_count}"
+  image  = "linode/ubuntu18.04"
+  kernel = "linode/latest-64bit"
+  label  = "foo-nginx-${count.index + 1}"
+
+  # group              = "foo"
+  region             = "${linode_nodebalancer.foo-nb.region}"
+  type               = "g6-nanode-1"
+  private_networking = true
+  ssh_key            = "${chomp(file(var.ssh_key))}"
+  root_password      = "${var.root_password}"
+
+  provisioner "remote-exec" {
+    inline = [
+      # install nginx
+      "export PATH=$PATH:/usr/bin",
+
+      "sudo apt-get -q update",
+      "sudo apt-get -q -y install nginx",
     ]
   }
 }
