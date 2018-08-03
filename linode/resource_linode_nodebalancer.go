@@ -64,7 +64,7 @@ func resourceLinodeNodeBalancerExists(d *schema.ResourceData, meta interface{}) 
 		return false, fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int because %s", d.Id(), err)
 	}
 
-	_, err = client.GetNodeBalancer(context.TODO(), int(id))
+	_, err = client.GetNodeBalancer(context.Background(), int(id))
 	if err != nil {
 		if _, ok := err.(*linodego.Error); ok {
 			d.SetId("")
@@ -92,7 +92,7 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int because %s", d.Id(), err)
 	}
 
-	nodebalancer, err := client.GetNodeBalancer(context.TODO(), int(id))
+	nodebalancer, err := client.GetNodeBalancer(context.Background(), int(id))
 
 	if err != nil {
 		return fmt.Errorf("Failed to find the specified Linode NodeBalancer because %s", err)
@@ -116,7 +116,7 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 		Label:              &label,
 		ClientConnThrottle: &clientConnThrottle,
 	}
-	nodebalancer, err := client.CreateNodeBalancer(context.TODO(), &createOpts)
+	nodebalancer, err := client.CreateNodeBalancer(context.Background(), &createOpts)
 	if err != nil {
 		return fmt.Errorf("Failed to create a Linode NodeBalancer because %s", err)
 	}
@@ -135,7 +135,7 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Failed to parse Linode NodeBalancer id %s as an int because %s", d.Id(), err)
 	}
 
-	nodebalancer, err := client.GetNodeBalancer(context.TODO(), int(id))
+	nodebalancer, err := client.GetNodeBalancer(context.Background(), int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to fetch data about the current NodeBalancer because %s", err)
 	}
@@ -148,7 +148,7 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 			Label:              &label,
 			ClientConnThrottle: &clientConnThrottle,
 		}
-		if nodebalancer, err = client.UpdateNodeBalancer(context.TODO(), nodebalancer.ID, updateOpts); err != nil {
+		if nodebalancer, err = client.UpdateNodeBalancer(context.Background(), nodebalancer.ID, updateOpts); err != nil {
 			return err
 		}
 		syncNodeBalancerData(d, nodebalancer)
@@ -163,7 +163,7 @@ func resourceLinodeNodeBalancerDelete(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return fmt.Errorf("Failed to parse Linode NodeBalancer id %s as int", d.Id())
 	}
-	err = client.DeleteNodeBalancer(context.TODO(), int(id))
+	err = client.DeleteNodeBalancer(context.Background(), int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to delete Linode NodeBalancer %d because %s", id, err)
 	}

@@ -144,7 +144,7 @@ func resourceLinodeNodeBalancerConfigExists(d *schema.ResourceData, meta interfa
 		return false, fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 
-	_, err = client.GetNodeBalancerConfig(context.TODO(), int(nodebalancerID), int(id))
+	_, err = client.GetNodeBalancerConfig(context.Background(), int(nodebalancerID), int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			d.SetId("")
@@ -185,7 +185,7 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 
-	nodebalancer, err := client.GetNodeBalancerConfig(context.TODO(), int(nodebalancerID), int(id))
+	nodebalancer, err := client.GetNodeBalancerConfig(context.Background(), int(nodebalancerID), int(id))
 
 	if err != nil {
 		return fmt.Errorf("Failed to find the specified Linode NodeBalancerConfig because %s", err)
@@ -224,7 +224,7 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 		createOpts.CheckPassive = &checkPassive
 	}
 
-	config, err := client.CreateNodeBalancerConfig(context.TODO(), nodebalancerID, &createOpts)
+	config, err := client.CreateNodeBalancerConfig(context.Background(), nodebalancerID, &createOpts)
 	if err != nil {
 		return fmt.Errorf("Failed to create a Linode NodeBalancerConfig because %s", err)
 	}
@@ -246,7 +246,7 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %s as int", d.Get("nodebalancer_id"))
 	}
 
-	config, err := client.GetNodeBalancerConfig(context.TODO(), nodebalancerID, int(id))
+	config, err := client.GetNodeBalancerConfig(context.Background(), nodebalancerID, int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to fetch data about the current NodeBalancerConfig because %s", err)
 	}
@@ -270,7 +270,7 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 		updateOpts.CheckPassive = &checkPassive
 	}
 
-	if config, err = client.UpdateNodeBalancerConfig(context.TODO(), int(nodebalancerID), int(id), updateOpts); err != nil {
+	if config, err = client.UpdateNodeBalancerConfig(context.Background(), int(nodebalancerID), int(id), updateOpts); err != nil {
 		return err
 	}
 	syncConfigResourceData(d, config)
@@ -288,7 +288,7 @@ func resourceLinodeNodeBalancerConfigDelete(d *schema.ResourceData, meta interfa
 	if !ok {
 		return fmt.Errorf("Failed to parse Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
-	err = client.DeleteNodeBalancerConfig(context.TODO(), nodebalancerID, int(id))
+	err = client.DeleteNodeBalancerConfig(context.Background(), nodebalancerID, int(id))
 	if err != nil {
 		return fmt.Errorf("Failed to delete Linode NodeBalancerConfig %d because %s", id, err)
 	}
