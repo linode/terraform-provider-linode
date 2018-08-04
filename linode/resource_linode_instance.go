@@ -12,9 +12,6 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-// WaitTimeout is the default number of seconds to wait for Linode instance status changes
-const WaitTimeout = 600
-
 var (
 	kernelList    []*linodego.LinodeKernel
 	kernelListMap map[string]*linodego.LinodeKernel
@@ -463,7 +460,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.Partial(false)
-	if err = linodego.WaitForInstanceStatus(context.Background(), &client, instance.ID, linodego.InstanceRunning, WaitTimeout); err != nil {
+	if err = linodego.WaitForInstanceStatus(context.Background(), &client, instance.ID, linodego.InstanceRunning, int(d.Timeout("create").Seconds())); err != nil {
 		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 	}
 
@@ -556,7 +553,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		if err != nil {
 			return fmt.Errorf("Error rebooting Linode instance %d: %s", instance.ID, err)
 		}
-		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, WaitTimeout)
+		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, int(d.Timeout("create").Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for Linode instance %d to finish rebooting: %s", instance.ID, err)
 		}
