@@ -47,7 +47,7 @@ func resourceLinodeTemplateExists(d *schema.ResourceData, meta interface{}) (boo
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return false, fmt.Errorf("Failed to parse Linode Template ID %s as int because %s", d.Id(), err)
+		return false, fmt.Errorf("Error parsing Linode Template ID %s as int: %s", d.Id(), err)
 	}
 
 	_, err = client.GetTemplate(int(id))
@@ -57,7 +57,7 @@ func resourceLinodeTemplateExists(d *schema.ResourceData, meta interface{}) (boo
 			return false, nil
 		}
 
-		return false, fmt.Errorf("Failed to get Linode Template ID %s because %s", d.Id(), err)
+		return false, fmt.Errorf("Error getting Linode Template ID %s: %s", d.Id(), err)
 	}
 	return true, nil
 }
@@ -66,13 +66,13 @@ func resourceLinodeTemplateRead(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Template ID %s as int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode Template ID %s as int: %s", d.Id(), err)
 	}
 
 	template, err := client.GetTemplate(int(id))
 
 	if err != nil {
-		return fmt.Errorf("Failed to find the specified Linode Template because %s", err)
+		return fmt.Errorf("Error finding the specified Linode Template: %s", err)
 	}
 
 	d.Set("label", template.Label)
@@ -93,7 +93,7 @@ func resourceLinodeTemplateCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	template, err := client.CreateTemplate(&createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode Template because %s", err)
+		return fmt.Errorf("Error creating a Linode Template: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", template.ID))
 	d.Set("label", template.Label)
@@ -108,12 +108,12 @@ func resourceLinodeTemplateUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Template id %s as an int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode Template id %s as int: %s", d.Id(), err)
 	}
 
 	template, err := client.GetTemplate(int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to fetch data about the current linode because %s", err)
+		return fmt.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
 	if d.HasChange("label") {
@@ -131,11 +131,11 @@ func resourceLinodeTemplateDelete(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Template id %s as int", d.Id())
+		return fmt.Errorf("Error parsing Linode Template id %s as int", d.Id())
 	}
 	err = client.DeleteTemplate(int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to delete Linode Template %d because %s", id, err)
+		return fmt.Errorf("Error deleting Linode Template %d: %s", id, err)
 	}
 	return nil
 }

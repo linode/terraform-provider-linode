@@ -186,7 +186,7 @@ func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (boo
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return false, fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
+		return false, fmt.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
 	}
 
 	_, err = client.GetInstance(context.Background(), int(id))
@@ -196,7 +196,7 @@ func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (boo
 			return false, nil
 		}
 
-		return false, fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
+		return false, fmt.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
 	}
 	return true, nil
 }
@@ -205,7 +205,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode instance ID %s as int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
 	}
 
 	instance, err := client.GetInstance(context.Background(), int(id))
@@ -216,13 +216,13 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 			return nil
 		}
 
-		return fmt.Errorf("Failed to find the specified Linode instance because %s", err)
+		return fmt.Errorf("Error finding the specified Linode instance: %s", err)
 	}
 
 	instanceNetwork, err := client.GetInstanceIPAddresses(context.Background(), int(id))
 
 	if err != nil {
-		return fmt.Errorf("Failed to get the IPs for Linode instance %s because %s", d.Id(), err)
+		return fmt.Errorf("Error getting the IPs for Linode instance %s: %s", d.Id(), err)
 	}
 
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
@@ -257,7 +257,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	instanceDisks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
 
 	if err != nil {
-		return fmt.Errorf("Failed to get the disks for the Linode instance %d because %s", id, err)
+		return fmt.Errorf("Error getting the disks for the Linode instance %d: %s", id, err)
 	}
 
 	planStorageUtilized := 0
@@ -280,7 +280,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	configs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
 	if err != nil {
-		return fmt.Errorf("Failed to get the config for Linode instance %d (%s) because %s", instance.ID, instance.Label, err)
+		return fmt.Errorf("Error getting the config for Linode instance %d (%s): %s", instance.ID, instance.Label, err)
 	} else if len(configs) != 1 {
 		return nil
 	}
@@ -292,7 +292,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	// likely occur in an environment where base image's are lifecycled.
 	image, err := getImage(client, int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to get the image because %s", err)
+		return fmt.Errorf("Error getting the image: %s", err)
 	}
 	d.Set("image", image)
 	d.SetPartial("image")
@@ -317,12 +317,12 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	// we used to translate these, now we expect the linode api ids
 	region, err := getRegion(&client, d.Get("region").(string))
 	if err != nil {
-		return fmt.Errorf("Failed to locate region %s because %s", d.Get("region").(string), err)
+		return fmt.Errorf("Error locating region %s: %s", d.Get("region").(string), err)
 	}
 
 	linodetype, err := getType(&client, d.Get("type").(string))
 	if err != nil {
-		return fmt.Errorf("Failed to find a Linode type %s because %s", d.Get("type"), err)
+		return fmt.Errorf("Error finding a Linode type %s: %s", d.Get("type"), err)
 	}
 	**/
 
@@ -336,7 +336,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	instance, err := client.CreateInstance(context.Background(), &createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode instance in region %s of type %s because %s", d.Get("region"), d.Get("type"), err)
+		return fmt.Errorf("Error creating a Linode instance in region %s of type %s: %s", d.Get("region"), d.Get("type"), err)
 	}
 	d.SetId(fmt.Sprintf("%d", instance.ID))
 	d.Set("label", instance.Label)
@@ -361,12 +361,12 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		swapDisk, err = client.CreateInstanceDisk(context.Background(), instance.ID, swapOpts)
 
 		if err != nil {
-			return fmt.Errorf("Failed to create Linode instance %d swap disk because %s", instance.ID, err)
+			return fmt.Errorf("Error creating Linode instance %d swap disk: %s", instance.ID, err)
 		}
 
 		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, swapDisk.Created, waitSeconds)
 		if err != nil {
-			return fmt.Errorf("Failed waiting for Linode instance %d swap disk because %s", swapDisk.ID, err)
+			return fmt.Errorf("Error waiting for Linode instance %d swap disk: %s", swapDisk.ID, err)
 		}
 
 	}
@@ -405,12 +405,12 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	storageDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create Linode instance %d root disk because %s", instance.ID, err)
+		return fmt.Errorf("Error creating Linode instance %d root disk: %s", instance.ID, err)
 	}
 
 	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, storageDisk.Created, waitSeconds)
 	if err != nil {
-		return fmt.Errorf("Failed waiting for Linode instance %d root disk because %s", storageDisk.ID, err)
+		return fmt.Errorf("Error waiting for Linode instance %d root disk: %s", storageDisk.ID, err)
 	}
 
 	d.SetPartial("image")
@@ -418,14 +418,14 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	d.SetPartial("ssh_key")
 
 	if err != nil {
-		return fmt.Errorf("Failed to create Linode instance %d disk because %s", instance.ID, err)
+		return fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
 	}
 	d.SetPartial("storage")
 
 	if d.Get("private_networking").(bool) {
 		resp, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
 		if err != nil {
-			return fmt.Errorf("Failed to add a private ip address to Linode instance %d because %s", instance.ID, err)
+			return fmt.Errorf("Error adding a private ip address to Linode instance %d: %s", instance.ID, err)
 		}
 		d.Set("private_ip_address", resp.Address)
 		d.SetPartial("private_ip_address")
@@ -454,7 +454,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	config, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create Linode instance %d config because %s", instance.ID, err)
+		return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
 	}
 
 	d.SetPartial("helper_network")
@@ -462,12 +462,12 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	booted, err := client.BootInstance(context.Background(), instance.ID, config.ID)
 	if !booted {
-		return fmt.Errorf("Failed to boot Linode instance %d because %s", instance.ID, err)
+		return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 	}
 
 	d.Partial(false)
 	if err = linodego.WaitForInstanceStatus(context.Background(), &client, instance.ID, linodego.InstanceRunning, WaitTimeout); err != nil {
-		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot because %s", instance.ID, err)
+		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 	}
 
 	return resourceLinodeInstanceRead(d, meta)
@@ -479,12 +479,12 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse linode id %s as an int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
 	}
 
 	instance, err := client.GetInstance(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to fetch data about the current linode because %s", err)
+		return fmt.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
 	if d.HasChange("label") {
@@ -512,7 +512,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		resp, err := client.AddInstanceIPAddress(context.Background(), int(id), false)
 
 		if err != nil {
-			return fmt.Errorf("Failed to activate private networking on linode %s because %s", d.Id(), err)
+			return fmt.Errorf("Error activating private networking on linode %s: %s", d.Id(), err)
 		}
 		d.SetPartial("private_networking")
 		d.Set("private_ip_address", resp.Address)
@@ -522,7 +522,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	configs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
 	if err != nil {
-		return fmt.Errorf("Failed to fetch the config for linode %d because %s", id, err)
+		return fmt.Errorf("Error fetching the config for linode %d: %s", id, err)
 	}
 	if len(configs) != 1 {
 		return fmt.Errorf("Linode %d has an incorrect number of configs %d, this plugin can only handle 1", id, len(configs))
@@ -545,7 +545,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if updateConfig {
 		_, err := client.UpdateInstanceConfig(context.Background(), instance.ID, configs[0].ID, config)
 		if err != nil {
-			return fmt.Errorf("Failed to update Linode %d config because %s", instance.ID, err)
+			return fmt.Errorf("Error updating Linode %d config: %s", instance.ID, err)
 		}
 		d.SetPartial("helper_distro")
 		d.SetPartial("helper_network")
@@ -557,11 +557,11 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if rebootInstance {
 		_, err = client.RebootInstance(context.Background(), instance.ID, configs[0].ID)
 		if err != nil {
-			return fmt.Errorf("Failed to reboot Linode instance %d because %s", instance.ID, err)
+			return fmt.Errorf("Error rebooting Linode instance %d: %s", instance.ID, err)
 		}
 		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, WaitTimeout)
 		if err != nil {
-			return fmt.Errorf("Failed while waiting for Linode instance %d to finish rebooting because %s", instance.ID, err)
+			return fmt.Errorf("Error waiting for Linode instance %d to finish rebooting: %s", instance.ID, err)
 		}
 	}
 
@@ -572,11 +572,11 @@ func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse linode id %s as int", d.Id())
+		return fmt.Errorf("Error parsing Linode Instance ID %s as int", d.Id())
 	}
 	err = client.DeleteInstance(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to delete Linode instance %d because %s", id, err)
+		return fmt.Errorf("Error deleting Linode instance %d: %s", id, err)
 	}
 	d.SetId("")
 	return nil
@@ -737,7 +737,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 
 	targetType, err := getType(client, typeID)
 	if err != nil {
-		return fmt.Errorf("Failed to find the instance type %s", typeID)
+		return fmt.Errorf("Error finding the instance type %s", typeID)
 	}
 
 	//biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
@@ -745,7 +745,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 	//currentDiskSize, err := getTotalDiskSize(client, instance.ID)
 
 	if ok, err := client.ResizeInstance(context.Background(), instance.ID, typeID); err != nil || !ok {
-		return fmt.Errorf("Failed resizing instance %d because %s", instance.ID, err)
+		return fmt.Errorf("Error resizing instance %d: %s", instance.ID, err)
 	}
 
 	// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
@@ -755,7 +755,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 
 	event, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, waitSeconds)
 	if err != nil {
-		return fmt.Errorf("Failed while waiting for instance %d to finish resizing because %s", instance.ID, err)
+		return fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
 
 	if d.Get("disk_expansion").(bool) && instance.Specs.Disk > targetType.Disk {
@@ -774,7 +774,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 		// waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
 		event, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, *event.Created, waitSeconds)
 		if err != nil {
-			return fmt.Errorf("Failed to wait for resize of Disk %d for Linode %d because %s", biggestDiskID, instance.ID, err)
+			return fmt.Errorf("Error waiting for resize of Disk %d for Linode %d: %s", biggestDiskID, instance.ID, err)
 		}
 	}
 

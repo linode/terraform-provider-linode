@@ -58,7 +58,7 @@ func TestAccLinodeInstanceUpdate(t *testing.T) {
 	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -92,7 +92,7 @@ func TestAccLinodeInstanceResize(t *testing.T) {
 	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -140,7 +140,7 @@ func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -176,7 +176,7 @@ func TestAccLinodeInstancePrivateNetworking(t *testing.T) {
 	var instanceName = acctest.RandomWithPrefix("tf_test_")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -218,7 +218,7 @@ func testAccCheckLinodeInstanceExists(s *terraform.State) error {
 func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Failed to get Linode client")
+		return fmt.Errorf("Error getting Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_instance" {
@@ -227,21 +227,22 @@ func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v as int", rs.Primary.ID)
 		}
+
 		if id == 0 {
-			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
+			return fmt.Errorf("should not have Linode ID %d", rs.Primary.ID, id)
 
 		}
 
 		_, err = client.GetInstance(context.Background(), id)
 
 		if err == nil {
-			return fmt.Errorf("Linode with id %d still exists", id)
+			return fmt.Errorf("should not find Linode ID %d existing after delete", id)
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request Linode with id %d", id)
+			return fmt.Errorf("Error getting Linode ID %d: %s", id, err)
 		}
 	}
 
@@ -252,23 +253,33 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found %+v", rs)
-		}
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Linode id set")
+			return fmt.Errorf("should have found linode_instance resource %s", n)
 		}
 
-		client := testAccProvider.Meta().(linodego.Client)
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("should have a Linode ID")
+		}
+
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("should have an integer Linode ID: ", err)
 		}
+
+		client, ok := testAccProvider.Meta().(linodego.Client)
+		if !ok {
+			return fmt.Errorf("should have a linodego.Client")
+		}
+
+		if err != nil {
+			return err
+		}
+
 		instanceIPs, err := client.GetInstanceIPAddresses(context.Background(), id)
 		if err != nil {
 			return err
 		}
 		if len(instanceIPs.IPv4.Private) == 0 {
-			return fmt.Errorf("Private Ip is not set")
+			return fmt.Errorf("should have a private ip on Linode ID %d", id)
 		}
 		return nil
 	}

@@ -111,7 +111,7 @@ func resourceLinodeDomainExists(d *schema.ResourceData, meta interface{}) (bool,
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return false, fmt.Errorf("Failed to parse Linode Domain ID %s as int because %s", d.Id(), err)
+		return false, fmt.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
 
 	_, err = client.GetDomain(context.Background(), int(id))
@@ -121,7 +121,7 @@ func resourceLinodeDomainExists(d *schema.ResourceData, meta interface{}) (bool,
 			return false, nil
 		}
 
-		return false, fmt.Errorf("Failed to get Linode Domain ID %s because %s", d.Id(), err)
+		return false, fmt.Errorf("Error getting Linode Domain ID %s: %s", d.Id(), err)
 	}
 	return true, nil
 }
@@ -130,13 +130,13 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Domain ID %s as int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
 
 	domain, err := client.GetDomain(context.Background(), int(id))
 
 	if err != nil {
-		return fmt.Errorf("Failed to find the specified Linode Domain because %s", err)
+		return fmt.Errorf("Error finding the specified Linode Domain: %s", err)
 	}
 
 	syncResourceData(d, domain)
@@ -182,7 +182,7 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 
 	domain, err := client.CreateDomain(context.Background(), &createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode Domain because %s", err)
+		return fmt.Errorf("Error creating a Linode Domain: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", domain.ID))
 	syncResourceData(d, domain)
@@ -195,7 +195,7 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Domain id %s as an int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode Domain id %s as int: %s", d.Id(), err)
 	}
 
 	updateOpts := linodego.DomainUpdateOptions{
@@ -231,7 +231,7 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	domain, err := client.UpdateDomain(context.Background(), int(id), updateOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to update Linode Domain %d because %s", id, err)
+		return fmt.Errorf("Error updating Linode Domain %d: %s", id, err)
 	}
 	syncResourceData(d, domain)
 
@@ -242,11 +242,11 @@ func resourceLinodeDomainDelete(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Domain id %s as int", d.Id())
+		return fmt.Errorf("Error parsing Linode Domain id %s as int", d.Id())
 	}
 	err = client.DeleteDomain(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to delete Linode Domain %d because %s", id, err)
+		return fmt.Errorf("Error deleting Linode Domain %d: %s", id, err)
 	}
 	d.SetId("")
 

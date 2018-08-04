@@ -92,7 +92,7 @@ func testAccCheckLinodeDomainExists(s *terraform.State) error {
 func testAccCheckLinodeDomainDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Failed to get Linode client")
+		return fmt.Errorf("Error getting Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain" {
@@ -101,7 +101,7 @@ func testAccCheckLinodeDomainDestroy(s *terraform.State) error {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
@@ -115,7 +115,7 @@ func testAccCheckLinodeDomainDestroy(s *terraform.State) error {
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request Linode Domain with id %d", id)
+			return fmt.Errorf("Error requesting Linode Domain with id %d", id)
 		}
 	}
 

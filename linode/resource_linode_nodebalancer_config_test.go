@@ -111,7 +111,7 @@ func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
 func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Failed to get Linode client")
+		return fmt.Errorf("Error getting Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
@@ -122,7 +122,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
 
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
@@ -136,7 +136,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request NodeBalancer Config with id %d", id)
+			return fmt.Errorf("Error requesting NodeBalancer Config with id %d", id)
 		}
 	}
 

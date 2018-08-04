@@ -49,16 +49,16 @@ func testAccStateIdDomainRecord(s *terraform.State) (string, error) {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return "", fmt.Errorf("Failed parsing ID %v to int", rs.Primary.ID)
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
 		}
 		domainID, err := strconv.Atoi(rs.Primary.Attributes["domain_id"])
 		if err != nil {
-			return "", fmt.Errorf("Failed parsing domain_id %v to int", rs.Primary.Attributes["domain_id"])
+			return "", fmt.Errorf("Error parsing domain_id %v to int", rs.Primary.Attributes["domain_id"])
 		}
 		return fmt.Sprintf("%d,%d", domainID, id), nil
 	}
 
-	return "", fmt.Errorf("Failed to find linode_domain_record")
+	return "", fmt.Errorf("Error finding linode_domain_record")
 }
 
 func TestAccLinodeDomainRecordUpdate(t *testing.T) {
@@ -99,11 +99,11 @@ func testAccCheckLinodeDomainRecordExists(s *terraform.State) error {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 		domainID, err := strconv.Atoi(rs.Primary.Attributes["domain_id"])
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.Attributes["domain_id"])
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.Attributes["domain_id"])
 		}
 		_, err = client.GetDomainRecord(context.Background(), domainID, id)
 		if err != nil {
@@ -117,7 +117,7 @@ func testAccCheckLinodeDomainRecordExists(s *terraform.State) error {
 func testAccCheckLinodeDomainRecordDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Failed to get Linode client")
+		return fmt.Errorf("Error getting Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain_record" {
@@ -125,11 +125,11 @@ func testAccCheckLinodeDomainRecordDestroy(s *terraform.State) error {
 		}
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 		domainID, err := strconv.Atoi(rs.Primary.Attributes["domain_id"])
 		if err != nil {
-			return fmt.Errorf("Failed parsing domain_id %v to int", rs.Primary.Attributes["domain_id"])
+			return fmt.Errorf("Error parsing domain_id %v to int", rs.Primary.Attributes["domain_id"])
 		}
 
 		if id == 0 {
@@ -144,7 +144,7 @@ func testAccCheckLinodeDomainRecordDestroy(s *terraform.State) error {
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request Linode DomainRecord with id %d", id)
+			return fmt.Errorf("Error requesting Linode DomainRecord with id %d", id)
 		}
 	}
 
