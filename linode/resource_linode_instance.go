@@ -292,8 +292,8 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	d.SetPartial("image")
 	**/
 
-	d.Set("helper_distro", boolToString(config.Helpers.Distro))
-	d.Set("helper_network", boolToString(config.Helpers.Network))
+	d.Set("helper_distro", config.Helpers.Distro)
+	d.Set("helper_network", config.Helpers.Network)
 	d.Set("kernel", config.Kernel)
 
 	return nil
@@ -776,12 +776,4 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 	d.SetPartial("disk_expansion")
 	d.SetPartial("type")
 	return nil
-}
-
-// Converts a bool to a string
-func boolToString(val bool) string {
-	if val {
-		return "true"
-	}
-	return "false"
 }
