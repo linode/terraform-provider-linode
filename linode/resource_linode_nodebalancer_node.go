@@ -9,9 +9,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func init() {
-}
-
 func resourceLinodeNodeBalancerNode() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeNodeBalancerNodeCreate,

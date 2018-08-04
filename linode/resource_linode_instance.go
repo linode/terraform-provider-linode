@@ -24,9 +24,6 @@ var (
 	typeListMap   map[string]*linodego.LinodeType
 )
 
-func init() {
-}
-
 func resourceLinodeInstance() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeInstanceCreate,
