@@ -231,8 +231,7 @@ func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
 		}
 
 		if id == 0 {
-			return fmt.Errorf("should not have Linode ID %d", rs.Primary.ID, id)
-
+			return fmt.Errorf("should not have Linode ID 0")
 		}
 
 		_, err = client.GetInstance(context.Background(), id)
@@ -262,7 +261,7 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("should have an integer Linode ID: ", err)
+			return fmt.Errorf("should have an integer Linode ID: %s", err)
 		}
 
 		client, ok := testAccProvider.Meta().(linodego.Client)

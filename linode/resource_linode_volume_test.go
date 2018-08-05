@@ -48,7 +48,11 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists,
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
+					resource.TestCheckResourceAttr(resName, "region", "us-west"),
+					resource.TestCheckNoResourceAttr(resName, "linode_id"),
 				),
 			},
 
@@ -267,7 +271,7 @@ resource "linode_volume" "foobar" {
 func testAccCheckLinodeVolumeConfigUpdates(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_volume" "foobar" {
-	label = "%s_renamed"
+	label = "%s_r"
 	region = "us-west"
 }`, volume)
 }
@@ -275,7 +279,7 @@ resource "linode_volume" "foobar" {
 func testAccCheckLinodeVolumeConfigResized(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_volume" "foobar" {
-	label = "%s_renamed"
+	label = "%s"
 	region = "us-west"
 	size = 30
 }`, volume)
