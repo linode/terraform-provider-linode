@@ -2,14 +2,22 @@ variable "region" {
   default = "us-central"
 }
 
-variable "root_password" {}
-
 variable "ssh_key" {
   description = "SSH Public Key Fingerprint"
   default     = "~/.ssh/id_rsa.pub"
 }
 
-variable "project_name" {
-  description = "A name for this example project.  This will be used in domain names and labels."
-  default     = "tf_test_foobar"
+resource "random_pet" "project" {
+  prefix    = "tf_test"
+  separator = "_"
+}
+
+resource "random_string" "password" {
+  length  = 32
+  special = true
+}
+
+variable "nginx_count" {
+  description = "The number of nginx web serving Linodes to create"
+  default     = 3
 }

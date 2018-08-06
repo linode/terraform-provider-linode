@@ -1,9 +1,5 @@
-variable "nginx_count" {
-  default = 3
-}
-
 resource "linode_nodebalancer" "foo-nb" {
-  label                = "${var.project_name}"
+  label                = "${random_pet.project.id}"
   region               = "${var.region}"
   client_conn_throttle = 0
 
@@ -50,7 +46,7 @@ resource "linode_nodebalancer_node" "foo-http-www" {
   count           = "${var.nginx_count}"
   nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
   config_id       = "${linode_nodebalancer_config.foo-https.id}"
-  label           = "${var.project_name}_nbnode_http_${var.nginx_count}"
+  label           = "${random_pet.project.id}_http_${var.nginx_count}"
 
   address = "${element(linode_instance.nginx.*.private_ip_address, count.index)}:80"
   weight  = 50
@@ -62,7 +58,7 @@ resource "linode_nodebalancer_node" "foo-https-www" {
   count           = "${var.nginx_count}"
   nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
   config_id       = "${linode_nodebalancer_config.foo-http.id}"
-  label           = "${var.project_name}_nbnode_https_${var.nginx_count}"
+  label           = "${random_pet.project.id}_https_${var.nginx_count}"
 
   address = "${element(linode_instance.nginx.*.private_ip_address, count.index)}:80"
   weight  = 50
@@ -71,11 +67,11 @@ resource "linode_nodebalancer_node" "foo-https-www" {
 
 resource "linode_domain" "foo-com" {
   # the default type = "master" .. call it domain_type?
-  soa_email   = "${var.project_name}@${substr(uuid(),0,8)}example.com"
+  soa_email   = "${random_pet.project.id}@${substr(sha256(random_pet.project.id),0,8)}example.com"
   ttl_sec     = "30"
   expire_sec  = "30"
   refresh_sec = "30"
-  domain      = "${var.project_name}${substr(uuid(),0,8)}example.com"
+  domain      = "${random_pet.project.id}example.com"
   domain_type = "master"
 
   # group              = "foo"
@@ -118,7 +114,7 @@ resource "linode_volume" "nginx-vol" {
   region    = "${linode_nodebalancer.foo-nb.region}"
   size      = 10
   linode_id = "${element(linode_instance.nginx.*.id, count.index)}"
-  label     = "nginx-vol-${count.index}"
+  label     = "${random_pet.project.id}-vol-${count.index}"
 
   connection {
     // user        = "root"
@@ -143,14 +139,14 @@ resource "linode_instance" "nginx" {
   count  = "${var.nginx_count}"
   image  = "linode/ubuntu18.04"
   kernel = "linode/latest-64bit"
-  label  = "foo-nginx-${count.index + 1}"
+  label  = "${random_pet.project.id}-nginx-${count.index + 1}"
 
   # group              = "foo"
   region             = "${linode_nodebalancer.foo-nb.region}"
   type               = "g6-nanode-1"
   private_networking = true
   ssh_key            = "${chomp(file(var.ssh_key))}"
-  root_password      = "${var.root_password}"
+  root_password      = "${random_string.password.result}"
 
   provisioner "remote-exec" {
     inline = [
