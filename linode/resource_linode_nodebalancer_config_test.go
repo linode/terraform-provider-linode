@@ -36,9 +36,22 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
 					resource.TestCheckResourceAttr(resName, "check_path", "/"),
 
+					resource.TestCheckResourceAttrSet(resName, "algorithm"),
 					resource.TestCheckResourceAttrSet(resName, "stickiness"),
 					resource.TestCheckResourceAttrSet(resName, "check_attempts"),
 					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
+					resource.TestCheckResourceAttrSet(resName, "check_interval"),
+					resource.TestCheckResourceAttrSet(resName, "check_passive"),
+					resource.TestCheckResourceAttrSet(resName, "cipher_suite"),
+					resource.TestCheckNoResourceAttr(resName, "ssl_common"),
+					resource.TestCheckNoResourceAttr(resName, "ssl_ciphersuite"),
+					resource.TestCheckResourceAttr(resName, "node_status.up", "0"),
+					resource.TestCheckResourceAttr(resName, "node_status.down", "0"),
+					resource.TestCheckNoResourceAttr(resName, "ssl_cert"),
+					// TODO(@paddycarver) what is best practice for attrs that are null
+					// cant test for noresourceattr nor resourceattrset
+					//resource.TestCheckNoResourceAttr(resName, "ssl_key"),
+					//resource.TestCheckNoResourceAttr(resName, "check_body"),
 				),
 			},
 		},
@@ -167,6 +180,5 @@ resource "linode_nodebalancer_config" "foofig" {
 	stickiness = "http_cookie"
 	algorithm = "source"
 }
-
 `
 }

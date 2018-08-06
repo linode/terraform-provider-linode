@@ -34,6 +34,9 @@ func TestAccLinodeNodeBalancerBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttr(resName, "transfer.%", "3"),
 				),
 			},
 
