@@ -119,15 +119,23 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 			},
-			"node_status_up": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The number of backends considered to be 'UP' and healthy, and that are serving requests.",
-				Computed:    true,
-			},
-			"node_status_down": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.",
-				Computed:    true,
+			"node_status": {
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"status_up": &schema.Schema{
+							Type:        schema.TypeInt,
+							Description: "The number of backends considered to be 'UP' and healthy, and that are serving requests.",
+							Computed:    true,
+						},
+						"status_down": &schema.Schema{
+							Type:        schema.TypeInt,
+							Description: "The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.",
+							Computed:    true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -166,12 +174,19 @@ func syncConfigResourceData(d *schema.ResourceData, config *linodego.NodeBalance
 	d.Set("check_timeout", config.CheckTimeout)
 	d.Set("check_passive", config.CheckPassive)
 	d.Set("check_path", config.CheckPath)
+	d.Set("cipher_suite", config.CipherSuite)
 	d.Set("port", config.Port)
 	d.Set("protocol", config.Protocol)
+	d.Set("ssl_key", config.SSLKey)
 	d.Set("ssl_fingerprint", config.SSLFingerprint)
 	d.Set("ssl_commonname", config.SSLCommonName)
-	d.Set("node_status_up", config.NodesStatus.Up)
-	d.Set("node_status_down", config.NodesStatus.Down)
+	nodeStatus := map[string]interface{}{
+		"up":   fmt.Sprintf("%d", config.NodesStatus.Up),
+		"down": fmt.Sprintf("%d", config.NodesStatus.Down),
+	}
+	if err := d.Set("node_status", nodeStatus); err != nil {
+		panic(err)
+	}
 }
 
 func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface{}) error {
@@ -229,6 +244,7 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Error creating a Linode NodeBalancerConfig: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", config.ID))
+	d.Set("nodebalancer_id", nodebalancerID)
 
 	syncConfigResourceData(d, config)
 

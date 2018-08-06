@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -53,6 +54,40 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 				Description: "The Public IPv6 Address of this NodeBalancer",
 				Computed:    true,
 			},
+			"created": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"updated": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"transfer": {
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"in": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Description: "The total transfer, in MB, used by this NodeBalancer this month",
+							Optional:    true,
+							Computed:    true,
+						},
+						"out": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Description: "The total inbound transfer, in MB, used for this NodeBalancer this month",
+							Optional:    true,
+							Computed:    true,
+						},
+						"total": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Description: "The total outbound transfer, in MB, used for this NodeBalancer this month",
+							Optional:    true,
+							Computed:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -83,6 +118,25 @@ func syncNodeBalancerData(d *schema.ResourceData, nodebalancer *linodego.NodeBal
 	d.Set("ipv4", nodebalancer.IPv4)
 	d.Set("ipv6", nodebalancer.IPv6)
 	d.Set("client_conn_throttle", nodebalancer.ClientConnThrottle)
+	d.Set("created", nodebalancer.Created.Format(time.RFC3339))
+	d.Set("updated", nodebalancer.Updated.Format(time.RFC3339))
+	transfer := map[string]interface{}{
+		"in":    floatString(nodebalancer.Transfer.In),
+		"out":   floatString(nodebalancer.Transfer.Out),
+		"total": floatString(nodebalancer.Transfer.Total),
+	}
+	if err := d.Set("transfer", transfer); err != nil {
+		panic(err)
+	}
+}
+
+// floatString returns nil or the string representation of the supplied *float64
+//   this is needed because ResourceData.Set will not accept *float64 and expects a string
+func floatString(f *float64) string {
+	if f == nil {
+		return ""
+	}
+	return fmt.Sprintf("%g", *f)
 }
 
 func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) error {

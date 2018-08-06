@@ -151,6 +151,8 @@ func resourceLinodeNodeBalancerNodeCreate(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error creating a Linode NodeBalancerNode: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", node.ID))
+	d.Set("config_id", configID)
+	d.Set("nodebalancer_id", nodebalancerID)
 
 	syncNodeBalancerNodeResourceData(d, node)
 
