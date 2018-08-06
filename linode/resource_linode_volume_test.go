@@ -37,7 +37,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_volume.foobar"
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -48,7 +48,11 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists,
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
+					resource.TestCheckResourceAttr(resName, "region", "us-west"),
+					resource.TestCheckNoResourceAttr(resName, "linode_id"),
 				),
 			},
 
@@ -63,7 +67,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 func TestAccLinodeVolumeUpdate(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -91,7 +95,7 @@ func TestAccLinodeVolumeUpdate(t *testing.T) {
 func TestAccLinodeVolumeResized(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -119,7 +123,7 @@ func TestAccLinodeVolumeResized(t *testing.T) {
 func TestAccLinodeVolumeAttached(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -149,7 +153,7 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 func TestAccLinodeVolumeDetached(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -178,7 +182,7 @@ func TestAccLinodeVolumeDetached(t *testing.T) {
 func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -226,7 +230,7 @@ func testAccCheckLinodeVolumeExists(s *terraform.State) error {
 func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Failed to get Linode client")
+		return fmt.Errorf("Error getting Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_volume" {
@@ -235,7 +239,7 @@ func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
@@ -249,7 +253,7 @@ func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request Linode Volume with id %d", id)
+			return fmt.Errorf("Error requesting Linode Volume with id %d", id)
 		}
 	}
 
@@ -267,7 +271,7 @@ resource "linode_volume" "foobar" {
 func testAccCheckLinodeVolumeConfigUpdates(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_volume" "foobar" {
-	label = "%s_renamed"
+	label = "%s_r"
 	region = "us-west"
 }`, volume)
 }
@@ -275,7 +279,7 @@ resource "linode_volume" "foobar" {
 func testAccCheckLinodeVolumeConfigResized(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_volume" "foobar" {
-	label = "%s_renamed"
+	label = "%s"
 	region = "us-west"
 	size = 30
 }`, volume)

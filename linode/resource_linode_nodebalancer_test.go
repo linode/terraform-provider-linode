@@ -16,7 +16,7 @@ func TestAccLinodeNodeBalancerBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
-	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -34,6 +34,9 @@ func TestAccLinodeNodeBalancerBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttr(resName, "transfer.%", "3"),
 				),
 			},
 
@@ -49,7 +52,7 @@ func TestAccLinodeNodeBalancerUpdate(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
-	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -68,7 +71,7 @@ func TestAccLinodeNodeBalancerUpdate(t *testing.T) {
 				Config: testAccCheckLinodeNodeBalancerUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", nodebalancerName)),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodebalancerName)),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
 				),
 			},
@@ -98,7 +101,7 @@ func testAccCheckLinodeNodeBalancerExists(s *terraform.State) error {
 func testAccCheckLinodeNodeBalancerDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Failed to get Linode client")
+		return fmt.Errorf("Error getting Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer" {
@@ -107,7 +110,7 @@ func testAccCheckLinodeNodeBalancerDestroy(s *terraform.State) error {
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
@@ -121,7 +124,7 @@ func testAccCheckLinodeNodeBalancerDestroy(s *terraform.State) error {
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request NodeBalancer with id %d", id)
+			return fmt.Errorf("Error requesting NodeBalancer with id %d", id)
 		}
 	}
 
@@ -140,7 +143,7 @@ resource "linode_nodebalancer" "foobar" {
 func testAccCheckLinodeNodeBalancerUpdates(nodebalancer string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
-	label = "%s_renamed"
+	label = "%s_r"
 	region = "us-east"
 	client_conn_throttle = 0
 }

@@ -15,7 +15,7 @@ func dataSourceLinodeComputeIPv6Range() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"range": &schema.Schema{
 				Type:     schema.TypeString,
-				Computed: true,
+				Required: true,
 			},
 
 			"region": &schema.Schema{
@@ -29,7 +29,7 @@ func dataSourceLinodeComputeIPv6Range() *schema.Resource {
 func dataSourceLinodeComputeIPv6RangeRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*linodego.Client)
 
-	ranges, err := client.ListIPv6Ranges(context.TODO(), nil)
+	ranges, err := client.ListIPv6Ranges(context.Background(), nil)
 	if err != nil {
 		return fmt.Errorf("Error listing ranges: %s", err)
 	}
@@ -44,5 +44,7 @@ func dataSourceLinodeComputeIPv6RangeRead(d *schema.ResourceData, meta interface
 		}
 	}
 
-	return fmt.Errorf("Pool not found")
+	d.SetId("")
+
+	return fmt.Errorf("IPv6 Range %s was not found", reqRange)
 }

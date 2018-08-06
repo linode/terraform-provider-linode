@@ -16,7 +16,7 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 	// t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
-	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 	config := testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName)
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -36,9 +36,22 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
 					resource.TestCheckResourceAttr(resName, "check_path", "/"),
 
+					resource.TestCheckResourceAttrSet(resName, "algorithm"),
 					resource.TestCheckResourceAttrSet(resName, "stickiness"),
 					resource.TestCheckResourceAttrSet(resName, "check_attempts"),
 					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
+					resource.TestCheckResourceAttrSet(resName, "check_interval"),
+					resource.TestCheckResourceAttrSet(resName, "check_passive"),
+					resource.TestCheckResourceAttrSet(resName, "cipher_suite"),
+					resource.TestCheckNoResourceAttr(resName, "ssl_common"),
+					resource.TestCheckNoResourceAttr(resName, "ssl_ciphersuite"),
+					resource.TestCheckResourceAttr(resName, "node_status.up", "0"),
+					resource.TestCheckResourceAttr(resName, "node_status.down", "0"),
+					resource.TestCheckNoResourceAttr(resName, "ssl_cert"),
+					// TODO(@paddycarver) what is best practice for attrs that are null
+					// cant test for noresourceattr nor resourceattrset
+					//resource.TestCheckNoResourceAttr(resName, "ssl_key"),
+					//resource.TestCheckNoResourceAttr(resName, "check_body"),
 				),
 			},
 		},
@@ -49,7 +62,7 @@ func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
-	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -111,7 +124,7 @@ func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
 func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Failed to get Linode client")
+		return fmt.Errorf("Error getting Linode client")
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
@@ -122,7 +135,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
 
 		if err != nil {
-			return fmt.Errorf("Failed parsing %v to int", rs.Primary.ID)
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
@@ -136,7 +149,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Failed to request NodeBalancer Config with id %d", id)
+			return fmt.Errorf("Error requesting NodeBalancer Config with id %d", id)
 		}
 	}
 
@@ -167,6 +180,5 @@ resource "linode_nodebalancer_config" "foofig" {
 	stickiness = "http_cookie"
 	algorithm = "source"
 }
-
 `
 }

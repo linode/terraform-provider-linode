@@ -62,17 +62,17 @@ func resourceLinodeVolumeExists(d *schema.ResourceData, meta interface{}) (bool,
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return false, fmt.Errorf("Failed to parse Linode Volume ID %s as int because %s", d.Id(), err)
+		return false, fmt.Errorf("Error parsing Linode Volume ID %s as int: %s", d.Id(), err)
 	}
 
-	_, err = client.GetVolume(context.TODO(), int(id))
+	_, err = client.GetVolume(context.Background(), int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			d.SetId("")
 			return false, nil
 		}
 
-		return false, fmt.Errorf("Failed to get Linode Volume ID %s because %s", d.Id(), err)
+		return false, fmt.Errorf("Error getting Linode Volume ID %s: %s", d.Id(), err)
 	}
 	return true, nil
 }
@@ -90,17 +90,17 @@ func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Volume ID %s as int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode Volume ID %s as int: %s", d.Id(), err)
 	}
 
-	volume, err := client.GetVolume(context.TODO(), int(id))
+	volume, err := client.GetVolume(context.Background(), int(id))
 
 	if err != nil {
 		if lerr, ok := err.(linodego.Error); ok && lerr.Code == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Failed to find the specified Linode Volume because %s", err)
+		return fmt.Errorf("Error finding the specified Linode Volume: %s", err)
 	}
 
 	syncVolumeResourceData(d, volume)
@@ -129,9 +129,9 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		createOpts.LinodeID = *linodeID
 	}
 
-	volume, err := client.CreateVolume(context.TODO(), createOpts)
+	volume, err := client.CreateVolume(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Failed to create a Linode Volume because %s", err)
+		return fmt.Errorf("Error creating a Linode Volume: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%d", volume.ID))
@@ -140,14 +140,14 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetPartial("size")
 
 	if createOpts.LinodeID > 0 {
-		if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+		if err := linodego.WaitForVolumeLinodeID(context.Background(), &client, volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
 			return err
 		}
 		d.SetPartial("linode_id")
 	}
 
 	syncVolumeResourceData(d, volume)
-	if err = linodego.WaitForVolumeStatus(context.TODO(), &client, volume.ID, linodego.VolumeActive, int(d.Timeout("create").Seconds())); err != nil {
+	if err = linodego.WaitForVolumeStatus(context.Background(), &client, volume.ID, linodego.VolumeActive, int(d.Timeout("create").Seconds())); err != nil {
 		return err
 	}
 
@@ -161,20 +161,20 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Volume id %s as an int because %s", d.Id(), err)
+		return fmt.Errorf("Error parsing Linode Volume id %s as int: %s", d.Id(), err)
 	}
 
-	volume, err := client.GetVolume(context.TODO(), int(id))
+	volume, err := client.GetVolume(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to fetch data about the current linode because %s", err)
+		return fmt.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
 	if d.HasChange("size") {
 		size := d.Get("size").(int)
-		if ok, err := client.ResizeVolume(context.TODO(), volume.ID, size); err != nil {
+		if ok, err := client.ResizeVolume(context.Background(), volume.ID, size); err != nil {
 			return err
 		} else if ok {
-			if err := linodego.WaitForVolumeStatus(context.TODO(), &client, volume.ID, linodego.VolumeActive, int(d.Timeout("update").Seconds())); err != nil {
+			if err := linodego.WaitForVolumeStatus(context.Background(), &client, volume.ID, linodego.VolumeActive, int(d.Timeout("update").Seconds())); err != nil {
 				return err
 			}
 
@@ -184,7 +184,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange("label") {
-		if volume, err = client.RenameVolume(context.TODO(), volume.ID, d.Get("label").(string)); err != nil {
+		if volume, err = client.RenameVolume(context.Background(), volume.ID, d.Get("label").(string)); err != nil {
 			return err
 		}
 		d.Set("label", volume.Label)
@@ -204,14 +204,14 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 	if detectVolumeIDChange(linodeID, volume.LinodeID) {
 		if linodeID == nil || volume.LinodeID != nil {
 			log.Printf("[INFO] Detaching Linode Volume %d", volume.ID)
-			if ok, err := client.DetachVolume(context.TODO(), volume.ID); err != nil {
+			if ok, err := client.DetachVolume(context.Background(), volume.ID); err != nil {
 				return err
 			} else if !ok {
-				return fmt.Errorf("Failed to detach Linode Volume %d", volume.ID)
+				return fmt.Errorf("Error detaching Linode Volume %d", volume.ID)
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volume.ID)
-			if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
+			if err := linodego.WaitForVolumeLinodeID(context.Background(), &client, volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
 				return err
 			}
 		}
@@ -224,14 +224,14 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 			log.Printf("[INFO] Attaching Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
 
-			if ok, err := client.AttachVolume(context.TODO(), volume.ID, &attachOptions); err != nil {
+			if ok, err := client.AttachVolume(context.Background(), volume.ID, &attachOptions); err != nil {
 				return err
 			} else if !ok {
-				return fmt.Errorf("Failed to attach Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
+				return fmt.Errorf("Error attaching Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to attach ...", volume.ID)
-			if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+			if err := linodego.WaitForVolumeLinodeID(context.Background(), &client, volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
 				return err
 			}
 		}
@@ -248,25 +248,25 @@ func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error 
 	client := meta.(linodego.Client)
 	id64, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to parse Linode Volume id %s as int", d.Id())
+		return fmt.Errorf("Error parsing Linode Volume id %s as int", d.Id())
 	}
 	id := int(id64)
 
 	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
-	if ok, err := client.DetachVolume(context.TODO(), id); err != nil {
+	if ok, err := client.DetachVolume(context.Background(), id); err != nil {
 		return err
 	} else if !ok {
-		return fmt.Errorf("Failed to detach Linode Volume %d", id)
+		return fmt.Errorf("Error detaching Linode Volume %d", id)
 	}
 
 	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
-	if err := linodego.WaitForVolumeLinodeID(context.TODO(), &client, id, nil, int(d.Timeout("update").Seconds())); err != nil {
+	if err := linodego.WaitForVolumeLinodeID(context.Background(), &client, id, nil, int(d.Timeout("update").Seconds())); err != nil {
 		return err
 	}
 
-	err = client.DeleteVolume(context.TODO(), int(id))
+	err = client.DeleteVolume(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Failed to delete Linode Volume %d because %s", id, err)
+		return fmt.Errorf("Error deleting Linode Volume %d: %s", id, err)
 	}
 	d.SetId("")
 	return nil
@@ -278,7 +278,7 @@ func detectVolumeIDChange(have *int, want *int) (changed bool) {
 	} else {
 		// attach or detach
 		changed = (have == nil && want != nil) || (have != nil && want == nil)
-		// reattach (linode id changed)
+		// reattach (Linode Instance ID changed)
 		changed = changed || (*have != *want)
 	}
 	return changed
