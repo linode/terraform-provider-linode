@@ -17,7 +17,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 
-	var instanceName = acctest.RandomWithPrefix("tf_test_")
+	var instanceName = acctest.RandomWithPrefix("tf_test")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Cannot generate test SSH key pair: %s", err)
@@ -55,7 +55,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 func TestAccLinodeInstanceUpdate(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = acctest.RandomWithPrefix("tf_test_")
+	var instanceName = acctest.RandomWithPrefix("tf_test")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
@@ -89,7 +89,7 @@ func TestAccLinodeInstanceUpdate(t *testing.T) {
 func TestAccLinodeInstanceResize(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = acctest.RandomWithPrefix("tf_test_")
+	var instanceName = acctest.RandomWithPrefix("tf_test")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
@@ -137,7 +137,7 @@ func TestAccLinodeInstanceResize(t *testing.T) {
 func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = acctest.RandomWithPrefix("tf_test_")
+	var instanceName = acctest.RandomWithPrefix("tf_test")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
@@ -173,7 +173,7 @@ func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 func TestAccLinodeInstancePrivateNetworking(t *testing.T) {
 	t.Parallel()
 
-	var instanceName = acctest.RandomWithPrefix("tf_test_")
+	var instanceName = acctest.RandomWithPrefix("tf_test")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Error generating test SSH key pair: %s", err)

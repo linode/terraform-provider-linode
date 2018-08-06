@@ -37,7 +37,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_volume.foobar"
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -67,7 +67,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 func TestAccLinodeVolumeUpdate(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -95,7 +95,7 @@ func TestAccLinodeVolumeUpdate(t *testing.T) {
 func TestAccLinodeVolumeResized(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -123,7 +123,7 @@ func TestAccLinodeVolumeResized(t *testing.T) {
 func TestAccLinodeVolumeAttached(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -153,7 +153,7 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 func TestAccLinodeVolumeDetached(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -182,7 +182,7 @@ func TestAccLinodeVolumeDetached(t *testing.T) {
 func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test_")
+	var volumeName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

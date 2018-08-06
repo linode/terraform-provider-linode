@@ -17,7 +17,7 @@ func TestAccLinodeTemplateBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_template.foobar"
-	var templateName = acctest.RandomWithPrefix("tf_test_")
+	var templateName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -43,7 +43,7 @@ func TestAccLinodeTemplateBasic(t *testing.T) {
 func TestAccLinodeTemplateUpdate(t *testing.T) {
 	t.Parallel()
 
-	var templateName = acctest.RandomWithPrefix("tf_test_")
+	var templateName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

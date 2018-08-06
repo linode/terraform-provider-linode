@@ -16,7 +16,7 @@ func TestAccLinodeNodeBalancerConfigBasic(t *testing.T) {
 	// t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
-	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 	config := testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName)
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -49,7 +49,7 @@ func TestAccLinodeNodeBalancerConfigUpdate(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
-	nodebalancerName := acctest.RandomWithPrefix("tf_test_")
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
