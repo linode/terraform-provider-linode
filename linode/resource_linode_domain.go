@@ -30,6 +30,7 @@ func resourceLinodeDomain() *schema.Resource {
 				Description: "If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).",
 				Default:     "master",
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"group": &schema.Schema{
 				Type:        schema.TypeString,
