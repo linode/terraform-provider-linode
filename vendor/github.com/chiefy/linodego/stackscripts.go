@@ -123,7 +123,7 @@ func (c *Client) GetStackscript(ctx context.Context, id int) (*Stackscript, erro
 }
 
 // CreateStackscript creates a StackScript
-func (c *Client) CreateStackscript(ctx context.Context, createOpts *StackscriptCreateOptions) (*Stackscript, error) {
+func (c *Client) CreateStackscript(ctx context.Context, createOpts StackscriptCreateOptions) (*Stackscript, error) {
 	var body string
 	e, err := c.StackScripts.Endpoint()
 	if err != nil {

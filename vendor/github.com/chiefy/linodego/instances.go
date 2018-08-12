@@ -93,27 +93,30 @@ type InstanceCreateOptions struct {
 	Image           string            `json:"image,omitempty"`
 	BackupsEnabled  bool              `json:"backups_enabled,omitempty"`
 	SwapSize        *int              `json:"swap_size,omitempty"`
-	Booted          bool              `json:"booted,omitempty"`
+	Booted          *bool             `json:"booted,omitempty"`
 }
 
 // InstanceUpdateOptions is an options struct used when Updating an Instance
 type InstanceUpdateOptions struct {
-	Label   string         `json:"label,omitempty"`
-	Group   string         `json:"group,omitempty"`
-	Backups InstanceBackup `json:"backups,omitempty"`
-	Alerts  InstanceAlert  `json:"alerts,omitempty"`
+	Label           string          `json:"label,omitempty"`
+	Group           string          `json:"group,omitempty"`
+	Backups         *InstanceBackup `json:"backups,omitempty"`
+	Alerts          *InstanceAlert  `json:"alerts,omitempty"`
+	WatchdogEnabled *bool           `json:"watchdog_enabled,omitempty"`
 }
 
-// InstanceCloneOptions is an options struct when sending a clone request to the API
+// InstanceCloneOptions is an options struct sent when Cloning an Instance
 type InstanceCloneOptions struct {
-	Region         string   `json:"region"`
-	Type           string   `json:"type"`
-	LinodeID       int      `json:"linode_id"`
-	Label          string   `json:"label"`
-	Group          string   `json:"group"`
-	BackupsEnabled bool     `json:"backups_enabled"`
-	Disks          []string `json:"disks"`
-	Configs        []string `json:"configs"`
+	Region string `json:"region,omitempty"`
+	Type   string `json:"type,omitempty"`
+
+	// LinodeID is an optional existing instance to use as the target of the clone
+	LinodeID       int    `json:"linode_id,omitempty"`
+	Label          string `json:"label,omitempty"`
+	Group          string `json:"group,omitempty"`
+	BackupsEnabled bool   `json:"backups_enabled"`
+	Disks          []int  `json:"disks,omitempty"`
+	Configs        []int  `json:"configs,omitempty"`
 }
 
 func (l *Instance) fixDates() *Instance {
@@ -177,7 +180,7 @@ func (c *Client) GetInstance(ctx context.Context, linodeID int) (*Instance, erro
 }
 
 // CreateInstance creates a Linode instance
-func (c *Client) CreateInstance(ctx context.Context, instance *InstanceCreateOptions) (*Instance, error) {
+func (c *Client) CreateInstance(ctx context.Context, instance InstanceCreateOptions) (*Instance, error) {
 	var body string
 	e, err := c.Instances.Endpoint()
 	if err != nil {
@@ -203,7 +206,7 @@ func (c *Client) CreateInstance(ctx context.Context, instance *InstanceCreateOpt
 }
 
 // UpdateInstance creates a Linode instance
-func (c *Client) UpdateInstance(ctx context.Context, id int, instance *InstanceUpdateOptions) (*Instance, error) {
+func (c *Client) UpdateInstance(ctx context.Context, id int, instance InstanceUpdateOptions) (*Instance, error) {
 	var body string
 	e, err := c.Instances.Endpoint()
 	if err != nil {
@@ -231,7 +234,7 @@ func (c *Client) UpdateInstance(ctx context.Context, id int, instance *InstanceU
 
 // RenameInstance renames an Instance
 func (c *Client) RenameInstance(ctx context.Context, linodeID int, label string) (*Instance, error) {
-	return c.UpdateInstance(ctx, linodeID, &InstanceUpdateOptions{Label: label})
+	return c.UpdateInstance(ctx, linodeID, InstanceUpdateOptions{Label: label})
 }
 
 // DeleteInstance deletes a Linode instance
@@ -276,8 +279,8 @@ func (c *Client) BootInstance(ctx context.Context, id int, configID int) (bool, 
 	return settleBoolResponseOrError(r, err)
 }
 
-// CloneInstance clones a Linode instance
-func (c *Client) CloneInstance(ctx context.Context, id int, options *InstanceCloneOptions) (*Instance, error) {
+// CloneInstance clone an existing Instances Disks and Configuration profiles to another Linode Instance
+func (c *Client) CloneInstance(ctx context.Context, id int, options InstanceCloneOptions) (*Instance, error) {
 	var body string
 	e, err := c.Instances.Endpoint()
 	if err != nil {
@@ -356,7 +359,7 @@ type RebuildInstanceOptions struct {
 
 // RebuildInstance Deletes all Disks and Configs on this Linode,
 // then deploys a new Image to this Linode with the given attributes.
-func (c *Client) RebuildInstance(ctx context.Context, id int, opts *RebuildInstanceOptions) (*Instance, error) {
+func (c *Client) RebuildInstance(ctx context.Context, id int, opts RebuildInstanceOptions) (*Instance, error) {
 	o, err := json.Marshal(opts)
 	if err != nil {
 		return nil, NewError(err)
@@ -375,6 +378,33 @@ func (c *Client) RebuildInstance(ctx context.Context, id int, opts *RebuildInsta
 		return nil, err
 	}
 	return r.Result().(*Instance).fixDates(), nil
+}
+
+type RescueInstanceOptions struct {
+	Devices InstanceConfigDeviceMap `json:"devices"`
+}
+
+// RescueInstance reboots an instance into a safe environment for performing many system recovery and disk management tasks.
+// Rescue Mode is based on the Finnix recovery distribution, a self-contained and bootable Linux distribution.
+// You can also use Rescue Mode for tasks other than disaster recovery, such as formatting disks to use different filesystems,
+// copying data between disks, and downloading files from a disk via SSH and SFTP.
+func (c *Client) RescueInstance(ctx context.Context, id int, opts RescueInstanceOptions) (bool, error) {
+	o, err := json.Marshal(opts)
+	if err != nil {
+		return false, NewError(err)
+	}
+	b := string(o)
+	e, err := c.Instances.Endpoint()
+	if err != nil {
+		return false, err
+	}
+	e = fmt.Sprintf("%s/%d/rescue", e, id)
+
+	r, err := coupleAPIErrors(c.R(ctx).
+		SetBody(b).
+		Post(e))
+
+	return settleBoolResponseOrError(r, err)
 }
 
 // ResizeInstance resizes an instance to new Linode type

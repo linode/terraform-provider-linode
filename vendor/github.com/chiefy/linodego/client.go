@@ -2,7 +2,6 @@ package linodego
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -22,7 +21,7 @@ const (
 	// APIProto connect to API with http(s)
 	APIProto = "https"
 	// Version of linodego
-	Version = "0.1.1"
+	Version = "0.2.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events
@@ -138,7 +137,7 @@ func NewClient(hc *http.Client) (client Client) {
 		instancesName:             NewResource(&client, instancesName, instancesEndpoint, false, Instance{}, InstancesPagedResponse{}),
 		instanceDisksName:         NewResource(&client, instanceDisksName, instanceDisksEndpoint, true, InstanceDisk{}, InstanceDisksPagedResponse{}),
 		instanceConfigsName:       NewResource(&client, instanceConfigsName, instanceConfigsEndpoint, true, InstanceConfig{}, InstanceConfigsPagedResponse{}),
-		instanceSnapshotsName:     NewResource(&client, instanceSnapshotsName, instanceSnapshotsEndpoint, true, InstanceSnapshot{}, InstanceSnapshotsPagedResponse{}),
+		instanceSnapshotsName:     NewResource(&client, instanceSnapshotsName, instanceSnapshotsEndpoint, true, InstanceSnapshot{}, nil),
 		instanceIPsName:           NewResource(&client, instanceIPsName, instanceIPsEndpoint, true, InstanceIP{}, nil),                           // really?
 		instanceVolumesName:       NewResource(&client, instanceVolumesName, instanceVolumesEndpoint, true, nil, InstanceVolumesPagedResponse{}), // really?
 		ipaddressesName:           NewResource(&client, ipaddressesName, ipaddressesEndpoint, false, nil, IPAddressesPagedResponse{}),            // really?
@@ -197,181 +196,4 @@ func NewClient(hc *http.Client) (client Client) {
 	client.Profile = resources[profileName]
 	client.Managed = resources[managedName]
 	return
-}
-
-// WaitForInstanceStatus waits for the Linode instance to reach the desired state
-// before returning. It will timeout with an error after timeoutSeconds.
-func WaitForInstanceStatus(ctx context.Context, client *Client, instanceID int, status InstanceStatus, timeoutSeconds int) error {
-	start := time.Now()
-	for {
-		instance, err := client.GetInstance(ctx, instanceID)
-		if err != nil {
-			return err
-		}
-		complete := (instance.Status == status)
-
-		if complete {
-			return nil
-		}
-
-		time.Sleep(1 * time.Second)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Instance %d didn't reach '%s' status in %d seconds", instanceID, status, timeoutSeconds)
-		}
-	}
-}
-
-// WaitForVolumeStatus waits for the Volume to reach the desired state
-// before returning. It will timeout with an error after timeoutSeconds.
-func WaitForVolumeStatus(ctx context.Context, client *Client, volumeID int, status VolumeStatus, timeoutSeconds int) error {
-	start := time.Now()
-	for {
-		volume, err := client.GetVolume(ctx, volumeID)
-		if err != nil {
-			return err
-		}
-		complete := (volume.Status == status)
-
-		if complete {
-			return nil
-		}
-
-		time.Sleep(1 * time.Second)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Volume %d didn't reach '%s' status in %d seconds", volumeID, status, timeoutSeconds)
-		}
-	}
-}
-
-// WaitForVolumeLinodeID waits for the Volume to match the desired LinodeID
-// before returning. An active Instance will not immediately attach or detach a volume, so the
-// the LinodeID must be polled to determine volume readiness from the API.
-// WaitForVolumeLinodeID will timeout with an error after timeoutSeconds.
-func WaitForVolumeLinodeID(ctx context.Context, client *Client, volumeID int, linodeID *int, timeoutSeconds int) error {
-	start := time.Now()
-	for {
-		volume, err := client.GetVolume(ctx, volumeID)
-		if err != nil {
-			return err
-		}
-
-		if linodeID == nil && volume.LinodeID == nil {
-			return nil
-		} else if linodeID == nil || volume.LinodeID == nil {
-			// continue waiting
-		} else if *volume.LinodeID == *linodeID {
-			return nil
-		}
-
-		time.Sleep(1 * time.Second)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Volume %d didn't match LinodeID %d in %d seconds", volumeID, linodeID, timeoutSeconds)
-		}
-	}
-}
-
-// WaitForEventFinished waits for an entity action to reach the 'finished' state
-// before returning. It will timeout with an error after timeoutSeconds.
-// If the event indicates a failure both the failed event and the error will be returned.
-func (c Client) WaitForEventFinished(ctx context.Context, id interface{}, entityType EntityType, action EventAction, minStart time.Time, timeoutSeconds int) (*Event, error) {
-	start := time.Now()
-	for {
-		filter, err := json.Marshal(map[string]interface{}{
-			// Entity is not filtered by the API
-			// Perhaps one day they will permit Entity ID/Type filtering.
-			// We'll have to verify these values manually, for now.
-			//"entity": map[string]interface{}{
-			//	"id":   fmt.Sprintf("%v", id),
-			//	"type": entityType,
-			//},
-
-			// Nor is action
-			//"action": action,
-
-			// Created is not correctly filtered by the API
-			// We'll have to verify these values manually, for now.
-			//"created": map[string]interface{}{
-			//	"+gte": minStart.Format(time.RFC3339),
-			//},
-
-			// With potentially 1000+ events coming back, we should filter on something
-			"seen": false,
-
-			// Float the latest events to page 1
-			"+order_by": "created",
-			"+order":    "desc",
-		})
-
-		// Optimistically restrict results to page 1.  We should remove this when more
-		// precise filtering options exist.
-		listOptions := NewListOptions(1, string(filter))
-		events, err := c.ListEvents(ctx, listOptions)
-		if err != nil {
-			return nil, err
-		}
-
-		log.Printf("waiting %ds for %s events since %v for %s %v", timeoutSeconds, action, minStart, entityType, id)
-
-		// If there are events for this instance + action, inspect them
-		for _, event := range events {
-			if event.Action != action {
-				continue
-			}
-			if event.Entity.Type != entityType {
-				continue
-			}
-
-			var entID string
-
-			switch event.Entity.ID.(type) {
-			case float64, float32:
-				entID = fmt.Sprintf("%.f", event.Entity.ID)
-			case int:
-				entID = strconv.Itoa(event.Entity.ID.(int))
-			default:
-				entID = fmt.Sprintf("%v", event.Entity.ID)
-			}
-
-			var findID string
-			switch id.(type) {
-			case float64, float32:
-				findID = fmt.Sprintf("%.f", id)
-			case int:
-				findID = strconv.Itoa(id.(int))
-			default:
-				findID = fmt.Sprintf("%v", id)
-			}
-
-			if entID != findID {
-				// just noise..
-				// log.Println(entID, "is not", id)
-				continue
-			} else {
-				log.Println("Found event for entity.", entID, "is", id)
-			}
-
-			if *event.Created != minStart && !event.Created.After(minStart) {
-				// Not the event we were looking for
-				log.Println(event.Created, "is not >=", minStart)
-				continue
-
-			}
-
-			if event.Status == EventFailed {
-				return event, fmt.Errorf("%s %v action %s failed", entityType, id, action)
-			} else if event.Status == EventScheduled {
-				log.Printf("%s %v action %s is scheduled", entityType, id, action)
-			} else if event.Status == EventFinished {
-				log.Printf("%s %v action %s is finished", entityType, id, action)
-				return event, nil
-			}
-			log.Printf("%s %v action %s is in state %s", entityType, id, action, event.Status)
-		}
-
-		// Either pushed out of the event list or hasn't been added to the list yet
-		time.Sleep(time.Second * APISecondsPerPoll)
-		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return nil, fmt.Errorf("Did not find '%s' status of %s %v action '%s' within %d seconds", EventFinished, entityType, id, action, timeoutSeconds)
-		}
-	}
 }

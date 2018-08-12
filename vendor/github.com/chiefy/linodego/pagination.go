@@ -170,6 +170,12 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 			results = r.Result().(*NotificationsPagedResponse).Results
 			v.appendData(r.Result().(*NotificationsPagedResponse))
 		}
+	case *NodeBalancersPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(NodeBalancersPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*NodeBalancersPagedResponse).Pages
+			results = r.Result().(*NodeBalancersPagedResponse).Results
+			v.appendData(r.Result().(*NodeBalancersPagedResponse))
+		}
 	/**
 	case AccountOauthClientsPagedResponse:
 		if r, err = req.SetResult(v).Get(v.endpoint(c)); r.Error() != nil {
@@ -325,12 +331,6 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 			results = r.Result().(*DomainRecordsPagedResponse).Results
 			v.appendData(r.Result().(*DomainRecordsPagedResponse))
 		}
-	case *InstanceSnapshotsPagedResponse:
-		if r, err = coupleAPIErrors(req.SetResult(InstanceSnapshotsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
-			pages = r.Result().(*InstanceSnapshotsPagedResponse).Pages
-			results = r.Result().(*InstanceSnapshotsPagedResponse).Results
-			v.appendData(r.Result().(*InstanceSnapshotsPagedResponse))
-		}
 	case *InstanceConfigsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(InstanceConfigsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
 			pages = r.Result().(*InstanceConfigsPagedResponse).Pages
@@ -383,7 +383,7 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 
 	if opts == nil {
 		for page := 2; page <= pages; page = page + 1 {
-			c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}})
+			c.listHelperWithID(ctx, i, id, &ListOptions{PageOptions: &PageOptions{Page: page}})
 		}
 	} else {
 		if opts.PageOptions == nil {
@@ -392,7 +392,7 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelper(ctx, i, opts)
+				c.listHelperWithID(ctx, i, id, opts)
 			}
 		}
 		opts.Results = results
@@ -451,7 +451,7 @@ func (c *Client) listHelperWithTwoIDs(ctx context.Context, i interface{}, firstI
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelper(ctx, i, opts)
+				c.listHelperWithTwoIDs(ctx, i, firstID, secondID, opts)
 			}
 		}
 		opts.Results = results

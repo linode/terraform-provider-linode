@@ -78,7 +78,15 @@ func main() {
 #### Auto-Pagination Requests
 
 ```go
-kernels, err := linodego.ListKernels(nil)
+kernels, err := linodego.ListKernels(context.Background(), nil)
+// len(kernels) == 218
+```
+
+Or, use a page value of "0":
+
+```go
+opts := NewListOptions(0,"")
+kernels, err := linodego.ListKernels(context.Background(), opts)
 // len(kernels) == 218
 ```
 
@@ -89,10 +97,16 @@ opts := NewListOptions(2,"")
 // or opts := ListOptions{PageOptions: &PageOptions: {Page: 2 }}
 kernels, err := linodego.ListKernels(context.Background(), opts)
 // len(kernels) == 100
+```
+
+ListOptions are supplied as a pointer because the Pages and Results
+values are set in the supplied ListOptions.
+
+```go
 // opts.Results == 218
 ```
 
-### Filtering
+#### Filtering
 
 ```go
 opts := ListOptions{Filter: "{\"mine\":true}"}

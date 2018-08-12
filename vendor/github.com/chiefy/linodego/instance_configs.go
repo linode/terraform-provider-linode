@@ -20,7 +20,7 @@ type InstanceConfig struct {
 	Helpers     *InstanceConfigHelpers   `json:"helpers"`
 	MemoryLimit int                      `json:"memory_limit"`
 	Kernel      string                   `json:"kernel"`
-	InitRD      int                      `json:"init_rd"`
+	InitRD      *int                     `json:"init_rd"`
 	RootDevice  string                   `json:"root_device"`
 	RunLevel    string                   `json:"run_level"`
 	VirtMode    string                   `json:"virt_mode"`
@@ -60,30 +60,43 @@ type InstanceConfigsPagedResponse struct {
 
 // InstanceConfigCreateOptions are InstanceConfig settings that can be used at creation
 type InstanceConfigCreateOptions struct {
-	Label       string                   `json:"label,omitempty"`
-	Comments    string                   `json:"comments,omitempty"`
-	Devices     *InstanceConfigDeviceMap `json:"devices,omitempty"`
-	Helpers     *InstanceConfigHelpers   `json:"helpers,omitempty"`
-	MemoryLimit int                      `json:"memory_limit"`
-	Kernel      string                   `json:"kernel,omitempty"`
-	InitRD      int                      `json:"init_rd"`
-	RootDevice  string                   `json:"root_device,omitempty"`
-	RunLevel    string                   `json:"run_level,omitempty"`
-	VirtMode    string                   `json:"virt_mode,omitempty"`
+	Label       string                  `json:"label,omitempty"`
+	Comments    string                  `json:"comments,omitempty"`
+	Devices     InstanceConfigDeviceMap `json:"devices"`
+	Helpers     *InstanceConfigHelpers  `json:"helpers,omitempty"`
+	MemoryLimit int                     `json:"memory_limit,omitempty"`
+	Kernel      string                  `json:"kernel,omitempty"`
+	InitRD      int                     `json:"init_rd,omitempty"`
+	RootDevice  string                  `json:"root_device,omitempty"`
+	RunLevel    string                  `json:"run_level,omitempty"`
+	VirtMode    string                  `json:"virt_mode,omitempty"`
 }
 
 // InstanceConfigUpdateOptions are InstanceConfig settings that can be used in updates
-type InstanceConfigUpdateOptions InstanceConfigCreateOptions
+type InstanceConfigUpdateOptions struct {
+	Label    string                  `json:"label,omitempty"`
+	Comments string                  `json:"comments"`
+	Devices  InstanceConfigDeviceMap `json:"devices"`
+	Helpers  *InstanceConfigHelpers  `json:"helpers,omitempty"`
+	// MemoryLimit 0 means unlimitted, this is not omitted
+	MemoryLimit int    `json:"memory_limit"`
+	Kernel      string `json:"kernel,omitempty"`
+	// InitRD is nullable, permit the sending of null
+	InitRD     *int   `json:"init_rd"`
+	RootDevice string `json:"root_device,omitempty"`
+	RunLevel   string `json:"run_level,omitempty"`
+	VirtMode   string `json:"virt_mode,omitempty"`
+}
 
 func (i InstanceConfig) GetCreateOptions() InstanceConfigCreateOptions {
 	return InstanceConfigCreateOptions{
 		Label:       i.Label,
 		Comments:    i.Comments,
-		Devices:     i.Devices,
+		Devices:     *i.Devices,
 		Helpers:     i.Helpers,
 		MemoryLimit: i.MemoryLimit,
 		Kernel:      i.Kernel,
-		InitRD:      i.InitRD,
+		InitRD:      *i.InitRD,
 		RootDevice:  i.RootDevice,
 		RunLevel:    i.RunLevel,
 		VirtMode:    i.VirtMode,
@@ -94,11 +107,11 @@ func (i InstanceConfig) GetUpdateOptions() InstanceConfigUpdateOptions {
 	return InstanceConfigUpdateOptions{
 		Label:       i.Label,
 		Comments:    i.Comments,
-		Devices:     i.Devices,
+		Devices:     *i.Devices,
 		Helpers:     i.Helpers,
 		MemoryLimit: i.MemoryLimit,
 		Kernel:      i.Kernel,
-		InitRD:      i.InitRD,
+		InitRD:      copyInt(i.InitRD),
 		RootDevice:  i.RootDevice,
 		RunLevel:    i.RunLevel,
 		VirtMode:    i.VirtMode,

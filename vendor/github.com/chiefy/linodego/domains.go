@@ -220,7 +220,7 @@ func (c *Client) GetDomain(ctx context.Context, id int) (*Domain, error) {
 }
 
 // CreateDomain creates a Domain
-func (c *Client) CreateDomain(ctx context.Context, domain *DomainCreateOptions) (*Domain, error) {
+func (c *Client) CreateDomain(ctx context.Context, domain DomainCreateOptions) (*Domain, error) {
 	var body string
 	e, err := c.Domains.Endpoint()
 	if err != nil {

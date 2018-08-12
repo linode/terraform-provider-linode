@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/chiefy/linodego"
-	"github.com/displague/terraform/helper/logging"
+	"github.com/hashicorp/terraform/helper/logging"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/hashicorp/terraform/version"

@@ -14,23 +14,37 @@ type NodeBalancerNode struct {
 	Label          string
 	Status         string
 	Weight         int
-	Mode           string
+	Mode           NodeMode
 	ConfigID       int `json:"config_id"`
 	NodeBalancerID int `json:"nodebalancer_id"`
 }
 
+// NodeMode is the mode a NodeBalancer should use when sending traffic to a NodeBalancer Node
+type NodeMode string
+
+var (
+	// ModeAccept is the NodeMode indicating a NodeBalancer Node is accepting traffic
+	ModeAccept NodeMode = "accept"
+
+	// ModeReject is the NodeMode indicating a NodeBalancer Node is not receiving traffic
+	ModeReject NodeMode = "reject"
+
+	// ModeDrain is the NodeMode indicating a NodeBalancer Node is not receiving new traffic, but may continue receiving traffic from pinned connections
+	ModeDrain NodeMode = "drain"
+)
+
 type NodeBalancerNodeCreateOptions struct {
-	Address string `json:"address"`
-	Label   string `json:"label"`
-	Weight  int    `json:"weight,omitempty"`
-	Mode    string `json:"mode,omitempty"`
+	Address string   `json:"address"`
+	Label   string   `json:"label"`
+	Weight  int      `json:"weight,omitempty"`
+	Mode    NodeMode `json:"mode,omitempty"`
 }
 
 type NodeBalancerNodeUpdateOptions struct {
-	Address string `json:"address,omitempty"`
-	Label   string `json:"label,omitempty"`
-	Weight  int    `json:"weight,omitempty"`
-	Mode    string `json:"mode,omitempty"`
+	Address string   `json:"address,omitempty"`
+	Label   string   `json:"label,omitempty"`
+	Weight  int      `json:"weight,omitempty"`
+	Mode    NodeMode `json:"mode,omitempty"`
 }
 
 func (i NodeBalancerNode) GetCreateOptions() NodeBalancerNodeCreateOptions {
@@ -109,7 +123,7 @@ func (c *Client) GetNodeBalancerNode(ctx context.Context, nodebalancerID int, co
 }
 
 // CreateNodeBalancerNode creates a NodeBalancerNode
-func (c *Client) CreateNodeBalancerNode(ctx context.Context, nodebalancerID int, configID int, createOpts *NodeBalancerNodeCreateOptions) (*NodeBalancerNode, error) {
+func (c *Client) CreateNodeBalancerNode(ctx context.Context, nodebalancerID int, configID int, createOpts NodeBalancerNodeCreateOptions) (*NodeBalancerNode, error) {
 	var body string
 	e, err := c.NodeBalancerNodes.endpointWithID(nodebalancerID, configID)
 	if err != nil {

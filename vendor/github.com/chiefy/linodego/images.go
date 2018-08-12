@@ -2,6 +2,7 @@ package linodego
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -16,7 +17,7 @@ type Image struct {
 	Label       string
 	Description string
 	Type        string
-	IsPublic    bool
+	IsPublic    bool `json:"is_public"`
 	Size        int
 	Vendor      string
 	Deprecated  bool
@@ -26,10 +27,27 @@ type Image struct {
 	Updated   *time.Time `json:"-"`
 }
 
+type ImageCreateOptions struct {
+	DiskID      int    `json:"disk_id"`
+	Label       string `json:"label"`
+	Description string `json:"description,omitempty"`
+}
+
+type ImageUpdateOptions struct {
+	Label       string  `json:"label,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
 func (l *Image) fixDates() *Image {
 	l.Created, _ = parseDates(l.CreatedStr)
 	l.Updated, _ = parseDates(l.UpdatedStr)
 	return l
+}
+
+func (i Image) GetUpdateOptions() (iu ImageUpdateOptions) {
+	iu.Label = i.Label
+	iu.Description = copyString(iu.Description)
+	return
 }
 
 // ImagesPagedResponse represents a linode API response for listing of images
@@ -80,4 +98,72 @@ func (c *Client) GetImage(ctx context.Context, id string) (*Image, error) {
 		return nil, err
 	}
 	return r.Result().(*Image), nil
+}
+
+// CreateImage creates a Image
+func (c *Client) CreateImage(ctx context.Context, createOpts ImageCreateOptions) (*Image, error) {
+	var body string
+	e, err := c.Images.Endpoint()
+	if err != nil {
+		return nil, err
+	}
+
+	req := c.R(ctx).SetResult(&Image{})
+
+	if bodyData, err := json.Marshal(createOpts); err == nil {
+		body = string(bodyData)
+	} else {
+		return nil, NewError(err)
+	}
+
+	r, err := coupleAPIErrors(req.
+		SetBody(body).
+		Post(e))
+
+	if err != nil {
+		return nil, err
+	}
+	return r.Result().(*Image).fixDates(), nil
+}
+
+// UpdateImage updates the Image with the specified id
+func (c *Client) UpdateImage(ctx context.Context, id string, updateOpts ImageUpdateOptions) (*Image, error) {
+	var body string
+	e, err := c.Images.Endpoint()
+	if err != nil {
+		return nil, err
+	}
+	e = fmt.Sprintf("%s/%s", e, id)
+
+	req := c.R(ctx).SetResult(&Image{})
+
+	if bodyData, err := json.Marshal(updateOpts); err == nil {
+		body = string(bodyData)
+	} else {
+		return nil, NewError(err)
+	}
+
+	r, err := coupleAPIErrors(req.
+		SetBody(body).
+		Put(e))
+
+	if err != nil {
+		return nil, err
+	}
+	return r.Result().(*Image).fixDates(), nil
+}
+
+// DeleteImage deletes the Image with the specified id
+func (c *Client) DeleteImage(ctx context.Context, id string) error {
+	e, err := c.Images.Endpoint()
+	if err != nil {
+		return err
+	}
+	e = fmt.Sprintf("%s/%s", e, id)
+
+	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
+		return err
+	}
+
+	return nil
 }

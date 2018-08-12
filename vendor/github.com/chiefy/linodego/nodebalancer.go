@@ -126,7 +126,7 @@ func (c *Client) GetNodeBalancer(ctx context.Context, id int) (*NodeBalancer, er
 }
 
 // CreateNodeBalancer creates a NodeBalancer
-func (c *Client) CreateNodeBalancer(ctx context.Context, nodebalancer *NodeBalancerCreateOptions) (*NodeBalancer, error) {
+func (c *Client) CreateNodeBalancer(ctx context.Context, nodebalancer NodeBalancerCreateOptions) (*NodeBalancer, error) {
 	var body string
 	e, err := c.NodeBalancers.Endpoint()
 	if err != nil {

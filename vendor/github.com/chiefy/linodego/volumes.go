@@ -119,27 +119,27 @@ func (c *Client) GetVolume(ctx context.Context, id int) (*Volume, error) {
 	return r.Result().(*Volume).fixDates(), nil
 }
 
-// AttachVolume attaches volume to linode instance
-func (c *Client) AttachVolume(ctx context.Context, id int, options *VolumeAttachOptions) (bool, error) {
+// AttachVolume attaches a volume to a Linode instance
+func (c *Client) AttachVolume(ctx context.Context, id int, options *VolumeAttachOptions) (*Volume, error) {
 	body := ""
 	if bodyData, err := json.Marshal(options); err == nil {
 		body = string(bodyData)
 	} else {
-		return false, NewError(err)
+		return nil, NewError(err)
 	}
 
 	e, err := c.Volumes.Endpoint()
 	if err != nil {
-		return false, NewError(err)
+		return nil, NewError(err)
 	}
 
 	e = fmt.Sprintf("%s/%d/attach", e, id)
 	resp, err := coupleAPIErrors(c.R(ctx).
-		SetHeader("Content-Type", "application/json").
+		SetResult(&Volume{}).
 		SetBody(body).
 		Post(e))
 
-	return settleBoolResponseOrError(resp, err)
+	return resp.Result().(*Volume).fixDates(), nil
 }
 
 // CreateVolume creates a Linode Volume

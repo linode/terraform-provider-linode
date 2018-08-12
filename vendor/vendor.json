@@ -405,10 +405,12 @@
 			"revisionTime": "2018-07-10T00:45:13Z"
 		},
 		{
-			"checksumSHA1": "8njieG2prt6ojnk6qmSCyXVTeUk=",
+			"checksumSHA1": "4VYGBHJY4j8BHuny7g1ADVxgPyM=",
 			"path": "github.com/chiefy/linodego",
-			"revision": "6f4f4140730e5dcc64efe280f8c0a7302ac135cd",
-			"revisionTime": "2018-08-02T18:58:35Z"
+			"revision": "e7bd44d89fc5db41b43b8bce7278550a589d7ab6",
+			"revisionTime": "2018-08-11T12:05:57Z",
+			"version": "v0.2.0",
+			"versionExact": "v0.2.0"
 		},
 		{
 			"checksumSHA1": "/5cvgU+J4l7EhMXTK76KaCAfOuU=",
@@ -1581,5 +1583,5 @@
 			"revision": ""
 		}
 	],
-	"rootPath": "github.com/terraform-providers/terraform-provider-linode"
+	"rootPath": "github.com/displague/terraform-provider-linode"
 }

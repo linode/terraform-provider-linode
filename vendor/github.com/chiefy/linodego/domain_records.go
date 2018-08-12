@@ -150,7 +150,7 @@ func (c *Client) GetDomainRecord(ctx context.Context, domainID int, id int) (*Do
 }
 
 // CreateDomainRecord creates a DomainRecord
-func (c *Client) CreateDomainRecord(ctx context.Context, domainID int, domainrecord *DomainRecordCreateOptions) (*DomainRecord, error) {
+func (c *Client) CreateDomainRecord(ctx context.Context, domainID int, domainrecord DomainRecordCreateOptions) (*DomainRecord, error) {
 	var body string
 	e, err := c.DomainRecords.endpointWithID(domainID)
 	if err != nil {

@@ -17,10 +17,20 @@ type InstanceDisk struct {
 	Label      string
 	Status     string
 	Size       int
-	Filesystem string
+	Filesystem DiskFilesystem
 	Created    time.Time `json:"-"`
 	Updated    time.Time `json:"-"`
 }
+
+type DiskFilesystem string
+
+var (
+	FilesystemRaw    DiskFilesystem = "raw"
+	FilesystemSwap   DiskFilesystem = "swap"
+	FilesystemExt3   DiskFilesystem = "ext3"
+	FilesystemExt4   DiskFilesystem = "ext4"
+	FilesystemInitrd DiskFilesystem = "initrd"
+)
 
 // InstanceDisksPagedResponse represents a paginated InstanceDisk API response
 type InstanceDisksPagedResponse struct {

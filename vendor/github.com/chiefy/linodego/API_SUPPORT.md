@@ -20,7 +20,7 @@
 - `/linode/instances/$id/rebuild`
   - [X] `POST`
 - `/linode/instances/$id/rescue`
-  - [ ] `POST`
+  - [X] `POST`
 - `/linode/instances/$id/resize`
   - [x] `POST`
 - `/linode/instances/$id/shutdown`
@@ -60,8 +60,6 @@
   - [X] `PUT`
   - [X] `POST`
   - [X] `DELETE`
-- `/linode/instances/$id/disks/$id/imagize`
-  - [ ] `POST`
 - `/linode/instances/$id/disks/$id/password`
   - [ ] `POST`
 - `/linode/instances/$id/disks/$id/resize`
@@ -123,11 +121,11 @@
   - [ ] `POST`
 - `/domains/$id/records`
   - [X] `GET`
-  - [ ] `POST`
+  - [X] `POST`
 - `/domains/$id/records/$id`
   - [X] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
+  - [X] `PUT`
+  - [X] `DELETE`
 
 ## Longview
 
@@ -297,8 +295,9 @@
   - [x] `GET`
 - `/images/$id`
   - [x] `GET`
-  - [ ] `PUT`
-  - [ ] `DELETE`
+  - [X] `POST`
+  - [X] `PUT`
+  - [X] `DELETE`
 
 ## Volumes
 
