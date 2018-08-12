@@ -239,7 +239,7 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 		createOpts.CheckPassive = &checkPassive
 	}
 
-	config, err := client.CreateNodeBalancerConfig(context.Background(), nodebalancerID, &createOpts)
+	config, err := client.CreateNodeBalancerConfig(context.Background(), nodebalancerID, createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode NodeBalancerConfig: %s", err)
 	}

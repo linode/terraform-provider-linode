@@ -143,10 +143,10 @@ func resourceLinodeNodeBalancerNodeCreate(d *schema.ResourceData, meta interface
 	createOpts := linodego.NodeBalancerNodeCreateOptions{
 		Address: d.Get("address").(string),
 		Label:   d.Get("label").(string),
-		Mode:    d.Get("mode").(string),
+		Mode:    linodego.NodeMode(d.Get("mode").(string)),
 		Weight:  d.Get("weight").(int),
 	}
-	node, err := client.CreateNodeBalancerNode(context.Background(), int(nodebalancerID), int(configID), &createOpts)
+	node, err := client.CreateNodeBalancerNode(context.Background(), int(nodebalancerID), int(configID), createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode NodeBalancerNode: %s", err)
 	}
@@ -183,7 +183,7 @@ func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface
 	updateOpts := linodego.NodeBalancerNodeUpdateOptions{
 		Address: d.Get("address").(string),
 		Label:   d.Get("label").(string),
-		Mode:    d.Get("mode").(string),
+		Mode:    linodego.NodeMode(d.Get("mode").(string)),
 		Weight:  d.Get("weight").(int),
 	}
 

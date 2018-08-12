@@ -328,7 +328,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		Label:  d.Get("label").(string),
 		Group:  d.Get("group").(string),
 	}
-	instance, err := client.CreateInstance(context.Background(), &createOpts)
+	instance, err := client.CreateInstance(context.Background(), createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode instance in region %s of type %s: %s", d.Get("region"), d.Get("type"), err)
 	}
@@ -443,7 +443,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			Distro:  d.Get("helper_distro").(bool),
 			Network: d.Get("helper_network").(bool),
 		},
-		Devices: configDevices,
+		Devices: *configDevices,
 	}
 
 	config, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
@@ -460,7 +460,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.Partial(false)
-	if err = linodego.WaitForInstanceStatus(context.Background(), &client, instance.ID, linodego.InstanceRunning, int(d.Timeout("create").Seconds())); err != nil {
+	if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout("create").Seconds())); err != nil {
 		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 	}
 

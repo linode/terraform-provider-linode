@@ -201,7 +201,7 @@ func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) 
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
-	domainRecord, err := client.CreateDomainRecord(context.Background(), domainID, &createOpts)
+	domainRecord, err := client.CreateDomainRecord(context.Background(), domainID, createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode DomainRecord: %s", err)
 	}

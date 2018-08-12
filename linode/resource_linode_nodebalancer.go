@@ -170,7 +170,7 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 		Label:              &label,
 		ClientConnThrottle: &clientConnThrottle,
 	}
-	nodebalancer, err := client.CreateNodeBalancer(context.Background(), &createOpts)
+	nodebalancer, err := client.CreateNodeBalancer(context.Background(), createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode NodeBalancer: %s", err)
 	}

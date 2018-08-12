@@ -181,7 +181,7 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 		createOpts.AXfrIPs = AXfrIPs
 	}
 
-	domain, err := client.CreateDomain(context.Background(), &createOpts)
+	domain, err := client.CreateDomain(context.Background(), createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode Domain: %s", err)
 	}

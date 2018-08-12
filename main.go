@@ -7,5 +7,6 @@ import (
 
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: linode.Provider})
+		ProviderFunc: linode.Provider,
+	})
 }
