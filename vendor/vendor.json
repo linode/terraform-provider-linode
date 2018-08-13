@@ -420,7 +420,7 @@
 			"revisionTime": "2018-07-10T00:45:13Z"
 		},
 		{
-			"path": "github.com/displague/terraform-provider-linode/linode",
+			"path": "github.com/terraform-providers/terraform-provider-linode/linode",
 			"revision": ""
 		},
 		{
@@ -1583,5 +1583,5 @@
 			"revision": ""
 		}
 	],
-	"rootPath": "github.com/displague/terraform-provider-linode"
+	"rootPath": "github.com/terraform-providers/terraform-provider-linode"
 }

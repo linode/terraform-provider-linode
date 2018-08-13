@@ -13,6 +13,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// Provider creates and manages the resources in a Linode configuration.
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{

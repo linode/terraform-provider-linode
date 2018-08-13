@@ -186,11 +186,10 @@ func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (boo
 	_, err = client.GetInstance(context.Background(), int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
 			return false, nil
 		}
 
-		return false, fmt.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
+		return false, fmt.Errorf("Error getting Linode Instance %d: %s", d.Id(), err)
 	}
 	return true, nil
 }
@@ -300,7 +299,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	waitSeconds := 180
 	client, ok := meta.(linodego.Client)
 	if !ok {
 		return fmt.Errorf("Invalid Client when creating Linode Instance")
@@ -344,7 +342,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	var swapDisk *linodego.InstanceDisk
 
 	// Create the Swap Partition
-	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeCreate, *instance.Created, waitSeconds)
+	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeCreate, *instance.Created, int(d.Timeout("create").Seconds()))
 	if swapSize = d.Get("swap_size").(int); swapSize > 0 {
 		swapOpts := linodego.InstanceDiskCreateOptions{
 			Label:      "linode" + strconv.Itoa(instance.ID) + "-swap",
@@ -358,7 +356,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			return fmt.Errorf("Error creating Linode instance %d swap disk: %s", instance.ID, err)
 		}
 
-		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, swapDisk.Created, waitSeconds)
+		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, swapDisk.Created, int(d.Timeout("create").Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for Linode instance %d swap disk: %s", swapDisk.ID, err)
 		}
@@ -402,7 +400,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error creating Linode instance %d root disk: %s", instance.ID, err)
 	}
 
-	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, storageDisk.Created, waitSeconds)
+	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, storageDisk.Created, int(d.Timeout("create").Seconds()))
 	if err != nil {
 		return fmt.Errorf("Error waiting for Linode instance %d root disk: %s", storageDisk.ID, err)
 	}
@@ -742,12 +740,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 		return fmt.Errorf("Error resizing instance %d: %s", instance.ID, err)
 	}
 
-	// Linode says 1-3 minutes per gigabyte for Resize time... Let's be safe with 3
-	// This delay should be expected for both the host migration of the Linode,
-	// and the filesystem expansion
-	waitSeconds := ((instance.Specs.Disk / 1024) * 180)
-
-	event, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, waitSeconds)
+	event, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, int(d.Timeout("update").Seconds()))
 	if err != nil {
 		return fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
@@ -766,7 +759,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 
 		// Wait for the Disk Resize Operation to Complete
 		// waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
-		event, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, *event.Created, waitSeconds)
+		event, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, *event.Created, int(d.Timeout("update").Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for resize of Disk %d for Linode %d: %s", biggestDiskID, instance.ID, err)
 		}
