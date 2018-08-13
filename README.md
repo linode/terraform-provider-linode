@@ -51,8 +51,14 @@ Using the provider
 
 See the docs included in the website/docs directory:
 
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/index.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/linode.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/index.html.markdown>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/instance.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/domain.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/domain_record.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_config.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_node.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/volume.html.md>
 
 *The following links will not work until this repo is accepted by terraform-providers*
 
