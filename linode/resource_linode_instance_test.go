@@ -294,7 +294,7 @@ resource "linode_instance" "foobar" {
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "%s"
+	authorized_keys = "%s"
 	group = "testing"
 }`, instance, pubkey)
 }
@@ -309,7 +309,7 @@ resource "linode_instance" "foobar" {
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "%s"
+	authorized_keys = "%s"
 	group = "testing"
 }`, instance, pubkey)
 }
@@ -324,7 +324,7 @@ resource "linode_instance" "foobar" {
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "%s"
+	authorized_keys = "%s"
 	group = "testing"
 }`, instance, pubkey)
 }
@@ -339,7 +339,7 @@ resource "linode_instance" "foobar" {
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "%s"
+	authorized_keys = "%s"
 	group = "testing"
 }`, instance, pubkey)
 }
@@ -354,7 +354,7 @@ resource "linode_instance" "foobar" {
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "%s"
+	authorized_keys = "%s"
 	group = "testing"
 }`, instance, pubkey)
 }
@@ -370,7 +370,7 @@ resource "linode_instance" "foobar" {
 	kernel = "linode/latest-64bit"
 	root_password = "terraform-test"
 	swap_size = 256
-	ssh_key = "%s"
+	authorized_keys = "%s"
 	group = "testing"
 }`, instance, pubkey)
 }
@@ -386,7 +386,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	private_networking = true
-	ssh_key = "%s"
+	authorized_keys = "%s"
 	group = "testing"
 }`, instance, pubkey)
 }

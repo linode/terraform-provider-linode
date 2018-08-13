@@ -33,11 +33,28 @@ func resourceLinodeInstance() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"image": &schema.Schema{
-				Type:         schema.TypeString,
-				Description:  "The image to deploy to the disk.",
-				Optional:     true,
-				ForceNew:     true,
-				InputDefault: "linode/debian9",
+				Type:        schema.TypeString,
+				Description: "An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use.",
+				Required:    true,
+				ForceNew:    true,
+			},
+			"backup_id": &schema.Schema{
+				Type:        schema.TypeInt,
+				Description: "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
+				Optional:    true,
+				ForceNew:    true,
+			},
+			"stackscript_id": &schema.Schema{
+				Type:        schema.TypeInt,
+				Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
+				Optional:    true,
+				ForceNew:    true,
+			},
+			"stackscript_data": &schema.Schema{
+				Type:        schema.TypeMap,
+				Description: "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"kernel": &schema.Schema{
 				Type:         schema.TypeString,
@@ -46,14 +63,9 @@ func resourceLinodeInstance() *schema.Resource {
 				InputDefault: "linode/grub2",
 				Computed:     true,
 			},
-			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
-				Removed:  "See 'label'",
-			},
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "The label of the Linode instance.",
+				Description: "The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -62,23 +74,12 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "The display group of the Linode instance.",
 				Optional:    true,
 			},
-			"tags": &schema.Schema{
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "The tags to apply to the Linode instance.",
-				Optional:    true,
-			},
 			"region": &schema.Schema{
 				Type:         schema.TypeString,
-				Description:  "The region where this instance will be deployed.",
+				Description:  "This is the location where the Linode was deployed. This cannot be changed without opening a support ticket.",
 				Required:     true,
 				ForceNew:     true,
 				InputDefault: "us-east",
-			},
-			"size": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
-				Removed:  "See 'type'",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -118,18 +119,30 @@ func resourceLinodeInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"private_networking": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
+			"ipv6": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.",
+				Computed:    true,
+			},
+			"ipv4": &schema.Schema{
+				Type:        schema.TypeSet,
+				Elem:        schema.TypeString,
+				Description: "This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.",
+				Computed:    true,
+			},
+			"private_ip": &schema.Schema{
+				Type:        schema.TypeBool,
+				Description: "If true, the created Linode will have private networking enabled, allowing use of the 192.168.0.0/17 network within the Linode's region.",
+				Optional:    true,
 			},
 			"private_ip_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"ssh_key": &schema.Schema{
+			"authorized_keys": &schema.Schema{
 				Type:          schema.TypeList,
 				Elem:          &schema.Schema{Type: schema.TypeString},
-				Description:   "The public keys to be used for accessing the root account via ssh.",
+				Description:   "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
 				Optional:      true,
 				ForceNew:      true,
 				StateFunc:     sshKeyState,
@@ -149,28 +162,327 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
-			"manage_private_ip_automatically": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true, // @TODO seems a bug that Optional is required when Removed is set
-				Removed:  "See 'helper_network'",
-			},
 			"helper_network": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "Controls the behavior of the Linode Config's Network Helper setting, used to automatically configure additional IP addresses assigned to this instance.",
 				Optional:    true,
 				Default:     true,
 			},
-			"disk_expansion": &schema.Schema{
+			"swap_size": &schema.Schema{
+				Type:        schema.TypeInt,
+				Description: "When deploying from an Image, this field is optional, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
+				Optional:    true,
+				Default:     512,
+			},
+			"backups_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
-				Description: "Controls the Linode Terraform provider's behavior of resizing the disk to full size after resizing to a larger Linode type.",
+				Description: "If this field is set to true, the created Linode will automatically be enrolled in the Linode Backup service. This will incur an additional charge. The cost for the Backup service is dependent on the Type of Linode deployed.",
 				Optional:    true,
 				Default:     false,
 			},
-			"swap_size": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "Storage (MB) to dedicate to local swap disk (memory) space.",
+			"watchdog_enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Description: "The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.",
 				Optional:    true,
-				Default:     512,
+				Default:     false,
+			},
+			"specs": &schema.Schema{
+				Computed: true,
+				Type:     schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"disk": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"memory": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"vcpus": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"transfer": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+					},
+				},
+			},
+			"alerts": &schema.Schema{
+				Computed: true,
+				Type:     schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"cpu": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"network_in": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"network_out": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"transfer_quota": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"io": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+					},
+				},
+			},
+			"backups": &schema.Schema{
+				Computed: true,
+				Type:     schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:     schema.TypeBool,
+							Required: true,
+						},
+						"schedule": {
+							Type: schema.TypeSet,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"day": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"window": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+							Required: true,
+						},
+					},
+				},
+			},
+			"config": &schema.Schema{
+				Computed:      true,
+				PromoteSingle: true,
+				Optional:      true,
+				Type:          schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"label": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"helpers": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"updatedb_disabled": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"distro": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"modules_dep": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"network": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"devtmpfs_automount": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+								},
+							},
+						},
+						"devices": {
+							Type: schema.TypeSet,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"sda": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Required: true,
+									},
+									"sdb": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Optional: true,
+									},
+									"sdc": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Optional: true,
+									},
+									"sdd": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Optional: true,
+									},
+									"sde": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Optional: true,
+									},
+									"sdf": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Optional: true,
+									},
+									"sdg": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Optional: true,
+									},
+									"sdh": {
+										Type: schema.TypeSet,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"disk_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"volume_id": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+											},
+										},
+										Optional: true,
+									},
+								},
+							},
+							Optional: true,
+						},
+						"kernel": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A Kernel ID to boot a Linode with. Defaults to 'linode/latest-64bit'",
+							Default:     "linode/latest-64bit",
+						},
+						"run_level": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Defines the state of your Linode after booting. Defaults to default.",
+							Default:     "default",
+						},
+						"virt_mode": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Controls the virtualization mode. Defaults to paravirt.",
+							Default:     "paravirt",
+						},
+						"root_device": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The root device to boot. The corresponding disk must be attached.",
+							Default:     "/dev/sda",
+						},
+						"comments": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Optional field for arbitrary User comments on this Config.",
+						},
+
+						"memory_limit": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Defaults to the total RAM of the Linode",
+						},
+					},
+				},
 			},
 		},
 	}
