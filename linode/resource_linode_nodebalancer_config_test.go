@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/chiefy/linodego"
+	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"

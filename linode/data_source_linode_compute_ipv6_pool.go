@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/chiefy/linodego"
+	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

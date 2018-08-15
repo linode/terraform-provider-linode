@@ -98,14 +98,6 @@
   version = "v3.5.1"
 
 [[projects]]
-  digest = "1:cc0b849fe53639d4f52c4986589c1805382b42ffa3cc087fddc7c4555349af24"
-  name = "github.com/chiefy/linodego"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "e7bd44d89fc5db41b43b8bce7278550a589d7ab6"
-  version = "v0.2.0"
-
-[[projects]]
   digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -329,6 +321,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "0b12d6b5"
+
+[[projects]]
+  digest = "1:cc0b849fe53639d4f52c4986589c1805382b42ffa3cc087fddc7c4555349af24"
+  name = "github.com/linode/linodego"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e7bd44d89fc5db41b43b8bce7278550a589d7ab6"
+  version = "v0.2.0"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -613,7 +613,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/chiefy/linodego",
     "github.com/hashicorp/terraform/helper/acctest",
     "github.com/hashicorp/terraform/helper/logging",
     "github.com/hashicorp/terraform/helper/resource",
@@ -621,6 +620,7 @@
     "github.com/hashicorp/terraform/plugin",
     "github.com/hashicorp/terraform/terraform",
     "github.com/hashicorp/terraform/version",
+    "github.com/linode/linodego",
     "golang.org/x/crypto/sha3",
     "golang.org/x/oauth2",
   ]
