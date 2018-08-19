@@ -608,15 +608,25 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	planStorageUtilized := 0
 	swapSize := 0
-	var disk []map[string[string]]
+	var disks []map[string[string]]
 
 	for _, disk := range instanceDisks {
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		if disk.Filesystem == "swap" {
 			swapSize += disk.Size
 		}
-		d.
+		disks = append(disks, map[string[string]]{
+			
+			"size": disk.Size,
+			"label": disk.Label,
+			"filesystem": disk.Filesystem,
+			"read_only": disk.ReadOnly,
+			"image": disk.Image,
+			"authorized_keys": disk.AuthorizedKeys,
+			"stackscript_id": disk.StackScriptID,
+		}
 	}
+	d.Set("disks", disks)
 	d.Set("swap_size", swapSize)
 
 	configs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
