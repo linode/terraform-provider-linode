@@ -21,14 +21,14 @@ const (
 	// APIProto connect to API with http(s)
 	APIProto = "https"
 	// Version of linodego
-	Version = "0.2.0"
+	Version = "0.3.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events
 	APISecondsPerPoll = 10
 )
 
-var DefaultUserAgent = fmt.Sprintf("linodego %s https://github.com/chiefy/linodego", Version)
+var DefaultUserAgent = fmt.Sprintf("linodego %s https://github.com/linode/linodego", Version)
 var envDebug = false
 
 // Client is a wrapper around the Resty client

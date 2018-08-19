@@ -79,25 +79,25 @@ func (client Client) WaitForSnapshotStatus(ctx context.Context, instanceID int, 
 // before returning. An active Instance will not immediately attach or detach a volume, so the
 // the LinodeID must be polled to determine volume readiness from the API.
 // WaitForVolumeLinodeID will timeout with an error after timeoutSeconds.
-func (client Client) WaitForVolumeLinodeID(ctx context.Context, volumeID int, linodeID *int, timeoutSeconds int) error {
+func (client Client) WaitForVolumeLinodeID(ctx context.Context, volumeID int, linodeID *int, timeoutSeconds int) (*Volume, error) {
 	start := time.Now()
 	for {
 		volume, err := client.GetVolume(ctx, volumeID)
 		if err != nil {
-			return err
+			return volume, err
 		}
 
 		if linodeID == nil && volume.LinodeID == nil {
-			return nil
+			return volume, nil
 		} else if linodeID == nil || volume.LinodeID == nil {
 			// continue waiting
 		} else if *volume.LinodeID == *linodeID {
-			return nil
+			return volume, nil
 		}
 
 		time.Sleep(1 * time.Second)
 		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
-			return fmt.Errorf("Volume %d didn't match LinodeID %d in %d seconds", volumeID, linodeID, timeoutSeconds)
+			return volume, fmt.Errorf("Volume %d didn't match LinodeID %d in %d seconds", volumeID, linodeID, timeoutSeconds)
 		}
 	}
 }

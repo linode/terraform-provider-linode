@@ -92,8 +92,11 @@ type InstanceCreateOptions struct {
 	BackupID        int               `json:"backup_id,omitempty"`
 	Image           string            `json:"image,omitempty"`
 	BackupsEnabled  bool              `json:"backups_enabled,omitempty"`
-	SwapSize        *int              `json:"swap_size,omitempty"`
-	Booted          *bool             `json:"booted,omitempty"`
+	PrivateIP       bool              `json:"private_ip,omitempty"`
+
+	// Creation fields that need to be set explicitly false, "", or 0 use pointers
+	SwapSize *int  `json:"swap_size,omitempty"`
+	Booted   *bool `json:"booted,omitempty"`
 }
 
 // InstanceUpdateOptions is an options struct used when Updating an Instance
