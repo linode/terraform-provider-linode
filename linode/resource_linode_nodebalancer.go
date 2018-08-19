@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/linode/linodego"
 )
 
 func resourceLinodeNodeBalancer() *schema.Resource {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/linode/linodego"
 )
 
 func resourceLinodeNodeBalancerConfig() *schema.Resource {

@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/linode/linodego"
 )
 
 func TestAccLinodeInstanceBasic(t *testing.T) {
@@ -291,8 +291,109 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
-	kernel = "linode/latest-64bit"
-	root_password = "terraform-test"
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_keys = "%s"
+	group = "testing"
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithConfig(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	config {
+		kernel = "linode/latest-64bit"
+	}
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_keys = "%s"
+	group = "testing"
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithMultipleConfigs(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	config {
+		kernel = "linode/latest-64bit"
+	}
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_keys = "%s"
+	group = "testing"
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithDisk(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	config {
+		kernel = "linode/latest-64bit"
+	}
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_keys = "%s"
+	group = "testing"
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithMultipleDisks(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	config {
+		kernel = "linode/latest-64bit"
+	}
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_keys = "%s"
+	group = "testing"
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithDiskAndConfig(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	config {
+		kernel = "linode/latest-64bit"
+	}
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_keys = "%s"
+	group = "testing"
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	config {
+		kernel = "linode/latest-64bit"
+	}
+	root_pass = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
 	group = "testing"

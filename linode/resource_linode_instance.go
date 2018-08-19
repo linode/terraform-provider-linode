@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 
-	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/linode/linodego"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -19,6 +20,11 @@ var (
 	regionListMap map[string]*linodego.Region
 	typeList      []*linodego.LinodeType
 	typeListMap   map[string]*linodego.LinodeType
+)
+
+var (
+	boolFalse = false
+	boolTrue  = true
 )
 
 func resourceLinodeInstance() *schema.Resource {
@@ -52,16 +58,12 @@ func resourceLinodeInstance() *schema.Resource {
 			},
 			"stackscript_data": &schema.Schema{
 				Type:        schema.TypeMap,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+
 				Description: "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
 				Optional:    true,
 				ForceNew:    true,
-			},
-			"kernel": &schema.Schema{
-				Type:         schema.TypeString,
-				Description:  "The kernel used at boot by the Linode Config. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
-				Optional:     true,
-				InputDefault: "linode/grub2",
-				Computed:     true,
+				Sensitive:   true,
 			},
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
@@ -92,29 +94,6 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "The status of the instance, indicating the current readiness state.",
 				Computed:    true,
 			},
-			"plan_storage": &schema.Schema{
-				Type: schema.TypeInt,
-				// Optional: true, // @TODO seems a bug that Optional is required when Removed is set
-				Computed: true,
-				Removed:  "See 'storage'",
-			},
-			"storage": &schema.Schema{
-				Type: schema.TypeInt,
-				// Optional:    true, // @TODO seems a bug that Optional is required when Removed is set
-				Computed:    true,
-				Description: "The total amount of local disk space (MB) available to this Linode instance.",
-			},
-			"plan_storage_utilized": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-				// Optional: true, // @TODO seems a bug that Optional is required when Removed is set
-				Removed: "See 'storage_utilized'",
-			},
-			"storage_utilized": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The total amount of local disk space (MB) utilized by this Linode instance.",
-				Computed:    true,
-			},
 			"ip_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -124,12 +103,14 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.",
 				Computed:    true,
 			},
+			
 			"ipv4": &schema.Schema{
 				Type:        schema.TypeSet,
-				Elem:        schema.TypeString,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.",
 				Computed:    true,
 			},
+		
 			"private_ip": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "If true, the created Linode will have private networking enabled, allowing use of the 192.168.0.0/17 network within the Linode's region.",
@@ -148,7 +129,7 @@ func resourceLinodeInstance() *schema.Resource {
 				StateFunc:     sshKeyState,
 				PromoteSingle: true,
 			},
-			"root_password": &schema.Schema{
+			"root_pass": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The password that will be initialially assigned to the 'root' user account.",
 				Sensitive:   true,
@@ -186,6 +167,8 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+						
+
 			"specs": &schema.Schema{
 				Computed: true,
 				Type:     schema.TypeSet,
@@ -210,6 +193,7 @@ func resourceLinodeInstance() *schema.Resource {
 					},
 				},
 			},
+
 			"alerts": &schema.Schema{
 				Computed: true,
 				Type:     schema.TypeSet,
@@ -449,8 +433,7 @@ func resourceLinodeInstance() *schema.Resource {
 						"kernel": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A Kernel ID to boot a Linode with. Defaults to 'linode/latest-64bit'",
-							Default:     "linode/latest-64bit",
+							Description: "A Kernel ID to boot a Linode with. Default is based on image choice. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
 						},
 						"run_level": {
 							Type:        schema.TypeString,
@@ -484,6 +467,63 @@ func resourceLinodeInstance() *schema.Resource {
 					},
 				},
 			},
+			"disk": &schema.Schema{
+				Computed:      true,
+				PromoteSingle: true,
+				Optional:      true,
+				Type:          schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"size": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"label": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"filesystem": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "ext4",
+						},
+						"read_only": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"image": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"authorized_keys": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"stackscript_id": &schema.Schema{
+							Type:        schema.TypeInt,
+							Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
+							Optional:    true,
+							ForceNew:    true,
+						},
+						"stackscript_data": &schema.Schema{
+							Type:        schema.TypeMap,
+							Description: "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
+							Optional:    true,
+							ForceNew:    true,
+							Sensitive:   true,
+						},
+						"root_pass": &schema.Schema{
+							Type:        schema.TypeString,
+							Description: "The password that will be initialially assigned to the 'root' user account.",
+							Sensitive:   true,
+							Required:    true,
+							ForceNew:    true,
+							StateFunc:   rootPasswordState,
+						},
+					},
+				},
+				
+			},
 		},
 	}
 }
@@ -501,7 +541,7 @@ func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (boo
 			return false, nil
 		}
 
-		return false, fmt.Errorf("Error getting Linode Instance %d: %s", d.Id(), err)
+		return false, fmt.Errorf("Error getting Linode Instance %s: %s", d.Id(), err)
 	}
 	return true, nil
 }
@@ -530,6 +570,8 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error getting the IPs for Linode instance %s: %s", d.Id(), err)
 	}
 
+
+	d.Set("ipv4", instance.IPv4)
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
@@ -539,6 +581,9 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 			"type": "ssh",
 			"host": public[0].Address,
 		})
+		// TODO(displague) to determine 'user', need to check disk.image
+		// "linode/containerlinux" is "core", else "root"
+		// might be better to make this a resource field and avoid lookups
 	}
 
 	if len(private) > 0 {
@@ -555,10 +600,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("group", instance.Group)
 
-	planStorage := instance.Specs.Disk
-	d.Set("plan_storage", planStorage)
-	d.Set("storage", planStorage)
-
 	instanceDisks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
 
 	if err != nil {
@@ -567,21 +608,16 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	planStorageUtilized := 0
 	swapSize := 0
+	var disk []map[string[string]]
 
 	for _, disk := range instanceDisks {
-		planStorageUtilized += disk.Size
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		if disk.Filesystem == "swap" {
-			swapSize = disk.Size
-			d.Set("swap_size", swapSize)
+			swapSize += disk.Size
 		}
+		d.
 	}
-
-	d.Set("plan_storage_utilized", planStorageUtilized)
-	d.Set("storage_utilized", planStorageUtilized)
-
-	//diskExpansion := d.Get("disk_expansion").(bool)
-	//d.Set("disk_expansion", diskExpansion)
+	d.Set("swap_size", swapSize)
 
 	configs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
 	if err != nil {
@@ -590,22 +626,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 	config := configs[0]
-
-	/**
-	// This doesn't really tell us much.  This will flunk if an ImageName is used to deploy, since getImage will return
-	// an imageID.  Trying to derive the imageName from an imageID could be bad if the image happens to be deleted, which would
-	// likely occur in an environment where base image's are lifecycled.
-	image, err := getImage(client, int(id))
-	if err != nil {
-		return fmt.Errorf("Error getting the image: %s", err)
-	}
-	d.Set("image", image)
-	d.SetPartial("image")
-	**/
-
-	d.Set("helper_distro", config.Helpers.Distro)
-	d.Set("helper_network", config.Helpers.Network)
-	d.Set("kernel", config.Kernel)
 
 	return nil
 }
@@ -617,159 +637,201 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	d.Partial(true)
 
-	/**
-	// we used to translate these, now we expect the linode api ids
-	region, err := getRegion(&client, d.Get("region").(string))
-	if err != nil {
-		return fmt.Errorf("Error locating region %s: %s", d.Get("region").(string), err)
-	}
-
-	linodetype, err := getType(&client, d.Get("type").(string))
-	if err != nil {
-		return fmt.Errorf("Error finding a Linode type %s: %s", d.Get("type"), err)
-	}
-	**/
-
+	bootConfig := 0
 	createOpts := linodego.InstanceCreateOptions{
-		// Region: region.ID,
-		// Type:   linodetype.ID,
-		Region: d.Get("region").(string),
-		Type:   d.Get("type").(string),
-		Label:  d.Get("label").(string),
-		Group:  d.Get("group").(string),
+		Region:         d.Get("region").(string),
+		Type:           d.Get("type").(string),
+		Label:          d.Get("label").(string),
+		Group:          d.Get("group").(string),
+		BackupsEnabled: d.Get("backups_enabled").(bool),
+		PrivateIP:      d.Get("private_ip").(bool),
 	}
+
+	_, disksOk := d.GetOk("disk")
+	_, configsOk := d.GetOk("config")
+
+	// If we don't have disks and we don't have configs, use the single API call approach
+	if !disksOk && !configsOk {
+		for _, key := range(d.Get("authorized_keys").([]interface{})) {
+			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
+		}
+		createOpts.RootPass = d.Get("root_pass").(string)
+		createOpts.Image = d.Get("image").(string)
+		createOpts.BackupID = d.Get("backup_id").(int)
+		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
+			createOpts.SwapSize = &swapSize
+		}
+
+		createOpts.StackScriptID = d.Get("stackscript_id").(int)
+
+		for name, value := range(d.Get("stackscript_data").(map[string]interface{})) {
+			createOpts.StackScriptData[name] = value.(string)
+		}
+	} else {
+		createOpts.Booted = &boolFalse // necessary to prepare disks and configs
+	}
+
 	instance, err := client.CreateInstance(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode instance in region %s of type %s: %s", d.Get("region"), d.Get("type"), err)
+		return fmt.Errorf("Error creating a Linode Instance: %s", err)
 	}
+
 	d.SetId(fmt.Sprintf("%d", instance.ID))
-	d.Set("label", instance.Label)
 
-	d.SetPartial("region")
-	d.SetPartial("type")
-	d.SetPartial("label")
-	d.SetPartial("group")
+	// d.Set("backups_enabled", instance.BackupsEnabled)
 
-	swapSize := 0
-	var swapDisk *linodego.InstanceDisk
-
-	// Create the Swap Partition
-	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeCreate, *instance.Created, int(d.Timeout("create").Seconds()))
-	if swapSize = d.Get("swap_size").(int); swapSize > 0 {
-		swapOpts := linodego.InstanceDiskCreateOptions{
-			Label:      "linode" + strconv.Itoa(instance.ID) + "-swap",
-			Filesystem: "swap",
-			Size:       swapSize,
-		}
-
-		swapDisk, err = client.CreateInstanceDisk(context.Background(), instance.ID, swapOpts)
-
-		if err != nil {
-			return fmt.Errorf("Error creating Linode instance %d swap disk: %s", instance.ID, err)
-		}
-
-		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, swapDisk.Created, int(d.Timeout("create").Seconds()))
-		if err != nil {
-			return fmt.Errorf("Error waiting for Linode instance %d swap disk: %s", swapDisk.ID, err)
-		}
-
-	}
+	d.SetPartial("private_ip")
+	d.SetPartial("authorized_keys")
+	d.SetPartial("root_pass")
+	d.SetPartial("kernel")
+	d.SetPartial("image")
+	d.SetPartial("backup_id")
+	d.SetPartial("stackscript_id")
+	d.SetPartial("stackscript_data")
 	d.SetPartial("swap_size")
 
-	// Create the storage Partition
+	d.Set("ipv4", instance.IPv4)
+	d.Set("ipv6", instance.IPv6)
 
-	storageSize := d.Get("storage").(int)
-
-	if !ok || storageSize == 0 {
-		storageSize = instance.Specs.Disk - d.Get("swap_size").(int)
+	for _, address := range instance.IPv4 {
+		if private := privateIP(*address); private {
+			d.Set("private_ip_address", address.String())
+		} else {
+			d.Set("ip_address", address.String())
+		}
 	}
 
-	diskOpts := linodego.InstanceDiskCreateOptions{
-		Label:      "linode" + strconv.Itoa(instance.ID) + "-root",
-		Filesystem: "ext4",
-		Size:       storageSize,
-	}
+	/*
+		if d.Get("private_networking").(bool) {
+			resp, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
+			if err != nil {
+				return fmt.Errorf("Error adding a private ip address to Linode instance %d: %s", instance.ID, err)
+			}
+			d.Set("private_ip_address", resp.Address)
+			d.SetPartial("private_ip_address")
+		}
+	*/
 
-	if image, ok := d.GetOk("image"); ok {
-		diskOpts.Image = image.(string)
+	if disksOk {
+		swapSize := 0
+		var swapDisk *linodego.InstanceDisk
 
-		diskOpts.RootPass = d.Get("root_password").(string)
+		// Create the Swap Partition
+		_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeCreate, *instance.Created, int(d.Timeout("create").Seconds()))
+		if swapSize = d.Get("swap_size").(int); swapSize > 0 {
+			swapOpts := linodego.InstanceDiskCreateOptions{
+				Label:      "linode" + strconv.Itoa(instance.ID) + "-swap",
+				Filesystem: "swap",
+				Size:       swapSize,
+			}
 
-		if sshKeys, ok := d.GetOk("ssh_key"); ok {
-			if sshKeysArr, ok := sshKeys.([]interface{}); ok {
-				diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
-				for k, v := range sshKeys.([]interface{}) {
-					if val, ok := v.(string); ok {
-						diskOpts.AuthorizedKeys[k] = val
+			swapDisk, err = client.CreateInstanceDisk(context.Background(), instance.ID, swapOpts)
+
+			if err != nil {
+				return fmt.Errorf("Error creating Linode instance %d swap disk: %s", instance.ID, err)
+			}
+
+			_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, swapDisk.Created, int(d.Timeout("create").Seconds()))
+			if err != nil {
+				return fmt.Errorf("Error waiting for Linode instance %d swap disk: %s", swapDisk.ID, err)
+			}
+
+		}
+		d.SetPartial("swap_size")
+
+		// Create the storage Partition
+
+		storageSize := d.Get("storage").(int)
+
+		if !ok || storageSize == 0 {
+			storageSize = instance.Specs.Disk - d.Get("swap_size").(int)
+		}
+
+		diskOpts := linodego.InstanceDiskCreateOptions{
+			Label:      "linode" + strconv.Itoa(instance.ID) + "-root",
+			Filesystem: "ext4",
+			Size:       storageSize,
+		}
+
+		if image, ok := d.GetOk("image"); ok {
+			diskOpts.Image = image.(string)
+
+			diskOpts.RootPass = d.Get("root_pass").(string)
+
+			if sshKeys, ok := d.GetOk("ssh_key"); ok {
+				if sshKeysArr, ok := sshKeys.([]interface{}); ok {
+					diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
+					for k, v := range sshKeys.([]interface{}) {
+						if val, ok := v.(string); ok {
+							diskOpts.AuthorizedKeys[k] = val
+						}
 					}
 				}
 			}
 		}
-	}
 
-	storageDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
-	if err != nil {
-		return fmt.Errorf("Error creating Linode instance %d root disk: %s", instance.ID, err)
-	}
-
-	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, storageDisk.Created, int(d.Timeout("create").Seconds()))
-	if err != nil {
-		return fmt.Errorf("Error waiting for Linode instance %d root disk: %s", storageDisk.ID, err)
-	}
-
-	d.SetPartial("image")
-	d.SetPartial("root_password")
-	d.SetPartial("ssh_key")
-
-	if err != nil {
-		return fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
-	}
-	d.SetPartial("storage")
-
-	if d.Get("private_networking").(bool) {
-		resp, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
+		storageDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
 		if err != nil {
-			return fmt.Errorf("Error adding a private ip address to Linode instance %d: %s", instance.ID, err)
+			return fmt.Errorf("Error creating Linode instance %d root disk: %s", instance.ID, err)
 		}
-		d.Set("private_ip_address", resp.Address)
-		d.SetPartial("private_ip_address")
+
+		_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, storageDisk.Created, int(d.Timeout("create").Seconds()))
+		if err != nil {
+			return fmt.Errorf("Error waiting for Linode instance %d root disk: %s", storageDisk.ID, err)
+		}
+
+		d.SetPartial("image")
+		d.SetPartial("root_pass")
+		d.SetPartial("ssh_key")
+
+		if err != nil {
+			return fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
+		}
+		d.SetPartial("storage")
+
+		configDevices := &linodego.InstanceConfigDeviceMap{
+			SDA: &linodego.InstanceConfigDevice{DiskID: storageDisk.ID},
+		}
+
+		if swapDisk.ID > 0 {
+			configDevices.SDB = &linodego.InstanceConfigDevice{DiskID: swapDisk.ID}
+		}
+
+		if !configsOk {
+			configOpts := linodego.InstanceConfigCreateOptions{
+				Label:  fmt.Sprintf("linode%d-config", instance.ID),
+				Kernel: d.Get("kernel").(string),
+				// RootDevice: "/dev/sda",
+				// RunLevel:   "default",
+				// VirtMode:   "paravirt",
+				Helpers: &linodego.InstanceConfigHelpers{
+					Distro:  d.Get("helper_distro").(bool),
+					Network: d.Get("helper_network").(bool),
+				},
+				Devices: *configDevices,
+			}
+
+			config, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
+			if err != nil {
+				return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
+			}
+			bootConfig = config.ID
+
+			d.SetPartial("helper_network")
+			d.SetPartial("helper_distro")
+
+		}
 	}
 
-	configDevices := &linodego.InstanceConfigDeviceMap{
-		SDA: &linodego.InstanceConfigDevice{DiskID: storageDisk.ID},
-	}
-
-	if swapDisk.ID > 0 {
-		configDevices.SDB = &linodego.InstanceConfigDevice{DiskID: swapDisk.ID}
-	}
-
-	configOpts := linodego.InstanceConfigCreateOptions{
-		Label:  fmt.Sprintf("linode%d-config", instance.ID),
-		Kernel: d.Get("kernel").(string),
-		// RootDevice: "/dev/sda",
-		// RunLevel:   "default",
-		// VirtMode:   "paravirt",
-		Helpers: &linodego.InstanceConfigHelpers{
-			Distro:  d.Get("helper_distro").(bool),
-			Network: d.Get("helper_network").(bool),
-		},
-		Devices: *configDevices,
-	}
-
-	config, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
-	if err != nil {
-		return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
-	}
-
-	d.SetPartial("helper_network")
-	d.SetPartial("helper_distro")
-
-	booted, err := client.BootInstance(context.Background(), instance.ID, config.ID)
-	if !booted {
-		return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
+	if createOpts.Booted != nil && *createOpts.Booted {
+		booted, err := client.BootInstance(context.Background(), instance.ID, bootConfig)
+		if !booted {
+			return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
+		}
 	}
 
 	d.Partial(false)
+
 	if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout("create").Seconds())); err != nil {
 		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 	}
@@ -886,104 +948,6 @@ func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-// getKernel gets the kernel from the id of the kernel
-func getKernel(client *linodego.Client, kernelID string) (*linodego.LinodeKernel, error) {
-	if kernelList == nil {
-		if err := getKernelList(client); err != nil {
-			return nil, err
-		}
-	}
-
-	if t, ok := kernelListMap[kernelID]; ok {
-		return t, nil
-	}
-	return nil, fmt.Errorf("Unable to find Linode Kernel %s", kernelID)
-}
-
-// getKernelList populates kernelList with the available kernels. kernelList is used to reduce the number of api
-// requests required as it is unlikely that the available kernels will change during a single terraform run.
-func getKernelList(client *linodego.Client) error {
-	var err error
-	if kernelList == nil {
-		if kernelList, err = client.ListKernels(context.Background(), nil); err != nil {
-			return err
-		}
-
-		kernelListMap = make(map[string]*linodego.LinodeKernel)
-		for _, t := range kernelList {
-			kernelListMap[t.ID] = t
-		}
-	}
-
-	return nil
-}
-
-// getRegion gets the region from the id of the region
-func getRegion(client *linodego.Client, regionID string) (*linodego.Region, error) {
-	if regionList == nil {
-		if err := getRegionList(client); err != nil {
-			return nil, err
-		}
-	}
-
-	if t, ok := regionListMap[regionID]; ok {
-		return t, nil
-	}
-	return nil, fmt.Errorf("Unable to find Linode Region %s", regionID)
-}
-
-// getRegionList populates regionList with the available regions. regionList is used to reduce the number of api
-// requests required as it is unlikely that the available regions will change during a single terraform run.
-func getRegionList(client *linodego.Client) error {
-	if regionList == nil {
-		var err error
-		if regionList, err = client.ListRegions(context.Background(), nil); err != nil {
-			return err
-		}
-
-		regionListMap = make(map[string]*linodego.Region)
-		for _, t := range regionList {
-			regionListMap[t.ID] = t
-		}
-	}
-
-	return nil
-}
-
-// getType gets the amount of ram from the plan id
-func getType(client *linodego.Client, typeID string) (*linodego.LinodeType, error) {
-	if typeList == nil {
-		if err := getTypeList(client); err != nil {
-			return nil, err
-		}
-	}
-
-	if t, ok := typeListMap[typeID]; ok {
-		return t, nil
-	}
-	return nil, fmt.Errorf("Unable to find Linode Type %s", typeID)
-}
-
-// getTypeList populates typeList and typeListMap. typeList is used to reduce
-//  the number of api requests required as its unlikely that
-// the plans will change during a single terraform run.
-func getTypeList(client *linodego.Client) error {
-	if typeList == nil {
-		var err error
-		typeList, err = client.ListTypes(context.Background(), nil)
-
-		if err != nil {
-			return err
-		}
-		typeListMap = make(map[string]*linodego.LinodeType)
-		for _, t := range typeList {
-			typeListMap[t.ID] = t
-		}
-	}
-
-	return nil
-}
-
 // getTotalDiskSize returns the number of disks and their total size.
 func getTotalDiskSize(client *linodego.Client, linodeID int) (totalDiskSize int, err error) {
 	disks, err := client.ListInstanceDisks(context.Background(), linodeID, nil)
@@ -1039,7 +1003,7 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 		return fmt.Errorf("Unexpected value for type %v", d.Get("type"))
 	}
 
-	targetType, err := getType(client, typeID)
+	targetType, err := client.GetType(context.Background(), typeID)
 	if err != nil {
 		return fmt.Errorf("Error finding the instance type %s", typeID)
 	}
@@ -1081,4 +1045,15 @@ func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *s
 	d.SetPartial("disk_expansion")
 	d.SetPartial("type")
 	return nil
+}
+
+// privateIP determines if an IP is for private use (RFC1918)
+// https://stackoverflow.com/a/41273687
+func privateIP(ip net.IP) bool {
+	private := false
+	_, private24BitBlock, _ := net.ParseCIDR("10.0.0.0/8")
+	_, private20BitBlock, _ := net.ParseCIDR("172.16.0.0/12")
+	_, private16BitBlock, _ := net.ParseCIDR("192.168.0.0/16")
+	private = private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) || private16BitBlock.Contains(ip)
+	return private
 }

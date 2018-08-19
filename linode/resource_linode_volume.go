@@ -6,8 +6,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/linode/linodego"
 )
 
 func resourceLinodeVolume() *schema.Resource {
@@ -140,7 +140,7 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetPartial("size")
 
 	if createOpts.LinodeID > 0 {
-		if err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+		if _, err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
 			return err
 		}
 		d.SetPartial("linode_id")
@@ -211,7 +211,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volume.ID)
-			if err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
+			if _, err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
 				return err
 			}
 		}
@@ -229,7 +229,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to attach ...", volume.ID)
-			if err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+			if _, err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
 				return err
 			}
 		}
@@ -258,7 +258,7 @@ func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
-	if err := client.WaitForVolumeLinodeID(context.Background(), id, nil, int(d.Timeout("update").Seconds())); err != nil {
+	if _, err := client.WaitForVolumeLinodeID(context.Background(), id, nil, int(d.Timeout("update").Seconds())); err != nil {
 		return err
 	}
 

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/linode/linodego"
 	"github.com/hashicorp/terraform/helper/logging"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/hashicorp/terraform/version"
+	"github.com/linode/linodego"
 	"golang.org/x/oauth2"
 )
 
@@ -62,8 +62,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	client := linodego.NewClient(oauth2Client)
 
 	projectURL := "https://www.terraform.io"
-	userAgent := fmt.Sprintf("Terraform/%s (+%s)",
-		version.String(), projectURL)
+	userAgent := fmt.Sprintf("Terraform/%s (+%s) linodego/%s",
+		version.String(), projectURL, linodego.Version)
 
 	client.SetUserAgent(userAgent)
 
