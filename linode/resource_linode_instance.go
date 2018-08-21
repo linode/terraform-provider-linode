@@ -128,18 +128,6 @@ func resourceLinodeInstance() *schema.Resource {
 				ForceNew:    true,
 				StateFunc:   rootPasswordState,
 			},
-			"helper_distro": &schema.Schema{
-				Type:        schema.TypeBool,
-				Description: "Controls the behavior of the Linode Config's Distribution Helper setting.",
-				Optional:    true,
-				Default:     true,
-			},
-			"helper_network": &schema.Schema{
-				Type:        schema.TypeBool,
-				Description: "Controls the behavior of the Linode Config's Network Helper setting, used to automatically configure additional IP addresses assigned to this instance.",
-				Optional:    true,
-				Default:     true,
-			},
 			"swap_size": &schema.Schema{
 				Type:        schema.TypeInt,
 				Description: "When deploying from an Image, this field is optional, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
@@ -263,9 +251,10 @@ func resourceLinodeInstance() *schema.Resource {
 										Default:  true,
 									},
 									"distro": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
+										Type:        schema.TypeBool,
+										Description: "Controls the behavior of the Linode Config's Distribution Helper setting.",
+										Optional:    true,
+										Default:     true,
 									},
 									"modules_dep": {
 										Type:     schema.TypeBool,
@@ -273,9 +262,10 @@ func resourceLinodeInstance() *schema.Resource {
 										Default:  true,
 									},
 									"network": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Controls the behavior of the Linode Config's Network Helper setting, used to automatically configure additional IP addresses assigned to this instance.",
+										Default:     true,
 									},
 									"devtmpfs_automount": {
 										Type:     schema.TypeBool,
