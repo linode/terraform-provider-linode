@@ -633,27 +633,15 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	// panic: interface conversion: interface {} is map[string]int, not *schema.Set
 
-	flatSpecs := []map[string]int{{
-		"vcpus":    instance.Specs.VCPUs,
-		"disk":     instance.Specs.Disk,
-		"memory":   instance.Specs.Memory,
-		"transfer": instance.Specs.Transfer,
-	}}
-
-	flatAlarms := []map[string]int{{
-		"cpu":            instance.Alerts.CPU,
-		"io":             instance.Alerts.IO,
-		"network_in":     instance.Alerts.NetworkIn,
-		"network_out":    instance.Alerts.NetworkOut,
-		"transfer_quota": instance.Alerts.TransferQuota,
-	}}
+	flatSpecs := flattenInstanceSpecs(*instance)
+	flatAlerts := flattenInstanceAlerts(*instance)
 
 	if err := d.Set("specs", flatSpecs); err != nil {
 		return fmt.Errorf("Error setting Linode Instance specs: %s", err)
 	}
 
-	if err := d.Set("alerts", flatAlarms); err != nil {
-		return fmt.Errorf("Error setting Linode Instance alarms: %s", err)
+	if err := d.Set("alerts", flatAlerts); err != nil {
+		return fmt.Errorf("Error setting Linode Instance alerts: %s", err)
 	}
 
 	instanceDisks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
