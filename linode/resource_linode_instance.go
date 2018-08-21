@@ -2,20 +2,11 @@ package linode
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"net"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
-	"golang.org/x/crypto/sha3"
-)
-
-var (
-	boolFalse = false
-	boolTrue  = true
 )
 
 func resourceLinodeInstance() *schema.Resource {
@@ -148,9 +139,9 @@ func resourceLinodeInstance() *schema.Resource {
 			},
 
 			"specs": &schema.Schema{
-				Computed:      true,
-				Type:          schema.TypeSet,
-				PromoteSingle: true,
+				Computed: true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk": {
@@ -175,7 +166,8 @@ func resourceLinodeInstance() *schema.Resource {
 
 			"alerts": &schema.Schema{
 				Computed: true,
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cpu": {
@@ -230,10 +222,9 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"config": &schema.Schema{
-				Computed:      true,
-				PromoteSingle: true,
-				Optional:      true,
-				Type:          schema.TypeSet,
+				Computed: true,
+				Optional: true,
+				Type:     schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
@@ -241,7 +232,8 @@ func resourceLinodeInstance() *schema.Resource {
 							Required: true,
 						},
 						"helpers": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
+							MaxItems: 1,
 							Optional: true,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -277,11 +269,16 @@ func resourceLinodeInstance() *schema.Resource {
 							},
 						},
 						"devices": {
-							Type: schema.TypeSet,
+							Type:     schema.TypeList,
+							MaxItems: 1,
+							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"sda": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Required: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -299,10 +296,11 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Required: true,
 									},
 									"sdb": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -320,10 +318,11 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Optional: true,
 									},
 									"sdc": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -341,10 +340,11 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Optional: true,
 									},
 									"sdd": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -362,10 +362,11 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Optional: true,
 									},
 									"sde": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -383,10 +384,11 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Optional: true,
 									},
 									"sdf": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -404,10 +406,11 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Optional: true,
 									},
 									"sdg": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -425,10 +428,11 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Optional: true,
 									},
 									"sdh": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
@@ -446,11 +450,9 @@ func resourceLinodeInstance() *schema.Resource {
 												},
 											},
 										},
-										Optional: true,
 									},
 								},
 							},
-							Optional: true,
 						},
 						"kernel": {
 							Type:        schema.TypeString,
@@ -629,32 +631,30 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("group", instance.Group)
 
-	/** TODO(displague)
 	// panic: interface conversion: interface {} is map[string]int, not *schema.Set
 
-	flatSpecs := map[string]int{
+	flatSpecs := []map[string]int{{
 		"vcpus":    instance.Specs.VCPUs,
 		"disk":     instance.Specs.Disk,
-		"mem":      instance.Specs.Memory,
+		"memory":   instance.Specs.Memory,
 		"transfer": instance.Specs.Transfer,
-	}
+	}}
 
-	flatAlarms := map[string]int{
-		"disk":           instance.Alerts.CPU,
-		"vcpus":          instance.Alerts.IO,
-		"mem":            instance.Alerts.NetworkIn,
-		"transfer":       instance.Alerts.NetworkOut,
+	flatAlarms := []map[string]int{{
+		"cpu":            instance.Alerts.CPU,
+		"io":             instance.Alerts.IO,
+		"network_in":     instance.Alerts.NetworkIn,
+		"network_out":    instance.Alerts.NetworkOut,
 		"transfer_quota": instance.Alerts.TransferQuota,
-	}
+	}}
 
 	if err := d.Set("specs", flatSpecs); err != nil {
 		return fmt.Errorf("Error setting Linode Instance specs: %s", err)
 	}
 
-	if err := d.Set("alarms", flatAlarms); err != nil {
+	if err := d.Set("alerts", flatAlarms); err != nil {
 		return fmt.Errorf("Error setting Linode Instance alarms: %s", err)
 	}
-	*/
 
 	instanceDisks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
 
@@ -662,25 +662,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error getting the disks for the Linode instance %d: %s", id, err)
 	}
 
-	swapSize := 0
-	var disks []map[string]interface{}
-
-	for _, disk := range instanceDisks {
-		// Determine if swap exists and the size.  If it does not exist, swap_size=0
-		if disk.Filesystem == "swap" {
-			swapSize += disk.Size
-		}
-		disks = append(disks, map[string]interface{}{
-			"size":       disk.Size,
-			"label":      disk.Label,
-			"filesystem": string(disk.Filesystem),
-			// TODO(displague) these can not be retrieved after the initial send
-			// "read_only":       disk.ReadOnly,
-			// "image":           disk.Image,
-			// "authorized_keys": disk.AuthorizedKeys,
-			// "stackscript_id":  disk.StackScriptID,
-		})
-	}
+	disks, swapSize := flattenInstanceDisks(instanceDisks)
 
 	if err := d.Set("disk", disks); err != nil {
 		return fmt.Errorf("Erroring setting Linode Instance disk: %s", err)
@@ -696,77 +678,11 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
-	var configs []map[string]interface{}
-
-	for _, config := range instanceConfigs {
-		devices := map[string]map[string]int{
-			"sda": deviceMap(config.Devices.SDA),
-			"sdb": deviceMap(config.Devices.SDB),
-			"sdc": deviceMap(config.Devices.SDC),
-			"sdd": deviceMap(config.Devices.SDD),
-			"sde": deviceMap(config.Devices.SDE),
-			"sdf": deviceMap(config.Devices.SDF),
-			"sdg": deviceMap(config.Devices.SDG),
-			"sdh": deviceMap(config.Devices.SDH),
-		}
-		// Determine if swap exists and the size.  If it does not exist, swap_size=0
-		configs = append(configs, map[string]interface{}{
-			"kernel":       config.Kernel,
-			"run_level":    string(config.RunLevel),
-			"virt_mode":    string(config.VirtMode),
-			"root_device":  config.RootDevice,
-			"comments":     config.Comments,
-			"memory_limit": config.MemoryLimit,
-			"label":        config.Label,
-			"helpers": map[string]bool{
-				"updatedb_disabled":  config.Helpers.UpdateDBDisabled,
-				"distro":             config.Helpers.Distro,
-				"modules_dep":        config.Helpers.ModulesDep,
-				"network":            config.Helpers.Network,
-				"devtmpfs_automount": config.Helpers.DevTmpFsAutomount,
-			},
-			"devices": devices,
-			// TODO(displague) these can not be retrieved after the initial send
-			// "read_only":       disk.ReadOnly,
-			// "image":           disk.Image,
-			// "authorized_keys": disk.AuthorizedKeys,
-			// "stackscript_id":  disk.StackScriptID,
-		})
-	}
-
-	/* TODO(displague)
-	// panic: interface conversion: interface {} is map[string]map[string]int, not *schema.Set
+	configs := flattenInstanceConfigs(instanceConfigs)
 	if err := d.Set("config", configs); err != nil {
 		return fmt.Errorf("Erroring setting Linode Instance config: %s", err)
 	}
-	*/
 	return nil
-}
-
-func deviceMap(dev *linodego.InstanceConfigDevice) map[string]int {
-	if dev == nil {
-		return map[string]int{
-			"disk_id":   0,
-			"volume_id": 0,
-		}
-	}
-
-	return map[string]int{
-		"disk_id":   dev.DiskID,
-		"volume_id": dev.VolumeID,
-	}
-}
-
-func deviceType(m map[string]interface{}) *linodego.InstanceConfigDevice {
-	var dev *linodego.InstanceConfigDevice
-	if m["disk_id"].(int) > 0 || m["volume_id"].(int) > 0 {
-		dev = &linodego.InstanceConfigDevice{
-			DiskID:   m["disk_id"].(int),
-			VolumeID: m["volume_id"].(int),
-		}
-	}
-
-	return dev
 }
 
 func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -987,7 +903,15 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 								return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
 							}
 						}
-						configOpts.Devices.SDA = deviceType(dev)
+						configOpts.Devices.SDA = expandInstanceconfigDevice(dev)
+					}
+					if k == "sdb" {
+						if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
+							if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
+								return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
+							}
+						}
+						configOpts.Devices.SDB = expandInstanceconfigDevice(dev)
 					}
 					// TODO(displague) copy through SDH
 				}
@@ -1123,114 +1047,4 @@ func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) erro
 	}
 	d.SetId("")
 	return nil
-}
-
-// getTotalDiskSize returns the number of disks and their total size.
-func getTotalDiskSize(client *linodego.Client, linodeID int) (totalDiskSize int, err error) {
-	disks, err := client.ListInstanceDisks(context.Background(), linodeID, nil)
-	if err != nil {
-		return 0, err
-	}
-
-	for _, disk := range disks {
-		totalDiskSize += disk.Size
-	}
-
-	return totalDiskSize, nil
-}
-
-// getBiggestDisk returns the ID and Size of the largest disk attached to the Linode
-func getBiggestDisk(client *linodego.Client, linodeID int) (biggestDiskID int, biggestDiskSize int, err error) {
-	diskFilter := "{\"+order_by\": \"size\", \"+order\": \"desc\"}"
-	disks, err := client.ListInstanceDisks(context.Background(), linodeID, linodego.NewListOptions(1, diskFilter))
-	if err != nil {
-		return 0, 0, err
-	}
-
-	for _, disk := range disks {
-		// Find Biggest Disk ID & Size
-		if disk.Size > biggestDiskSize {
-			biggestDiskID = disk.ID
-			biggestDiskSize = disk.Size
-		}
-	}
-	return biggestDiskID, biggestDiskSize, nil
-}
-
-// sshKeyState hashes a string passed in as an interface
-func sshKeyState(val interface{}) string {
-	return hashString(strings.Join(val.([]string), "\n"))
-}
-
-// rootPasswordState hashes a string passed in as an interface
-func rootPasswordState(val interface{}) string {
-	return hashString(val.(string))
-}
-
-// hashString hashes a string
-func hashString(key string) string {
-	hash := sha3.Sum512([]byte(key))
-	return base64.StdEncoding.EncodeToString(hash[:])
-}
-
-// changeLinodeSize resizes the current linode
-func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *schema.ResourceData) error {
-	typeID, ok := d.Get("type").(string)
-	if !ok {
-		return fmt.Errorf("Unexpected value for type %v", d.Get("type"))
-	}
-
-	targetType, err := client.GetType(context.Background(), typeID)
-	if err != nil {
-		return fmt.Errorf("Error finding the instance type %s", typeID)
-	}
-
-	//biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
-
-	//currentDiskSize, err := getTotalDiskSize(client, instance.ID)
-
-	if ok, err := client.ResizeInstance(context.Background(), instance.ID, typeID); err != nil || !ok {
-		return fmt.Errorf("Error resizing instance %d: %s", instance.ID, err)
-	}
-
-	event, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
-	if err != nil {
-		return fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
-	}
-
-	if d.Get("disk_expansion").(bool) && instance.Specs.Disk > targetType.Disk {
-		// Determine the biggestDisk ID and Size
-		biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
-		if err != nil {
-			return err
-		}
-		// Calculate new size, with other disks taken into consideration
-		expandedDiskSize := biggestDiskSize + targetType.Disk - instance.Specs.Disk
-
-		// Resize the Disk
-		client.ResizeInstanceDisk(context.Background(), instance.ID, biggestDiskID, expandedDiskSize)
-
-		// Wait for the Disk Resize Operation to Complete
-		// waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
-		event, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, *event.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
-		if err != nil {
-			return fmt.Errorf("Error waiting for resize of Disk %d for Linode %d: %s", biggestDiskID, instance.ID, err)
-		}
-	}
-
-	// Return the new Linode size
-	d.SetPartial("disk_expansion")
-	d.SetPartial("type")
-	return nil
-}
-
-// privateIP determines if an IP is for private use (RFC1918)
-// https://stackoverflow.com/a/41273687
-func privateIP(ip net.IP) bool {
-	private := false
-	_, private24BitBlock, _ := net.ParseCIDR("10.0.0.0/8")
-	_, private20BitBlock, _ := net.ParseCIDR("172.16.0.0/12")
-	_, private16BitBlock, _ := net.ParseCIDR("192.168.0.0/16")
-	private = private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) || private16BitBlock.Contains(ip)
-	return private
 }

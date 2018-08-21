@@ -254,7 +254,7 @@ func testAccCheckLinodeInstanceExists(name string, instance *linodego.Instance) 
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
 		}
-		*instance = *found
+		instance = found
 
 		return nil
 	}
