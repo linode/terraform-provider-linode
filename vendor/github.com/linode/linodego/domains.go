@@ -11,22 +11,22 @@ import (
 // Domain represents a Domain object
 type Domain struct {
 	//	This Domain's unique ID
-	ID int
+	ID int `json:"id"`
 
 	// The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.
-	Domain string
+	Domain string `json:"domain"`
 
 	// If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).
-	Type DomainType // Enum:"master" "slave"
+	Type DomainType `json:"type"` // Enum:"master" "slave"
 
 	// Deprecated: The group this Domain belongs to. This is for display purposes only.
-	Group string
+	Group string `json:"group"`
 
 	// Used to control whether this Domain is currently being rendered.
-	Status DomainStatus // Enum:"disabled" "active" "edit_mode" "has_errors"
+	Status DomainStatus `json:"domain_status"` // Enum:"disabled" "active" "edit_mode" "has_errors"
 
 	// A description for this Domain. This is for display purposes only.
-	Description string
+	Description string `json:"description"`
 
 	// Start of Authority email address. This is required for master Domains.
 	SOAEmail string `json:"soa_email"`
@@ -168,7 +168,7 @@ func (d Domain) GetUpdateOptions() (du DomainUpdateOptions) {
 // DomainsPagedResponse represents a paginated Domain API response
 type DomainsPagedResponse struct {
 	*PageOptions
-	Data []*Domain
+	Data []*Domain `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Domain
@@ -280,9 +280,6 @@ func (c *Client) DeleteDomain(ctx context.Context, id int) error {
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

@@ -6,6 +6,7 @@ package linodego
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -14,9 +15,9 @@ import (
 
 // PageOptions are the pagination parameters for List endpoints
 type PageOptions struct {
-	Page    int `url:"page,omitempty"`
-	Pages   int `url:"pages,omitempty"`
-	Results int `url:"results,omitempty"`
+	Page    int `url:"page,omitempty" json:"page"`
+	Pages   int `url:"pages,omitempty" json:"pages"`
+	Results int `url:"results,omitempty" json:"results"`
 }
 
 // ListOptions are the pagination and filtering (TODO) parameters for endpoints
@@ -111,9 +112,13 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 		}
 	case *DomainsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(DomainsPagedResponse{}).Get(v.endpoint(c))); err == nil {
-			pages = r.Result().(*DomainsPagedResponse).Pages
-			results = r.Result().(*DomainsPagedResponse).Results
-			v.appendData(r.Result().(*DomainsPagedResponse))
+			response, ok := r.Result().(*DomainsPagedResponse)
+			if !ok {
+				return fmt.Errorf("Response is not a *DomainsPagedResponse")
+			}
+			pages = response.Pages
+			results = response.Results
+			v.appendData(response)
 		}
 	case *EventsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(EventsPagedResponse{}).Get(v.endpoint(c))); err == nil {
@@ -327,9 +332,13 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 		}
 	case *DomainRecordsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(DomainRecordsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
-			pages = r.Result().(*DomainRecordsPagedResponse).Pages
-			results = r.Result().(*DomainRecordsPagedResponse).Results
-			v.appendData(r.Result().(*DomainRecordsPagedResponse))
+			response, ok := r.Result().(*DomainRecordsPagedResponse)
+			if !ok {
+				return fmt.Errorf("Response is not a *DomainRecordsPagedResponse")
+			}
+			pages = response.Pages
+			results = response.Results
+			v.appendData(response)
 		}
 	case *InstanceConfigsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(InstanceConfigsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {

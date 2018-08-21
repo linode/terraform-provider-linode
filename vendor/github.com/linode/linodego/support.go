@@ -8,41 +8,43 @@ import (
 	"github.com/go-resty/resty"
 )
 
-// Ticket Statuses
-const (
-	TicketClosed = "closed"
-	TicketOpen   = "open"
-	TicketNew    = "new"
-)
-
 // Ticket represents a support ticket object
 type Ticket struct {
-	ID          int
-	Attachments []string
-	Closed      *time.Time `json:"-"`
-	Description string
-	Entity      *TicketEntity
-	GravatarID  string
-	Opened      *time.Time `json:"-"`
-	OpenedBy    string
-	Status      string
-	Summary     string
-	Updated     *time.Time `json:"-"`
-	UpdatedBy   string
+	ID          int           `json:"id"`
+	Attachments []string      `json:"attachments"`
+	Closed      *time.Time    `json:"-"`
+	Description string        `json:"description"`
+	Entity      *TicketEntity `json:"entity"`
+	GravatarID  string        `json:"gravatar_id"`
+	Opened      *time.Time    `json:"-"`
+	OpenedBy    string        `json:"opened_by"`
+	Status      TicketStatus  `json:"status"`
+	Summary     string        `json:"summary"`
+	Updated     *time.Time    `json:"-"`
+	UpdatedBy   string        `json:"updated_by"`
 }
 
 // TicketEntity refers a ticket to a specific entity
 type TicketEntity struct {
-	ID    int
-	Label string
-	Type  string
-	URL   string
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+	Type  string `json:"type"`
+	URL   string `json:"url"`
 }
+
+type TicketStatus string
+
+// Ticket Statuses
+const (
+	TicketNew    TicketStatus = "new"
+	TicketClosed TicketStatus = "closed"
+	TicketOpen   TicketStatus = "open"
+)
 
 // TicketsPagedResponse represents a paginated ticket API response
 type TicketsPagedResponse struct {
 	*PageOptions
-	Data []*Ticket
+	Data []*Ticket `json:"data"`
 }
 
 func (TicketsPagedResponse) endpoint(c *Client) string {
@@ -81,9 +83,9 @@ func (c *Client) GetTicket(ctx context.Context, id int) (*Ticket, error) {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
-	r, err := c.R(ctx).
+	r, err := coupleAPIErrors(c.R(ctx).
 		SetResult(&Ticket{}).
-		Get(e)
+		Get(e))
 	if err != nil {
 		return nil, err
 	}

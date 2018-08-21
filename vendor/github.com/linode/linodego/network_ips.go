@@ -10,7 +10,7 @@ import (
 // IPAddressesPagedResponse represents a paginated IPAddress API response
 type IPAddressesPagedResponse struct {
 	*PageOptions
-	Data []*InstanceIP
+	Data []*InstanceIP `json:"data"`
 }
 
 // endpoint gets the endpoint URL for IPAddress
@@ -49,7 +49,7 @@ func (c *Client) GetIPAddress(ctx context.Context, id string) (*InstanceIP, erro
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R(ctx).SetResult(&InstanceIP{}).Get(e)
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&InstanceIP{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

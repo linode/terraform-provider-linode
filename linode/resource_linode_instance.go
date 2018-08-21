@@ -14,15 +14,6 @@ import (
 )
 
 var (
-	kernelList    []*linodego.LinodeKernel
-	kernelListMap map[string]*linodego.LinodeKernel
-	regionList    []*linodego.Region
-	regionListMap map[string]*linodego.Region
-	typeList      []*linodego.LinodeType
-	typeListMap   map[string]*linodego.LinodeType
-)
-
-var (
 	boolFalse = false
 	boolTrue  = true
 )
@@ -57,8 +48,8 @@ func resourceLinodeInstance() *schema.Resource {
 				ForceNew:    true,
 			},
 			"stackscript_data": &schema.Schema{
-				Type:        schema.TypeMap,
-				Elem:          &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{Type: schema.TypeString},
 
 				Description: "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
 				Optional:    true,
@@ -103,14 +94,14 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.",
 				Computed:    true,
 			},
-			
+
 			"ipv4": &schema.Schema{
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.",
 				Computed:    true,
 			},
-		
+
 			"private_ip": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "If true, the created Linode will have private networking enabled, allowing use of the 192.168.0.0/17 network within the Linode's region.",
@@ -167,7 +158,6 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-						
 
 			"specs": &schema.Schema{
 				Computed: true,
@@ -176,19 +166,19 @@ func resourceLinodeInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"disk": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
 						},
 						"memory": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
 						},
 						"vcpus": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
 						},
 						"transfer": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
 						},
 					},
 				},
@@ -264,6 +254,7 @@ func resourceLinodeInstance() *schema.Resource {
 						"helpers": {
 							Type:     schema.TypeSet,
 							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"updatedb_disabled": {
@@ -302,9 +293,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -318,9 +314,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -334,9 +335,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -350,9 +356,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -366,9 +377,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -382,9 +398,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -398,9 +419,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -414,9 +440,14 @@ func resourceLinodeInstance() *schema.Resource {
 										Type: schema.TypeSet,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"disk_label": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"disk_id": {
 													Type:     schema.TypeInt,
 													Optional: true,
+													Computed: true,
 												},
 												"volume_id": {
 													Type:     schema.TypeInt,
@@ -522,7 +553,6 @@ func resourceLinodeInstance() *schema.Resource {
 						},
 					},
 				},
-				
 			},
 		},
 	}
@@ -570,8 +600,11 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error getting the IPs for Linode instance %s: %s", d.Id(), err)
 	}
 
-
-	d.Set("ipv4", instance.IPv4)
+	var ips []string
+	for _, ip := range instance.IPv4 {
+		ips = append(ips, ip.String())
+	}
+	d.Set("ipv4", ips)
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
@@ -600,44 +633,124 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("group", instance.Group)
 
+	d.Set("specs", map[string]int{
+		"disk":     instance.Specs.Disk,
+		"vcpus":    instance.Specs.VCPUs,
+		"mem":      instance.Specs.Memory,
+		"transfer": instance.Specs.Transfer,
+	})
+
+	d.Set("alerts", map[string]int{
+		"disk":           instance.Alerts.CPU,
+		"vcpus":          instance.Alerts.IO,
+		"mem":            instance.Alerts.NetworkIn,
+		"transfer":       instance.Alerts.NetworkOut,
+		"transfer_quota": instance.Alerts.TransferQuota,
+	})
+
 	instanceDisks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
 
 	if err != nil {
 		return fmt.Errorf("Error getting the disks for the Linode instance %d: %s", id, err)
 	}
 
-	planStorageUtilized := 0
 	swapSize := 0
-	var disks []map[string[string]]
+	var disks []map[string]interface{}
 
 	for _, disk := range instanceDisks {
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		if disk.Filesystem == "swap" {
 			swapSize += disk.Size
 		}
-		disks = append(disks, map[string[string]]{
-			
-			"size": disk.Size,
-			"label": disk.Label,
-			"filesystem": disk.Filesystem,
-			"read_only": disk.ReadOnly,
-			"image": disk.Image,
-			"authorized_keys": disk.AuthorizedKeys,
-			"stackscript_id": disk.StackScriptID,
-		}
+		disks = append(disks, map[string]interface{}{
+			"size":       disk.Size,
+			"label":      disk.Label,
+			"filesystem": string(disk.Filesystem),
+			// TODO(displague) these can not be retrieved after the initial send
+			// "read_only":       disk.ReadOnly,
+			// "image":           disk.Image,
+			// "authorized_keys": disk.AuthorizedKeys,
+			// "stackscript_id":  disk.StackScriptID,
+		})
 	}
 	d.Set("disks", disks)
 	d.Set("swap_size", swapSize)
 
-	configs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
+	instanceConfigs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
+
 	if err != nil {
 		return fmt.Errorf("Error getting the config for Linode instance %d (%s): %s", instance.ID, instance.Label, err)
-	} else if len(configs) != 1 {
+	} else if len(instanceConfigs) == 0 {
 		return nil
 	}
-	config := configs[0]
+
+	var configs []map[string]interface{}
+
+	for _, config := range instanceConfigs {
+		devices := map[string]map[string]int{
+			"sda": deviceMap(config.Devices.SDA),
+			"sdb": deviceMap(config.Devices.SDB),
+			"sdc": deviceMap(config.Devices.SDC),
+			"sdd": deviceMap(config.Devices.SDD),
+			"sde": deviceMap(config.Devices.SDE),
+			"sdf": deviceMap(config.Devices.SDF),
+			"sdg": deviceMap(config.Devices.SDG),
+			"sdh": deviceMap(config.Devices.SDH),
+		}
+		// Determine if swap exists and the size.  If it does not exist, swap_size=0
+		configs = append(configs, map[string]interface{}{
+			"kernel":       config.Kernel,
+			"run_level":    string(config.RunLevel),
+			"virt_mode":    string(config.VirtMode),
+			"root_device":  config.RootDevice,
+			"comments":     config.Comments,
+			"memory_limit": config.MemoryLimit,
+			"label":        config.Label,
+			"helpers": map[string]bool{
+				"updatedb_disabled":  config.Helpers.UpdateDBDisabled,
+				"distro":             config.Helpers.Distro,
+				"modules_dep":        config.Helpers.ModulesDep,
+				"network":            config.Helpers.Network,
+				"devtmpfs_automount": config.Helpers.DevTmpFsAutomount,
+			},
+			"devices": devices,
+			// TODO(displague) these can not be retrieved after the initial send
+			// "read_only":       disk.ReadOnly,
+			// "image":           disk.Image,
+			// "authorized_keys": disk.AuthorizedKeys,
+			// "stackscript_id":  disk.StackScriptID,
+		})
+	}
+
+	d.Set("configs", configs)
 
 	return nil
+}
+
+func deviceMap(dev *linodego.InstanceConfigDevice) map[string]int {
+	if dev == nil {
+		return map[string]int{
+			"disk_id":   0,
+			"volume_id": 0,
+		}
+	}
+
+	return map[string]int{
+		"disk_id":   dev.DiskID,
+		"volume_id": dev.VolumeID,
+	}
+}
+
+func deviceType(m map[string]interface{}) *linodego.InstanceConfigDevice {
+	var dev *linodego.InstanceConfigDevice
+	if m["disk_id"].(int) > 0 || m["volume_id"].(int) > 0 {
+		dev = &linodego.InstanceConfigDevice{
+			DiskID:   m["disk_id"].(int),
+			VolumeID: m["volume_id"].(int),
+		}
+	}
+
+	return dev
 }
 
 func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -662,7 +775,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
-		for _, key := range(d.Get("authorized_keys").([]interface{})) {
+		for _, key := range d.Get("authorized_keys").([]interface{}) {
 			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
 		}
 		createOpts.RootPass = d.Get("root_pass").(string)
@@ -674,7 +787,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 		createOpts.StackScriptID = d.Get("stackscript_id").(int)
 
-		for name, value := range(d.Get("stackscript_data").(map[string]interface{})) {
+		for name, value := range d.Get("stackscript_data").(map[string]interface{}) {
 			createOpts.StackScriptData[name] = value.(string)
 		}
 	} else {
@@ -722,89 +835,76 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	*/
 
+	// Look up tables for any disks and configs we create
+	// - so configs and initrd can reference disks by label
+	// - so configs can be referenced as a boot_config param
+	var diskIDLabelMap map[string]int
+	var configIDLabelMap map[string]int
+	var configDevices linodego.InstanceConfigDeviceMap
+
 	if disksOk {
-		swapSize := 0
-		var swapDisk *linodego.InstanceDisk
-
-		// Create the Swap Partition
 		_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeCreate, *instance.Created, int(d.Timeout("create").Seconds()))
-		if swapSize = d.Get("swap_size").(int); swapSize > 0 {
-			swapOpts := linodego.InstanceDiskCreateOptions{
-				Label:      "linode" + strconv.Itoa(instance.ID) + "-swap",
-				Filesystem: "swap",
-				Size:       swapSize,
-			}
-
-			swapDisk, err = client.CreateInstanceDisk(context.Background(), instance.ID, swapOpts)
-
-			if err != nil {
-				return fmt.Errorf("Error creating Linode instance %d swap disk: %s", instance.ID, err)
-			}
-
-			_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, swapDisk.Created, int(d.Timeout("create").Seconds()))
-			if err != nil {
-				return fmt.Errorf("Error waiting for Linode instance %d swap disk: %s", swapDisk.ID, err)
-			}
-
-		}
-		d.SetPartial("swap_size")
-
-		// Create the storage Partition
-
-		storageSize := d.Get("storage").(int)
-
-		if !ok || storageSize == 0 {
-			storageSize = instance.Specs.Disk - d.Get("swap_size").(int)
+		if err != nil {
+			return fmt.Errorf("Error waiting for Instance to finish creating")
 		}
 
-		diskOpts := linodego.InstanceDiskCreateOptions{
-			Label:      "linode" + strconv.Itoa(instance.ID) + "-root",
-			Filesystem: "ext4",
-			Size:       storageSize,
-		}
+		// TODO(displague) over 8 disks is a problem
+		for index, disk := range d.Get("disk").([]map[string]interface{}) {
+			diskOpts := linodego.InstanceDiskCreateOptions{
+				Label:      disk["label"].(string),
+				Filesystem: disk["filesystem"].(string),
+				Size:       disk["size"].(int),
+			}
 
-		if image, ok := d.GetOk("image"); ok {
-			diskOpts.Image = image.(string)
+			if image, ok := disk["image"]; ok {
+				diskOpts.Image = image.(string)
 
-			diskOpts.RootPass = d.Get("root_pass").(string)
+				diskOpts.RootPass = d.Get("root_pass").(string)
 
-			if sshKeys, ok := d.GetOk("ssh_key"); ok {
-				if sshKeysArr, ok := sshKeys.([]interface{}); ok {
-					diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
-					for k, v := range sshKeys.([]interface{}) {
-						if val, ok := v.(string); ok {
-							diskOpts.AuthorizedKeys[k] = val
+				if sshKeys, ok := d.GetOk("ssh_key"); ok {
+					if sshKeysArr, ok := sshKeys.([]interface{}); ok {
+						diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
+						for k, v := range sshKeys.([]interface{}) {
+							if val, ok := v.(string); ok {
+								diskOpts.AuthorizedKeys[k] = val
+							}
 						}
 					}
 				}
 			}
-		}
 
-		storageDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
-		if err != nil {
-			return fmt.Errorf("Error creating Linode instance %d root disk: %s", instance.ID, err)
-		}
+			instanceDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
 
-		_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, storageDisk.Created, int(d.Timeout("create").Seconds()))
-		if err != nil {
-			return fmt.Errorf("Error waiting for Linode instance %d root disk: %s", storageDisk.ID, err)
-		}
+			if err != nil {
+				return fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
+			}
 
-		d.SetPartial("image")
-		d.SetPartial("root_pass")
-		d.SetPartial("ssh_key")
+			_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, instanceDisk.Created, int(d.Timeout("create").Seconds()))
+			if err != nil {
+				return fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
+			}
 
-		if err != nil {
-			return fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
-		}
-		d.SetPartial("storage")
+			diskIDLabelMap[diskOpts.Label] = instanceDisk.ID
 
-		configDevices := &linodego.InstanceConfigDeviceMap{
-			SDA: &linodego.InstanceConfigDevice{DiskID: storageDisk.ID},
-		}
+			d.Set("disk.%d.id", instanceDisk.ID)
 
-		if swapDisk.ID > 0 {
-			configDevices.SDB = &linodego.InstanceConfigDevice{DiskID: swapDisk.ID}
+			if index == 0 {
+				configDevices.SDA = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			} else if index == 1 {
+				configDevices.SDB = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			} else if index == 2 {
+				configDevices.SDC = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			} else if index == 3 {
+				configDevices.SDD = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			} else if index == 4 {
+				configDevices.SDE = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			} else if index == 5 {
+				configDevices.SDF = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			} else if index == 6 {
+				configDevices.SDG = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			} else if index == 7 {
+				configDevices.SDH = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
+			}
 		}
 
 		if !configsOk {
@@ -814,11 +914,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				// RootDevice: "/dev/sda",
 				// RunLevel:   "default",
 				// VirtMode:   "paravirt",
-				Helpers: &linodego.InstanceConfigHelpers{
-					Distro:  d.Get("helper_distro").(bool),
-					Network: d.Get("helper_network").(bool),
-				},
-				Devices: *configDevices,
+				Devices: configDevices,
 			}
 
 			config, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
@@ -826,24 +922,52 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
 			}
 			bootConfig = config.ID
+		} else {
+			configs, ok := d.Get("config").([]map[string]interface{})
+			if !ok {
+				return fmt.Errorf("Error parsing configs")
+			}
 
-			d.SetPartial("helper_network")
-			d.SetPartial("helper_distro")
-
+			for _, config := range configs {
+				configOpts := linodego.InstanceConfigCreateOptions{}
+				configOpts.Kernel = config["kernel"].(string)
+				configOpts.Label = config["label"].(string)
+				configOpts.Comments = config["comments"].(string)
+				// configOpts.InitRD = config["initrd"].(string)
+				// TODO(displague) need a disk_label to initrd lookup?
+				devices, _ := config["devices"].(map[string]map[string]interface{})
+				// TODO(displague) ok needed? check it
+				for k, dev := range devices {
+					if k == "sda" {
+						if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
+							if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
+								return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
+							}
+						}
+						configOpts.Devices.SDA = deviceType(dev)
+					}
+					// TODO(displague) copy through SDH
+				}
+				instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
+				if err != nil {
+					return fmt.Errorf("Error creating Instance Config: %s", err)
+				}
+				configIDLabelMap[configOpts.Label] = instanceConfig.ID
+			}
 		}
 	}
+
+	d.Partial(false)
 
 	if createOpts.Booted != nil && *createOpts.Booted {
 		booted, err := client.BootInstance(context.Background(), instance.ID, bootConfig)
 		if !booted {
 			return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 		}
-	}
 
-	d.Partial(false)
-
-	if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout("create").Seconds())); err != nil {
-		return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout("create").Seconds())); err != nil {
+			return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+		}
 	}
 
 	return resourceLinodeInstanceRead(d, meta)

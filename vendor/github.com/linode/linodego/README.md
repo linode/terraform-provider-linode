@@ -1,28 +1,27 @@
 # linodego
 
-[![Build Status](https://travis-ci.org/chiefy/linodego.svg?branch=master)](https://travis-ci.org/chiefy/linodego)
-[![GoDoc](https://godoc.org/github.com/chiefy/linodego?status.svg)](https://godoc.org/github.com/chiefy/linodego)
-[![Go Report Card](https://goreportcard.com/badge/github.com/chiefy/linodego)](https://goreportcard.com/report/github.com/chiefy/linodego)
-[![codecov](https://codecov.io/gh/chiefy/linodego/branch/master/graph/badge.svg)](https://codecov.io/gh/chiefy/linodego)
+[![Build Status](https://travis-ci.org/linode/linodego.svg?branch=master)](https://travis-ci.org/linode/linodego)
+[![GoDoc](https://godoc.org/github.com/linode/linodego?status.svg)](https://godoc.org/github.com/linode/linodego)
+[![Go Report Card](https://goreportcard.com/badge/github.com/linode/linodego)](https://goreportcard.com/report/github.com/linode/linodego)
+[![codecov](https://codecov.io/gh/linode/linodego/branch/master/graph/badge.svg)](https://codecov.io/gh/linode/linodego)
 
 Go client for [Linode REST v4 API](https://developers.linode.com/v4/introduction)
 
 ## Installation
 
 ```sh
-go get -u github.com/chiefy/linodego
+go get -u github.com/linode/linodego
 ```
 
 ## API Support
 
-** Note: Currently in work-in-progress.  Things will change and break until we release a tagged version. **
-
 Check [API_SUPPORT.md](API_SUPPORT.md) for current support of the Linode `v4` API endpoints.
 
+** Note: This project will change and break until we release a v1.0.0 tagged version. Breaking changes in v0.x.x will be denoted with a minor version bump (v0.2.4 -> v0.3.0) **
 
 ## Documentation
 
-See [godoc](https://godoc.org/github.com/chiefy/linodego) for a complete reference.
+See [godoc](https://godoc.org/github.com/linode/linodego) for a complete reference.
 
 The API generally follows the naming patterns prescribed in the [OpenAPIv3 document for Linode APIv4](https://developers.linode.com/api/v4).
 
@@ -43,7 +42,7 @@ import (
   "log"
   "os"
 
-  "github.com/chiefy/linodego"
+  "github.com/linode/linodego"
   "golang.org/x/oauth2"
 )
 

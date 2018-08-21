@@ -12,9 +12,9 @@ import (
 type Invoice struct {
 	DateStr string `json:"date"`
 
-	ID    int
-	Label string
-	Total float32
+	ID    int        `json:"id"`
+	Label string     `json:"label"`
+	Total float32    `json:"total"`
 	Date  *time.Time `json:"-"`
 }
 
@@ -23,11 +23,11 @@ type InvoiceItem struct {
 	FromStr string `json:"from"`
 	ToStr   string `json:"to"`
 
-	Label     string
-	Type      string
-	UnitPrice int
-	Quantity  int
-	Amount    float32
+	Label     string     `json:"label"`
+	Type      string     `json:"type"`
+	UnitPrice int        `json:"unitprice"`
+	Quantity  int        `json:"quantity"`
+	Amount    float32    `json:"amount"`
 	From      *time.Time `json:"-"`
 	To        *time.Time `json:"-"`
 }
@@ -35,7 +35,7 @@ type InvoiceItem struct {
 // InvoicesPagedResponse represents a paginated Invoice API response
 type InvoicesPagedResponse struct {
 	*PageOptions
-	Data []*Invoice
+	Data []*Invoice `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Invoice
@@ -101,7 +101,7 @@ func (c *Client) GetInvoice(ctx context.Context, id int) (*Invoice, error) {
 // InvoiceItemsPagedResponse represents a paginated Invoice Item API response
 type InvoiceItemsPagedResponse struct {
 	*PageOptions
-	Data []*InvoiceItem
+	Data []*InvoiceItem `json:"data"`
 }
 
 // endpointWithID gets the endpoint URL for InvoiceItems associated with a specific Invoice

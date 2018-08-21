@@ -11,28 +11,28 @@ type Notification struct {
 	UntilStr string `json:"until"`
 	WhenStr  string `json:"when"`
 
-	Label    string
-	Message  string
-	Type     string
-	Severity string
-	Entity   *NotificationEntity
-	Until    *time.Time `json:"-"`
-	When     *time.Time `json:"-"`
+	Label    string              `json:"label"`
+	Message  string              `json:"message"`
+	Type     string              `json:"type"`
+	Severity string              `json:"severity"`
+	Entity   *NotificationEntity `json:"entity"`
+	Until    *time.Time          `json:"-"`
+	When     *time.Time          `json:"-"`
 }
 
 // NotificationEntity adds detailed information about the Notification.
 // This could refer to the ticket that triggered the notification, for example.
 type NotificationEntity struct {
-	ID    int
-	Label string
-	Type  string
-	URL   string
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+	Type  string `json:"type"`
+	URL   string `json:"url"`
 }
 
 // NotificationsPagedResponse represents a paginated Notifications API response
 type NotificationsPagedResponse struct {
 	*PageOptions
-	Data []*Notification
+	Data []*Notification `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Notification

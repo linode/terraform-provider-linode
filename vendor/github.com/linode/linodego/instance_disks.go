@@ -13,13 +13,13 @@ type InstanceDisk struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
 
-	ID         int
-	Label      string
-	Status     string
-	Size       int
-	Filesystem DiskFilesystem
-	Created    time.Time `json:"-"`
-	Updated    time.Time `json:"-"`
+	ID         int            `json:"id"`
+	Label      string         `json:"label"`
+	Status     string         `json:"status"`
+	Size       int            `json:"size"`
+	Filesystem DiskFilesystem `json:"filesystem"`
+	Created    time.Time      `json:"-"`
+	Updated    time.Time      `json:"-"`
 }
 
 type DiskFilesystem string
@@ -35,7 +35,7 @@ var (
 // InstanceDisksPagedResponse represents a paginated InstanceDisk API response
 type InstanceDisksPagedResponse struct {
 	*PageOptions
-	Data []*InstanceDisk
+	Data []*InstanceDisk `json:"data"`
 }
 
 // InstanceDiskCreateOptions are InstanceDisk settings that can be used at creation
@@ -215,8 +215,6 @@ func (c *Client) DeleteInstanceDisk(ctx context.Context, linodeID int, diskID in
 	}
 	e = fmt.Sprintf("%s/%d", e, diskID)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

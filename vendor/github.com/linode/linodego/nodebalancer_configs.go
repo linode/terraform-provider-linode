@@ -9,12 +9,12 @@ import (
 )
 
 type NodeBalancerConfig struct {
-	ID             int
-	Port           int
-	Protocol       ConfigProtocol
-	Algorithm      ConfigAlgorithm
-	Stickiness     ConfigStickiness
-	Check          ConfigCheck
+	ID             int                     `json:"id"`
+	Port           int                     `json:"port"`
+	Protocol       ConfigProtocol          `json:"protocol"`
+	Algorithm      ConfigAlgorithm         `json:"algorithm"`
+	Stickiness     ConfigStickiness        `json:"stickiness"`
+	Check          ConfigCheck             `json:"check"`
 	CheckInterval  int                     `json:"check_interval"`
 	CheckAttempts  int                     `json:"check_attempts"`
 	CheckPath      string                  `json:"check_path"`
@@ -71,8 +71,8 @@ var (
 )
 
 type NodeBalancerNodeStatus struct {
-	Up   int
-	Down int
+	Up   int `json:"up"`
+	Down int `json:"down"`
 }
 
 // NodeBalancerConfigUpdateOptions are permitted by CreateNodeBalancerConfig
@@ -137,7 +137,7 @@ func (i NodeBalancerConfig) GetUpdateOptions() NodeBalancerConfigUpdateOptions {
 // NodeBalancerConfigsPagedResponse represents a paginated NodeBalancerConfig API response
 type NodeBalancerConfigsPagedResponse struct {
 	*PageOptions
-	Data []*NodeBalancerConfig
+	Data []*NodeBalancerConfig `json:"data"`
 }
 
 // endpointWithID gets the endpoint URL for NodeBalancerConfig
@@ -254,9 +254,6 @@ func (c *Client) DeleteNodeBalancerConfig(ctx context.Context, nodebalancerID in
 	}
 	e = fmt.Sprintf("%s/%d", e, configID)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

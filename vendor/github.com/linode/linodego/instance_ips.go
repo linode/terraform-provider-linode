@@ -7,37 +7,37 @@ import (
 )
 
 type InstanceIPAddressResponse struct {
-	IPv4 *InstanceIPv4Response
-	IPv6 *InstanceIPv6Response
+	IPv4 *InstanceIPv4Response `json:"ipv4"`
+	IPv6 *InstanceIPv6Response `json:"ipv6"`
 }
 
 type InstanceIPv4Response struct {
-	Public  []*InstanceIP
-	Private []*InstanceIP
-	Shared  []*InstanceIP
+	Public  []*InstanceIP `json:"public"`
+	Private []*InstanceIP `json:"private"`
+	Shared  []*InstanceIP `json:"shared"`
 }
 
 type InstanceIP struct {
-	Address    string
-	Gateway    string
-	SubnetMask string
-	Prefix     int
-	Type       string
-	Public     bool
-	RDNS       string
-	LinodeID   int `json:"linode_id"`
-	Region     string
+	Address    string `json:"address"`
+	Gateway    string `json:"gateway"`
+	SubnetMask string `json:"subnet_mask"`
+	Prefix     int    `json:"prefix"`
+	Type       string `json:"type"`
+	Public     bool   `json:"public"`
+	RDNS       string `json:"rdns"`
+	LinodeID   int    `json:"linode_id"`
+	Region     string `json:"region"`
 }
 
 type InstanceIPv6Response struct {
-	LinkLocal *InstanceIP `json:"link_local"`
-	SLAAC     *InstanceIP
-	Global    []*IPv6Range
+	LinkLocal *InstanceIP  `json:"link_local"`
+	SLAAC     *InstanceIP  `json:"slaac"`
+	Global    []*IPv6Range `json:"global"`
 }
 
 type IPv6Range struct {
-	Range  string
-	Region string
+	Range  string `json:"range"`
+	Region string `json:"region"`
 }
 
 // GetInstanceIPAddresses gets the IPAddresses for a Linode instance

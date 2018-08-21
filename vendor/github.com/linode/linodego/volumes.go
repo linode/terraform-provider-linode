@@ -31,15 +31,15 @@ type Volume struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
 
-	ID             int
-	Label          string
-	Status         VolumeStatus
-	Region         string
-	Size           int
-	LinodeID       *int      `json:"linode_id"`
-	FilesystemPath string    `json:"filesystem_path"`
-	Created        time.Time `json:"-"`
-	Updated        time.Time `json:"-"`
+	ID             int          `json:"id"`
+	Label          string       `json:"label"`
+	Status         VolumeStatus `json:"status"`
+	Region         string       `json:"region"`
+	Size           int          `json:"size"`
+	LinodeID       *int         `json:"linode_id"`
+	FilesystemPath string       `json:"filesystem_path"`
+	Created        time.Time    `json:"-"`
+	Updated        time.Time    `json:"-"`
 }
 
 type VolumeCreateOptions struct {
@@ -59,7 +59,7 @@ type VolumeAttachOptions struct {
 // VolumesPagedResponse represents a linode API response for listing of volumes
 type VolumesPagedResponse struct {
 	*PageOptions
-	Data []*Volume
+	Data []*Volume `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Volume
@@ -256,9 +256,6 @@ func (c *Client) DeleteVolume(ctx context.Context, id int) error {
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

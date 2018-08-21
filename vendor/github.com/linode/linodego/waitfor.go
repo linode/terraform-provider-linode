@@ -24,10 +24,10 @@ func (client Client) WaitForInstanceStatus(ctx context.Context, instanceID int, 
 			return instance, nil
 		}
 
-		time.Sleep(1 * time.Second)
 		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
 			return instance, fmt.Errorf("Instance %d didn't reach '%s' status in %d seconds", instanceID, status, timeoutSeconds)
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -46,10 +46,10 @@ func (client Client) WaitForVolumeStatus(ctx context.Context, volumeID int, stat
 			return volume, nil
 		}
 
-		time.Sleep(1 * time.Second)
 		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
 			return volume, fmt.Errorf("Volume %d didn't reach '%s' status in %d seconds", volumeID, status, timeoutSeconds)
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -68,10 +68,10 @@ func (client Client) WaitForSnapshotStatus(ctx context.Context, instanceID int, 
 			return snapshot, nil
 		}
 
-		time.Sleep(1 * time.Second)
 		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
 			return snapshot, fmt.Errorf("Snapshot %d didn't reach '%s' status in %d seconds", snapshotID, status, timeoutSeconds)
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -95,10 +95,10 @@ func (client Client) WaitForVolumeLinodeID(ctx context.Context, volumeID int, li
 			return volume, nil
 		}
 
-		time.Sleep(1 * time.Second)
 		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
 			return volume, fmt.Errorf("Volume %d didn't match LinodeID %d in %d seconds", volumeID, linodeID, timeoutSeconds)
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -200,9 +200,9 @@ func (client Client) WaitForEventFinished(ctx context.Context, id interface{}, e
 		}
 
 		// Either pushed out of the event list or hasn't been added to the list yet
-		time.Sleep(time.Second * APISecondsPerPoll)
 		if time.Since(start) > time.Duration(timeoutSeconds)*time.Second {
 			return nil, fmt.Errorf("Did not find '%s' status of %s %v action '%s' within %d seconds", EventFinished, entityType, id, action, timeoutSeconds)
 		}
+		time.Sleep(time.Second * APISecondsPerPoll)
 	}
 }

@@ -13,7 +13,7 @@ type InstanceConfig struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
 
-	ID          int
+	ID          int                      `json:"id"`
 	Label       string                   `json:"label"`
 	Comments    string                   `json:"comments"`
 	Devices     *InstanceConfigDeviceMap `json:"devices"`
@@ -55,7 +55,7 @@ type InstanceConfigHelpers struct {
 // InstanceConfigsPagedResponse represents a paginated InstanceConfig API response
 type InstanceConfigsPagedResponse struct {
 	*PageOptions
-	Data []*InstanceConfig
+	Data []*InstanceConfig `json:"data"`
 }
 
 // InstanceConfigCreateOptions are InstanceConfig settings that can be used at creation
@@ -238,9 +238,6 @@ func (c *Client) DeleteInstanceConfig(ctx context.Context, linodeID int, configI
 	}
 	e = fmt.Sprintf("%s/%d", e, configID)
 
-	if _, err = coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

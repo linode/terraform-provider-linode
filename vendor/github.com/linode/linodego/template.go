@@ -21,7 +21,7 @@ import (
 
 // Template represents a Template object
 type Template struct {
-	ID int
+	ID int `json:"id"`
 	// UpdatedStr string `json:"updated"`
 	// Updated *time.Time `json:"-"`
 }
@@ -47,7 +47,7 @@ func (i Template) GetUpdateOptions() (o TemplateCreateOptions) {
 // TemplatesPagedResponse represents a paginated Template API response
 type TemplatesPagedResponse struct {
 	*PageOptions
-	Data []*Template
+	Data []*Template `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Template

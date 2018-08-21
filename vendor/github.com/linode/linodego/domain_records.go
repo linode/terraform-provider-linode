@@ -10,17 +10,17 @@ import (
 
 // DomainRecord represents a DomainRecord object
 type DomainRecord struct {
-	ID       int
-	Type     DomainRecordType
-	Name     string
-	Target   string
-	Priority int
-	Weight   int
-	Port     int
-	Service  *string
-	Protocol *string
-	TTLSec   int `json:"ttl_sec"`
-	Tag      *string
+	ID       int              `json:"id"`
+	Type     DomainRecordType `json:"type"`
+	Name     string           `json:"name"`
+	Target   string           `json:"target"`
+	Priority int              `json:"priority"`
+	Weight   int              `json:"weight"`
+	Port     int              `json:"port"`
+	Service  *string          `json:"service"`
+	Protocol *string          `json:"protocol"`
+	TTLSec   int              `json:"ttl_sec"`
+	Tag      *string          `json:"tag"`
 }
 
 type DomainRecordCreateOptions struct {
@@ -81,8 +81,7 @@ func copyInt(iPtr *int) *int {
 	if iPtr == nil {
 		return nil
 	}
-	var t int
-	t = *iPtr
+	var t int = *iPtr
 	return &t
 }
 
@@ -90,15 +89,14 @@ func copyString(sPtr *string) *string {
 	if sPtr == nil {
 		return nil
 	}
-	var t string
-	t = *sPtr
+	var t string = *sPtr
 	return &t
 }
 
 // DomainRecordsPagedResponse represents a paginated DomainRecord API response
 type DomainRecordsPagedResponse struct {
 	*PageOptions
-	Data []*DomainRecord
+	Data []*DomainRecord `json:"data"`
 }
 
 // endpoint gets the endpoint URL for InstanceConfig
@@ -210,9 +208,6 @@ func (c *Client) DeleteDomainRecord(ctx context.Context, domainID int, id int) e
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

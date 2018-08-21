@@ -14,20 +14,40 @@ type Stackscript struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
 
-	ID                int
-	Username          string
-	Label             string
-	Description       string
-	Images            []string
-	DeploymentsTotal  int
-	DeploymentsActive int
-	IsPublic          bool
-	Created           *time.Time `json:"-"`
-	Updated           *time.Time `json:"-"`
-	RevNote           string
-	Script            string
-	UserDefinedFields *map[string]string
-	UserGravatarID    string
+	ID                int               `json:"id"`
+	Username          string            `json:"username"`
+	Label             string            `json:"label"`
+	Description       string            `json:"description"`
+	Images            []string          `json:"images"`
+	DeploymentsTotal  int               `json:"deployments_total"`
+	DeploymentsActive int               `json:"deployments_active"`
+	IsPublic          bool              `json:"is_public"`
+	Created           *time.Time        `json:"-"`
+	Updated           *time.Time        `json:"-"`
+	RevNote           string            `json:"rev_note"`
+	Script            string            `json:"script"`
+	UserDefinedFields *[]StackscriptUDF `json:"user_defined_fields"`
+	UserGravatarID    string            `json:"user_gravatar_id"`
+}
+
+type StackscriptUDF struct {
+	// A human-readable label for the field that will serve as the input prompt for entering the value during deployment.
+	Label string `json:"label"`
+
+	// The name of the field.
+	Name string `json:"name"`
+
+	// An example value for the field.
+	Example string `json:"example"`
+
+	// A list of acceptable single values for the field.
+	OneOf string `json:"oneOf,omitempty"`
+
+	// A list of acceptable values for the field in any quantity, combination or order.
+	ManyOf string `json:"manyOf,omitempty"`
+
+	// The default value. If not specified, this value will be used.
+	Default string `json:"default,omitempty"`
 }
 
 type StackscriptCreateOptions struct {
@@ -66,7 +86,7 @@ func (i Stackscript) GetUpdateOptions() StackscriptUpdateOptions {
 // StackscriptsPagedResponse represents a paginated Stackscript API response
 type StackscriptsPagedResponse struct {
 	*PageOptions
-	Data []*Stackscript
+	Data []*Stackscript `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Stackscript
@@ -184,9 +204,6 @@ func (c *Client) DeleteStackscript(ctx context.Context, id int) error {
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

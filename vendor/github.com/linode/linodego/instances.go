@@ -36,29 +36,29 @@ type Instance struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
 
-	ID         int
-	Created    *time.Time `json:"-"`
-	Updated    *time.Time `json:"-"`
-	Region     string
-	Alerts     *InstanceAlert
-	Backups    *InstanceBackup
-	Image      string
-	Group      string
-	IPv4       []*net.IP
-	IPv6       string
-	Label      string
-	Type       string
-	Status     InstanceStatus
-	Hypervisor string
-	Specs      *InstanceSpec
+	ID         int             `json:"id"`
+	Created    *time.Time      `json:"-"`
+	Updated    *time.Time      `json:"-"`
+	Region     string          `json:"region"`
+	Alerts     *InstanceAlert  `json:"alerts"`
+	Backups    *InstanceBackup `json:"backups"`
+	Image      string          `json:"image"`
+	Group      string          `json:"group"`
+	IPv4       []*net.IP       `json:"ipv4"`
+	IPv6       string          `json:"ipv6"`
+	Label      string          `json:"label"`
+	Type       string          `json:"type"`
+	Status     InstanceStatus  `json:"status"`
+	Hypervisor string          `json:"hypervisor"`
+	Specs      *InstanceSpec   `json:"specs"`
 }
 
 // InstanceSpec represents a linode spec
 type InstanceSpec struct {
-	Disk     int
-	Memory   int
-	VCPUs    int
-	Transfer int
+	Disk     int `json:"disk"`
+	Memory   int `json:"memory"`
+	VCPUs    int `json:"vcpus"`
+	Transfer int `json:"transfer"`
 }
 
 // InstanceAlert represents a metric alert
@@ -131,7 +131,7 @@ func (l *Instance) fixDates() *Instance {
 // InstancesPagedResponse represents a linode API response for listing
 type InstancesPagedResponse struct {
 	*PageOptions
-	Data []*Instance
+	Data []*Instance `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Instance
@@ -248,11 +248,8 @@ func (c *Client) DeleteInstance(ctx context.Context, id int) error {
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }
 
 // BootInstance will boot a Linode instance

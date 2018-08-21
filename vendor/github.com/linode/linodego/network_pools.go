@@ -10,7 +10,7 @@ import (
 // IPv6PoolsPagedResponse represents a paginated IPv6Pool API response
 type IPv6PoolsPagedResponse struct {
 	*PageOptions
-	Data []*IPv6Range
+	Data []*IPv6Range `json:"data"`
 }
 
 // endpoint gets the endpoint URL for IPv6Pool
@@ -49,7 +49,7 @@ func (c *Client) GetIPv6Pool(ctx context.Context, id string) (*IPv6Range, error)
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R(ctx).SetResult(&IPv6Range{}).Get(e)
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&IPv6Range{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

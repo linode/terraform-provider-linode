@@ -9,19 +9,19 @@ import (
 
 // LinodeKernel represents a linode kernel object
 type LinodeKernel struct {
-	ID           string
-	Label        string
-	Version      string
-	KVM          bool
-	XEN          bool
-	Architecture string
-	PVOPS        bool
+	ID           string `json:"id"`
+	Label        string `json:"label"`
+	Version      string `json:"version"`
+	KVM          bool   `json:"kvm"`
+	XEN          bool   `json:"xen"`
+	Architecture string `json:"architecture"`
+	PVOPS        bool   `json:"pvops"`
 }
 
 // LinodeKernelsPagedResponse represents a linode kernels API response for listing
 type LinodeKernelsPagedResponse struct {
 	*PageOptions
-	Data []*LinodeKernel
+	Data []*LinodeKernel `json:"data"`
 }
 
 // ListKernels lists linode kernels

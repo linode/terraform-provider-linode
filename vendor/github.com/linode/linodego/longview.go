@@ -9,7 +9,7 @@ import (
 
 // LongviewClient represents a LongviewClient object
 type LongviewClient struct {
-	ID int
+	ID int `json:"id"`
 	// UpdatedStr string `json:"updated"`
 	// Updated *time.Time `json:"-"`
 }
@@ -17,7 +17,7 @@ type LongviewClient struct {
 // LongviewClientsPagedResponse represents a paginated LongviewClient API response
 type LongviewClientsPagedResponse struct {
 	*PageOptions
-	Data []*LongviewClient
+	Data []*LongviewClient `json:"data"`
 }
 
 // endpoint gets the endpoint URL for LongviewClient

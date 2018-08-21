@@ -14,21 +14,21 @@ type NodeBalancer struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
 	// This NodeBalancer's unique ID.
-	ID int
+	ID int `json:"id"`
 	// This NodeBalancer's label. These must be unique on your Account.
-	Label *string
+	Label *string `json:"label"`
 	// The Region where this NodeBalancer is located. NodeBalancers only support backends in the same Region.
-	Region string
+	Region string `json:"region"`
 	// This NodeBalancer's hostname, ending with .nodebalancer.linode.com
-	Hostname *string
+	Hostname *string `json:"hostname"`
 	// This NodeBalancer's public IPv4 address.
-	IPv4 *string
+	IPv4 *string `json:"ipv4"`
 	// This NodeBalancer's public IPv6 address.
-	IPv6 *string
+	IPv6 *string `json:"ipv6"`
 	// Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.
 	ClientConnThrottle int `json:"client_conn_throttle"`
 	// Information about the amount of transfer this NodeBalancer has had so far this month.
-	Transfer NodeBalancerTransfer
+	Transfer NodeBalancerTransfer `json:"transfer"`
 
 	Created *time.Time `json:"-"`
 	Updated *time.Time `json:"-"`
@@ -36,11 +36,11 @@ type NodeBalancer struct {
 
 type NodeBalancerTransfer struct {
 	// The total transfer, in MB, used by this NodeBalancer this month.
-	Total *float64
+	Total *float64 `json:"total"`
 	// The total inbound transfer, in MB, used for this NodeBalancer this month.
-	Out *float64
+	Out *float64 `json:"out"`
 	// The total outbound transfer, in MB, used for this NodeBalancer this month.
-	In *float64
+	In *float64 `json:"in"`
 }
 
 // NodeBalancerCreateOptions are the options permitted for CreateNodeBalancer
@@ -74,7 +74,7 @@ func (i NodeBalancer) GetUpdateOptions() NodeBalancerUpdateOptions {
 // NodeBalancersPagedResponse represents a paginated NodeBalancer API response
 type NodeBalancersPagedResponse struct {
 	*PageOptions
-	Data []*NodeBalancer
+	Data []*NodeBalancer `json:"data"`
 }
 
 func (NodeBalancersPagedResponse) endpoint(c *Client) string {
@@ -187,9 +187,7 @@ func (c *Client) DeleteNodeBalancer(ctx context.Context, id int) error {
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
 
-	return nil
+	return err
 }

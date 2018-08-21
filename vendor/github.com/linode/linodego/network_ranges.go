@@ -10,7 +10,7 @@ import (
 // IPv6RangesPagedResponse represents a paginated IPv6Range API response
 type IPv6RangesPagedResponse struct {
 	*PageOptions
-	Data []*IPv6Range
+	Data []*IPv6Range `json:"data"`
 }
 
 // endpoint gets the endpoint URL for IPv6Range
@@ -49,7 +49,7 @@ func (c *Client) GetIPv6Range(ctx context.Context, id string) (*IPv6Range, error
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R(ctx).SetResult(&IPv6Range{}).Get(e)
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&IPv6Range{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

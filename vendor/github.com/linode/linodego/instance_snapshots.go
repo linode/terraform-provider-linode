@@ -9,12 +9,12 @@ import (
 
 // InstanceBackupsResponse response struct for backup snapshot
 type InstanceBackupsResponse struct {
-	Automatic []*InstanceSnapshot
-	Snapshot  *InstanceBackupSnapshotResponse
+	Automatic []*InstanceSnapshot             `json:"automatic"`
+	Snapshot  *InstanceBackupSnapshotResponse `json:"snapshot"`
 }
 
 type InstanceBackupSnapshotResponse struct {
-	Current    *InstanceSnapshot
+	Current    *InstanceSnapshot `json:"current"`
 	InProgress *InstanceSnapshot `json:"in_progress"`
 }
 
@@ -29,21 +29,21 @@ type InstanceSnapshot struct {
 	UpdatedStr  string `json:"updated"`
 	FinishedStr string `json:"finished"`
 
-	ID       int
-	Label    string
-	Status   InstanceSnapshotStatus
-	Type     string
-	Created  *time.Time `json:"-"`
-	Updated  *time.Time `json:"-"`
-	Finished *time.Time `json:"-"`
-	Configs  []string
-	Disks    []*InstanceSnapshotDisk
+	ID       int                     `json:"id"`
+	Label    string                  `json:"label"`
+	Status   InstanceSnapshotStatus  `json:"status"`
+	Type     string                  `json:"type"`
+	Created  *time.Time              `json:"-"`
+	Updated  *time.Time              `json:"-"`
+	Finished *time.Time              `json:"-"`
+	Configs  []string                `json:"configs"`
+	Disks    []*InstanceSnapshotDisk `json:"disks"`
 }
 
 type InstanceSnapshotDisk struct {
-	Label      string
-	Size       int
-	Filesystem string
+	Label      string `json:"label"`
+	Size       int    `json:"size"`
+	Filesystem string `json:"filesystem"`
 }
 
 type InstanceSnapshotStatus string

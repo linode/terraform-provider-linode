@@ -9,14 +9,14 @@ import (
 
 // LinodeRegion represents a linode region object
 type Region struct {
-	ID      string
-	Country string
+	ID      string `json:"id"`
+	Country string `json:"country"`
 }
 
 // LinodeRegionsPagedResponse represents a linode API response for listing
 type RegionsPagedResponse struct {
 	*PageOptions
-	Data []*Region
+	Data []*Region `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Region
@@ -63,7 +63,7 @@ func (c *Client) GetRegion(ctx context.Context, id string) (*Region, error) {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%s", e, id)
-	r, err := c.R(ctx).SetResult(&Region{}).Get(e)
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Region{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

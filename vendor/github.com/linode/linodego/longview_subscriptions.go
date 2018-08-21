@@ -9,10 +9,10 @@ import (
 
 // LongviewSubscription represents a LongviewSubscription object
 type LongviewSubscription struct {
-	ID              string
-	Label           string
-	ClientsIncluded int `json:"clients_included"`
-	Price           *LinodePrice
+	ID              string       `json:"id"`
+	Label           string       `json:"label"`
+	ClientsIncluded int          `json:"clients_included"`
+	Price           *LinodePrice `json:"price"`
 	// UpdatedStr string `json:"updated"`
 	// Updated *time.Time `json:"-"`
 }
@@ -20,7 +20,7 @@ type LongviewSubscription struct {
 // LongviewSubscriptionsPagedResponse represents a paginated LongviewSubscription API response
 type LongviewSubscriptionsPagedResponse struct {
 	*PageOptions
-	Data []*LongviewSubscription
+	Data []*LongviewSubscription `json:"data"`
 }
 
 // endpoint gets the endpoint URL for LongviewSubscription

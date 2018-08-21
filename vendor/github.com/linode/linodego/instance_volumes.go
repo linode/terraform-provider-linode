@@ -9,7 +9,7 @@ import (
 // InstanceVolumesPagedResponse represents a paginated InstanceVolume API response
 type InstanceVolumesPagedResponse struct {
 	*PageOptions
-	Data []*Volume
+	Data []*Volume `json:"data"`
 }
 
 // endpoint gets the endpoint URL for InstanceVolume

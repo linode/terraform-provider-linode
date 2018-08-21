@@ -9,38 +9,46 @@ import (
 
 // LinodeType represents a linode type object
 type LinodeType struct {
-	ID         string
-	Disk       int
-	Class      string // enum: nanode, standard, highmem
-	Price      *LinodePrice
-	Label      string
-	Addons     *LinodeAddons
-	NetworkOut int `json:"network_out"`
-	Memory     int
-	Transfer   int
-	VCPUs      int
+	ID         string          `json:"id"`
+	Disk       int             `json:"disk"`
+	Class      LinodeTypeClass `json:"class"` // enum: nanode, standard, highmem
+	Price      *LinodePrice    `json:"price"`
+	Label      string          `json:"label"`
+	Addons     *LinodeAddons   `json:"addons"`
+	NetworkOut int             `json:"network_out"`
+	Memory     int             `json:"memory"`
+	Transfer   int             `json:"transfer"`
+	VCPUs      int             `json:"vcpus"`
 }
 
 // LinodePrice represents a linode type price object
 type LinodePrice struct {
-	Hourly  float32
-	Monthly float32
+	Hourly  float32 `json:"hourly"`
+	Monthly float32 `json:"monthly"`
 }
 
 // LinodeBackupsAddon represents a linode backups addon object
 type LinodeBackupsAddon struct {
-	Price *LinodePrice
+	Price *LinodePrice `json:"price"`
 }
 
 // LinodeAddons represent the linode addons object
 type LinodeAddons struct {
-	Backups *LinodeBackupsAddon
+	Backups *LinodeBackupsAddon `json:"backups"`
 }
+
+type LinodeTypeClass string
+
+const (
+	ClassNanode   LinodeTypeClass = "nanode"
+	ClassStandard LinodeTypeClass = "standard"
+	ClassHighmem  LinodeTypeClass = "highmem"
+)
 
 // LinodeTypesPagedResponse represents a linode types API response for listing
 type LinodeTypesPagedResponse struct {
 	*PageOptions
-	Data []*LinodeType
+	Data []*LinodeType `json:"data"`
 }
 
 func (LinodeTypesPagedResponse) endpoint(c *Client) string {
