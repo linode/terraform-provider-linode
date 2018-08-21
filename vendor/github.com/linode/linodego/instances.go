@@ -67,7 +67,7 @@ type InstanceAlert struct {
 	IO            int `json:"io"`
 	NetworkIn     int `json:"network_in"`
 	NetworkOut    int `json:"network_out"`
-	TransferQuote int `json:"transfer_queue"`
+	TransferQuota int `json:"transfer_quota"`
 }
 
 // InstanceBackup represents backup settings for an instance
