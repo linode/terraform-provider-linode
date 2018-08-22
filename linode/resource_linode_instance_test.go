@@ -36,7 +36,7 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
-					resource.TestCheckResourceAttr(resName, "group", "testing"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 				),
 			},
@@ -73,7 +73,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "testing"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					testAccCheckComputeInstanceConfig(&instance, "config", "linode/latest-64bit"),
 				),
@@ -111,7 +111,7 @@ func TestAccLinodeInstance_multipleConfigs(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "group", "testing"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					testAccCheckComputeInstanceConfig(&instance, "configa", "linode/latest-64bit"),
 					testAccCheckComputeInstanceConfig(&instance, "configb", "linode/latest-32bit"),
@@ -125,6 +125,84 @@ func TestAccLinodeInstance_multipleConfigs(t *testing.T) {
 		},
 	})
 }
+
+func TestAccLinodeInstance_disk(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithDisk(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_multipleDisks(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceMultipleDisks(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
+					testAccCheckComputeInstanceDisk(&instance, "diska", 3000),
+					testAccCheckComputeInstanceDisk(&instance, "diskb", 512),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstanceUpdate(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
@@ -372,8 +450,8 @@ func testAccCheckComputeInstanceConfig(instance *linodego.Instance, label string
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(linodego.Client)
 
-		if instance.ID == 0 {
-			return fmt.Errorf("Error fetching configs, Instance ID is 0")
+		if instance == nil || instance.ID == 0 {
+			return fmt.Errorf("Error fetching configs: invalid Instance argument")
 		}
 
 		instanceConfigs, err := client.ListInstanceConfigs(context.Background(), instance.ID, nil)
@@ -400,6 +478,10 @@ func testAccCheckComputeInstanceDisk(instance *linodego.Instance, label string, 
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(linodego.Client)
 
+		if instance == nil || instance.ID == 0 {
+			return fmt.Errorf("Error fetching disks: invalid Instance argument")
+		}
+
 		instanceDisks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
 
 		if err != nil {
@@ -424,13 +506,13 @@ func testAccCheckLinodeInstanceBasic(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
+	group = "tf_test"
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
 	root_pass = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
-	group = "testing"
 }`, instance, pubkey)
 }
 
@@ -438,13 +520,13 @@ func testAccCheckLinodeInstanceWithConfig(instance string, pubkey string) string
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
+	group = "tf_test"
 	type = "g6-nanode-1"
 	region = "us-east"
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
 	}
-	group = "testing"
 }`, instance)
 }
 
@@ -452,6 +534,7 @@ func testAccCheckLinodeInstanceWithMultipleConfigs(instance string, pubkey strin
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
+	group = "tf_test"
 	type = "g6-nanode-1"
 	region = "us-east"
 	config {
@@ -462,7 +545,6 @@ resource "linode_instance" "foobar" {
 		label = "configb"
 		kernel = "linode/latest-32bit"
 	}
-	group = "testing"
 }`, instance)
 }
 
@@ -470,33 +552,38 @@ func testAccCheckLinodeInstanceWithDisk(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
+	group = "tf_test"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
 	region = "us-east"
-	config {
-		kernel = "linode/latest-64bit"
+	disk {
+		label = "disk"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 3000
 	}
-	root_pass = "terraform-test"
-	swap_size = 256
-	authorized_keys = "%s"
-	group = "testing"
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeInstanceWithMultipleDisks(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceMultipleDisks(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
+	group = "tf_test"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
 	region = "us-east"
-	config {
-		kernel = "linode/latest-64bit"
+	disk {
+		label = "diska"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 3000
 	}
-	root_pass = "terraform-test"
-	swap_size = 256
-	authorized_keys = "%s"
-	group = "testing"
+	disk {
+		label = "diskb"
+		filesystem = "swap"
+		size = 512
+	}
 }`, instance, pubkey)
 }
 
@@ -505,15 +592,21 @@ func testAccCheckLinodeInstanceWithDiskAndConfig(instance string, pubkey string)
 resource "linode_instance" "foobar" {
 	label = "%s"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
 	region = "us-east"
+	group = "tf_test"
+
+	disk {
+		label = "diska"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 3000
+	}
+
 	config {
 		kernel = "linode/latest-64bit"
+		devices = [ { disk_label = "root" } ]
 	}
-	root_pass = "terraform-test"
-	swap_size = 256
-	authorized_keys = "%s"
-	group = "testing"
 }`, instance, pubkey)
 }
 

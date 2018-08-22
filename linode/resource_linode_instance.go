@@ -27,16 +27,18 @@ func resourceLinodeInstance() *schema.Resource {
 				ForceNew:    true,
 			},
 			"backup_id": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeInt,
+				Description:   "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
+				ConflictsWith: []string{"disk", "config"},
+				Optional:      true,
+				ForceNew:      true,
 			},
 			"stackscript_id": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeInt,
+				Description:   "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
+				ConflictsWith: []string{"disk"},
+				Optional:      true,
+				ForceNew:      true,
 			},
 			"stackscript_data": &schema.Schema{
 				Type: schema.TypeMap,
@@ -108,23 +110,26 @@ func resourceLinodeInstance() *schema.Resource {
 				Description:   "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
 				Optional:      true,
 				ForceNew:      true,
+				ConflictsWith: []string{"disk"},
 				StateFunc:     sshKeyState,
 				PromoteSingle: true,
 			},
 			"root_pass": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The password that will be initialially assigned to the 'root' user account.",
-				Sensitive:   true,
-				Optional:    true,
-				ForceNew:    true,
-				StateFunc:   rootPasswordState,
+				Type:          schema.TypeString,
+				Description:   "The password that will be initialially assigned to the 'root' user account.",
+				Sensitive:     true,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"disk"},
+				StateFunc:     rootPasswordState,
 			},
 			"swap_size": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
-				Optional:    true,
-				Computed:    true,
-				Default:     nil,
+				Type:          schema.TypeInt,
+				Description:   "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"disk"},
+				Default:       nil,
 			},
 			"backups_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -139,7 +144,6 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-
 			"specs": &schema.Schema{
 				Computed: true,
 				Type:     schema.TypeList,
@@ -499,6 +503,7 @@ func resourceLinodeInstance() *schema.Resource {
 				PromoteSingle: true,
 				Optional:      true,
 				Type:          schema.TypeSet,
+				Set:           labelHashcode,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size": {
@@ -548,7 +553,7 @@ func resourceLinodeInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "The password that will be initialially assigned to the 'root' user account.",
 							Sensitive:   true,
-							Required:    true,
+							Optional:    true,
 							ForceNew:    true,
 							StateFunc:   rootPasswordState,
 						},
@@ -777,7 +782,15 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 		// TODO(displague) over 8 disks is a problem
-		for index, disk := range d.Get("disk").([]map[string]interface{}) {
+		dset := d.Get("disk").(*schema.Set)
+		diskIDLabelMap = make(map[string]int, len(dset.List()))
+		for index, v := range dset.List() {
+			disk, ok := v.(map[string]interface{})
+
+			if !ok {
+				return fmt.Errorf("Error converting disk from Terraform Set to golang map")
+			}
+
 			diskOpts := linodego.InstanceDiskCreateOptions{
 				Label:      disk["label"].(string),
 				Filesystem: disk["filesystem"].(string),
@@ -834,9 +847,9 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 			diskIDLabelMap[diskOpts.Label] = instanceDisk.ID
 
-			if err := d.Set(fmt.Sprintf("disk.%d.id", index), instanceDisk.ID); err != nil {
-				return fmt.Errorf("Error setting Linode Disk ID: %s", err)
-			}
+			// if err := d.Set(fmt.Sprintf("disk.%d.id", index), instanceDisk.ID); err != nil {
+			//	return fmt.Errorf("Error setting Linode Disk ID: %s", err)
+			// }
 
 			if index == 0 {
 				configDevices.SDA = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
