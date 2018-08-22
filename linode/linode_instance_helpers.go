@@ -244,9 +244,8 @@ func labelHashcode(v interface{}) int {
 	case map[string]interface{}:
 		if label, ok := t["label"]; ok {
 			return schema.HashString(label.(string))
-		} else {
-			panic(fmt.Sprintf("Error hashing label for unknown map: %#v", v))
 		}
+		panic(fmt.Sprintf("Error hashing label for unknown map: %#v", v))
 	default:
 		panic(fmt.Sprintf("Error hashing label for unknown interface: %#v", v))
 	}

@@ -12,7 +12,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func TestAccLinodeInstanceBasic(t *testing.T) {
+func TestAccLinodeInstance_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -49,7 +49,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstanceWithConfig(t *testing.T) {
+func TestAccLinodeInstance_config(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -71,7 +71,6 @@ func TestAccLinodeInstanceWithConfig(t *testing.T) {
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "testing"),
@@ -88,6 +87,44 @@ func TestAccLinodeInstanceWithConfig(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_multipleConfigs(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "testing"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfig(&instance, "configa", "linode/latest-64bit"),
+					testAccCheckComputeInstanceConfig(&instance, "configb", "linode/latest-32bit"),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+		},
+	})
+}
 func TestAccLinodeInstanceUpdate(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
@@ -402,17 +439,13 @@ func testAccCheckLinodeInstanceWithConfig(instance string, pubkey string) string
 resource "linode_instance" "foobar" {
 	label = "%s"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
 	region = "us-east"
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
 	}
-	root_pass = "terraform-test"
-	swap_size = 256
-	authorized_keys = "%s"
 	group = "testing"
-}`, instance, pubkey)
+}`, instance)
 }
 
 func testAccCheckLinodeInstanceWithMultipleConfigs(instance string, pubkey string) string {
@@ -420,16 +453,17 @@ func testAccCheckLinodeInstanceWithMultipleConfigs(instance string, pubkey strin
 resource "linode_instance" "foobar" {
 	label = "%s"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
 	region = "us-east"
 	config {
+		label = "configa"
 		kernel = "linode/latest-64bit"
 	}
-	root_pass = "terraform-test"
-	swap_size = 256
-	authorized_keys = "%s"
+	config {
+		label = "configb"
+		kernel = "linode/latest-32bit"
+	}
 	group = "testing"
-}`, instance, pubkey)
+}`, instance)
 }
 
 func testAccCheckLinodeInstanceWithDisk(instance string, pubkey string) string {

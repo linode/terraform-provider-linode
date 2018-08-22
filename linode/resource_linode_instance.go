@@ -23,7 +23,7 @@ func resourceLinodeInstance() *schema.Resource {
 			"image": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use.",
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"backup_id": &schema.Schema{
@@ -115,21 +115,23 @@ func resourceLinodeInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The password that will be initialially assigned to the 'root' user account.",
 				Sensitive:   true,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				StateFunc:   rootPasswordState,
 			},
 			"swap_size": &schema.Schema{
 				Type:        schema.TypeInt,
-				Description: "When deploying from an Image, this field is optional, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
+				Description: "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
 				Optional:    true,
-				Default:     512,
+				Computed:    true,
+				Default:     nil,
 			},
 			"backups_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "If this field is set to true, the created Linode will automatically be enrolled in the Linode Backup service. This will incur an additional charge. The cost for the Backup service is dependent on the Type of Linode deployed.",
 				Optional:    true,
-				Default:     false,
+				Computed:    true,
+				Default:     nil,
 			},
 			"watchdog_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
