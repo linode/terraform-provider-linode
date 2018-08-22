@@ -16,6 +16,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
+	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -30,7 +31,7 @@ func TestAccLinodeInstanceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeInstanceBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, nil),
+					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
@@ -254,7 +255,8 @@ func testAccCheckLinodeInstanceExists(name string, instance *linodego.Instance) 
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
 		}
-		instance = found
+
+		*instance = *found
 
 		return nil
 	}
@@ -332,6 +334,10 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 func testAccCheckComputeInstanceConfig(instance *linodego.Instance, label string, kernel string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(linodego.Client)
+
+		if instance.ID == 0 {
+			return fmt.Errorf("Error fetching configs, Instance ID is 0")
+		}
 
 		instanceConfigs, err := client.ListInstanceConfigs(context.Background(), instance.ID, nil)
 

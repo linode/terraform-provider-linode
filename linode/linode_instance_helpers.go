@@ -234,3 +234,20 @@ func privateIP(ip net.IP) bool {
 	private = private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) || private16BitBlock.Contains(ip)
 	return private
 }
+
+func labelHashcode(v interface{}) int {
+	switch t := v.(type) {
+	case linodego.InstanceConfig:
+		return schema.HashString(t.Label)
+	case linodego.InstanceDisk:
+		return schema.HashString(t.Label)
+	case map[string]interface{}:
+		if label, ok := t["label"]; ok {
+			return schema.HashString(label.(string))
+		} else {
+			panic(fmt.Sprintf("Error hashing label for unknown map: %#v", v))
+		}
+	default:
+		panic(fmt.Sprintf("Error hashing label for unknown interface: %#v", v))
+	}
+}

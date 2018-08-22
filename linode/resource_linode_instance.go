@@ -225,6 +225,7 @@ func resourceLinodeInstance() *schema.Resource {
 				Computed: true,
 				Optional: true,
 				Type:     schema.TypeSet,
+				Set:      labelHashcode,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
@@ -853,62 +854,70 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				configDevices.SDH = &linodego.InstanceConfigDevice{DiskID: instanceDisk.ID}
 			}
 		}
+	}
 
-		if !configsOk {
-			configOpts := linodego.InstanceConfigCreateOptions{
-				Label:  fmt.Sprintf("linode%d-config", instance.ID),
-				Kernel: d.Get("kernel").(string),
-				// RootDevice: "/dev/sda",
-				// RunLevel:   "default",
-				// VirtMode:   "paravirt",
-				Devices: configDevices,
-			}
+	if !configsOk {
+		configOpts := linodego.InstanceConfigCreateOptions{
+			Label: fmt.Sprintf("linode%d-config", instance.ID),
+			// RootDevice: "/dev/sda",
+			// RunLevel:   "default",
+			// VirtMode:   "paravirt",
+			Devices: configDevices,
+		}
 
-			config, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
-			if err != nil {
-				return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
-			}
-			bootConfig = config.ID
-		} else {
-			configs, ok := d.Get("config").([]map[string]interface{})
+		instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
+		if err != nil {
+			return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
+		}
+		bootConfig = instanceConfig.ID
+		configIDLabelMap = make(map[string]int, 1)
+		configIDLabelMap[configOpts.Label] = instanceConfig.ID
+	} else {
+		cset := d.Get("config").(*schema.Set)
+		configIDLabelMap = make(map[string]int, len(cset.List()))
+		for _, v := range cset.List() {
+			config, ok := v.(map[string]interface{})
+
 			if !ok {
-				return fmt.Errorf("Error parsing configs")
+				return fmt.Errorf("Error parsing configs  %#v ... %#v", v, cset)
 			}
 
-			for _, config := range configs {
-				configOpts := linodego.InstanceConfigCreateOptions{}
-				configOpts.Kernel = config["kernel"].(string)
-				configOpts.Label = config["label"].(string)
-				configOpts.Comments = config["comments"].(string)
-				// configOpts.InitRD = config["initrd"].(string)
-				// TODO(displague) need a disk_label to initrd lookup?
-				devices, _ := config["devices"].(map[string]map[string]interface{})
-				// TODO(displague) ok needed? check it
-				for k, dev := range devices {
-					if k == "sda" {
-						if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
-							if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
-								return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
-							}
+			configOpts := linodego.InstanceConfigCreateOptions{}
+			configOpts.Kernel = config["kernel"].(string)
+			configOpts.Label = config["label"].(string)
+			configOpts.Comments = config["comments"].(string)
+			// configOpts.InitRD = config["initrd"].(string)
+			// TODO(displague) need a disk_label to initrd lookup?
+			devices, _ := config["devices"].(map[string]map[string]interface{})
+			// TODO(displague) ok needed? check it
+			for k, dev := range devices {
+				if k == "sda" {
+					if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
+						if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
+							return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
 						}
-						configOpts.Devices.SDA = expandInstanceconfigDevice(dev)
 					}
-					if k == "sdb" {
-						if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
-							if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
-								return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
-							}
+					configOpts.Devices.SDA = expandInstanceconfigDevice(dev)
+				}
+				if k == "sdb" {
+					if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
+						if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
+							return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
 						}
-						configOpts.Devices.SDB = expandInstanceconfigDevice(dev)
 					}
-					// TODO(displague) copy through SDH
+					configOpts.Devices.SDB = expandInstanceconfigDevice(dev)
 				}
-				instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
-				if err != nil {
-					return fmt.Errorf("Error creating Instance Config: %s", err)
-				}
-				configIDLabelMap[configOpts.Label] = instanceConfig.ID
+				// TODO(displague) copy through SDH
 			}
+			instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
+			if err != nil {
+				return fmt.Errorf("Error creating Instance Config: %s", err)
+			}
+			if len(configIDLabelMap) == 1 {
+				bootConfig = instanceConfig.ID
+			}
+
+			configIDLabelMap[configOpts.Label] = instanceConfig.ID
 		}
 	}
 
