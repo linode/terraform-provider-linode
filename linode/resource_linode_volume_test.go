@@ -38,7 +38,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 
 	resName := "linode_volume.foobar"
 	var volumeName = acctest.RandomWithPrefix("tf_test")
-
+	var volume = linodego.Volume{}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -47,7 +47,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
@@ -68,6 +68,7 @@ func TestAccLinodeVolumeUpdate(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
+	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -77,14 +78,14 @@ func TestAccLinodeVolumeUpdate(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigUpdates(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", fmt.Sprintf("%s_renamed", volumeName)),
 				),
 			},
@@ -96,6 +97,7 @@ func TestAccLinodeVolumeResized(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
+	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -105,14 +107,14 @@ func TestAccLinodeVolumeResized(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigResized(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "size", "30"),
 				),
 			},
@@ -124,6 +126,7 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
+	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -133,7 +136,7 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 					resource.TestCheckNoResourceAttr("linode_volume.foobar", "linode_id"),
 				),
@@ -141,7 +144,7 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet("linode_instance.foobar", "id"),
 					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 				),
@@ -154,6 +157,7 @@ func TestAccLinodeVolumeDetached(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
+	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -163,7 +167,7 @@ func TestAccLinodeVolumeDetached(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 					resource.TestCheckResourceAttrPair("linode_instance.foobar", "id", "linode_volume.foobar", "linode_id"),
 				),
@@ -171,7 +175,7 @@ func TestAccLinodeVolumeDetached(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 				),
 			},
@@ -183,6 +187,7 @@ func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
+	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -192,7 +197,7 @@ func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
 				),
@@ -200,7 +205,7 @@ func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigReattachedBetweenInstances(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists,
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
 				),
 			},
@@ -208,23 +213,30 @@ func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeVolumeExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(linodego.Client)
+func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testAccProvider.Meta().(linodego.Client)
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_volume" {
-			continue
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
 
-		_, err = client.GetVolume(context.Background(), id)
+		found, err := client.GetVolume(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of Volume %s: %s", rs.Primary.Attributes["label"], err)
 		}
-	}
 
-	return nil
+		*volume = *found
+
+		return nil
+	}
 }
 
 func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {

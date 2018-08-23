@@ -256,9 +256,12 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckLinodeInstanceDestroy,
+			testAccCheckLinodeVolumeDestroy,
+		),
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instanceName, publicKeyMaterial),
@@ -276,6 +279,52 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 					testAccCheckComputeInstanceDisk(&instance, "diskb", 512),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk))),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(instanceDisk))),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	volName := "linode_volume.foo"
+
+	var instance linodego.Instance
+	var instanceDisk linodego.InstanceDisk
+	var volume linodego.Volume
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithVolumeAndConfig(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testAccCheckLinodeVolumeExists(volName, &volume),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
+					testAccCheckLinodeInstanceDiskExists(&instance, "disk", &instanceDisk),
+					// TODO(displague) create testAccCheckComputeInstanceDisks helper (like Configs)
+					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk), testConfigSDBVolume(volume))),
 				),
 			},
 
@@ -589,7 +638,16 @@ func testConfigSDADisk(disk linodego.InstanceDisk) testConfigFunc {
 func testConfigSDBDisk(disk linodego.InstanceDisk) testConfigFunc {
 	return func(config *linodego.InstanceConfig) error {
 		if config.Devices.SDB.DiskID == disk.ID {
-			return fmt.Errorf("should have SDA with expected disk id")
+			return fmt.Errorf("should have SDB with expected disk id")
+		}
+		return nil
+	}
+}
+
+func testConfigSDBVolume(volume linodego.Volume) testConfigFunc {
+	return func(config *linodego.InstanceConfig) error {
+		if config.Devices.SDB.VolumeID == volume.ID {
+			return fmt.Errorf("should have SDB with expected volume id")
 		}
 		return nil
 	}
@@ -824,8 +882,41 @@ resource "linode_instance" "foobar" {
 		devices = { sda = { disk_label = "diskb" }, sdb = { disk_label = "diska" } }
 	}
 
-	boot_config = "configa"
+	boot_config_label = "configa"
 }`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithVolumeAndConfig(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_volume" "foo" {
+	label = "%s"
+	size = "10"
+	region = "us-east"
+}
+
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	region = "us-east"
+	group = "tf_test"
+
+	disk {
+		label = "disk"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 3000
+	}
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices = {
+			sda = { disk_label = "disk" },
+			sdb = { volume_id = "${linode_volume.foo.id}" }
+		}
+	}
+}`, instance, instance, pubkey)
 }
 
 func testAccCheckLinodeInstanceConfigUpdates(instance string, pubkey string) string {

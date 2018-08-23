@@ -60,10 +60,11 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "The display group of the Linode instance.",
 				Optional:    true,
 			},
-			"boot_config": &schema.Schema{
+			"boot_config_label": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"region": &schema.Schema{
 				Type:         schema.TypeString,
@@ -683,6 +684,11 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	if err := d.Set("config", configs); err != nil {
 		return fmt.Errorf("Erroring setting Linode Instance config: %s", err)
 	}
+
+	if len(instanceConfigs) == 1 {
+		d.Set("boot_config_label", instanceConfigs[0].Label)
+	}
+
 	return nil
 }
 
@@ -775,7 +781,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	// Look up tables for any disks and configs we create
 	// - so configs and initrd can reference disks by label
-	// - so configs can be referenced as a boot_config param
+	// - so configs can be referenced as a boot_config_label param
 	var diskIDLabelMap map[string]int
 	var configIDLabelMap map[string]int
 	var configDevices linodego.InstanceConfigDeviceMap
