@@ -75,7 +75,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfig(&instance, "config", "linode/latest-64bit"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 				),
 			},
 
@@ -113,8 +113,8 @@ func TestAccLinodeInstance_multipleConfigs(t *testing.T) {
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfig(&instance, "configa", "linode/latest-64bit"),
-					testAccCheckComputeInstanceConfig(&instance, "configb", "linode/latest-32bit"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/latest-32bit"))),
 				),
 			},
 
@@ -229,8 +229,53 @@ func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfig(&instance, "config", "linode/latest-64bit"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceDisk linodego.InstanceDisk
+
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
+					testAccCheckLinodeInstanceDiskExists(&instance, "diska", &instanceDisk),
+					// TODO(displague) create testAccCheckComputeInstanceDisks helper (like Configs)
+					testAccCheckComputeInstanceDisk(&instance, "diska", 3000),
+					testAccCheckComputeInstanceDisk(&instance, "diskb", 512),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk))),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(instanceDisk))),
 				),
 			},
 
@@ -485,7 +530,73 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 	}
 }
 
-func testAccCheckComputeInstanceConfig(instance *linodego.Instance, label string, kernel string) resource.TestCheckFunc {
+type testConfigFunc func(config *linodego.InstanceConfig) error
+type testConfigsFunc func(config []*linodego.InstanceConfig) error
+
+// testConfig verifies a labeled config exists and runs many tests against that config
+func testConfig(label string, configTests ...testConfigFunc) testConfigsFunc {
+	return func(configs []*linodego.InstanceConfig) error {
+		for _, config := range configs {
+			if config.Label == label {
+				for _, test := range configTests {
+					if err := test(config); err != nil {
+						return err
+					}
+				}
+				return nil
+			}
+		}
+		return fmt.Errorf("should have found Instance config with label: %s", label)
+	}
+}
+
+func testConfigLabel(label string) testConfigFunc {
+	return func(config *linodego.InstanceConfig) error {
+		if config.Label != label {
+			return fmt.Errorf("should have matching labels: %s != %s", config.Label, label)
+		}
+		return nil
+	}
+}
+
+func testConfigKernel(kernel string) testConfigFunc {
+	return func(config *linodego.InstanceConfig) error {
+		if config.Kernel != kernel {
+			return fmt.Errorf("should have matching kernels: %s != %s", config.Kernel, kernel)
+		}
+		return nil
+	}
+}
+
+func testConfigComments(comments string) testConfigFunc {
+	return func(config *linodego.InstanceConfig) error {
+		if config.Comments != comments {
+			return fmt.Errorf("should have matching comments: %s != %s", config.Comments, comments)
+		}
+		return nil
+	}
+}
+
+func testConfigSDADisk(disk linodego.InstanceDisk) testConfigFunc {
+	return func(config *linodego.InstanceConfig) error {
+		if config.Devices.SDA.DiskID == disk.ID {
+			return fmt.Errorf("should have SDA with expected disk id")
+		}
+		return nil
+	}
+}
+
+func testConfigSDBDisk(disk linodego.InstanceDisk) testConfigFunc {
+	return func(config *linodego.InstanceConfig) error {
+		if config.Devices.SDB.DiskID == disk.ID {
+			return fmt.Errorf("should have SDA with expected disk id")
+		}
+		return nil
+	}
+}
+
+// testAccCheckComputeInstanceConfigs verifies any configs exist and runs config specific tests against a target instance
+func testAccCheckComputeInstanceConfigs(instance *linodego.Instance, configsTests ...testConfigsFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(linodego.Client)
 
@@ -503,13 +614,41 @@ func testAccCheckComputeInstanceConfig(instance *linodego.Instance, label string
 			return fmt.Errorf("No configs")
 		}
 
-		for _, config := range instanceConfigs {
-			if config.Label == label && config.Kernel == kernel {
+		for _, tests := range configsTests {
+			if err := tests(instanceConfigs); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+func testAccCheckLinodeInstanceDiskExists(instance *linodego.Instance, label string, instanceDisk *linodego.InstanceDisk) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testAccProvider.Meta().(linodego.Client)
+
+		if instance == nil || instance.ID == 0 {
+			return fmt.Errorf("Error fetching disks: invalid Instance argument")
+		}
+
+		instanceDisks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
+
+		if err != nil {
+			return fmt.Errorf("Error fetching disks: %s", err)
+		}
+
+		if len(instanceDisks) == 0 {
+			return fmt.Errorf("No disks")
+		}
+
+		for _, disk := range instanceDisks {
+			if disk.Label == label {
+				*instanceDisk = *disk
 				return nil
 			}
 		}
 
-		return fmt.Errorf("Config not found: %s", label)
+		return fmt.Errorf("Disk not found: %s", label)
 	}
 }
 
@@ -655,15 +794,37 @@ func testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instance string, pubkey
 resource "linode_instance" "foobar" {
 	label = "%s"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
 	region = "us-east"
-	config {
-		kernel = "linode/latest-64bit"
+	group = "tf_test"
+
+	disk {
+		label = "diska"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 3000
 	}
-	root_pass = "terraform-test"
-	swap_size = 256
-	authorized_keys = "%s"
-	group = "testing"
+
+	disk {
+		label = "diskb"
+		filesystem = "swap"
+		size = 512
+	}
+
+	config {
+		label = "configa"
+		kernel = "linode/latest-64bit"
+		devices = { sda = { disk_label = "diska" }, sdb = { disk_label = "diskb" } }
+	}
+
+	config {
+		label = "configb"
+		comments = "won't boot"
+		kernel = "linode/grub2"
+		devices = { sda = { disk_label = "diskb" }, sdb = { disk_label = "diska" } }
+	}
+
+	boot_config = "configa"
 }`, instance, pubkey)
 }
 
