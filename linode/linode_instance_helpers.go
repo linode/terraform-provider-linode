@@ -115,9 +115,13 @@ func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice) []map[strin
 
 func expandInstanceconfigDevice(m map[string]interface{}) *linodego.InstanceConfigDevice {
 	var dev *linodego.InstanceConfigDevice
-	if m["disk_id"].(int) > 0 || m["volume_id"].(int) > 0 {
+	// be careful of `disk_label string` in m
+	if diskID, ok := m["disk_id"]; ok && diskID.(int) > 0 {
 		dev = &linodego.InstanceConfigDevice{
-			DiskID:   m["disk_id"].(int),
+			DiskID: diskID.(int),
+		}
+	} else if volumeID, ok := m["volume_id"]; ok && volumeID.(int) > 0 {
+		dev = &linodego.InstanceConfigDevice{
 			VolumeID: m["volume_id"].(int),
 		}
 	}
@@ -249,4 +253,15 @@ func labelHashcode(v interface{}) int {
 	default:
 		panic(fmt.Sprintf("Error hashing label for unknown interface: %#v", v))
 	}
+}
+
+func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int) error {
+	if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
+		if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
+			return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
+		}
+	}
+	expanded := expandInstanceconfigDevice(dev)
+	*device = *expanded
+	return nil
 }

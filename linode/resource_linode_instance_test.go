@@ -203,6 +203,45 @@ func TestAccLinodeInstance_multipleDisks(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfig(&instance, "config", "linode/latest-64bit"),
+					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstanceUpdate(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
@@ -596,7 +635,7 @@ resource "linode_instance" "foobar" {
 	group = "tf_test"
 
 	disk {
-		label = "diska"
+		label = "disk"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
 		authorized_keys = "%s"
@@ -604,8 +643,9 @@ resource "linode_instance" "foobar" {
 	}
 
 	config {
+		label = "config"
 		kernel = "linode/latest-64bit"
-		devices = [ { disk_label = "root" } ]
+		devices = { sda = { disk_label = "disk" } }
 	}
 }`, instance, pubkey)
 }

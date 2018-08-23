@@ -60,6 +60,11 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "The display group of the Linode instance.",
 				Optional:    true,
 			},
+			"boot_config": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
+				Optional:    true,
+			},
 			"region": &schema.Schema{
 				Type:         schema.TypeString,
 				Description:  "This is the location where the Linode was deployed. This cannot be changed without opening a support ticket.",
@@ -872,6 +877,8 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if !configsOk {
+		// TODO(displague)  should we really create a config if not specfically defined? probably not
+
 		configOpts := linodego.InstanceConfigCreateOptions{
 			Label: fmt.Sprintf("linode%d-config", instance.ID),
 			// RootDevice: "/dev/sda",
@@ -903,26 +910,65 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			configOpts.Comments = config["comments"].(string)
 			// configOpts.InitRD = config["initrd"].(string)
 			// TODO(displague) need a disk_label to initrd lookup?
-			devices, _ := config["devices"].(map[string]map[string]interface{})
+			devices, _ := config["devices"].([]interface{})
 			// TODO(displague) ok needed? check it
-			for k, dev := range devices {
-				if k == "sda" {
-					if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
-						if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
-							return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
+			for _, device := range devices {
+				for k, rdev := range device.(map[string]interface{}) {
+					devSlots := rdev.([]interface{})
+					for _, rrdev := range devSlots {
+						dev := rrdev.(map[string]interface{})
+						if k == "sda" {
+							configOpts.Devices.SDA = &linodego.InstanceConfigDevice{}
+							if err := assignConfigDevice(configOpts.Devices.SDA, dev, diskIDLabelMap); err != nil {
+								return err
+							}
+						}
+						if k == "sdb" {
+							configOpts.Devices.SDB = &linodego.InstanceConfigDevice{}
+							if err := assignConfigDevice(configOpts.Devices.SDB, dev, diskIDLabelMap); err != nil {
+								return err
+							}
+						}
+						if k == "sdc" {
+							configOpts.Devices.SDC = &linodego.InstanceConfigDevice{}
+							if err := assignConfigDevice(configOpts.Devices.SDC, dev, diskIDLabelMap); err != nil {
+								return err
+							}
+						}
+						if k == "sdd" {
+							configOpts.Devices.SDD = &linodego.InstanceConfigDevice{}
+							if err := assignConfigDevice(configOpts.Devices.SDD, dev, diskIDLabelMap); err != nil {
+								return err
+							}
+						}
+						if k == "sde" {
+							configOpts.Devices.SDE = &linodego.InstanceConfigDevice{}
+
+							if err := assignConfigDevice(configOpts.Devices.SDE, dev, diskIDLabelMap); err != nil {
+								return err
+							}
+						}
+						if k == "sdf" {
+							configOpts.Devices.SDF = &linodego.InstanceConfigDevice{}
+
+							if err := assignConfigDevice(configOpts.Devices.SDF, dev, diskIDLabelMap); err != nil {
+								return err
+							}
+						}
+						if k == "sdg" {
+							configOpts.Devices.SDG = &linodego.InstanceConfigDevice{}
+							if err := assignConfigDevice(configOpts.Devices.SDG, dev, diskIDLabelMap); err != nil {
+								return err
+							}
+						}
+						if k == "sdh" {
+							configOpts.Devices.SDH = &linodego.InstanceConfigDevice{}
+							if err := assignConfigDevice(configOpts.Devices.SDH, dev, diskIDLabelMap); err != nil {
+								return err
+							}
 						}
 					}
-					configOpts.Devices.SDA = expandInstanceconfigDevice(dev)
 				}
-				if k == "sdb" {
-					if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
-						if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
-							return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
-						}
-					}
-					configOpts.Devices.SDB = expandInstanceconfigDevice(dev)
-				}
-				// TODO(displague) copy through SDH
 			}
 			instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
 			if err != nil {
