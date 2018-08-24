@@ -109,52 +109,95 @@ resource "linode_domain_record" "CNAME-www" {
   target      = "${linode_domain.foo-com.domain}"
 }
 
-resource "linode_volume" "nginx-vol" {
-  count     = "${var.nginx_count}"
-  region    = "${linode_nodebalancer.foo-nb.region}"
-  size      = 10
-  linode_id = "${element(linode_instance.nginx.*.id, count.index)}"
-  label     = "${random_pet.project.id}-vol-${count.index}"
-
-  connection {
-    // user        = "root"
-    // private_key = "${pathexpand(replace(var.ssh_key, ".pub", ""))}"
-    host = "${element(linode_instance.nginx.*.ip_address,count.index)}"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "export PATH=$PATH:/usr/bin",
-      "ls /dev/disk/by-id/",
-      "sudo mkfs /dev/disk/by-id/scsi-0Linode_Volume_nginx-vol-${count.index}",
-      "mkdir -p /srv/www",
-      "echo /dev/disk/by-id/scsi-0Linode_Volume_nginx-vol-${count.index} /srv/www ext4 defaults 0 2 | sudo tee -a /etc/fstab",
-      "mount -a",
-      "echo it works node ${count.index + 1} > /srv/www/index.html",
-    ]
-  }
-}
-
 resource "linode_instance" "nginx" {
   count  = "${var.nginx_count}"
-  image  = "linode/ubuntu18.04"
-  kernel = "linode/latest-64bit"
   label  = "${random_pet.project.id}-nginx-${count.index + 1}"
 
-  # group              = "foo"
+  group              = "foo"
   region             = "${linode_nodebalancer.foo-nb.region}"
   type               = "g6-nanode-1"
-  private_networking = true
-  ssh_key            = "${chomp(file(var.ssh_key))}"
-  root_password      = "${random_string.password.result}"
+  private_ip = true
+  
+  disk {
+    label = "boot"
+    size = 3000
+    authorized_keys            = "${chomp(file(var.ssh_key))}"
+    root_pass      = "${random_string.password.result}"
+    image  = "linode/ubuntu18.04"
+  }
+
+  config {
+    label = "nginx"
+    kernel = "linode/latest-64bit"
+    devices {
+      sda = { disk_label = "boot" },
+      sdb = { volume_id = "${element(linode_volume.nginx-vol.*.id, count.index)}" }
+    }
+  }
 
   provisioner "remote-exec" {
     inline = [
       # install nginx
       "export PATH=$PATH:/usr/bin",
 
-      "sudo apt-get -q update",
-      "sudo apt-get -q -y install nginx",
+      "apt-get -q update",
+      "ls /dev/disk/by-id/",
+      "mkfs /dev/disk/by-id/scsi-0Linode_Volume_nginx-vol-${count.index}",
+      "mkdir -p /srv/www",
+      "echo /dev/disk/by-id/scsi-0Linode_Volume_nginx-vol-${count.index} /srv/www ext4 defaults 0 2 | sudo tee -a /etc/fstab",
+      "mount -a",
+      "echo it works node ${count.index + 1} > /srv/www/index.html",
+      "apt-get -q -y install nginx",
+    ]
+  }
+}
+
+resource "linode_volume" "nginx-vol" {
+  count     = "${var.nginx_count}"
+  region    = "${linode_nodebalancer.foo-nb.region}"
+  size      = 10
+  label     = "${random_pet.project.id}-vol-${count.index}"
+}
+
+resource "linode_volume" "simple-vol-lateattachment" {
+  region    = "${linode_instance.simple.region}"
+  size      = 10
+  label     = "${random_pet.project.id}-simple"
+  linode_id = "${linode_instance.simple.id}"
+
+  connection {
+    host = "${linode_instance.simple.ip_address}"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "export PATH=$PATH:/usr/bin",
+      "timeout 180 sh -c 'while ! ls /dev/disk/by-id/scsi-0Linode_Volume_${self.label}; do sleep 1; done'",
+      "sudo mkfs /dev/disk/by-id/scsi-0Linode_Volume_${self.label}",
+      "mkdir -p /srv/www",
+      "echo /dev/disk/by-id/scsi-0Linode_Volume_${self.label} /srv/www ext4 defaults 0 2 | sudo tee -a /etc/fstab",
+      "mount -a",
+      "echo it works, so simple > /srv/www/index.html",
+    ]
+  }
+}
+
+resource "linode_instance" "simple" {
+  image  = "linode/ubuntu18.04"
+  label  = "${random_pet.project.id}-simple"
+
+  group              = "foo"
+  region             = "${var.region}"
+  type               = "g6-nanode-1"
+  authorized_keys    = "${chomp(file(var.ssh_key))}"
+  root_pass      = "${random_string.password.result}"
+
+  provisioner "remote-exec" {
+    inline = [
+      "export PATH=$PATH:/usr/bin",
+      "apt-get -q update",
+      "echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections",
+      "apt-get -q -y install unattended-upgrades nginx",
     ]
   }
 }

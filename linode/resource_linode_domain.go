@@ -49,7 +49,7 @@ func resourceLinodeDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"master_ips": &schema.Schema{
-				Type: schema.TypeSet,
+				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -100,7 +100,9 @@ func syncResourceData(d *schema.ResourceData, domain *linodego.Domain) {
 	d.Set("status", domain.Status)
 	d.Set("description", domain.Description)
 	d.Set("master_ips", domain.MasterIPs)
-	d.Set("afxr_ips", domain.AXfrIPs)
+	if len(domain.AXfrIPs) > 0 {
+		d.Set("afxr_ips", domain.AXfrIPs)
+	}
 	d.Set("ttl_sec", domain.TTLSec)
 	d.Set("retry_sec", domain.RetrySec)
 	d.Set("expire_sec", domain.ExpireSec)
@@ -186,7 +188,7 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error creating a Linode Domain: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", domain.ID))
-	syncResourceData(d, domain)
+	// syncResourceData(d, domain)
 
 	return resourceLinodeDomainRead(d, meta)
 }
