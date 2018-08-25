@@ -135,7 +135,7 @@ func (c *Client) GetStackscript(ctx context.Context, id int) (*Stackscript, erro
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
-	r, err := c.R(ctx).SetResult(&Stackscript{}).Get(e)
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Stackscript{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

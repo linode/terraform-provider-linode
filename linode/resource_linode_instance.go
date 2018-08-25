@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
@@ -1105,10 +1106,14 @@ func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Instance ID %s as int", d.Id())
 	}
+	minDelete := time.Now().AddDate(0, 0, -1)
 	err = client.DeleteInstance(context.Background(), int(id))
 	if err != nil {
 		return fmt.Errorf("Error deleting Linode instance %d: %s", id, err)
 	}
+	// Wait for full deletion to assure volumes are detached
+	client.WaitForEventFinished(context.Background(), int(id), linodego.EntityLinode, linodego.ActionLinodeDelete, minDelete, int(d.Timeout(schema.TimeoutDelete).Seconds()))
+
 	d.SetId("")
 	return nil
 }
