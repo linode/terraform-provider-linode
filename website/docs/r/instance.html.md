@@ -72,7 +72,7 @@ The following arguments are supported:
 
 * `disk_expansion` - (Optional) A boolean that when true will automatically expand the root volume if the size of the Linode plan is increased.  Setting this value will prevent downsizing without manually shrinking the volume prior to decreasing the size.
 
-* `swap_size` - (Optional) Sets the size of the swap partition on a Linode in MB.  At this time, this cannot be modified by Terraform after initial provisioning.  If manually modified via the Web GUI, this value will reflect such modification.  This value can be set to 0 to create a Linode without a swap partition.  Defaults to 256.
+* `swap_size` - (Optional) Sets the size of the swap partition on a Linode in MB.  At this time, this cannot be modified by Terraform after initial provisioning.  If manually modified via the Web GUI, this value will reflect such modification.  This value can be set to 0 to create a Linode without a swap partition.  Defaults to 512.
 
 ## Attributes
 
