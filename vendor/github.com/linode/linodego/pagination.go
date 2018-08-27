@@ -26,18 +26,6 @@ type ListOptions struct {
 	Filter string
 }
 
-type pagedResponse struct {
-	listResponse
-	*PageOptions
-}
-
-type listResponse interface {
-	endpoint(*Client) string
-	appendData(*resty.Response)
-	setResult(*resty.Request)
-	listHelper(*resty.Request, *ListOptions) *Error
-}
-
 // NewListOptions simplified construction of ListOptions using only
 // the two writable properties, Page and Filter
 func NewListOptions(Page int, Filter string) *ListOptions {
@@ -281,7 +269,9 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 
 	if opts == nil {
 		for page := 2; page <= pages; page = page + 1 {
-			c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}})
+			if err := c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}}); err != nil {
+				return err
+			}
 		}
 	} else {
 		if opts.PageOptions == nil {
@@ -291,7 +281,9 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelper(ctx, i, opts)
+				if err := c.listHelper(ctx, i, opts); err != nil {
+					return err
+				}
 			}
 		}
 		opts.Results = results
@@ -392,7 +384,9 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 
 	if opts == nil {
 		for page := 2; page <= pages; page = page + 1 {
-			c.listHelperWithID(ctx, i, id, &ListOptions{PageOptions: &PageOptions{Page: page}})
+			if err := c.listHelperWithID(ctx, i, id, &ListOptions{PageOptions: &PageOptions{Page: page}}); err != nil {
+				return err
+			}
 		}
 	} else {
 		if opts.PageOptions == nil {
@@ -401,7 +395,9 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelperWithID(ctx, i, id, opts)
+				if err := c.listHelperWithID(ctx, i, id, opts); err != nil {
+					return err
+				}
 			}
 		}
 		opts.Results = results
@@ -451,7 +447,9 @@ func (c *Client) listHelperWithTwoIDs(ctx context.Context, i interface{}, firstI
 
 	if opts == nil {
 		for page := 2; page <= pages; page = page + 1 {
-			c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}})
+			if err := c.listHelper(ctx, i, &ListOptions{PageOptions: &PageOptions{Page: page}}); err != nil {
+				return err
+			}
 		}
 	} else {
 		if opts.PageOptions == nil {
@@ -460,7 +458,9 @@ func (c *Client) listHelperWithTwoIDs(ctx context.Context, i interface{}, firstI
 		if opts.Page == 0 {
 			for page := 2; page <= pages; page = page + 1 {
 				opts.Page = page
-				c.listHelperWithTwoIDs(ctx, i, firstID, secondID, opts)
+				if err := c.listHelperWithTwoIDs(ctx, i, firstID, secondID, opts); err != nil {
+					return err
+				}
 			}
 		}
 		opts.Results = results

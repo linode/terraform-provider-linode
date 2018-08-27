@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"time"
-
-	"github.com/go-resty/resty"
 )
 
 // Ticket represents a support ticket object
@@ -32,9 +30,10 @@ type TicketEntity struct {
 	URL   string `json:"url"`
 }
 
+// TicketStatus constants start with Ticket and include Linode API Ticket Status values
 type TicketStatus string
 
-// Ticket Statuses
+// TicketStatus constants reflect the current status of a Ticket
 const (
 	TicketNew    TicketStatus = "new"
 	TicketClosed TicketStatus = "closed"
@@ -57,10 +56,6 @@ func (TicketsPagedResponse) endpoint(c *Client) string {
 
 func (resp *TicketsPagedResponse) appendData(r *TicketsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-func (TicketsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(TicketsPagedResponse{})
 }
 
 // ListTickets returns a collection of Support Tickets on the Account. Support Tickets

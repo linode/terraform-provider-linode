@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/go-resty/resty"
 )
 
+// InstanceConfig represents all of the settings that control the boot and run configuration of a Linode Instance
 type InstanceConfig struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
@@ -28,11 +27,13 @@ type InstanceConfig struct {
 	Updated     *time.Time               `json:"-"`
 }
 
+// InstanceConfigDevice contains either the DiskID or VolumeID assigned to a Config Device
 type InstanceConfigDevice struct {
 	DiskID   int `json:"disk_id,omitempty"`
 	VolumeID int `json:"volume_id,omitempty"`
 }
 
+// InstanceConfigDeviceMap contains SDA-SDH InstanceConfigDevice settings
 type InstanceConfigDeviceMap struct {
 	SDA *InstanceConfigDevice `json:"sda,omitempty"`
 	SDB *InstanceConfigDevice `json:"sdb,omitempty"`
@@ -44,6 +45,7 @@ type InstanceConfigDeviceMap struct {
 	SDH *InstanceConfigDevice `json:"sdh,omitempty"`
 }
 
+// InstanceConfigHelpers are Instance Config options that control Linux distribution specific tweaks
 type InstanceConfigHelpers struct {
 	UpdateDBDisabled  bool `json:"updatedb_disabled"`
 	Distro            bool `json:"distro"`
@@ -88,6 +90,7 @@ type InstanceConfigUpdateOptions struct {
 	VirtMode   string `json:"virt_mode,omitempty"`
 }
 
+// GetCreateOptions converts a InstanceConfig to InstanceConfigCreateOptions for use in CreateInstanceConfig
 func (i InstanceConfig) GetCreateOptions() InstanceConfigCreateOptions {
 	return InstanceConfigCreateOptions{
 		Label:       i.Label,
@@ -103,6 +106,7 @@ func (i InstanceConfig) GetCreateOptions() InstanceConfigCreateOptions {
 	}
 }
 
+// GetUpdateOptions converts a InstanceConfig to InstanceConfigUpdateOptions for use in UpdateInstanceConfig
 func (i InstanceConfig) GetUpdateOptions() InstanceConfigUpdateOptions {
 	return InstanceConfigUpdateOptions{
 		Label:       i.Label,
@@ -130,11 +134,6 @@ func (InstanceConfigsPagedResponse) endpointWithID(c *Client, id int) string {
 // appendData appends InstanceConfigs when processing paginated InstanceConfig responses
 func (resp *InstanceConfigsPagedResponse) appendData(r *InstanceConfigsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of InstanceConfig
-func (InstanceConfigsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(InstanceConfigsPagedResponse{})
 }
 
 // ListInstanceConfigs lists InstanceConfigs

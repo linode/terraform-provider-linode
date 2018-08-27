@@ -164,23 +164,23 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error parsing Linode Volume id %s as int: %s", d.Id(), err)
 	}
 
-	volume, err := client.GetVolume(context.Background(), int(id))
-	if err != nil {
-		return fmt.Errorf("Error fetching data about the current linode: %s", err)
+	volume, errVolume := client.GetVolume(context.Background(), int(id))
+	if errVolume != nil {
+		return fmt.Errorf("Error fetching data about the current linode: %s", errVolume)
 	}
 
 	if d.HasChange("size") {
 		size := d.Get("size").(int)
-		if ok, err := client.ResizeVolume(context.Background(), volume.ID, size); err != nil {
+		if err = client.ResizeVolume(context.Background(), volume.ID, size); err != nil {
 			return err
-		} else if ok {
-			if _, err := client.WaitForVolumeStatus(context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout("update").Seconds())); err != nil {
-				return err
-			}
-
-			d.Set("size", size)
-			d.SetPartial("size")
 		}
+
+		if _, err = client.WaitForVolumeStatus(context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout("update").Seconds())); err != nil {
+			return err
+		}
+
+		d.Set("size", size)
+		d.SetPartial("size")
 	}
 
 	if d.HasChange("label") {
@@ -204,14 +204,12 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 	if detectVolumeIDChange(linodeID, volume.LinodeID) {
 		if linodeID == nil || volume.LinodeID != nil {
 			log.Printf("[INFO] Detaching Linode Volume %d", volume.ID)
-			if ok, err := client.DetachVolume(context.Background(), volume.ID); err != nil {
+			if err = client.DetachVolume(context.Background(), volume.ID); err != nil {
 				return err
-			} else if !ok {
-				return fmt.Errorf("Error detaching Linode Volume %d", volume.ID)
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volume.ID)
-			if _, err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
+			if _, err = client.WaitForVolumeLinodeID(context.Background(), volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
 				return err
 			}
 		}
@@ -224,12 +222,12 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 			log.Printf("[INFO] Attaching Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
 
-			if _, err := client.AttachVolume(context.Background(), volume.ID, &attachOptions); err != nil {
+			if _, err = client.AttachVolume(context.Background(), volume.ID, &attachOptions); err != nil {
 				return fmt.Errorf("Error attaching Linode Volume %d to Linode Instance %d: %s", volume.ID, *linodeID, err)
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to attach ...", volume.ID)
-			if _, err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+			if _, err = client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
 				return err
 			}
 		}
@@ -251,10 +249,9 @@ func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error 
 	id := int(id64)
 
 	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
-	if ok, err := client.DetachVolume(context.Background(), id); err != nil {
-		return err
-	} else if !ok {
-		return fmt.Errorf("Error detaching Linode Volume %d", id)
+	if err := client.DetachVolume(context.Background(), id); err != nil {
+		return fmt.Errorf("Error detaching Linode Volume %d: %s", id, err)
+
 	}
 
 	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)

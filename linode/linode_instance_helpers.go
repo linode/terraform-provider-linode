@@ -179,7 +179,7 @@ func hashString(key string) string {
 
 // changeInstanceType resizes the Linode Instance
 func changeInstanceType(client *linodego.Client, instance *linodego.Instance, targetType string, d *schema.ResourceData) error {
-	if ok, err := client.ResizeInstance(context.Background(), instance.ID, targetType); err != nil || !ok {
+	if err := client.ResizeInstance(context.Background(), instance.ID, targetType); err != nil {
 		return fmt.Errorf("Error resizing instance %d: %s", instance.ID, err)
 	}
 

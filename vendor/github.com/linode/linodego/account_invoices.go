@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"time"
-
-	"github.com/go-resty/resty"
 )
 
 // Invoice structs reflect an invoice for billable activity on the account.
@@ -50,11 +48,6 @@ func (InvoicesPagedResponse) endpoint(c *Client) string {
 // appendData appends Invoices when processing paginated Invoice responses
 func (resp *InvoicesPagedResponse) appendData(r *InvoicesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of Invoice
-func (InvoicesPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(InvoicesPagedResponse{})
 }
 
 // ListInvoices gets a paginated list of Invoices against the Account
@@ -116,11 +109,6 @@ func (InvoiceItemsPagedResponse) endpointWithID(c *Client, id int) string {
 // appendData appends InvoiceItems when processing paginated Invoice Item responses
 func (resp *InvoiceItemsPagedResponse) appendData(r *InvoiceItemsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of InvoiceItems
-func (InvoiceItemsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(InvoiceItemsPagedResponse{})
 }
 
 // ListInvoiceItems gets the invoice items associated with a specific Invoice

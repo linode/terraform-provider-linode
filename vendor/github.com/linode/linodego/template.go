@@ -5,6 +5,7 @@ package linodego
 /*
  - replace "Template" with "NameOfResource"
  - replace "template" with "nameOfResource"
+ - copy template_test.go and do the same
  - When updating Template structs,
    - use pointers where ever null'able would have a different meaning if the wrapper
 	 supplied "" or 0 instead
@@ -15,8 +16,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
 // Template represents a Template object
@@ -64,15 +63,10 @@ func (resp *TemplatesPagedResponse) appendData(r *TemplatesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// setResult sets the Resty response type of Template
-func (TemplatesPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(TemplatesPagedResponse{})
-}
-
 // ListTemplates lists Templates
-func (c *Client) ListTemplates(opts *ListOptions) ([]*Template, error) {
+func (c *Client) ListTemplates(ctx context.Context, opts *ListOptions) ([]*Template, error) {
 	response := TemplatesPagedResponse{}
-	err := c.listHelper(&response, opts)
+	err := c.listHelper(ctx, &response, opts)
 	for _, el := range response.Data {
 		el.fixDates()
 	}
@@ -90,13 +84,13 @@ func (v *Template) fixDates() *Template {
 }
 
 // GetTemplate gets the template with the provided ID
-func (c *Client) GetTemplate(id int) (*Template, error) {
+func (c *Client) GetTemplate(ctx context.Context, id int) (*Template, error) {
 	e, err := c.Templates.Endpoint()
 	if err != nil {
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
-	r, err := coupleAPIErrors(c.R().SetResult(&Template{}).Get(e))
+	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Template{}).Get(e))
 	if err != nil {
 		return nil, err
 	}

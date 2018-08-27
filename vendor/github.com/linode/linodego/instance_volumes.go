@@ -2,8 +2,6 @@ package linodego
 
 import (
 	"context"
-
-	"github.com/go-resty/resty"
 )
 
 // InstanceVolumesPagedResponse represents a paginated InstanceVolume API response
@@ -24,11 +22,6 @@ func (InstanceVolumesPagedResponse) endpointWithID(c *Client, id int) string {
 // appendData appends InstanceVolumes when processing paginated InstanceVolume responses
 func (resp *InstanceVolumesPagedResponse) appendData(r *InstanceVolumesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of InstanceVolume
-func (InstanceVolumesPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(InstanceVolumesPagedResponse{})
 }
 
 // ListInstanceVolumes lists InstanceVolumes

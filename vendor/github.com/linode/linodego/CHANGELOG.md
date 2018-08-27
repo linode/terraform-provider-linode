@@ -1,5 +1,50 @@
 # Change Log
 
+<a name="0.4.0"></a>
+## [0.4.0](https://github.com/linode/linodego/compare/v0.3.0...0.4.0) (2018-08-27)
+
+### Breaking Changes
+
+Replaces bool, error results with error results, for:
+
+* instance\_snapshots.go: EnableInstanceBackups
+* instance\_snapshots.go: CancelInstanceBackups
+* instance\_snapshots.go: RestoreInstanceBackup
+* instances.go: BootInstance
+* instances.go: RebootInstance
+* instances.go: MutateInstance
+* instances.go: RescueInstance
+* instances.go: ResizeInstance
+* instances.go: ShutdownInstance
+* volumes.go: DetachVolume
+* volumes.go: ResizeVolume
+
+
+### Docs
+
+* reword text about breaking changes until first tag
+
+### Feat
+
+* added MigrateInstance and InstanceResizing from 4.0.1-4.0.3 API Changelog
+* added gometalinter to travis builds
+* added missing function and type comments as reported by linting tools
+* supply json values for all fields, useful for mocking responses using linodego types
+* use context channels in WaitFor\* functions
+* add LinodeTypeClass type (enum)
+* add TicketStatus type (enum)
+* update template thing and add a test template
+
+### Fix
+
+* TransferQuota was TransferQuote (and not parsed from the api correctly)
+* stackscripts udf was not parsed correctly
+* add InstanceCreateOptions.PrivateIP
+* check the WaitFor timeout before sleeping to avoid extra sleep
+* various linting warnings and unhandled err results as reported by linting tools
+* fix GetStackscript 404 handling
+
+
 <a name="0.3.0"></a>
 
 ## [0.3.0](https://github.com/linode/linodego/compare/v0.2.0...0.3.0) (2018-08-15)

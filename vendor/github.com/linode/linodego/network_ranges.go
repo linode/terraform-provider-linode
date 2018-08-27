@@ -3,8 +3,6 @@ package linodego
 import (
 	"context"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
 // IPv6RangesPagedResponse represents a paginated IPv6Range API response
@@ -25,11 +23,6 @@ func (IPv6RangesPagedResponse) endpoint(c *Client) string {
 // appendData appends IPv6Ranges when processing paginated IPv6Range responses
 func (resp *IPv6RangesPagedResponse) appendData(r *IPv6RangesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of IPv6Range
-func (IPv6RangesPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(IPv6RangesPagedResponse{})
 }
 
 // ListIPv6Ranges lists IPv6Ranges

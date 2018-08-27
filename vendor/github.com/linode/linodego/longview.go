@@ -3,8 +3,6 @@ package linodego
 import (
 	"context"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
 // LongviewClient represents a LongviewClient object
@@ -32,11 +30,6 @@ func (LongviewClientsPagedResponse) endpoint(c *Client) string {
 // appendData appends LongviewClients when processing paginated LongviewClient responses
 func (resp *LongviewClientsPagedResponse) appendData(r *LongviewClientsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of LongviewClient
-func (LongviewClientsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(LongviewClientsPagedResponse{})
 }
 
 // ListLongviewClients lists LongviewClients

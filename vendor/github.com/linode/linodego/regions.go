@@ -3,17 +3,15 @@ package linodego
 import (
 	"context"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
-// LinodeRegion represents a linode region object
+// Region represents a linode region object
 type Region struct {
 	ID      string `json:"id"`
 	Country string `json:"country"`
 }
 
-// LinodeRegionsPagedResponse represents a linode API response for listing
+// RegionsPagedResponse represents a linode API response for listing
 type RegionsPagedResponse struct {
 	*PageOptions
 	Data []*Region `json:"data"`
@@ -31,11 +29,6 @@ func (RegionsPagedResponse) endpoint(c *Client) string {
 // appendData appends Regions when processing paginated Region responses
 func (resp *RegionsPagedResponse) appendData(r *RegionsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of Region
-func (RegionsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(RegionsPagedResponse{})
 }
 
 // ListRegions lists Regions

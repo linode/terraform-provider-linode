@@ -3,8 +3,6 @@ package linodego
 import (
 	"context"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
 // LongviewSubscription represents a LongviewSubscription object
@@ -35,11 +33,6 @@ func (LongviewSubscriptionsPagedResponse) endpoint(c *Client) string {
 // appendData appends LongviewSubscriptions when processing paginated LongviewSubscription responses
 func (resp *LongviewSubscriptionsPagedResponse) appendData(r *LongviewSubscriptionsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of LongviewSubscription
-func (LongviewSubscriptionsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(LongviewSubscriptionsPagedResponse{})
 }
 
 // ListLongviewSubscriptions lists LongviewSubscriptions

@@ -3,10 +3,9 @@ package linodego
 import (
 	"context"
 	"time"
-
-	"github.com/go-resty/resty"
 )
 
+// Notification represents a notification on an Account
 type Notification struct {
 	UntilStr string `json:"until"`
 	WhenStr  string `json:"when"`
@@ -47,11 +46,6 @@ func (NotificationsPagedResponse) endpoint(c *Client) string {
 // appendData appends Notifications when processing paginated Notification responses
 func (resp *NotificationsPagedResponse) appendData(r *NotificationsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of Notifications
-func (NotificationsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(NotificationsPagedResponse{})
 }
 
 // ListNotifications gets a collection of Notification objects representing important,

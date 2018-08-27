@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
 // Domain represents a Domain object
@@ -51,6 +49,7 @@ type Domain struct {
 	TTLSec int `json:"ttl_sec"`
 }
 
+// DomainCreateOptions fields are those accepted by CreateDomain
 type DomainCreateOptions struct {
 	// The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.
 	Domain string `json:"domain"`
@@ -92,6 +91,7 @@ type DomainCreateOptions struct {
 	TTLSec int `json:"ttl_sec,omitempty"`
 }
 
+// DomainUpdateOptions converts a Domain to DomainUpdateOptions for use in UpdateDomain
 type DomainUpdateOptions struct {
 	// The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.
 	Domain string `json:"domain,omitempty"`
@@ -133,15 +133,19 @@ type DomainUpdateOptions struct {
 	TTLSec int `json:"ttl_sec,omitempty"`
 }
 
+// DomainType constants start with DomainType and include Linode API Domain Type values
 type DomainType string
 
+// DomainType constants reflect the DNS zone type of a Domain
 const (
 	DomainTypeMaster DomainType = "master"
 	DomainTypeSlave  DomainType = "slave"
 )
 
+// DomainStatus constants start with DomainStatus and include Linode API Domain Status values
 type DomainStatus string
 
+// DomainStatus constants reflect the current status of a Domain
 const (
 	DomainStatusDisabled  DomainStatus = "disabled"
 	DomainStatusActive    DomainStatus = "active"
@@ -149,6 +153,7 @@ const (
 	DomainStatusHasErrors DomainStatus = "has_errors"
 )
 
+// GetUpdateOptions converts a Domain to DomainUpdateOptions for use in UpdateDomain
 func (d Domain) GetUpdateOptions() (du DomainUpdateOptions) {
 	du.Domain = d.Domain
 	du.Type = d.Type
@@ -185,11 +190,6 @@ func (resp *DomainsPagedResponse) appendData(r *DomainsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// setResult sets the Resty response type of Domain
-func (DomainsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(DomainsPagedResponse{})
-}
-
 // ListDomains lists Domains
 func (c *Client) ListDomains(ctx context.Context, opts *ListOptions) ([]*Domain, error) {
 	response := DomainsPagedResponse{}
@@ -201,8 +201,8 @@ func (c *Client) ListDomains(ctx context.Context, opts *ListOptions) ([]*Domain,
 }
 
 // fixDates converts JSON timestamps to Go time.Time values
-func (v *Domain) fixDates() *Domain {
-	return v
+func (d *Domain) fixDates() *Domain {
+	return d
 }
 
 // GetDomain gets the domain with the provided ID
@@ -229,11 +229,11 @@ func (c *Client) CreateDomain(ctx context.Context, domain DomainCreateOptions) (
 
 	req := c.R(ctx).SetResult(&Domain{})
 
-	if bodyData, err := json.Marshal(domain); err == nil {
-		body = string(bodyData)
-	} else {
+	bodyData, err := json.Marshal(domain)
+	if err != nil {
 		return nil, NewError(err)
 	}
+	body = string(bodyData)
 
 	r, err := coupleAPIErrors(req.
 		SetBody(body).

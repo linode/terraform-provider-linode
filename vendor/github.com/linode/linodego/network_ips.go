@@ -3,8 +3,6 @@ package linodego
 import (
 	"context"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
 // IPAddressesPagedResponse represents a paginated IPAddress API response
@@ -25,11 +23,6 @@ func (IPAddressesPagedResponse) endpoint(c *Client) string {
 // appendData appends IPAddresses when processing paginated InstanceIPAddress responses
 func (resp *IPAddressesPagedResponse) appendData(r *IPAddressesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of IPAddress
-func (IPAddressesPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(IPAddressesPagedResponse{})
 }
 
 // ListIPAddresses lists IPAddresses

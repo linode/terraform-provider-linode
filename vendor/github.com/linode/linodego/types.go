@@ -3,8 +3,6 @@ package linodego
 import (
 	"context"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
 // LinodeType represents a linode type object
@@ -37,8 +35,10 @@ type LinodeAddons struct {
 	Backups *LinodeBackupsAddon `json:"backups"`
 }
 
+// LinodeTypeClass constants start with Class and include Linode API Instance Type Classes
 type LinodeTypeClass string
 
+// LinodeTypeClass contants are the Instance Type Classes that an Instance Type can be assigned
 const (
 	ClassNanode   LinodeTypeClass = "nanode"
 	ClassStandard LinodeTypeClass = "standard"
@@ -61,10 +61,6 @@ func (LinodeTypesPagedResponse) endpoint(c *Client) string {
 
 func (resp *LinodeTypesPagedResponse) appendData(r *LinodeTypesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-func (LinodeTypesPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(LinodeTypesPagedResponse{})
 }
 
 // ListTypes lists linode types

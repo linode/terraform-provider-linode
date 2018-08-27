@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
+// NodeBalancerConfig objects allow a NodeBalancer to accept traffic on a new port
 type NodeBalancerConfig struct {
 	ID             int                     `json:"id"`
 	Port           int                     `json:"port"`
@@ -30,52 +29,63 @@ type NodeBalancerConfig struct {
 	NodesStatus    *NodeBalancerNodeStatus `json:"nodes_status"`
 }
 
+// ConfigAlgorithm constants start with Algorithm and include Linode API NodeBalancer Config Algorithms
 type ConfigAlgorithm string
 
-var (
+// ConfigAlgorithm constants reflect the NodeBalancer Config Algorithm
+const (
 	AlgorithmRoundRobin ConfigAlgorithm = "roundrobin"
 	AlgorithmLeastConn  ConfigAlgorithm = "leastconn"
 	AlgorithmSource     ConfigAlgorithm = "source"
 )
 
+// ConfigStickiness constants start with Stickiness and include Linode API NodeBalancer Config Stickiness
 type ConfigStickiness string
 
-var (
+// ConfigStickiness constants reflect the node stickiness method for a NodeBalancer Config
+const (
 	StickinessNone       ConfigStickiness = "none"
 	StickinessTable      ConfigStickiness = "table"
 	StickinessHTTPCookie ConfigStickiness = "http_cookie"
 )
 
+// ConfigCheck constants start with Check and include Linode API NodeBalancer Config Check methods
 type ConfigCheck string
 
-var (
+// ConfigCheck constants reflect the node health status checking method for a NodeBalancer Config
+const (
 	CheckNone       ConfigCheck = "none"
 	CheckConnection ConfigCheck = "connection"
 	CheckHTTP       ConfigCheck = "http"
 	CheckHTTPBody   ConfigCheck = "http_body"
 )
 
+// ConfigProtocol constants start with Protocol and include Linode API Nodebalancer Config protocols
 type ConfigProtocol string
 
-var (
+// ConfigProtocol constants reflect the protocol used by a NodeBalancer Config
+const (
 	ProtocolHTTP  ConfigProtocol = "http"
 	ProtocolHTTPS ConfigProtocol = "https"
 	ProtocolTCP   ConfigProtocol = "tcp"
 )
 
+// ConfigCipher constants start with Cipher and include Linode API NodeBalancer Config Cipher values
 type ConfigCipher string
 
-var (
+// ConfigCipher constants reflect the preferred cipher set for a NodeBalancer Config
+const (
 	CipherRecommended ConfigCipher = "recommended"
 	CipherLegacy      ConfigCipher = "legacy"
 )
 
+// NodeBalancerNodeStatus represents the total number of nodes whose status is Up or Down
 type NodeBalancerNodeStatus struct {
 	Up   int `json:"up"`
 	Down int `json:"down"`
 }
 
-// NodeBalancerConfigUpdateOptions are permitted by CreateNodeBalancerConfig
+// NodeBalancerConfigCreateOptions are permitted by CreateNodeBalancerConfig
 type NodeBalancerConfigCreateOptions struct {
 	Port          int              `json:"port"`
 	Protocol      ConfigProtocol   `json:"protocol,omitempty"`
@@ -96,6 +106,7 @@ type NodeBalancerConfigCreateOptions struct {
 // NodeBalancerConfigUpdateOptions are permitted by UpdateNodeBalancerConfig
 type NodeBalancerConfigUpdateOptions NodeBalancerConfigCreateOptions
 
+// GetCreateOptions converts a NodeBalancerConfig to NodeBalancerConfigCreateOptions for use in CreateNodeBalancerConfig
 func (i NodeBalancerConfig) GetCreateOptions() NodeBalancerConfigCreateOptions {
 	return NodeBalancerConfigCreateOptions{
 		Port:          i.Port,
@@ -115,6 +126,7 @@ func (i NodeBalancerConfig) GetCreateOptions() NodeBalancerConfigCreateOptions {
 	}
 }
 
+// GetUpdateOptions converts a NodeBalancerConfig to NodeBalancerConfigUpdateOptions for use in UpdateNodeBalancerConfig
 func (i NodeBalancerConfig) GetUpdateOptions() NodeBalancerConfigUpdateOptions {
 	return NodeBalancerConfigUpdateOptions{
 		Port:          i.Port,
@@ -154,11 +166,6 @@ func (resp *NodeBalancerConfigsPagedResponse) appendData(r *NodeBalancerConfigsP
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// setResult sets the Resty response type of NodeBalancerConfig
-func (NodeBalancerConfigsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(NodeBalancerConfigsPagedResponse{})
-}
-
 // ListNodeBalancerConfigs lists NodeBalancerConfigs
 func (c *Client) ListNodeBalancerConfigs(ctx context.Context, nodebalancerID int, opts *ListOptions) ([]*NodeBalancerConfig, error) {
 	response := NodeBalancerConfigsPagedResponse{}
@@ -173,8 +180,8 @@ func (c *Client) ListNodeBalancerConfigs(ctx context.Context, nodebalancerID int
 }
 
 // fixDates converts JSON timestamps to Go time.Time values
-func (v *NodeBalancerConfig) fixDates() *NodeBalancerConfig {
-	return v
+func (i *NodeBalancerConfig) fixDates() *NodeBalancerConfig {
+	return i
 }
 
 // GetNodeBalancerConfig gets the template with the provided ID

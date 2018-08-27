@@ -38,9 +38,9 @@ const (
 	eventsName                = "events"
 	invoicesName              = "invoices"
 	invoiceItemsName          = "invoiceitems"
-	notificationsName         = "notifications"
 	profileName               = "profile"
 	managedName               = "managed"
+	// notificationsName = "notifications"
 
 	stackscriptsEndpoint          = "linode/stackscripts"
 	imagesEndpoint                = "images"
@@ -74,9 +74,9 @@ const (
 	eventsEndpoint              = "account/events"
 	invoicesEndpoint            = "account/invoices"
 	invoiceItemsEndpoint        = "account/invoices/{{ .ID }}/items"
-	notificationsEndpoint       = "account/notifications"
 	profileEndpoint             = "profile"
 	managedEndpoint             = "managed"
+	// notificationsEndpoint       = "account/notifications"
 )
 
 // Resource represents a linode API resource

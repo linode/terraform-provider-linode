@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/go-resty/resty"
 )
 
+// InstanceDisk represents an Instance Disk object
 type InstanceDisk struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
@@ -22,9 +21,11 @@ type InstanceDisk struct {
 	Updated    time.Time      `json:"-"`
 }
 
+// DiskFilesystem constants start with Filesystem and include Linode API Filesystems
 type DiskFilesystem string
 
-var (
+// DiskFilesystem constants represent the filesystems types an Instance Disk may use
+const (
 	FilesystemRaw    DiskFilesystem = "raw"
 	FilesystemSwap   DiskFilesystem = "swap"
 	FilesystemExt3   DiskFilesystem = "ext3"
@@ -72,11 +73,6 @@ func (InstanceDisksPagedResponse) endpointWithID(c *Client, id int) string {
 // appendData appends InstanceDisks when processing paginated InstanceDisk responses
 func (resp *InstanceDisksPagedResponse) appendData(r *InstanceDisksPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-// setResult sets the Resty response type of InstanceDisk
-func (InstanceDisksPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(InstanceDisksPagedResponse{})
 }
 
 // ListInstanceDisks lists InstanceDisks

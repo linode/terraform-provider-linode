@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"net"
 	"time"
-
-	"github.com/go-resty/resty"
 )
 
 /*
  * https://developers.linode.com/v4/reference/endpoints/linode/instances
  */
 
+// InstanceStatus constants start with Instance and include Linode API Instance Status values
 type InstanceStatus string
 
-// InstanceStatus enum represents potential Instance.Status values
+// InstanceStatus constants reflect the current status of an Instance
 const (
 	InstanceBooting      InstanceStatus = "booting"
 	InstanceRunning      InstanceStatus = "running"
@@ -29,6 +28,7 @@ const (
 	InstanceRebuilding   InstanceStatus = "rebuilding"
 	InstanceCloning      InstanceStatus = "cloning"
 	InstanceRestoring    InstanceStatus = "restoring"
+	InstanceResizing     InstanceStatus = "resizing"
 )
 
 // Instance represents a linode object
@@ -148,11 +148,6 @@ func (resp *InstancesPagedResponse) appendData(r *InstancesPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// setResult sets the Resty response type of Instance
-func (InstancesPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(InstancesPagedResponse{})
-}
-
 // ListInstances lists linode instances
 func (c *Client) ListInstances(ctx context.Context, opts *ListOptions) ([]*Instance, error) {
 	response := InstancesPagedResponse{}
@@ -254,29 +249,29 @@ func (c *Client) DeleteInstance(ctx context.Context, id int) error {
 
 // BootInstance will boot a Linode instance
 // A configID of 0 will cause Linode to choose the last/best config
-func (c *Client) BootInstance(ctx context.Context, id int, configID int) (bool, error) {
+func (c *Client) BootInstance(ctx context.Context, id int, configID int) error {
 	bodyStr := ""
 
 	if configID != 0 {
 		bodyMap := map[string]int{"config_id": configID}
 		bodyJSON, err := json.Marshal(bodyMap)
 		if err != nil {
-			return false, NewError(err)
+			return NewError(err)
 		}
 		bodyStr = string(bodyJSON)
 	}
 
 	e, err := c.Instances.Endpoint()
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	e = fmt.Sprintf("%s/%d/boot", e, id)
-	r, err := coupleAPIErrors(c.R(ctx).
+	_, err = coupleAPIErrors(c.R(ctx).
 		SetBody(bodyStr).
 		Post(e))
 
-	return settleBoolResponseOrError(r, err)
+	return err
 }
 
 // CloneInstance clone an existing Instances Disks and Configuration profiles to another Linode Instance
@@ -309,42 +304,30 @@ func (c *Client) CloneInstance(ctx context.Context, id int, options InstanceClon
 
 // RebootInstance reboots a Linode instance
 // A configID of 0 will cause Linode to choose the last/best config
-func (c *Client) RebootInstance(ctx context.Context, id int, configID int) (bool, error) {
+func (c *Client) RebootInstance(ctx context.Context, id int, configID int) error {
 	bodyStr := "{}"
 
 	if configID != 0 {
 		bodyMap := map[string]int{"config_id": configID}
 		bodyJSON, err := json.Marshal(bodyMap)
 		if err != nil {
-			return false, NewError(err)
+			return NewError(err)
 		}
 		bodyStr = string(bodyJSON)
 	}
 
 	e, err := c.Instances.Endpoint()
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	e = fmt.Sprintf("%s/%d/reboot", e, id)
 
-	r, err := coupleAPIErrors(c.R(ctx).
+	_, err = coupleAPIErrors(c.R(ctx).
 		SetBody(bodyStr).
 		Post(e))
 
-	return settleBoolResponseOrError(r, err)
-}
-
-// MutateInstance Upgrades a Linode to its next generation.
-func (c *Client) MutateInstance(ctx context.Context, id int) (bool, error) {
-	e, err := c.Instances.Endpoint()
-	if err != nil {
-		return false, err
-	}
-	e = fmt.Sprintf("%s/%d/mutate", e, id)
-
-	r, err := coupleAPIErrors(c.R(ctx).Post(e))
-	return settleBoolResponseOrError(r, err)
+	return err
 }
 
 // RebuildInstanceOptions is a struct representing the options to send to the rebuild linode endpoint
@@ -380,6 +363,7 @@ func (c *Client) RebuildInstance(ctx context.Context, id int, opts RebuildInstan
 	return r.Result().(*Instance).fixDates(), nil
 }
 
+// RescueInstanceOptions fields are those accepted by RescueInstance
 type RescueInstanceOptions struct {
 	Devices InstanceConfigDeviceMap `json:"devices"`
 }
@@ -388,55 +372,65 @@ type RescueInstanceOptions struct {
 // Rescue Mode is based on the Finnix recovery distribution, a self-contained and bootable Linux distribution.
 // You can also use Rescue Mode for tasks other than disaster recovery, such as formatting disks to use different filesystems,
 // copying data between disks, and downloading files from a disk via SSH and SFTP.
-func (c *Client) RescueInstance(ctx context.Context, id int, opts RescueInstanceOptions) (bool, error) {
+func (c *Client) RescueInstance(ctx context.Context, id int, opts RescueInstanceOptions) error {
 	o, err := json.Marshal(opts)
 	if err != nil {
-		return false, NewError(err)
+		return NewError(err)
 	}
 	b := string(o)
 	e, err := c.Instances.Endpoint()
 	if err != nil {
-		return false, err
+		return err
 	}
 	e = fmt.Sprintf("%s/%d/rescue", e, id)
 
-	r, err := coupleAPIErrors(c.R(ctx).
+	_, err = coupleAPIErrors(c.R(ctx).
 		SetBody(b).
 		Post(e))
 
-	return settleBoolResponseOrError(r, err)
+	return err
 }
 
 // ResizeInstance resizes an instance to new Linode type
-func (c *Client) ResizeInstance(ctx context.Context, id int, linodeType string) (bool, error) {
+func (c *Client) ResizeInstance(ctx context.Context, id int, linodeType string) error {
 	body := fmt.Sprintf("{\"type\":\"%s\"}", linodeType)
 
 	e, err := c.Instances.Endpoint()
 	if err != nil {
-		return false, err
+		return err
 	}
 	e = fmt.Sprintf("%s/%d/resize", e, id)
 
-	r, err := coupleAPIErrors(c.R(ctx).
+	_, err = coupleAPIErrors(c.R(ctx).
 		SetBody(body).
 		Post(e))
 
-	return settleBoolResponseOrError(r, err)
+	return err
 }
 
 // ShutdownInstance - Shutdown an instance
-func (c *Client) ShutdownInstance(ctx context.Context, id int) (bool, error) {
-	e, err := c.Instances.Endpoint()
-	if err != nil {
-		return false, err
-	}
-	e = fmt.Sprintf("%s/%d/shutdown", e, id)
-	return settleBoolResponseOrError(coupleAPIErrors(c.R(ctx).Post(e)))
+func (c *Client) ShutdownInstance(ctx context.Context, id int) error {
+	return c.simpleInstanceAction(ctx, "shutdown", id)
 }
 
-func settleBoolResponseOrError(resp *resty.Response, err error) (bool, error) {
+// MutateInstance Upgrades a Linode to its next generation.
+func (c *Client) MutateInstance(ctx context.Context, id int) error {
+	return c.simpleInstanceAction(ctx, "mutate", id)
+}
+
+// MigrateInstance - Migrate an instance
+func (c *Client) MigrateInstance(ctx context.Context, id int) error {
+	return c.simpleInstanceAction(ctx, "migrate", id)
+}
+
+// simpleInstanceAction is a helper for Instance actions that take no parameters
+// and return empty responses `{}` unless they return a standard error
+func (c *Client) simpleInstanceAction(ctx context.Context, action string, id int) error {
+	e, err := c.Instances.Endpoint()
 	if err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	e = fmt.Sprintf("%s/%d/%s", e, id, action)
+	_, err = coupleAPIErrors(c.R(ctx).Post(e))
+	return err
 }

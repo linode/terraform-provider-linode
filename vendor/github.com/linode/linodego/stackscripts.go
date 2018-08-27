@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/go-resty/resty"
 )
 
 // Stackscript represents a Linode StackScript
@@ -30,6 +28,7 @@ type Stackscript struct {
 	UserGravatarID    string            `json:"user_gravatar_id"`
 }
 
+// StackscriptUDF define a single variable that is accepted by a Stackscript
 type StackscriptUDF struct {
 	// A human-readable label for the field that will serve as the input prompt for entering the value during deployment.
 	Label string `json:"label"`
@@ -50,6 +49,7 @@ type StackscriptUDF struct {
 	Default string `json:"default,omitempty"`
 }
 
+// StackscriptCreateOptions fields are those accepted by CreateStackscript
 type StackscriptCreateOptions struct {
 	Label       string   `json:"label"`
 	Description string   `json:"description"`
@@ -59,8 +59,10 @@ type StackscriptCreateOptions struct {
 	Script      string   `json:"script"`
 }
 
+// StackscriptUpdateOptions fields are those accepted by UpdateStackscript
 type StackscriptUpdateOptions StackscriptCreateOptions
 
+// GetCreateOptions converts a Stackscript to StackscriptCreateOptions for use in CreateStackscript
 func (i Stackscript) GetCreateOptions() StackscriptCreateOptions {
 	return StackscriptCreateOptions{
 		Label:       i.Label,
@@ -72,6 +74,7 @@ func (i Stackscript) GetCreateOptions() StackscriptCreateOptions {
 	}
 }
 
+// GetUpdateOptions converts a Stackscript to StackscriptUpdateOptions for use in UpdateStackscript
 func (i Stackscript) GetUpdateOptions() StackscriptUpdateOptions {
 	return StackscriptUpdateOptions{
 		Label:       i.Label,
@@ -103,11 +106,6 @@ func (resp *StackscriptsPagedResponse) appendData(r *StackscriptsPagedResponse) 
 	(*resp).Data = append(resp.Data, r.Data...)
 }
 
-// setResult sets the Resty response type of Stackscript
-func (StackscriptsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(StackscriptsPagedResponse{})
-}
-
 // ListStackscripts lists Stackscripts
 func (c *Client) ListStackscripts(ctx context.Context, opts *ListOptions) ([]*Stackscript, error) {
 	response := StackscriptsPagedResponse{}
@@ -122,10 +120,10 @@ func (c *Client) ListStackscripts(ctx context.Context, opts *ListOptions) ([]*St
 }
 
 // fixDates converts JSON timestamps to Go time.Time values
-func (v *Stackscript) fixDates() *Stackscript {
-	v.Created, _ = parseDates(v.CreatedStr)
-	v.Updated, _ = parseDates(v.UpdatedStr)
-	return v
+func (i *Stackscript) fixDates() *Stackscript {
+	i.Created, _ = parseDates(i.CreatedStr)
+	i.Updated, _ = parseDates(i.UpdatedStr)
+	return i
 }
 
 // GetStackscript gets the Stackscript with the provided ID
@@ -135,7 +133,9 @@ func (c *Client) GetStackscript(ctx context.Context, id int) (*Stackscript, erro
 		return nil, err
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
-	r, err := coupleAPIErrors(c.R(ctx).SetResult(&Stackscript{}).Get(e))
+	r, err := coupleAPIErrors(c.R(ctx).
+		SetResult(&Stackscript{}).
+		Get(e))
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,6 @@ func (c *Client) CreateStackscript(ctx context.Context, createOpts StackscriptCr
 	}
 
 	r, err := coupleAPIErrors(req.
-		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(e))
 

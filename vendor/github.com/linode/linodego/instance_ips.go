@@ -6,17 +6,20 @@ import (
 	"fmt"
 )
 
+// InstanceIPAddressResponse contains the IPv4 and IPv6 details for an Instance
 type InstanceIPAddressResponse struct {
 	IPv4 *InstanceIPv4Response `json:"ipv4"`
 	IPv6 *InstanceIPv6Response `json:"ipv6"`
 }
 
+// InstanceIPv4Response contains the details of all IPv4 addresses associated with an Instance
 type InstanceIPv4Response struct {
 	Public  []*InstanceIP `json:"public"`
 	Private []*InstanceIP `json:"private"`
 	Shared  []*InstanceIP `json:"shared"`
 }
 
+// InstanceIP represents an Instance IP with additional DNS and networking details
 type InstanceIP struct {
 	Address    string `json:"address"`
 	Gateway    string `json:"gateway"`
@@ -29,12 +32,14 @@ type InstanceIP struct {
 	Region     string `json:"region"`
 }
 
+// InstanceIPv6Response contains the IPv6 addresses and ranges for an Instance
 type InstanceIPv6Response struct {
 	LinkLocal *InstanceIP  `json:"link_local"`
 	SLAAC     *InstanceIP  `json:"slaac"`
 	Global    []*IPv6Range `json:"global"`
 }
 
+// IPv6Range represents a range of IPv6 addresses routed to a single Linode in a given Region
 type IPv6Range struct {
 	Range  string `json:"range"`
 	Region string `json:"region"`

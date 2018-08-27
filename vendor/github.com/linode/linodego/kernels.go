@@ -3,22 +3,20 @@ package linodego
 import (
 	"context"
 	"fmt"
-
-	"github.com/go-resty/resty"
 )
 
-// LinodeKernel represents a linode kernel object
+// LinodeKernel represents a Linode Instance kernel object
 type LinodeKernel struct {
 	ID           string `json:"id"`
 	Label        string `json:"label"`
 	Version      string `json:"version"`
+	Architecture string `json:"architecture"`
 	KVM          bool   `json:"kvm"`
 	XEN          bool   `json:"xen"`
-	Architecture string `json:"architecture"`
 	PVOPS        bool   `json:"pvops"`
 }
 
-// LinodeKernelsPagedResponse represents a linode kernels API response for listing
+// LinodeKernelsPagedResponse represents a Linode kernels API response for listing
 type LinodeKernelsPagedResponse struct {
 	*PageOptions
 	Data []*LinodeKernel `json:"data"`
@@ -44,10 +42,6 @@ func (LinodeKernelsPagedResponse) endpoint(c *Client) string {
 
 func (resp *LinodeKernelsPagedResponse) appendData(r *LinodeKernelsPagedResponse) {
 	(*resp).Data = append(resp.Data, r.Data...)
-}
-
-func (LinodeKernelsPagedResponse) setResult(r *resty.Request) {
-	r.SetResult(LinodeKernelsPagedResponse{})
 }
 
 // GetKernel gets the kernel with the provided ID

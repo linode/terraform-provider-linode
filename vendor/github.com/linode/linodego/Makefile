@@ -5,6 +5,14 @@ include .env
 LINODE_FIXTURE_INSTANCE:=76859403
 LINODE_FIXTURE_VOLUME:=6574839201
 
+.PHONY: test
+test: vendor
+	@LINODE_TEST_INSTANCE=$(LINODE_FIXTURE_INSTANCE) \
+	LINODE_TEST_VOLUME=$(LINODE_FIXTURE_VOLUME) \
+	LINODE_FIXTURE_MODE="play" \
+	LINODE_TOKEN="awesometokenawesometokenawesometoken" \
+	go test $(ARGS)
+
 $(GOPATH)/bin/dep:
 	@go get -u github.com/golang/dep/cmd/dep
 
@@ -37,14 +45,6 @@ fixtures:
 			-e 's/(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/1234::5678/g' \
 			-e "s/$(LINODE_TEST_VOLUME)/$(LINODE_FIXTURE_VOLUME)/g" $$yaml; \
 	done
-
-.PHONY: test
-test: vendor
-	@LINODE_TEST_INSTANCE=$(LINODE_FIXTURE_INSTANCE) \
-	LINODE_TEST_VOLUME=$(LINODE_FIXTURE_VOLUME) \
-	LINODE_FIXTURE_MODE="play" \
-	LINODE_TOKEN="awesometokenawesometokenawesometoken" \
-	go test $(ARGS)
 
 .PHONY: godoc
 godoc:

@@ -992,8 +992,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	d.Partial(false)
 
 	if createOpts.Booted != nil && *createOpts.Booted {
-		booted, err := client.BootInstance(context.Background(), instance.ID, bootConfig)
-		if !booted {
+		if err = client.BootInstance(context.Background(), instance.ID, bootConfig); err != nil {
 			return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 		}
 
@@ -1087,10 +1086,11 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if rebootInstance {
-		_, err = client.RebootInstance(context.Background(), instance.ID, configs[0].ID)
+		err = client.RebootInstance(context.Background(), instance.ID, configs[0].ID)
 		if err != nil {
 			return fmt.Errorf("Error rebooting Linode instance %d: %s", instance.ID, err)
 		}
+
 		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for Linode instance %d to finish rebooting: %s", instance.ID, err)
