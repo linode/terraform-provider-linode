@@ -1030,7 +1030,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	rebootInstance := false
 
 	if d.HasChange("type") {
-		err = changeLinodeSize(&client, instance, d)
+		err = changeInstanceType(&client, instance, d.Get("type").(string), d)
 		if err != nil {
 			return err
 		}

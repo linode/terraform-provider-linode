@@ -177,54 +177,33 @@ func hashString(key string) string {
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 
-// changeLinodeSize resizes the current linode
-func changeLinodeSize(client *linodego.Client, instance *linodego.Instance, d *schema.ResourceData) error {
-	typeID, ok := d.Get("type").(string)
-	if !ok {
-		return fmt.Errorf("Unexpected value for type %v", d.Get("type"))
-	}
-
-	targetType, err := client.GetType(context.Background(), typeID)
-	if err != nil {
-		return fmt.Errorf("Error finding the instance type %s", typeID)
-	}
-
-	//biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
-
-	//currentDiskSize, err := getTotalDiskSize(client, instance.ID)
-
-	if ok, err := client.ResizeInstance(context.Background(), instance.ID, typeID); err != nil || !ok {
+// changeInstanceType resizes the Linode Instance
+func changeInstanceType(client *linodego.Client, instance *linodego.Instance, targetType string, d *schema.ResourceData) error {
+	if ok, err := client.ResizeInstance(context.Background(), instance.ID, targetType); err != nil || !ok {
 		return fmt.Errorf("Error resizing instance %d: %s", instance.ID, err)
 	}
 
-	event, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+	_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 	if err != nil {
 		return fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
 
-	if d.Get("disk_expansion").(bool) && instance.Specs.Disk > targetType.Disk {
-		// Determine the biggestDisk ID and Size
-		biggestDiskID, biggestDiskSize, err := getBiggestDisk(client, instance.ID)
-		if err != nil {
-			return err
-		}
-		// Calculate new size, with other disks taken into consideration
-		expandedDiskSize := biggestDiskSize + targetType.Disk - instance.Specs.Disk
+	return nil
+}
 
-		// Resize the Disk
-		client.ResizeInstanceDisk(context.Background(), instance.ID, biggestDiskID, expandedDiskSize)
+func changeDiskSize(client *linodego.Client, instance *linodego.Instance, disk *linodego.InstanceDisk, targetSize int, d *schema.ResourceData) error {
+	if instance.Specs.Disk > targetSize {
+		client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize)
 
 		// Wait for the Disk Resize Operation to Complete
 		// waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
-		event, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, *event.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, disk.Updated, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
-			return fmt.Errorf("Error waiting for resize of Disk %d for Linode %d: %s", biggestDiskID, instance.ID, err)
+			return fmt.Errorf("Error waiting for resize of Disk %d: %s", disk.ID, instance.ID, err)
 		}
+	} else {
+		return fmt.Errorf("Error resizing Disk %d: size exceeds disk size for Instance %d", disk.ID, instance.ID)
 	}
-
-	// Return the new Linode size
-	d.SetPartial("disk_expansion")
-	d.SetPartial("type")
 	return nil
 }
 
