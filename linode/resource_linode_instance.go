@@ -489,7 +489,6 @@ func resourceLinodeInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The root device to boot. The corresponding disk must be attached.",
-							Default:     "/dev/sda",
 						},
 						"comments": {
 							Type:        schema.TypeString,
@@ -797,67 +796,12 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		dset := d.Get("disk").(*schema.Set)
 		diskIDLabelMap = make(map[string]int, len(dset.List()))
 		for index, v := range dset.List() {
-			disk, ok := v.(map[string]interface{})
-
-			if !ok {
-				return fmt.Errorf("Error converting disk from Terraform Set to golang map")
-			}
-
-			diskOpts := linodego.InstanceDiskCreateOptions{
-				Label:      disk["label"].(string),
-				Filesystem: disk["filesystem"].(string),
-				Size:       disk["size"].(int),
-			}
-
-			if image, ok := disk["image"]; ok {
-				diskOpts.Image = image.(string)
-
-				if rootPass, ok := disk["root_pass"]; ok {
-					diskOpts.RootPass = rootPass.(string)
-				}
-
-				if authorizedKeys, ok := disk["authorized_keys"]; ok {
-					for _, sshKey := range authorizedKeys.([]interface{}) {
-						diskOpts.AuthorizedKeys = append(diskOpts.AuthorizedKeys, sshKey.(string))
-					}
-				}
-
-				if stackscriptID, ok := disk["stackscript_id"]; ok {
-					diskOpts.StackscriptID = stackscriptID.(int)
-				}
-
-				if stackscriptData, ok := disk["stackscript_data"]; ok {
-					for name, value := range stackscriptData.(map[string]interface{}) {
-						diskOpts.StackscriptData[name] = value.(string)
-					}
-				}
-
-				/*
-					if sshKeys, ok := d.GetOk("authorized_keys"); ok {
-						if sshKeysArr, ok := sshKeys.([]interface{}); ok {
-							diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
-							for k, v := range sshKeys.([]interface{}) {
-								if val, ok := v.(string); ok {
-									diskOpts.AuthorizedKeys[k] = val
-								}
-							}
-						}
-					}
-				*/
-			}
-
-			instanceDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
-
+			instanceDisk, err := createDiskFromSet(client, *instance, v, d)
 			if err != nil {
-				return fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
+				return err
 			}
 
-			_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, instanceDisk.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
-			if err != nil {
-				return fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
-			}
-
-			diskIDLabelMap[diskOpts.Label] = instanceDisk.ID
+			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
 
 			// if err := d.Set(fmt.Sprintf("disk.%d.id", index), instanceDisk.ID); err != nil {
 			//	return fmt.Errorf("Error setting Linode Disk ID: %s", err)
@@ -912,71 +856,28 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			}
 
 			configOpts := linodego.InstanceConfigCreateOptions{}
+
 			configOpts.Kernel = config["kernel"].(string)
 			configOpts.Label = config["label"].(string)
 			configOpts.Comments = config["comments"].(string)
 			// configOpts.InitRD = config["initrd"].(string)
 			// TODO(displague) need a disk_label to initrd lookup?
-			devices, _ := config["devices"].([]interface{})
+			devices, _ := config["devices"].([]map[string]interface{})
 			// TODO(displague) ok needed? check it
 			for _, device := range devices {
-				for k, rdev := range device.(map[string]interface{}) {
-					devSlots := rdev.([]interface{})
-					for _, rrdev := range devSlots {
-						dev := rrdev.(map[string]interface{})
-						if k == "sda" {
-							configOpts.Devices.SDA = &linodego.InstanceConfigDevice{}
-							if err := assignConfigDevice(configOpts.Devices.SDA, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-						if k == "sdb" {
-							configOpts.Devices.SDB = &linodego.InstanceConfigDevice{}
-							if err := assignConfigDevice(configOpts.Devices.SDB, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-						if k == "sdc" {
-							configOpts.Devices.SDC = &linodego.InstanceConfigDevice{}
-							if err := assignConfigDevice(configOpts.Devices.SDC, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-						if k == "sdd" {
-							configOpts.Devices.SDD = &linodego.InstanceConfigDevice{}
-							if err := assignConfigDevice(configOpts.Devices.SDD, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-						if k == "sde" {
-							configOpts.Devices.SDE = &linodego.InstanceConfigDevice{}
+				confDevices, err := expandInstanceConfigDeviceMap(device, diskIDLabelMap)
+				if err != nil {
+					return err
+				}
+				configOpts.Devices = *confDevices
 
-							if err := assignConfigDevice(configOpts.Devices.SDE, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-						if k == "sdf" {
-							configOpts.Devices.SDF = &linodego.InstanceConfigDevice{}
-
-							if err := assignConfigDevice(configOpts.Devices.SDF, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-						if k == "sdg" {
-							configOpts.Devices.SDG = &linodego.InstanceConfigDevice{}
-							if err := assignConfigDevice(configOpts.Devices.SDG, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-						if k == "sdh" {
-							configOpts.Devices.SDH = &linodego.InstanceConfigDevice{}
-							if err := assignConfigDevice(configOpts.Devices.SDH, dev, diskIDLabelMap); err != nil {
-								return err
-							}
-						}
-					}
+				if len(diskIDLabelMap) == 0 {
+					empty := ""
+					configOpts.RootDevice = &empty
 				}
 			}
+			empty := ""
+			configOpts.RootDevice = &empty
 			instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
 			if err != nil {
 				return fmt.Errorf("Error creating Instance Config: %s", err)
@@ -1006,7 +907,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
-	d.Partial(true)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -1018,86 +918,250 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
-	if d.HasChange("label") {
-		if instance, err = client.RenameInstance(context.Background(), instance.ID, d.Get("label").(string)); err != nil {
-			return err
-		}
-		d.Set("label", instance.Label)
-		d.SetPartial("label")
-	}
-
 	rebootInstance := false
 
+	// Handle all simple updates that don't require reboots, configs, or disks
+	d.Partial(true)
+
+	updateOpts := linodego.InstanceUpdateOptions{}
+	simpleUpdate := false
+
+	if d.HasChange("label") {
+		updateOpts.Label = d.Get("label").(string)
+		d.SetPartial("label")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("group") {
+		updateOpts.Group = d.Get("group").(string)
+		d.SetPartial("group")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("watchdog_enabled") {
+		watchdogEnabled := d.Get("watchdog_enabled").(bool)
+		updateOpts.WatchdogEnabled = &watchdogEnabled
+		d.SetPartial("watchdog_enabled")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("alerts.0.cpu") {
+		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
+		d.SetPartial("alerts.0.cpu")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("alerts.0.io") {
+		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
+		d.SetPartial("alerts.0.io")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("alerts.0.network_in") {
+		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
+		d.SetPartial("alerts.0.network_in")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("alerts.0.network_out") {
+		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
+		d.SetPartial("alerts.0.network_out")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("alerts.0.transfer_quota") {
+		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.transfer_quota").(int)
+		d.SetPartial("alerts.0.transfer_quota")
+		simpleUpdate = true
+	}
+
+	if simpleUpdate {
+		if instance, err = client.UpdateInstance(context.Background(), instance.ID, updateOpts); err != nil {
+			return fmt.Errorf("Error updating Instance %d: %s", instance.ID, err)
+		}
+	}
+
+	d.Partial(false)
+
+	if d.HasChange("backups_enabled") {
+		d.Partial(true)
+		if d.Get("backups_enabled").(bool) {
+			if err = client.EnableInstanceBackups(context.Background(), instance.ID); err != nil {
+				return err
+			}
+		} else {
+			if err = client.CancelInstanceBackups(context.Background(), instance.ID); err != nil {
+				return err
+			}
+		}
+		d.SetPartial("backups_enabled")
+		d.Partial(false)
+	}
+
 	if d.HasChange("type") {
-		err = changeInstanceType(&client, instance, d.Get("type").(string), d)
-		if err != nil {
+		if err = changeInstanceType(&client, instance, d.Get("type").(string), d); err != nil {
 			return err
 		}
+		d.Set("type", d.Get("type").(string))
 	}
 
 	if d.HasChange("private_ip") {
 		if !d.Get("private_ip").(bool) {
-			return fmt.Errorf("Can't deactivate private networking for linode %s", d.Id())
+			return fmt.Errorf("Error removing private IP address for Instance %d: Removing a Private IP address must be handled through a support ticket", instance.ID)
 		}
 
-		resp, err := client.AddInstanceIPAddress(context.Background(), int(id), false)
+		d.Partial(true)
+		resp, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
 
 		if err != nil {
-			return fmt.Errorf("Error activating private networking on linode %s: %s", d.Id(), err)
+			return fmt.Errorf("Error activating private networking on Instance %d: %s", instance.ID, err)
 		}
+
 		d.SetPartial("private_ip")
 		d.Set("private_ip_address", resp.Address)
 		d.SetPartial("private_ip_address")
+		d.Partial(false)
 		rebootInstance = true
 	}
 
+	disks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
+	if err != nil {
+		return fmt.Errorf("Error fetching the disks for Instance %d: %s", id, err)
+	}
+
+	diskMap := make(map[string]linodego.InstanceDisk, len(disks))
+	for _, disk := range disks {
+		if _, duplicate := diskMap[disk.Label]; duplicate {
+			return fmt.Errorf("Error indexing Instance %d Disks: Label '%s' is assigned to multiple disks", id, disk.Label)
+		}
+		diskMap[disk.Label] = *disk
+	}
+
+	tfDisks := d.Get("disk").(*schema.Set)
+	updatedDisks := make([]*linodego.InstanceDisk, tfDisks.Len())
+	diskIDLabelMap := make(map[string]int, tfDisks.Len())
+
+	for _, tfDisk := range tfDisks.List() {
+		tfd := tfDisk.(map[string]interface{})
+		label, _ := tfd["label"].(string)
+		if existingDisk, existing := diskMap[label]; existing {
+			// The only non-destructive change supported is resize, which requires a reboot
+			// Label renames are not supported because this TF provider relies on the label as an identifier
+			if tfd["size"].(int) != existingDisk.Size {
+				if err = changeInstanceDiskSize(&client, instance, &existingDisk, tfd["size"].(int), d); err != nil {
+					return err
+				}
+				rebootInstance = true
+			}
+			if tfd["filesystem"] != existingDisk.Filesystem {
+				return fmt.Errorf("Error updating Instance %d Disk %d: Filesystem changes are not supported", instance.ID, existingDisk.ID)
+			}
+			diskIDLabelMap[existingDisk.Label] = existingDisk.ID
+		} else {
+			instanceDisk, err := createDiskFromSet(client, *instance, tfd, d)
+			if err != nil {
+				return err
+			}
+
+			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
+		}
+	}
+
+	// @TODO(displague) check for dupe disk labels .. perhaps in flattener
+	// @TODO(displague) delete unfound disks
+	// @TODO(displague) even bother Set'ting disk if Read is going to do it?
+	updatedTFDisks, swap := flattenInstanceDisks(updatedDisks)
+	d.Set("disk", updatedTFDisks)
+	d.Set("swap_size", swap)
+
+	bootConfig := 0
 	configs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
 	if err != nil {
-		return fmt.Errorf("Error fetching the config for linode %d: %s", id, err)
-	}
-	if len(configs) != 1 {
-		return fmt.Errorf("Linode %d has an incorrect number of configs %d, this plugin can only handle 1", id, len(configs))
-	}
-	config := configs[0].GetUpdateOptions()
-	updateConfig := false
-	if d.HasChange("helper_distro") {
-		updateConfig = true
-		config.Helpers.Distro = d.Get("helper_distro").(bool)
-	}
-	if d.HasChange("helper_network") {
-		updateConfig = true
-		config.Helpers.Network = d.Get("helper_network").(bool)
-	}
-	if d.HasChange("kernel") {
-		updateConfig = true
-		config.Kernel = d.Get("kernel").(string)
+		return fmt.Errorf("Error fetching the config for Instance %d: %s", id, err)
 	}
 
-	if updateConfig {
-		_, err := client.UpdateInstanceConfig(context.Background(), instance.ID, configs[0].ID, config)
-		if err != nil {
-			return fmt.Errorf("Error updating Linode %d config: %s", instance.ID, err)
+	configMap := make(map[string]linodego.InstanceConfig, len(configs))
+	for _, config := range configs {
+		if _, duplicate := configMap[config.Label]; duplicate {
+			return fmt.Errorf("Error indexing Instance %d Configs: Label '%s' is assigned to multiple configs", id, config.Label)
 		}
-		d.SetPartial("helper_distro")
-		d.SetPartial("helper_network")
-		d.SetPartial("kernel")
+		configMap[config.Label] = *config
+	}
 
-		rebootInstance = true
+	if len(configs) == 0 {
+		return fmt.Errorf("Instance %d must have atleast one config to boot", id)
+	}
+
+	tfConfigs := d.Get("config").(*schema.Set)
+	updatedConfigs := make([]*linodego.InstanceConfig, tfConfigs.Len())
+	updatedConfigMap := make(map[string]int, tfConfigs.Len())
+	for _, tfConfig := range tfConfigs.List() {
+		tfc := tfConfig.(map[string]interface{})
+		label, _ := tfc["label"].(string)
+		rootDevice, _ := tfc["root_device"].(string)
+		empty := ""
+		if existingConfig, existing := configMap[label]; existing {
+			configUpdateOpts := existingConfig.GetUpdateOptions()
+			configUpdateOpts.Kernel = tfc["kernel"].(string)
+			configUpdateOpts.RunLevel = tfc["run_level"].(string)
+			configUpdateOpts.VirtMode = tfc["virt_mode"].(string)
+			configUpdateOpts.RootDevice = &rootDevice
+			configUpdateOpts.Comments = tfc["comments"].(string)
+			configUpdateOpts.MemoryLimit = tfc["memory_limit"].(int)
+
+			if tfcDevices, devicesFound := tfc["devices"].(*schema.Set); devicesFound {
+				devices := tfcDevices.List()[0].(map[string]interface{})
+				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
+				if err != nil {
+					return err
+				}
+				if configUpdateOpts.Devices == nil {
+					configUpdateOpts.RootDevice = &empty
+				}
+			} else {
+				configUpdateOpts.Devices = nil
+				configUpdateOpts.RootDevice = &empty
+			}
+
+			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)
+			if err != nil {
+				return fmt.Errorf("Error updating Instance %d Config %d: %s", instance.ID, existingConfig.ID, err)
+			}
+			updatedConfigs = append(updatedConfigs, updatedConfig)
+			updatedConfigMap[updatedConfig.Label] = updatedConfig.ID
+		}
+	}
+	// @TODO(displague) check for dupe config labels .. perhaps in flattener
+	// @TODO(displague) delete unfound configs
+	// @TODO(displague) check boot_label and set bootConfig
+	// @TODO(displague) even bother Set'ting config if Read is going to do it?
+	d.Set("config", flattenInstanceConfigs(updatedConfigs))
+
+	bootConfigLabel := d.Get("boot_config_label").(string)
+
+	if len(bootConfigLabel) > 0 {
+		if foundConfig, found := updatedConfigMap[bootConfigLabel]; found {
+			bootConfig = foundConfig
+		} else {
+			return fmt.Errorf("Error setting boot_config_label: Config label '%s' not found", bootConfigLabel)
+		}
+	} else if len(updatedConfigs) > 0 {
+		bootConfig = updatedConfigs[0].ID
 	}
 
 	if rebootInstance {
-		err = client.RebootInstance(context.Background(), instance.ID, configs[0].ID)
+		err = client.RebootInstance(context.Background(), instance.ID, bootConfig)
 		if err != nil {
-			return fmt.Errorf("Error rebooting Linode instance %d: %s", instance.ID, err)
+			return fmt.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}
 
 		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
 		if err != nil {
-			return fmt.Errorf("Error waiting for Linode instance %d to finish rebooting: %s", instance.ID, err)
+			return fmt.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
 		}
 	}
 
-	return nil // resourceLinodeInstanceRead(d, meta)
+	return resourceLinodeInstanceRead(d, meta)
 }
 
 func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) error {

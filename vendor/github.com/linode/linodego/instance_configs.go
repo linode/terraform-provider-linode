@@ -69,29 +69,33 @@ type InstanceConfigCreateOptions struct {
 	MemoryLimit int                     `json:"memory_limit,omitempty"`
 	Kernel      string                  `json:"kernel,omitempty"`
 	InitRD      int                     `json:"init_rd,omitempty"`
-	RootDevice  string                  `json:"root_device,omitempty"`
+	RootDevice  *string                 `json:"root_device,omitempty"`
 	RunLevel    string                  `json:"run_level,omitempty"`
 	VirtMode    string                  `json:"virt_mode,omitempty"`
 }
 
 // InstanceConfigUpdateOptions are InstanceConfig settings that can be used in updates
 type InstanceConfigUpdateOptions struct {
-	Label    string                  `json:"label,omitempty"`
-	Comments string                  `json:"comments"`
-	Devices  InstanceConfigDeviceMap `json:"devices"`
-	Helpers  *InstanceConfigHelpers  `json:"helpers,omitempty"`
+	Label    string                   `json:"label,omitempty"`
+	Comments string                   `json:"comments"`
+	Devices  *InstanceConfigDeviceMap `json:"devices,omitempty"`
+	Helpers  *InstanceConfigHelpers   `json:"helpers,omitempty"`
 	// MemoryLimit 0 means unlimitted, this is not omitted
 	MemoryLimit int    `json:"memory_limit"`
 	Kernel      string `json:"kernel,omitempty"`
 	// InitRD is nullable, permit the sending of null
-	InitRD     *int   `json:"init_rd"`
-	RootDevice string `json:"root_device,omitempty"`
-	RunLevel   string `json:"run_level,omitempty"`
-	VirtMode   string `json:"virt_mode,omitempty"`
+	InitRD     *int    `json:"init_rd"`
+	RootDevice *string `json:"root_device,omitempty"`
+	RunLevel   string  `json:"run_level,omitempty"`
+	VirtMode   string  `json:"virt_mode,omitempty"`
 }
 
 // GetCreateOptions converts a InstanceConfig to InstanceConfigCreateOptions for use in CreateInstanceConfig
 func (i InstanceConfig) GetCreateOptions() InstanceConfigCreateOptions {
+	initrd := 0
+	if i.InitRD != nil {
+		initrd = *i.InitRD
+	}
 	return InstanceConfigCreateOptions{
 		Label:       i.Label,
 		Comments:    i.Comments,
@@ -99,8 +103,8 @@ func (i InstanceConfig) GetCreateOptions() InstanceConfigCreateOptions {
 		Helpers:     i.Helpers,
 		MemoryLimit: i.MemoryLimit,
 		Kernel:      i.Kernel,
-		InitRD:      *i.InitRD,
-		RootDevice:  i.RootDevice,
+		InitRD:      initrd,
+		RootDevice:  copyString(&i.RootDevice),
 		RunLevel:    i.RunLevel,
 		VirtMode:    i.VirtMode,
 	}
@@ -111,12 +115,12 @@ func (i InstanceConfig) GetUpdateOptions() InstanceConfigUpdateOptions {
 	return InstanceConfigUpdateOptions{
 		Label:       i.Label,
 		Comments:    i.Comments,
-		Devices:     *i.Devices,
+		Devices:     i.Devices,
 		Helpers:     i.Helpers,
 		MemoryLimit: i.MemoryLimit,
 		Kernel:      i.Kernel,
 		InitRD:      copyInt(i.InitRD),
-		RootDevice:  i.RootDevice,
+		RootDevice:  copyString(&i.RootDevice),
 		RunLevel:    i.RunLevel,
 		VirtMode:    i.VirtMode,
 	}

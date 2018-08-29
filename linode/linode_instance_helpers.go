@@ -113,7 +113,71 @@ func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice) []map[strin
 	}}
 }
 
-func expandInstanceconfigDevice(m map[string]interface{}) *linodego.InstanceConfigDevice {
+// TODO(displague) do we need a disk_label map?
+func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
+	if len(m) > 0 {
+		return nil, nil
+	}
+	for k, rdev := range m {
+		devSlots := rdev.([]interface{})
+		for _, rrdev := range devSlots {
+			dev := rrdev.(map[string]interface{})
+			if k == "sda" {
+				deviceMap.SDA = &linodego.InstanceConfigDevice{}
+				if err := assignConfigDevice(deviceMap.SDA, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+			if k == "sdb" {
+				deviceMap.SDB = &linodego.InstanceConfigDevice{}
+				if err := assignConfigDevice(deviceMap.SDB, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+			if k == "sdc" {
+				deviceMap.SDC = &linodego.InstanceConfigDevice{}
+				if err := assignConfigDevice(deviceMap.SDC, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+			if k == "sdd" {
+				deviceMap.SDD = &linodego.InstanceConfigDevice{}
+				if err := assignConfigDevice(deviceMap.SDD, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+			if k == "sde" {
+				deviceMap.SDE = &linodego.InstanceConfigDevice{}
+
+				if err := assignConfigDevice(deviceMap.SDE, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+			if k == "sdf" {
+				deviceMap.SDF = &linodego.InstanceConfigDevice{}
+
+				if err := assignConfigDevice(deviceMap.SDF, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+			if k == "sdg" {
+				deviceMap.SDG = &linodego.InstanceConfigDevice{}
+				if err := assignConfigDevice(deviceMap.SDG, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+			if k == "sdh" {
+				deviceMap.SDH = &linodego.InstanceConfigDevice{}
+				if err := assignConfigDevice(deviceMap.SDH, dev, diskIDLabelMap); err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+	return deviceMap, nil
+}
+
+func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConfigDevice {
 	var dev *linodego.InstanceConfigDevice
 	// be careful of `disk_label string` in m
 	if diskID, ok := m["disk_id"]; ok && diskID.(int) > 0 {
@@ -127,6 +191,70 @@ func expandInstanceconfigDevice(m map[string]interface{}) *linodego.InstanceConf
 	}
 
 	return dev
+}
+
+func createDiskFromSet(client linodego.Client, instance linodego.Instance, v interface{}, d *schema.ResourceData) (*linodego.InstanceDisk, error) {
+	disk, ok := v.(map[string]interface{})
+
+	if !ok {
+		return nil, fmt.Errorf("Error converting disk from Terraform Set to golang map")
+	}
+
+	diskOpts := linodego.InstanceDiskCreateOptions{
+		Label:      disk["label"].(string),
+		Filesystem: disk["filesystem"].(string),
+		Size:       disk["size"].(int),
+	}
+
+	if image, ok := disk["image"]; ok {
+		diskOpts.Image = image.(string)
+
+		if rootPass, ok := disk["root_pass"]; ok {
+			diskOpts.RootPass = rootPass.(string)
+		}
+
+		if authorizedKeys, ok := disk["authorized_keys"]; ok {
+			for _, sshKey := range authorizedKeys.([]interface{}) {
+				diskOpts.AuthorizedKeys = append(diskOpts.AuthorizedKeys, sshKey.(string))
+			}
+		}
+
+		if stackscriptID, ok := disk["stackscript_id"]; ok {
+			diskOpts.StackscriptID = stackscriptID.(int)
+		}
+
+		if stackscriptData, ok := disk["stackscript_data"]; ok {
+			for name, value := range stackscriptData.(map[string]interface{}) {
+				diskOpts.StackscriptData[name] = value.(string)
+			}
+		}
+
+		/*
+			if sshKeys, ok := d.GetOk("authorized_keys"); ok {
+				if sshKeysArr, ok := sshKeys.([]interface{}); ok {
+					diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
+					for k, v := range sshKeys.([]interface{}) {
+						if val, ok := v.(string); ok {
+							diskOpts.AuthorizedKeys[k] = val
+						}
+					}
+				}
+			}
+		*/
+	}
+
+	instanceDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
+	}
+
+	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, instanceDisk.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	if err != nil {
+		return nil, fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
+	}
+
+	return instanceDisk, err
 }
 
 // getTotalDiskSize returns the number of disks and their total size.
@@ -191,7 +319,7 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 	return nil
 }
 
-func changeDiskSize(client *linodego.Client, instance *linodego.Instance, disk *linodego.InstanceDisk, targetSize int, d *schema.ResourceData) error {
+func changeInstanceDiskSize(client *linodego.Client, instance *linodego.Instance, disk *linodego.InstanceDisk, targetSize int, d *schema.ResourceData) error {
 	if instance.Specs.Disk > targetSize {
 		client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize)
 
@@ -199,7 +327,7 @@ func changeDiskSize(client *linodego.Client, instance *linodego.Instance, disk *
 		// waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
 		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, disk.Updated, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
-			return fmt.Errorf("Error waiting for resize of Disk %d: %s", disk.ID, instance.ID, err)
+			return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
 		}
 	} else {
 		return fmt.Errorf("Error resizing Disk %d: size exceeds disk size for Instance %d", disk.ID, instance.ID)
@@ -240,7 +368,7 @@ func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]in
 			return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
 		}
 	}
-	expanded := expandInstanceconfigDevice(dev)
+	expanded := expandInstanceConfigDevice(dev)
 	*device = *expanded
 	return nil
 }

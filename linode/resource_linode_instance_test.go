@@ -336,7 +336,7 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstanceUpdate(t *testing.T) {
+func TestAccLinodeInstanceUpdate_simple(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
@@ -356,15 +356,53 @@ func TestAccLinodeInstanceUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					//resource.TestCheckResourceAttr("linode_instance.foobar", "group", "testing"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceConfigUpdates(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceSimpleUpdates(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", instanceName)),
-					//resource.TestCheckResourceAttr("linode_instance.foobar", "group", "integration"),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstanceUpdate_config(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Error generating test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceConfigSimpleUpdates(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
+					// changed kerel, not label
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
 				),
 			},
 		},
@@ -919,19 +957,36 @@ resource "linode_instance" "foobar" {
 }`, instance, instance, pubkey)
 }
 
-func testAccCheckLinodeInstanceConfigUpdates(instance string, pubkey string) string {
+// testAccCheckLinodeInstanceSimpleUpdates is testAccCheckLinodeInstanceWithConfig with an instance and group rename
+func testAccCheckLinodeInstanceSimpleUpdates(instance string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
-	label = "%s_renamed"
+	label = "%s_r"
 	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
 	region = "us-east"
-	kernel = "linode/latest-64bit"
-	root_password = "terraform-test"
-	swap_size = 256
-	authorized_keys = "%s"
-	group = "testing"
-}`, instance, pubkey)
+	group = "tf_test_r"
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+	}
+}`, instance)
+}
+
+// testAccCheckLinodeInstanceConfigSimpleUpdates is testAccCheckLinodeInstanceWithConfig with an instance and group rename and a different kernel
+func testAccCheckLinodeInstanceConfigSimpleUpdates(instance string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s_r"
+	type = "g6-nanode-1"
+	region = "us-east"
+	group = "tf_test_r"
+
+	config {
+		label = "config"
+		kernel = "linode/latest-32bit"
+	}
+}`, instance)
 }
 
 func testAccCheckLinodeInstanceConfigUpsizeSmall(instance string, pubkey string) string {
@@ -945,7 +1000,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
-	group = "testing"
+	group = "tf_test"
 }`, instance, pubkey)
 }
 
@@ -960,7 +1015,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
-	group = "testing"
+	group = "tf_test"
 }`, instance, pubkey)
 }
 
@@ -975,7 +1030,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
-	group = "testing"
+	group = "tf_test"
 }`, instance, pubkey)
 }
 
@@ -991,7 +1046,7 @@ resource "linode_instance" "foobar" {
 	root_password = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
-	group = "testing"
+	group = "tf_test"
 }`, instance, pubkey)
 }
 
@@ -1007,6 +1062,6 @@ resource "linode_instance" "foobar" {
 	swap_size = 256
 	private_networking = true
 	authorized_keys = "%s"
-	group = "testing"
+	group = "tf_test"
 }`, instance, pubkey)
 }
