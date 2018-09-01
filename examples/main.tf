@@ -1,3 +1,7 @@
+data "linode_regions" "us-east" {}
+data "linode_instance_types" "g6-nanode-1" {}
+data "linode_image" "linode/ubuntu18.04" {}
+
 resource "linode_nodebalancer" "foo-nb" {
   label                = "${random_pet.project.id}"
   region               = "${var.region}"
@@ -120,7 +124,7 @@ resource "linode_instance" "nginx" {
   
   disk {
     label = "boot"
-    size = 3000
+    size = 3000 // @TODO(displague) howto do this "${linode_image["linode/ubuntu18.04"].size}"
     authorized_keys            = "${chomp(file(var.ssh_key))}"
     root_pass      = "${random_string.password.result}"
     image  = "linode/ubuntu18.04"

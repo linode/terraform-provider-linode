@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -523,7 +524,7 @@ func resourceLinodeInstance() *schema.Resource {
 						"filesystem": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Default:  "ext4",
+							Computed: true,
 						},
 						"read_only": {
 							Type:     schema.TypeBool,
@@ -828,23 +829,25 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if !configsOk {
-		// TODO(displague)  should we really create a config if not specfically defined? probably not
+		if disksOk {
+			// TODO(displague)  should we really create a config if not specfically defined? probably not
 
-		configOpts := linodego.InstanceConfigCreateOptions{
-			Label: fmt.Sprintf("linode%d-config", instance.ID),
-			// RootDevice: "/dev/sda",
-			// RunLevel:   "default",
-			// VirtMode:   "paravirt",
-			Devices: configDevices,
-		}
+			configOpts := linodego.InstanceConfigCreateOptions{
+				Label: fmt.Sprintf("linode%d-config", instance.ID),
+				// RootDevice: "/dev/sda",
+				// RunLevel:   "default",
+				// VirtMode:   "paravirt",
+				Devices: configDevices,
+			}
 
-		instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
-		if err != nil {
-			return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
+			instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
+			if err != nil {
+				return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
+			}
+			bootConfig = instanceConfig.ID
+			configIDLabelMap = make(map[string]int, 1)
+			configIDLabelMap[configOpts.Label] = instanceConfig.ID
 		}
-		bootConfig = instanceConfig.ID
-		configIDLabelMap = make(map[string]int, 1)
-		configIDLabelMap[configOpts.Label] = instanceConfig.ID
 	} else {
 		cset := d.Get("config").(*schema.Set)
 		configIDLabelMap = make(map[string]int, len(cset.List()))
@@ -864,6 +867,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			// TODO(displague) need a disk_label to initrd lookup?
 			devices, _ := config["devices"].([]map[string]interface{})
 			// TODO(displague) ok needed? check it
+			fmt.Println("mwj debug-1:", devices, configOpts)
 			for _, device := range devices {
 				confDevices, err := expandInstanceConfigDeviceMap(device, diskIDLabelMap)
 				if err != nil {
@@ -1038,7 +1042,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	tfDisks := d.Get("disk").(*schema.Set)
-	updatedDisks := make([]*linodego.InstanceDisk, tfDisks.Len())
+	//updatedDisks := make([]*linodego.InstanceDisk, tfDisks.Len())
 	diskIDLabelMap := make(map[string]int, tfDisks.Len())
 
 	for _, tfDisk := range tfDisks.List() {
@@ -1053,8 +1057,8 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 				}
 				rebootInstance = true
 			}
-			if tfd["filesystem"] != existingDisk.Filesystem {
-				return fmt.Errorf("Error updating Instance %d Disk %d: Filesystem changes are not supported", instance.ID, existingDisk.ID)
+			if strings.Compare(tfd["filesystem"].(string), string(existingDisk.Filesystem)) != 0 {
+				return fmt.Errorf("Error updating Instance %d Disk %d: Filesystem changes are not supported ('%s' != '%s')", instance.ID, existingDisk.ID, tfd["filesystem"], existingDisk.Filesystem)
 			}
 			diskIDLabelMap[existingDisk.Label] = existingDisk.ID
 		} else {
@@ -1062,7 +1066,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 			if err != nil {
 				return err
 			}
-
+			rebootInstance = true
 			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
 		}
 	}
@@ -1070,9 +1074,10 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	// @TODO(displague) check for dupe disk labels .. perhaps in flattener
 	// @TODO(displague) delete unfound disks
 	// @TODO(displague) even bother Set'ting disk if Read is going to do it?
-	updatedTFDisks, swap := flattenInstanceDisks(updatedDisks)
-	d.Set("disk", updatedTFDisks)
-	d.Set("swap_size", swap)
+
+	//updatedTFDisks, swap := flattenInstanceDisks(updatedDisks)
+	//d.Set("disk", updatedTFDisks)
+	//d.Set("swap_size", swap)
 
 	bootConfig := 0
 	configs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
@@ -1099,7 +1104,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		tfc := tfConfig.(map[string]interface{})
 		label, _ := tfc["label"].(string)
 		rootDevice, _ := tfc["root_device"].(string)
-		empty := ""
+		// empty := ""
 		if existingConfig, existing := configMap[label]; existing {
 			configUpdateOpts := existingConfig.GetUpdateOptions()
 			configUpdateOpts.Kernel = tfc["kernel"].(string)
@@ -1111,23 +1116,27 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 			if tfcDevices, devicesFound := tfc["devices"].(*schema.Set); devicesFound {
 				devices := tfcDevices.List()[0].(map[string]interface{})
+				fmt.Println("mwj debug-1 U:", devices, tfcDevices, devicesFound)
+
 				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
 				if err != nil {
 					return err
 				}
+				fmt.Println("mwj debug-2 U:", configUpdateOpts)
 				if configUpdateOpts.Devices == nil {
-					configUpdateOpts.RootDevice = &empty
+					configUpdateOpts.RootDevice = nil // &empty
 				}
 			} else {
 				configUpdateOpts.Devices = nil
-				configUpdateOpts.RootDevice = &empty
+				configUpdateOpts.RootDevice = nil // &empty
 			}
+			fmt.Println("mwj debug-3 U:", configUpdateOpts)
 
 			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
 				return fmt.Errorf("Error updating Instance %d Config %d: %s", instance.ID, existingConfig.ID, err)
 			}
-			updatedConfigs = append(updatedConfigs, updatedConfig)
+			//updatedConfigs = append(updatedConfigs, updatedConfig)
 			updatedConfigMap[updatedConfig.Label] = updatedConfig.ID
 		}
 	}
@@ -1135,7 +1144,8 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	// @TODO(displague) delete unfound configs
 	// @TODO(displague) check boot_label and set bootConfig
 	// @TODO(displague) even bother Set'ting config if Read is going to do it?
-	d.Set("config", flattenInstanceConfigs(updatedConfigs))
+
+	// d.Set("config", flattenInstanceConfigs(updatedConfigs))
 
 	bootConfigLabel := d.Get("boot_config_label").(string)
 

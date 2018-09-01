@@ -2,7 +2,10 @@ package linodego
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -23,7 +26,7 @@ type Event struct {
 	PercentComplete int `json:"percent_complete"`
 
 	// The rate of completion of the Event. Only some Events will return rate; for example, migration and resize Events.
-	Rate string `json:"rate"`
+	Rate *string `json:"rate"`
 
 	// If this Event has been read.
 	Read bool `json:"read"`
@@ -32,7 +35,8 @@ type Event struct {
 	Seen bool `json:"seen"`
 
 	// The estimated time remaining until the completion of this Event. This value is only returned for in-progress events.
-	TimeRemaining int `json:"time_remaining"`
+	TimeRemainingMsg json.RawMessage `json:"time_remaining"`
+	TimeRemaining    *int            `json:"-"`
 
 	// The username of the User who caused the Event.
 	Username string `json:"username"`
@@ -200,6 +204,7 @@ func (c *Client) GetEvent(ctx context.Context, id int) (*Event, error) {
 // fixDates converts JSON timestamps to Go time.Time values
 func (e *Event) fixDates() *Event {
 	e.Created, _ = parseDates(e.CreatedStr)
+	e.TimeRemaining = unmarshalTimeRemaining(e.TimeRemainingMsg)
 	return e
 }
 
@@ -221,4 +226,44 @@ func (c *Client) MarkEventsSeen(ctx context.Context, event *Event) error {
 	_, err := coupleAPIErrors(c.R(ctx).Post(e))
 
 	return err
+}
+
+func unmarshalTimeRemaining(m json.RawMessage) *int {
+	var intPtr *int
+	jsonBytes, err := m.MarshalJSON()
+	if err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal(jsonBytes, intPtr); err == nil {
+		return intPtr
+	}
+	var timeStr string
+	if err := json.Unmarshal(jsonBytes, timeStr); err == nil {
+		if dur, err := durationToSeconds(timeStr); err != nil {
+			panic(err)
+		} else {
+			return &dur
+		}
+	}
+
+	return nil
+}
+
+// durationToSeconds takes a hh:mm:ss string and returns the number of seconds
+func durationToSeconds(s string) (int, error) {
+	multipliers := [3]int{60 * 60, 60, 1}
+	segs := strings.Split(s, ":")
+	if len(segs) > len(multipliers) {
+		return 0, fmt.Errorf("too many ':' separators in time duration: %s", s)
+	}
+	var d int
+	l := len(segs)
+	for i := 0; i < l; i++ {
+		m, err := strconv.Atoi(segs[i])
+		if err != nil {
+			return 0, err
+		}
+		d += m * multipliers[i+len(multipliers)-l]
+	}
+	return d, nil
 }

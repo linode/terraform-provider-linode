@@ -115,13 +115,18 @@ func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice) []map[strin
 
 // TODO(displague) do we need a disk_label map?
 func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
+	fmt.Println("mwj debug0:", m, diskIDLabelMap)
 	if len(m) > 0 {
 		return nil, nil
 	}
+	fmt.Println("mwj debug1:", m)
 	for k, rdev := range m {
+		fmt.Println("mwj debug2:", k, rdev)
 		devSlots := rdev.([]interface{})
+		fmt.Println("mwj debug3:", devSlots)
 		for _, rrdev := range devSlots {
 			dev := rrdev.(map[string]interface{})
+			fmt.Println("mwj debug4:", rrdev, dev)
 			if k == "sda" {
 				deviceMap.SDA = &linodego.InstanceConfigDevice{}
 				if err := assignConfigDevice(deviceMap.SDA, dev, diskIDLabelMap); err != nil {
@@ -174,6 +179,7 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 			}
 		}
 	}
+	fmt.Println("mwj debug5:", deviceMap)
 	return deviceMap, nil
 }
 
@@ -307,6 +313,17 @@ func hashString(key string) string {
 
 // changeInstanceType resizes the Linode Instance
 func changeInstanceType(client *linodego.Client, instance *linodego.Instance, targetType string, d *schema.ResourceData) error {
+	// Instance must be either offline or running (with no extra activity) to resize.
+	if instance.Status == linodego.InstanceOffline || instance.Status == linodego.InstanceShuttingDown {
+		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
+			return fmt.Errorf("Error waiting for instance %d to go offline: %s", instance.ID, err)
+		}
+	} else {
+		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
+			return fmt.Errorf("Error waiting for instance %d readiness: %s", instance.ID, err)
+		}
+	}
+
 	if err := client.ResizeInstance(context.Background(), instance.ID, targetType); err != nil {
 		return fmt.Errorf("Error resizing instance %d: %s", instance.ID, err)
 	}

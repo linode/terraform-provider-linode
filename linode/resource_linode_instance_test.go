@@ -429,9 +429,7 @@ func TestAccLinodeInstanceResize(t *testing.T) {
 				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "plan_storage_utilized", "25600"),
-					resource.TestCheckResourceAttr(resName, "storage_utilized", "25600"),
-					resource.TestCheckResourceAttr(resName, "storage", "25600"),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 				),
 			},
@@ -440,17 +438,16 @@ func TestAccLinodeInstanceResize(t *testing.T) {
 				Config: testAccCheckLinodeInstanceConfigUpsizeBigger(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
-					resource.TestCheckResourceAttr(resName, "plan_storage_utilized", "25600"),
-					resource.TestCheckResourceAttr(resName, "storage_utilized", "25600"),
-					resource.TestCheckResourceAttr(resName, "storage", "25600"),
 				),
 			},
 			// Go back down to a 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceConfigDownsize(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 				),
 			},
@@ -996,9 +993,8 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
-	kernel = "linode/latest-64bit"
-	root_password = "terraform-test"
-	swap_size = 256
+	root_pass = "terraform-test"
+	swap_size = 512
 	authorized_keys = "%s"
 	group = "tf_test"
 }`, instance, pubkey)
@@ -1007,13 +1003,12 @@ resource "linode_instance" "foobar" {
 func testAccCheckLinodeInstanceConfigUpsizeBigger(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
-	label = "%s_upsized"
+	label = "%s"
 	type = "g6-standard-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
-	kernel = "linode/latest-64bit"
-	root_password = "terraform-test"
-	swap_size = 256
+	root_pass = "terraform-test"
+	swap_size = 512
 	authorized_keys = "%s"
 	group = "tf_test"
 }`, instance, pubkey)
@@ -1026,8 +1021,7 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
-	kernel = "linode/latest-64bit"
-	root_password = "terraform-test"
+	root_pass = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
 	group = "tf_test"
