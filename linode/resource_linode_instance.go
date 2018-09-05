@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -865,21 +866,39 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			configOpts.Comments = config["comments"].(string)
 			// configOpts.InitRD = config["initrd"].(string)
 			// TODO(displague) need a disk_label to initrd lookup?
-			devices, _ := config["devices"].([]map[string]interface{})
+			devices, ok := config["devices"].([]interface{})
+			if !ok {
+				fmt.Println(fmt.Sprintf("mwj debug-1: %#v\n", config["devices"]))
+				return fmt.Errorf("Error converting config devices")
+			}
 			// TODO(displague) ok needed? check it
-			fmt.Println("mwj debug-1:", devices, configOpts)
+			fmt.Println(fmt.Sprintf("mwj debug-1a: %#v %#v\n", devices, configOpts))
+			spew.Dump(config["devices"])
+			spew.Dump(devices)
+			fmt.Println("mwj debug-2:", config["devices"])
 			for _, device := range devices {
-				confDevices, err := expandInstanceConfigDeviceMap(device, diskIDLabelMap)
+				deviceMap, ok := device.(map[string]interface{})
+				spew.Dump(device)
+				spew.Dump(deviceMap)
+				if !ok {
+					return fmt.Errorf("Error converting config device %#v", device)
+				}
+				confDevices, err := expandInstanceConfigDeviceMap(deviceMap, diskIDLabelMap)
 				if err != nil {
 					return err
 				}
-				configOpts.Devices = *confDevices
+				fmt.Println("mwj debug-2a:", deviceMap, confDevices)
+				if confDevices != nil {
+					configOpts.Devices = *confDevices
+				}
 
 				if len(diskIDLabelMap) == 0 {
 					empty := ""
 					configOpts.RootDevice = &empty
 				}
 			}
+			fmt.Println("mwj debug-3:", configOpts)
+
 			empty := ""
 			configOpts.RootDevice = &empty
 			instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
@@ -1044,9 +1063,12 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	tfDisks := d.Get("disk").(*schema.Set)
 	//updatedDisks := make([]*linodego.InstanceDisk, tfDisks.Len())
 	diskIDLabelMap := make(map[string]int, tfDisks.Len())
+	spew.Dump("mwjdump")
+	spew.Dump(tfDisks)
 
 	for _, tfDisk := range tfDisks.List() {
 		tfd := tfDisk.(map[string]interface{})
+		spew.Dump(tfDisk, tfd)
 		label, _ := tfd["label"].(string)
 		if existingDisk, existing := diskMap[label]; existing {
 			// The only non-destructive change supported is resize, which requires a reboot

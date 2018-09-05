@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -472,20 +473,91 @@ func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "plan_storage_utilized", "25600"),
+
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
 			// Bump it to a 2048, and expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceConfigUpsizeExpandDisk(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig_resizedAndExpanded(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
-					resource.TestCheckResourceAttr(resName, "plan_storage_utilized", "25600"),
+
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceDisk(&instance, "disk", 6000),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstanceReorderedDisks(t *testing.T) {
+	// t.Parallel()
+	var (
+		instance      linodego.Instance
+		instanceDisk  linodego.InstanceDisk
+		instanceDiskB linodego.InstanceDisk
+	)
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Error generating test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Start off with a Linode 1024
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					testAccCheckLinodeInstanceDiskExists(&instance, "disk", &instanceDisk),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk))),
+					testDebug(instance, &instance),
+					testDebug(&instanceDisk, instanceDisk, instanceDisk.ID, strconv.Itoa(instanceDisk.ID)),
+					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+					resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sda.0.disk_id", strconv.Itoa(instanceDisk.ID)),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					// testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+				),
+			},
+			// Add a disk, reorder the disks
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig_addedAndReordered(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("disk"))+".size", "3000"),
+					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("diskb"))+".size", "3000"),
+
+					testAccCheckLinodeInstanceDiskExists(&instance, "diskb", &instanceDiskB),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDiskB), testConfigSDBDisk(instanceDisk))),
+
+					resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sda.0.disk_id", strconv.Itoa(instanceDiskB.ID)),
+					resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sdb.0.disk_id", strconv.Itoa(instanceDisk.ID)),
+
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+					testAccCheckComputeInstanceDisk(&instance, "diskb", 3000),
 				),
 			},
 		},
@@ -614,6 +686,62 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 	}
 }
 
+type testDiskFunc func(disk *linodego.InstanceDisk) error
+type testDisksFunc func(disk []*linodego.InstanceDisk) error
+
+func testDisk(label string, diskTests ...testDiskFunc) testDisksFunc {
+	return func(disks []*linodego.InstanceDisk) error {
+		for _, disk := range disks {
+			if disk.Label == label {
+				for _, test := range diskTests {
+					if err := test(disk); err != nil {
+						return err
+					}
+				}
+				return nil
+			}
+		}
+		return fmt.Errorf("should have found Instance disk with label: %s", label)
+	}
+}
+
+func testDiskSize(size int) testDiskFunc {
+	return func(disk *linodego.InstanceDisk) error {
+		if disk.Size != size {
+			return fmt.Errorf("should have matching sizes: %d != %d", disk.Size, size)
+		}
+		return nil
+	}
+}
+
+func testAccCheckComputeInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testAccProvider.Meta().(linodego.Client)
+
+		if instance == nil || instance.ID == 0 {
+			return fmt.Errorf("Error fetching disks: invalid Instance argument")
+		}
+
+		instanceDisks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
+
+		if err != nil {
+			return fmt.Errorf("Error fetching disks: %s", err)
+		}
+
+		if len(instanceDisks) == 0 {
+			return fmt.Errorf("No disks")
+		}
+
+		for _, tests := range disksTests {
+			if err := tests(instanceDisks); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
 type testConfigFunc func(config *linodego.InstanceConfig) error
 type testConfigsFunc func(config []*linodego.InstanceConfig) error
 
@@ -713,6 +841,14 @@ func testAccCheckComputeInstanceConfigs(instance *linodego.Instance, configsTest
 			}
 		}
 
+		return nil
+	}
+}
+func testDebug(all ...interface{}) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		fmt.Println("mwj testDebug")
+
+		spew.Dump(all)
 		return nil
 	}
 }
@@ -880,6 +1016,65 @@ resource "linode_instance" "foobar" {
 		devices = { sda = { disk_label = "disk" } }
 	}
 }`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithDiskAndConfig_resizedAndExpanded(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-standard-1"
+	region = "us-east"
+	group = "tf_test"
+
+	disk {
+		label = "disk"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 6000
+	}
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices = { sda = { disk_label = "disk" } }
+	}
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithDiskAndConfig_addedAndReordered(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-standard-1"
+	region = "us-east"
+	group = "tf_test"
+
+	disk {
+		label = "disk"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 3000
+	}
+
+	disk {
+		label = "diskb"
+		image = "linode/ubuntu18.04"
+		root_pass = "b4d_p4s5"
+		authorized_keys = "%s"
+		size = 3000
+	}
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices = {
+			sda = { disk_label = "diskb" }, 
+			sdb = { disk_label = "disk" }
+		}
+	}
+}`, instance, pubkey, pubkey)
 }
 
 func testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instance string, pubkey string) string {

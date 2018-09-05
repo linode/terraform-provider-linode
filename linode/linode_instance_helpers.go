@@ -359,6 +359,8 @@ func privateIP(ip net.IP) bool {
 
 func labelHashcode(v interface{}) int {
 	switch t := v.(type) {
+	case string:
+		return schema.HashString(v)
 	case linodego.InstanceConfig:
 		return schema.HashString(t.Label)
 	case linodego.InstanceDisk:
