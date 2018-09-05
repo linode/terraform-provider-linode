@@ -115,18 +115,14 @@ func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice) []map[strin
 
 // TODO(displague) do we need a disk_label map?
 func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
-	fmt.Println("mwj debug0:", m, diskIDLabelMap)
-	if len(m) > 0 {
+	if len(m) == 0 {
 		return nil, nil
 	}
-	fmt.Println("mwj debug1:", m)
+	deviceMap = &linodego.InstanceConfigDeviceMap{}
 	for k, rdev := range m {
-		fmt.Println("mwj debug2:", k, rdev)
 		devSlots := rdev.([]interface{})
-		fmt.Println("mwj debug3:", devSlots)
 		for _, rrdev := range devSlots {
 			dev := rrdev.(map[string]interface{})
-			fmt.Println("mwj debug4:", rrdev, dev)
 			if k == "sda" {
 				deviceMap.SDA = &linodego.InstanceConfigDevice{}
 				if err := assignConfigDevice(deviceMap.SDA, dev, diskIDLabelMap); err != nil {
@@ -153,7 +149,6 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 			}
 			if k == "sde" {
 				deviceMap.SDE = &linodego.InstanceConfigDevice{}
-
 				if err := assignConfigDevice(deviceMap.SDE, dev, diskIDLabelMap); err != nil {
 					return nil, err
 				}
@@ -179,7 +174,6 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 			}
 		}
 	}
-	fmt.Println("mwj debug5:", deviceMap)
 	return deviceMap, nil
 }
 
