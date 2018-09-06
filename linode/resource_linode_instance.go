@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -647,8 +646,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("group", instance.Group)
 
-	// panic: interface conversion: interface {} is map[string]int, not *schema.Set
-
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
 
@@ -868,18 +865,11 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			// TODO(displague) need a disk_label to initrd lookup?
 			devices, ok := config["devices"].([]interface{})
 			if !ok {
-				fmt.Println(fmt.Sprintf("mwj debug-1: %#v\n", config["devices"]))
 				return fmt.Errorf("Error converting config devices")
 			}
 			// TODO(displague) ok needed? check it
-			fmt.Println(fmt.Sprintf("mwj debug-1a: %#v %#v\n", devices, configOpts))
-			spew.Dump(config["devices"])
-			spew.Dump(devices)
-			fmt.Println("mwj debug-2:", config["devices"])
 			for _, device := range devices {
 				deviceMap, ok := device.(map[string]interface{})
-				spew.Dump(device)
-				spew.Dump(deviceMap)
 				if !ok {
 					return fmt.Errorf("Error converting config device %#v", device)
 				}
@@ -887,7 +877,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				if err != nil {
 					return err
 				}
-				fmt.Println("mwj debug-2a:", deviceMap, confDevices)
 				if confDevices != nil {
 					configOpts.Devices = *confDevices
 				}
@@ -897,7 +886,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 					configOpts.RootDevice = &empty
 				}
 			}
-			fmt.Println("mwj debug-3:", configOpts)
 
 			empty := ""
 			configOpts.RootDevice = &empty
@@ -915,7 +903,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	d.Partial(false)
 
-	if createOpts.Booted != nil && *createOpts.Booted {
+	if createOpts.Booted == nil || !*createOpts.Booted {
 		if err = client.BootInstance(context.Background(), instance.ID, bootConfig); err != nil {
 			return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 		}
@@ -1063,12 +1051,9 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	tfDisks := d.Get("disk").(*schema.Set)
 	//updatedDisks := make([]*linodego.InstanceDisk, tfDisks.Len())
 	diskIDLabelMap := make(map[string]int, tfDisks.Len())
-	spew.Dump("mwjdump")
-	spew.Dump(tfDisks)
 
 	for _, tfDisk := range tfDisks.List() {
 		tfd := tfDisk.(map[string]interface{})
-		spew.Dump(tfDisk, tfd)
 		label, _ := tfd["label"].(string)
 		if existingDisk, existing := diskMap[label]; existing {
 			// The only non-destructive change supported is resize, which requires a reboot
@@ -1138,13 +1123,11 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 			if tfcDevices, devicesFound := tfc["devices"].(*schema.Set); devicesFound {
 				devices := tfcDevices.List()[0].(map[string]interface{})
-				fmt.Println("mwj debug-1 U:", devices, tfcDevices, devicesFound)
 
 				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
 				if err != nil {
 					return err
 				}
-				fmt.Println("mwj debug-2 U:", configUpdateOpts)
 				if configUpdateOpts.Devices == nil {
 					configUpdateOpts.RootDevice = nil // &empty
 				}
@@ -1152,7 +1135,6 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 				configUpdateOpts.Devices = nil
 				configUpdateOpts.RootDevice = nil // &empty
 			}
-			fmt.Println("mwj debug-3 U:", configUpdateOpts)
 
 			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
