@@ -1045,7 +1045,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		if _, duplicate := diskMap[disk.Label]; duplicate {
 			return fmt.Errorf("Error indexing Instance %d Disks: Label '%s' is assigned to multiple disks", id, disk.Label)
 		}
-		diskMap[disk.Label] = *disk
+		diskMap[disk.Label] = disk
 	}
 
 	tfDisks := d.Get("disk").(*schema.Set)
@@ -1097,7 +1097,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		if _, duplicate := configMap[config.Label]; duplicate {
 			return fmt.Errorf("Error indexing Instance %d Configs: Label '%s' is assigned to multiple configs", id, config.Label)
 		}
-		configMap[config.Label] = *config
+		configMap[config.Label] = config
 	}
 
 	if len(configs) == 0 {
@@ -1111,13 +1111,12 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		tfc := tfConfig.(map[string]interface{})
 		label, _ := tfc["label"].(string)
 		rootDevice, _ := tfc["root_device"].(string)
-		// empty := ""
 		if existingConfig, existing := configMap[label]; existing {
 			configUpdateOpts := existingConfig.GetUpdateOptions()
 			configUpdateOpts.Kernel = tfc["kernel"].(string)
 			configUpdateOpts.RunLevel = tfc["run_level"].(string)
 			configUpdateOpts.VirtMode = tfc["virt_mode"].(string)
-			configUpdateOpts.RootDevice = &rootDevice
+			configUpdateOpts.RootDevice = rootDevice
 			configUpdateOpts.Comments = tfc["comments"].(string)
 			configUpdateOpts.MemoryLimit = tfc["memory_limit"].(int)
 
@@ -1129,11 +1128,11 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 					return err
 				}
 				if configUpdateOpts.Devices == nil {
-					configUpdateOpts.RootDevice = nil // &empty
+					configUpdateOpts.RootDevice = ""
 				}
 			} else {
 				configUpdateOpts.Devices = nil
-				configUpdateOpts.RootDevice = nil // &empty
+				configUpdateOpts.RootDevice = ""
 			}
 
 			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)

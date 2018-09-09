@@ -8,7 +8,7 @@ import (
 // IPv6RangesPagedResponse represents a paginated IPv6Range API response
 type IPv6RangesPagedResponse struct {
 	*PageOptions
-	Data []*IPv6Range `json:"data"`
+	Data []IPv6Range `json:"data"`
 }
 
 // endpoint gets the endpoint URL for IPv6Range
@@ -22,11 +22,11 @@ func (IPv6RangesPagedResponse) endpoint(c *Client) string {
 
 // appendData appends IPv6Ranges when processing paginated IPv6Range responses
 func (resp *IPv6RangesPagedResponse) appendData(r *IPv6RangesPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListIPv6Ranges lists IPv6Ranges
-func (c *Client) ListIPv6Ranges(ctx context.Context, opts *ListOptions) ([]*IPv6Range, error) {
+func (c *Client) ListIPv6Ranges(ctx context.Context, opts *ListOptions) ([]IPv6Range, error) {
 	response := IPv6RangesPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 	if err != nil {

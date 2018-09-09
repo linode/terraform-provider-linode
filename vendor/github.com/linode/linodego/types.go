@@ -48,7 +48,7 @@ const (
 // LinodeTypesPagedResponse represents a linode types API response for listing
 type LinodeTypesPagedResponse struct {
 	*PageOptions
-	Data []*LinodeType `json:"data"`
+	Data []LinodeType `json:"data"`
 }
 
 func (LinodeTypesPagedResponse) endpoint(c *Client) string {
@@ -60,11 +60,11 @@ func (LinodeTypesPagedResponse) endpoint(c *Client) string {
 }
 
 func (resp *LinodeTypesPagedResponse) appendData(r *LinodeTypesPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListTypes lists linode types
-func (c *Client) ListTypes(ctx context.Context, opts *ListOptions) ([]*LinodeType, error) {
+func (c *Client) ListTypes(ctx context.Context, opts *ListOptions) ([]LinodeType, error) {
 	response := LinodeTypesPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 	if err != nil {

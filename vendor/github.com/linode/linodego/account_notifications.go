@@ -31,7 +31,7 @@ type NotificationEntity struct {
 // NotificationsPagedResponse represents a paginated Notifications API response
 type NotificationsPagedResponse struct {
 	*PageOptions
-	Data []*Notification `json:"data"`
+	Data []Notification `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Notification
@@ -45,7 +45,7 @@ func (NotificationsPagedResponse) endpoint(c *Client) string {
 
 // appendData appends Notifications when processing paginated Notification responses
 func (resp *NotificationsPagedResponse) appendData(r *NotificationsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListNotifications gets a collection of Notification objects representing important,
@@ -53,11 +53,11 @@ func (resp *NotificationsPagedResponse) appendData(r *NotificationsPagedResponse
 // Notifications, and a Notification will disappear when the circumstances causing it
 // have been resolved. For example, if the account has an important Ticket open, a response
 // to the Ticket will dismiss the Notification.
-func (c *Client) ListNotifications(ctx context.Context, opts *ListOptions) ([]*Notification, error) {
+func (c *Client) ListNotifications(ctx context.Context, opts *ListOptions) ([]Notification, error) {
 	response := NotificationsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

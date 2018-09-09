@@ -71,7 +71,7 @@ func (i NodeBalancerNode) GetUpdateOptions() NodeBalancerNodeUpdateOptions {
 // NodeBalancerNodesPagedResponse represents a paginated NodeBalancerNode API response
 type NodeBalancerNodesPagedResponse struct {
 	*PageOptions
-	Data []*NodeBalancerNode `json:"data"`
+	Data []NodeBalancerNode `json:"data"`
 }
 
 // endpoint gets the endpoint URL for NodeBalancerNode
@@ -85,15 +85,15 @@ func (NodeBalancerNodesPagedResponse) endpointWithTwoIDs(c *Client, nodebalancer
 
 // appendData appends NodeBalancerNodes when processing paginated NodeBalancerNode responses
 func (resp *NodeBalancerNodesPagedResponse) appendData(r *NodeBalancerNodesPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListNodeBalancerNodes lists NodeBalancerNodes
-func (c *Client) ListNodeBalancerNodes(ctx context.Context, nodebalancerID int, configID int, opts *ListOptions) ([]*NodeBalancerNode, error) {
+func (c *Client) ListNodeBalancerNodes(ctx context.Context, nodebalancerID int, configID int, opts *ListOptions) ([]NodeBalancerNode, error) {
 	response := NodeBalancerNodesPagedResponse{}
 	err := c.listHelperWithTwoIDs(ctx, &response, nodebalancerID, configID, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

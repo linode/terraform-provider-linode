@@ -25,19 +25,23 @@ type Template struct {
 	// Updated *time.Time `json:"-"`
 }
 
+// TemplateCreateOptions fields are those accepted by CreateTemplate
 type TemplateCreateOptions struct {
 }
 
+// TemplateUpdateOptions fields are those accepted by UpdateTemplate
 type TemplateUpdateOptions struct {
 }
 
+// GetCreateOptions converts a Template to TemplateCreateOptions for use in CreateTemplate
 func (i Template) GetCreateOptions() (o TemplateCreateOptions) {
 	// o.Label = i.Label
 	// o.Description = copyString(o.Description)
 	return
 }
 
-func (i Template) GetUpdateOptions() (o TemplateCreateOptions) {
+// GetUpdateOptions converts a Template to TemplateUpdateOptions for use in UpdateTemplate
+func (i Template) GetUpdateOptions() (o TemplateUpdateOptions) {
 	// o.Label = i.Label
 	// o.Description = copyString(o.Description)
 	return
@@ -46,7 +50,7 @@ func (i Template) GetUpdateOptions() (o TemplateCreateOptions) {
 // TemplatesPagedResponse represents a paginated Template API response
 type TemplatesPagedResponse struct {
 	*PageOptions
-	Data []*Template `json:"data"`
+	Data []Template `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Template
@@ -60,15 +64,15 @@ func (TemplatesPagedResponse) endpoint(c *Client) string {
 
 // appendData appends Templates when processing paginated Template responses
 func (resp *TemplatesPagedResponse) appendData(r *TemplatesPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListTemplates lists Templates
-func (c *Client) ListTemplates(ctx context.Context, opts *ListOptions) ([]*Template, error) {
+func (c *Client) ListTemplates(ctx context.Context, opts *ListOptions) ([]Template, error) {
 	response := TemplatesPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err
@@ -77,10 +81,10 @@ func (c *Client) ListTemplates(ctx context.Context, opts *ListOptions) ([]*Templ
 }
 
 // fixDates converts JSON timestamps to Go time.Time values
-func (v *Template) fixDates() *Template {
-	// v.Created, _ = parseDates(v.CreatedStr)
-	// v.Updated, _ = parseDates(v.UpdatedStr)
-	return v
+func (i *Template) fixDates() *Template {
+	// i.Created, _ = parseDates(i.CreatedStr)
+	// i.Updated, _ = parseDates(i.UpdatedStr)
+	return i
 }
 
 // GetTemplate gets the template with the provided ID
@@ -158,9 +162,6 @@ func (c *Client) DeleteTemplate(ctx context.Context, id int) error {
 	}
 	e = fmt.Sprintf("%s/%d", e, id)
 
-	if _, err := coupleAPIErrors(c.R(ctx).Delete(e)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = coupleAPIErrors(c.R(ctx).Delete(e))
+	return err
 }

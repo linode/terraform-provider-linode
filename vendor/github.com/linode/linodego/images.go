@@ -54,7 +54,7 @@ func (i Image) GetUpdateOptions() (iu ImageUpdateOptions) {
 // ImagesPagedResponse represents a linode API response for listing of images
 type ImagesPagedResponse struct {
 	*PageOptions
-	Data []*Image `json:"data"`
+	Data []Image `json:"data"`
 }
 
 func (ImagesPagedResponse) endpoint(c *Client) string {
@@ -66,15 +66,15 @@ func (ImagesPagedResponse) endpoint(c *Client) string {
 }
 
 func (resp *ImagesPagedResponse) appendData(r *ImagesPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListImages lists Images
-func (c *Client) ListImages(ctx context.Context, opts *ListOptions) ([]*Image, error) {
+func (c *Client) ListImages(ctx context.Context, opts *ListOptions) ([]Image, error) {
 	response := ImagesPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

@@ -8,7 +8,7 @@ import (
 // IPAddressesPagedResponse represents a paginated IPAddress API response
 type IPAddressesPagedResponse struct {
 	*PageOptions
-	Data []*InstanceIP `json:"data"`
+	Data []InstanceIP `json:"data"`
 }
 
 // endpoint gets the endpoint URL for IPAddress
@@ -22,11 +22,11 @@ func (IPAddressesPagedResponse) endpoint(c *Client) string {
 
 // appendData appends IPAddresses when processing paginated InstanceIPAddress responses
 func (resp *IPAddressesPagedResponse) appendData(r *IPAddressesPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListIPAddresses lists IPAddresses
-func (c *Client) ListIPAddresses(ctx context.Context, opts *ListOptions) ([]*InstanceIP, error) {
+func (c *Client) ListIPAddresses(ctx context.Context, opts *ListOptions) ([]InstanceIP, error) {
 	response := IPAddressesPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 	if err != nil {

@@ -211,7 +211,11 @@ func (client Client) WaitForEventFinished(ctx context.Context, id interface{}, e
 					continue
 				}
 
-				if *event.Created != minStart && !event.Created.After(minStart) {
+				// @TODO(displague) This event.Created check shouldn't be needed, but it appears
+				// that the ListEvents method is not populating it correctly
+				if event.Created == nil {
+					log.Printf("[WARN] event.Created is nil when API returned: %#+v", event.CreatedStr)
+				} else if *event.Created != minStart && !event.Created.After(minStart) {
 					// Not the event we were looking for
 					// log.Println(event.Created, "is not >=", minStart)
 					continue
@@ -219,13 +223,14 @@ func (client Client) WaitForEventFinished(ctx context.Context, id interface{}, e
 				}
 
 				if event.Status == EventFailed {
-					return event, fmt.Errorf("%s %v action %s failed", titledEntityType, id, action)
+					return &event, fmt.Errorf("%s %v action %s failed", titledEntityType, id, action)
 				} else if event.Status == EventScheduled {
 					log.Printf("[INFO] %s %v action %s is scheduled", titledEntityType, id, action)
 				} else if event.Status == EventFinished {
 					log.Printf("[INFO] %s %v action %s is finished", titledEntityType, id, action)
-					return event, nil
+					return &event, nil
 				}
+				// TODO(displague) can we bump the ticker to TimeRemaining/2 (>=1) when non-nil?
 				log.Printf("[INFO] %s %v action %s is %s", titledEntityType, id, action, event.Status)
 			}
 		case <-ctx.Done():

@@ -89,7 +89,7 @@ func (i Stackscript) GetUpdateOptions() StackscriptUpdateOptions {
 // StackscriptsPagedResponse represents a paginated Stackscript API response
 type StackscriptsPagedResponse struct {
 	*PageOptions
-	Data []*Stackscript `json:"data"`
+	Data []Stackscript `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Stackscript
@@ -103,15 +103,15 @@ func (StackscriptsPagedResponse) endpoint(c *Client) string {
 
 // appendData appends Stackscripts when processing paginated Stackscript responses
 func (resp *StackscriptsPagedResponse) appendData(r *StackscriptsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListStackscripts lists Stackscripts
-func (c *Client) ListStackscripts(ctx context.Context, opts *ListOptions) ([]*Stackscript, error) {
+func (c *Client) ListStackscripts(ctx context.Context, opts *ListOptions) ([]Stackscript, error) {
 	response := StackscriptsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

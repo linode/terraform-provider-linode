@@ -19,7 +19,7 @@ const (
 	// APIProto connect to API with http(s)
 	APIProto = "https"
 	// Version of linodego
-	Version = "0.4.0"
+	Version = "0.5.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events
@@ -61,6 +61,7 @@ type Client struct {
 	NodeBalancers         *Resource
 	NodeBalancerConfigs   *Resource
 	NodeBalancerNodes     *Resource
+	SSHKeys               *Resource
 	Tickets               *Resource
 	Account               *Resource
 	Invoices              *Resource
@@ -154,6 +155,7 @@ func NewClient(hc *http.Client) (client Client) {
 		nodebalancersName:         NewResource(&client, nodebalancersName, nodebalancersEndpoint, false, NodeBalancer{}, NodeBalancerConfigsPagedResponse{}),
 		nodebalancerconfigsName:   NewResource(&client, nodebalancerconfigsName, nodebalancerconfigsEndpoint, true, NodeBalancerConfig{}, NodeBalancerConfigsPagedResponse{}),
 		nodebalancernodesName:     NewResource(&client, nodebalancernodesName, nodebalancernodesEndpoint, true, NodeBalancerNode{}, NodeBalancerNodesPagedResponse{}),
+		sshkeysName:               NewResource(&client, sshkeysName, sshkeysEndpoint, false, SSHKey{}, SSHKeysPagedResponse{}),
 		ticketsName:               NewResource(&client, ticketsName, ticketsEndpoint, false, Ticket{}, TicketsPagedResponse{}),
 		accountName:               NewResource(&client, accountName, accountEndpoint, false, Account{}, nil), // really?
 		eventsName:                NewResource(&client, eventsName, eventsEndpoint, false, Event{}, EventsPagedResponse{}),
@@ -188,6 +190,7 @@ func NewClient(hc *http.Client) (client Client) {
 	client.NodeBalancers = resources[nodebalancersName]
 	client.NodeBalancerConfigs = resources[nodebalancerconfigsName]
 	client.NodeBalancerNodes = resources[nodebalancernodesName]
+	client.SSHKeys = resources[sshkeysName]
 	client.Tickets = resources[ticketsName]
 	client.Account = resources[accountName]
 	client.Events = resources[eventsName]

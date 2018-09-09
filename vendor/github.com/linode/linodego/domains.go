@@ -173,7 +173,7 @@ func (d Domain) GetUpdateOptions() (du DomainUpdateOptions) {
 // DomainsPagedResponse represents a paginated Domain API response
 type DomainsPagedResponse struct {
 	*PageOptions
-	Data []*Domain `json:"data"`
+	Data []Domain `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Domain
@@ -187,11 +187,11 @@ func (DomainsPagedResponse) endpoint(c *Client) string {
 
 // appendData appends Domains when processing paginated Domain responses
 func (resp *DomainsPagedResponse) appendData(r *DomainsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListDomains lists Domains
-func (c *Client) ListDomains(ctx context.Context, opts *ListOptions) ([]*Domain, error) {
+func (c *Client) ListDomains(ctx context.Context, opts *ListOptions) ([]Domain, error) {
 	response := DomainsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 	if err != nil {

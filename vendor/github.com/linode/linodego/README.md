@@ -156,9 +156,8 @@ When performing a `POST` or `PUT` request, multiple field related errors will be
 Run `make test` to run the unit tests.  This is the same as running `go test` except that `make test` will
 execute the tests while playing back API response fixtures that were recorded during a previous development build.
 
-`go test` can be used without the fixtures, so long as `LINODE_TEST_INSTANCE` and `LINODE_TEST_VOLUME` are set
-to an instance ID and volume ID that exists on your account.  The Linode instance must have a backup and a snapshot to
-match the test expectations. Copy `env.sample` to `.env` and configure your persistent test settings, including an API token.
+`go test` can be used without the fixtures. Copy `env.sample` to `.env` and configure your persistent test
+settings, including an API token.
 
 `go test -short` can be used to run live API tests that do not require an account token.
 

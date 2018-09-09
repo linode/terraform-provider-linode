@@ -36,7 +36,7 @@ const (
 // InstanceDisksPagedResponse represents a paginated InstanceDisk API response
 type InstanceDisksPagedResponse struct {
 	*PageOptions
-	Data []*InstanceDisk `json:"data"`
+	Data []InstanceDisk `json:"data"`
 }
 
 // InstanceDiskCreateOptions are InstanceDisk settings that can be used at creation
@@ -50,6 +50,7 @@ type InstanceDiskCreateOptions struct {
 
 	Filesystem      string            `json:"filesystem,omitempty"`
 	AuthorizedKeys  []string          `json:"authorized_keys,omitempty"`
+	AuthorizedUsers []string          `json:"authorized_users,omitempty"`
 	ReadOnly        bool              `json:"read_only,omitempty"`
 	StackscriptID   int               `json:"stackscript_id,omitempty"`
 	StackscriptData map[string]string `json:"stackscript_data,omitempty"`
@@ -72,15 +73,15 @@ func (InstanceDisksPagedResponse) endpointWithID(c *Client, id int) string {
 
 // appendData appends InstanceDisks when processing paginated InstanceDisk responses
 func (resp *InstanceDisksPagedResponse) appendData(r *InstanceDisksPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListInstanceDisks lists InstanceDisks
-func (c *Client) ListInstanceDisks(ctx context.Context, linodeID int, opts *ListOptions) ([]*InstanceDisk, error) {
+func (c *Client) ListInstanceDisks(ctx context.Context, linodeID int, opts *ListOptions) ([]InstanceDisk, error) {
 	response := InstanceDisksPagedResponse{}
 	err := c.listHelperWithID(ctx, &response, linodeID, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

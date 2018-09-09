@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -145,7 +146,7 @@ type EventEntity struct {
 // EventsPagedResponse represents a paginated Events API response
 type EventsPagedResponse struct {
 	*PageOptions
-	Data []*Event `json:"data"`
+	Data []Event `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Event
@@ -169,17 +170,17 @@ func (e Event) endpointWithID(c *Client) string {
 
 // appendData appends Events when processing paginated Event responses
 func (resp *EventsPagedResponse) appendData(r *EventsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListEvents gets a collection of Event objects representing actions taken
 // on the Account. The Events returned depend on the token grants and the grants
 // of the associated user.
-func (c *Client) ListEvents(ctx context.Context, opts *ListOptions) ([]*Event, error) {
+func (c *Client) ListEvents(ctx context.Context, opts *ListOptions) ([]Event, error) {
 	response := EventsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err
@@ -229,23 +230,30 @@ func (c *Client) MarkEventsSeen(ctx context.Context, event *Event) error {
 }
 
 func unmarshalTimeRemaining(m json.RawMessage) *int {
-	var intPtr *int
 	jsonBytes, err := m.MarshalJSON()
 	if err != nil {
-		panic(err)
+		panic(jsonBytes)
 	}
-	if err := json.Unmarshal(jsonBytes, intPtr); err == nil {
-		return intPtr
+
+	if len(jsonBytes) == 4 && string(jsonBytes) == "null" {
+		return nil
 	}
+
 	var timeStr string
-	if err := json.Unmarshal(jsonBytes, timeStr); err == nil {
+	if err := json.Unmarshal(jsonBytes, &timeStr); err == nil && len(timeStr) > 0 {
 		if dur, err := durationToSeconds(timeStr); err != nil {
 			panic(err)
 		} else {
 			return &dur
 		}
+	} else {
+		var intPtr int
+		if err := json.Unmarshal(jsonBytes, &intPtr); err == nil {
+			return &intPtr
+		}
 	}
 
+	log.Println("[WARN] Unexpected unmarshalTimeRemaining value: ", jsonBytes)
 	return nil
 }
 

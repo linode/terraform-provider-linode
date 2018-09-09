@@ -145,6 +145,16 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 			v.appendData(r.Result().(*IPv6RangesPagedResponse))
 			// @TODO consolidate this type with IPv6PoolsPagedResponse?
 		}
+	case *SSHKeysPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(SSHKeysPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			response, ok := r.Result().(*SSHKeysPagedResponse)
+			if !ok {
+				return fmt.Errorf("Response is not a *SSHKeysPagedResponse")
+			}
+			pages = response.Pages
+			results = response.Results
+			v.appendData(response)
+		}
 	case *TicketsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(TicketsPagedResponse{}).Get(v.endpoint(c))); err == nil {
 			pages = r.Result().(*TicketsPagedResponse).Pages

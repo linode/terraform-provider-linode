@@ -19,11 +19,11 @@ type LinodeKernel struct {
 // LinodeKernelsPagedResponse represents a Linode kernels API response for listing
 type LinodeKernelsPagedResponse struct {
 	*PageOptions
-	Data []*LinodeKernel `json:"data"`
+	Data []LinodeKernel `json:"data"`
 }
 
 // ListKernels lists linode kernels
-func (c *Client) ListKernels(ctx context.Context, opts *ListOptions) ([]*LinodeKernel, error) {
+func (c *Client) ListKernels(ctx context.Context, opts *ListOptions) ([]LinodeKernel, error) {
 	response := LinodeKernelsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 	if err != nil {
@@ -41,7 +41,7 @@ func (LinodeKernelsPagedResponse) endpoint(c *Client) string {
 }
 
 func (resp *LinodeKernelsPagedResponse) appendData(r *LinodeKernelsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // GetKernel gets the kernel with the provided ID

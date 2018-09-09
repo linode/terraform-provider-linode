@@ -59,7 +59,7 @@ type VolumeAttachOptions struct {
 // VolumesPagedResponse represents a linode API response for listing of volumes
 type VolumesPagedResponse struct {
 	*PageOptions
-	Data []*Volume `json:"data"`
+	Data []Volume `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Volume
@@ -73,15 +73,15 @@ func (VolumesPagedResponse) endpoint(c *Client) string {
 
 // appendData appends Volumes when processing paginated Volume responses
 func (resp *VolumesPagedResponse) appendData(r *VolumesPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListVolumes lists Volumes
-func (c *Client) ListVolumes(ctx context.Context, opts *ListOptions) ([]*Volume, error) {
+func (c *Client) ListVolumes(ctx context.Context, opts *ListOptions) ([]Volume, error) {
 	response := VolumesPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

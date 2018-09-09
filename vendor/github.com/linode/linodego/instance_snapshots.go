@@ -178,8 +178,8 @@ func (l *InstanceBackupSnapshotResponse) fixDates() *InstanceBackupSnapshotRespo
 }
 
 func (l *InstanceBackupsResponse) fixDates() *InstanceBackupsResponse {
-	for _, el := range l.Automatic {
-		el.fixDates()
+	for i := range l.Automatic {
+		l.Automatic[i].fixDates()
 	}
 	if l.Snapshot != nil {
 		l.Snapshot.fixDates()

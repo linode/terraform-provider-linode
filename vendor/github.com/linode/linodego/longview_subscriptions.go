@@ -18,7 +18,7 @@ type LongviewSubscription struct {
 // LongviewSubscriptionsPagedResponse represents a paginated LongviewSubscription API response
 type LongviewSubscriptionsPagedResponse struct {
 	*PageOptions
-	Data []*LongviewSubscription `json:"data"`
+	Data []LongviewSubscription `json:"data"`
 }
 
 // endpoint gets the endpoint URL for LongviewSubscription
@@ -32,15 +32,15 @@ func (LongviewSubscriptionsPagedResponse) endpoint(c *Client) string {
 
 // appendData appends LongviewSubscriptions when processing paginated LongviewSubscription responses
 func (resp *LongviewSubscriptionsPagedResponse) appendData(r *LongviewSubscriptionsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListLongviewSubscriptions lists LongviewSubscriptions
-func (c *Client) ListLongviewSubscriptions(ctx context.Context, opts *ListOptions) ([]*LongviewSubscription, error) {
+func (c *Client) ListLongviewSubscriptions(ctx context.Context, opts *ListOptions) ([]LongviewSubscription, error) {
 	response := LongviewSubscriptionsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

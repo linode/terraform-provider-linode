@@ -1,5 +1,22 @@
 # Change Log
 
+<a name="v0.5.0"></a>
+## [v0.5.0](https://github.com/linode/linodego/compare/v0.4.0...v0.5.0) (2018-09-09)
+
+### Breaking Changes
+
+* List functions return slice of thing instead of slice of pointer to thing
+
+### Feature
+
+* add SSHKeys methods to client (also affects InstanceCreate, InstanceDiskCreate)
+* add RebuildNodeBalancerConfig (and CreateNodeBalancerConfig with Nodes)
+
+### Fixes
+
+* Event.TimeRemaining wouldn't parse all possible API value
+* Tests no longer rely on known/special instance and volume ids
+
 <a name="0.4.0"></a>
 ## [0.4.0](https://github.com/linode/linodego/compare/v0.3.0...0.4.0) (2018-08-27)
 

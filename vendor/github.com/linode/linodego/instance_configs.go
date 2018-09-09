@@ -57,7 +57,7 @@ type InstanceConfigHelpers struct {
 // InstanceConfigsPagedResponse represents a paginated InstanceConfig API response
 type InstanceConfigsPagedResponse struct {
 	*PageOptions
-	Data []*InstanceConfig `json:"data"`
+	Data []InstanceConfig `json:"data"`
 }
 
 // InstanceConfigCreateOptions are InstanceConfig settings that can be used at creation
@@ -84,10 +84,10 @@ type InstanceConfigUpdateOptions struct {
 	MemoryLimit int    `json:"memory_limit"`
 	Kernel      string `json:"kernel,omitempty"`
 	// InitRD is nullable, permit the sending of null
-	InitRD     *int    `json:"init_rd"`
-	RootDevice *string `json:"root_device,omitempty"`
-	RunLevel   string  `json:"run_level,omitempty"`
-	VirtMode   string  `json:"virt_mode,omitempty"`
+	InitRD     *int   `json:"init_rd"`
+	RootDevice string `json:"root_device,omitempty"`
+	RunLevel   string `json:"run_level,omitempty"`
+	VirtMode   string `json:"virt_mode,omitempty"`
 }
 
 // GetCreateOptions converts a InstanceConfig to InstanceConfigCreateOptions for use in CreateInstanceConfig
@@ -120,7 +120,7 @@ func (i InstanceConfig) GetUpdateOptions() InstanceConfigUpdateOptions {
 		MemoryLimit: i.MemoryLimit,
 		Kernel:      i.Kernel,
 		InitRD:      copyInt(i.InitRD),
-		RootDevice:  copyString(&i.RootDevice),
+		RootDevice:  i.RootDevice,
 		RunLevel:    i.RunLevel,
 		VirtMode:    i.VirtMode,
 	}
@@ -137,15 +137,15 @@ func (InstanceConfigsPagedResponse) endpointWithID(c *Client, id int) string {
 
 // appendData appends InstanceConfigs when processing paginated InstanceConfig responses
 func (resp *InstanceConfigsPagedResponse) appendData(r *InstanceConfigsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListInstanceConfigs lists InstanceConfigs
-func (c *Client) ListInstanceConfigs(ctx context.Context, linodeID int, opts *ListOptions) ([]*InstanceConfig, error) {
+func (c *Client) ListInstanceConfigs(ctx context.Context, linodeID int, opts *ListOptions) ([]InstanceConfig, error) {
 	response := InstanceConfigsPagedResponse{}
 	err := c.listHelperWithID(ctx, &response, linodeID, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

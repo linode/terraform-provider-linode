@@ -36,7 +36,7 @@ func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
 	}}
 }
 
-func flattenInstanceDisks(instanceDisks []*linodego.InstanceDisk) (disks []map[string]interface{}, swapSize int) {
+func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[string]interface{}, swapSize int) {
 	for _, disk := range instanceDisks {
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		if disk.Filesystem == "swap" {
@@ -56,7 +56,7 @@ func flattenInstanceDisks(instanceDisks []*linodego.InstanceDisk) (disks []map[s
 	return
 }
 
-func flattenInstanceConfigs(instanceConfigs []*linodego.InstanceConfig) (configs []map[string]interface{}) {
+func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig) (configs []map[string]interface{}) {
 	for _, config := range instanceConfigs {
 
 		devices := []map[string]interface{}{{

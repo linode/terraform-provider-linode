@@ -99,7 +99,7 @@ func copyString(sPtr *string) *string {
 // DomainRecordsPagedResponse represents a paginated DomainRecord API response
 type DomainRecordsPagedResponse struct {
 	*PageOptions
-	Data []*DomainRecord `json:"data"`
+	Data []DomainRecord `json:"data"`
 }
 
 // endpoint gets the endpoint URL for InstanceConfig
@@ -113,11 +113,11 @@ func (DomainRecordsPagedResponse) endpointWithID(c *Client, id int) string {
 
 // appendData appends DomainRecords when processing paginated DomainRecord responses
 func (resp *DomainRecordsPagedResponse) appendData(r *DomainRecordsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListDomainRecords lists DomainRecords
-func (c *Client) ListDomainRecords(ctx context.Context, domainID int, opts *ListOptions) ([]*DomainRecord, error) {
+func (c *Client) ListDomainRecords(ctx context.Context, domainID int, opts *ListOptions) ([]DomainRecord, error) {
 	response := DomainRecordsPagedResponse{}
 	err := c.listHelperWithID(ctx, &response, domainID, opts)
 	if err != nil {

@@ -33,6 +33,7 @@ const (
 	nodebalancersName         = "nodebalancers"
 	nodebalancerconfigsName   = "nodebalancerconfigs"
 	nodebalancernodesName     = "nodebalancernodes"
+	sshkeysName               = "sshkeys"
 	ticketsName               = "tickets"
 	accountName               = "account"
 	eventsName                = "events"
@@ -69,6 +70,7 @@ const (
 	// Should we include these fields in CreateOpts and UpdateOpts?
 	nodebalancerconfigsEndpoint = "nodebalancers/{{ .ID }}/configs"
 	nodebalancernodesEndpoint   = "nodebalancers/{{ .ID }}/configs/{{ .SecondID }}/nodes"
+	sshkeysEndpoint             = "profile/sshkeys"
 	ticketsEndpoint             = "support/tickets"
 	accountEndpoint             = "account"
 	eventsEndpoint              = "account/events"

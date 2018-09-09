@@ -44,9 +44,10 @@ type NodeBalancerTransfer struct {
 
 // NodeBalancerCreateOptions are the options permitted for CreateNodeBalancer
 type NodeBalancerCreateOptions struct {
-	Label              *string `json:"label,omitempty"`
-	Region             string  `json:"region,omitempty"`
-	ClientConnThrottle *int    `json:"client_conn_throttle,omitempty"`
+	Label              *string                            `json:"label,omitempty"`
+	Region             string                             `json:"region,omitempty"`
+	ClientConnThrottle *int                               `json:"client_conn_throttle,omitempty"`
+	Configs            []*NodeBalancerConfigCreateOptions `json:"configs,omitempty"`
 }
 
 // NodeBalancerUpdateOptions are the options permitted for UpdateNodeBalancer
@@ -75,7 +76,7 @@ func (i NodeBalancer) GetUpdateOptions() NodeBalancerUpdateOptions {
 // NodeBalancersPagedResponse represents a paginated NodeBalancer API response
 type NodeBalancersPagedResponse struct {
 	*PageOptions
-	Data []*NodeBalancer `json:"data"`
+	Data []NodeBalancer `json:"data"`
 }
 
 func (NodeBalancersPagedResponse) endpoint(c *Client) string {
@@ -87,11 +88,11 @@ func (NodeBalancersPagedResponse) endpoint(c *Client) string {
 }
 
 func (resp *NodeBalancersPagedResponse) appendData(r *NodeBalancersPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListNodeBalancers lists NodeBalancers
-func (c *Client) ListNodeBalancers(ctx context.Context, opts *ListOptions) ([]*NodeBalancer, error) {
+func (c *Client) ListNodeBalancers(ctx context.Context, opts *ListOptions) ([]NodeBalancer, error) {
 	response := NodeBalancersPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 	if err != nil {

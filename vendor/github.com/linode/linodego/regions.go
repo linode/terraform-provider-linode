@@ -14,7 +14,7 @@ type Region struct {
 // RegionsPagedResponse represents a linode API response for listing
 type RegionsPagedResponse struct {
 	*PageOptions
-	Data []*Region `json:"data"`
+	Data []Region `json:"data"`
 }
 
 // endpoint gets the endpoint URL for Region
@@ -28,15 +28,15 @@ func (RegionsPagedResponse) endpoint(c *Client) string {
 
 // appendData appends Regions when processing paginated Region responses
 func (resp *RegionsPagedResponse) appendData(r *RegionsPagedResponse) {
-	(*resp).Data = append(resp.Data, r.Data...)
+	resp.Data = append(resp.Data, r.Data...)
 }
 
 // ListRegions lists Regions
-func (c *Client) ListRegions(ctx context.Context, opts *ListOptions) ([]*Region, error) {
+func (c *Client) ListRegions(ctx context.Context, opts *ListOptions) ([]Region, error) {
 	response := RegionsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
-	for _, el := range response.Data {
-		el.fixDates()
+	for i := range response.Data {
+		response.Data[i].fixDates()
 	}
 	if err != nil {
 		return nil, err

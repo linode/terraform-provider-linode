@@ -479,8 +479,9 @@ func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("disk"))+".size", "3000"),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
 			},
 			// Bump it to a 2048, and expand the disk
@@ -492,8 +493,10 @@ func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("disk"))+".size", "6000"),
+
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisk(&instance, "disk", 6000),
+					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
 				),
 			},
 		},
@@ -941,7 +944,7 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
-		root_dev = "/dev/root"
+		root_device = "/dev/root"
 	}
 }`, instance)
 }
@@ -956,12 +959,12 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "configa"
 		kernel = "linode/latest-64bit"
-		root_dev = "/dev/root"
+		root_device = "/dev/root"
 	}
 	config {
 		label = "configb"
 		kernel = "linode/latest-32bit"
-		root_dev = "/dev/root"
+		root_device = "/dev/root"
 	}
 }`, instance)
 }
@@ -1172,7 +1175,7 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
-		root_dev = "/dev/root"
+		root_device = "/dev/root"
 	}
 }`, instance)
 }
@@ -1189,7 +1192,7 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-32bit"
-		root_dev = "/dev/root"
+		root_device = "/dev/root"
 	}
 }`, instance)
 }
@@ -1244,8 +1247,7 @@ resource "linode_instance" "foobar" {
 	disk_expansion = true
 	image = "linode/ubuntu18.04"
 	region = "us-east"
-	kernel = "linode/latest-64bit"
-	root_password = "terraform-test"
+	root_pass = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
 	group = "tf_test"
@@ -1259,10 +1261,9 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
-	kernel = "linode/latest-64bit"
-	root_password = "terraform-test"
+	root_pass = "terraform-test"
 	swap_size = 256
-	private_networking = true
+	private_ip = true
 	authorized_keys = "%s"
 	group = "tf_test"
 }`, instance, pubkey)
