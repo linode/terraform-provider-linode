@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeComputeIPv6Range() *schema.Resource {

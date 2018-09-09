@@ -10,20 +10,20 @@
   version = "v1.2.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:ef98942770803ae37c4787ad6bf70e401c99834dfba5e3034b97ba7c24e66c10"
+  digest = "1:1929b21a34400d463a99336f8e2908d2a154dc525c52411a8d99bb519942dc4c"
   name = "github.com/apparentlymart/go-cidr"
   packages = ["cidr"]
   pruneopts = "UT"
-  revision = "2bd8b58cf4275aeb086ade613de226773e29e853"
+  revision = "b1115bf8e14a60131a196f908223e4506b0ddc35"
+  version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
   digest = "1:2bf7da77216264bb61bd8cb5f3380a03ab509e8a826fe359008d4a6ba0789b13"
   name = "github.com/apparentlymart/go-textseg"
   packages = ["textseg"]
   pruneopts = "UT"
-  revision = "b836f5c4d331d1945a2fead7188db25432d73b69"
+  revision = "fb01f485ebef760e5ee06d55e1b07534dda2d295"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -34,7 +34,7 @@
   revision = "7fddfc383310abc091d79a27f116d30cf0424032"
 
 [[projects]]
-  digest = "1:5451616706898e0c592b242ba593d43d708f869afa2eb2d88ea006d12e41db59"
+  digest = "1:dd2a6fa25b80d9f13e3a7a6dc790c8d49f4ba13a449680d650e6ec7a6c20535c"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -70,8 +70,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "254f2f37e83d1b3585237fe166aacd14c1783e0b"
-  version = "v1.15.10"
+  revision = "66974140c322f22c1daaf95a18930ea6a9e4d21e"
+  version = "v1.15.16"
 
 [[projects]]
   branch = "master"
@@ -98,20 +98,12 @@
   version = "v3.5.1"
 
 [[projects]]
-  digest = "1:cc0b849fe53639d4f52c4986589c1805382b42ffa3cc087fddc7c4555349af24"
-  name = "github.com/chiefy/linodego"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "e7bd44d89fc5db41b43b8bce7278550a589d7ab6"
-  version = "v0.2.0"
-
-[[projects]]
-  digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "UT"
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:865079840386857c809b72ce300be7580cb50d3d3129ce11bf9aa6ca2bc1934a"
@@ -138,7 +130,7 @@
   version = "v1.8.0"
 
 [[projects]]
-  digest = "1:17fe264ee908afc795734e8c4e63db2accabaf57326dbf21763a7d6b86096260"
+  digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -148,8 +140,8 @@
     "ptypes/timestamp",
   ]
   pruneopts = "UT"
-  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
-  version = "v1.1.0"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -196,11 +188,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:82320f8469d1524df337bc315a38c87644765cd89ec4cf3cbda249a3acdde671"
+  digest = "1:20f78c1cf1b6fe6c55ba1407350d6fc7dc77d1591f8106ba693c28014a1a1b37"
   name = "github.com/hashicorp/go-plugin"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e8d22c780116115ae5624720c9af0c97afe4f551"
+  revision = "a4620f9913d19f03a6bf19b2f304daaaf83ea130"
 
 [[projects]]
   branch = "master"
@@ -257,7 +249,7 @@
     "hclparse",
   ]
   pruneopts = "UT"
-  revision = "c79a9bd509c8897b83598ec971ae4db54eab4e85"
+  revision = "d6049c2a047e81ac7e8b7934ae479898387f1bbc"
 
 [[projects]]
   branch = "master"
@@ -281,7 +273,7 @@
   revision = "0dc08b1671f34c4250ce212759ebd880f743d883"
 
 [[projects]]
-  digest = "1:c5a1d6083649228a90a0d5b1d9138027c70d82dec80767125ce29d92b8980862"
+  digest = "1:219c0ae340cc1e341c851b14435210742e2de52860be64393ab9e3f3522b8b6a"
   name = "github.com/hashicorp/terraform"
   packages = [
     "config",
@@ -312,8 +304,8 @@
     "version",
   ]
   pruneopts = "UT"
-  revision = "41e50bd32a8825a84535e353c3674af8ce799161"
-  version = "v0.11.7"
+  revision = "6dfc4d748de9cda23835bc5704307ed45e839622"
+  version = "v0.11.8"
 
 [[projects]]
   branch = "master"
@@ -329,6 +321,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "0b12d6b5"
+
+[[projects]]
+  digest = "1:bfc5134112a1258cd522cd41a458cc3888aa9eef155c9abeda5a3b499bfc675d"
+  name = "github.com/linode/linodego"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4d828dc3419a316b8a15f0cf71f825de526088b3"
+  version = "v0.5.0"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -458,7 +458,7 @@
     "cty/set",
   ]
   pruneopts = "UT"
-  revision = "02bd58e97b5759d478019c5a6333edbfdfed16a0"
+  revision = "58bb2bc0302a85e14ddcd734a1509f66fd89d595"
 
 [[projects]]
   branch = "master"
@@ -484,11 +484,11 @@
     "ssh",
   ]
   pruneopts = "UT"
-  revision = "de0752318171da717af4ce24d0a2e8626afaeb11"
+  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
 
 [[projects]]
   branch = "master"
-  digest = "1:af81707f12751e54d126dc4d0b81156b88b842938e4d9c3b24bab4be4b26e972"
+  digest = "1:033f9ad4a2c5b90718c75257710098e3c5863459a62cd735b85cd9ac9f0d23ac"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -504,26 +504,26 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "c39426892332e1bb5ec0a434a079bf82f5d30c54"
+  revision = "aaf60122140d3fcf75376d319f0554393160eb50"
 
 [[projects]]
   branch = "master"
-  digest = "1:af19f6e6c369bf51ef226e989034cd88a45083173c02ac4d7ab74c9a90d356b7"
+  digest = "1:85e93ef61e34df4ac086c12765cc15320f98f310a4758be1dc2eebcd8469ccc7"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
     "internal",
   ]
   pruneopts = "UT"
-  revision = "3d292e4d0cdc3a0113e6d207bb137145ef1de42f"
+  revision = "f720f1faee02c1fb456408c22886169405f239aa"
 
 [[projects]]
   branch = "master"
-  digest = "1:33a43cb31975899cfcd81600d1390467db1778ae87102f80668a753fed8c663e"
+  digest = "1:e3e7f51633f98fce9404940f74dfd65cf306ee173ddf5a8b247c9c830e42b38a"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "98c5dad5d1a0e8a73845ecc8897d0bd56586511d"
+  revision = "1a700e749ce29638d0bbcb531cce1094ea096bd3"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -570,7 +570,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "383e8b2c3b9e36c4076b235b32537292176bae20"
+  revision = "c66870c02cf823ceb633bcd05be3c7cda29976f4"
 
 [[projects]]
   digest = "1:047efbc3c9a51f3002b0002f92543857d372654a676fb6b01931982cd80467dd"
@@ -613,7 +613,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/chiefy/linodego",
     "github.com/hashicorp/terraform/helper/acctest",
     "github.com/hashicorp/terraform/helper/logging",
     "github.com/hashicorp/terraform/helper/resource",
@@ -621,6 +620,7 @@
     "github.com/hashicorp/terraform/plugin",
     "github.com/hashicorp/terraform/terraform",
     "github.com/hashicorp/terraform/version",
+    "github.com/linode/linodego",
     "golang.org/x/crypto/sha3",
     "golang.org/x/oauth2",
   ]

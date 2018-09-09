@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/linode/linodego"
 )
 
 func resourceLinodeDomain() *schema.Resource {
@@ -26,11 +26,11 @@ func resourceLinodeDomain() *schema.Resource {
 				Required:    true,
 			},
 			"domain_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).",
-				Default:     "master",
-				Optional:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).",
+				InputDefault: "master",
+				Required:     true,
+				ForceNew:     true,
 			},
 			"group": &schema.Schema{
 				Type:        schema.TypeString,
@@ -49,7 +49,7 @@ func resourceLinodeDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"master_ips": &schema.Schema{
-				Type: schema.TypeSet,
+				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -100,7 +100,9 @@ func syncResourceData(d *schema.ResourceData, domain *linodego.Domain) {
 	d.Set("status", domain.Status)
 	d.Set("description", domain.Description)
 	d.Set("master_ips", domain.MasterIPs)
-	d.Set("afxr_ips", domain.AXfrIPs)
+	if len(domain.AXfrIPs) > 0 {
+		d.Set("afxr_ips", domain.AXfrIPs)
+	}
 	d.Set("ttl_sec", domain.TTLSec)
 	d.Set("retry_sec", domain.RetrySec)
 	d.Set("expire_sec", domain.ExpireSec)
@@ -186,7 +188,7 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error creating a Linode Domain: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", domain.ID))
-	syncResourceData(d, domain)
+	// syncResourceData(d, domain)
 
 	return resourceLinodeDomainRead(d, meta)
 }

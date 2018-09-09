@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/chiefy/linodego"
 	"github.com/hashicorp/terraform/helper/logging"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/hashicorp/terraform/version"
+	"github.com/linode/linodego"
 	"golang.org/x/oauth2"
 )
 
@@ -26,8 +26,11 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_ipv6_pool":  dataSourceLinodeComputeIPv6Pool(),
-			"linode_ipv6_range": dataSourceLinodeComputeIPv6Range(),
+			"linode_ipv6_pool":     dataSourceLinodeComputeIPv6Pool(),
+			"linode_ipv6_range":    dataSourceLinodeComputeIPv6Range(),
+			"linode_instance_type": dataSourceLinodeInstanceType(),
+			"linode_region":        dataSourceLinodeRegion(),
+			"linode_image":         dataSourceLinodeImage(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -38,6 +41,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_nodebalancer_config": resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":   resourceLinodeNodeBalancerNode(),
 			"linode_volume":              resourceLinodeVolume(),
+			"linode_stackscript":         resourceLinodeStackscript(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -62,8 +66,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	client := linodego.NewClient(oauth2Client)
 
 	projectURL := "https://www.terraform.io"
-	userAgent := fmt.Sprintf("Terraform/%s (+%s)",
-		version.String(), projectURL)
+	userAgent := fmt.Sprintf("Terraform/%s (+%s) linodego/%s",
+		version.String(), projectURL, linodego.Version)
 
 	client.SetUserAgent(userAgent)
 
