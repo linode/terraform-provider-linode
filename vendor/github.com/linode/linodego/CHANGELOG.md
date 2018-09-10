@@ -1,5 +1,12 @@
 # Change Log
 
+<a name="v0.5.1"></a>
+## [v0.5.1](https://github.com/linode/linodego/compare/v0.5.0...v0.5.1) (2018-09-10)
+
+### Fixes
+
+* Domain.Status was not imported from API responses correctly
+
 <a name="v0.5.0"></a>
 ## [v0.5.0](https://github.com/linode/linodego/compare/v0.4.0...v0.5.0) (2018-09-09)
 
