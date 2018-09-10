@@ -38,10 +38,11 @@ func resourceLinodeDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"status": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Used to control whether this Domain is currently being rendered.",
-				Optional:    true,
-				Default:     "active",
+				Type:         schema.TypeString,
+				Description:  "Used to control whether this Domain is currently being rendered.",
+				Optional:     true,
+				Computed:     true,
+				InputDefault: "active",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
@@ -49,7 +50,7 @@ func resourceLinodeDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"master_ips": &schema.Schema{
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -93,23 +94,6 @@ func resourceLinodeDomain() *schema.Resource {
 	}
 }
 
-func syncResourceData(d *schema.ResourceData, domain *linodego.Domain) {
-	d.Set("domain", domain.Domain)
-	d.Set("domain_type", domain.Type)
-	d.Set("group", domain.Group)
-	d.Set("status", domain.Status)
-	d.Set("description", domain.Description)
-	d.Set("master_ips", domain.MasterIPs)
-	if len(domain.AXfrIPs) > 0 {
-		d.Set("afxr_ips", domain.AXfrIPs)
-	}
-	d.Set("ttl_sec", domain.TTLSec)
-	d.Set("retry_sec", domain.RetrySec)
-	d.Set("expire_sec", domain.ExpireSec)
-	d.Set("refresh_sec", domain.RefreshSec)
-	d.Set("soa_email", domain.SOAEmail)
-}
-
 func resourceLinodeDomainExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -142,7 +126,20 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error finding the specified Linode Domain: %s", err)
 	}
 
-	syncResourceData(d, domain)
+	d.Set("domain", domain.Domain)
+	d.Set("domain_type", domain.Type)
+	d.Set("group", domain.Group)
+	d.Set("status", domain.Status)
+	d.Set("description", domain.Description)
+	d.Set("master_ips", domain.MasterIPs)
+	if len(domain.AXfrIPs) > 0 {
+		d.Set("afxr_ips", domain.AXfrIPs)
+	}
+	d.Set("ttl_sec", domain.TTLSec)
+	d.Set("retry_sec", domain.RetrySec)
+	d.Set("expire_sec", domain.ExpireSec)
+	d.Set("refresh_sec", domain.RefreshSec)
+	d.Set("soa_email", domain.SOAEmail)
 
 	return nil
 }
@@ -188,7 +185,6 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error creating a Linode Domain: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", domain.ID))
-	// syncResourceData(d, domain)
 
 	return resourceLinodeDomainRead(d, meta)
 }
@@ -232,13 +228,11 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 		updateOpts.AXfrIPs = AXfrIPs
 	}
 
-	domain, err := client.UpdateDomain(context.Background(), int(id), updateOpts)
+	_, err = client.UpdateDomain(context.Background(), int(id), updateOpts)
 	if err != nil {
 		return fmt.Errorf("Error updating Linode Domain %d: %s", id, err)
 	}
-	syncResourceData(d, domain)
-
-	return nil
+	return resourceLinodeDomainRead(d, meta)
 }
 
 func resourceLinodeDomainDelete(d *schema.ResourceData, meta interface{}) error {

@@ -690,11 +690,11 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 	}
 }
 
-type testDiskFunc func(disk *linodego.InstanceDisk) error
-type testDisksFunc func(disk []*linodego.InstanceDisk) error
+type testDiskFunc func(disk linodego.InstanceDisk) error
+type testDisksFunc func(disk []linodego.InstanceDisk) error
 
 func testDisk(label string, diskTests ...testDiskFunc) testDisksFunc {
-	return func(disks []*linodego.InstanceDisk) error {
+	return func(disks []linodego.InstanceDisk) error {
 		for _, disk := range disks {
 			if disk.Label == label {
 				for _, test := range diskTests {
@@ -710,17 +710,14 @@ func testDisk(label string, diskTests ...testDiskFunc) testDisksFunc {
 }
 
 func testDiskExists(diskPtr *linodego.InstanceDisk) testDiskFunc {
-	return func(disk *linodego.InstanceDisk) error {
-		if disk == nil {
-			return fmt.Errorf("should have non-nil disk")
-		}
-		*diskPtr = *disk
+	return func(disk linodego.InstanceDisk) error {
+		*diskPtr = disk
 		return nil
 	}
 }
 
 func testDiskSize(size int) testDiskFunc {
-	return func(disk *linodego.InstanceDisk) error {
+	return func(disk linodego.InstanceDisk) error {
 		if disk.Size != size {
 			return fmt.Errorf("should have matching sizes: %d != %d", disk.Size, size)
 		}
@@ -756,12 +753,12 @@ func testAccCheckComputeInstanceDisks(instance *linodego.Instance, disksTests ..
 	}
 }
 
-type testConfigFunc func(config *linodego.InstanceConfig) error
-type testConfigsFunc func(config []*linodego.InstanceConfig) error
+type testConfigFunc func(config linodego.InstanceConfig) error
+type testConfigsFunc func(config []linodego.InstanceConfig) error
 
 // testConfig verifies a labeled config exists and runs many tests against that config
 func testConfig(label string, configTests ...testConfigFunc) testConfigsFunc {
-	return func(configs []*linodego.InstanceConfig) error {
+	return func(configs []linodego.InstanceConfig) error {
 		for _, config := range configs {
 			if config.Label == label {
 				for _, test := range configTests {
@@ -777,7 +774,7 @@ func testConfig(label string, configTests ...testConfigFunc) testConfigsFunc {
 }
 
 func testConfigLabel(label string) testConfigFunc {
-	return func(config *linodego.InstanceConfig) error {
+	return func(config linodego.InstanceConfig) error {
 		if config.Label != label {
 			return fmt.Errorf("should have matching labels: %s != %s", config.Label, label)
 		}
@@ -786,7 +783,7 @@ func testConfigLabel(label string) testConfigFunc {
 }
 
 func testConfigKernel(kernel string) testConfigFunc {
-	return func(config *linodego.InstanceConfig) error {
+	return func(config linodego.InstanceConfig) error {
 		if config.Kernel != kernel {
 			return fmt.Errorf("should have matching kernels: %s != %s", config.Kernel, kernel)
 		}
@@ -795,7 +792,7 @@ func testConfigKernel(kernel string) testConfigFunc {
 }
 
 func testConfigComments(comments string) testConfigFunc {
-	return func(config *linodego.InstanceConfig) error {
+	return func(config linodego.InstanceConfig) error {
 		if config.Comments != comments {
 			return fmt.Errorf("should have matching comments: %s != %s", config.Comments, comments)
 		}
@@ -804,7 +801,7 @@ func testConfigComments(comments string) testConfigFunc {
 }
 
 func testConfigSDADisk(disk linodego.InstanceDisk) testConfigFunc {
-	return func(config *linodego.InstanceConfig) error {
+	return func(config linodego.InstanceConfig) error {
 		if config.Devices.SDA.DiskID == disk.ID {
 			return fmt.Errorf("should have SDA with expected disk id")
 		}
@@ -813,7 +810,7 @@ func testConfigSDADisk(disk linodego.InstanceDisk) testConfigFunc {
 }
 
 func testConfigSDBDisk(disk linodego.InstanceDisk) testConfigFunc {
-	return func(config *linodego.InstanceConfig) error {
+	return func(config linodego.InstanceConfig) error {
 		if config.Devices.SDB.DiskID == disk.ID {
 			return fmt.Errorf("should have SDB with expected disk id")
 		}
@@ -822,7 +819,7 @@ func testConfigSDBDisk(disk linodego.InstanceDisk) testConfigFunc {
 }
 
 func testConfigSDBVolume(volume linodego.Volume) testConfigFunc {
-	return func(config *linodego.InstanceConfig) error {
+	return func(config linodego.InstanceConfig) error {
 		if config.Devices.SDB.VolumeID == volume.ID {
 			return fmt.Errorf("should have SDB with expected volume id")
 		}
@@ -883,7 +880,7 @@ func testAccCheckLinodeInstanceDiskExists(instance *linodego.Instance, label str
 
 		for _, disk := range instanceDisks {
 			if disk.Label == label {
-				*instanceDisk = *disk
+				*instanceDisk = disk
 				return nil
 			}
 		}
