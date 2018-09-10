@@ -12,7 +12,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func TestAccLinodeStackscriptBasic(t *testing.T) {
+func TestAccLinodeStackscript_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_stackscript.foobar"
@@ -42,7 +42,7 @@ func TestAccLinodeStackscriptBasic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeStackscriptUpdate(t *testing.T) {
+func TestAccLinodeStackscript_update(t *testing.T) {
 	t.Parallel()
 
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
@@ -80,7 +80,7 @@ func TestAccLinodeStackscriptUpdate(t *testing.T) {
 	})
 }
 
-func TestAccLinodeStackscriptCodeChange(t *testing.T) {
+func TestAccLinodeStackscript_codeChange(t *testing.T) {
 	t.Parallel()
 
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
