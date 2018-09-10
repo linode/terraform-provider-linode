@@ -25,7 +25,7 @@ func resourceLinodeDomain() *schema.Resource {
 				Description: "The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.",
 				Required:    true,
 			},
-			"domain_type": &schema.Schema{
+			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Description:  "If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).",
 				InputDefault: "master",
@@ -127,7 +127,7 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("domain", domain.Domain)
-	d.Set("domain_type", domain.Type)
+	d.Set("type", domain.Type)
 	d.Set("group", domain.Group)
 	d.Set("status", domain.Status)
 	d.Set("description", domain.Description)
@@ -152,7 +152,7 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 
 	createOpts := linodego.DomainCreateOptions{
 		Domain:      d.Get("domain").(string),
-		Type:        linodego.DomainType(d.Get("domain_type").(string)),
+		Type:        linodego.DomainType(d.Get("type").(string)),
 		Group:       d.Get("group").(string),
 		Description: d.Get("description").(string),
 		SOAEmail:    d.Get("soa_email").(string),
@@ -200,7 +200,6 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 	updateOpts := linodego.DomainUpdateOptions{
 		Domain:      d.Get("domain").(string),
 		Status:      linodego.DomainStatus(d.Get("status").(string)),
-		Type:        linodego.DomainType(d.Get("domain_type").(string)),
 		Group:       d.Get("group").(string),
 		Description: d.Get("description").(string),
 		SOAEmail:    d.Get("soa_email").(string),

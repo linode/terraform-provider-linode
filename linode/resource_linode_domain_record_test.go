@@ -12,7 +12,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func TestAccLinodeDomainRecordBasic(t *testing.T) {
+func TestAccLinodeDomainRecord_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_domain_record.foobar"
@@ -61,7 +61,7 @@ func testAccStateIdDomainRecord(s *terraform.State) (string, error) {
 	return "", fmt.Errorf("Error finding linode_domain_record")
 }
 
-func TestAccLinodeDomainRecordUpdate(t *testing.T) {
+func TestAccLinodeDomainRecord_update(t *testing.T) {
 	t.Parallel()
 
 	var domainRecordName = acctest.RandomWithPrefix("tf-test-")

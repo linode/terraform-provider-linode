@@ -36,11 +36,11 @@ The following arguments are supported:
 
 * `domain` - (Required) The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.
 
-* `domain_type` - (Required) If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).
+* `type` - (Required) If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).
 
 * `soa_email` - (Required) Start of Authority email address. This is required for master Domains.
 
-* `master_ips` - (Required for domain_type="slave") The IP addresses representing the master DNS for this Domain.
+* `master_ips` - (Required for type="slave") The IP addresses representing the master DNS for this Domain.
 
 - - -
 

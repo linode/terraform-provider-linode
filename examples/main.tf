@@ -70,13 +70,12 @@ resource "linode_nodebalancer_node" "foo-https-www" {
 }
 
 resource "linode_domain" "foo-com" {
-  # the default type = "master" .. call it domain_type?
   soa_email   = "${random_pet.project.id}@${substr(sha256(random_pet.project.id),0,8)}example.com"
   ttl_sec     = "30"
   expire_sec  = "30"
   refresh_sec = "30"
   domain      = "${random_pet.project.id}example.com"
-  domain_type = "master"
+  type = "master"
 
   # group              = "foo"
   # interesting that the bare address "@" could be set this way..
