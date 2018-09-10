@@ -12,7 +12,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func TestAccLinodeNodeBalancerBasic(t *testing.T) {
+func TestAccLinodeNodeBalancer_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
@@ -48,7 +48,7 @@ func TestAccLinodeNodeBalancerBasic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeNodeBalancerUpdate(t *testing.T) {
+func TestAccLinodeNodeBalancer_update(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
