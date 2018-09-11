@@ -27,7 +27,7 @@ resource "linode_instance" "web" {
     region = "us-central"
     type = "g6-standard-1"
     authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
-    root_password = "terr4form-test"
+    root_pass = "terr4form-test"
 
     group = "foo"
     swap_size = 256
@@ -51,7 +51,7 @@ resource "linode_instance" "web" {
     label = "boot"
     size = 3000
     authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
-    root_password = "terr4form-test"
+    root_pass = "terr4form-test"
     image  = "linode/ubuntu18.04"
   }
 
@@ -88,9 +88,9 @@ The following arguments are supported:
 
 * `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
-* `root_password` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+* `root_pass` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
-  A `root_password` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
+  A `root_pass` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
 
 - - -
 

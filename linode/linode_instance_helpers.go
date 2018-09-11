@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"net"
 	"strings"
+	"sync"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
@@ -175,6 +177,23 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 		}
 	}
 	return deviceMap, nil
+}
+
+type volumeDetacher func(context.Context, int, string) error
+
+func makeVolumeDetacher(client linodego.Client, d *schema.ResourceData) volumeDetacher {
+	return func(ctx context.Context, volumeID int, reason string) error {
+		log.Printf("[INFO] Detaching Linode Volume %d %s", volumeID, reason)
+		if err := client.DetachVolume(ctx, volumeID); err != nil {
+			return err
+		}
+
+		log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volumeID)
+		if _, err := client.WaitForVolumeLinodeID(ctx, volumeID, nil, int(d.Timeout("update").Seconds())); err != nil {
+			return err
+		}
+		return nil
+	}
 }
 
 func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConfigDevice {
@@ -383,5 +402,55 @@ func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]in
 	}
 	expanded := expandInstanceConfigDevice(dev)
 	*device = *expanded
+	return nil
+}
+
+// detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct
+func detachConfigVolumes(dmap linodego.InstanceConfigDeviceMap, detacher volumeDetacher) error {
+	// Preallocate our slice of config devices
+	drives := []*linodego.InstanceConfigDevice{
+		dmap.SDA, dmap.SDB, dmap.SDC, dmap.SDD, dmap.SDE, dmap.SDF, dmap.SDG, dmap.SDH,
+	}
+
+	// Make a buffered error channel for our goroutines to send error values back on
+	errCh := make(chan error, len(drives))
+
+	// Make a sync.WaitGroup so our devices can signal they're finished
+	var wg sync.WaitGroup
+	wg.Add(len(drives))
+
+	// For each drive, spawn a goroutine to detach the volume, send an error on the err channel
+	// if one exists, and signal the worker process is done
+	for _, d := range drives {
+		go func(dev *linodego.InstanceConfigDevice) {
+			defer wg.Done()
+
+			if dev != nil && dev.VolumeID > 0 {
+				err := detacher(context.Background(), dev.VolumeID, "for config attachment")
+				if err != nil {
+					errCh <- err
+				}
+			}
+		}(d)
+	}
+
+	// Wait until all processes are finished and close the error channel so we can range over it
+	wg.Wait()
+	close(errCh)
+
+	// Build the error from the errors in the channel and return the combined error if any exist
+	var errStr string
+	for err := range errCh {
+		if len(errStr) == 0 {
+			errStr += ", "
+		}
+
+		errStr += err.Error()
+	}
+
+	if len(errStr) > 0 {
+		return fmt.Errorf("Error detaching volumes: %s", errStr)
+	}
+
 	return nil
 }

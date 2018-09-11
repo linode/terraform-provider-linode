@@ -12,7 +12,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func TestDetectVolumeIDChange(t *testing.T) {
+func TestAccLinodeVolume_detectVolumeIDChange(t *testing.T) {
 	t.Parallel()
 	var have, want *int
 	var one, two *int
@@ -33,7 +33,7 @@ func TestDetectVolumeIDChange(t *testing.T) {
 	}
 }
 
-func TestAccLinodeVolumeBasic(t *testing.T) {
+func TestAccLinodeVolume_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_volume.foobar"
@@ -52,7 +52,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 					resource.TestCheckResourceAttr(resName, "region", "us-west"),
-					resource.TestCheckNoResourceAttr(resName, "linode_id"),
+					resource.TestCheckResourceAttr(resName, "linode_id", "0"),
 				),
 			},
 
@@ -64,7 +64,7 @@ func TestAccLinodeVolumeBasic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeVolumeUpdate(t *testing.T) {
+func TestAccLinodeVolume_update(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
@@ -86,14 +86,14 @@ func TestAccLinodeVolumeUpdate(t *testing.T) {
 				Config: testAccCheckLinodeVolumeConfigUpdates(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
-					resource.TestCheckResourceAttr("linode_volume.foobar", "label", fmt.Sprintf("%s_renamed", volumeName)),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "label", fmt.Sprintf("%s_r", volumeName)),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeVolumeResized(t *testing.T) {
+func TestAccLinodeVolume_resized(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
@@ -122,7 +122,7 @@ func TestAccLinodeVolumeResized(t *testing.T) {
 	})
 }
 
-func TestAccLinodeVolumeAttached(t *testing.T) {
+func TestAccLinodeVolume_attached(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
@@ -138,7 +138,7 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
-					resource.TestCheckNoResourceAttr("linode_volume.foobar", "linode_id"),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 				),
 			},
 			resource.TestStep{
@@ -146,14 +146,19 @@ func TestAccLinodeVolumeAttached(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet("linode_instance.foobar", "id"),
-					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
+					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
 				),
+			},
+			resource.TestStep{
+				ResourceName: "linode_volume.foobar",
+				ImportState:  true,
+				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 		},
 	})
 }
 
-func TestAccLinodeVolumeDetached(t *testing.T) {
+func TestAccLinodeVolume_detached(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
@@ -169,21 +174,29 @@ func TestAccLinodeVolumeDetached(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
-					resource.TestCheckResourceAttrPair("linode_instance.foobar", "id", "linode_volume.foobar", "linode_id"),
 				),
+			},
+			resource.TestStep{
+				ResourceName: "linode_volume.foobar",
+				ImportState:  true,
+				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
-					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 				),
+			},
+			resource.TestStep{
+				ResourceName: "linode_volume.foobar",
+				ImportState:  true,
+				Check:        resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 			},
 		},
 	})
 }
 
-func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
+func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
@@ -206,8 +219,17 @@ func TestAccLinodeVolumeReattachedBetweenInstances(t *testing.T) {
 				Config: testAccCheckLinodeVolumeConfigReattachedBetweenInstances(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
-					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
 				),
+			},
+			resource.TestStep{
+				ResourceName: "linode_instance.foobar",
+				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
+				ImportState:  true,
+			},
+			resource.TestStep{
+				ResourceName: "linode_instance.foobaz",
+				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
+				ImportState:  true,
 			},
 		},
 	})
@@ -300,32 +322,60 @@ resource "linode_volume" "foobar" {
 func testAccCheckLinodeVolumeConfigAttached(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
-	root_password = "%s"
+	type = "g6-nanode-1"
 	region = "us-west"
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices = {
+			sda = { volume_id = "${linode_volume.foobar.id}" }, 
+		}
+	}
 }
 	
 resource "linode_volume" "foobar" {
 	label = "%s"
 	region = "us-west"
-	linode_id = "${linode_instance.foobar.id}"
-}`, volume, volume)
+}`, volume)
 }
 
 func testAccCheckLinodeVolumeConfigReattachedBetweenInstances(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
-	root_password = "%s"
+	type = "g6-nanode-1"
 	region = "us-west"
-}
 
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices = {
+			sda = { volume_id = "${linode_volume.foobaz.id}" }, 
+		}
+	}
+}
+	
 resource "linode_instance" "foobaz" {
-	root_password = "%s"
+	type = "g6-nanode-1"
 	region = "us-west"
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices = {
+			sda = { volume_id = "${linode_volume.foobar.id}" }, 
+		}
+	}
 }
 	
 resource "linode_volume" "foobar" {
 	label = "%s"
 	region = "us-west"
-	linode_id = "${linode_instance.foobaz.id}"
-}`, volume, volume, volume)
+}
+
+resource "linode_volume" "foobaz" {
+	label = "%s_baz"
+	region = "us-west"
+}
+`, volume, volume)
 }
