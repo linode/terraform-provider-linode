@@ -336,7 +336,7 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstanceUpdate_simple(t *testing.T) {
+func TestAccLinodeInstance_updateSimple(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
@@ -371,7 +371,7 @@ func TestAccLinodeInstanceUpdate_simple(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstanceUpdate_config(t *testing.T) {
+func TestAccLinodeInstance_updateConfig(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
@@ -409,7 +409,7 @@ func TestAccLinodeInstanceUpdate_config(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstanceResize(t *testing.T) {
+func TestAccLinodeInstance_resize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
@@ -455,7 +455,7 @@ func TestAccLinodeInstanceResize(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstanceExpandDisk(t *testing.T) {
+func TestAccLinodeInstance_expandDisk(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
@@ -503,7 +503,7 @@ func TestAccLinodeInstanceExpandDisk(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstanceReorderedDisks(t *testing.T) {
+func TestAccLinodeInstance_reorderedDisks(t *testing.T) {
 	t.Parallel()
 	var (
 		instance      linodego.Instance
@@ -568,7 +568,7 @@ func TestAccLinodeInstanceReorderedDisks(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstancePrivateNetworking(t *testing.T) {
+func TestAccLinodeInstance_privateNetworking(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")

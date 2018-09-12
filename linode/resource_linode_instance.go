@@ -506,11 +506,9 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"disk": &schema.Schema{
-				Computed:      true,
-				PromoteSingle: true,
-				Optional:      true,
-				Type:          schema.TypeSet,
-				Set:           labelHashcode,
+				Optional: true,
+				Type:     schema.TypeSet,
+				Set:      labelHashcode,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size": {
@@ -1070,8 +1068,23 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	for _, tfDisk := range tfDisks.List() {
 		tfd := tfDisk.(map[string]interface{})
-		label, _ := tfd["label"].(string)
-		if existingDisk, existing := diskMap[label]; existing {
+
+		labelStr, found := tfd["label"]
+		if !found {
+			return fmt.Errorf("Error parsing disk label")
+		}
+
+		label, ok := labelStr.(string)
+		if !ok {
+			return fmt.Errorf("Error parsing disk label")
+		}
+
+		existingDisk, existing := diskMap[label]
+
+		if existing {
+			fmt.Printf("RESIZE \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n",
+				tfDisks, diskMap, tfd, label, found, existingDisk, existing)
+
 			// The only non-destructive change supported is resize, which requires a reboot
 			// Label renames are not supported because this TF provider relies on the label as an identifier
 			if tfd["size"].(int) != existingDisk.Size {
@@ -1085,6 +1098,9 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 			}
 			diskIDLabelMap[existingDisk.Label] = existingDisk.ID
 		} else {
+			fmt.Printf("NO RESIZE \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n",
+				diskMap, tfd, label, found, existingDisk, existing)
+
 			instanceDisk, err := createDiskFromSet(client, *instance, tfd, d)
 			if err != nil {
 				return err
@@ -1092,6 +1108,8 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 			rebootInstance = true
 			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
 		}
+		fmt.Printf("POST %#+v\n", rebootInstance)
+
 	}
 
 	// @TODO(displague) check for dupe disk labels .. perhaps in flattener
@@ -1192,10 +1210,15 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 			return fmt.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}
 
-		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
 		}
+
+		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
+			return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+		}
+
 	}
 
 	return resourceLinodeInstanceRead(d, meta)
