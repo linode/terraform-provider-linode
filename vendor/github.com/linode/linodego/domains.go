@@ -21,7 +21,7 @@ type Domain struct {
 	Group string `json:"group"`
 
 	// Used to control whether this Domain is currently being rendered.
-	Status DomainStatus `json:"domain_status"` // Enum:"disabled" "active" "edit_mode" "has_errors"
+	Status DomainStatus `json:"status"` // Enum:"disabled" "active" "edit_mode" "has_errors"
 
 	// A description for this Domain. This is for display purposes only.
 	Description string `json:"description"`

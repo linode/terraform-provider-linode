@@ -837,7 +837,10 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 				// VirtMode:   "paravirt",
 				Devices: configDevices,
 			}
-
+			detacher := makeVolumeDetacher(client, d)
+			if err := detachConfigVolumes(configOpts.Devices, detacher); err != nil {
+				return err
+			}
 			instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
 			if err != nil {
 				return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
@@ -889,6 +892,11 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 			empty := ""
 			configOpts.RootDevice = &empty
+			detacher := makeVolumeDetacher(client, d)
+			if err := detachConfigVolumes(configOpts.Devices, detacher); err != nil {
+				return err
+			}
+
 			instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
 			if err != nil {
 				return fmt.Errorf("Error creating Instance Config: %s", err)
@@ -1133,6 +1141,14 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 			} else {
 				configUpdateOpts.Devices = nil
 				configUpdateOpts.RootDevice = ""
+			}
+
+			if configUpdateOpts.Devices != nil {
+				detacher := makeVolumeDetacher(client, d)
+
+				if err := detachConfigVolumes(*configUpdateOpts.Devices, detacher); err != nil {
+					return err
+				}
 			}
 
 			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)

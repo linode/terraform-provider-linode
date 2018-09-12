@@ -82,19 +82,6 @@ func resourceLinodeDomainRecord() *schema.Resource {
 	}
 }
 
-func syncDomainRecordData(d *schema.ResourceData, record linodego.DomainRecord) {
-	d.Set("name", record.Name)
-	d.Set("port", record.Port)
-	d.Set("priority", record.Priority)
-	d.Set("protocol", record.Protocol)
-	d.Set("service", record.Service)
-	d.Set("tag", record.Tag)
-	d.Set("target", record.Target)
-	d.Set("ttl_sec", record.TTLSec)
-	d.Set("record_type", record.Type)
-	d.Set("weight", record.Weight)
-}
-
 func resourceLinodeDomainRecordExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -154,13 +141,22 @@ func resourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
 	}
 	domainID := d.Get("domain_id").(int)
-	domainRecord, err := client.GetDomainRecord(context.Background(), int(domainID), int(id))
+	record, err := client.GetDomainRecord(context.Background(), int(domainID), int(id))
 
 	if err != nil {
 		return fmt.Errorf("Error finding the specified Linode DomainRecord: %s", err)
 	}
 
-	syncDomainRecordData(d, *domainRecord)
+	d.Set("name", record.Name)
+	d.Set("port", record.Port)
+	d.Set("priority", record.Priority)
+	d.Set("protocol", record.Protocol)
+	d.Set("service", record.Service)
+	d.Set("tag", record.Tag)
+	d.Set("target", record.Target)
+	d.Set("ttl_sec", record.TTLSec)
+	d.Set("record_type", record.Type)
+	d.Set("weight", record.Weight)
 
 	return nil
 }
@@ -168,6 +164,9 @@ func resourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) er
 func resourceDataStringOrNil(d *schema.ResourceData, name string) *string {
 	if val, ok := d.GetOkExists(name); ok {
 		i := val.(string)
+		if len(i) == 0 {
+			return nil
+		}
 		return &i
 	}
 	return nil
@@ -207,7 +206,6 @@ func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	d.SetId(fmt.Sprintf("%d", domainRecord.ID))
-	syncDomainRecordData(d, *domainRecord)
 
 	return resourceLinodeDomainRecordRead(d, meta)
 }
@@ -233,13 +231,12 @@ func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) 
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
-	domainRecord, err := client.UpdateDomainRecord(context.Background(), domainID, int(id), updateOpts)
+	_, err = client.UpdateDomainRecord(context.Background(), domainID, int(id), updateOpts)
 	if err != nil {
 		return fmt.Errorf("Error updating Domain Record: %s", err)
 	}
 
-	syncDomainRecordData(d, *domainRecord)
-	return nil
+	return resourceLinodeDomainRecordRead(d, meta)
 }
 
 func resourceLinodeDomainRecordDelete(d *schema.ResourceData, meta interface{}) error {

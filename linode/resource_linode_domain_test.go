@@ -12,7 +12,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func TestAccLinodeDomainBasic(t *testing.T) {
+func TestAccLinodeDomain_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_domain.foobar"
@@ -28,9 +28,14 @@ func TestAccLinodeDomainBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeDomainExists,
 					resource.TestCheckResourceAttr(resName, "domain", domainName),
-					resource.TestCheckResourceAttrSet(resName, "domain_type"),
+					resource.TestCheckResourceAttrSet(resName, "type"),
 					resource.TestCheckResourceAttrSet(resName, "soa_email"),
+					resource.TestCheckResourceAttrSet(resName, "description"),
+					resource.TestCheckResourceAttrSet(resName, "retry_sec"),
+					resource.TestCheckResourceAttrSet(resName, "expire_sec"),
 					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckNoResourceAttr(resName, "master_ips"),
+					resource.TestCheckNoResourceAttr(resName, "axfr_ips"),
 				),
 			},
 
@@ -42,10 +47,10 @@ func TestAccLinodeDomainBasic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeDomainUpdate(t *testing.T) {
+func TestAccLinodeDomain_update(t *testing.T) {
 	t.Parallel()
 
-	var domainName = acctest.RandomWithPrefix("tf-test-")
+	var domainName = acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -126,7 +131,10 @@ func testAccCheckLinodeDomainConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "foobar" {
 	domain = "%s"
+	type = "master"
+	status = "active"
 	soa_email = "example@%s"
+	description = "tf-testing"
 }`, domain, domain)
 }
 
@@ -134,6 +142,9 @@ func testAccCheckLinodeDomainConfigUpdates(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "foobar" {
 	domain = "renamed-%s"
+	type = "master"
+	status = "active"
 	soa_email = "example@%s"
+	description = "tf-testing"
 }`, domain, domain)
 }

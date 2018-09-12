@@ -16,27 +16,61 @@ Linodes also support `[provisioning](/docs/provisioners/index.html).
 
 ## Example Usage
 
+### Simple Linode Style
+
 The following example shows how one might use this resource to configure a Linode instance.
 
 ```hcl
 resource "linode_instance" "web" {
+    label = "simple_instance"
     image = "linode/ubuntu18.04"
-    kernel = "linode/latest-64"
     region = "us-central"
     type = "g6-standard-1"
-    ssh_key = "ssh-rsa AAAA...Gw== user@example.local"
-    root_password = "terraform-test"
+    authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+    root_pass = "terr4form-test"
 
-    label = "foobaz"
-    group = "integration"
-    status = "on"
+    group = "foo"
     swap_size = 256
     private_networking = true
+}
+```
 
-    // ip_address = "8.8.8.8"
-    // plan_storage = 24576
-    // plan_storage_utilized = 24576
-    // private_ip_address = "192.168.10.50"
+### Linode with explicit Configs and Disks
+
+Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance.  This can be used to provision multiple disks and volumes during Instance creation.
+
+```hcl
+resource "linode_instance" "web" {
+  label      = "complex_instance"
+  group      = "foo"
+  region     = "us-central"
+  type       = "g6-nanode-1"
+  private_ip = true
+  
+  disk {
+    label = "boot"
+    size = 3000
+    authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+    root_pass = "terr4form-test"
+    image  = "linode/ubuntu18.04"
+  }
+
+  config {
+    label = "boot_config"
+    kernel = "linode/latest-64bit"
+    devices {
+      sda = { disk_label = "boot" },
+      sdb = { volume_id = "${linode_volume.web_volume.id}" }
+    }
+  }
+
+  boot_config = "boot_config"
+}
+
+resource "linode_volume" "web_volume" {
+  label = "web_volume"
+  size = 20
+  region = "us-central"
 }
 ```
 
@@ -54,9 +88,9 @@ The following arguments are supported:
 
 * `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
-* `root_password` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+* `root_pass` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
-  A `root_password` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
+  A `root_pass` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
 
 - - -
 

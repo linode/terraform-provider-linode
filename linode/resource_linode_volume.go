@@ -48,6 +48,7 @@ func resourceLinodeVolume() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "The Linode ID where the Volume should be attached.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"filesystem_path": &schema.Schema{
 				Type:        schema.TypeString,
@@ -77,15 +78,6 @@ func resourceLinodeVolumeExists(d *schema.ResourceData, meta interface{}) (bool,
 	return true, nil
 }
 
-func syncVolumeResourceData(d *schema.ResourceData, volume *linodego.Volume) {
-	d.Set("label", volume.Label)
-	d.Set("region", volume.Region)
-	d.Set("status", volume.Status)
-	d.Set("size", volume.Size)
-	// d.Set("linode_id", volume.LinodeID)
-	d.Set("filesystem_path", volume.FilesystemPath)
-}
-
 func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -103,7 +95,12 @@ func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error finding the specified Linode Volume: %s", err)
 	}
 
-	syncVolumeResourceData(d, volume)
+	d.Set("label", volume.Label)
+	d.Set("region", volume.Region)
+	d.Set("status", volume.Status)
+	d.Set("size", volume.Size)
+	d.Set("linode_id", volume.LinodeID)
+	d.Set("filesystem_path", volume.FilesystemPath)
 
 	return nil
 }
@@ -146,12 +143,12 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		d.SetPartial("linode_id")
 	}
 
-	syncVolumeResourceData(d, volume)
 	if _, err = client.WaitForVolumeStatus(context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout("create").Seconds())); err != nil {
 		return err
 	}
 
 	d.Partial(false)
+
 	return resourceLinodeVolumeRead(d, meta)
 }
 

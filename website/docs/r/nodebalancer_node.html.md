@@ -21,11 +21,10 @@ resource "linode_instance" "web" {
     count = "3"
     label = "web-${count.index + 1}"
     image = "linode/ubuntu18.04"
-    kernel = "linode/latest-64"
     region = "us-east"
     type = "g6-standard-1"
-    ssh_key = "ssh-rsa AAAA...Gw== user@example.local"
-    root_password = "terraform-test"
+    authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+    root_pass = "terraform-test"
 
     private_networking = true
 }

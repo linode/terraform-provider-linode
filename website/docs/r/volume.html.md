@@ -18,7 +18,8 @@ The following example shows how one might use this resource to configure a Volum
 
 ```hcl
 resource "linode_instance" "foobaz" {
-    root_password = "3X4mp13"
+    root_pass = "3X4mp13"
+    type = "g6-nanode-1"
     region = "us-west"
 }
 
