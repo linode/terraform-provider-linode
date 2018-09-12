@@ -718,6 +718,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 		createOpts.RootPass = d.Get("root_pass").(string)
 		createOpts.Image = d.Get("image").(string)
+		createOpts.Booted = &boolTrue
 		createOpts.BackupID = d.Get("backup_id").(int)
 		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
 			createOpts.SwapSize = &swapSize
@@ -851,6 +852,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	} else {
 		cset := d.Get("config").(*schema.Set)
+
 		configIDLabelMap = make(map[string]int, len(cset.List()))
 		for _, v := range cset.List() {
 			config, ok := v.(map[string]interface{})
@@ -912,12 +914,18 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	d.Partial(false)
 
 	if createOpts.Booted == nil || !*createOpts.Booted {
-		if err = client.BootInstance(context.Background(), instance.ID, bootConfig); err != nil {
-			return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
-		}
+		if disksOk {
+			if err = client.BootInstance(context.Background(), instance.ID, bootConfig); err != nil {
+				return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
+			}
 
-		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-			return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+			if _, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot, *instance.Created, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
+				return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
+			}
+
+			if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
+				return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+			}
 		}
 	}
 
