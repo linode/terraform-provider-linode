@@ -64,7 +64,6 @@ The following arguments are supported:
 
 This resource exports no additional attributes, however `status` may reflect degraded states.
 
-
 ## Import
 
 Linodes Domains can be imported using the Linode Domain `id`, e.g.

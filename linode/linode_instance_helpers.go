@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -73,11 +74,11 @@ func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig) (configs 
 		}}
 
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
-		configs = append(configs, map[string]interface{}{
+		c := map[string]interface{}{
+			"root_device":  "/dev/root",
 			"kernel":       config.Kernel,
 			"run_level":    string(config.RunLevel),
 			"virt_mode":    string(config.VirtMode),
-			"root_device":  config.RootDevice,
 			"comments":     config.Comments,
 			"memory_limit": config.MemoryLimit,
 			"label":        config.Label,
@@ -96,9 +97,100 @@ func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig) (configs 
 			// "image":           disk.Image,
 			// "authorized_keys": disk.AuthorizedKeys,
 			// "stackscript_id":  disk.StackScriptID,
-		})
+		}
+
+		// Work-Around API reporting root_device /dev/sda despite not existing and requesting a different root
+		// Linode disk slots are sequentially filled.  No SDA means no disks.
+		if config.Devices.SDA != nil {
+			if config.RootDevice != "/dev/sda" {
+				// don't set an explicit value so the value stored in state will remain
+				c["root_device"] = config.RootDevice
+			} else {
+				// a work-around value
+				c["root_device"] = "/dev/root"
+			}
+		}
+
+		configs = append(configs, c)
 	}
 	return
+}
+
+func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset *schema.Set, diskIDLabelMap map[string]int, detacher volumeDetacher) (map[int]linodego.InstanceConfig, error) {
+	configIDMap := make(map[int]linodego.InstanceConfig, len(cset.List()))
+
+	for _, v := range cset.List() {
+		config, ok := v.(map[string]interface{})
+
+		if !ok {
+			return configIDMap, fmt.Errorf("Error parsing configs")
+		}
+
+		configOpts := linodego.InstanceConfigCreateOptions{}
+
+		configOpts.Kernel = config["kernel"].(string)
+		configOpts.Label = config["label"].(string)
+		configOpts.Comments = config["comments"].(string)
+		rootDevice := config["root_device"].(string)
+		if rootDevice != "" {
+			configOpts.RootDevice = &rootDevice
+		}
+		// configOpts.InitRD = config["initrd"].(string)
+		// TODO(displague) need a disk_label to initrd lookup?
+		devices, ok := config["devices"].([]interface{})
+		if !ok {
+			return configIDMap, fmt.Errorf("Error converting config devices")
+		}
+		// TODO(displague) ok needed? check it
+		for _, device := range devices {
+			deviceMap, ok := device.(map[string]interface{})
+			if !ok {
+				return configIDMap, fmt.Errorf("Error converting config device %#v", device)
+			}
+			confDevices, err := expandInstanceConfigDeviceMap(deviceMap, diskIDLabelMap)
+			if err != nil {
+				return configIDMap, err
+			}
+			if confDevices != nil {
+				configOpts.Devices = *confDevices
+			}
+
+			// @TODO(displague) should DefaultFunc set /dev/root when no devices?
+			//if len(diskIDLabelMap) == 0 {
+			//	empty := ""
+			//	configOpts.RootDevice = &empty
+			//}
+		}
+
+		//empty := ""
+		//configOpts.RootDevice = &empty
+		if err := detachConfigVolumes(configOpts.Devices, detacher); err != nil {
+			return configIDMap, err
+		}
+
+		instanceConfig, err := client.CreateInstanceConfig(context.Background(), instanceID, configOpts)
+		if err != nil {
+			return configIDMap, fmt.Errorf("Error creating Instance Config: %s", err)
+		}
+		configIDMap[instanceConfig.ID] = *instanceConfig
+	}
+	return configIDMap, nil
+
+}
+
+func deleteInstanceConfigsFromSet(client linodego.Client, instanceID int, configs *schema.Set) error {
+	for _, configRaw := range configs.List() {
+		config := configRaw.(map[string]interface{})
+		if idRaw, found := config["id"]; found {
+			if id, ok := idRaw.(int); ok {
+				if err := client.DeleteInstanceConfig(context.Background(), instanceID, id); err != nil {
+					return err
+				}
+
+			}
+		}
+	}
+	return nil
 }
 
 func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice) []map[string]interface{} {
@@ -376,21 +468,79 @@ func privateIP(ip net.IP) bool {
 	return private
 }
 
+func diskHashCode(v interface{}) int {
+	switch t := v.(type) {
+	case linodego.InstanceDisk:
+		return schema.HashString(t.Label + ":" + strconv.Itoa(t.Size))
+	case map[string]interface{}:
+		if _, found := t["size"]; found {
+			if size, ok := t["size"].(int); ok {
+				if _, found := t["label"]; found {
+					if label, ok := t["label"].(string); ok {
+						return schema.HashString(label + ":" + strconv.Itoa(size))
+					}
+				}
+			}
+		}
+		panic(fmt.Sprintf("Error hashing disk for invalid map: %#v", v))
+	default:
+		panic(fmt.Sprintf("Error hashing config for unknown interface: %#v", v))
+	}
+}
+
 func labelHashcode(v interface{}) int {
+	switch t := v.(type) {
+	case string:
+		return schema.HashString(v)
+	case linodego.InstanceDisk:
+		return schema.HashString(t.Label)
+	case linodego.InstanceConfig:
+		return schema.HashString(t.Label)
+	case map[string]interface{}:
+		if _, found := t["label"]; found {
+			if label, ok := t["label"].(string); ok {
+				return schema.HashString(label)
+			}
+		}
+		panic(fmt.Sprintf("Error hashing label for unknown map: %#v", v))
+	default:
+		panic(fmt.Sprintf("Error hashing label for unknown interface: %#v", v))
+	}
+}
+
+func configHashcode(v interface{}) int {
 	switch t := v.(type) {
 	case string:
 		return schema.HashString(v)
 	case linodego.InstanceConfig:
 		return schema.HashString(t.Label)
-	case linodego.InstanceDisk:
-		return schema.HashString(t.Label)
 	case map[string]interface{}:
-		if label, ok := t["label"]; ok {
-			return schema.HashString(label.(string))
+		if _, found := t["label"]; found {
+			if label, ok := t["label"].(string); ok {
+				return schema.HashString(label)
+			}
 		}
-		panic(fmt.Sprintf("Error hashing label for unknown map: %#v", v))
+		panic(fmt.Sprintf("Error hashing config for unknown map: %#v", v))
 	default:
-		panic(fmt.Sprintf("Error hashing label for unknown interface: %#v", v))
+		panic(fmt.Sprintf("Error hashing config for unknown interface: %#v", v))
+	}
+}
+
+func diskState(v interface{}) string {
+	switch t := v.(type) {
+	case map[string]interface{}:
+		if _, found := t["size"]; found {
+			if size, ok := t["size"].(int); ok {
+				if _, found := t["label"]; found {
+					if label, ok := t["label"].(string); ok {
+						return label + ":" + strconv.Itoa(size)
+					}
+				}
+			}
+		}
+		panic(fmt.Sprintf("Error generating disk state for invalid map: %#v", v))
+	default:
+		panic(fmt.Sprintf("Error generating disk for unknown interface: %#v", v))
 	}
 }
 

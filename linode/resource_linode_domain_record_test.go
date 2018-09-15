@@ -35,13 +35,13 @@ func TestAccLinodeDomainRecord_basic(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateIdDomainRecord,
+				ImportStateIdFunc: testAccStateIDDomainRecord,
 			},
 		},
 	})
 }
 
-func testAccStateIdDomainRecord(s *terraform.State) (string, error) {
+func testAccStateIDDomainRecord(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain_record" {
 			continue

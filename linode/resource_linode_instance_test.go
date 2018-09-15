@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -381,6 +382,83 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
+	empty := ""
+	var configAttrName *string
+	configAttrName = &empty
+
+	//strconv.Itoa(labelHashcode("config"))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testGetTypeSetIndexyByLabel(resName, "config", "config", configAttrName),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.kernel", *configAttrName), "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.root_device", *configAttrName), "/dev/root"),
+					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.helpers.0.network", *configAttrName), "true"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceConfigSimpleUpdates(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
+					// changed kerel, not label
+					testGetTypeSetIndexyByLabel(resName, "config", "config", configAttrName),
+					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.label", *configAttrName), "config"),
+					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.kernel", *configAttrName), "linode/latest-32bit"),
+					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.root_device", *configAttrName), "/dev/root"),
+					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.helpers.0.network", *configAttrName), "false"),
+				),
+			},
+		},
+	})
+}
+
+func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		*index = "x" // s[len(s)-2]
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Resource not found: %s", name)
+		}
+
+		for k, v := range rs.Primary.Attributes {
+			if strings.HasSuffix(k, ".label") && strings.HasPrefix(k, key+".") && v == label {
+				//s := strings.Split(k, ".")
+				*index = "x" // s[len(s)-2]
+				return nil
+			}
+
+		}
+		return fmt.Errorf("Resource attribute label not found: %s.%s.*.label == %s", name, key, label)
+	}
+}
+
+func TestAccLinodeInstance_updateMultipleConfigs(t *testing.T) {
+	t.Parallel()
+
+	config := linodego.InstanceConfig{}
+	configA := linodego.InstanceConfig{}
+	configB := linodego.InstanceConfig{}
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -392,17 +470,68 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("config", testConfigExists(&config), testConfigKernel("linode/latest-64bit")),
+					),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceConfigSimpleUpdates(instanceName),
+				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
-					// changed kerel, not label
-					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
-					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("configa", testConfigExists(&configA), testConfigKernel("linode/latest-64bit")),
+						testConfig("configb", testConfigExists(&configB), testConfigKernel("linode/latest-32bit")),
+					),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithMultipleConfigsReverseOrder(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("configb"))+".kernel", "linode/latest-32bit"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("configb", testConfigKernel("linode/latest-32bit")),
+						testConfig("configa", testConfigKernel("linode/latest-64bit")),
+					),
+				),
+			},
+			resource.TestStep{
+				ResourceName: resName,
+				ImportState:  true,
+			},
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithMultipleConfigsAllUpdated(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("configb", testConfigKernel("linode/latest-64bit")),
+						testConfig("configa", testConfigKernel("linode/latest-32bit")),
+						testConfig("configc", testConfigKernel("linode/latest-64bit")),
+					),
 				),
 			},
 		},
@@ -588,7 +717,7 @@ func TestAccLinodeInstance_privateNetworking(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					testAccCheckLinodeInstanceAttributesPrivateNetworking("linode_instance.foobar"),
-					resource.TestCheckResourceAttr(resName, "private_networking", "true"),
+					resource.TestCheckResourceAttr(resName, "private_ip", "true"),
 				),
 			},
 		},
@@ -773,6 +902,13 @@ func testConfig(label string, configTests ...testConfigFunc) testConfigsFunc {
 	}
 }
 
+func testConfigExists(configPtr *linodego.InstanceConfig) testConfigFunc {
+	return func(config linodego.InstanceConfig) error {
+		*configPtr = config
+		return nil
+	}
+}
+
 func testConfigLabel(label string) testConfigFunc {
 	return func(config linodego.InstanceConfig) error {
 		if config.Label != label {
@@ -942,7 +1078,12 @@ resource "linode_instance" "foobar" {
 		label = "config"
 		kernel = "linode/latest-64bit"
 		root_device = "/dev/root"
+		helpers {
+			network = true
+		}
 	}
+
+	boot_config_label = "config"
 }`, instance)
 }
 
@@ -963,6 +1104,60 @@ resource "linode_instance" "foobar" {
 		kernel = "linode/latest-32bit"
 		root_device = "/dev/root"
 	}
+
+	boot_config_label = "configa"
+}`, instance)
+}
+
+func testAccCheckLinodeInstanceWithMultipleConfigsReverseOrder(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "g6-nanode-1"
+	region = "us-east"
+	config {
+		label = "configb"
+		kernel = "linode/latest-32bit"
+		root_device = "/dev/root"
+	}
+	config {
+		label = "configa"
+		kernel = "linode/latest-64bit"
+		root_device = "/dev/root"
+	}
+
+	boot_config_label = "configa"
+}`, instance)
+}
+
+func testAccCheckLinodeInstanceWithMultipleConfigsAllUpdated(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "g6-nanode-1"
+	region = "us-east"
+	config {
+		label = "configb"
+		comments = "configb"
+		kernel = "linode/latest-64bit"
+		root_device = "/dev/configb"
+	}
+	config {
+		label = "configa"
+		comments = "configa"
+		kernel = "linode/latest-32bit"
+		root_device = "/dev/configa"
+	}
+	config {
+		label = "configc"
+		comments = "configc"
+		kernel = "linode/latest-64bit"
+		root_device = "/dev/configc"
+	}
+
+	boot_config_label = "configa"
 }`, instance)
 }
 
@@ -1174,6 +1369,8 @@ resource "linode_instance" "foobar" {
 		kernel = "linode/latest-64bit"
 		root_device = "/dev/root"
 	}
+
+	boot_config_label = "config"
 }`, instance)
 }
 
@@ -1190,7 +1387,11 @@ resource "linode_instance" "foobar" {
 		label = "config"
 		kernel = "linode/latest-32bit"
 		root_device = "/dev/root"
+		helpers {
+			network = false
+		}
 	}
+	boot_config_label = "config"
 }`, instance)
 }
 
