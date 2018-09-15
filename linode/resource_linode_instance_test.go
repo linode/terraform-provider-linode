@@ -382,10 +382,8 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
-	empty := ""
-	var configAttrName *string
-	configAttrName = &empty
-
+	var configAttrName string
+	fmt.Println("DEBUG0", &configAttrName)
 	//strconv.Itoa(labelHashcode("config"))
 
 	resource.Test(t, resource.TestCase{
@@ -398,12 +396,12 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					testGetTypeSetIndexyByLabel(resName, "config", "config", configAttrName),
+					testGetTypeSetIndexyByLabel(resName, "config", "config", &configAttrName),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.kernel", *configAttrName), "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.root_device", *configAttrName), "/dev/root"),
-					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.helpers.0.network", *configAttrName), "true"),
+					resource.TestCheckResourceAttr(resName, x("config.%s.kernel", &configAttrName), "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, x("config.%s.root_device", &configAttrName), "/dev/root"),
+					resource.TestCheckResourceAttr(resName, x("config.%s.helpers.0.network", &configAttrName), "true"),
 				),
 			},
 			resource.TestStep{
@@ -413,20 +411,24 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
 					// changed kerel, not label
-					testGetTypeSetIndexyByLabel(resName, "config", "config", configAttrName),
-					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.label", *configAttrName), "config"),
-					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.kernel", *configAttrName), "linode/latest-32bit"),
-					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.root_device", *configAttrName), "/dev/root"),
-					resource.TestCheckResourceAttr(resName, fmt.Sprintf("config.%s.helpers.0.network", *configAttrName), "false"),
+					testGetTypeSetIndexyByLabel(resName, "config", "config", &configAttrName),
+					resource.TestCheckResourceAttr(resName, x("config.%s.label", &configAttrName), "config"),
+					resource.TestCheckResourceAttr(resName, x("config.%s.kernel", &configAttrName), "linode/latest-32bit"),
+					resource.TestCheckResourceAttr(resName, x("config.%s.root_device", &configAttrName), "/dev/root"),
+					resource.TestCheckResourceAttr(resName, x("config.%s.helpers.0.network", &configAttrName), "false"),
 				),
 			},
 		},
 	})
 }
 
+func x(format string, configAttrName *string) string { return fmt.Sprintf(format, *configAttrName) }
+
 func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resource.TestCheckFunc {
+	fmt.Println("DEBUGA", index)
 	return func(s *terraform.State) error {
 		*index = "x" // s[len(s)-2]
+		fmt.Println("DEBUGB", index)
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Resource not found: %s", name)
@@ -436,6 +438,7 @@ func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resourc
 			if strings.HasSuffix(k, ".label") && strings.HasPrefix(k, key+".") && v == label {
 				//s := strings.Split(k, ".")
 				*index = "x" // s[len(s)-2]
+				fmt.Println("DEBUGC", index)
 				return nil
 			}
 
