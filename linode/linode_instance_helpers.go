@@ -116,10 +116,10 @@ func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig) (configs 
 	return
 }
 
-func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset *schema.Set, diskIDLabelMap map[string]int, detacher volumeDetacher) (map[int]linodego.InstanceConfig, error) {
-	configIDMap := make(map[int]linodego.InstanceConfig, len(cset.List()))
+func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset []interface{}, diskIDLabelMap map[string]int, detacher volumeDetacher) (map[int]linodego.InstanceConfig, error) {
+	configIDMap := make(map[int]linodego.InstanceConfig, len(cset))
 
-	for _, v := range cset.List() {
+	for _, v := range cset {
 		config, ok := v.(map[string]interface{})
 
 		if !ok {
@@ -131,6 +131,41 @@ func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset *
 		configOpts.Kernel = config["kernel"].(string)
 		configOpts.Label = config["label"].(string)
 		configOpts.Comments = config["comments"].(string)
+
+		if helpers, ok := config["helpers"].([]interface{}); ok {
+			for _, helper := range helpers {
+				if helperMap, ok := helper.(map[string]interface{}); ok {
+					configOpts.Helpers = &linodego.InstanceConfigHelpers{}
+					fmt.Println("MARQUES", helperMap)
+					if updateDBDisabled, found := helperMap["updatedb_disabled"]; found {
+						if value, ok := updateDBDisabled.(bool); ok {
+							configOpts.Helpers.UpdateDBDisabled = value
+						}
+					}
+					if distro, found := helperMap["distro"]; found {
+						if value, ok := distro.(bool); ok {
+							configOpts.Helpers.Distro = value
+						}
+					}
+					if modulesDep, found := helperMap["modules_dep"]; found {
+						if value, ok := modulesDep.(bool); ok {
+							configOpts.Helpers.ModulesDep = value
+						}
+					}
+					if network, found := helperMap["network"]; found {
+						if value, ok := network.(bool); ok {
+							configOpts.Helpers.Network = value
+						}
+					}
+					if devTmpFsAutomount, found := helperMap["devtmpfs_automount"]; found {
+						if value, ok := devTmpFsAutomount.(bool); ok {
+							configOpts.Helpers.DevTmpFsAutomount = value
+						}
+					}
+				}
+			}
+		}
+
 		rootDevice := config["root_device"].(string)
 		if rootDevice != "" {
 			configOpts.RootDevice = &rootDevice
@@ -154,7 +189,6 @@ func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset *
 			if confDevices != nil {
 				configOpts.Devices = *confDevices
 			}
-
 			// @TODO(displague) should DefaultFunc set /dev/root when no devices?
 			//if len(diskIDLabelMap) == 0 {
 			//	empty := ""
@@ -207,7 +241,7 @@ func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice) []map[strin
 	}}
 }
 
-// TODO(displague) do we need a disk_label map?
+// expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap for the Linode API
 func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
 	if len(m) == 0 {
 		return nil, nil
@@ -217,58 +251,62 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 		devSlots := rdev.([]interface{})
 		for _, rrdev := range devSlots {
 			dev := rrdev.(map[string]interface{})
-			if k == "sda" {
-				deviceMap.SDA = &linodego.InstanceConfigDevice{}
-				if err := assignConfigDevice(deviceMap.SDA, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
+			tDevice := new(linodego.InstanceConfigDevice)
+			if err := assignConfigDevice(tDevice, dev, diskIDLabelMap); err != nil {
+				return nil, err
 			}
-			if k == "sdb" {
-				deviceMap.SDB = &linodego.InstanceConfigDevice{}
-				if err := assignConfigDevice(deviceMap.SDB, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
-			}
-			if k == "sdc" {
-				deviceMap.SDC = &linodego.InstanceConfigDevice{}
-				if err := assignConfigDevice(deviceMap.SDC, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
-			}
-			if k == "sdd" {
-				deviceMap.SDD = &linodego.InstanceConfigDevice{}
-				if err := assignConfigDevice(deviceMap.SDD, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
-			}
-			if k == "sde" {
-				deviceMap.SDE = &linodego.InstanceConfigDevice{}
-				if err := assignConfigDevice(deviceMap.SDE, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
-			}
-			if k == "sdf" {
-				deviceMap.SDF = &linodego.InstanceConfigDevice{}
 
-				if err := assignConfigDevice(deviceMap.SDF, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
-			}
-			if k == "sdg" {
-				deviceMap.SDG = &linodego.InstanceConfigDevice{}
-				if err := assignConfigDevice(deviceMap.SDG, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
-			}
-			if k == "sdh" {
-				deviceMap.SDH = &linodego.InstanceConfigDevice{}
-				if err := assignConfigDevice(deviceMap.SDH, dev, diskIDLabelMap); err != nil {
-					return nil, err
-				}
-			}
+			*deviceMap = changeInstanceConfigDevice(*deviceMap, k, tDevice)
 		}
 	}
 	return deviceMap, nil
+}
+
+// changeInstanceConfigDevice returns a copy of a config device map with the specified disk slot changed to the provided device
+func changeInstanceConfigDevice(deviceMap linodego.InstanceConfigDeviceMap, namedSlot string, device *linodego.InstanceConfigDevice) linodego.InstanceConfigDeviceMap {
+	tDevice := device
+	if tDevice != nil && emptyInstanceConfigDevice(*tDevice) {
+		tDevice = nil
+	}
+	switch namedSlot {
+	case "sda":
+		deviceMap.SDA = tDevice
+	case "sdb":
+		deviceMap.SDB = tDevice
+	case "sdc":
+		deviceMap.SDC = tDevice
+	case "sdd":
+		deviceMap.SDD = tDevice
+	case "sde":
+		deviceMap.SDE = tDevice
+	case "sdf":
+		deviceMap.SDF = tDevice
+	case "sdg":
+		deviceMap.SDG = tDevice
+	case "sdh":
+		deviceMap.SDH = tDevice
+	}
+
+	return deviceMap
+}
+
+// emptyInstanceConfigDevice returns true only when neither the disk or volume have been assigned to a config device
+func emptyInstanceConfigDevice(dev linodego.InstanceConfigDevice) bool {
+	return (dev.DiskID == 0 && dev.VolumeID == 0)
+}
+
+// emptyConfigDeviceMap returns true only when none of the disks in a config device map have been assigned
+func emptyConfigDeviceMap(dmap linodego.InstanceConfigDeviceMap) bool {
+	drives := []*linodego.InstanceConfigDevice{
+		dmap.SDA, dmap.SDB, dmap.SDC, dmap.SDD, dmap.SDE, dmap.SDF, dmap.SDG, dmap.SDH,
+	}
+
+	for _, drive := range drives {
+		if drive != nil && !emptyInstanceConfigDevice(*drive) {
+			return true
+		}
+	}
+	return false
 }
 
 type volumeDetacher func(context.Context, int, string) error
@@ -551,7 +589,9 @@ func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]in
 		}
 	}
 	expanded := expandInstanceConfigDevice(dev)
-	*device = *expanded
+	if expanded != nil {
+		*device = *expanded
+	}
 	return nil
 }
 

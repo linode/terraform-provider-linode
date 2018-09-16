@@ -88,7 +88,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_multipleConfigs(t *testing.T) {
+func TestAccLinodeInstance_configPair(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -165,7 +165,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_multipleDisks(t *testing.T) {
+func TestAccLinodeInstance_diskPair(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -372,7 +372,7 @@ func TestAccLinodeInstance_updateSimple(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_updateConfig(t *testing.T) {
+func TestAccLinodeInstance_configUpdate(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
@@ -382,10 +382,6 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
-	var configAttrName string
-	fmt.Println("DEBUG0", &configAttrName)
-	//strconv.Itoa(labelHashcode("config"))
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -393,15 +389,13 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
-
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					testGetTypeSetIndexyByLabel(resName, "config", "config", &configAttrName),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-					resource.TestCheckResourceAttr(resName, x("config.%s.kernel", &configAttrName), "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, x("config.%s.root_device", &configAttrName), "/dev/root"),
-					resource.TestCheckResourceAttr(resName, x("config.%s.helpers.0.network", &configAttrName), "true"),
+					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/root"),
+					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
 				),
 			},
 			resource.TestStep{
@@ -411,24 +405,27 @@ func TestAccLinodeInstance_updateConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
 					// changed kerel, not label
-					testGetTypeSetIndexyByLabel(resName, "config", "config", &configAttrName),
-					resource.TestCheckResourceAttr(resName, x("config.%s.label", &configAttrName), "config"),
-					resource.TestCheckResourceAttr(resName, x("config.%s.kernel", &configAttrName), "linode/latest-32bit"),
-					resource.TestCheckResourceAttr(resName, x("config.%s.root_device", &configAttrName), "/dev/root"),
-					resource.TestCheckResourceAttr(resName, x("config.%s.helpers.0.network", &configAttrName), "false"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
+					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/root"),
+					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "false"),
 				),
 			},
 		},
 	})
 }
 
-func x(format string, configAttrName *string) string { return fmt.Sprintf(format, *configAttrName) }
+func x(format string, configAttrName *string) string {
+	fmt.Println("DEBUGX", configAttrName, *configAttrName)
+
+	return fmt.Sprintf(format, *configAttrName)
+}
 
 func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resource.TestCheckFunc {
 	fmt.Println("DEBUGA", index)
 	return func(s *terraform.State) error {
 		*index = "x" // s[len(s)-2]
-		fmt.Println("DEBUGB", index)
+		fmt.Println("DEBUGB", index, *index)
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Resource not found: %s", name)
@@ -438,7 +435,7 @@ func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resourc
 			if strings.HasSuffix(k, ".label") && strings.HasPrefix(k, key+".") && v == label {
 				//s := strings.Split(k, ".")
 				*index = "x" // s[len(s)-2]
-				fmt.Println("DEBUGC", index)
+				fmt.Println("DEBUGC", index, *index)
 				return nil
 			}
 
@@ -447,7 +444,7 @@ func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resourc
 	}
 }
 
-func TestAccLinodeInstance_updateMultipleConfigs(t *testing.T) {
+func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 	t.Parallel()
 
 	config := linodego.InstanceConfig{}
@@ -473,6 +470,9 @@ func TestAccLinodeInstance_updateMultipleConfigs(t *testing.T) {
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "config.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 					testAccCheckComputeInstanceConfigs(&instance,
 						testConfig("config", testConfigExists(&config), testConfigKernel("linode/latest-64bit")),
 					),
@@ -486,6 +486,11 @@ func TestAccLinodeInstance_updateMultipleConfigs(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "config.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "configa"),
+					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
+					resource.TestCheckResourceAttr(resName, "config.1.label", "configb"),
+					resource.TestCheckResourceAttr(resName, "config.1.kernel", "linode/latest-32bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					testAccCheckComputeInstanceConfigs(&instance,
@@ -494,25 +499,21 @@ func TestAccLinodeInstance_updateMultipleConfigs(t *testing.T) {
 					),
 				),
 			},
-
 			resource.TestStep{
 				ResourceName: resName,
 				ImportState:  true,
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceWithMultipleConfigsReverseOrder(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "region", "us-east"),
-					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-					resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("configb"))+".kernel", "linode/latest-32bit"),
-					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "config.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 					testAccCheckComputeInstanceConfigs(&instance,
-						testConfig("configb", testConfigKernel("linode/latest-32bit")),
-						testConfig("configa", testConfigKernel("linode/latest-64bit")),
+						testConfig("config", testConfigExists(&config), testConfigKernel("linode/latest-64bit")),
 					),
 				),
 			},
@@ -587,7 +588,7 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_expandDisk(t *testing.T) {
+func TestAccLinodeInstance_diskResize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	var instanceName = acctest.RandomWithPrefix("tf_test")
@@ -595,6 +596,17 @@ func TestAccLinodeInstance_expandDisk(t *testing.T) {
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
+	}
+
+	diskSetID := ""
+
+	diskSetFunc := func(diskSetID *string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr(resName, x("disk.%s.size", diskSetID), "3000"),
+			)
+			return nil
+		}
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -607,11 +619,12 @@ func TestAccLinodeInstance_expandDisk(t *testing.T) {
 				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
+					testGetTypeSetIndexyByLabel(resName, "disk", "disk", &diskSetID),
+
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-
+					diskSetFunc(&diskSetID),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("disk"))+".size", "3000"),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
@@ -635,7 +648,7 @@ func TestAccLinodeInstance_expandDisk(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_reorderedDisks(t *testing.T) {
+func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 	t.Parallel()
 	var (
 		instance      linodego.Instance
@@ -664,8 +677,8 @@ func TestAccLinodeInstance_reorderedDisks(t *testing.T) {
 					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskExists(&instanceDisk), testDiskSize(3000))),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk))),
 					// resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sda.0.disk_id", instanceDiskID(&instanceDisk)),
-					resource.TestCheckResourceAttrSet(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sda.0.disk_id"),
-					resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sdb.0.disk_id", "0"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
+					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdb.0.disk_id", "0"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 				),
@@ -679,8 +692,8 @@ func TestAccLinodeInstance_reorderedDisks(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("disk"))+".size", "3000"),
 					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("diskb"))+".size", "3000"),
-					resource.TestCheckResourceAttrSet(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sda.0.disk_id"),
-					resource.TestCheckResourceAttrSet(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sdb.0.disk_id"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sdb.0.disk_id"),
 
 					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskExists(&instanceDisk), testDiskSize(3000))),
 					testAccCheckComputeInstanceDisks(&instance, testDisk("diskb", testDiskExists(&instanceDiskB), testDiskSize(3000))),
@@ -688,9 +701,9 @@ func TestAccLinodeInstance_reorderedDisks(t *testing.T) {
 
 					// resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sda.0.disk_id", strconv.Itoa(instanceDiskB.ID)),
 					// resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sdb.0.disk_id", strconv.Itoa(instanceDisk.ID)),
-					resource.TestCheckResourceAttrSet(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sda.0.disk_id"),
-					resource.TestCheckResourceAttrSet(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sdb.0.disk_id"),
-					resource.TestCheckResourceAttr(resName, "config."+strconv.Itoa(labelHashcode("config"))+".devices.0.sdc.0.disk_id", "0"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sdb.0.disk_id"),
+					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdc.0.disk_id", "0"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "status", "running"),
@@ -1120,13 +1133,13 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	region = "us-east"
 	config {
-		label = "configb"
-		kernel = "linode/latest-32bit"
+		label = "configa"
+		kernel = "linode/latest-64bit"
 		root_device = "/dev/root"
 	}
 	config {
-		label = "configa"
-		kernel = "linode/latest-64bit"
+		label = "configb"
+		kernel = "linode/latest-32bit"
 		root_device = "/dev/root"
 	}
 
@@ -1142,22 +1155,22 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	region = "us-east"
 	config {
-		label = "configb"
-		comments = "configb"
-		kernel = "linode/latest-64bit"
-		root_device = "/dev/configb"
-	}
-	config {
 		label = "configa"
 		comments = "configa"
 		kernel = "linode/latest-32bit"
-		root_device = "/dev/configa"
+		root_device = "/dev/root"
+	}
+	config {
+		label = "configb"
+		comments = "configb"
+		kernel = "linode/latest-64bit"
+		root_device = "/dev/root"
 	}
 	config {
 		label = "configc"
 		comments = "configc"
 		kernel = "linode/latest-64bit"
-		root_device = "/dev/configc"
+		root_device = "/dev/root"
 	}
 
 	boot_config_label = "configa"
