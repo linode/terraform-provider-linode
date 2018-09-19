@@ -76,6 +76,8 @@ func TestAccLinodeInstance_config(t *testing.T) {
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
+					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 				),
 			},
@@ -142,6 +144,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckLinodeInstanceWithDisk(instanceName, publicKeyMaterial),
@@ -409,6 +412,7 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/root"),
 					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
+					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
 				),
 			},
 			resource.TestStep{
@@ -422,6 +426,7 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
 					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/root"),
 					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "false"),
+					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "80"),
 				),
 			},
 		},
@@ -1093,6 +1098,9 @@ resource "linode_instance" "foobar" {
 	group = "tf_test"
 	type = "g6-nanode-1"
 	region = "us-east"
+	alerts {
+		cpu = 60
+	}
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
@@ -1401,6 +1409,10 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	region = "us-east"
 	group = "tf_test_r"
+
+	alerts {
+		cpu = 80
+	}
 
 	config {
 		label = "config"

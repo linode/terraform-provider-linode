@@ -181,28 +181,34 @@ func resourceLinodeInstance() *schema.Resource {
 			"alerts": &schema.Schema{
 				Computed: true,
 				Type:     schema.TypeList,
+				Optional: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cpu": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
+							Optional: true,
 						},
 						"network_in": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
+							Optional: true,
 						},
 						"network_out": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
+							Optional: true,
 						},
 						"transfer_quota": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
+							Optional: true,
 						},
 						"io": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Computed: true,
+							Optional: true,
 						},
 					},
 				},
@@ -790,16 +796,22 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	/*
-		if d.Get("private_networking").(bool) {
-			resp, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
-			if err != nil {
-				return fmt.Errorf("Error adding a private ip address to Linode instance %d: %s", instance.ID, err)
-			}
-			d.Set("private_ip_address", resp.Address)
-			d.SetPartial("private_ip_address")
+	if _, alertsOk := d.GetOk("alerts.0"); alertsOk {
+		updateOpts := linodego.InstanceUpdateOptions{
+			Alerts: &linodego.InstanceAlert{},
 		}
-	*/
+		// TODO(displague) only set specified alerts
+		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
+		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
+		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
+		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
+		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.transfer_quota").(int)
+
+		instance, err = client.UpdateInstance(context.Background(), instance.ID, updateOpts)
+		if err != nil {
+			return err
+		}
+	}
 
 	// Look up tables for any disks and configs we create
 	// - so configs and initrd can reference disks by label
@@ -962,34 +974,15 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		simpleUpdate = true
 	}
 
-	// TODO(displague) HasChange(alerts) - update all
-	if d.HasChange("alerts.0.cpu") {
+	if d.HasChange("alerts") {
+		updateOpts.Alerts = &linodego.InstanceAlert{}
 		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
-		d.SetPartial("alerts.0.cpu")
-		simpleUpdate = true
-	}
-
-	if d.HasChange("alerts.0.io") {
 		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
-		d.SetPartial("alerts.0.io")
-		simpleUpdate = true
-	}
-
-	if d.HasChange("alerts.0.network_in") {
 		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
-		d.SetPartial("alerts.0.network_in")
-		simpleUpdate = true
-	}
-
-	if d.HasChange("alerts.0.network_out") {
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
-		d.SetPartial("alerts.0.network_out")
-		simpleUpdate = true
-	}
-
-	if d.HasChange("alerts.0.transfer_quota") {
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.transfer_quota").(int)
-		d.SetPartial("alerts.0.transfer_quota")
+		d.SetPartial("alerts")
+
 		simpleUpdate = true
 	}
 
