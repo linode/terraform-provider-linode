@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/linode/linodego"
-  version = "0.5.1"
+  branch = "master"
 
 [[constraint]]
   branch = "master"
