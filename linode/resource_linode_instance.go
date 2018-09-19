@@ -818,7 +818,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	// - so configs can be referenced as a boot_config_label param
 	var diskIDLabelMap map[string]int
 	var configIDLabelMap map[string]int
-	//var configDevices linodego.InstanceConfigDeviceMap
 	var diskIDOrdered []int
 
 	if disksOk {
@@ -841,59 +840,10 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
 			diskIDOrdered[index] = instanceDisk.ID
-			// if err := d.Set(fmt.Sprintf("disk.%d.id", index), instanceDisk.ID); err != nil {
-			//	return fmt.Errorf("Error setting Linode Disk ID: %s", err)
-			// }
-
 		}
 	}
 
-	if !configsOk {
-		/*
-			if disksOk {
-
-				// TODO(displague)  should we really create a config if not specfically defined? probably not
-				for index, diskID := range diskIDOrdered {
-					if index == 0 {
-						configDevices.SDA = &linodego.InstanceConfigDevice{DiskID: diskID}
-					} else if index == 1 {
-						configDevices.SDB = &linodego.InstanceConfigDevice{DiskID: diskID}
-					} else if index == 2 {
-						configDevices.SDC = &linodego.InstanceConfigDevice{DiskID: diskID}
-					} else if index == 3 {
-						configDevices.SDD = &linodego.InstanceConfigDevice{DiskID: diskID}
-					} else if index == 4 {
-						configDevices.SDE = &linodego.InstanceConfigDevice{DiskID: diskID}
-					} else if index == 5 {
-						configDevices.SDF = &linodego.InstanceConfigDevice{DiskID: diskID}
-					} else if index == 6 {
-						configDevices.SDG = &linodego.InstanceConfigDevice{DiskID: diskID}
-					} else if index == 7 {
-						configDevices.SDH = &linodego.InstanceConfigDevice{DiskID: diskID}
-					}
-				}
-
-				configOpts := linodego.InstanceConfigCreateOptions{
-					Label: fmt.Sprintf("linode%d-config", instance.ID),
-					// RootDevice: "/dev/sda",
-					// RunLevel:   "default",
-					// VirtMode:   "paravirt",
-					Devices: configDevices,
-				}
-				detacher := makeVolumeDetacher(client, d)
-				if err := detachConfigVolumes(configOpts.Devices, detacher); err != nil {
-					return err
-				}
-				instanceConfig, err := client.CreateInstanceConfig(context.Background(), instance.ID, configOpts)
-				if err != nil {
-					return fmt.Errorf("Error creating Linode instance %d config: %s", instance.ID, err)
-				}
-				bootConfig = instanceConfig.ID
-				configIDLabelMap = make(map[string]int, 1)
-				configIDLabelMap[configOpts.Label] = instanceConfig.ID
-			}
-		*/
-	} else {
+	if configsOk {
 		cset := d.Get("config").([]interface{})
 		detacher := makeVolumeDetacher(client, d)
 
@@ -1042,21 +992,6 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		rebootInstance = true
 	}
 
-	/*
-		tfDisks := d.Get("disk").([]interface{})
-		fmt.Println("[MARQUES] DISK HAS CHANGE", d.HasChange("disk"))
-		x, y := d.GetChange("disk")
-		fmt.Println("[MARQUES] DISK CHANGE", x, y)
-	*/
-
-	// @TODO(displague) check for dupe disk labels .. perhaps in flattener
-	// @TODO(displague) delete unfound disks
-	// @TODO(displague) even bother Set'ting disk if Read is going to do it?
-
-	//updatedTFDisks, swap := flattenInstanceDisks(updatedDisks)
-	//d.Set("disk", updatedTFDisks)
-	//d.Set("swap_size", swap)
-
 	tfConfigsOld, tfConfigsNew := d.GetChange("config")
 	cRebootInstance, updatedConfigMap, updatedConfigs, err := updateInstanceConfigs(client, d, *instance, tfConfigsOld, tfConfigsNew, diskIDLabelMap)
 	if err != nil {
@@ -1065,11 +1000,6 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	rebootInstance = rebootInstance || cRebootInstance
 
 	bootConfig := 0
-
-	// @TODO(displague) check for dupe config labels .. perhaps in flattener
-	// @TODO(displague) even bother Set'ting config if Read is going to do it?
-
-	// d.Set("config", flattenInstanceConfigs(updatedConfigs))
 
 	bootConfigLabel := d.Get("boot_config_label").(string)
 

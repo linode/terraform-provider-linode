@@ -89,7 +89,6 @@ func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig) (configs 
 				"network":            config.Helpers.Network,
 				"devtmpfs_automount": config.Helpers.DevTmpFsAutomount,
 			}},
-			// panic: interface conversion: interface {} is map[string]map[string]int, not *schema.Set
 			"devices": devices,
 
 			// TODO(displague) these can not be retrieved after the initial send
