@@ -243,7 +243,6 @@ func resourceLinodeInstance() *schema.Resource {
 			},
 			"config": &schema.Schema{
 				Computed:    true,
-				Default:     nil,
 				Optional:    true,
 				Type:        schema.TypeList,
 				Description: "The set of boot configurations for an Instance",
@@ -536,7 +535,6 @@ func resourceLinodeInstance() *schema.Resource {
 				Computed: true,
 				Optional: true,
 				Type:     schema.TypeList,
-				// Set:      labelHashcode,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size": {
@@ -556,34 +554,40 @@ func resourceLinodeInstance() *schema.Resource {
 						"read_only": {
 							Type:     schema.TypeBool,
 							Optional: true,
+							Computed: true,
 							ForceNew: true,
 						},
 						"image": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 							ForceNew: true,
 						},
 						"authorized_keys": {
-							Type:          schema.TypeList,
-							Elem:          &schema.Schema{Type: schema.TypeString},
-							Description:   "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
-							Optional:      true,
-							ForceNew:      true,
-							StateFunc:     sshKeyState,
-							PromoteSingle: true,
+							Type:        schema.TypeList,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
+							Optional:    true,
+							ForceNew:    true,
+							Computed:    true,
+							StateFunc:   sshKeyState,
 						},
 						"stackscript_id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
+							Computed:    true,
 							Optional:    true,
 							ForceNew:    true,
+							Default:     nil,
 						},
 						"stackscript_data": &schema.Schema{
 							Type:        schema.TypeMap,
 							Description: "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
 							Optional:    true,
+							Computed:    true,
 							ForceNew:    true,
 							Sensitive:   true,
+							Default:     nil,
 						},
 						"root_pass": &schema.Schema{
 							Type:        schema.TypeString,
@@ -695,9 +699,27 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 
-	if err := d.Set("disk", disks); err != nil {
-		return fmt.Errorf("Erroring setting Linode Instance disk: %s", err)
-	}
+	fmt.Println("[MARQUES] disks", disks)
+	/*
+		_, newDisksRaw := d.GetChange("disk")
+		newDisks := newDisksRaw.([]interface{})
+		copyDiskConfigs := []string{"image", "authorized_keys", "stackscript_id", "stackscript_data", "root_pass", "read_only"}
+		for i, tfDisk := range newDisks {
+			newDisk := tfDisk.(map[string]interface{})
+			if disks[i]["label"].(string) == newDisk["label"].(string) {
+				for k, v := range newDisk {
+					if sliceContains(copyDiskConfigs, k) {
+						disks[i][k] = v
+					}
+				}
+
+			}
+		}
+
+		if err := d.Set("disk", disks); err != nil {
+			return fmt.Errorf("Erroring setting Linode Instance disk: %s", err)
+		}
+	*/
 
 	d.Set("swap_size", swapSize)
 
@@ -706,7 +728,13 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return fmt.Errorf("Error getting the config for Linode instance %d (%s): %s", instance.ID, instance.Label, err)
 	}
-	configs := flattenInstanceConfigs(instanceConfigs)
+	diskLabelIDMap := make(map[int]string, len(instanceDisks))
+	for _, disk := range instanceDisks {
+		diskLabelIDMap[disk.ID] = disk.Label
+
+	}
+
+	configs := flattenInstanceConfigs(instanceConfigs, diskLabelIDMap)
 
 	if err := d.Set("config", configs); err != nil {
 		return fmt.Errorf("Erroring setting Linode Instance config: %s", err)
@@ -717,6 +745,16 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	return nil
+}
+
+// sliceContains tells whether a contains x.
+func sliceContains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
 }
 
 func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {

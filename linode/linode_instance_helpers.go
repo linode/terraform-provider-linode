@@ -49,6 +49,7 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 			"size":       disk.Size,
 			"label":      disk.Label,
 			"filesystem": string(disk.Filesystem),
+
 			// TODO(displague) these can not be retrieved after the initial send
 			// "read_only":       disk.ReadOnly,
 			// "image":           disk.Image,
@@ -59,18 +60,18 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 	return
 }
 
-func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig) (configs []map[string]interface{}) {
+func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig, diskLabelIDMap map[int]string) (configs []map[string]interface{}) {
 	for _, config := range instanceConfigs {
 
 		devices := []map[string]interface{}{{
-			"sda": flattenInstanceConfigDevice(config.Devices.SDA),
-			"sdb": flattenInstanceConfigDevice(config.Devices.SDB),
-			"sdc": flattenInstanceConfigDevice(config.Devices.SDC),
-			"sdd": flattenInstanceConfigDevice(config.Devices.SDD),
-			"sde": flattenInstanceConfigDevice(config.Devices.SDE),
-			"sdf": flattenInstanceConfigDevice(config.Devices.SDF),
-			"sdg": flattenInstanceConfigDevice(config.Devices.SDG),
-			"sdh": flattenInstanceConfigDevice(config.Devices.SDH),
+			"sda": flattenInstanceConfigDevice(config.Devices.SDA, diskLabelIDMap),
+			"sdb": flattenInstanceConfigDevice(config.Devices.SDB, diskLabelIDMap),
+			"sdc": flattenInstanceConfigDevice(config.Devices.SDC, diskLabelIDMap),
+			"sdd": flattenInstanceConfigDevice(config.Devices.SDD, diskLabelIDMap),
+			"sde": flattenInstanceConfigDevice(config.Devices.SDE, diskLabelIDMap),
+			"sdf": flattenInstanceConfigDevice(config.Devices.SDF, diskLabelIDMap),
+			"sdg": flattenInstanceConfigDevice(config.Devices.SDG, diskLabelIDMap),
+			"sdh": flattenInstanceConfigDevice(config.Devices.SDH, diskLabelIDMap),
 		}}
 
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
@@ -337,33 +338,33 @@ func deleteInstanceConfigs(client linodego.Client, instanceID int, oldConfigLabe
 	}
 	return nil
 }
-func deleteInstanceConfigsFromSet(client linodego.Client, instanceID int, configs *schema.Set) error {
-	for _, configRaw := range configs.List() {
-		config := configRaw.(map[string]interface{})
-		if idRaw, found := config["id"]; found {
-			if id, ok := idRaw.(int); ok {
-				if err := client.DeleteInstanceConfig(context.Background(), instanceID, id); err != nil {
-					return err
-				}
 
-			}
+func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice, diskLabelIDMap map[int]string) []map[string]interface{} {
+	if dev == nil || emptyInstanceConfigDevice(*dev) {
+		return nil
+	}
+	/*
+		if dev == nil {
+			return []map[string]interface{}{{
+				"disk_id":   0,
+				"volume_id": 0,
+			}}
 		}
-	}
-	return nil
-}
 
-func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice) []map[string]interface{} {
-	if dev == nil {
-		return []map[string]interface{}{{
-			"disk_id":   0,
-			"volume_id": 0,
-		}}
+	*/
+	if dev.DiskID > 0 {
+		ret := map[string]interface{}{
+			"disk_id": dev.DiskID,
+		}
+		if label, found := diskLabelIDMap[dev.DiskID]; found {
+			ret["disk_label"] = label
+		}
+		return []map[string]interface{}{ret}
 	}
-
 	return []map[string]interface{}{{
-		"disk_id":   dev.DiskID,
 		"volume_id": dev.VolumeID,
 	}}
+
 }
 
 // expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap for the Linode API

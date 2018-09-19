@@ -1199,7 +1199,7 @@ resource "linode_instance" "foobar" {
 		label = "disk"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 3000
 	}
 }`, instance, pubkey)
@@ -1216,7 +1216,7 @@ resource "linode_instance" "foobar" {
 		label = "diska"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 3000
 	}
 	disk {
@@ -1239,7 +1239,7 @@ resource "linode_instance" "foobar" {
 		label = "disk"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 3000
 	}
 
@@ -1263,7 +1263,7 @@ resource "linode_instance" "foobar" {
 		label = "disk"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 6000
 	}
 
@@ -1287,7 +1287,7 @@ resource "linode_instance" "foobar" {
 		label = "disk"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 3000
 	}
 
@@ -1295,7 +1295,7 @@ resource "linode_instance" "foobar" {
 		label = "diskb"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 3000
 	}
 
@@ -1322,7 +1322,7 @@ resource "linode_instance" "foobar" {
 		label = "diska"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 3000
 	}
 
@@ -1367,7 +1367,7 @@ resource "linode_instance" "foobar" {
 		label = "disk"
 		image = "linode/ubuntu18.04"
 		root_pass = "b4d_p4s5"
-		authorized_keys = "%s"
+		authorized_keys = ["%s"]
 		size = 3000
 	}
 
