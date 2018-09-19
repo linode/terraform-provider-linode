@@ -29,18 +29,16 @@ func resourceLinodeInstance() *schema.Resource {
 				ForceNew:    true,
 			},
 			"backup_id": &schema.Schema{
-				Type:          schema.TypeInt,
-				Description:   "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
-				ConflictsWith: []string{"disk", "config"},
-				Optional:      true,
-				ForceNew:      true,
+				Type:        schema.TypeInt,
+				Description: "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"stackscript_id": &schema.Schema{
-				Type:          schema.TypeInt,
-				Description:   "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
-				ConflictsWith: []string{"disk"},
-				Optional:      true,
-				ForceNew:      true,
+				Type:        schema.TypeInt,
+				Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"stackscript_data": &schema.Schema{
 				Type: schema.TypeMap,
@@ -118,26 +116,23 @@ func resourceLinodeInstance() *schema.Resource {
 				Description:   "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"disk"},
 				StateFunc:     sshKeyState,
 				PromoteSingle: true,
 			},
 			"root_pass": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "The password that will be initialially assigned to the 'root' user account.",
-				Sensitive:     true,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"disk"},
-				StateFunc:     rootPasswordState,
+				Type:        schema.TypeString,
+				Description: "The password that will be initialially assigned to the 'root' user account.",
+				Sensitive:   true,
+				Optional:    true,
+				ForceNew:    true,
+				StateFunc:   rootPasswordState,
 			},
 			"swap_size": &schema.Schema{
-				Type:          schema.TypeInt,
-				Description:   "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"disk"},
-				Default:       nil,
+				Type:        schema.TypeInt,
+				Description: "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
+				Optional:    true,
+				Computed:    true,
+				Default:     nil,
 			},
 			"backups_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -242,10 +237,12 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"config": &schema.Schema{
-				Computed:    true,
-				Optional:    true,
-				Type:        schema.TypeList,
-				Description: "The set of boot configurations for an Instance",
+				Optional: true,
+				Type:     schema.TypeList,
+				// Computed:      true,
+				// ComputedWhen:  []string{"image", "backup_id"},
+				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
+				Description:   "The set of boot configurations for an Instance",
 
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -532,9 +529,11 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"disk": &schema.Schema{
-				Computed: true,
 				Optional: true,
-				Type:     schema.TypeList,
+				//Computed:      true,
+				//ComputedWhen:  []string{"image", "backup_id"},
+				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
+				Type:          schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size": {
@@ -715,11 +714,10 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 			}
 		}
-
-		if err := d.Set("disk", disks); err != nil {
-			return fmt.Errorf("Erroring setting Linode Instance disk: %s", err)
-		}
 	*/
+	if err := d.Set("disk", disks); err != nil {
+		return fmt.Errorf("Erroring setting Linode Instance disk: %s", err)
+	}
 
 	d.Set("swap_size", swapSize)
 
@@ -926,6 +924,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
+	fmt.Println("[MARQUES] INSTANCE UPDATE")
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -1005,8 +1004,10 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	tfDisksOld, tfDisksNew := d.GetChange("disk")
+	fmt.Println("[MARQUES] DISKS UPDATE - next")
 
 	rebootInstance, diskIDLabelMap, err := updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew)
+	fmt.Println("[MARQUES] DISKS UPDATE - done", diskIDLabelMap)
 	if err != nil {
 		return err
 	}
@@ -1051,8 +1052,9 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		bootConfig = updatedConfigs[0].ID
 	}
 
-	if rebootInstance {
+	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
 		err = client.RebootInstance(context.Background(), instance.ID, bootConfig)
+
 		if err != nil {
 			return fmt.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}

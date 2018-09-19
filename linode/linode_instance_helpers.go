@@ -230,10 +230,6 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 		configMap[config.Label] = config
 	}
 
-	if len(configs) == 0 {
-		return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf("Instance %d must have atleast one config to boot", instance.ID)
-	}
-
 	oldConfigLabels := make([]string, len(tfConfigsOld.([]interface{})))
 
 	for _, tfConfigOld := range tfConfigsOld.([]interface{}) {
@@ -319,24 +315,26 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 		}
 	}
 
-	if err := deleteInstanceConfigs(client, instance.ID, oldConfigLabels, updatedConfigMap, configMap); err != nil {
+	updatedConfigMap, err = deleteInstanceConfigs(client, instance.ID, oldConfigLabels, updatedConfigMap, configMap)
+	if err != nil {
 		return rebootInstance, updatedConfigMap, updatedConfigs, err
 	}
 
 	return rebootInstance, updatedConfigMap, updatedConfigs, nil
 }
 
-func deleteInstanceConfigs(client linodego.Client, instanceID int, oldConfigLabels []string, newConfigLabels map[string]int, configMap map[string]linodego.InstanceConfig) error {
+func deleteInstanceConfigs(client linodego.Client, instanceID int, oldConfigLabels []string, newConfigLabels map[string]int, configMap map[string]linodego.InstanceConfig) (map[string]int, error) {
 	for _, oldLabel := range oldConfigLabels {
 		if _, found := newConfigLabels[oldLabel]; !found {
 			if listedConfig, found := configMap[oldLabel]; found {
 				if err := client.DeleteInstanceConfig(context.Background(), instanceID, listedConfig.ID); err != nil {
-					return err
+					return newConfigLabels, err
 				}
+				delete(newConfigLabels, oldLabel)
 			}
 		}
 	}
-	return nil
+	return newConfigLabels, nil
 }
 
 func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice, diskLabelIDMap map[int]string) []map[string]interface{} {
@@ -536,6 +534,7 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 	var diskIDLabelMap map[string]int
 	var rebootInstance bool
 
+	fmt.Println("[MARQUES] DISKS UPDATE")
 	disks, err := client.ListInstanceDisks(context.Background(), int(instance.ID), nil)
 	if err != nil {
 		return rebootInstance, diskIDLabelMap, fmt.Errorf("Error fetching the disks for Instance %d: %s", instance.ID, err)
@@ -613,6 +612,11 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 				if err := client.DeleteInstanceDisk(context.Background(), instance.ID, listedDisk.ID); err != nil {
 					return rebootInstance, diskIDLabelMap, err
 				}
+				_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskDelete, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+				if err != nil {
+					return rebootInstance, diskIDLabelMap, fmt.Errorf("Error waiting for Instance %d Disk %d to finish deleting: %s", instance.ID, listedDisk.ID, err)
+				}
+				delete(diskIDLabelMap, oldLabel)
 			}
 		}
 	}

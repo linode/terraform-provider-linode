@@ -122,14 +122,6 @@
   version = "v1.38.1"
 
 [[projects]]
-  digest = "1:cf9c32df6fe209f9b5db1aa91c6e4084d3867baa9063803df07c5b80a37f1f90"
-  name = "github.com/go-resty/resty"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "97a15579492cd5f35632499f315d7a8df94160a1"
-  version = "v1.8.0"
-
-[[projects]]
   digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
   name = "github.com/golang/protobuf"
   packages = [
@@ -323,12 +315,12 @@
   revision = "0b12d6b5"
 
 [[projects]]
-  digest = "1:95a8303346925597904bc86790fe640ed04ea31d44d9b3cf1ae2f87be905c6f1"
+  branch = "master"
+  digest = "1:cc8734b8981bb8821b61d8f3770e6bef2075e7aae0961c5c999f5e5cfa9cf642"
   name = "github.com/linode/linodego"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d0d31d8ca62fa3f7e4526ca0ce95de81e4ed001e"
-  version = "v0.5.1"
+  revision = "cdef5193899cbcaf8aaab010e9c6e23523b53697"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -608,6 +600,14 @@
   pruneopts = "UT"
   revision = "32fb0ac620c32ba40a4626ddf94d90d12cce3455"
   version = "v1.14.0"
+
+[[projects]]
+  digest = "1:b7fc4c3fd91df516486f53cc86f4b55a0c815782dbe852c5a19cce8e6c577aac"
+  name = "gopkg.in/resty.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d4920dcf5b7689548a6db640278a9b35a5b48ec6"
+  version = "v1.9.1"
 
 [solve-meta]
   analyzer-name = "dep"
