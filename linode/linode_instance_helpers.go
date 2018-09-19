@@ -212,6 +212,132 @@ func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset [
 
 }
 
+func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, instance linodego.Instance, tfConfigsOld, tfConfigsNew interface{}, diskIDLabelMap map[string]int) (bool, map[string]int, []*linodego.InstanceConfig, error) {
+	var updatedConfigMap map[string]int
+	var rebootInstance bool
+	var updatedConfigs []*linodego.InstanceConfig
+
+	configs, err := client.ListInstanceConfigs(context.Background(), int(instance.ID), nil)
+	if err != nil {
+		return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf("Error fetching the config for Instance %d: %s", instance.ID, err)
+	}
+
+	configMap := make(map[string]linodego.InstanceConfig, len(configs))
+	for _, config := range configs {
+		if _, duplicate := configMap[config.Label]; duplicate {
+			return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf("Error indexing Instance %d Configs: Label '%s' is assigned to multiple configs", instance.ID, config.Label)
+		}
+		configMap[config.Label] = config
+	}
+
+	if len(configs) == 0 {
+		return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf("Instance %d must have atleast one config to boot", instance.ID)
+	}
+
+	oldConfigLabels := make([]string, len(tfConfigsOld.([]interface{})))
+
+	for _, tfConfigOld := range tfConfigsOld.([]interface{}) {
+		if oldConfig, ok := tfConfigOld.(map[string]interface{}); ok {
+			oldConfigLabels = append(oldConfigLabels, oldConfig["label"].(string))
+		}
+	}
+	tfConfigs := tfConfigsNew.([]interface{})
+	updatedConfigs = make([]*linodego.InstanceConfig, len(tfConfigs))
+	updatedConfigMap = make(map[string]int, len(tfConfigs))
+	for _, tfConfig := range tfConfigs {
+		fmt.Println("[MARQUES] CONFIG LOOP", tfConfig)
+		tfc, _ := tfConfig.(map[string]interface{})
+		label, _ := tfc["label"].(string)
+		rootDevice, _ := tfc["root_device"].(string)
+		if existingConfig, existing := configMap[label]; existing {
+			configUpdateOpts := existingConfig.GetUpdateOptions()
+			configUpdateOpts.Kernel = tfc["kernel"].(string)
+			configUpdateOpts.RunLevel = tfc["run_level"].(string)
+			configUpdateOpts.VirtMode = tfc["virt_mode"].(string)
+			configUpdateOpts.RootDevice = rootDevice
+			configUpdateOpts.Comments = tfc["comments"].(string)
+			configUpdateOpts.MemoryLimit = tfc["memory_limit"].(int)
+
+			tfcHelpersRaw, helpersFound := tfc["helpers"]
+			if tfcHelpers, ok := tfcHelpersRaw.([]interface{}); helpersFound && ok {
+				fmt.Println("[MARQUES] FOUND HELPERS", tfcHelpers)
+				helpersMap := tfcHelpers[0].(map[string]interface{})
+				configUpdateOpts.Helpers = &linodego.InstanceConfigHelpers{
+					UpdateDBDisabled:  helpersMap["updatedb_disabled"].(bool),
+					Distro:            helpersMap["distro"].(bool),
+					ModulesDep:        helpersMap["modules_dep"].(bool),
+					Network:           helpersMap["network"].(bool),
+					DevTmpFsAutomount: helpersMap["devtmpfs_automount"].(bool),
+				}
+
+			}
+
+			tfcDevicesRaw, devicesFound := tfc["devices"]
+			if tfcDevices, ok := tfcDevicesRaw.(*schema.Set); devicesFound && ok {
+				devices := tfcDevices.List()[0].(map[string]interface{})
+
+				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
+				if err != nil {
+					return rebootInstance, updatedConfigMap, updatedConfigs, err
+				}
+				if configUpdateOpts.Devices != nil && emptyConfigDeviceMap(*configUpdateOpts.Devices) {
+					configUpdateOpts.Devices = nil
+				}
+				if configUpdateOpts.Devices == nil {
+					// configUpdateOpts.RootDevice = "/dev/root"
+				}
+			} else {
+				configUpdateOpts.Devices = nil
+				// configUpdateOpts.RootDevice = "/dev/root"
+			}
+
+			if configUpdateOpts.Devices != nil {
+				detacher := makeVolumeDetacher(client, d)
+
+				if err := detachConfigVolumes(*configUpdateOpts.Devices, detacher); err != nil {
+					return rebootInstance, updatedConfigMap, updatedConfigs, err
+				}
+			}
+
+			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)
+			if err != nil {
+				return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf("Error updating Instance %d Config %d: %s", instance.ID, existingConfig.ID, err)
+			}
+
+			updatedConfigMap[updatedConfig.Label] = updatedConfig.ID
+		} else {
+			detacher := makeVolumeDetacher(client, d)
+
+			configIDMap, err := createInstanceConfigsFromSet(client, instance.ID, []interface{}{tfc}, diskIDLabelMap, detacher)
+			if err != nil {
+				return rebootInstance, updatedConfigMap, updatedConfigs, err
+			}
+			for _, config := range configIDMap {
+				updatedConfigMap[config.Label] = config.ID
+				updatedConfigs = append(updatedConfigs, &config)
+			}
+		}
+	}
+
+	if err := deleteInstanceConfigs(client, instance.ID, oldConfigLabels, updatedConfigMap, configMap); err != nil {
+		return rebootInstance, updatedConfigMap, updatedConfigs, err
+	}
+
+	return rebootInstance, updatedConfigMap, updatedConfigs, nil
+}
+
+func deleteInstanceConfigs(client linodego.Client, instanceID int, oldConfigLabels []string, newConfigLabels map[string]int, configMap map[string]linodego.InstanceConfig) error {
+	for _, oldLabel := range oldConfigLabels {
+		if _, found := newConfigLabels[oldLabel]; !found {
+			if listedConfig, found := configMap[oldLabel]; found {
+				if err := client.DeleteInstanceConfig(context.Background(), instanceID, listedConfig.ID); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
 func deleteInstanceConfigsFromSet(client linodego.Client, instanceID int, configs *schema.Set) error {
 	for _, configRaw := range configs.List() {
 		config := configRaw.(map[string]interface{})
@@ -342,7 +468,7 @@ func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConf
 	return dev
 }
 
-func createDiskFromSet(client linodego.Client, instance linodego.Instance, v interface{}, d *schema.ResourceData) (*linodego.InstanceDisk, error) {
+func createInstanceDisk(client linodego.Client, instance linodego.Instance, v interface{}, d *schema.ResourceData) (*linodego.InstanceDisk, error) {
 	disk, ok := v.(map[string]interface{})
 
 	if !ok {
@@ -404,6 +530,94 @@ func createDiskFromSet(client linodego.Client, instance linodego.Instance, v int
 	}
 
 	return instanceDisk, err
+}
+
+func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instance linodego.Instance, tfDisksOld interface{}, tfDisksNew interface{}) (bool, map[string]int, error) {
+	var diskIDLabelMap map[string]int
+	var rebootInstance bool
+
+	disks, err := client.ListInstanceDisks(context.Background(), int(instance.ID), nil)
+	if err != nil {
+		return rebootInstance, diskIDLabelMap, fmt.Errorf("Error fetching the disks for Instance %d: %s", instance.ID, err)
+	}
+
+	diskMap := make(map[string]linodego.InstanceDisk, len(disks))
+	for _, disk := range disks {
+		if _, duplicate := diskMap[disk.Label]; duplicate {
+			return rebootInstance, diskIDLabelMap, fmt.Errorf("Error indexing Instance %d Disks: Label '%s' is assigned to multiple disks", instance.ID, disk.Label)
+		}
+		diskMap[disk.Label] = disk
+	}
+
+	oldDiskLabels := make([]string, len(tfDisksOld.([]interface{})))
+
+	for _, tfDiskOld := range tfDisksOld.([]interface{}) {
+		if oldDisk, ok := tfDiskOld.(map[string]interface{}); ok {
+			oldDiskLabels = append(oldDiskLabels, oldDisk["label"].(string))
+		}
+	}
+	tfDisks := tfDisksNew.([]interface{})
+
+	//updatedDisks := make([]*linodego.InstanceDisk, tfDisks.Len())
+	diskIDLabelMap = make(map[string]int, len(tfDisks))
+
+	for _, tfDisk := range tfDisks {
+		tfd := tfDisk.(map[string]interface{})
+
+		labelStr, found := tfd["label"]
+		if !found {
+			return rebootInstance, diskIDLabelMap, fmt.Errorf("Error parsing disk label")
+		}
+
+		label, ok := labelStr.(string)
+		if !ok {
+			return rebootInstance, diskIDLabelMap, fmt.Errorf("Error parsing disk label")
+		}
+
+		existingDisk, existing := diskMap[label]
+
+		if existing {
+			fmt.Printf("[MARQUES] RESIZE \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n",
+				tfDisks, diskMap, tfd, label, found, existingDisk, existing)
+
+			// The only non-destructive change supported is resize, which requires a reboot
+			// Label renames are not supported because this TF provider relies on the label as an identifier
+			if tfd["size"].(int) != existingDisk.Size {
+				if err := changeInstanceDiskSize(&client, instance, existingDisk, tfd["size"].(int), d); err != nil {
+					return rebootInstance, diskIDLabelMap, err
+				}
+				rebootInstance = true
+			}
+			if strings.Compare(tfd["filesystem"].(string), string(existingDisk.Filesystem)) != 0 {
+				return rebootInstance, diskIDLabelMap, fmt.Errorf("Error updating Instance %d Disk %d: Filesystem changes are not supported ('%s' != '%s')", instance.ID, existingDisk.ID, tfd["filesystem"], existingDisk.Filesystem)
+			}
+			diskIDLabelMap[existingDisk.Label] = existingDisk.ID
+
+		} else {
+			fmt.Printf("[MARQUES] NO RESIZE \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n",
+				diskMap, tfd, label, found, existingDisk, existing)
+
+			instanceDisk, err := createInstanceDisk(client, instance, tfd, d)
+			if err != nil {
+				return rebootInstance, diskIDLabelMap, err
+			}
+			rebootInstance = true
+			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
+		}
+		fmt.Printf("[MARQUES] POST %#+v\n", rebootInstance)
+	}
+
+	for _, oldLabel := range oldDiskLabels {
+		if _, found := diskIDLabelMap[oldLabel]; !found {
+			if listedDisk, found := diskMap[oldLabel]; found {
+				if err := client.DeleteInstanceDisk(context.Background(), instance.ID, listedDisk.ID); err != nil {
+					return rebootInstance, diskIDLabelMap, err
+				}
+			}
+		}
+	}
+
+	return rebootInstance, diskIDLabelMap, nil
 }
 
 // getTotalDiskSize returns the number of disks and their total size.
@@ -479,7 +693,7 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 	return nil
 }
 
-func changeInstanceDiskSize(client *linodego.Client, instance *linodego.Instance, disk *linodego.InstanceDisk, targetSize int, d *schema.ResourceData) error {
+func changeInstanceDiskSize(client *linodego.Client, instance linodego.Instance, disk linodego.InstanceDisk, targetSize int, d *schema.ResourceData) error {
 	if instance.Specs.Disk > targetSize {
 		client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize)
 

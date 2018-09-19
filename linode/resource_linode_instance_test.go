@@ -153,6 +153,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
 					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
@@ -170,6 +171,7 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
+	var instanceDisk linodego.InstanceDisk
 	var instanceName = acctest.RandomWithPrefix("tf_test")
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
@@ -191,8 +193,13 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
-					testAccCheckComputeInstanceDisk(&instance, "diska", 3000),
-					testAccCheckComputeInstanceDisk(&instance, "diskb", 512),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDisk("diska", testDiskSize(3000), testDiskExists(&instanceDisk)),
+						testDisk("diskb", testDiskSize(512)),
+					),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(instanceDisk)),
+					),
 				),
 			},
 
@@ -230,7 +237,9 @@ func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("config", testConfigKernel("linode/latest-64bit")),
+					),
 					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
@@ -278,8 +287,10 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 					// TODO(displague) create testAccCheckComputeInstanceDisks helper (like Configs)
 					testAccCheckComputeInstanceDisk(&instance, "diska", 3000),
 					testAccCheckComputeInstanceDisk(&instance, "diskb", 512),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk))),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(instanceDisk))),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("configa", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk)),
+						testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(instanceDisk)),
+					),
 				),
 			},
 
@@ -325,7 +336,9 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 					testAccCheckLinodeInstanceDiskExists(&instance, "disk", &instanceDisk),
 					// TODO(displague) create testAccCheckComputeInstanceDisks helper (like Configs)
 					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk), testConfigSDBVolume(volume))),
+					testAccCheckComputeInstanceConfigs(&instance,
+						testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk), testConfigSDBVolume(volume)),
+					),
 				),
 			},
 
@@ -415,17 +428,8 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 	})
 }
 
-func x(format string, configAttrName *string) string {
-	fmt.Println("DEBUGX", configAttrName, *configAttrName)
-
-	return fmt.Sprintf(format, *configAttrName)
-}
-
 func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resource.TestCheckFunc {
-	fmt.Println("DEBUGA", index)
 	return func(s *terraform.State) error {
-		*index = "x" // s[len(s)-2]
-		fmt.Println("DEBUGB", index, *index)
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Resource not found: %s", name)
@@ -433,9 +437,8 @@ func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resourc
 
 		for k, v := range rs.Primary.Attributes {
 			if strings.HasSuffix(k, ".label") && strings.HasPrefix(k, key+".") && v == label {
-				//s := strings.Split(k, ".")
-				*index = "x" // s[len(s)-2]
-				fmt.Println("DEBUGC", index, *index)
+				s := strings.Split(k, ".")
+				*index = s[len(s)-2]
 				return nil
 			}
 
@@ -603,7 +606,7 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 	diskSetFunc := func(diskSetID *string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
 			resource.ComposeTestCheckFunc(
-				resource.TestCheckResourceAttr(resName, x("disk.%s.size", diskSetID), "3000"),
+				resource.TestCheckResourceAttr(resName, fmt.Sprintf("disk.%s.size", *diskSetID), "3000"),
 			)
 			return nil
 		}
