@@ -816,10 +816,10 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
-					resource.TestCheckResourceAttrPair(resName, "config.0.devices.0.sda.0.disk_id", resName, "disk.0.id"),
 					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sdb.0.disk_id"),
-					resource.TestCheckResourceAttrPair(resName, "config.0.devices.0.sdb.0.disk_id", resName, "disk.1.id"),
 					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdc.#", "0"),
+					resource.TestCheckResourceAttrPair(resName, "config.0.devices.0.sda.0.disk_id", resName, "disk.1.id"),
+					resource.TestCheckResourceAttrPair(resName, "config.0.devices.0.sdb.0.disk_id", resName, "disk.0.id"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "status", "running"),
@@ -1196,10 +1196,6 @@ resource "linode_instance" "foobar" {
 	root_pass = "terraform-test"
 	swap_size = 256
 	authorized_keys = "%s"
-
-	lifecycle {
-		ignore_changes = ["disk","config"]
-	}
 }`, instance, pubkey)
 }
 

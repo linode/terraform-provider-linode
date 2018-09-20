@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -282,6 +283,7 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}
 				if configUpdateOpts.Devices != nil && emptyConfigDeviceMap(*configUpdateOpts.Devices) {
+					fmt.Println("[MARQUES] configUpdateOpts.Devices EMPTY")
 					configUpdateOpts.Devices = nil
 				}
 				if configUpdateOpts.Devices == nil {
@@ -289,6 +291,7 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 				}
 			} else {
 				configUpdateOpts.Devices = nil
+				fmt.Println("[MARQUES] configUpdateOpts.Devices EMPTY 2")
 				// configUpdateOpts.RootDevice = "/dev/root"
 			}
 
@@ -299,6 +302,9 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}
 			}
+
+			marques, err := json.Marshal(configUpdateOpts.Devices)
+			fmt.Println("[MARQUES] configUpdateOpts.Devices", string(marques))
 
 			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
@@ -391,7 +397,7 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 			*deviceMap = changeInstanceConfigDevice(*deviceMap, k, tDevice)
 		}
 	}
-	fmt.Println("[MARQUES] deviceMap", deviceMap)
+	fmt.Println("[MARQUES] deviceMap", fmt.Sprintf("%#+v", deviceMap))
 	return deviceMap, nil
 }
 
@@ -419,6 +425,7 @@ func changeInstanceConfigDevice(deviceMap linodego.InstanceConfigDeviceMap, name
 	case "sdh":
 		deviceMap.SDH = tDevice
 	}
+	fmt.Println("[MARQUES] changeInstanceConfigDevice", namedSlot, deviceMap)
 
 	return deviceMap
 }
@@ -433,13 +440,14 @@ func emptyConfigDeviceMap(dmap linodego.InstanceConfigDeviceMap) bool {
 	drives := []*linodego.InstanceConfigDevice{
 		dmap.SDA, dmap.SDB, dmap.SDC, dmap.SDD, dmap.SDE, dmap.SDF, dmap.SDG, dmap.SDH,
 	}
-
+	empty := true
 	for _, drive := range drives {
 		if drive != nil && !emptyInstanceConfigDevice(*drive) {
-			return true
+			empty = false
+			break
 		}
 	}
-	return false
+	return empty
 }
 
 type volumeDetacher func(context.Context, int, string) error
@@ -471,7 +479,7 @@ func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConf
 			VolumeID: m["volume_id"].(int),
 		}
 	}
-
+	fmt.Println("[MARQUES] expandInstanceConfigDevice", dev)
 	return dev
 }
 
@@ -820,7 +828,7 @@ func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]in
 
 	}
 	expanded := expandInstanceConfigDevice(dev)
-	fmt.Println("[MARQUES] expanded", expanded)
+	fmt.Println("[MARQUES] assignConfigDevice expanded", expanded)
 	if expanded != nil {
 		*device = *expanded
 	}
