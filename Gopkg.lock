@@ -265,7 +265,7 @@
   revision = "0dc08b1671f34c4250ce212759ebd880f743d883"
 
 [[projects]]
-  digest = "1:4d68ff3b065ef32fefc42834a66c531cdbc20603fa12a6a570104437cbaede0b"
+  digest = "1:219c0ae340cc1e341c851b14435210742e2de52860be64393ab9e3f3522b8b6a"
   name = "github.com/hashicorp/terraform"
   packages = [
     "config",
@@ -276,7 +276,6 @@
     "flatmap",
     "helper/acctest",
     "helper/config",
-    "helper/customdiff",
     "helper/hashcode",
     "helper/hilmapstructure",
     "helper/logging",
@@ -317,11 +316,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cc8734b8981bb8821b61d8f3770e6bef2075e7aae0961c5c999f5e5cfa9cf642"
+  digest = "1:11d5915fbee6ff5abb9eb84d6586b7a6d44ce0f09a0ef14e27ce22dc7dd0ef94"
   name = "github.com/linode/linodego"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cdef5193899cbcaf8aaab010e9c6e23523b53697"
+  revision = "948202af842769e099ff77c4dac3c8fc367641d3"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -615,7 +614,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/hashicorp/terraform/helper/acctest",
-    "github.com/hashicorp/terraform/helper/customdiff",
     "github.com/hashicorp/terraform/helper/logging",
     "github.com/hashicorp/terraform/helper/resource",
     "github.com/hashicorp/terraform/helper/schema",

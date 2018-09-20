@@ -119,6 +119,8 @@ func (c *Client) SetBaseURL(url string) *Client {
 	return c
 }
 
+// SetPollDelay sets the number of milliseconds to wait between events or status polls.
+// Affects all WaitFor* functions.
 func (c *Client) SetPollDelay(delay time.Duration) *Client {
 	c.millisecondsPerPoll = delay
 	return c
