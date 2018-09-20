@@ -7,6 +7,9 @@ variable "ssh_key" {
   default     = "~/.ssh/id_rsa.pub"
 }
 
+// random_pet is used for convenience in the example.
+// if the pet exceeds 17 characters some of the example resources
+// will fail for label length > 32 chars
 resource "random_pet" "project" {
   prefix    = "tf_test"
   separator = "_"
