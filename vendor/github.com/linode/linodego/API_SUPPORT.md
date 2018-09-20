@@ -61,7 +61,7 @@
   - [X] `POST`
   - [X] `DELETE`
 - `/linode/instances/$id/disks/$id/password`
-  - [ ] `POST`
+  - [X] `POST`
 - `/linode/instances/$id/disks/$id/resize`
   - [X] `POST`
 

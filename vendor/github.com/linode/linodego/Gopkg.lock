@@ -13,14 +13,6 @@
   revision = "aafff18a5cc28fa0b2f26baf6a14472cda9b54c6"
 
 [[projects]]
-  digest = "1:4a4785749b54b948fd45be3824c6bb1d606578a440657f7cabc79dbbbdc7c476"
-  name = "github.com/go-resty/resty"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "383acc8a8b687098ee02168c0335a43dfee701f0"
-  version = "v1.9.0"
-
-[[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -92,6 +84,14 @@
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:b7fc4c3fd91df516486f53cc86f4b55a0c815782dbe852c5a19cce8e6c577aac"
+  name = "gopkg.in/resty.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d4920dcf5b7689548a6db640278a9b35a5b48ec6"
+  version = "v1.9.1"
+
+[[projects]]
   digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -104,8 +104,8 @@
   analyzer-version = 1
   input-imports = [
     "github.com/dnaeon/go-vcr/recorder",
-    "github.com/go-resty/resty",
     "golang.org/x/oauth2",
+    "gopkg.in/resty.v1",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
