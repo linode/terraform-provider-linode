@@ -190,8 +190,26 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("updated", stackscript.Updated.String()); err != nil {
 		return err
 	}
-	if err := d.Set("user_defined_fields", stackscript.UserDefinedFields); err != nil {
-		return err
+
+	if stackscript.UserDefinedFields == nil {
+		if err := d.Set("user_defined_fields", nil); err != nil {
+			return err
+		}
+	} else {
+		var udfs []map[string]string
+		for _, udf := range *stackscript.UserDefinedFields {
+			udfs = append(udfs, map[string]string{
+				"default": udf.Default,
+				"example": udf.Example,
+				"many_of": udf.ManyOf,
+				"one_of":  udf.OneOf,
+				"label":   udf.Label,
+				"name":    udf.Name,
+			})
+		}
+		if err := d.Set("user_defined_fields", udfs); err != nil {
+			return err
+		}
 	}
 
 	return nil

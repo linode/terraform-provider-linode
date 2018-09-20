@@ -832,8 +832,15 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 		createOpts.StackScriptID = d.Get("stackscript_id").(int)
 
-		for name, value := range d.Get("stackscript_data").(map[string]interface{}) {
-			createOpts.StackScriptData[name] = value.(string)
+		if stackscriptDataRaw, ok := d.GetOk("stackscript_data"); ok {
+			stackscriptData, ok := stackscriptDataRaw.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("Error parsing stackscript_data: expected map[string]interface{}")
+			}
+			createOpts.StackScriptData = make(map[string]string, len(stackscriptData))
+			for name, value := range stackscriptData {
+				createOpts.StackScriptData[name] = value.(string)
+			}
 		}
 	} else {
 		createOpts.Booted = &boolFalse // necessary to prepare disks and configs
