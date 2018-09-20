@@ -237,30 +237,36 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"config": &schema.Schema{
-				Optional: true,
-				Type:     schema.TypeList,
+				Optional:    true,
+				Description: "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
+				Type:        schema.TypeList,
 				// Computed:      true,
 				// ComputedWhen:  []string{"image", "backup_id"},
 				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
-				Description:   "The set of boot configurations for an Instance",
-
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, hasImage := d.GetOk("image")
+					return hasImage
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The Config's label for display purposes.  Also used by `boot_config_label`.",
+							Required:    true,
 						},
 						"helpers": {
-							Type:     schema.TypeList,
-							MaxItems: 1,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "Helpers enabled when booting to this Linode Config.",
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"updatedb_disabled": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
+										Type:        schema.TypeBool,
+										Description: "Disables updatedb cron job to avoid disk thrashing.",
+										Optional:    true,
+										Default:     true,
 									},
 									"distro": {
 										Type:        schema.TypeBool,
@@ -269,9 +275,10 @@ func resourceLinodeInstance() *schema.Resource {
 										Default:     true,
 									},
 									"modules_dep": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
+										Type:        schema.TypeBool,
+										Description: "Creates a modules dependency file for the Kernel you run.",
+										Optional:    true,
+										Default:     true,
 									},
 									"network": {
 										Type:        schema.TypeBool,
@@ -280,19 +287,21 @@ func resourceLinodeInstance() *schema.Resource {
 										Default:     true,
 									},
 									"devtmpfs_automount": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  false,
+										Type:        schema.TypeBool,
+										Description: "Populates the /dev directory early during boot without udev. Defaults to false.",
+										Optional:    true,
+										Default:     false,
 									},
 								},
 							},
 						},
 						"devices": {
-							Type:     schema.TypeList,
-							MaxItems: 1,
-							Optional: true,
-							Computed: true,
-							Default:  nil,
+							Type:        schema.TypeList,
+							Description: "Device sda-sdh can be either a Disk or Volume identified by disk_label or volume_id. Only one type per slot allowed.",
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Default:     nil,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"sda": {
@@ -534,42 +543,63 @@ func resourceLinodeInstance() *schema.Resource {
 				//ComputedWhen:  []string{"image", "backup_id"},
 				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
 				Type:          schema.TypeList,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					_, hasImage := d.GetOk("image")
+					return hasImage
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"size": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
 						"label": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The disks label, which acts as an identifier in Terraform.",
+							Required:    true,
+						},
+						"size": {
+							Type:        schema.TypeInt,
+							Description: "The size of the Disk in MB.",
+							Required:    true,
+						},
+						"id": {
+							Type:         schema.TypeInt,
+							Computed:     true,
+							ComputedWhen: []string{"label"},
 						},
 						"filesystem": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
+							Optional:    true,
+							ForceNew:    true,
+							Computed:    true,
 						},
 						"read_only": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Computed: true,
-							ForceNew: true,
+							Type:        schema.TypeBool,
+							Description: "If true, this Disk is read-only.",
+							Optional:    true,
+							Computed:    true,
+							ForceNew:    true,
 						},
 						"image": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Description: "An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/.",
+							Optional:    true,
+							Computed:    true,
+							ForceNew:    true,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								// the API does not return this field for existing disks, so must be ignored for diffs/updates
+								return !d.HasChange("label")
+							},
 						},
 						"authorized_keys": {
 							Type:        schema.TypeList,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
-							Optional:    true,
-							ForceNew:    true,
-							Computed:    true,
-							StateFunc:   sshKeyState,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								// the API does not return this field for existing disks, so must be ignored for diffs/updates
+								return !d.HasChange("label")
+							},
+							Optional:  true,
+							ForceNew:  true,
+							StateFunc: sshKeyState,
 						},
 						"stackscript_id": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -577,7 +607,11 @@ func resourceLinodeInstance() *schema.Resource {
 							Computed:    true,
 							Optional:    true,
 							ForceNew:    true,
-							Default:     nil,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								// the API does not return this field for existing disks, so must be ignored for diffs/updates
+								return !d.HasChange("label")
+							},
+							Default: nil,
 						},
 						"stackscript_data": &schema.Schema{
 							Type:        schema.TypeMap,
@@ -586,7 +620,11 @@ func resourceLinodeInstance() *schema.Resource {
 							Computed:    true,
 							ForceNew:    true,
 							Sensitive:   true,
-							Default:     nil,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								// the API does not return this field for existing disks, so must be ignored for diffs/updates
+								return !d.HasChange("label")
+							},
+							Default: nil,
 						},
 						"root_pass": &schema.Schema{
 							Type:        schema.TypeString,
@@ -594,7 +632,11 @@ func resourceLinodeInstance() *schema.Resource {
 							Sensitive:   true,
 							Optional:    true,
 							ForceNew:    true,
-							StateFunc:   rootPasswordState,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								// the API does not return this field for existing disks, so must be ignored for diffs/updates
+								return !d.HasChange("label")
+							},
+							StateFunc: rootPasswordState,
 						},
 					},
 				},

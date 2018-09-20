@@ -46,6 +46,7 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 			swapSize += disk.Size
 		}
 		disks = append(disks, map[string]interface{}{
+			"id":         disk.ID,
 			"size":       disk.Size,
 			"label":      disk.Label,
 			"filesystem": string(disk.Filesystem),
@@ -118,6 +119,7 @@ func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig, diskLabel
 
 func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset []interface{}, diskIDLabelMap map[string]int, detacher volumeDetacher) (map[int]linodego.InstanceConfig, error) {
 	configIDMap := make(map[int]linodego.InstanceConfig, len(cset))
+	fmt.Println("[MARQUES] createInstanceConfigsFromSet diskIDLabelMap", diskIDLabelMap)
 
 	for _, v := range cset {
 		config, ok := v.(map[string]interface{})
@@ -136,7 +138,7 @@ func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset [
 			for _, helper := range helpers {
 				if helperMap, ok := helper.(map[string]interface{}); ok {
 					configOpts.Helpers = &linodego.InstanceConfigHelpers{}
-					fmt.Println("MARQUES", helperMap)
+					fmt.Println("[MARQUES] helperMap", helperMap)
 					if updateDBDisabled, found := helperMap["updatedb_disabled"]; found {
 						if value, ok := updateDBDisabled.(bool); ok {
 							configOpts.Helpers.UpdateDBDisabled = value
@@ -216,6 +218,7 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 	var updatedConfigMap map[string]int
 	var rebootInstance bool
 	var updatedConfigs []*linodego.InstanceConfig
+	fmt.Println("[MARQUES] updateInstanceConfigs diskIDLabelMap", diskIDLabelMap)
 
 	configs, err := client.ListInstanceConfigs(context.Background(), int(instance.ID), nil)
 	if err != nil {
@@ -269,10 +272,12 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 			}
 
 			tfcDevicesRaw, devicesFound := tfc["devices"]
-			if tfcDevices, ok := tfcDevicesRaw.(*schema.Set); devicesFound && ok {
-				devices := tfcDevices.List()[0].(map[string]interface{})
+			if tfcDevices, ok := tfcDevicesRaw.([]interface{}); devicesFound && ok {
+				devices := tfcDevices[0].(map[string]interface{})
 
 				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
+				fmt.Println("[MARQUES] configUpdateOpts.Devices", configUpdateOpts.Devices)
+
 				if err != nil {
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}
@@ -370,11 +375,14 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 	if len(m) == 0 {
 		return nil, nil
 	}
+	fmt.Println("[MARQUES] expandInstanceConfigDeviceMap diskIDLabelMap", diskIDLabelMap)
 	deviceMap = &linodego.InstanceConfigDeviceMap{}
 	for k, rdev := range m {
 		devSlots := rdev.([]interface{})
+		fmt.Println("[MARQUES] devSlots", devSlots)
 		for _, rrdev := range devSlots {
 			dev := rrdev.(map[string]interface{})
+			fmt.Println("[MARQUES] dev", dev)
 			tDevice := new(linodego.InstanceConfigDevice)
 			if err := assignConfigDevice(tDevice, dev, diskIDLabelMap); err != nil {
 				return nil, err
@@ -383,6 +391,7 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 			*deviceMap = changeInstanceConfigDevice(*deviceMap, k, tDevice)
 		}
 	}
+	fmt.Println("[MARQUES] deviceMap", deviceMap)
 	return deviceMap, nil
 }
 
@@ -801,12 +810,17 @@ func diskState(v interface{}) string {
 }
 
 func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int) error {
+	fmt.Println("[MARQUES] assignConfigDevice diskIDLabelMap", diskIDLabelMap)
+	fmt.Println("[MARQUES] assignConfigDevice dev", dev)
 	if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
 		if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
 			return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
 		}
+		fmt.Println("[MARQUES] assignConfigDevice dev(2)", dev)
+
 	}
 	expanded := expandInstanceConfigDevice(dev)
+	fmt.Println("[MARQUES] expanded", expanded)
 	if expanded != nil {
 		*device = *expanded
 	}

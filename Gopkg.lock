@@ -265,7 +265,7 @@
   revision = "0dc08b1671f34c4250ce212759ebd880f743d883"
 
 [[projects]]
-  digest = "1:219c0ae340cc1e341c851b14435210742e2de52860be64393ab9e3f3522b8b6a"
+  digest = "1:4d68ff3b065ef32fefc42834a66c531cdbc20603fa12a6a570104437cbaede0b"
   name = "github.com/hashicorp/terraform"
   packages = [
     "config",
@@ -276,6 +276,7 @@
     "flatmap",
     "helper/acctest",
     "helper/config",
+    "helper/customdiff",
     "helper/hashcode",
     "helper/hilmapstructure",
     "helper/logging",
@@ -614,6 +615,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/hashicorp/terraform/helper/acctest",
+    "github.com/hashicorp/terraform/helper/customdiff",
     "github.com/hashicorp/terraform/helper/logging",
     "github.com/hashicorp/terraform/helper/resource",
     "github.com/hashicorp/terraform/helper/schema",

@@ -239,9 +239,6 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 						testDisk("diska", testDiskSize(3000), testDiskExists(&instanceDisk)),
 						testDisk("diskb", testDiskSize(512)),
 					),
-					testAccCheckComputeInstanceConfigs(&instance,
-						testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(instanceDisk)),
-					),
 				),
 			},
 
@@ -330,8 +327,8 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 					testAccCheckComputeInstanceDisk(&instance, "diska", 3000),
 					testAccCheckComputeInstanceDisk(&instance, "diskb", 512),
 					testAccCheckComputeInstanceConfigs(&instance,
-						testConfig("configa", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk)),
-						testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(instanceDisk)),
+						testConfig("configa", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(&instanceDisk)),
+						testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(&instanceDisk)),
 					),
 				),
 			},
@@ -379,7 +376,7 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 					// TODO(displague) create testAccCheckComputeInstanceDisks helper (like Configs)
 					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
 					testAccCheckComputeInstanceConfigs(&instance,
-						testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk), testConfigSDBVolume(volume)),
+						testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(&instanceDisk), testConfigSDBVolume(&volume)),
 					),
 				),
 			},
@@ -732,17 +729,6 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 		t.Fatalf("Error generating test SSH key pair: %s", err)
 	}
 
-	diskSetID := ""
-
-	diskSetFunc := func(diskSetID *string) resource.TestCheckFunc {
-		return func(s *terraform.State) error {
-			resource.ComposeTestCheckFunc(
-				resource.TestCheckResourceAttr(resName, fmt.Sprintf("disk.%s.size", *diskSetID), "3000"),
-			)
-			return nil
-		}
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -753,12 +739,10 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					testGetTypeSetIndexyByLabel(resName, "disk", "disk", &diskSetID),
-
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					diskSetFunc(&diskSetID),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
@@ -772,7 +756,7 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					resource.TestCheckResourceAttr(resName, "disk."+strconv.Itoa(labelHashcode("disk"))+".size", "6000"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "6000"),
 
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
@@ -785,9 +769,9 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 	t.Parallel()
 	var (
-		instance      linodego.Instance
-		instanceDisk  linodego.InstanceDisk
-		instanceDiskB linodego.InstanceDisk
+		instance     linodego.Instance
+		instanceDisk linodego.InstanceDisk
+		//		instanceDiskB linodego.InstanceDisk
 	)
 	var instanceName = acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
@@ -809,9 +793,9 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskExists(&instanceDisk), testDiskSize(3000))),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDisk))),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(&instanceDisk))),
 					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
-					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdb.0.disk_id", "0"),
+					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdb.#", "0"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 				),
@@ -825,18 +809,17 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
 					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
+					resource.TestCheckResourceAttrSet(resName, "disk.0.id"),
 					resource.TestCheckResourceAttr(resName, "disk.1.size", "3000"),
 					resource.TestCheckResourceAttr(resName, "disk.1.label", "diskb"),
+					resource.TestCheckResourceAttrSet(resName, "disk.1.id"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
+					resource.TestCheckResourceAttrPair(resName, "config.0.devices.0.sda.0.disk_id", resName, "disk.0.id"),
 					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sdb.0.disk_id"),
-
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskExists(&instanceDisk), testDiskSize(3000))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("diskb", testDiskExists(&instanceDiskB), testDiskSize(3000))),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(instanceDiskB), testConfigSDBDisk(instanceDisk))),
-
-					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sdb.0.disk_id"),
-					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdc.0.disk_id", "0"),
+					resource.TestCheckResourceAttrPair(resName, "config.0.devices.0.sdb.0.disk_id", resName, "disk.1.id"),
+					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdc.#", "0"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "status", "running"),
@@ -1085,27 +1068,27 @@ func testConfigComments(comments string) testConfigFunc {
 	}
 }
 
-func testConfigSDADisk(disk linodego.InstanceDisk) testConfigFunc {
+func testConfigSDADisk(disk *linodego.InstanceDisk) testConfigFunc {
 	return func(config linodego.InstanceConfig) error {
-		if config.Devices.SDA.DiskID == disk.ID {
+		if disk == nil || config.Devices == nil || config.Devices.SDA == nil || config.Devices.SDA.DiskID != disk.ID {
 			return fmt.Errorf("should have SDA with expected disk id")
 		}
 		return nil
 	}
 }
 
-func testConfigSDBDisk(disk linodego.InstanceDisk) testConfigFunc {
+func testConfigSDBDisk(disk *linodego.InstanceDisk) testConfigFunc {
 	return func(config linodego.InstanceConfig) error {
-		if config.Devices.SDB.DiskID == disk.ID {
+		if disk == nil || config.Devices == nil || config.Devices.SDB == nil || config.Devices.SDB.DiskID != disk.ID {
 			return fmt.Errorf("should have SDB with expected disk id")
 		}
 		return nil
 	}
 }
 
-func testConfigSDBVolume(volume linodego.Volume) testConfigFunc {
+func testConfigSDBVolume(volume *linodego.Volume) testConfigFunc {
 	return func(config linodego.InstanceConfig) error {
-		if config.Devices.SDB.VolumeID == volume.ID {
+		if volume == nil || config.Devices == nil || config.Devices.SDB == nil || config.Devices.SDB.VolumeID != volume.ID {
 			return fmt.Errorf("should have SDB with expected volume id")
 		}
 		return nil
