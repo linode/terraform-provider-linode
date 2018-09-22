@@ -30,6 +30,23 @@ resource "linode_volume" "foobar" {
 }
 ```
 
+Volumes can also be attached using the Linode Instance config device map.
+
+```hcl
+resource "linode_instance" "foo" {
+  region             = "us-east"
+  type               = "g6-nanode-1"
+
+  config {
+    label = "boot-existing-volume"
+    kernel = "linode/latest-64bit"
+    devices {
+      sda = { volume_id = "123" }
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:

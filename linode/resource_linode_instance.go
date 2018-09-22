@@ -29,10 +29,11 @@ func resourceLinodeInstance() *schema.Resource {
 				ForceNew:    true,
 			},
 			"backup_id": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeInt,
+				Description:   "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"image"},
 			},
 			"stackscript_id": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -85,8 +86,9 @@ func resourceLinodeInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"ip_address": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "This Linode's Public IPv4 Address. If there are multiple public IPv4 addresses on this Instance, an arbitrary address will be used for this field.",
+				Computed:    true,
 			},
 			"ipv6": &schema.Schema{
 				Type:        schema.TypeString,
@@ -103,12 +105,13 @@ func resourceLinodeInstance() *schema.Resource {
 
 			"private_ip": &schema.Schema{
 				Type:        schema.TypeBool,
-				Description: "If true, the created Linode will have private networking enabled, allowing use of the 192.168.0.0/17 network within the Linode's region.",
+				Description: "If true, the created Linode will have private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region.",
 				Optional:    true,
 			},
 			"private_ip_address": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "This Linode's Private IPv4 Address.  The regional private IP address range is 192.168.128/17 address shared by all Linode Instances in a region.",
+				Computed:    true,
 			},
 			"authorized_keys": &schema.Schema{
 				Type:          schema.TypeList,
@@ -154,20 +157,24 @@ func resourceLinodeInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.",
 						},
 						"memory": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "",
 						},
 						"vcpus": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "",
 						},
 						"transfer": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "",
 						},
 					},
 				},
@@ -181,29 +188,34 @@ func resourceLinodeInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cpu": {
-							Type:     schema.TypeInt,
-							Computed: true,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.",
 						},
 						"network_in": {
-							Type:     schema.TypeInt,
-							Computed: true,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.",
 						},
 						"network_out": {
-							Type:     schema.TypeInt,
-							Computed: true,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "The amount of outbound traffic, in Mbit/s, required to trigger an alert. If the average outbound traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.",
 						},
 						"transfer_quota": {
-							Type:     schema.TypeInt,
-							Computed: true,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to 0 (zero), the alert is disabled.",
 						},
 						"io": {
-							Type:     schema.TypeInt,
-							Computed: true,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Optional:    true,
+							Description: "The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.",
 						},
 					},
 				},
@@ -313,17 +325,20 @@ func resourceLinodeInstance() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The `label` of the `disk` to map to this `device` slot.",
 												},
 												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Computed:    true,
+													Description: "The Disk ID to map to this disk slot",
 												},
 												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Description: "The Block Storage volume ID to map to this disk slot",
 												},
 											},
 										},

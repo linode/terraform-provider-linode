@@ -194,7 +194,7 @@ resource "linode_stackscript" "install-nginx" {
 export PATH=$PATH:/usr/bin
 apt-get -q update
 echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections
-apt-get -q -y install unattended-upgrades nginx $PACKAGE
+apt-get -q -y install unattended-upgrades $PACKAGE
 EOF
 	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
   rev_note = "initial script"

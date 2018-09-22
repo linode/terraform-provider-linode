@@ -31,7 +31,7 @@ resource "linode_instance" "web" {
 
     group = "foo"
     swap_size = 256
-    private_networking = true
+    private_ip = true
 }
 ```
 
@@ -78,49 +78,142 @@ resource "linode_volume" "web_volume" {
 
 The following arguments are supported:
 
-* `image` - (Required) The image to use when creating the Linode's disks. Examples are `"linode/debian9"`, `"linode/fedora28"`, and `"linode/arch"`. *Changing `image` forces the creation of a new Linode Instance.*
-
-* `kernel` - (Required) The kernel to start the linode with. Specify `"linode/latest-64bit"` or `"linode/latest-32bit""` for the most recent Linode provided kernel. "linode/direct-disk" can be used to boot the raw disk and "linode/grub2" will boot to the Grub config on the disk.
-
-* `region` - (Required) The region that the linode will be created in.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc.  *Changing `region` forces the creation of a new Linode Instance.*.
+* `region` - (Required) This is the location where the Linode is deployed. Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc.  *Changing `region` forces the creation of a new Linode Instance.*.
 
 * `type` - (Required) The Linode type defines the pricing, CPU, disk, and RAM specs of the instance.  Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, etc.
 
-* `ssh_key` - (Required) The full text of the public key to add to the root user. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+* `label` - (Optional) The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned.
+
+* `group` - (Optional) The display group of the Linode instance.
+
+* `private_ip` - (Optional) If true, the created Linode will have private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region. It can be enabled on an existing Linode but it can't be disabled.
+
+* `alerts.0.cpu` - (Optional) The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.
+
+* `alerts.0.network_in` - (Optional) The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
+
+* `alerts.0.network_out` - (Optional) The amount of outbound traffic, in Mbit/s, required to trigger an alert. If the average outbound traffic over two hours exceeds this value, we'll send you an alert. If this is set to 0 (zero), the alert is disabled.
+
+* `alerts.0.transfer_quota` - (Optional) The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to 0 (zero), the alert is disabled.
+
+* `alerts.0.io` - (Optional) The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to 0, this alert is disabled.
+
+* `backups_enabled` - (Optional) If this field is set to true, the created Linode will automatically be enrolled in the Linode Backup service. This will incur an additional charge. The cost for the Backup service is dependent on the Type of Linode deployed.
+
+* `watchdog_enabled` - (Optional) The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.
+
+### Simplified Provisioning Arguments
+
+Just as the Linode API provides, these arguments are for the most common provisioning use case, a single data disk, a single swap disk, and a single config.  These arguments are not compatible with `disk` and `config` lists, described later.
+
+* `authorized_keys` - (Required) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
 * `root_pass` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
 
-  A `root_pass` is required by the Linode API. You'll likely want to modify this on the server during provisioning and then disable password logins in favor of SSH keys.
+* `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, and `linode/arch`. *Changing `image` forces the creation of a new Linode Instance.*
 
-- - -
+* `stackscript_id` - (Optional) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *Changing `stackscript_id` forces the creation of a new Linode Instance.*
 
-* `label` - (Optional) The label of the Linode.
+* `stackscript_data` - (Optional) An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.  *Changing `stackscript_data` forces the creation of a new Linode Instance.*
 
-* `group` - (Optional) The group of the Linode.
+* `swap_size` - (Optional) When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.
 
-* `private_networking` - (Optional) A boolean controlling whether or not to enable private networking. It can be enabled on an existing Linode but it can't be disabled.
+* `backup_id` - (Optional) A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive. *Changing `backup_id` forces the creation of a new Linode Instance.*
 
-* `helper_distro` - (Optional) A boolean used to enable the Distro Filesystem helper.   This corrects fstab and inittab/upstart entries depending on the distribution or kernel being booted. You want this unless you're providing your own kernel.
+### Disk and Config Provisioning Arguments
 
-* `manage_private_ip_automatically` - (Optional) A boolean used to enable the Network Helper.  This automatically creates network configuration files for your distro and places them into your filesystem. Enabling this in a change will reboot your Linode.
+By specifying the `disk` and `config` arguments for a Linode instance, it is possible to use non-standard kernels, boot with and provision multiple disks, and modify the boot behaviors (`helpers`) of the Linode.
 
-* `disk_expansion` - (Optional) A boolean that when true will automatically expand the root volume if the size of the Linode plan is increased.  Setting this value will prevent downsizing without manually shrinking the volume prior to decreasing the size.
+* `boot_config_label` - (Optional) The Label of the Instance Config that should be used to boot the Linode instance.  If there is only one `config`, the `label` of that `config` will be used as the `boot_config_label`.
 
-* `swap_size` - (Optional) Sets the size of the swap partition on a Linode in MB.  At this time, this cannot be modified by Terraform after initial provisioning.  If manually modified via the Web GUI, this value will reflect such modification.  This value can be set to 0 to create a Linode without a swap partition.  Defaults to 512.
+#### Disks
+  
+* `disk`
 
+  * `label` - (Required) The disks label, which acts as an identifier in Terraform.  This must be unique within each Linode Instance.
+
+  * `size` - (Required) The size of the Disk in MB.
+  
+  * `id` - (Computed) The ID of the disk in the Linode API.
+
+  * `filesystem` - (Optional) The Disk filesystem can be one of: `"raw"`, `"swap"`, `"ext3"`, `"ext4"`, or `"initrd"` which has a max size of 32mb and can be used in the config `initrd` (not currently supported in this Terraform Provider).
+
+  * `readonly` - (Optional) If true, this Disk is read-only.
+
+  * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, and `linode/arch`. *Changing `image` forces the creation of a new Linode Instance.*
+
+  * `authorized_keys` - (Required with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+
+  * `root_pass` - (Required with `image`) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+
+  * `stackscript_id` - (Optional with `image`) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *Changing `stackscript_id` forces the creation of a new Linode Instance.*
+
+  * `stackscript_data` - (Optional with `image`) An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.  *Changing `stackscript_data` forces the creation of a new Linode Instance.*
+
+#### Configs
+
+Configuration profiles define the VM settings and boot behavior of the Linode Instance.  Multiple configurations profiles can be provided but their `label` values must be unique.
+
+* `config`
+
+  * `label` - (Required) The Config's label for display purposes.  Also used by `boot_config_label`.
+
+  * `helpers` - (Options) Helpers enabled when booting to this Linode Config.
+
+    * `updatedb_disabled` - (Optional) Disables updatedb cron job to avoid disk thrashing.
+
+    * `distro` - (Optional) Controls the behavior of the Linode Config's Distribution Helper setting.
+
+    * `modules_dep` - (Optional) Creates a modules dependency file for the Kernel you run.
+
+    * `network` - (Optional) Controls the behavior of the Linode Config's Network Helper setting, used to automatically configure additional IP addresses assigned to this instance.
+
+  * `devices` - (Optional) A list of `disk` or `volume` attachments for this `config`.  If the `boot_config_label` omits a `devices` block, the Linode will not be booted.
+
+    * `sda` ... `sdh` - (Optional) The SDA-SDH slots, represent the Linux block device nodes for the first 8 disks attached to the Linode.  Each device must be suplied sequentially.  The device can be either a Disk or a Volume identified by `disk_label` or `volume_id`. Only one disk identifier is permitted per slot. Devices mapped from `sde` through `sdh` are unavailable in `"fullvirt"` `virt_mode`.
+
+      * `disk_label` - (Optional) The `label` of the `disk` to map to this `device` slot.
+
+      * `volume_id` - (Optional) The Volume ID to map to this `device` slot.
+
+      * `disk_id` - (Computed) The Disk ID of the associated `disk_label`, if used.
+
+    * `kernel` - (Optional) - A Kernel ID to boot a Linode with. Default is based on image choice. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)
+
+    * `run_level` - (Optional) - Defines the state of your Linode after booting. Defaults to `"default"`.
+
+    * `virt_mode` - (Optional) - Controls the virtualization mode. Defaults to `"paravirt"`.
+
+    * `root_device` - (Optional) - The root device to boot. The corresponding disk must be attached to a `device` slot.  Example: `"/dev/sda"`
+
+    * `comments` - (Optional) - Arbitrary user comments about this `config`.
+
+    * `memory_limit` - (Optional) - Defaults to the total RAM of the Linode
+
+  
 ## Attributes
 
-This resource exports the following attributes:
+This Linode Instance resource exports the following attributes:
 
-* `status` - A string representing the power status of the Linode (`"on"`, `"off"`)
+* `status` - The status of the instance, indicating the current readiness state. (`running`, `offline`, ...)
 
 * `ip_address` - A string containing the Linode's public IP address.
 
-* `private_ip_address` - A string containing the Linode's private IP address if private networking is enabled.
+* `private_ip_address` - This Linode's Private IPv4 Address, if enabled.  The regional private IP address range is 192.168.128/17 address shared by all Linode Instances in a region.
 
-* `plan_storage` - An integer reflecting the size of the Linode's storage capacity in MB, based on the Linode plan.
+* `ipv6` - This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.
 
-* `plan_storage_utilized` - An integer sum of the size of all the Linode's disks, given in MB.
+* `ipv4` - This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.
+
+* `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
+
+* `specs.0.memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
+
+* `specs.0.vcpus` - The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.
+
+* `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
+
+* `backups
 
 ## Import
 
