@@ -3,7 +3,6 @@ package linode
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -120,7 +119,6 @@ func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig, diskLabel
 
 func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset []interface{}, diskIDLabelMap map[string]int, detacher volumeDetacher) (map[int]linodego.InstanceConfig, error) {
 	configIDMap := make(map[int]linodego.InstanceConfig, len(cset))
-	fmt.Println("[MARQUES] createInstanceConfigsFromSet diskIDLabelMap", diskIDLabelMap)
 
 	for _, v := range cset {
 		config, ok := v.(map[string]interface{})
@@ -139,7 +137,6 @@ func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset [
 			for _, helper := range helpers {
 				if helperMap, ok := helper.(map[string]interface{}); ok {
 					configOpts.Helpers = &linodego.InstanceConfigHelpers{}
-					fmt.Println("[MARQUES] helperMap", helperMap)
 					if updateDBDisabled, found := helperMap["updatedb_disabled"]; found {
 						if value, ok := updateDBDisabled.(bool); ok {
 							configOpts.Helpers.UpdateDBDisabled = value
@@ -219,7 +216,6 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 	var updatedConfigMap map[string]int
 	var rebootInstance bool
 	var updatedConfigs []*linodego.InstanceConfig
-	fmt.Println("[MARQUES] updateInstanceConfigs diskIDLabelMap", diskIDLabelMap)
 
 	configs, err := client.ListInstanceConfigs(context.Background(), int(instance.ID), nil)
 	if err != nil {
@@ -245,7 +241,6 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 	updatedConfigs = make([]*linodego.InstanceConfig, len(tfConfigs))
 	updatedConfigMap = make(map[string]int, len(tfConfigs))
 	for _, tfConfig := range tfConfigs {
-		fmt.Println("[MARQUES] CONFIG LOOP", tfConfig)
 		tfc, _ := tfConfig.(map[string]interface{})
 		label, _ := tfc["label"].(string)
 		rootDevice, _ := tfc["root_device"].(string)
@@ -260,7 +255,6 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 
 			tfcHelpersRaw, helpersFound := tfc["helpers"]
 			if tfcHelpers, ok := tfcHelpersRaw.([]interface{}); helpersFound && ok {
-				fmt.Println("[MARQUES] FOUND HELPERS", tfcHelpers)
 				helpersMap := tfcHelpers[0].(map[string]interface{})
 				configUpdateOpts.Helpers = &linodego.InstanceConfigHelpers{
 					UpdateDBDisabled:  helpersMap["updatedb_disabled"].(bool),
@@ -277,22 +271,15 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 				devices := tfcDevices[0].(map[string]interface{})
 
 				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
-				fmt.Println("[MARQUES] configUpdateOpts.Devices", configUpdateOpts.Devices)
 
 				if err != nil {
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}
 				if configUpdateOpts.Devices != nil && emptyConfigDeviceMap(*configUpdateOpts.Devices) {
-					fmt.Println("[MARQUES] configUpdateOpts.Devices EMPTY")
 					configUpdateOpts.Devices = nil
-				}
-				if configUpdateOpts.Devices == nil {
-					// configUpdateOpts.RootDevice = "/dev/root"
 				}
 			} else {
 				configUpdateOpts.Devices = nil
-				fmt.Println("[MARQUES] configUpdateOpts.Devices EMPTY 2")
-				// configUpdateOpts.RootDevice = "/dev/root"
 			}
 
 			if configUpdateOpts.Devices != nil {
@@ -302,9 +289,6 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}
 			}
-
-			marques, err := json.Marshal(configUpdateOpts.Devices)
-			fmt.Println("[MARQUES] configUpdateOpts.Devices", string(marques))
 
 			updatedConfig, err := client.UpdateInstanceConfig(context.Background(), instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
@@ -352,15 +336,7 @@ func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice, diskLabelID
 	if dev == nil || emptyInstanceConfigDevice(*dev) {
 		return nil
 	}
-	/*
-		if dev == nil {
-			return []map[string]interface{}{{
-				"disk_id":   0,
-				"volume_id": 0,
-			}}
-		}
 
-	*/
 	if dev.DiskID > 0 {
 		ret := map[string]interface{}{
 			"disk_id": dev.DiskID,
@@ -381,14 +357,11 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 	if len(m) == 0 {
 		return nil, nil
 	}
-	fmt.Println("[MARQUES] expandInstanceConfigDeviceMap diskIDLabelMap", diskIDLabelMap)
 	deviceMap = &linodego.InstanceConfigDeviceMap{}
 	for k, rdev := range m {
 		devSlots := rdev.([]interface{})
-		fmt.Println("[MARQUES] devSlots", devSlots)
 		for _, rrdev := range devSlots {
 			dev := rrdev.(map[string]interface{})
-			fmt.Println("[MARQUES] dev", dev)
 			tDevice := new(linodego.InstanceConfigDevice)
 			if err := assignConfigDevice(tDevice, dev, diskIDLabelMap); err != nil {
 				return nil, err
@@ -397,7 +370,6 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 			*deviceMap = changeInstanceConfigDevice(*deviceMap, k, tDevice)
 		}
 	}
-	fmt.Println("[MARQUES] deviceMap", fmt.Sprintf("%#+v", deviceMap))
 	return deviceMap, nil
 }
 
@@ -425,7 +397,6 @@ func changeInstanceConfigDevice(deviceMap linodego.InstanceConfigDeviceMap, name
 	case "sdh":
 		deviceMap.SDH = tDevice
 	}
-	fmt.Println("[MARQUES] changeInstanceConfigDevice", namedSlot, deviceMap)
 
 	return deviceMap
 }
@@ -479,7 +450,6 @@ func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConf
 			VolumeID: m["volume_id"].(int),
 		}
 	}
-	fmt.Println("[MARQUES] expandInstanceConfigDevice", dev)
 	return dev
 }
 
@@ -551,7 +521,6 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 	var diskIDLabelMap map[string]int
 	var rebootInstance bool
 
-	fmt.Println("[MARQUES] DISKS UPDATE")
 	disks, err := client.ListInstanceDisks(context.Background(), int(instance.ID), nil)
 	if err != nil {
 		return rebootInstance, diskIDLabelMap, fmt.Errorf("Error fetching the disks for Instance %d: %s", instance.ID, err)
@@ -593,9 +562,6 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 		existingDisk, existing := diskMap[label]
 
 		if existing {
-			fmt.Printf("[MARQUES] RESIZE \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n",
-				tfDisks, diskMap, tfd, label, found, existingDisk, existing)
-
 			// The only non-destructive change supported is resize, which requires a reboot
 			// Label renames are not supported because this TF provider relies on the label as an identifier
 			if tfd["size"].(int) != existingDisk.Size {
@@ -610,9 +576,6 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 			diskIDLabelMap[existingDisk.Label] = existingDisk.ID
 
 		} else {
-			fmt.Printf("[MARQUES] NO RESIZE \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n %#+v \n",
-				diskMap, tfd, label, found, existingDisk, existing)
-
 			instanceDisk, err := createInstanceDisk(client, instance, tfd, d)
 			if err != nil {
 				return rebootInstance, diskIDLabelMap, err
@@ -620,7 +583,6 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 			rebootInstance = true
 			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
 		}
-		fmt.Printf("[MARQUES] POST %#+v\n", rebootInstance)
 	}
 
 	for _, oldLabel := range oldDiskLabels {
@@ -818,17 +780,12 @@ func diskState(v interface{}) string {
 }
 
 func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int) error {
-	fmt.Println("[MARQUES] assignConfigDevice diskIDLabelMap", diskIDLabelMap)
-	fmt.Println("[MARQUES] assignConfigDevice dev", dev)
 	if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
 		if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
 			return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
 		}
-		fmt.Println("[MARQUES] assignConfigDevice dev(2)", dev)
-
 	}
 	expanded := expandInstanceConfigDevice(dev)
-	fmt.Println("[MARQUES] assignConfigDevice expanded", expanded)
 	if expanded != nil {
 		*device = *expanded
 	}
