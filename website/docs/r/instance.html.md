@@ -190,7 +190,6 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `memory_limit` - (Optional) - Defaults to the total RAM of the Linode
 
-  
 ## Attributes
 
 This Linode Instance resource exports the following attributes:
@@ -213,7 +212,15 @@ This Linode Instance resource exports the following attributes:
 
 * `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
 
-* `backups
+* `backups` - Information about this Linode's backups status.
+
+  * `enabled` - If this Linode has the Backup service enabled.
+
+  * `schedule`
+
+    * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
+
+    * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
 
 ## Import
 

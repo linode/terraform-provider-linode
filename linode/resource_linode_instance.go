@@ -221,25 +221,29 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"backups": &schema.Schema{
-				Computed: true,
-				Type:     schema.TypeSet,
+				Computed:    true,
+				Type:        schema.TypeSet,
+				Description: "Information about this Linode's backups status.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
-							Type:     schema.TypeBool,
-							Required: true,
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "If this Linode has the Backup service enabled.",
 						},
 						"schedule": {
 							Type: schema.TypeSet,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"day": {
-										Type:     schema.TypeString,
-										Required: true,
+										Type:        schema.TypeString,
+										Description: "The day ('Sunday'-'Saturday') of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as 'Scheduling' until the day is automatically selected.",
+										Required:    true,
 									},
 									"window": {
-										Type:     schema.TypeString,
-										Required: true,
+										Type:        schema.TypeString,
+										Description: "The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.",
+										Required:    true,
 									},
 								},
 							},
@@ -755,23 +759,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 
-	fmt.Println("[MARQUES] disks", disks)
-	/*
-		_, newDisksRaw := d.GetChange("disk")
-		newDisks := newDisksRaw.([]interface{})
-		copyDiskConfigs := []string{"image", "authorized_keys", "stackscript_id", "stackscript_data", "root_pass", "read_only"}
-		for i, tfDisk := range newDisks {
-			newDisk := tfDisk.(map[string]interface{})
-			if disks[i]["label"].(string) == newDisk["label"].(string) {
-				for k, v := range newDisk {
-					if sliceContains(copyDiskConfigs, k) {
-						disks[i][k] = v
-					}
-				}
-
-			}
-		}
-	*/
 	if err := d.Set("disk", disks); err != nil {
 		return fmt.Errorf("Erroring setting Linode Instance disk: %s", err)
 	}
@@ -988,7 +975,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
-	fmt.Println("[MARQUES] INSTANCE UPDATE")
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -1068,10 +1054,8 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	tfDisksOld, tfDisksNew := d.GetChange("disk")
-	fmt.Println("[MARQUES] DISKS UPDATE - next")
 
 	rebootInstance, diskIDLabelMap, err := updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew)
-	fmt.Println("[MARQUES] DISKS UPDATE - done", diskIDLabelMap)
 	if err != nil {
 		return err
 	}
