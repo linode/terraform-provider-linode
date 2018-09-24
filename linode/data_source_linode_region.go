@@ -3,7 +3,6 @@ package linode
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -13,33 +12,38 @@ func dataSourceLinodeRegion() *schema.Resource {
 		Read: dataSourceLinodeRegionRead,
 
 		Schema: map[string]*schema.Schema{
-			"country": &schema.Schema{
+			"country": {
 				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
+			},
+			"id": {
+				Type:     schema.TypeString,
+				Required: true,
 			},
 		},
 	}
 }
 
 func dataSourceLinodeRegionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*linodego.Client)
+	client := meta.(linodego.Client)
 
-	regions, err := client.ListRegions(context.Background(), nil)
+	reqRegion := d.Get("id").(string)
+
+	if reqRegion == "" {
+		return fmt.Errorf("Error region id is required")
+	}
+
+	region, err := client.GetRegion(context.Background(), reqRegion)
 	if err != nil {
 		return fmt.Errorf("Error listing regions: %s", err)
 	}
 
-	reqRegion := d.Get("id").(string)
-
-	for _, r := range regions {
-		if r.ID == reqRegion {
-			d.SetId(r.ID)
-			d.Set("country", r.Country)
-			return nil
-		}
+	if region != nil {
+		d.SetId(region.ID)
+		d.Set("country", region.Country)
+		return nil
 	}
-
-	d.SetId("")
 
 	return fmt.Errorf("Linode Region %s was not found", reqRegion)
 }
