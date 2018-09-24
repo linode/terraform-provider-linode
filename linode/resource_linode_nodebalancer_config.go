@@ -269,6 +269,7 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 		CheckBody:     d.Get("check_body").(string),
 		CheckInterval: d.Get("check_interval").(int),
 		CheckPath:     d.Get("check_path").(string),
+		CheckTimeout:  d.Get("check_timeout").(int),
 		Port:          d.Get("port").(int),
 		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
 		SSLCert:       d.Get("ssl_cert").(string),
