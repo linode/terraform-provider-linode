@@ -1,10 +1,18 @@
-data "linode_regions" "us-east" {}
-data "linode_instance_types" "g6-nanode-1" {}
-data "linode_image" "linode/ubuntu18.04" {}
+data "linode_region" "main" {
+  id = "${var.region}"
+}
+
+data "linode_instance_type" "default" {
+  id = "g6-nanode-1"
+}
+
+data "linode_image" "ubuntu" {
+  id = "linode/ubuntu18.04"
+}
 
 resource "linode_nodebalancer" "foo-nb" {
   label                = "${random_pet.project.id}"
-  region               = "${var.region}"
+  region               = "${data.linode_region.main.id}"
   client_conn_throttle = 0
 
   # group              = "foo"
@@ -118,16 +126,16 @@ resource "linode_instance" "nginx" {
 
   group             = "foo"
   region            = "${linode_nodebalancer.foo-nb.region}"
-  type              = "g6-nanode-1"
+  type              = "${data.linode_instance_type.default.id}"
   private_ip        = true
   boot_config_label = "nginx"
 
   disk {
     label           = "boot"
-    size            = 3000                               // @TODO(displague) howto do this "${linode_image["linode/ubuntu18.04"].size}"
+    size            = "${data.linode_instance_type.default.disk / 2}"
     authorized_keys = ["${chomp(file(var.ssh_key))}"]
     root_pass       = "${random_string.password.result}"
-    image           = "linode/ubuntu18.04"
+    image           = "${data.linode_image.ubuntu.id}"
   }
 
   config {
