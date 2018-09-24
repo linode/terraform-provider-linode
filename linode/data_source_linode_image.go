@@ -10,42 +10,46 @@ import (
 
 func dataSourceLinodeImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeInstanceTypeRead,
+		Read: dataSourceLinodeImageRead,
 
 		Schema: map[string]*schema.Schema{
-			"label": &schema.Schema{
+			"id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"label": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"created": &schema.Schema{
+			"created": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"created_by": &schema.Schema{
+			"created_by": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"deprecated": &schema.Schema{
+			"deprecated": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"is_public": &schema.Schema{
+			"is_public": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"size": &schema.Schema{
+			"size": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"vendor": &schema.Schema{
+			"vendor": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -54,29 +58,31 @@ func dataSourceLinodeImage() *schema.Resource {
 }
 
 func dataSourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*linodego.Client)
+	client := meta.(linodego.Client)
 
-	images, err := client.ListImages(context.Background(), nil)
+	reqImage := d.Get("id").(string)
+
+	if reqImage == "" {
+		return fmt.Errorf("Image id is required")
+	}
+
+	image, err := client.GetImage(context.Background(), reqImage)
 	if err != nil {
 		return fmt.Errorf("Error listing images: %s", err)
 	}
 
-	reqImage := d.Get("id").(string)
-
-	for _, r := range images {
-		if r.ID == reqImage {
-			d.SetId(r.ID)
-			d.Set("label", r.Label)
-			d.Set("description", r.Description)
-			d.Set("created", r.Created)
-			d.Set("created_by", r.CreatedBy)
-			d.Set("deprecated", r.Deprecated)
-			d.Set("is_public", r.IsPublic)
-			d.Set("size", r.Size)
-			d.Set("type", r.Type)
-			d.Set("vendor", r.Vendor)
-			return nil
-		}
+	if image != nil {
+		d.SetId(image.ID)
+		d.Set("label", image.Label)
+		d.Set("description", image.Description)
+		d.Set("created", image.Created)
+		d.Set("created_by", image.CreatedBy)
+		d.Set("deprecated", image.Deprecated)
+		d.Set("is_public", image.IsPublic)
+		d.Set("size", image.Size)
+		d.Set("type", image.Type)
+		d.Set("vendor", image.Vendor)
+		return nil
 	}
 
 	d.SetId("")
