@@ -67,9 +67,9 @@ resource "linode_nodebalancer_node" "foo-https-www" {
 
 resource "linode_domain" "foo-com" {
   soa_email   = "${random_pet.project.id}@${substr(sha256(random_pet.project.id),0,8)}example.com"
-  ttl_sec     = "30"
-  expire_sec  = "30"
-  refresh_sec = "30"
+  ttl_sec     = "300"
+  expire_sec  = "300"
+  refresh_sec = "300"
   domain      = "${random_pet.project.id}example.com"
   type = "master"
 
