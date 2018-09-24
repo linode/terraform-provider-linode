@@ -26,8 +26,6 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_ipv6_pool":     dataSourceLinodeComputeIPv6Pool(),
-			"linode_ipv6_range":    dataSourceLinodeComputeIPv6Range(),
 			"linode_instance_type": dataSourceLinodeInstanceType(),
 			"linode_region":        dataSourceLinodeRegion(),
 			"linode_image":         dataSourceLinodeImage(),
