@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -102,32 +103,12 @@ func resourceLinodeNodeBalancerExists(d *schema.ResourceData, meta interface{}) 
 	_, err = client.GetNodeBalancer(context.Background(), int(id))
 	if err != nil {
 		if _, ok := err.(*linodego.Error); ok {
-			d.SetId("")
 			return false, nil
 		}
 
 		return false, fmt.Errorf("Error getting sdd marty Linode NodeBalancer ID %s: %s", d.Id(), err)
 	}
 	return true, nil
-}
-
-func syncNodeBalancerData(d *schema.ResourceData, nodebalancer *linodego.NodeBalancer) {
-	d.Set("label", nodebalancer.Label)
-	d.Set("hostname", nodebalancer.Hostname)
-	d.Set("region", nodebalancer.Region)
-	d.Set("ipv4", nodebalancer.IPv4)
-	d.Set("ipv6", nodebalancer.IPv6)
-	d.Set("client_conn_throttle", nodebalancer.ClientConnThrottle)
-	d.Set("created", nodebalancer.Created.Format(time.RFC3339))
-	d.Set("updated", nodebalancer.Updated.Format(time.RFC3339))
-	transfer := map[string]interface{}{
-		"in":    floatString(nodebalancer.Transfer.In),
-		"out":   floatString(nodebalancer.Transfer.Out),
-		"total": floatString(nodebalancer.Transfer.Total),
-	}
-	if err := d.Set("transfer", transfer); err != nil {
-		panic(err)
-	}
 }
 
 // floatString returns nil or the string representation of the supplied *float64
@@ -149,10 +130,32 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 	nodebalancer, err := client.GetNodeBalancer(context.Background(), int(id))
 
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode NodeBalancer ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return fmt.Errorf("Error finding the specified Linode NodeBalancer: %s", err)
 	}
 
-	syncNodeBalancerData(d, nodebalancer)
+	d.Set("label", nodebalancer.Label)
+	d.Set("hostname", nodebalancer.Hostname)
+	d.Set("region", nodebalancer.Region)
+	d.Set("ipv4", nodebalancer.IPv4)
+	d.Set("ipv6", nodebalancer.IPv6)
+	d.Set("client_conn_throttle", nodebalancer.ClientConnThrottle)
+	d.Set("created", nodebalancer.Created.Format(time.RFC3339))
+	d.Set("updated", nodebalancer.Updated.Format(time.RFC3339))
+	transfer := map[string]interface{}{
+		"in":    floatString(nodebalancer.Transfer.In),
+		"out":   floatString(nodebalancer.Transfer.Out),
+		"total": floatString(nodebalancer.Transfer.Total),
+	}
+
+	if err := d.Set("transfer", transfer); err != nil {
+		return fmt.Errorf("Error setting transfer: %s", err)
+	}
 
 	return nil
 }
@@ -176,9 +179,7 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetId(fmt.Sprintf("%d", nodebalancer.ID))
 
-	syncNodeBalancerData(d, nodebalancer)
-
-	return nil
+	return resourceLinodeNodeBalancerRead(d, meta)
 }
 
 func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -205,10 +206,9 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		if nodebalancer, err = client.UpdateNodeBalancer(context.Background(), nodebalancer.ID, updateOpts); err != nil {
 			return err
 		}
-		syncNodeBalancerData(d, nodebalancer)
 	}
 
-	return nil
+	return resourceLinodeNodeBalancerRead(d, meta)
 }
 
 func resourceLinodeNodeBalancerDelete(d *schema.ResourceData, meta interface{}) error {

@@ -133,32 +133,32 @@ func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset [
 		configOpts.Label = config["label"].(string)
 		configOpts.Comments = config["comments"].(string)
 
-		if helpers, ok := config["helpers"].([]interface{}); ok {
+		if helpers, helpersOk := config["helpers"].([]interface{}); helpersOk {
 			for _, helper := range helpers {
-				if helperMap, ok := helper.(map[string]interface{}); ok {
+				if helperMap, helperMapOk := helper.(map[string]interface{}); helperMapOk {
 					configOpts.Helpers = &linodego.InstanceConfigHelpers{}
 					if updateDBDisabled, found := helperMap["updatedb_disabled"]; found {
-						if value, ok := updateDBDisabled.(bool); ok {
+						if value, updateDBDisabledOk := updateDBDisabled.(bool); updateDBDisabledOk {
 							configOpts.Helpers.UpdateDBDisabled = value
 						}
 					}
 					if distro, found := helperMap["distro"]; found {
-						if value, ok := distro.(bool); ok {
+						if value, distroOk := distro.(bool); distroOk {
 							configOpts.Helpers.Distro = value
 						}
 					}
 					if modulesDep, found := helperMap["modules_dep"]; found {
-						if value, ok := modulesDep.(bool); ok {
+						if value, modulesDepOk := modulesDep.(bool); modulesDepOk {
 							configOpts.Helpers.ModulesDep = value
 						}
 					}
 					if network, found := helperMap["network"]; found {
-						if value, ok := network.(bool); ok {
+						if value, networkOk := network.(bool); networkOk {
 							configOpts.Helpers.Network = value
 						}
 					}
 					if devTmpFsAutomount, found := helperMap["devtmpfs_automount"]; found {
-						if value, ok := devTmpFsAutomount.(bool); ok {
+						if value, devTmpFsAutomountOk := devTmpFsAutomount.(bool); devTmpFsAutomountOk {
 							configOpts.Helpers.DevTmpFsAutomount = value
 						}
 					}
@@ -285,8 +285,8 @@ func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, insta
 			if configUpdateOpts.Devices != nil {
 				detacher := makeVolumeDetacher(client, d)
 
-				if err := detachConfigVolumes(*configUpdateOpts.Devices, detacher); err != nil {
-					return rebootInstance, updatedConfigMap, updatedConfigs, err
+				if detachErr := detachConfigVolumes(*configUpdateOpts.Devices, detacher); detachErr != nil {
+					return rebootInstance, updatedConfigMap, updatedConfigs, detachErr
 				}
 			}
 
@@ -695,11 +695,10 @@ func changeInstanceDiskSize(client *linodego.Client, instance linodego.Instance,
 // privateIP determines if an IP is for private use (RFC1918)
 // https://stackoverflow.com/a/41273687
 func privateIP(ip net.IP) bool {
-	private := false
 	_, private24BitBlock, _ := net.ParseCIDR("10.0.0.0/8")
 	_, private20BitBlock, _ := net.ParseCIDR("172.16.0.0/12")
 	_, private16BitBlock, _ := net.ParseCIDR("192.168.0.0/16")
-	private = private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) || private16BitBlock.Contains(ip)
+	private := private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) || private16BitBlock.Contains(ip)
 	return private
 }
 

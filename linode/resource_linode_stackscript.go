@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -149,6 +150,11 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 	stackscript, err := client.GetStackscript(context.Background(), int(id))
 
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing StackScript ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding the specified Linode Stackscript: %s", err)
 	}
 
@@ -193,7 +199,7 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 
 	if stackscript.UserDefinedFields == nil {
 		if err := d.Set("user_defined_fields", nil); err != nil {
-			return err
+			return fmt.Errorf("Error setting user_defined_fields: %s", err)
 		}
 	} else {
 		var udfs []map[string]string
@@ -208,7 +214,7 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 			})
 		}
 		if err := d.Set("user_defined_fields", udfs); err != nil {
-			return err
+			return fmt.Errorf("Error setting user_defined_fields: %s", err)
 		}
 	}
 
@@ -263,7 +269,7 @@ func resourceLinodeStackscriptUpdate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if _, err = client.UpdateStackscript(context.Background(), int(id), updateOpts); err != nil {
-		return err
+		return fmt.Errorf("Error updating Linode Stackscript %d: %s", int(id), err)
 	}
 
 	return resourceLinodeStackscriptRead(d, meta)
@@ -278,11 +284,9 @@ func resourceLinodeStackscriptDelete(d *schema.ResourceData, meta interface{}) e
 	err = client.DeleteStackscript(context.Background(), int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("Error deleting Linode Stackscript %d: %s", id, err)
 	}
-	d.SetId("")
 	return nil
 }

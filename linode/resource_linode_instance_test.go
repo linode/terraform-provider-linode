@@ -660,7 +660,7 @@ func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 			},
 			// Bump it to a 2048, and expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceWithDiskRaw_resizedAndExpanded(instanceName),
+				Config: testAccCheckLinodeInstanceWithDiskRawResizedAndExpanded(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
@@ -705,7 +705,7 @@ func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 			},
 			// Bump it to a 2048, and expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceWithDiskRaw_deleted(instanceName),
+				Config: testAccCheckLinodeInstanceWithDiskRawDeleted(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
@@ -749,7 +749,7 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 			},
 			// Bump it to a 2048, and expand the disk
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig_resizedAndExpanded(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigResizedAndExpanded(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
@@ -802,7 +802,7 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 			},
 			// Add a disk, reorder the disks
 			resource.TestStep{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig_addedAndReordered(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigAddedAndReordered(instanceName, publicKeyMaterial),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
@@ -870,6 +870,9 @@ func testAccCheckLinodeInstanceExists(name string, instance *linodego.Instance) 
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
 
 		found, err := client.GetInstance(context.Background(), id)
 		if err != nil {
@@ -1310,7 +1313,7 @@ resource "linode_instance" "foobar" {
 }`, instance)
 }
 
-func testAccCheckLinodeInstanceWithDiskRaw_deleted(instance string) string {
+func testAccCheckLinodeInstanceWithDiskRawDeleted(instance string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -1320,7 +1323,7 @@ resource "linode_instance" "foobar" {
 }`, instance)
 }
 
-func testAccCheckLinodeInstanceWithDiskRaw_resizedAndExpanded(instance string) string {
+func testAccCheckLinodeInstanceWithDiskRawResizedAndExpanded(instance string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -1397,7 +1400,7 @@ resource "linode_instance" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeInstanceWithDiskAndConfig_resizedAndExpanded(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceWithDiskAndConfigResizedAndExpanded(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -1421,7 +1424,7 @@ resource "linode_instance" "foobar" {
 }`, instance, pubkey)
 }
 
-func testAccCheckLinodeInstanceWithDiskAndConfig_addedAndReordered(instance string, pubkey string) string {
+func testAccCheckLinodeInstanceWithDiskAndConfigAddedAndReordered(instance string, pubkey string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"

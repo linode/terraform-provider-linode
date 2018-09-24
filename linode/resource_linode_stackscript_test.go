@@ -130,6 +130,9 @@ func testAccCheckLinodeStackscriptExists(s *terraform.State) error {
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
 
 		_, err = client.GetStackscript(context.Background(), id)
 		if err != nil {

@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -693,7 +694,8 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	instance, err := client.GetInstance(context.Background(), int(id))
 
 	if err != nil {
-		if lerr, ok := err.(linodego.Error); ok && lerr.Code == 404 {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode Instance ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}

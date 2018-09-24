@@ -69,7 +69,6 @@ func resourceLinodeVolumeExists(d *schema.ResourceData, meta interface{}) (bool,
 	_, err = client.GetVolume(context.Background(), int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
 			return false, nil
 		}
 
@@ -88,7 +87,8 @@ func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	volume, err := client.GetVolume(context.Background(), int(id))
 
 	if err != nil {
-		if lerr, ok := err.(linodego.Error); ok && lerr.Code == 404 {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Volume ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -231,8 +231,8 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 		d.Set("linode_id", linodeID)
 		d.SetPartial("linode_id")
-		d.Partial(false)
 	}
+	d.Partial(false)
 
 	return resourceLinodeVolumeRead(d, meta)
 }

@@ -110,7 +110,13 @@ func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
 		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.Attributes["nodebalancer_id"])
+		}
 
 		_, err = client.GetNodeBalancerConfig(context.Background(), nodebalancerID, id)
 		if err != nil {
@@ -132,14 +138,16 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
-		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
-
 		if err != nil {
 			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
+		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.Attributes["nodebalancer_id"])
+		}
+
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetNodeBalancerConfig(context.Background(), nodebalancerID, id)

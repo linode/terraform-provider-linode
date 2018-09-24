@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -96,7 +97,6 @@ func resourceLinodeDomainRecordExists(d *schema.ResourceData, meta interface{}) 
 
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
 			return false, nil
 		}
 
@@ -144,6 +144,11 @@ func resourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) er
 	record, err := client.GetDomainRecord(context.Background(), int(domainID), int(id))
 
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode Domain Record ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding the specified Linode DomainRecord: %s", err)
 	}
 

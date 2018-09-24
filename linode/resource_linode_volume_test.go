@@ -249,6 +249,9 @@ func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resour
 		}
 
 		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
 
 		found, err := client.GetVolume(context.Background(), id)
 		if err != nil {

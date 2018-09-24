@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -82,21 +83,11 @@ func resourceLinodeNodeBalancerNodeExists(d *schema.ResourceData, meta interface
 	_, err = client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
 			return false, nil
 		}
-
 		return false, fmt.Errorf("Error getting Linode NodeBalancerNode ID %s: %s", d.Id(), err)
 	}
 	return true, nil
-}
-
-func syncNodeBalancerNodeResourceData(d *schema.ResourceData, node *linodego.NodeBalancerNode) {
-	d.Set("label", node.Label)
-	d.Set("weight", node.Weight)
-	d.Set("mode", node.Mode)
-	d.Set("address", node.Address)
-	d.Set("status", node.Status)
 }
 
 func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}) error {
@@ -117,11 +108,20 @@ func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}
 	node, err := client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
 
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing NodeBalancer Node ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return fmt.Errorf("Error finding the specified Linode NodeBalancerNode: %s", err)
 	}
 
-	syncNodeBalancerNodeResourceData(d, node)
-
+	d.Set("label", node.Label)
+	d.Set("weight", node.Weight)
+	d.Set("mode", node.Mode)
+	d.Set("address", node.Address)
+	d.Set("status", node.Status)
 	return nil
 }
 
@@ -154,9 +154,7 @@ func resourceLinodeNodeBalancerNodeCreate(d *schema.ResourceData, meta interface
 	d.Set("config_id", configID)
 	d.Set("nodebalancer_id", nodebalancerID)
 
-	syncNodeBalancerNodeResourceData(d, node)
-
-	return nil
+	return resourceLinodeNodeBalancerNodeRead(d, meta)
 }
 
 func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -175,11 +173,6 @@ func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
 
-	node, err := client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
-	if err != nil {
-		return fmt.Errorf("Error fetching data about the current NodeBalancerNode: %s", err)
-	}
-
 	updateOpts := linodego.NodeBalancerNodeUpdateOptions{
 		Address: d.Get("address").(string),
 		Label:   d.Get("label").(string),
@@ -187,12 +180,11 @@ func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface
 		Weight:  d.Get("weight").(int),
 	}
 
-	if node, err = client.UpdateNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id), updateOpts); err != nil {
-		return err
+	if _, err = client.UpdateNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id), updateOpts); err != nil {
+		return fmt.Errorf("Error updating Linode Nodebalancer %d Config %d Node %d: %s", nodebalancerID, configID, int(id), err)
 	}
-	syncNodeBalancerNodeResourceData(d, node)
 
-	return nil
+	return resourceLinodeNodeBalancerNodeRead(d, meta)
 }
 
 func resourceLinodeNodeBalancerNodeDelete(d *schema.ResourceData, meta interface{}) error {
