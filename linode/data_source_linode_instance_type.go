@@ -13,19 +13,24 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 		Read: dataSourceLinodeInstanceTypeRead,
 
 		Schema: map[string]*schema.Schema{
-			"label": &schema.Schema{
+			"id": {
 				Type:     schema.TypeString,
+				Required: true,
+			},
+			"label": {
+				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
 			},
-			"disk": &schema.Schema{
+			"disk": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"class": &schema.Schema{
+			"class": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"price": &schema.Schema{
+			"price": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Computed: true,
@@ -42,7 +47,7 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 					},
 				},
 			},
-			"addons": &schema.Schema{
+			"addons": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Computed: true,
@@ -54,7 +59,7 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"price": &schema.Schema{
+									"price": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										Computed: true,
@@ -77,19 +82,19 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 					},
 				},
 			},
-			"network_out": &schema.Schema{
+			"network_out": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"memory": &schema.Schema{
+			"memory": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"transfer": &schema.Schema{
+			"transfer": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"vcpus": &schema.Schema{
+			"vcpus": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -98,7 +103,7 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 }
 
 func dataSourceLinodeInstanceTypeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*linodego.Client)
+	client := meta.(linodego.Client)
 
 	types, err := client.ListTypes(context.Background(), nil)
 	if err != nil {
@@ -117,8 +122,21 @@ func dataSourceLinodeInstanceTypeRead(d *schema.ResourceData, meta interface{}) 
 			d.Set("network_out", r.NetworkOut)
 			d.Set("transfer", r.Transfer)
 			d.Set("class", r.Class)
-			d.Set("price.0.hourly", r.Price.Hourly)
-			d.Set("price.0.monthly", r.Price.Monthly)
+
+			d.Set("price", []map[string]interface{}{{
+				"hourly":  r.Price.Hourly,
+				"monthly": r.Price.Monthly,
+			}})
+
+			d.Set("addons", []map[string]interface{}{{
+				"backups": []map[string]interface{}{{
+					"price": []map[string]interface{}{{
+						"hourly":  r.Addons.Backups.Price.Hourly,
+						"monthly": r.Addons.Backups.Price.Monthly,
+					}},
+				}},
+			}})
+
 			d.Set("addons.0.backups.0.price.0.hourly", r.Addons.Backups.Price.Hourly)
 			d.Set("addons.0.backups.0.price.0.monthly", r.Addons.Backups.Price.Monthly)
 			return nil
