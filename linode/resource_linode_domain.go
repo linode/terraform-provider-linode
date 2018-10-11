@@ -7,10 +7,13 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeDomain() *schema.Resource {
+	validDomainSeconds := domainSecondsValidator()
+
 	return &schema.Resource{
 		Create: resourceLinodeDomainCreate,
 		Read:   resourceLinodeDomainRead,
@@ -30,13 +33,15 @@ func resourceLinodeDomain() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).",
 				InputDefault: "master",
+				ValidateFunc: validation.StringInSlice([]string{"master", "slave"}, false),
 				Required:     true,
 				ForceNew:     true,
 			},
 			"group": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The group this Domain belongs to. This is for display purposes only.",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "The group this Domain belongs to. This is for display purposes only.",
+				ValidateFunc: validation.StringLenBetween(0, 50),
+				Optional:     true,
 			},
 			"status": &schema.Schema{
 				Type:         schema.TypeString,
@@ -46,9 +51,10 @@ func resourceLinodeDomain() *schema.Resource {
 				InputDefault: "active",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "A description for this Domain. This is for display purposes only.",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "A description for this Domain. This is for display purposes only.",
+				ValidateFunc: validation.StringLenBetween(0, 255),
+				Optional:     true,
 			},
 			"master_ips": &schema.Schema{
 				Type: schema.TypeSet,
@@ -67,24 +73,28 @@ func resourceLinodeDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"ttl_sec": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Description:  "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				ValidateFunc: validDomainSeconds,
+				Optional:     true,
 			},
 			"retry_sec": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The interval, in seconds, at which a failed refresh should be retried. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Description:  "The interval, in seconds, at which a failed refresh should be retried. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				ValidateFunc: validDomainSeconds,
+				Optional:     true,
 			},
 			"expire_sec": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Description:  "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				ValidateFunc: validDomainSeconds,
+				Optional:     true,
 			},
 			"refresh_sec": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The amount of time in seconds before this Domain should be refreshed. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Description:  "The amount of time in seconds before this Domain should be refreshed. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				ValidateFunc: validDomainSeconds,
+				Optional:     true,
 			},
 			"soa_email": &schema.Schema{
 				Type:        schema.TypeString,
@@ -93,6 +103,32 @@ func resourceLinodeDomain() *schema.Resource {
 			},
 		},
 	}
+}
+
+// IntInSlice returns a SchemaValidateFunc which tests if the provided value
+// is of type int and matches the value of an element in the valid slice
+func intInSlice(valid []int) schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (s []string, es []error) {
+		v, ok := i.(int)
+		if !ok {
+			es = append(es, fmt.Errorf("expected type of %s to be int", k))
+			return
+		}
+
+		for _, n := range valid {
+			if v == n {
+				return
+			}
+		}
+
+		es = append(es, fmt.Errorf("expected %s to be one of %v, got %d", k, valid, v))
+		return
+	}
+}
+
+func domainSecondsValidator() schema.SchemaValidateFunc {
+	validSeconds := []int{300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200}
+	return intInSlice(validSeconds)
 }
 
 func resourceLinodeDomainExists(d *schema.ResourceData, meta interface{}) (bool, error) {

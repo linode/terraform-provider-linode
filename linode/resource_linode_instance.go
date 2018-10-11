@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -56,6 +58,10 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned",
 				Optional:    true,
 				Computed:    true,
+				ValidateFunc: validateAll(
+					validation.StringLenBetween(3, 50),
+					validation.StringMatch(regexp.MustCompile("^[a-zA-Z]((?!--|__)[a-zA-Z0-9-_])+$"), ""),
+				),
 			},
 			"group": &schema.Schema{
 				Type:        schema.TypeString,
@@ -267,9 +273,10 @@ func resourceLinodeInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
-							Type:        schema.TypeString,
-							Description: "The Config's label for display purposes.  Also used by `boot_config_label`.",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "The Config's label for display purposes.  Also used by `boot_config_label`.",
+							Required:     true,
+							ValidateFunc: validation.StringLenBetween(1, 48),
 						},
 						"helpers": {
 							Type:        schema.TypeList,
@@ -526,16 +533,18 @@ func resourceLinodeInstance() *schema.Resource {
 							Description: "A Kernel ID to boot a Linode with. Default is based on image choice. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
 						},
 						"run_level": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Defines the state of your Linode after booting. Defaults to default.",
-							Default:     "default",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Defines the state of your Linode after booting. Defaults to default.",
+							Default:      "default",
+							ValidateFunc: validation.StringInSlice([]string{"default", "single", "binbash"}, false),
 						},
 						"virt_mode": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Controls the virtualization mode. Defaults to paravirt.",
-							Default:     "paravirt",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Controls the virtualization mode. Defaults to paravirt.",
+							Default:      "paravirt",
+							ValidateFunc: validation.StringInSlice([]string{"paravirt", "fullvirt"}, false),
 						},
 						"root_device": {
 							Type:        schema.TypeString,
@@ -570,9 +579,10 @@ func resourceLinodeInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
-							Type:        schema.TypeString,
-							Description: "The disks label, which acts as an identifier in Terraform.",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "The disks label, which acts as an identifier in Terraform.",
+							Required:     true,
+							ValidateFunc: validation.StringLenBetween(1, 48),
 						},
 						"size": {
 							Type:        schema.TypeInt,
@@ -585,11 +595,12 @@ func resourceLinodeInstance() *schema.Resource {
 							ComputedWhen: []string{"label"},
 						},
 						"filesystem": {
-							Type:        schema.TypeString,
-							Description: "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
-							Optional:    true,
-							ForceNew:    true,
-							Computed:    true,
+							Type:         schema.TypeString,
+							Description:  "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
+							Optional:     true,
+							ForceNew:     true,
+							Computed:     true,
+							ValidateFunc: validation.StringInSlice([]string{"raw", "swap", "ext3", "ext4", "initrd"}, false),
 						},
 						"read_only": {
 							Type:        schema.TypeBool,
@@ -656,12 +667,26 @@ func resourceLinodeInstance() *schema.Resource {
 								// the API does not return this field for existing disks, so must be ignored for diffs/updates
 								return !d.HasChange("label")
 							},
-							StateFunc: rootPasswordState,
+							ValidateFunc: validation.StringLenBetween(6, 128),
+							StateFunc:    rootPasswordState,
 						},
 					},
 				},
 			},
 		},
+	}
+}
+
+func validateAll(validators ...schema.SchemaValidateFunc) schema.SchemaValidateFunc {
+	var allWs []string
+	var allErrors []error
+	return func(i interface{}, k string) ([]string, []error) {
+		for _, validator := range validators {
+			ws, errors := validator(i, k)
+			allWs = append(allWs, ws...)
+			allErrors = append(allErrors, errors...)
+		}
+		return allWs, allErrors
 	}
 }
 

@@ -7,10 +7,14 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeNodeBalancerNode() *schema.Resource {
+	privateStart := 3232235520 // 192.168.0.0
+	privateEnd := 3232301055   // 192.168.255.255
+
 	return &schema.Resource{
 		Create: resourceLinodeNodeBalancerNodeCreate,
 		Read:   resourceLinodeNodeBalancerNodeRead,
@@ -39,21 +43,24 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 				Optional:    true,
 			},
 			"weight": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "Used when picking a backend to serve a request and is not pinned to a single backend yet. Nodes with a higher weight will receive more traffic. (1-255)",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeInt,
+				Description:  "Used when picking a backend to serve a request and is not pinned to a single backend yet. Nodes with a higher weight will receive more traffic. (1-255)",
+				ValidateFunc: validation.IntBetween(1, 255),
+				Optional:     true,
+				Computed:     true,
 			},
 			"mode": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it.",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it.",
+				ValidateFunc: validation.StringInSlice([]string{"accept", "reject", "drain"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 			"address": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The private IP Address where this backend can be reached. This must be a private IP address.",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "The private IP Address where this backend can be reached. This must be a private IP address.",
+				ValidateFunc: validation.CIDRNetwork(privateStart, privateEnd),
+				Required:     true,
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeString,

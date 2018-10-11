@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -35,10 +36,11 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 				InputDefault: "us-east",
 			},
 			"client_conn_throttle": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.",
-				Optional:    true,
-				Default:     0,
+				Type:         schema.TypeInt,
+				Description:  "Throttle connections per second (0-20). Set to 0 (zero) to disable throttling.",
+				ValidateFunc: validation.IntBetween(0, 20),
+				Optional:     true,
+				Default:      0,
 			},
 			"hostname": &schema.Schema{
 				Type:        schema.TypeString,

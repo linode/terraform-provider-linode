@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -28,16 +29,18 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				ForceNew:    true,
 			},
 			"protocol": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key.",
-				Optional:    true,
-				Default:     linodego.ProtocolHTTP,
+				Type:         schema.TypeString,
+				Description:  "The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key.",
+				ValidateFunc: validation.StringInSlice([]string{"http", "https", "tcp"}, false),
+				Optional:     true,
+				Default:      linodego.ProtocolHTTP,
 			},
 			"port": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The TCP port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example). While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443.",
-				Optional:    true,
-				Default:     80,
+				Type:         schema.TypeInt,
+				Description:  "The TCP port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example). While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443.",
+				ValidateFunc: validation.IntBetween(1, 65535),
+				Optional:     true,
+				Default:      80,
 			},
 			"check_interval": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -46,34 +49,39 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				Computed:    true,
 			},
 			"check_timeout": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "How long, in seconds, to wait for a check attempt before considering it failed. (1-30)",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeInt,
+				Description:  "How long, in seconds, to wait for a check attempt before considering it failed. (1-30)",
+				ValidateFunc: validation.IntBetween(1, 30),
+				Optional:     true,
+				Computed:     true,
 			},
 			"check_attempts": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "How many times to attempt a check before considering a backend to be down. (1-30)",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeInt,
+				Description:  "How many times to attempt a check before considering a backend to be down. (1-30)",
+				ValidateFunc: validation.IntBetween(1, 30),
+				Optional:     true,
+				Computed:     true,
 			},
 			"algorithm": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "What algorithm this NodeBalancer should use for routing traffic to backends: roundrobin, leastconn, source",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "What algorithm this NodeBalancer should use for routing traffic to backends: roundrobin, leastconn, source",
+				ValidateFunc: validation.StringInSlice([]string{"roundrobin", "leastconn", "source"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 			"stickiness": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Controls how session stickiness is handled on this port: 'none', 'table', 'http_cookie'",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "Controls how session stickiness is handled on this port: 'none', 'table', 'http_cookie'",
+				ValidateFunc: validation.StringInSlice([]string{"none", "table", "http_cookie"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 			"check": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. If none no check is performed. connection requires only a connection to the backend to succeed. http and http_body rely on the backend serving HTTP, and that the response returned matches what is expected.",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. If none no check is performed. connection requires only a connection to the backend to succeed. http and http_body rely on the backend serving HTTP, and that the response returned matches what is expected.",
+				ValidateFunc: validation.StringInSlice([]string{"none", "connection", "http", "http_body"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 			"check_path": &schema.Schema{
 				Type:        schema.TypeString,
@@ -94,10 +102,11 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				Computed:    true,
 			},
 			"cipher_suite": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary.",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary.",
+				ValidateFunc: validation.StringInSlice([]string{"recommended", "legacy"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 			"ssl_commonname": &schema.Schema{
 				Type:        schema.TypeString,
