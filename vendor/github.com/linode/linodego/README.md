@@ -37,13 +37,15 @@ A brief summary of the features offered in this API client are shown here.
 package main
 
 import (
-  "context"
-  "fmt"
-  "log"
-  "os"
+	"context"
+	"fmt"
 
-  "github.com/linode/linodego"
-  "golang.org/x/oauth2"
+	"github.com/linode/linodego"
+	"golang.org/x/oauth2"
+
+	"log"
+	"net/http"
+	"os"
 )
 
 func main() {
@@ -59,11 +61,9 @@ func main() {
     },
   }
 
-  linodeClient, err := linodego.NewClient(oauth2Client)
-  if err != nil {
-    log.Fatal(err)
-  }
+  linodeClient := linodego.NewClient(oauth2Client)
   linodeClient.SetDebug(true)
+  
   res, err := linodeClient.GetInstance(context.Background(), 4090913)
   if err != nil {
     log.Fatal(err)

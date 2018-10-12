@@ -84,3 +84,11 @@ This resource exports the following attributes:
 * `node_status_up` - The number of backends considered to be 'UP' and healthy, and that are serving requests.
 
 * `node_status_down` - The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.
+
+## Import
+
+NodeBalancer Configs can be imported using the NodeBalancer `nodebalancer_id` followed by the NodeBalancer Config `id` separated by a comma, e.g.
+
+```sh
+terraform import linode_nodebalancer_config.http-foobar 1234567,7654321
+```

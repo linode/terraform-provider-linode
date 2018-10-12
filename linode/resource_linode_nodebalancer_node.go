@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -18,7 +20,7 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 		Delete: resourceLinodeNodeBalancerNodeDelete,
 		Exists: resourceLinodeNodeBalancerNodeExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceLinodeNodeBalancerNodeImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"nodebalancer_id": &schema.Schema{
@@ -39,20 +41,22 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 				Optional:    true,
 			},
 			"weight": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "Used when picking a backend to serve a request and is not pinned to a single backend yet. Nodes with a higher weight will receive more traffic. (1-255)",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeInt,
+				Description:  "Used when picking a backend to serve a request and is not pinned to a single backend yet. Nodes with a higher weight will receive more traffic. (1-255)",
+				ValidateFunc: validation.IntBetween(1, 255),
+				Optional:     true,
+				Computed:     true,
 			},
 			"mode": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it.",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it.",
+				ValidateFunc: validation.StringInSlice([]string{"accept", "reject", "drain"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 			"address": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "The private IP Address where this backend can be reached. This must be a private IP address.",
+				Description: "The private IP Address and port (IP:PORT) where this backend can be reached. This must be a private IP address.",
 				Required:    true,
 			},
 			"status": &schema.Schema{
@@ -123,6 +127,41 @@ func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}
 	d.Set("address", node.Address)
 	d.Set("status", node.Status)
 	return nil
+}
+
+func resourceLinodeNodeBalancerNodeImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if strings.Contains(d.Id(), ",") {
+		s := strings.Split(d.Id(), ",")
+		// Validate that this is an ID by making sure it can be converted into an int
+		_, err := strconv.Atoi(s[2])
+		if err != nil {
+			return nil, fmt.Errorf("invalid nodebalancer_node ID: %v", err)
+		}
+
+		configID, err := strconv.Atoi(s[1])
+		if err != nil {
+			return nil, fmt.Errorf("invalid config ID: %v", err)
+		}
+
+		nodebalancerID, err := strconv.Atoi(s[0])
+		if err != nil {
+			return nil, fmt.Errorf("invalid nodebalancer ID: %v", err)
+		}
+
+		d.SetId(s[2])
+		d.Set("nodebalancer_id", nodebalancerID)
+		d.Set("config_id", configID)
+	}
+
+	err := resourceLinodeNodeBalancerNodeRead(d, meta)
+	if err != nil {
+		return nil, fmt.Errorf("unable to import %v as nodebalancer_node: %v", d.Id(), err)
+	}
+
+	results := make([]*schema.ResourceData, 0)
+	results = append(results, d)
+
+	return results, nil
 }
 
 func resourceLinodeNodeBalancerNodeCreate(d *schema.ResourceData, meta interface{}) error {

@@ -179,6 +179,13 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 			results = r.Result().(*NodeBalancersPagedResponse).Results
 			v.appendData(r.Result().(*NodeBalancersPagedResponse))
 		}
+	case *TagsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(TagsPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*TagsPagedResponse).Pages
+			results = r.Result().(*TagsPagedResponse).Results
+			v.appendData(r.Result().(*TagsPagedResponse))
+		}
+
 	/**
 	case AccountOauthClientsPagedResponse:
 		if r, err = req.SetResult(v).Get(v.endpoint(c)); r.Error() != nil {
@@ -308,7 +315,7 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 // When opts (or opts.Page) is nil, all pages will be fetched and
 // returned in a single (endpoint-specific)PagedResponse
 // opts.results and opts.pages will be updated from the API response
-func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, opts *ListOptions) error {
+func (c *Client) listHelperWithID(ctx context.Context, i interface{}, idRaw interface{}, opts *ListOptions) error {
 	req := c.R(ctx)
 	if opts != nil && opts.Page > 0 {
 		req.SetQueryParam("page", strconv.Itoa(opts.Page))
@@ -320,6 +327,8 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 		results int
 		r       *resty.Response
 	)
+
+	id, _ := idRaw.(int)
 
 	if opts != nil && len(opts.Filter) > 0 {
 		req.SetHeader("X-Filter", opts.Filter)
@@ -365,6 +374,14 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, id int, op
 			pages = r.Result().(*InstanceVolumesPagedResponse).Pages
 			results = r.Result().(*InstanceVolumesPagedResponse).Results
 			v.appendData(r.Result().(*InstanceVolumesPagedResponse))
+		}
+	case *TaggedObjectsPagedResponse:
+		idStr := idRaw.(string)
+
+		if r, err = coupleAPIErrors(req.SetResult(TaggedObjectsPagedResponse{}).Get(v.endpointWithID(c, idStr))); err == nil {
+			pages = r.Result().(*TaggedObjectsPagedResponse).Pages
+			results = r.Result().(*TaggedObjectsPagedResponse).Results
+			v.appendData(r.Result().(*TaggedObjectsPagedResponse))
 		}
 	/**
 	case TicketAttachmentsPagedResponse:

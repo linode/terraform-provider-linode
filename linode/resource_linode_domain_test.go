@@ -40,8 +40,9 @@ func TestAccLinodeDomain_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				ResourceName: resName,
-				ImportState:  true,
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

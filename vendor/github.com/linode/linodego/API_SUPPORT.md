@@ -216,6 +216,15 @@
   - [ ] `GET`
   - [ ] `POST`
 
+## Tags
+
+- `/tags/`
+  - [X] `GET`
+  - [X] `POST`
+- `/tags/$id`
+  - [X] `GET`
+  - [X] `DELETE`
+
 ## Account
 
 ### Events
