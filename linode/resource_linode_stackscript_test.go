@@ -35,8 +35,9 @@ func TestAccLinodeStackscript_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				ResourceName: resName,
-				ImportState:  true,
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -73,8 +74,9 @@ func TestAccLinodeStackscript_update(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName: resName,
-				ImportState:  true,
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -119,8 +121,9 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName: resName,
-				ImportState:  true,
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
