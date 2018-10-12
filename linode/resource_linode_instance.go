@@ -157,7 +157,7 @@ func resourceLinodeInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.",
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 			},
 			"specs": &schema.Schema{
 				Computed: true,
@@ -230,7 +230,8 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"backups": &schema.Schema{
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
+				MaxItems:    1,
 				Description: "Information about this Linode's backups status.",
 				Computed:    true,
 				Elem: &schema.Resource{
@@ -241,9 +242,11 @@ func resourceLinodeInstance() *schema.Resource {
 							Description: "If this Linode has the Backup service enabled.",
 						},
 						"schedule": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
+							MaxItems: 1,
 							Computed: true,
 							Elem: &schema.Resource{
+								// TODO(displague) these fields are updatable via PUT to instance
 								Schema: map[string]*schema.Schema{
 									"day": {
 										Type:        schema.TypeString,
@@ -736,6 +739,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		ips = append(ips, ip.String())
 	}
 	d.Set("ipv4", ips)
+	d.Set("ipv6", instance.IPv6)
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
@@ -761,11 +765,16 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("status", instance.Status)
 	d.Set("type", instance.Type)
 	d.Set("region", instance.Region)
-
+	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
+	flatBackups := flattenInstanceBackups(*instance)
+
+	if err := d.Set("backups", flatBackups); err != nil {
+		return fmt.Errorf("Error setting Linode Instance backups: %s", err)
+	}
 
 	if err := d.Set("specs", flatSpecs); err != nil {
 		return fmt.Errorf("Error setting Linode Instance specs: %s", err)
@@ -907,17 +916,28 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	updateOpts := linodego.InstanceUpdateOptions{}
+	doUpdate := false
+
+	if _, watchdogEnabledOk := d.GetOk("watchdog_enabled"); watchdogEnabledOk {
+		doUpdate = true
+		watchdogEnabled := d.Get("watchdog_enabled").(bool)
+		updateOpts.WatchdogEnabled = &watchdogEnabled
+	}
+
 	if _, alertsOk := d.GetOk("alerts.0"); alertsOk {
-		updateOpts := linodego.InstanceUpdateOptions{
-			Alerts: &linodego.InstanceAlert{},
-		}
+		doUpdate = true
+		updateOpts.Alerts = &linodego.InstanceAlert{}
+
 		// TODO(displague) only set specified alerts
 		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
 		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
 		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.transfer_quota").(int)
+	}
 
+	if doUpdate {
 		instance, err = client.UpdateInstance(context.Background(), instance.ID, updateOpts)
 		if err != nil {
 			return err
