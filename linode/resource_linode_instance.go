@@ -126,7 +126,6 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				StateFunc:     sshKeyState,
-				PromoteSingle: true,
 				ConflictsWith: []string{"disk", "config"},
 			},
 			"root_pass": &schema.Schema{

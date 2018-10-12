@@ -43,9 +43,10 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image"},
 			},
 		},
 	})
@@ -124,9 +125,10 @@ func TestAccLinodeInstance_configPair(t *testing.T) {
 			},
 
 			resource.TestStep{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"boot_config_label"},
 			},
 		},
 	})
@@ -341,9 +343,10 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 			},
 
 			resource.TestStep{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"boot_config_label"},
 			},
 		},
 	})
@@ -553,9 +556,10 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
@@ -572,9 +576,10 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeInstanceWithMultipleConfigsAllUpdated(instanceName, publicKeyMaterial),
@@ -1208,7 +1213,7 @@ resource "linode_instance" "foobar" {
 	region = "us-east"
 	root_pass = "terraform-test"
 	swap_size = 256
-	authorized_keys = "%s"
+	authorized_keys = ["%s"]
 }`, instance, pubkey)
 }
 
@@ -1594,7 +1599,7 @@ resource "linode_instance" "foobar" {
 	region = "us-east"
 	root_pass = "terraform-test"
 	swap_size = 512
-	authorized_keys = "%s"
+	authorized_keys = ["%s"]
 	group = "tf_test"
 }`, instance, pubkey)
 }
@@ -1608,7 +1613,7 @@ resource "linode_instance" "foobar" {
 	region = "us-east"
 	root_pass = "terraform-test"
 	swap_size = 512
-	authorized_keys = "%s"
+	authorized_keys = ["%s"]
 	group = "tf_test"
 }`, instance, pubkey)
 }
@@ -1622,7 +1627,7 @@ resource "linode_instance" "foobar" {
 	region = "us-east"
 	root_pass = "terraform-test"
 	swap_size = 256
-	authorized_keys = "%s"
+	authorized_keys = ["%s"]
 	group = "tf_test"
 }`, instance, pubkey)
 }
@@ -1637,7 +1642,7 @@ resource "linode_instance" "foobar" {
 	region = "us-east"
 	root_pass = "terraform-test"
 	swap_size = 256
-	authorized_keys = "%s"
+	authorized_keys = ["%s"]
 	group = "tf_test"
 }`, instance, pubkey)
 }
@@ -1652,7 +1657,7 @@ resource "linode_instance" "foobar" {
 	root_pass = "terraform-test"
 	swap_size = 256
 	private_ip = true
-	authorized_keys = "%s"
+	authorized_keys = ["%s"]
 	group = "tf_test"
 }`, instance, pubkey)
 }
