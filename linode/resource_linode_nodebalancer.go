@@ -73,19 +73,16 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 						"in": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Description: "The total transfer, in MB, used by this NodeBalancer this month",
-							Optional:    true,
 							Computed:    true,
 						},
 						"out": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Description: "The total inbound transfer, in MB, used for this NodeBalancer this month",
-							Optional:    true,
 							Computed:    true,
 						},
 						"total": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Description: "The total outbound transfer, in MB, used for this NodeBalancer this month",
-							Optional:    true,
 							Computed:    true,
 						},
 					},

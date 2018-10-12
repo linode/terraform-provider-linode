@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -19,7 +20,7 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 		Delete: resourceLinodeNodeBalancerConfigDelete,
 		Exists: resourceLinodeNodeBalancerConfigExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceLinodeNodeBalancerConfigImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"nodebalancer_id": &schema.Schema{
@@ -171,6 +172,35 @@ func resourceLinodeNodeBalancerConfigExists(d *schema.ResourceData, meta interfa
 		return false, fmt.Errorf("Error getting Linode NodeBalancerConfig ID %s: %s", d.Id(), err)
 	}
 	return true, nil
+}
+
+func resourceLinodeNodeBalancerConfigImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if strings.Contains(d.Id(), ",") {
+		s := strings.Split(d.Id(), ",")
+		// Validate that this is an ID by making sure it can be converted into an int
+		_, err := strconv.Atoi(s[1])
+		if err != nil {
+			return nil, fmt.Errorf("invalid nodebalancer_config ID: %v", err)
+		}
+
+		nodebalancerID, err := strconv.Atoi(s[0])
+		if err != nil {
+			return nil, fmt.Errorf("invalid nodebalancer ID: %v", err)
+		}
+
+		d.SetId(s[1])
+		d.Set("nodebalancer_id", nodebalancerID)
+	}
+
+	err := resourceLinodeNodeBalancerConfigRead(d, meta)
+	if err != nil {
+		return nil, fmt.Errorf("unable to import %v as nodebalancer_config: %v", d.Id(), err)
+	}
+
+	results := make([]*schema.ResourceData, 0)
+	results = append(results, d)
+
+	return results, nil
 }
 
 func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface{}) error {

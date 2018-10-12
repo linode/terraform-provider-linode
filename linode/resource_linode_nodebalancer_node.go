@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -12,9 +13,6 @@ import (
 )
 
 func resourceLinodeNodeBalancerNode() *schema.Resource {
-	privateStart := 3232235520 // 192.168.0.0
-	privateEnd := 3232301055   // 192.168.255.255
-
 	return &schema.Resource{
 		Create: resourceLinodeNodeBalancerNodeCreate,
 		Read:   resourceLinodeNodeBalancerNodeRead,
@@ -22,7 +20,7 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 		Delete: resourceLinodeNodeBalancerNodeDelete,
 		Exists: resourceLinodeNodeBalancerNodeExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceLinodeNodeBalancerNodeImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"nodebalancer_id": &schema.Schema{
@@ -57,10 +55,9 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 				Computed:     true,
 			},
 			"address": &schema.Schema{
-				Type:         schema.TypeString,
-				Description:  "The private IP Address where this backend can be reached. This must be a private IP address.",
-				ValidateFunc: validation.CIDRNetwork(privateStart, privateEnd),
-				Required:     true,
+				Type:        schema.TypeString,
+				Description: "The private IP Address and port (IP:PORT) where this backend can be reached. This must be a private IP address.",
+				Required:    true,
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
@@ -130,6 +127,41 @@ func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}
 	d.Set("address", node.Address)
 	d.Set("status", node.Status)
 	return nil
+}
+
+func resourceLinodeNodeBalancerNodeImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if strings.Contains(d.Id(), ",") {
+		s := strings.Split(d.Id(), ",")
+		// Validate that this is an ID by making sure it can be converted into an int
+		_, err := strconv.Atoi(s[2])
+		if err != nil {
+			return nil, fmt.Errorf("invalid nodebalancer_node ID: %v", err)
+		}
+
+		configID, err := strconv.Atoi(s[1])
+		if err != nil {
+			return nil, fmt.Errorf("invalid config ID: %v", err)
+		}
+
+		nodebalancerID, err := strconv.Atoi(s[0])
+		if err != nil {
+			return nil, fmt.Errorf("invalid nodebalancer ID: %v", err)
+		}
+
+		d.SetId(s[2])
+		d.Set("nodebalancer_id", nodebalancerID)
+		d.Set("config_id", configID)
+	}
+
+	err := resourceLinodeNodeBalancerNodeRead(d, meta)
+	if err != nil {
+		return nil, fmt.Errorf("unable to import %v as nodebalancer_node: %v", d.Id(), err)
+	}
+
+	results := make([]*schema.ResourceData, 0)
+	results = append(results, d)
+
+	return results, nil
 }
 
 func resourceLinodeNodeBalancerNodeCreate(d *schema.ResourceData, meta interface{}) error {

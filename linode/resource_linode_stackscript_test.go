@@ -98,6 +98,7 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
 					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "script", "#!/bin/bash\necho hello\n"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.#", "0"),
 					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
@@ -109,7 +110,11 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "rev_note", "second"),
 					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "images.1", "linode/ubuntu16.04lts"),
-					resource.TestCheckResourceAttr(resName, "script", "#!/bin/bash\necho bye\n"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.#", "1"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.name", "hasudf"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.label", "a label"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.default", "a default"),
+					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.example", "an example"),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s", stackscriptName)),
 				),
 			},
@@ -210,6 +215,7 @@ resource "linode_stackscript" "foobar" {
 	label = "%s"
 	script = <<EOF
 #!/bin/bash
+# <UDF name="hasudf" label="a label" example="an example" default="a default">
 echo bye
 EOF
 	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
