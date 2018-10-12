@@ -10,7 +10,7 @@ Terraform Provider
 Maintainers
 -----------
 
-This work-in-progress provider plugin is maintained by the Marques Johansson (for now).
+This provider plugin is maintained by Linode.
 
 Requirements
 ------------
@@ -31,7 +31,7 @@ provider "linode" {
 Building The Provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-linode`
+Clone this repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-linode`
 
 ```sh
 mkdir -p $GOPATH/src/github.com/terraform-providers
@@ -58,6 +58,7 @@ See the docs included in the website/docs directory:
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer.html.md>
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_config.html.md>
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_node.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/stackscript.html.md>
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/volume.html.md>
 
 *The following links will not work until this repo is accepted by terraform-providers*
