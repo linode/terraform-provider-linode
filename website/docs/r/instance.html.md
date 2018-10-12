@@ -64,7 +64,7 @@ resource "linode_instance" "web" {
     }
   }
 
-  boot_config = "boot_config"
+  boot_config_label = "boot_config"
 }
 
 resource "linode_volume" "web_volume" {
