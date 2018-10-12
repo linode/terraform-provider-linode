@@ -71,7 +71,7 @@ resource "linode_domain" "foo-com" {
   expire_sec  = "300"
   refresh_sec = "300"
   domain      = "${random_pet.project.id}example.com"
-  type = "master"
+  type        = "master"
 
   # group              = "foo"
   # interesting that the bare address "@" could be set this way..
@@ -109,29 +109,35 @@ resource "linode_domain_record" "CNAME-www" {
 }
 
 resource "linode_instance" "nginx" {
-  count  = "${var.nginx_count}"
-  label  = "${random_pet.project.id}-nginx-${count.index + 1}"
+  count = "${var.nginx_count}"
+  label = "${random_pet.project.id}-nginx-${count.index + 1}"
 
-  group              = "foo"
-  region             = "${linode_nodebalancer.foo-nb.region}"
-  type               = "g6-nanode-1"
-  private_ip = true
+  group             = "foo"
+  region            = "${linode_nodebalancer.foo-nb.region}"
+  type              = "g6-nanode-1"
+  private_ip        = true
   boot_config_label = "nginx"
-  
+
   disk {
-    label = "boot"
-    size = 3000
-    authorized_keys            = ["${chomp(file(var.ssh_key))}"]
-    root_pass      = "${random_string.password.result}"
-    image  = "linode/ubuntu18.04"
+    label           = "boot"
+    size            = 3000
+    authorized_keys = ["${chomp(file(var.ssh_key))}"]
+    root_pass       = "${random_string.password.result}"
+    image           = "linode/ubuntu18.04"
   }
 
   config {
-    label = "nginx"
+    label  = "nginx"
     kernel = "linode/latest-64bit"
+
     devices {
-      sda = { disk_label = "boot" },
-      sdb = { volume_id = "${element(linode_volume.nginx-vol.*.id, count.index)}" }
+      sda = {
+        disk_label = "boot"
+      }
+
+      sdb = {
+        volume_id = "${element(linode_volume.nginx-vol.*.id, count.index)}"
+      }
     }
   }
 
@@ -154,10 +160,10 @@ resource "linode_instance" "nginx" {
 }
 
 resource "linode_volume" "nginx-vol" {
-  count     = "${var.nginx_count}"
-  region    = "${linode_nodebalancer.foo-nb.region}"
-  size      = 10
-  label     = "${random_pet.project.id}-vol-${count.index}"
+  count  = "${var.nginx_count}"
+  region = "${linode_nodebalancer.foo-nb.region}"
+  size   = 10
+  label  = "${random_pet.project.id}-vol-${count.index}"
 }
 
 resource "linode_volume" "simple-vol-lateattachment" {
@@ -186,8 +192,9 @@ resource "linode_volume" "simple-vol-lateattachment" {
 }
 
 resource "linode_stackscript" "install-nginx" {
-  label = "install-nginx"
+  label       = "install-nginx"
   description = "Update system software and install nginx."
+
   script = <<EOF
 #!/bin/bash
 # <UDF name="package" label="System Package to Install" example="nginx" default="">
@@ -196,20 +203,22 @@ apt-get -q update
 echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections
 apt-get -q -y install unattended-upgrades $PACKAGE
 EOF
-	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+
+  images   = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
   rev_note = "initial script"
 }
 
 resource "linode_instance" "simple" {
-  image  = "linode/ubuntu18.04"
-  label  = "${random_pet.project.id}-simple"
+  image = "linode/ubuntu18.04"
+  label = "${random_pet.project.id}-simple"
 
-  group              = "foo"
-  region             = "${var.region}"
-  type               = "g6-nanode-1"
-  authorized_keys    = ["${chomp(file(var.ssh_key))}"]
-  root_pass      = "${random_string.password.result}"
-  stackscript_id = "${linode_stackscript.install-nginx.id}"
+  group           = "foo"
+  region          = "${var.region}"
+  type            = "g6-nanode-1"
+  authorized_keys = ["${chomp(file(var.ssh_key))}"]
+  root_pass       = "${random_string.password.result}"
+  stackscript_id  = "${linode_stackscript.install-nginx.id}"
+
   stackscript_data = {
     "package" = "nginx"
   }
