@@ -26,6 +26,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"linode_image":               resourceLinodeImage(),
 			"linode_instance":            resourceLinodeInstance(),
 			"linode_domain":              resourceLinodeDomain(),
 			"linode_domain_record":       resourceLinodeDomainRecord(),
