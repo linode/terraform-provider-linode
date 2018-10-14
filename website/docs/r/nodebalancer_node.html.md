@@ -80,3 +80,11 @@ This resource exports the following attributes:
 * `config_id` - The ID of the NodeBalancerConfig this NodeBalancerNode is attached to.
 
 * `nodebalancer_id` - The ID of the NodeBalancer this NodeBalancerNode is attached to.
+
+## Import
+
+NodeBalancer Nodes can be imported using the NodeBalancer `nodebalancer_id` followed by the NodeBalancer Config `config_id` followed by the NodeBalancer Node `id`, separated by a comma, e.g.
+
+```sh
+terraform import linode_nodebalancer_node.https-foobar-1 1234567,7654321,9999999
+```

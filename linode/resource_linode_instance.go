@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -24,38 +25,42 @@ func resourceLinodeInstance() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"image": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeString,
+				Description:   "An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"disk", "config", "backup_id"},
 			},
 			"backup_id": &schema.Schema{
 				Type:          schema.TypeInt,
 				Description:   "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"image"},
+				ConflictsWith: []string{"image", "disk", "config"},
 			},
 			"stackscript_id": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:          schema.TypeInt,
+				Description:   "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"disk", "config"},
 			},
 			"stackscript_data": &schema.Schema{
 				Type: schema.TypeMap,
 				Elem: &schema.Schema{Type: schema.TypeString},
 
-				Description: "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
-				Optional:    true,
-				ForceNew:    true,
-				Sensitive:   true,
+				Description:   "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
+				Optional:      true,
+				ForceNew:      true,
+				Sensitive:     true,
+				ConflictsWith: []string{"disk", "config"},
 			},
 			"label": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringLenBetween(3, 50),
 			},
 			"group": &schema.Schema{
 				Type:        schema.TypeString,
@@ -121,22 +126,24 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				StateFunc:     sshKeyState,
-				PromoteSingle: true,
+				ConflictsWith: []string{"disk", "config"},
 			},
 			"root_pass": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The password that will be initialially assigned to the 'root' user account.",
-				Sensitive:   true,
-				Optional:    true,
-				ForceNew:    true,
-				StateFunc:   rootPasswordState,
+				Type:          schema.TypeString,
+				Description:   "The password that will be initialially assigned to the 'root' user account.",
+				Sensitive:     true,
+				Optional:      true,
+				ForceNew:      true,
+				StateFunc:     rootPasswordState,
+				ConflictsWith: []string{"disk", "config"},
 			},
 			"swap_size": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
-				Optional:    true,
-				Computed:    true,
-				Default:     nil,
+				Type:          schema.TypeInt,
+				Description:   "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
+				Optional:      true,
+				Computed:      true,
+				Default:       nil,
+				ConflictsWith: []string{"disk", "config"},
 			},
 			"backups_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -149,7 +156,7 @@ func resourceLinodeInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.",
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 			},
 			"specs": &schema.Schema{
 				Computed: true,
@@ -222,43 +229,44 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"backups": &schema.Schema{
-				Computed:    true,
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
+				MaxItems:    1,
 				Description: "Information about this Linode's backups status.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
 							Type:        schema.TypeBool,
-							Required:    true,
+							Computed:    true,
 							Description: "If this Linode has the Backup service enabled.",
 						},
 						"schedule": {
-							Type: schema.TypeSet,
+							Type:     schema.TypeList,
+							MaxItems: 1,
+							Computed: true,
 							Elem: &schema.Resource{
+								// TODO(displague) these fields are updatable via PUT to instance
 								Schema: map[string]*schema.Schema{
 									"day": {
 										Type:        schema.TypeString,
 										Description: "The day ('Sunday'-'Saturday') of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as 'Scheduling' until the day is automatically selected.",
-										Required:    true,
+										Computed:    true,
 									},
 									"window": {
 										Type:        schema.TypeString,
 										Description: "The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.",
-										Required:    true,
+										Computed:    true,
 									},
 								},
 							},
-							Required: true,
 						},
 					},
 				},
 			},
 			"config": &schema.Schema{
-				Optional:    true,
-				Description: "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
-				Type:        schema.TypeList,
-				// Computed:      true,
-				// ComputedWhen:  []string{"image", "backup_id"},
+				Optional:      true,
+				Description:   "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
+				Type:          schema.TypeList,
 				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, hasImage := d.GetOk("image")
@@ -267,9 +275,10 @@ func resourceLinodeInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
-							Type:        schema.TypeString,
-							Description: "The Config's label for display purposes.  Also used by `boot_config_label`.",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "The Config's label for display purposes.  Also used by `boot_config_label`.",
+							Required:     true,
+							ValidateFunc: validation.StringLenBetween(1, 48),
 						},
 						"helpers": {
 							Type:        schema.TypeList,
@@ -526,16 +535,18 @@ func resourceLinodeInstance() *schema.Resource {
 							Description: "A Kernel ID to boot a Linode with. Default is based on image choice. (examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
 						},
 						"run_level": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Defines the state of your Linode after booting. Defaults to default.",
-							Default:     "default",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Defines the state of your Linode after booting. Defaults to default.",
+							Default:      "default",
+							ValidateFunc: validation.StringInSlice([]string{"default", "single", "binbash"}, false),
 						},
 						"virt_mode": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Controls the virtualization mode. Defaults to paravirt.",
-							Default:     "paravirt",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Controls the virtualization mode. Defaults to paravirt.",
+							Default:      "paravirt",
+							ValidateFunc: validation.StringInSlice([]string{"paravirt", "fullvirt"}, false),
 						},
 						"root_device": {
 							Type:        schema.TypeString,
@@ -558,9 +569,7 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"disk": &schema.Schema{
-				Optional: true,
-				//Computed:      true,
-				//ComputedWhen:  []string{"image", "backup_id"},
+				Optional:      true,
 				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
 				Type:          schema.TypeList,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -570,9 +579,10 @@ func resourceLinodeInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
-							Type:        schema.TypeString,
-							Description: "The disks label, which acts as an identifier in Terraform.",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "The disks label, which acts as an identifier in Terraform.",
+							Required:     true,
+							ValidateFunc: validation.StringLenBetween(1, 48),
 						},
 						"size": {
 							Type:        schema.TypeInt,
@@ -580,16 +590,16 @@ func resourceLinodeInstance() *schema.Resource {
 							Required:    true,
 						},
 						"id": {
-							Type:         schema.TypeInt,
-							Computed:     true,
-							ComputedWhen: []string{"label"},
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 						"filesystem": {
-							Type:        schema.TypeString,
-							Description: "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
-							Optional:    true,
-							ForceNew:    true,
-							Computed:    true,
+							Type:         schema.TypeString,
+							Description:  "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
+							Optional:     true,
+							ForceNew:     true,
+							Computed:     true,
+							ValidateFunc: validation.StringInSlice([]string{"raw", "swap", "ext3", "ext4", "initrd"}, false),
 						},
 						"read_only": {
 							Type:        schema.TypeBool,
@@ -656,12 +666,26 @@ func resourceLinodeInstance() *schema.Resource {
 								// the API does not return this field for existing disks, so must be ignored for diffs/updates
 								return !d.HasChange("label")
 							},
-							StateFunc: rootPasswordState,
+							ValidateFunc: validation.StringLenBetween(6, 128),
+							StateFunc:    rootPasswordState,
 						},
 					},
 				},
 			},
 		},
+	}
+}
+
+func validateAll(validators ...schema.SchemaValidateFunc) schema.SchemaValidateFunc {
+	var allWs []string
+	var allErrors []error
+	return func(i interface{}, k string) ([]string, []error) {
+		for _, validator := range validators {
+			ws, errors := validator(i, k)
+			allWs = append(allWs, ws...)
+			allErrors = append(allErrors, errors...)
+		}
+		return allWs, allErrors
 	}
 }
 
@@ -714,6 +738,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 		ips = append(ips, ip.String())
 	}
 	d.Set("ipv4", ips)
+	d.Set("ipv6", instance.IPv6)
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
@@ -739,11 +764,16 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("status", instance.Status)
 	d.Set("type", instance.Type)
 	d.Set("region", instance.Region)
-
+	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
+	flatBackups := flattenInstanceBackups(*instance)
+
+	if err := d.Set("backups", flatBackups); err != nil {
+		return fmt.Errorf("Error setting Linode Instance backups: %s", err)
+	}
 
 	if err := d.Set("specs", flatSpecs); err != nil {
 		return fmt.Errorf("Error setting Linode Instance specs: %s", err)
@@ -892,17 +922,28 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	updateOpts := linodego.InstanceUpdateOptions{}
+	doUpdate := false
+
+	if _, watchdogEnabledOk := d.GetOk("watchdog_enabled"); watchdogEnabledOk {
+		doUpdate = true
+		watchdogEnabled := d.Get("watchdog_enabled").(bool)
+		updateOpts.WatchdogEnabled = &watchdogEnabled
+	}
+
 	if _, alertsOk := d.GetOk("alerts.0"); alertsOk {
-		updateOpts := linodego.InstanceUpdateOptions{
-			Alerts: &linodego.InstanceAlert{},
-		}
+		doUpdate = true
+		updateOpts.Alerts = &linodego.InstanceAlert{}
+
 		// TODO(displague) only set specified alerts
 		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
 		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
 		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.transfer_quota").(int)
+	}
 
+	if doUpdate {
 		instance, err = client.UpdateInstance(context.Background(), instance.ID, updateOpts)
 		if err != nil {
 			return err

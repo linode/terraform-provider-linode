@@ -57,8 +57,9 @@ func TestAccLinodeVolume_basic(t *testing.T) {
 			},
 
 			resource.TestStep{
-				ResourceName: resName,
-				ImportState:  true,
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -150,9 +151,10 @@ func TestAccLinodeVolume_attached(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName: "linode_volume.foobar",
-				ImportState:  true,
-				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
+				ResourceName:      "linode_volume.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 		},
 	})
@@ -177,9 +179,10 @@ func TestAccLinodeVolume_detached(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName: "linode_volume.foobar",
-				ImportState:  true,
-				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
+				ResourceName:      "linode_volume.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
@@ -188,9 +191,10 @@ func TestAccLinodeVolume_detached(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName: "linode_volume.foobar",
-				ImportState:  true,
-				Check:        resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
+				ResourceName:      "linode_volume.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				Check:             resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 			},
 		},
 	})
@@ -222,14 +226,16 @@ func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName: "linode_instance.foobar",
-				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
-				ImportState:  true,
+				ResourceName:      "linode_instance.foobar",
+				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			resource.TestStep{
-				ResourceName: "linode_instance.foobaz",
-				Check:        resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
-				ImportState:  true,
+				ResourceName:      "linode_instance.foobaz",
+				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

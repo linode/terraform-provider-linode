@@ -74,6 +74,7 @@ type Client struct {
 	Notifications         *Resource
 	Profile               *Resource
 	Managed               *Resource
+	Tags                  *Resource
 }
 
 func init() {
@@ -175,6 +176,7 @@ func NewClient(hc *http.Client) (client Client) {
 		invoiceItemsName:          NewResource(&client, invoiceItemsName, invoiceItemsEndpoint, true, InvoiceItem{}, InvoiceItemsPagedResponse{}),
 		profileName:               NewResource(&client, profileName, profileEndpoint, false, nil, nil), // really?
 		managedName:               NewResource(&client, managedName, managedEndpoint, false, nil, nil), // really?
+		tagsName:                  NewResource(&client, tagsName, tagsEndpoint, false, Tag{}, TagsPagedResponse{}),
 	}
 
 	client.resources = resources
@@ -209,5 +211,6 @@ func NewClient(hc *http.Client) (client Client) {
 	client.Invoices = resources[invoicesName]
 	client.Profile = resources[profileName]
 	client.Managed = resources[managedName]
+	client.Tags = resources[tagsName]
 	return
 }

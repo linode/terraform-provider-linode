@@ -41,6 +41,7 @@ const (
 	invoiceItemsName          = "invoiceitems"
 	profileName               = "profile"
 	managedName               = "managed"
+	tagsName                  = "tags"
 	// notificationsName = "notifications"
 
 	stackscriptsEndpoint          = "linode/stackscripts"
@@ -78,6 +79,7 @@ const (
 	invoiceItemsEndpoint        = "account/invoices/{{ .ID }}/items"
 	profileEndpoint             = "profile"
 	managedEndpoint             = "managed"
+	tagsEndpoint                = "tags"
 	// notificationsEndpoint       = "account/notifications"
 )
 

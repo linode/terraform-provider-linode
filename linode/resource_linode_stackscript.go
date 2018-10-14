@@ -87,33 +87,33 @@ func resourceLinodeStackscript() *schema.Resource {
 			},
 			"user_defined_fields": &schema.Schema{
 				Description: "This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment.",
-				Computed:    true,
 				Type:        schema.TypeSet,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"name": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"example": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"one_of": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"many_of": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"default": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 					},
 				},

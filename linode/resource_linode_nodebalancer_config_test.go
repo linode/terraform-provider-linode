@@ -25,8 +25,6 @@ func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
 		CheckDestroy:              testAccCheckLinodeNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				//ImportState:       true,
-				//ImportStateVerify: true,
 				Config:       config,
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -53,6 +51,12 @@ func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
 					//resource.TestCheckNoResourceAttr(resName, "ssl_key"),
 					//resource.TestCheckNoResourceAttr(resName, "check_body"),
 				),
+			},
+			resource.TestStep{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccStateIDNodeBalancerConfig,
 			},
 		},
 	})
@@ -163,6 +167,27 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 
 	return nil
 }
+
+func testAccStateIDNodeBalancerConfig(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_nodebalancer_config" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing nodebalancer_id %v to int", rs.Primary.Attributes["nodebalancer_id"])
+		}
+		return fmt.Sprintf("%d,%d", nodebalancerID, id), nil
+	}
+
+	return "", fmt.Errorf("Error finding linode_nodebalancer_config")
+}
+
 func testAccCheckLinodeNodeBalancerConfigBasic(nodebalancer string) string {
 	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + `
 resource "linode_nodebalancer_config" "foofig" {

@@ -26,12 +26,6 @@ func TestAccLinodeNodeBalancerNode_basic(t *testing.T) {
 		CheckDestroy:              testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				ResourceName: resName,
-				// ImportState:  true,
-				// ImportStateVerify: true,
-				Config: config,
-			},
-			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNodeExists,
@@ -42,6 +36,12 @@ func TestAccLinodeNodeBalancerNode_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "mode", "accept"),
 					resource.TestCheckResourceAttr(resName, "weight", "50"),
 				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccStateIDNodeBalancerNode,
 			},
 		},
 	})
@@ -58,7 +58,7 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNodeExists,
@@ -67,7 +67,7 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "weight", "50"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeNodeBalancerNodeUpdates(nodeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNodeExists,
@@ -75,6 +75,12 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "address", "192.168.200.1:8080"),
 					resource.TestCheckResourceAttr(resName, "weight", "200"),
 				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccStateIDNodeBalancerNode,
 			},
 		},
 	})
@@ -155,6 +161,31 @@ func testAccCheckLinodeNodeBalancerNodeDestroy(s *terraform.State) error {
 
 	return nil
 }
+
+func testAccStateIDNodeBalancerNode(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_nodebalancer_node" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing nodebalancer_id %v to int", rs.Primary.Attributes["nodebalancer_id"])
+		}
+		configID, err := strconv.Atoi(rs.Primary.Attributes["config_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing config_id %v to int", rs.Primary.Attributes["config_id"])
+		}
+		return fmt.Sprintf("%d,%d,%d", nodebalancerID, configID, id), nil
+	}
+
+	return "", fmt.Errorf("Error finding linode_nodebalancer_config")
+}
+
 func testAccCheckLinodeNodeBalancerNodeBasic(label string) string {
 	return testAccCheckLinodeNodeBalancerConfigBasic(label) + fmt.Sprintf(`
 resource "linode_nodebalancer_node" "foonode" {

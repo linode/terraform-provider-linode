@@ -8,10 +8,13 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeDomainRecord() *schema.Resource {
+	validDomainSeconds := domainSecondsValidator()
+
 	return &schema.Resource{
 		Create: resourceLinodeDomainRecordCreate,
 		Read:   resourceLinodeDomainRecordRead,
@@ -29,20 +32,23 @@ func resourceLinodeDomainRecord() *schema.Resource {
 				ForceNew:    true,
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The name of this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the subdomain being associated with an IP address.",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "The name of this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the subdomain being associated with an IP address.",
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(0, 100),
 			},
 			"record_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "The type of Record this is in the DNS system. For example, A records associate a domain name with an IPv4 address, and AAAA records associate a domain name with an IPv6 address.",
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "The type of Record this is in the DNS system. For example, A records associate a domain name with an IPv4 address, and AAAA records associate a domain name with an IPv6 address.",
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"A", "AAAA", "NS", "MX", "CNAME", "TXT", "SRV", "PTR", "CAA"}, false),
 			},
 			"ttl_sec": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Description:  "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				ValidateFunc: validDomainSeconds,
+				Optional:     true,
 			},
 			"target": &schema.Schema{
 				Type:        schema.TypeString,
@@ -50,9 +56,10 @@ func resourceLinodeDomainRecord() *schema.Resource {
 				Required:    true,
 			},
 			"priority": &schema.Schema{
-				Type:        schema.TypeInt,
-				Description: "The priority of the target host. Lower values are preferred.",
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Description:  "The priority of the target host. Lower values are preferred.",
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, 255),
 			},
 			"protocol": &schema.Schema{
 				Type:        schema.TypeString,
