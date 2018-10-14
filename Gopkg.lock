@@ -34,7 +34,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:999e9c7ec2c2f64b39389000edf98973600e84bb2e33d4edc998d98d5cd26bac"
+  digest = "1:bc2410ad4d4fb637698c3c71d514cdf38a43a8c5f83c3c415af1925e426abdc5"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -71,8 +71,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "4b4fb865e4e4a972645dba0b9677e623dd83a8a8"
-  version = "v1.15.53"
+  revision = "bf8067ceb6e7f51e150c218972dccfeeed892b85"
+  version = "v1.15.54"
 
 [[projects]]
   branch = "master"
@@ -308,7 +308,7 @@
   name = "github.com/hashicorp/yamux"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7221087c3d281fda5f794e28c2ea4c6e4d5c4558"
+  revision = "2f1d1f20f75d5404f53b9edf6b53ed5505508675"
 
 [[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
@@ -319,11 +319,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d3a49d8b5158ec26260a1a3fedac6e77caa11cd3a8eeacb01934d66434bb0825"
+  digest = "1:91d575af2c66c0d4cd04995b2190cc53c6e4f471541ce4aa4e8db3f90fc16f08"
   name = "github.com/linode/linodego"
   packages = ["."]
   pruneopts = "UT"
-  revision = "82e18ac40277d43a10e6e28686bf55758e8a052c"
+  revision = "cfc619fac7077e46d3c09990f133dfaf31138a67"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -457,7 +457,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2f8c72388ed6b6400f6ef4b2ba0c57aeaac496e8752cfe4b6e2d33c59c7d4d40"
+  digest = "1:cb5b34ebe1613e1f8676862eb7ebb04c72cbacc7ffd96295f126de1678ab2d2b"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -479,7 +479,7 @@
     "ssh",
   ]
   pruneopts = "UT"
-  revision = "7c1a557ab941a71c619514f229f0b27ccb0c27cf"
+  revision = "a92615f3c49003920a58dedcf32cf55022cefb8d"
 
 [[projects]]
   branch = "master"
