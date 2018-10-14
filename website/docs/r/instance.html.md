@@ -106,9 +106,9 @@ The following arguments are supported:
 
 Just as the Linode API provides, these arguments are for the most common provisioning use case, a single data disk, a single swap disk, and a single config.  These arguments are not compatible with `disk` and `config` lists, described later.
 
-* `authorized_keys` - (Required) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+* `authorized_keys` - (Required) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *Changing `authorized_keys` forces the creation of a new Linode Instance.*
 
-* `root_pass` - (Required) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+* `root_pass` - (Optional) The initial password for the `root` user account. *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
 * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, and `linode/arch`. *Changing `image` forces the creation of a new Linode Instance.*
 
@@ -142,9 +142,9 @@ By specifying the `disk` and `config` arguments for a Linode instance, it is pos
 
   * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, and `linode/arch`. *Changing `image` forces the creation of a new Linode Instance.*
 
-  * `authorized_keys` - (Required with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+  * `authorized_keys` - (Required with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *Changing `authorized_keys` forces the creation of a new Linode Instance.*
 
-  * `root_pass` - (Required with `image`) The initial password for the `root` user account. *Changing `ssh_key` forces the creation of a new Linode Instance.*
+  * `root_pass` - (Optional with `image`) The initial password for the `root` user account. *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
   * `stackscript_id` - (Optional with `image`) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *Changing `stackscript_id` forces the creation of a new Linode Instance.*
 
