@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
@@ -22,22 +23,64 @@ func resourceLinodeImage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"label": {
 				Type:        schema.TypeString,
-				Description: "The label of the Linode Image.",
+				Description: "A short description of the Image. Labels cannot contain special characters.",
 				Required:    true,
 			},
 			"disk_id": {
 				Type:        schema.TypeInt,
-				Description: "The Disk ID to base the Image on.",
+				Description: "The ID of the Linode Disk that this Image will be created from.",
 				Required:    true,
+				ForceNew:    true,
+			},
+			"linode_id": {
+				Type:        schema.TypeInt,
+				Description: "The ID of the Linode that this Image will be created from.",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"description": {
 				Type:        schema.TypeString,
-				Description: "A text description of the Image.",
+				Description: "A detailed description of this Image.",
 				Optional:    true,
 			},
-			"image_id": {
+			"created": {
+				Type:        schema.TypeString,
+				Description: "When this Image was created.",
+				Computed:    true,
+			},
+			"created_by": {
+				Type:        schema.TypeString,
+				Description: "The name of the User who created this Image.",
+				Computed:    true,
+			},
+			"deprecated": {
+				Type:        schema.TypeBool,
+				Description: "Whether or not this Image is deprecated. Will only be True for deprecated public Images.",
+				Computed:    true,
+			},
+			"is_public": {
+				Type:        schema.TypeBool,
+				Description: "True if the Image is public.",
+				Computed:    true,
+			},
+			"size": {
 				Type:        schema.TypeInt,
-				Description: "The ID of the Image.",
+				Description: "The minimum size this Image needs to deploy. Size is in MB.",
+				Computed:    true,
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Description: "How the Image was created. 'Manual' Images can be created at any time. 'Automatic' images are created automatically from a deleted Linode.",
+				Computed:    true,
+			},
+			"expiry": {
+				Type:        schema.TypeString,
+				Description: "Only Images created automatically (from a deleted Linode; type=automatic) will expire.",
+				Computed:    true,
+			},
+			"vendor": {
+				Type:        schema.TypeString,
+				Description: "The upstream distribution vendor. Nil for private Images.",
 				Computed:    true,
 			},
 		},
@@ -74,6 +117,18 @@ func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("label", image.Label)
 	d.Set("description", image.Description)
+	d.Set("type", image.Type)
+	d.Set("size", image.Size)
+	d.Set("vendor", image.Vendor)
+	d.Set("created_by", image.CreatedBy)
+	d.Set("deprecated", image.Deprecated)
+	d.Set("is_public", image.IsPublic)
+	if image.Created != nil {
+		d.Set("created", image.Created.Format(time.RFC3339))
+	}
+	if image.Expiry != nil {
+		d.Set("expiry", image.Expiry.Format(time.RFC3339))
+	}
 
 	return nil
 }
@@ -85,8 +140,15 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Partial(true)
 
+	linodeID := d.Get("linode_id").(int)
+	diskID := d.Get("disk_id").(int)
+
+	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout("create").Seconds())); err != nil {
+		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
+	}
+
 	createOpts := linodego.ImageCreateOptions{
-		DiskID:      d.Get("disk_id").(int),
+		DiskID:      diskID,
 		Label:       d.Get("label").(string),
 		Description: d.Get("description").(string),
 	}
@@ -101,12 +163,15 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetPartial("description")
 	d.Partial(false)
 
+	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout("create").Seconds())); err != nil {
+		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
+	}
+
 	return resourceLinodeImageRead(d, meta)
 }
 
 func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
-	d.Partial(true)
 
 	image, err := client.GetImage(context.Background(), d.Id())
 	if err != nil {
@@ -137,8 +202,6 @@ func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceLinodeImageDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
-
-	log.Printf("[INFO] Detaching Linode Image %s for deletion", d.Id())
 
 	err := client.DeleteImage(context.Background(), d.Id())
 	if err != nil {
