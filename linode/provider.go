@@ -29,6 +29,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_instance_type": dataSourceLinodeInstanceType(),
 			"linode_region":        dataSourceLinodeRegion(),
 			"linode_image":         dataSourceLinodeImage(),
+			"linode_sshkey":        dataSourceLinodeSSHKey(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
