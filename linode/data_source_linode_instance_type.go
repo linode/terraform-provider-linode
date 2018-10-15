@@ -136,9 +136,6 @@ func dataSourceLinodeInstanceTypeRead(d *schema.ResourceData, meta interface{}) 
 					}},
 				}},
 			}})
-
-			d.Set("addons.0.backups.0.price.0.hourly", r.Addons.Backups.Price.Hourly)
-			d.Set("addons.0.backups.0.price.0.monthly", r.Addons.Backups.Price.Monthly)
 			return nil
 		}
 	}
