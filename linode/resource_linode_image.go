@@ -106,13 +106,14 @@ func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 
 	image, err := client.GetImage(context.Background(), d.Id())
 
+	found, err := resourceLinodeImageExists(d, meta)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Image ID %q from state because it no longer exists", d.Id())
-			d.SetId("")
-			return nil
-		}
 		return fmt.Errorf("Error finding the specified Linode Image: %s", err)
+	}
+	if !found {
+		log.Printf("[WARN] removing Image ID %q from state because it no longer exists", d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("label", image.Label)
@@ -165,6 +166,14 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout("create").Seconds())); err != nil {
 		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
+	}
+
+	found, err := resourceLinodeImageExists(d, meta)
+	if err != nil {
+		return fmt.Errorf("Error finding the newly created Linode Image: %s", err)
+	}
+	if !found {
+		return fmt.Errorf("The Linode Image failed to be created")
 	}
 
 	return resourceLinodeImageRead(d, meta)
