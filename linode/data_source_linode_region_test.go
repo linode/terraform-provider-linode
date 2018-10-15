@@ -11,7 +11,7 @@ func TestDataSourceLinodeRegion(t *testing.T) {
 	t.Parallel()
 
 	country := "us"
-	regionId := "us-east"
+	regionID := "us-east"
 	resourceName := "data.linode_region.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -19,20 +19,19 @@ func TestDataSourceLinodeRegion(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeRegion(regionId),
+				Config: testDataSourceLinodeRegion(regionID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "country", country),
-					resource.TestCheckResourceAttr(resourceName, "id", regionId),
-					resource.TestCheckResourceAttr(resourceName, "id", regionId),
+					resource.TestCheckResourceAttr(resourceName, "id", regionID),
 				),
 			},
 		},
 	})
 }
 
-func testDataSourceLinodeRegion(regionId string) string {
+func testDataSourceLinodeRegion(regionID string) string {
 	return fmt.Sprintf(`
 data "linode_region" "foobar" {
 	id = "%s"
-}`, regionId)
+}`, regionID)
 }
