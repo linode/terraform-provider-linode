@@ -13,7 +13,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func TestAccLinodeTemplateBasic(t *testing.T) {
+func TestAccLinodeTemplate_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_template.foobar"
@@ -24,15 +24,14 @@ func TestAccLinodeTemplateBasic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeTemplateDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeTemplateConfigBasic(templateName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeTemplateExists,
 					resource.TestCheckResourceAttr(resName, "label", templateName),
 				),
 			},
-
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -41,28 +40,29 @@ func TestAccLinodeTemplateBasic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeTemplateUpdate(t *testing.T) {
+func TestAccLinodeTemplate_update(t *testing.T) {
 	t.Parallel()
 
 	var templateName = acctest.RandomWithPrefix("tf_test")
+	resName := "linode_template.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeTemplateDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeTemplateConfigBasic(templateName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeTemplateExists,
-					resource.TestCheckResourceAttr("linode_template.foobar", "label", templateName),
+					resource.TestCheckResourceAttr(resName, "label", templateName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeTemplateConfigUpdates(templateName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeTemplateExists,
-					resource.TestCheckResourceAttr("linode_template.foobar", "label", fmt.Sprintf("%s_renamed", templateName)),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", templateName)),
 				),
 			},
 		},
