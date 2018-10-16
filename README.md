@@ -1,42 +1,43 @@
-Terraform Provider
-==================
+# Terraform Provider for Linode
 
 - Website: <https://www.terraform.io>
+- Documentation: <https://www.terraform.io/docs/providers/linode/index.html>
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
 <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
 
-Maintainers
------------
+## Maintainers
 
 This provider plugin is maintained by Linode.
 
-Requirements
-------------
+## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.10.x
-- [Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 0.10+
+- [Go](https://golang.org/doc/install) 1.11.0 or higher (to build the provider plugin)
 
-Usage
----------------------
+## Using the provider
 
-```tf
-# For example, restrict linode version in 0.1.x
-provider "linode" {
-  version = "~> 0.1"
-}
-```
+See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.  The [examples](https://github.com/terraform-providers/terraform-provider-linode/tree/master/examples) included in this repository demonstrate usage of many of the Linode provider resources.
 
-Building The Provider
----------------------
+Additional documentation and examples are provided in the Linode Guide, [Using Terraform to Provision Linode Environments](https://linode.com/docs/platform/how-to-build-your-infrastructure-using-terraform-and-linode/).
+
+## Development
+
+### Building the provider
+
+If you wish to build or contribute code to the provider, you'll first need [Git](https://git-scm.com/downloads) and [Go](http://www.golang.org) installed on your machine (version 1.8+ is *required*).
+
+You'll also need to correctly configure a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+
+To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 Clone this repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-linode`
 
 ```sh
 mkdir -p $GOPATH/src/github.com/terraform-providers
 cd $GOPATH/src/github.com/terraform-providers
-git clone https://github.com/displague/terraform-provider-linode.git
+git clone https://github.com/terraform-providers/terraform-provider-linode.git
 ```
 
 Enter the provider directory and build the provider
@@ -46,40 +47,7 @@ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-linode
 make build
 ```
 
-Using the provider
-----------------------
-
-See the docs included in the website/docs directory:
-
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/index.html.markdown>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/instance.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/domain.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/domain_record.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_config.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_node.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/stackscript.html.md>
-- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/volume.html.md>
-
-*The following links will not work until this repo is accepted by terraform-providers*
-
-See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.
-
-Additional documentation and examples are provided in the Linode Guide, [Using Terraform to Provision Linode Environments](https://linode.com/docs/platform/how-to-build-your-infrastructure-using-terraform-and-linode/).
-
-Developing the Provider
----------------------------
-
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.8+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
-
-To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
-
-```sh
-$ make bin
-...
-$ $GOPATH/bin/terraform-provider-linode
-...
-```
+### Testing the provider
 
 In order to test the provider, you can simply run `make test`.
 
@@ -87,7 +55,7 @@ In order to test the provider, you can simply run `make test`.
 make test
 ```
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
+In order to run the full suite of Acceptance tests, run `make testacc`. Acceptance testing will require the `LINODE_TOKEN` variable to be populated with a Linode APIv4 Token.  See [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) for more details.
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
@@ -95,6 +63,16 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 make testacc
 ```
 
+There are a number of useful flags and variables to aid in debugging.
+
+- `LINODE_DEBUG` - If truthy, this will emit all HTTP requests and responses to the Linode API.
+
+- `TF_LOG` - This instructs Terraform to emit trace level (and higher) logging messages.
+
+- `TF_SCHEMA_PANIC_ON_ERROR` - This forces Terraform to panic if a Schema Set command failed.
+
+These values (along with `LINODE_TOKEN`) can be placed in a `.env` file in the repository root to avoid repeating them on the command line.
+
 ```sh
-TESTARGS="-run TestAccLinodeVolume* -count=1"  make testacc
+LINODE_TOKEN="__YOUR_APIV4_TOKEN__" TESTARGS="-run TestAccLinodeVolume -count=1"  make testacc
 ```
