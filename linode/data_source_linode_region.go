@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -13,13 +14,15 @@ func dataSourceLinodeRegion() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"country": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The country where this Region resides.",
+				Computed:    true,
 			},
 			"id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The unique ID of this Region.",
+				Required:    true,
 			},
 		},
 	}

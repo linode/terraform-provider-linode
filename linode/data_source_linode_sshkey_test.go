@@ -2,13 +2,14 @@ package linode
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestDataSourceLinodeSSHKey(t *testing.T) {
+func TestAccDataSourceLinodeSSHKey(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf_test")
@@ -19,15 +20,23 @@ func TestDataSourceLinodeSSHKey(t *testing.T) {
 	resourceName := "data.linode_sshkey.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeSSHKey(label, publicKeyMaterial),
+				Config: testAccCheckLinodeSSHKeyConfigBasic(label, publicKeyMaterial),
+			},
+			{
+				Config: testAccCheckLinodeSSHKeyConfigBasic(label, publicKeyMaterial) + testDataSourceLinodeSSHKey(label, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "ssh_key", publicKeyMaterial),
 					resource.TestCheckResourceAttr(resourceName, "label", label),
 				),
+			},
+			{
+				Config:      testDataSourceLinodeSSHKey(label, publicKeyMaterial),
+				ExpectError: regexp.MustCompile(label + " was not found"),
 			},
 		},
 	})
@@ -39,9 +48,5 @@ data "linode_sshkey" "foobar" {
 	label = "%s"
 }
 
-resource "linode_sshkey" "foobar" {
-	label = "%s"
-	ssh_key = "%s"
-}
-`, label, label, sshKey)
+`, label)
 }

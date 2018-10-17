@@ -22,8 +22,7 @@ func dataSourceLinodeSSHKey() *schema.Resource {
 			"ssh_key": {
 				Type:        schema.TypeString,
 				Description: "The public SSH Key, which is used to authenticate to the root user of the Linodes you deploy.",
-				Required:    true,
-				ForceNew:    true,
+				Computed:    true,
 			},
 			"created": {
 				Type:        schema.TypeString,
@@ -56,7 +55,7 @@ func dataSourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	if sshkey.ID == 0 {
+	if sshkey.ID != 0 {
 		d.SetId(fmt.Sprintf("%d", sshkey.ID))
 		d.Set("label", sshkey.Label)
 		d.Set("ssh_key", sshkey.SSHKey)
