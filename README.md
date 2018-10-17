@@ -58,6 +58,7 @@ See the docs included in the website/docs directory:
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer.html.md>
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_config.html.md>
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/nodebalancer_node.html.md>
+- <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/sshkey.html.md>
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/stackscript.html.md>
 - <https://github.com/displague/terraform-provider-linode/blob/master/website/docs/r/volume.html.md>
 
