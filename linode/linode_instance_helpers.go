@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"log"
@@ -488,8 +489,14 @@ func createInstanceDisk(client linodego.Client, instance linodego.Instance, v in
 	if image, ok := disk["image"]; ok {
 		diskOpts.Image = image.(string)
 
-		if rootPass, ok := disk["root_pass"]; ok {
+		if rootPass, ok := disk["root_pass"]; ok && rootPass != "" {
 			diskOpts.RootPass = rootPass.(string)
+		} else {
+			var err error
+			diskOpts.RootPass, err = createRandomRootPassword()
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		if authorizedKeys, ok := disk["authorized_keys"]; ok {
@@ -668,6 +675,16 @@ func rootPasswordState(val interface{}) string {
 func hashString(key string) string {
 	hash := sha3.Sum512([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])
+}
+
+func createRandomRootPassword() (string, error) {
+	rawRootPass := make([]byte, 50)
+	_, err := rand.Read(rawRootPass)
+	if err != nil {
+		return "", fmt.Errorf("Failed to generate random password")
+	}
+	rootPass := base64.StdEncoding.EncodeToString(rawRootPass)
+	return rootPass, nil
 }
 
 // changeInstanceType resizes the Linode Instance

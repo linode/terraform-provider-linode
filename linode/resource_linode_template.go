@@ -111,7 +111,7 @@ func resourceLinodeTemplateUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	template, err := client.GetTemplate(int(id))
 	if err != nil {
-		return fmt.Errorf("Error fetching data about the current linode: %s", err)
+		return fmt.Errorf("Error fetching data about the current Linode Template: %s", err)
 	}
 
 	if d.HasChange("label") {
@@ -121,7 +121,7 @@ func resourceLinodeTemplateUpdate(d *schema.ResourceData, meta interface{}) erro
 		d.Set("label", template.Label)
 	}
 
-	return nil // resourceLinodeTemplateRead(d, meta)
+	return resourceLinodeTemplateRead(d, meta)
 }
 
 func resourceLinodeTemplateDelete(d *schema.ResourceData, meta interface{}) error {
