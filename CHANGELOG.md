@@ -1,16 +1,19 @@
-## 1.0.1 (Unreleased)
-## 1.0.0 (September 26, 2017)
+## 1.0.0 (Unreleased)
 
-* No changes from 0.1.1; just adjusting to [the new version numbering scheme](https://www.hashicorp.com/blog/hashicorp-terraform-provider-versioning/).
+FEATURES:
 
-## 0.1.1 (June 21, 2017)
+* **New Resource** `linode_instance` Initial work from @btobolaski!
+* **New Resource** `linode_domain`
+* **New Resource** `linode_domain_record`
+* **New Resource** `linode_image` Thanks @akerl!
+* **New Resource** `linode_nodebalancer`
+* **New Resource** `linode_nodebalancer_config`
+* **New Resource** `linode_nodebalancer_node`
+* **New Resource** `linode_stackscript`
+* **New Resource** `linode_sshkey`
+* **New Resource** `linode_volume`
 
-NOTES:
-
-Bumping the provider version to get around provider caching issues - still same functionality
-
-## 0.1.0 (June 21, 2017)
-
-NOTES:
-
-* Same functionality as that of Terraform 0.9.8. Repacked as part of [Provider Splitout](https://www.hashicorp.com/blog/upcoming-provider-changes-in-terraform-0-10/)
+* **New Data Resource** `linode_image` Thanks @cliedeman!
+* **New Data Resource** `linode_instance_type` Thanks @cliedeman!
+* **New Data Resource** `linode_region` Thanks @cliedeman!
+* **New Data Resource** `linode_sshkey`
