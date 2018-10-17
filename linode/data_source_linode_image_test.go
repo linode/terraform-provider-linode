@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestDataSourceLinodeImage(t *testing.T) {
+func TestAccDataSourceLinodeImage(t *testing.T) {
 	t.Parallel()
 
 	imageID := "linode/debian8"

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestDataSourceLinodeRegion(t *testing.T) {
+func TestAccDataSourceLinodeRegion(t *testing.T) {
 	t.Parallel()
 
 	country := "us"

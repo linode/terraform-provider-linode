@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestDataSourceLinodeInstanceType(t *testing.T) {
+func TestAccDataSourceLinodeInstanceType(t *testing.T) {
 	t.Parallel()
 
 	instanceTypeID := "g6-standard-2"
