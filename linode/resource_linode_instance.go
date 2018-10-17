@@ -857,6 +857,13 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
 		}
 		createOpts.RootPass = d.Get("root_pass").(string)
+		if createOpts.RootPass == "" {
+			var err error
+			createOpts.RootPass, err = createRandomRootPassword()
+			if err != nil {
+				return err
+			}
+		}
 		createOpts.Image = d.Get("image").(string)
 		createOpts.Booted = &boolTrue
 		createOpts.BackupID = d.Get("backup_id").(int)
