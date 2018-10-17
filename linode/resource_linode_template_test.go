@@ -3,6 +3,7 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -82,7 +83,7 @@ func testAccCheckLinodeTemplateExists(s *terraform.State) error {
 			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 
-		_, err = client.GetTemplate(id)
+		_, err = client.GetTemplate(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of Template %s: %s", rs.Primary.Attributes["label"], err)
 		}
