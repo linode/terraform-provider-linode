@@ -35,6 +35,7 @@ const (
 	nodebalancernodesName     = "nodebalancernodes"
 	sshkeysName               = "sshkeys"
 	ticketsName               = "tickets"
+	tokensName                = "tokens"
 	accountName               = "account"
 	eventsName                = "events"
 	invoicesName              = "invoices"
@@ -42,6 +43,7 @@ const (
 	profileName               = "profile"
 	managedName               = "managed"
 	tagsName                  = "tags"
+	usersName                 = "users"
 	// notificationsName = "notifications"
 
 	stackscriptsEndpoint          = "linode/stackscripts"
@@ -73,6 +75,7 @@ const (
 	nodebalancernodesEndpoint   = "nodebalancers/{{ .ID }}/configs/{{ .SecondID }}/nodes"
 	sshkeysEndpoint             = "profile/sshkeys"
 	ticketsEndpoint             = "support/tickets"
+	tokensEndpoint              = "profile/tokens"
 	accountEndpoint             = "account"
 	eventsEndpoint              = "account/events"
 	invoicesEndpoint            = "account/invoices"
@@ -80,6 +83,7 @@ const (
 	profileEndpoint             = "profile"
 	managedEndpoint             = "managed"
 	tagsEndpoint                = "tags"
+	usersEndpoint               = "account/users"
 	// notificationsEndpoint       = "account/notifications"
 )
 

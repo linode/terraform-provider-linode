@@ -1,5 +1,30 @@
 # Change Log
 
+<a name-"v0.6.0"></a>
+## [v0.6.0](https://github.com/linode/linodego/compare/v0.5.1..v0.6.0) (2018-10-25)
+
+### Fixes
+
+* Fixes Image date handling
+* Fixes broken example code in README
+* Fixes WaitForEventFinished when encountering events without entity
+* Fixes ResizeInstanceDisk which was executing CloneInstanceDisk
+* Fixes go-resty import path to gopkg.in version for future go module support
+
+### Features
+
+* Adds support for user account operations
+* Adds support for profile tokens
+* Adds support for Tags
+* Adds PasswordResetInstanceDisk
+* Adds DiskStatus constants
+* Adds WaitForInstanceDiskStatus
+* Adds SetPollDelay for configuring poll duration
+
+  * Reduced polling time to millisecond granularity
+  * Change polling default to 3s to avoid 429 conditions
+  * Use poll delay in waitfor functions
+
 <a name="v0.5.1"></a>
 ## [v0.5.1](https://github.com/linode/linodego/compare/v0.5.0...v0.5.1) (2018-09-10)
 

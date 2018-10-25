@@ -20,7 +20,7 @@ const (
 	// APIProto connect to API with http(s)
 	APIProto = "https"
 	// Version of linodego
-	Version = "0.5.1"
+	Version = "0.6.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events or Status in WaitFor functions
@@ -67,6 +67,8 @@ type Client struct {
 	NodeBalancerNodes     *Resource
 	SSHKeys               *Resource
 	Tickets               *Resource
+	Tokens                *Resource
+	Token                 *Resource
 	Account               *Resource
 	Invoices              *Resource
 	InvoiceItems          *Resource
@@ -75,6 +77,7 @@ type Client struct {
 	Profile               *Resource
 	Managed               *Resource
 	Tags                  *Resource
+	Users                 *Resource
 }
 
 func init() {
@@ -170,6 +173,7 @@ func NewClient(hc *http.Client) (client Client) {
 		nodebalancernodesName:     NewResource(&client, nodebalancernodesName, nodebalancernodesEndpoint, true, NodeBalancerNode{}, NodeBalancerNodesPagedResponse{}),
 		sshkeysName:               NewResource(&client, sshkeysName, sshkeysEndpoint, false, SSHKey{}, SSHKeysPagedResponse{}),
 		ticketsName:               NewResource(&client, ticketsName, ticketsEndpoint, false, Ticket{}, TicketsPagedResponse{}),
+		tokensName:                NewResource(&client, tokensName, tokensEndpoint, false, Token{}, TokensPagedResponse{}),
 		accountName:               NewResource(&client, accountName, accountEndpoint, false, Account{}, nil), // really?
 		eventsName:                NewResource(&client, eventsName, eventsEndpoint, false, Event{}, EventsPagedResponse{}),
 		invoicesName:              NewResource(&client, invoicesName, invoicesEndpoint, false, Invoice{}, InvoicesPagedResponse{}),
@@ -177,6 +181,7 @@ func NewClient(hc *http.Client) (client Client) {
 		profileName:               NewResource(&client, profileName, profileEndpoint, false, nil, nil), // really?
 		managedName:               NewResource(&client, managedName, managedEndpoint, false, nil, nil), // really?
 		tagsName:                  NewResource(&client, tagsName, tagsEndpoint, false, Tag{}, TagsPagedResponse{}),
+		usersName:                 NewResource(&client, usersName, usersEndpoint, false, User{}, UsersPagedResponse{}),
 	}
 
 	client.resources = resources
@@ -206,11 +211,45 @@ func NewClient(hc *http.Client) (client Client) {
 	client.NodeBalancerNodes = resources[nodebalancernodesName]
 	client.SSHKeys = resources[sshkeysName]
 	client.Tickets = resources[ticketsName]
+	client.Tokens = resources[tokensName]
 	client.Account = resources[accountName]
 	client.Events = resources[eventsName]
 	client.Invoices = resources[invoicesName]
 	client.Profile = resources[profileName]
 	client.Managed = resources[managedName]
 	client.Tags = resources[tagsName]
+	client.Users = resources[usersName]
 	return
+}
+
+func copyBool(bPtr *bool) *bool {
+	if bPtr == nil {
+		return nil
+	}
+	var t = *bPtr
+	return &t
+}
+
+func copyInt(iPtr *int) *int {
+	if iPtr == nil {
+		return nil
+	}
+	var t = *iPtr
+	return &t
+}
+
+func copyString(sPtr *string) *string {
+	if sPtr == nil {
+		return nil
+	}
+	var t = *sPtr
+	return &t
+}
+
+func copyTime(tPtr *time.Time) *time.Time {
+	if tPtr == nil {
+		return nil
+	}
+	var t = *tPtr
+	return &t
 }
