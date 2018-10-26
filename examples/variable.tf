@@ -1,3 +1,7 @@
+variable "linode_token" {
+  description = "Linode APIv4 Personal Access Token"
+}
+
 variable "region" {
   default = "us-central"
 }

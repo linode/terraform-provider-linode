@@ -1,3 +1,7 @@
+provider "linode" {
+  token = "${var.linode_token}"
+}
+
 data "linode_region" "main" {
   id = "${var.region}"
 }
