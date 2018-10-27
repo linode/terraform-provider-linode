@@ -318,12 +318,12 @@
   revision = "0b12d6b5"
 
 [[projects]]
-  digest = "1:397fa2ffe1e88c8a6c55da2cb71e32820449b384590c9c4292ace33adb1add07"
+  digest = "1:bc5cabd896558322376aeacf0dfa8a3f1ff201c0326da3821e499f04e3e89569"
   name = "github.com/linode/linodego"
   packages = ["."]
   pruneopts = "UT"
-  revision = "aa0d6bf012fe523a68584a595870008ff4c47eed"
-  version = "v0.6.1"
+  revision = "bcd50a0c5437e65b51934c794ea336aa079af08a"
+  version = "v0.6.2"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
