@@ -305,8 +305,8 @@
 ### Personalized User Settings
 
 - `/profile`
-  - [ ] `GET`
-  - [ ] `PUT`
+  - [X] `GET`
+  - [X] `PUT`
 
 ### Granted OAuth Apps
 
