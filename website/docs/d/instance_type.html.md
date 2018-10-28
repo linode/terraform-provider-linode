@@ -24,11 +24,11 @@ data "linode_instance_type" "default" {
 
 The following arguments are supported:
 
-* `id` - (Required) Label used to identify instance type 
+* `id` - (Required) Label used to identify instance type
 
 ## Attributes
 
-This Linode Instance resource exports the following attributes:
+The Linode Instance Type resource exports the following attributes:
 
 * `id` - The ID representing the Linode Type
 

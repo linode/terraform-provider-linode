@@ -24,11 +24,11 @@ data "linode_image" "k8_master" {
 
 The following arguments are supported:
 
-* `id` - (Required) The unique ID of this Image. 
+* `id` - (Required) The unique ID of this Image.
 
 ## Attributes
 
-This Linode Instance resource exports the following attributes:
+The Linode Image resource exports the following attributes:
 
 * `label` - A short description of the Image.
 
