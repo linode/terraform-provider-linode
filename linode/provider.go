@@ -26,10 +26,13 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"linode_account":       dataSourceLinodeAccount(),
 			"linode_instance_type": dataSourceLinodeInstanceType(),
 			"linode_region":        dataSourceLinodeRegion(),
 			"linode_image":         dataSourceLinodeImage(),
 			"linode_sshkey":        dataSourceLinodeSSHKey(),
+			"linode_profile":       dataSourceLinodeProfile(),
+			"linode_user":          dataSourceLinodeUser(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -43,6 +46,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_volume":              resourceLinodeVolume(),
 			"linode_sshkey":              resourceLinodeSSHKey(),
 			"linode_stackscript":         resourceLinodeStackscript(),
+			"linode_token":               resourceLinodeToken(),
 		},
 
 		ConfigureFunc: providerConfigure,

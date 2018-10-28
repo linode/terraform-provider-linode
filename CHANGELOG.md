@@ -1,4 +1,13 @@
 ## 1.0.1 (Unreleased)
+
+FEATURES:
+
+* **New Resource** `linode_token`
+
+* **New Data Resource** `linode_user`
+* **New Data Resource** `linode_account`
+* **New Data Resource** `linode_profile`
+
 ## 1.0.0 (October 18, 2018)
 
 FEATURES:
