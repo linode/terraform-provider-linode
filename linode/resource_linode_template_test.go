@@ -111,7 +111,7 @@ func testAccCheckLinodeTemplateDestroy(s *terraform.State) error {
 
 		}
 
-		_, err = client.GetTemplate(id)
+		_, err = client.GetTemplate(context.Background(), id)
 
 		if err == nil {
 			return fmt.Errorf("Linode Template with id %d still exists", id)
