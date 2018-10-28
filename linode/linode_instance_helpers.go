@@ -21,6 +21,29 @@ var (
 	boolTrue  = true
 )
 
+type flattenedAccountCreditCard map[string]string
+
+type flattenedProfileReferrals struct {
+	code, url                 string
+	total, completed, pending int
+	credit                    float64
+}
+
+func flattenAccountCreditCard(card linodego.CreditCard) []flattenedAccountCreditCard {
+	return []flattenedAccountCreditCard{{
+		"expiry":    card.Expiry,
+		"last_four": card.LastFour,
+	}}
+}
+
+func flattenProfileReferrals(referrals linodego.ProfileReferrals) []flattenedProfileReferrals {
+	return []flattenedProfileReferrals{{
+		referrals.Code, referrals.URL,
+		referrals.Total, referrals.Completed, referrals.Pending,
+		referrals.Credit,
+	}}
+}
+
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
 	return []map[string]int{{
 		"vcpus":    instance.Specs.VCPUs,
