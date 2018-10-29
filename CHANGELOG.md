@@ -1,5 +1,9 @@
 ## 1.0.1 (Unreleased)
 
+FIXES:
+
+* `linode_nodebalancer_config.check_passive` changes were not handled [GH-4]
+
 FEATURES:
 
 * **New Resource** `linode_token`

@@ -274,8 +274,8 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 		SSLKey:        d.Get("ssl_key").(string),
 	}
 
-	if checkPassive, ok := d.GetOk("check_passive"); ok {
-		checkPassive := checkPassive.(bool)
+	if checkPassiveRaw, ok := d.GetOkExists("check_passive"); ok {
+		checkPassive := checkPassiveRaw.(bool)
 		createOpts.CheckPassive = &checkPassive
 	}
 
@@ -315,8 +315,8 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 		SSLKey:        d.Get("ssl_key").(string),
 	}
 
-	if checkPassive, ok := d.GetOk("check_passive"); ok {
-		checkPassive := checkPassive.(bool)
+	if ok := d.HasChange("check_passive"); ok {
+		checkPassive := d.Get("check_passive").(bool)
 		updateOpts.CheckPassive = &checkPassive
 	}
 

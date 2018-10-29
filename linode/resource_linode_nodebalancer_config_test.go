@@ -81,6 +81,7 @@ func TestAccLinodeNodeBalancerConfig_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
 					resource.TestCheckResourceAttr(resName, "check_path", "/"),
+					resource.TestCheckResourceAttr(resName, "check_passive", "true"),
 
 					resource.TestCheckResourceAttrSet(resName, "stickiness"),
 					resource.TestCheckResourceAttrSet(resName, "check_attempts"),
@@ -97,6 +98,7 @@ func TestAccLinodeNodeBalancerConfig_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "check_path", "/foo"),
 					resource.TestCheckResourceAttr(resName, "check_attempts", "3"),
 					resource.TestCheckResourceAttr(resName, "check_timeout", "30"),
+					resource.TestCheckResourceAttr(resName, "check_passive", "false"),
 
 					resource.TestCheckResourceAttr(resName, "stickiness", string(linodego.StickinessHTTPCookie)),
 				),
@@ -195,6 +197,7 @@ resource "linode_nodebalancer_config" "foofig" {
 	port = 8080
 	protocol = "http"
 	check = "http"
+	check_passive = true
 	check_path = "/"
 }
 `
@@ -210,6 +213,7 @@ resource "linode_nodebalancer_config" "foofig" {
 	check_path = "/foo"
 	check_attempts = 3
 	check_timeout = 30
+	check_passive = false
 	stickiness = "http_cookie"
 	algorithm = "source"
 }
