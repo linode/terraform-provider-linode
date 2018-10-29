@@ -187,6 +187,7 @@ func resourceLinodeTokenDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error deleting Linode Token %d: %s", id, err)
 	}
-
+	// a settling cooldown to avoid expired tokens from being returned in listings
+	time.Sleep(3 * time.Second)
 	return nil
 }
