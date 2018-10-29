@@ -1013,6 +1013,10 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
 				return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 			}
+		} else {
+			if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
+				return fmt.Errorf("Timed-out waiting for Linode instance %d to be created: %s", instance.ID, err)
+			}
 		}
 	} else {
 		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
