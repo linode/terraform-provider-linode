@@ -8,15 +8,14 @@ description: |-
 
 # linode\_instance
 
-Provides a Linode instance resource.  This can be used to create,
-modify, and delete Linodes. For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/)
-and [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createLinodeInstance).
+Provides a Linode Instance resource.  This can be used to create, modify, and delete Linodes.
+For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createLinodeInstance).
 
-Linodes also support [provisioning](/docs/provisioners/index.html).
+Linode Instances can also use [provisioners](/docs/provisioners/index.html).
 
 ## Example Usage
 
-### Simple Linode Style
+### Simple Linode Instance Style
 
 The following example shows how one might use this resource to configure a Linode instance.
 
@@ -35,7 +34,7 @@ resource "linode_instance" "web" {
 }
 ```
 
-### Linode with explicit Configs and Disks
+### Linode Instance with explicit Configs and Disks
 
 Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance.  This can be used to provision multiple disks and volumes during Instance creation.
 

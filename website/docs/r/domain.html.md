@@ -8,9 +8,8 @@ description: |-
 
 # linode\_domain
 
-Provides a Linode Domain Record resource.  This can be used to create,
-modify, and delete Linodes Domain Records. For more information, see [DNS Manager](https://www.linode.com/docs/platform/manager/dns-manager/)
-and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createDomain).
+Provides a Linode Domain resource.  This can be used to create, modify, and delete Linodes Domains.
+For more information, see [DNS Manager](https://www.linode.com/docs/platform/manager/dns-manager/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createDomain).
 
 ## Example Usage
 

@@ -8,13 +8,12 @@ description: |-
 
 # linode\_volume
 
-Provides a Linode volume resource.  This can be used to create,
-modify, and delete Linodes Volumes. For more information, see [How to Use Block Storage with Your Linode](https://www.linode.com/docs/platform/block-storage/how-to-use-block-storage-with-your-linode/)
-and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createVolume).
+Provides a Linode Volume resource.  This can be used to create, modify, and delete Linodes Block Storage Volumes.
+For more information, see [How to Use Block Storage with Your Linode](https://www.linode.com/docs/platform/block-storage/how-to-use-block-storage-with-your-linode/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createVolume).
 
 ## Example Usage
 
-The following example shows how one might use this resource to configure a Volume attached to a Linode instance.
+The following example shows how one might use this resource to configure a Block Storage Volume attached to a Linode Instance.
 
 ```hcl
 resource "linode_instance" "foobaz" {

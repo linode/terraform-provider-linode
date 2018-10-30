@@ -6,13 +6,13 @@ description: |-
   Provides details about a Linode instance type.
 ---
 
-# Data Source: instance_type
+# Data Source: linode\_instance\_type
 
 Provides information about a Linode instance type
 
 ## Example Usage
 
-The following example shows how one might use this data source to define a Linode instance.
+The following example shows how one might use this data source to access information about a Linode Instance type.
 
 ```hcl
 data "linode_instance_type" "default" {

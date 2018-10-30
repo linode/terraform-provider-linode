@@ -8,9 +8,8 @@ description: |-
 
 # linode\_image
 
-Provides a Linode Image resource.  This can be used to create,
-modify, and delete Linodes Images. For more information, see [Linode's documentation on Images](https://www.linode.com/docs/platform/disk-images/linode-images/)
-and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createImage).
+Provides a Linode Image resource.  This can be used to create, modify, and delete Linodes Images.
+For more information, see [Linode's documentation on Images](https://www.linode.com/docs/platform/disk-images/linode-images/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createImage).
 
 ## Example Usage
 

@@ -6,14 +6,13 @@ description: |-
   Provides details about a specific service region
 ---
 
-# Data Source: linode_region
+# Data Source: linode\_region
 
 `linode_region` provides details about a specific Linode region.
 
 ## Example Usage
 
-The following example shows how the resource might be used to obtain
-the name of the Linode region configured on the provider.
+The following example shows how the resource might be used to obtain additional information about a Linode region.
 
 ```hcl
 data "linode_region" "region" {

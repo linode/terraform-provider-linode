@@ -24,7 +24,7 @@ From the `examples/` directory,
     terraform init
     terraform apply
 
-The full set of provisioning, including 4 Linodes and 4 Block Storage Volumes, should be complete in under 10 minutes.
+The full set of provisioning, including 4 Linodes and 4 Block Storage Volumes, should be completed in under 10 minutes.
 
 ## Scaling
 

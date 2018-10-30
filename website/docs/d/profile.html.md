@@ -6,9 +6,9 @@ description: |-
   Provides details about a Linode profile.
 ---
 
-# Data Source: profile
+# Data Source: linode\_profile
 
-Provides information about a Linode profile
+Provides information about a Linode profile.
 
 ## Example Usage
 
@@ -20,7 +20,7 @@ data "linode_profile" "profile" {}
 
 ## Argument Reference
 
-There are no supported arguments because the provider token can only access the associated profile.
+There are no supported arguments because the provider `token` can only access the associated profile.
 
 ## Attributes
 

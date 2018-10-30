@@ -6,13 +6,13 @@ description: |-
   Provides details about a Linode image.
 ---
 
-# Data Source: image
+# Data Source: linode\_image
 
 Provides information about a Linode image
 
 ## Example Usage
 
-The following example shows how one might use this data source to define a Linode instance.
+The following example shows how one might use this data source to access information about a Linode image.
 
 ```hcl
 data "linode_image" "k8_master" {

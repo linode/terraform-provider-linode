@@ -8,9 +8,8 @@ description: |-
 
 # linode\_nodebalancer_config
 
-Provides a Linode nodebalancer_config resource.  This can be used to create,
-modify, and delete Linodes NodeBalancer Configs. For more information, see [Getting Started with NodeBalancers](https://www.linode.com/docs/platform/nodebalancer/getting-started-with-nodebalancers/)
-and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createNodeBalancerConfig).
+Provides a Linode NodeBalancer Config resource.  This can be used to create, modify, and delete Linodes NodeBalancer Configs.
+For more information, see [Getting Started with NodeBalancers](https://www.linode.com/docs/platform/nodebalancer/getting-started-with-nodebalancers/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createNodeBalancerConfig).
 
 ## Example Usage
 

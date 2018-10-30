@@ -6,13 +6,13 @@ description: |-
   Provides details about a Linode user.
 ---
 
-# Data Source: user
+# Data Source: linode\_user
 
 Provides information about a Linode user
 
 ## Example Usage
 
-The following example shows how one might use this data source to define a Linode instance.
+The following example shows how one might use this data source to access information about a Linode user.
 
 ```hcl
 data "linode_user" "foo" {
