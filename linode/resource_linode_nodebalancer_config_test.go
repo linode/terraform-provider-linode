@@ -46,10 +46,6 @@ func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "node_status.up", "0"),
 					resource.TestCheckResourceAttr(resName, "node_status.down", "0"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_cert"),
-					// TODO(@paddycarver) what is best practice for attrs that are null
-					// cant test for noresourceattr nor resourceattrset
-					//resource.TestCheckNoResourceAttr(resName, "ssl_key"),
-					//resource.TestCheckNoResourceAttr(resName, "check_body"),
 				),
 			},
 			resource.TestStep{

@@ -23,11 +23,7 @@ var (
 
 type flattenedAccountCreditCard map[string]string
 
-type flattenedProfileReferrals struct {
-	code, url                 string
-	total, completed, pending int
-	credit                    float64
-}
+type flattenedProfileReferrals map[string]interface{}
 
 func flattenAccountCreditCard(card linodego.CreditCard) []flattenedAccountCreditCard {
 	return []flattenedAccountCreditCard{{
@@ -38,9 +34,12 @@ func flattenAccountCreditCard(card linodego.CreditCard) []flattenedAccountCredit
 
 func flattenProfileReferrals(referrals linodego.ProfileReferrals) []flattenedProfileReferrals {
 	return []flattenedProfileReferrals{{
-		referrals.Code, referrals.URL,
-		referrals.Total, referrals.Completed, referrals.Pending,
-		referrals.Credit,
+		"code":      referrals.Code,
+		"url":       referrals.URL,
+		"total":     referrals.Total,
+		"completed": referrals.Completed,
+		"pending":   referrals.Pending,
+		"credit":    referrals.Credit,
 	}}
 }
 
