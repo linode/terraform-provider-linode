@@ -65,7 +65,7 @@ make testacc
 
 There are a number of useful flags and variables to aid in debugging.
 
-- `LINODE_DEBUG` - If truthy, this will emit all HTTP requests and responses to the Linode API.
+- `LINODE_DEBUG` - If truthy, this will emit all HTTP requests and responses to the Linode API.  **This may include sensitive data** such as the account `tax_id` (VAT) and the credit card `last_four` and `expiry`.  Be very cautious about storing this output.
 
 - `TF_LOG` - This instructs Terraform to emit trace level (and higher) logging messages.
 

@@ -6,9 +6,11 @@ description: |-
   Provides details about a Linode account.
 ---
 
-# Data Source: account
+# Data Source: linode\_account
 
-Provides information about a Linode account
+Provides information about a Linode account.
+
+This data source should not be used in conjuction with the `LINODE_DEBUG` option.  See the [debugging notes](/docs/providers/linode/index.html#debugging) for more details.
 
 ## Example Usage
 
@@ -20,7 +22,7 @@ data "linode_account" "account" {}
 
 ## Argument Reference
 
-There are no supported arguments because the provider token can only access the associated account.
+There are no supported arguments because the provider `token` can only access the associated account.
 
 ## Attributes
 
@@ -47,13 +49,5 @@ The Linode Account resource exports the following attributes:
 * `country` - The two-letter country code of this Account's billing address.
 
 * `zip` - The zip code of this Account's billing address.
-
-* `credit_card` - Credit Card information associated with this Account.
-
-* `credit_card.0.last_four` - The last four digits of the credit card associated with this Account.
-
-* `credit_card.0.expiry` - The expiration month and year of the credit card.
-
-* `tax_id` - The tax identification number associated with this Account, for tax calculations in some countries. If the account is not based in a country that collects tax, this should be null.
 
 * `balance` - This Account's balance, in US dollars.

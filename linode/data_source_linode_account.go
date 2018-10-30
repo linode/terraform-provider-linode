@@ -67,31 +67,6 @@ func dataSourceLinodeAccount() *schema.Resource {
 				Description: "The zip code of this Account's billing address.",
 				Computed:    true,
 			},
-			"credit_card": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Description: "Credit Card information associated with this Account.",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"last_four": {
-							Type:        schema.TypeString,
-							Description: "The last four digits of the credit card associated with this Account.",
-							Computed:    true,
-						},
-						"expiry": {
-							Type:        schema.TypeString,
-							Description: "The expiration month and year of the credit card.",
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"tax_id": {
-				Type:        schema.TypeString,
-				Description: "The tax identification number associated with this Account, for tax calculations in some countries. If the account is not based in a country that collects tax, this should be null.",
-				Computed:    true,
-			},
 			"balance": {
 				Type:        schema.TypeInt,
 				Description: "This Account's balance, in US dollars.",
@@ -123,16 +98,9 @@ func dataSourceLinodeAccountRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("country", account.Country)
 	d.Set("zip", account.Zip)
 
-	if account.CreditCard == nil {
-		d.Set("credit_card", nil)
-	} else {
-		if err := d.Set("credit_card", flattenAccountCreditCard(*account.CreditCard)); err != nil {
-			return fmt.Errorf("Error parsing account credit card: %s", err)
-		}
-	}
-
-	d.Set("tax_id", account.TaxID)
 	d.Set("balance", account.Balance)
+
+	// We exclude the credit_card and tax_id fields because they are too sensitive
 
 	return nil
 }
