@@ -1,4 +1,4 @@
-## 1.1.0 (Unreleased)
+## 1.1.0 (October 31, 2018)
 
 FEATURES:
 
@@ -10,7 +10,7 @@ FEATURES:
 
 BUG FIXES:
 
-* `linode_nodebalancer_config.check_passive` changes were not handled [GH-4]
+* `linode_nodebalancer_config.check_passive` changes were not handled ([#4](https://github.com/terraform-providers/terraform-provider-template/issues/4))
 
 ## 1.0.0 (October 18, 2018)
 
