@@ -1,9 +1,5 @@
 ## 1.1.0 (Unreleased)
 
-FIXES:
-
-* `linode_nodebalancer_config.check_passive` changes were not handled [GH-4]
-
 FEATURES:
 
 * **New Resource** `linode_token`
@@ -11,6 +7,10 @@ FEATURES:
 * **New Data Resource** `linode_user`
 * **New Data Resource** `linode_account`
 * **New Data Resource** `linode_profile`
+
+BUG FIXES:
+
+* `linode_nodebalancer_config.check_passive` changes were not handled [GH-4]
 
 ## 1.0.0 (October 18, 2018)
 
