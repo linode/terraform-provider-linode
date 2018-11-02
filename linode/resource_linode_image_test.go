@@ -11,6 +11,39 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_image", &resource.Sweeper{
+		Name: "linode_image",
+		F:    testSweepLinodeImage,
+	})
+
+}
+
+func testSweepLinodeImage(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	images, err := client.ListImages(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting images: %s", err)
+	}
+	for _, image := range images {
+		if !shouldSweepAcceptanceTestResource(prefix, image.Label) {
+			continue
+		}
+		err := client.DeleteImage(context.Background(), image.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", image.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeImage_basic(t *testing.T) {
 	t.Parallel()
 

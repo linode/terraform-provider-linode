@@ -14,6 +14,38 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_template", &resource.Sweeper{
+		Name: "linode_template",
+		F:    testSweepLinodeTemplate,
+	})
+}
+
+func testSweepLinodeTemplate(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	templates, err := client.ListTemplates(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting templates: %s", err)
+	}
+	for _, template := range templates {
+		if !shouldSweepAcceptanceTestResource(prefix, template.Label) {
+			continue
+		}
+		err := client.DeleteTemplate(context.Background(), template.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", template.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeTemplate_basic(t *testing.T) {
 	t.Parallel()
 

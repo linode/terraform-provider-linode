@@ -12,6 +12,38 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_sshkey", &resource.Sweeper{
+		Name: "linode_sshkey",
+		F:    testSweepLinodeSSHKey,
+	})
+}
+
+func testSweepLinodeSSHKey(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	sshkeys, err := client.ListSSHKeys(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting sshkeys: %s", err)
+	}
+	for _, sshkey := range sshkeys {
+		if !shouldSweepAcceptanceTestResource(prefix, sshkey.Label) {
+			continue
+		}
+		err := client.DeleteSSHKey(context.Background(), sshkey.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", sshkey.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeSSHKey_basic(t *testing.T) {
 	t.Parallel()
 

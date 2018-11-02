@@ -1,8 +1,13 @@
+SWEEP?="tf_test,tf-test"
 TEST?=$$(go list ./... |grep -v 'vendor')
 TESTARGS?=$("-parallel=2","-timeout=120m")
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode
+
+sweep:
+	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
+	go test $(TEST) -v -sweep=$(SWEEP) $(SWEEPARGS)
 
 default: build
 
@@ -60,5 +65,5 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck vendor-status test-compile website website-test
+.PHONY: build sweep test testacc vet fmt fmtcheck errcheck vendor-status test-compile website website-test
 

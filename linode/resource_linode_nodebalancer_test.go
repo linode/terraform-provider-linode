@@ -12,6 +12,38 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_nodebalancer", &resource.Sweeper{
+		Name: "linode_nodebalancer",
+		F:    testSweepLinodeNodeBalancer,
+	})
+}
+
+func testSweepLinodeNodeBalancer(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	nodebalancers, err := client.ListNodeBalancers(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting instances: %s", err)
+	}
+	for _, nodebalancer := range nodebalancers {
+		if nodebalancer.Label == nil || !shouldSweepAcceptanceTestResource(prefix, *nodebalancer.Label) {
+			continue
+		}
+		err := client.DeleteNodeBalancer(context.Background(), nodebalancer.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %v during sweep: %s", nodebalancer.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeNodeBalancer_basic(t *testing.T) {
 	t.Parallel()
 

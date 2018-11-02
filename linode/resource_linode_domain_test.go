@@ -12,11 +12,44 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_domain", &resource.Sweeper{
+		Name: "linode_domain",
+		F:    testSweepLinodeDomain,
+	})
+
+}
+
+func testSweepLinodeDomain(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "domain")
+	domains, err := client.ListDomains(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting domains: %s", err)
+	}
+	for _, domain := range domains {
+		if !shouldSweepAcceptanceTestResource(prefix, domain.Domain) {
+			continue
+		}
+		err := client.DeleteDomain(context.Background(), domain.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", domain.Domain, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeDomain_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_domain.foobar"
-	var domainName = acctest.RandomWithPrefix("tf-test-") + ".example"
+	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -51,7 +84,7 @@ func TestAccLinodeDomain_basic(t *testing.T) {
 func TestAccLinodeDomain_update(t *testing.T) {
 	t.Parallel()
 
-	var domainName = acctest.RandomWithPrefix("tf-test-") + ".example"
+	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

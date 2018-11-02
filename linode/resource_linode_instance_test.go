@@ -13,6 +13,38 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_instance", &resource.Sweeper{
+		Name: "linode_instance",
+		F:    testSweepLinodeInstance,
+	})
+}
+
+func testSweepLinodeInstance(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	instances, err := client.ListInstances(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting instances: %s", err)
+	}
+	for _, instance := range instances {
+		if !shouldSweepAcceptanceTestResource(prefix, instance.Label) {
+			continue
+		}
+		err := client.DeleteInstance(context.Background(), instance.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", instance.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeInstance_basic(t *testing.T) {
 	t.Parallel()
 

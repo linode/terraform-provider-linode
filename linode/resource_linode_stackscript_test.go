@@ -12,6 +12,38 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_stackscript", &resource.Sweeper{
+		Name: "linode_stackscript",
+		F:    testSweepLinodeStackScript,
+	})
+}
+
+func testSweepLinodeStackScript(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	stackscripts, err := client.ListStackscripts(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting stackscripts: %s", err)
+	}
+	for _, stackscript := range stackscripts {
+		if !shouldSweepAcceptanceTestResource(prefix, stackscript.Label) {
+			continue
+		}
+		err := client.DeleteStackscript(context.Background(), stackscript.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", stackscript.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeStackscript_basic(t *testing.T) {
 	t.Parallel()
 
