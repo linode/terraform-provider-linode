@@ -1,9 +1,5 @@
 ## 1.2.0 (Unreleased)
 
-FEATURES:
-
-* Added test sweepers
-
 ## 1.1.0 (October 31, 2018)
 
 FEATURES:
