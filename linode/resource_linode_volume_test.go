@@ -12,6 +12,38 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_volume", &resource.Sweeper{
+		Name: "linode_volume",
+		F:    testSweepLinodeVolume,
+	})
+}
+
+func testSweepLinodeVolume(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	volumes, err := client.ListVolumes(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting volumes: %s", err)
+	}
+	for _, volume := range volumes {
+		if !shouldSweepAcceptanceTestResource(prefix, volume.Label) {
+			continue
+		}
+		err := client.DeleteVolume(context.Background(), volume.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", volume.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeVolume_detectVolumeIDChange(t *testing.T) {
 	t.Parallel()
 	var have, want *int

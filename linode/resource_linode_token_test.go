@@ -12,6 +12,38 @@ import (
 	"github.com/linode/linodego"
 )
 
+func init() {
+	resource.AddTestSweepers("linode_token", &resource.Sweeper{
+		Name: "linode_token",
+		F:    testSweepLinodeToken,
+	})
+}
+
+func testSweepLinodeToken(prefix string) error {
+	client, err := getClientForSweepers()
+	if err != nil {
+		return fmt.Errorf("Error getting client: %s", err)
+	}
+
+	listOpts := sweeperListOptions(prefix, "label")
+	tokens, err := client.ListTokens(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error getting tokens: %s", err)
+	}
+	for _, token := range tokens {
+		if !shouldSweepAcceptanceTestResource(prefix, token.Label) {
+			continue
+		}
+		err := client.DeleteToken(context.Background(), token.ID)
+
+		if err != nil {
+			return fmt.Errorf("Error destroying %s during sweep: %s", token.Label, err)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeToken_basic(t *testing.T) {
 	t.Parallel()
 

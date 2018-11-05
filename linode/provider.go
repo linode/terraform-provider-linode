@@ -58,6 +58,18 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("The Linode API Token was not valid")
 	}
+
+	client := getLinodeClient(token)
+	// Ping the API for an empty response to verify the configuration works
+	_, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, ""))
+	if err != nil {
+		return nil, fmt.Errorf("Error connecting to the Linode API: %s", err)
+	}
+
+	return client, nil
+}
+
+func getLinodeClient(token string) linodego.Client {
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 
 	oauthTransport := &oauth2.Transport{
@@ -75,12 +87,5 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		version.String(), projectURL, linodego.Version)
 
 	client.SetUserAgent(userAgent)
-
-	// Ping the API for an empty response to verify the configuration works
-	_, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, ""))
-	if err != nil {
-		return nil, fmt.Errorf("Error connecting to the Linode API: %s", err)
-	}
-
-	return client, nil
+	return client
 }
