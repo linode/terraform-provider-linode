@@ -84,6 +84,45 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceAuthorizedUsers(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
+				),
+			},
+
+			resource.TestStep{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image"},
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_config(t *testing.T) {
 	t.Parallel()
 
@@ -1692,4 +1731,25 @@ resource "linode_instance" "foobar" {
 	authorized_keys = ["%s"]
 	group = "tf_test"
 }`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceAuthorizedUsers(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+data "linode_profile" "profile" {}
+
+resource "linode_sshkey" "key" {
+	label = "tf_test_authorized_keys"
+	ssh_key = "%s"
+}
+
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_users = [ "${data.linode_profile.profile.username}" ]
+}`, pubkey, instance)
 }

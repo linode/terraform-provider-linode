@@ -128,6 +128,15 @@ func resourceLinodeInstance() *schema.Resource {
 				StateFunc:     sshKeyState,
 				ConflictsWith: []string{"disk", "config"},
 			},
+			"authorized_users": &schema.Schema{
+				Type:          schema.TypeList,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. Only accepted if 'image' is provided.",
+				Optional:      true,
+				ForceNew:      true,
+				StateFunc:     sshKeyState,
+				ConflictsWith: []string{"disk", "config"},
+			},
 			"root_pass": &schema.Schema{
 				Type:          schema.TypeString,
 				Description:   "The password that will be initialially assigned to the 'root' user account.",
@@ -267,7 +276,7 @@ func resourceLinodeInstance() *schema.Resource {
 				Optional:      true,
 				Description:   "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
+				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "authorized_users", "swap_size", "backup_id", "stackscript_id"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, hasImage := d.GetOk("image")
 					return hasImage
@@ -570,7 +579,7 @@ func resourceLinodeInstance() *schema.Resource {
 			},
 			"disk": &schema.Schema{
 				Optional:      true,
-				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "swap_size", "backup_id", "stackscript_id"},
+				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "authorized_users", "swap_size", "backup_id", "stackscript_id"},
 				Type:          schema.TypeList,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, hasImage := d.GetOk("image")
@@ -623,6 +632,18 @@ func resourceLinodeInstance() *schema.Resource {
 							Type:        schema.TypeList,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								// the API does not return this field for existing disks, so must be ignored for diffs/updates
+								return !d.HasChange("label")
+							},
+							Optional:  true,
+							ForceNew:  true,
+							StateFunc: sshKeyState,
+						},
+						"authorized_users": {
+							Type:        schema.TypeList,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. Only accepted if 'image' is provided.",
 							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 								// the API does not return this field for existing disks, so must be ignored for diffs/updates
 								return !d.HasChange("label")
@@ -856,6 +877,9 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		for _, key := range d.Get("authorized_keys").([]interface{}) {
 			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
 		}
+		for _, key := range d.Get("authorized_users").([]interface{}) {
+			createOpts.AuthorizedUsers = append(createOpts.AuthorizedUsers, key.(string))
+		}
 		createOpts.RootPass = d.Get("root_pass").(string)
 		if createOpts.RootPass == "" {
 			var err error
@@ -898,6 +922,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 
 	d.SetPartial("private_ip")
 	d.SetPartial("authorized_keys")
+	d.SetPartial("authorized_users")
 	d.SetPartial("root_pass")
 	d.SetPartial("kernel")
 	d.SetPartial("image")

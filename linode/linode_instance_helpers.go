@@ -92,12 +92,6 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 			"size":       disk.Size,
 			"label":      disk.Label,
 			"filesystem": string(disk.Filesystem),
-
-			// TODO(displague) these can not be retrieved after the initial send
-			// "read_only":       disk.ReadOnly,
-			// "image":           disk.Image,
-			// "authorized_keys": disk.AuthorizedKeys,
-			// "stackscript_id":  disk.StackScriptID,
 		})
 	}
 	return
@@ -134,12 +128,6 @@ func flattenInstanceConfigs(instanceConfigs []linodego.InstanceConfig, diskLabel
 				"devtmpfs_automount": config.Helpers.DevTmpFsAutomount,
 			}},
 			"devices": devices,
-
-			// TODO(displague) these can not be retrieved after the initial send
-			// "read_only":       disk.ReadOnly,
-			// "image":           disk.Image,
-			// "authorized_keys": disk.AuthorizedKeys,
-			// "stackscript_id":  disk.StackScriptID,
 		}
 
 		// Work-Around API reporting root_device /dev/sda despite not existing and requesting a different root
@@ -527,6 +515,12 @@ func createInstanceDisk(client linodego.Client, instance linodego.Instance, v in
 			}
 		}
 
+		if authorizedUsers, ok := disk["authorized_users"]; ok {
+			for _, user := range authorizedUsers.([]interface{}) {
+				diskOpts.AuthorizedUsers = append(diskOpts.AuthorizedUsers, user.(string))
+			}
+		}
+
 		if stackscriptID, ok := disk["stackscript_id"]; ok {
 			diskOpts.StackscriptID = stackscriptID.(int)
 		}
@@ -536,19 +530,6 @@ func createInstanceDisk(client linodego.Client, instance linodego.Instance, v in
 				diskOpts.StackscriptData[name] = value.(string)
 			}
 		}
-
-		/*
-			if sshKeys, ok := d.GetOk("authorized_keys"); ok {
-				if sshKeysArr, ok := sshKeys.([]interface{}); ok {
-					diskOpts.AuthorizedKeys = make([]string, len(sshKeysArr))
-					for k, v := range sshKeys.([]interface{}) {
-						if val, ok := v.(string); ok {
-							diskOpts.AuthorizedKeys[k] = val
-						}
-					}
-				}
-			}
-		*/
 	}
 
 	instanceDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)

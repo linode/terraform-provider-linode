@@ -2,6 +2,8 @@ provider "linode" {
   token = "${var.linode_token}"
 }
 
+data "linode_profile" "me" {}
+
 data "linode_region" "main" {
   id = "${var.region}"
 }
@@ -18,8 +20,6 @@ resource "linode_nodebalancer" "foo-nb" {
   label                = "${random_pet.project.id}"
   region               = "${data.linode_region.main.id}"
   client_conn_throttle = 0
-
-  # group              = "foo"
 }
 
 resource "linode_nodebalancer_config" "foo-https" {
@@ -58,7 +58,6 @@ resource "linode_nodebalancer_config" "foo-http" {
 }
 
 resource "linode_nodebalancer_node" "foo-http-www" {
-  # LABEL becomes foo-80-www
   count           = "${var.nginx_count}"
   nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
   config_id       = "${linode_nodebalancer_config.foo-https.id}"
@@ -70,7 +69,6 @@ resource "linode_nodebalancer_node" "foo-http-www" {
 }
 
 resource "linode_nodebalancer_node" "foo-https-www" {
-  # LABEL becomes foo-80-www
   count           = "${var.nginx_count}"
   nodebalancer_id = "${linode_nodebalancer.foo-nb.id}"
   config_id       = "${linode_nodebalancer_config.foo-http.id}"
@@ -88,11 +86,6 @@ resource "linode_domain" "foo-com" {
   refresh_sec = "300"
   domain      = "${random_pet.project.id}example.com"
   type        = "master"
-
-  # group              = "foo"
-  # interesting that the bare address "@" could be set this way..
-  # but terraform would have to do this behind the scenes
-  # ip_address = "${linode_instance.haproxy-www.ipv4_address}"
 }
 
 resource "linode_domain_record" "A-root" {
@@ -224,6 +217,11 @@ EOF
   rev_note = "initial script"
 }
 
+resource "linode_sshkey" "mykey" {
+  ssh_key = "${chomp(file(var.ssh_key))}"
+  label = "Terraform SSHKey"
+}
+
 resource "linode_instance" "simple" {
   image = "linode/ubuntu18.04"
   label = "${random_pet.project.id}-simple"
@@ -231,8 +229,7 @@ resource "linode_instance" "simple" {
   group           = "foo"
   region          = "${var.region}"
   type            = "g6-nanode-1"
-  authorized_keys = ["${chomp(file(var.ssh_key))}"]
-  root_pass       = "${random_string.password.result}"
+  authorized_users = [ "${data.linode_profile.me.username}" ]
   stackscript_id  = "${linode_stackscript.install-nginx.id}"
 
   stackscript_data = {

@@ -39,6 +39,8 @@ resource "linode_instance" "web" {
 Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance.  This can be used to provision multiple disks and volumes during Instance creation.
 
 ```hcl
+data "linode_profile" "me" {}
+
 resource "linode_instance" "web" {
   label      = "complex_instance"
   group      = "foo"
@@ -49,9 +51,13 @@ resource "linode_instance" "web" {
   disk {
     label = "boot"
     size = 3000
-    authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
-    root_pass = "terr4form-test"
     image  = "linode/ubuntu18.04"
+
+    # Any of authorized_keys, authorized_users, and root_pass
+    # can be used for provisioning.
+    authorized_keys = [ "ssh-rsa AAAA...Gw== user@example.local" ]
+    authorized_users = [ "${data.linode_profile.me.username}" ]
+    root_pass = "terr4form-test"
   }
 
   config {
@@ -101,11 +107,13 @@ The following arguments are supported:
 
 * `watchdog_enabled` - (Optional) The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.
 
-### Simplified Provisioning Arguments
+### Simplified Resource Arguments
 
-Just as the Linode API provides, these arguments are for the most common provisioning use case, a single data disk, a single swap disk, and a single config.  These arguments are not compatible with `disk` and `config` lists, described later.
+Just as the Linode API provides, these fields are for the most common provisioning use case, a single data disk, a single swap disk, and a single config.  These arguments are not compatible with `disk` and `config` fields, described later.
 
-* `authorized_keys` - (Required) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
+* `authorized_keys` - (Optional with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
+
+* `authorized_users` - (Optional with `image`) A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. *This value can not be imported.* *Changing `authorized_users` forces the creation of a new Linode Instance.*
 
 * `root_pass` - (Optional) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
@@ -119,9 +127,9 @@ Just as the Linode API provides, these arguments are for the most common provisi
 
 * `backup_id` - (Optional) A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive. *This value can not be imported.* *Changing `backup_id` forces the creation of a new Linode Instance.*
 
-### Disk and Config Provisioning Arguments
+### Disk and Config Arguments
 
-By specifying the `disk` and `config` arguments for a Linode instance, it is possible to use non-standard kernels, boot with and provision multiple disks, and modify the boot behaviors (`helpers`) of the Linode.
+By specifying the `disk` and `config` fields for a Linode instance, it is possible to use non-standard kernels, boot with and provision multiple disks, and modify the boot behaviors (`helpers`) of the Linode.
 
 * `boot_config_label` - (Optional) The Label of the Instance Config that should be used to boot the Linode instance.  If there is only one `config`, the `label` of that `config` will be used as the `boot_config_label`. *This value can not be imported.*
 
@@ -141,7 +149,9 @@ By specifying the `disk` and `config` arguments for a Linode instance, it is pos
 
   * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, and `linode/arch`. *Changing `image` forces the creation of a new Linode Instance.*
 
-  * `authorized_keys` - (Required with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
+  * `authorized_keys` - (Optional with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
+
+  * `authorized_users` - (Optional with `image`) A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. *This value can not be imported.* *Changing `authorized_users` forces the creation of a new Linode Instance.*
 
   * `root_pass` - (Optional with `image`) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
