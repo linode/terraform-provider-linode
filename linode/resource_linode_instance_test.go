@@ -725,6 +725,40 @@ func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_tag(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Start off with a single tag
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithTag(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+				),
+			},
+			// Apply updated tags
+			resource.TestStep{
+				Config: testAccCheckLinodeInstanceWithUpdatedTag(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
@@ -1367,6 +1401,34 @@ resource "linode_instance" "foobar" {
 	group = "tf_test"
 	type = "g6-nanode-1"
 	region = "us-east"
+}`, instance)
+}
+
+func testAccCheckLinodeInstanceWithTag(instance string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	tags = ["tf_test"]
+	type = "g6-nanode-1"
+	region = "us-east"
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+	}
+}`, instance)
+}
+
+func testAccCheckLinodeInstanceWithUpdatedTag(instance string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	tags = ["tf_test", "tf_test_2"]
+	type = "g6-nanode-1"
+	region = "us-east"
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+	}
 }`, instance)
 }
 

@@ -15,7 +15,7 @@ Linode Instances can also use [provisioners](/docs/provisioners/index.html).
 
 ## Example Usage
 
-### Simple Linode Instance Style
+### Simple Linode Instance
 
 The following example shows how one might use this resource to configure a Linode instance.
 
@@ -29,6 +29,7 @@ resource "linode_instance" "web" {
     root_pass = "terr4form-test"
 
     group = "foo"
+    tags = [ "foo" ]
     swap_size = 256
     private_ip = true
 }
@@ -42,6 +43,7 @@ Using explicit Instance Configs and Disks it is possible to create a more elabor
 resource "linode_instance" "web" {
   label      = "complex_instance"
   group      = "foo"
+  tags = [ "foo" ]
   region     = "us-central"
   type       = "g6-nanode-1"
   private_ip = true
@@ -61,6 +63,7 @@ resource "linode_instance" "web" {
       sda = { disk_label = "boot" },
       sdb = { volume_id = "${linode_volume.web_volume.id}" }
     }
+    root_device = "/dev/sda"
   }
 
   boot_config_label = "boot_config"
@@ -84,6 +87,8 @@ The following arguments are supported:
 * `label` - (Optional) The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned.
 
 * `group` - (Optional) The display group of the Linode instance.
+
+* `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
 * `private_ip` - (Optional) If true, the created Linode will have private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region. It can be enabled on an existing Linode but it can't be disabled.
 
@@ -228,3 +233,9 @@ Linodes Instances can be imported using the Linode `id`, e.g.
 ```sh
 terraform import linode_instance.mylinode 1234567
 ```
+
+When importing an instance, all `disk` and `config` values must be represented.
+
+Imported disks must include their `label` value.  **Any disk that is not precisely represented may be removed resulting in data loss.**
+
+Imported configs should include all `devices`, and must include `label`, `kernel`, and the `root_device`.  The instance must include a `boot_config_label` referring to the correct configuration profile.
