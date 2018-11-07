@@ -67,6 +67,12 @@ func resourceLinodeInstance() *schema.Resource {
 				Description: "The display group of the Linode instance.",
 				Optional:    true,
 			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+			},
 			"boot_config_label": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
@@ -167,22 +173,22 @@ func resourceLinodeInstance() *schema.Resource {
 						"disk": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.",
+							Description: "The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image without specifying disks.",
 						},
 						"memory": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "",
+							Description: "The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.",
 						},
 						"vcpus": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "",
+							Description: "The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.",
 						},
 						"transfer": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "",
+							Description: "The amount of network transfer this Linode is allotted each month.",
 						},
 					},
 				},
@@ -590,8 +596,9 @@ func resourceLinodeInstance() *schema.Resource {
 							Required:    true,
 						},
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the Disk (for use in Linode Image resources and Linode Instance Config Devices)",
+							Computed:    true,
 						},
 						"filesystem": {
 							Type:         schema.TypeString,
@@ -766,6 +773,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("region", instance.Region)
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
+	d.Set("tags", instance.Tags)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -846,6 +854,12 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		Group:          d.Get("group").(string),
 		BackupsEnabled: d.Get("backups_enabled").(bool),
 		PrivateIP:      d.Get("private_ip").(bool),
+	}
+
+	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+		for _, tag := range tagsRaw.([]interface{}) {
+			createOpts.Tags = append(createOpts.Tags, tag.(string))
+		}
 	}
 
 	_, disksOk := d.GetOk("disk")
@@ -1055,6 +1069,17 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if d.HasChange("group") {
 		updateOpts.Group = d.Get("group").(string)
 		d.SetPartial("group")
+		simpleUpdate = true
+	}
+
+	if d.HasChange("tags") {
+		tags := []string{}
+		for _, tag := range d.Get("tags").([]interface{}) {
+			tags = append(tags, tag.(string))
+		}
+
+		updateOpts.Tags = &tags
+		d.SetPartial("tags")
 		simpleUpdate = true
 	}
 

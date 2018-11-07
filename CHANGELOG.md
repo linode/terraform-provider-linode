@@ -1,5 +1,9 @@
 ## 1.2.0 (Unreleased)
 
+ENHANCEMENTS:
+
+* resource/linode_instance: Add `tags` field
+
 ## 1.1.0 (October 31, 2018)
 
 FEATURES:
