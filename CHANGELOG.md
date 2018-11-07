@@ -2,7 +2,8 @@
 
 ENHANCEMENTS:
 
-* resource/linode_instance: Add `tags` field
+* resource/linode\_instance: Add `tags` field
+* resource/linode\_instance: Add `authorized_users` field and added `authorized_users` field to `disk`
 
 ## 1.1.0 (October 31, 2018)
 

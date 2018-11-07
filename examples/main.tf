@@ -227,6 +227,7 @@ resource "linode_instance" "simple" {
   label = "${random_pet.project.id}-simple"
 
   group           = "foo"
+  tags            = [ "terraform" ]
   region          = "${var.region}"
   type            = "g6-nanode-1"
   authorized_users = [ "${data.linode_profile.me.username}" ]
