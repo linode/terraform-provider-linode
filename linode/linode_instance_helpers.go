@@ -461,7 +461,7 @@ func makeVolumeDetacher(client linodego.Client, d *schema.ResourceData) volumeDe
 		}
 
 		log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volumeID)
-		if _, err := client.WaitForVolumeLinodeID(ctx, volumeID, nil, int(d.Timeout("update").Seconds())); err != nil {
+		if _, err := client.WaitForVolumeLinodeID(ctx, volumeID, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 			return err
 		}
 		return nil

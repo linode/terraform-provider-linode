@@ -10,6 +10,10 @@ import (
 	"github.com/linode/linodego"
 )
 
+const (
+	LinodeImageCreateTimeout = 20 * time.Minute
+)
+
 func resourceLinodeImage() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeImageCreate,
@@ -19,6 +23,9 @@ func resourceLinodeImage() *schema.Resource {
 		Exists: resourceLinodeImageExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(LinodeImageCreateTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -144,7 +151,7 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	linodeID := d.Get("linode_id").(int)
 	diskID := d.Get("disk_id").(int)
 
-	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout("create").Seconds())); err != nil {
+	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
 		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
 	}
 
@@ -164,7 +171,7 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetPartial("description")
 	d.Partial(false)
 
-	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout("create").Seconds())); err != nil {
+	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
 		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
 	}
 
