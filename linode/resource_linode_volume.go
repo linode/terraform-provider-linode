@@ -5,9 +5,16 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/linode/linodego"
+)
+
+const (
+	LinodeVolumeCreateTimeout = 10 * time.Minute
+	LinodeVolumeUpdateTimeout = 20 * time.Minute
+	LinodeVolumeDeleteTimeout = 10 * time.Minute
 )
 
 func resourceLinodeVolume() *schema.Resource {
@@ -19,6 +26,11 @@ func resourceLinodeVolume() *schema.Resource {
 		Exists: resourceLinodeVolumeExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(LinodeVolumeCreateTimeout),
+			Update: schema.DefaultTimeout(LinodeVolumeUpdateTimeout),
+			Delete: schema.DefaultTimeout(LinodeVolumeDeleteTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"label": &schema.Schema{
@@ -137,13 +149,13 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 	d.SetPartial("size")
 
 	if createOpts.LinodeID > 0 {
-		if _, err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+		if _, err := client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 			return err
 		}
 		d.SetPartial("linode_id")
 	}
 
-	if _, err = client.WaitForVolumeStatus(context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout("create").Seconds())); err != nil {
+	if _, err = client.WaitForVolumeStatus(context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
 		return err
 	}
 
@@ -172,7 +184,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 
-		if _, err = client.WaitForVolumeStatus(context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout("update").Seconds())); err != nil {
+		if _, err = client.WaitForVolumeStatus(context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 			return err
 		}
 
@@ -206,7 +218,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volume.ID)
-			if _, err = client.WaitForVolumeLinodeID(context.Background(), volume.ID, nil, int(d.Timeout("update").Seconds())); err != nil {
+			if _, err = client.WaitForVolumeLinodeID(context.Background(), volume.ID, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 				return err
 			}
 		}
@@ -224,7 +236,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to attach ...", volume.ID)
-			if _, err = client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout("update").Seconds())); err != nil {
+			if _, err = client.WaitForVolumeLinodeID(context.Background(), volume.ID, linodeID, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 				return err
 			}
 		}
@@ -252,7 +264,7 @@ func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
-	if _, err := client.WaitForVolumeLinodeID(context.Background(), id, nil, int(d.Timeout("update").Seconds())); err != nil {
+	if _, err := client.WaitForVolumeLinodeID(context.Background(), id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 		return err
 	}
 

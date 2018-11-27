@@ -12,6 +12,12 @@ import (
 	"github.com/linode/linodego"
 )
 
+const (
+	LinodeInstanceCreateTimeout = 10 * time.Minute
+	LinodeInstanceUpdateTimeout = 20 * time.Minute
+	LinodeInstanceDeleteTimeout = 10 * time.Minute
+)
+
 func resourceLinodeInstance() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeInstanceCreate,
@@ -19,9 +25,13 @@ func resourceLinodeInstance() *schema.Resource {
 		Update: resourceLinodeInstanceUpdate,
 		Delete: resourceLinodeInstanceDelete,
 		Exists: resourceLinodeInstanceExists,
-
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(LinodeInstanceCreateTimeout),
+			Update: schema.DefaultTimeout(LinodeInstanceUpdateTimeout),
+			Delete: schema.DefaultTimeout(LinodeInstanceDeleteTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"image": &schema.Schema{
