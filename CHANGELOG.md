@@ -1,10 +1,10 @@
-## 1.2.1 (Unreleased)
+## 1.3.0 (Unreleased)
 
 ENHANCEMENTS:
 
-* resource/linode\_instance: Add `timeouts` support for `create`, `update`, and `delete` (defaults 10, 20, 10)
-* resource/linode\_image: Add `timeouts` support for `create` (defaults 20)
-* resource/linode\_volume: Add `timeouts` support for `create`, `update`, and `delete` (defaults 10, 20, 10)
+* resource/linode_instance: Add `timeouts` support for `create`, `update`, and `delete` (defaults 10, 20, 10)
+* resource/linode_image: Add `timeouts` support for `create` (defaults 20)
+* resource/linode_volume: Add `timeouts` support for `create`, `update`, and `delete` (defaults 10, 20, 10)
 
 ## 1.2.0 (November 08, 2018)
 
