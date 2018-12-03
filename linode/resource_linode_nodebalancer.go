@@ -208,14 +208,23 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error fetching data about the current NodeBalancer: %s", err)
 	}
 
-	if d.HasChange("label") || d.HasChange("client_conn_throttle") {
+	if d.HasChange("label") || d.HasChange("client_conn_throttle") || d.HasChange("tags") {
 		label := d.Get("label").(string)
 		clientConnThrottle := d.Get("client_conn_throttle").(int)
+
 		// @TODO nodebalancer.GetUpdateOptions, avoid clobbering client_conn_throttle
 		updateOpts := linodego.NodeBalancerUpdateOptions{
 			Label:              &label,
 			ClientConnThrottle: &clientConnThrottle,
 		}
+
+		tags := []string{}
+		for _, tag := range d.Get("tags").([]interface{}) {
+			tags = append(tags, tag.(string))
+		}
+
+		updateOpts.Tags = &tags
+
 		if nodebalancer, err = client.UpdateNodeBalancer(context.Background(), nodebalancer.ID, updateOpts); err != nil {
 			return err
 		}

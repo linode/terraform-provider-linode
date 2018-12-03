@@ -291,7 +291,7 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 			tags = append(tags, tag.(string))
 		}
 
-		updateOpts.Tags = &tags
+		updateOpts.Tags = tags
 	}
 
 	_, err = client.UpdateDomain(context.Background(), int(id), updateOpts)

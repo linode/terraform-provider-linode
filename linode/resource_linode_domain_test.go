@@ -69,6 +69,8 @@ func TestAccLinodeDomain_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckNoResourceAttr(resName, "master_ips"),
 					resource.TestCheckNoResourceAttr(resName, "axfr_ips"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 				),
 			},
 
@@ -85,6 +87,7 @@ func TestAccLinodeDomain_update(t *testing.T) {
 	t.Parallel()
 
 	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
+	var resName = "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -95,14 +98,17 @@ func TestAccLinodeDomain_update(t *testing.T) {
 				Config: testAccCheckLinodeDomainConfigBasic(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeDomainExists,
-					resource.TestCheckResourceAttr("linode_domain.foobar", "domain", domainName),
+					resource.TestCheckResourceAttr(resName, "domain", domainName),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeDomainConfigUpdates(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeDomainExists,
-					resource.TestCheckResourceAttr("linode_domain.foobar", "domain", fmt.Sprintf("renamed-%s", domainName)),
+					resource.TestCheckResourceAttr(resName, "domain", fmt.Sprintf("renamed-%s", domainName)),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
 				),
 			},
 		},
@@ -172,6 +178,7 @@ resource "linode_domain" "foobar" {
 	status = "active"
 	soa_email = "example@%s"
 	description = "tf-testing"
+	tags = ["tf_test"]
 }`, domain, domain)
 }
 
@@ -183,5 +190,6 @@ resource "linode_domain" "foobar" {
 	status = "active"
 	soa_email = "example@%s"
 	description = "tf-testing"
+	tags = ["tf_test", "tf_test_2"]
 }`, domain, domain)
 }

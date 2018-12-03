@@ -205,15 +205,6 @@ func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateOpts.Description = &descString
 	}
 
-	if d.HasChange("tags") {
-		tags := []string{}
-		for _, tag := range d.Get("tags").([]interface{}) {
-			tags = append(tags, tag.(string))
-		}
-
-		updateOpts.Tags = &tags
-	}
-
 	image, err = client.UpdateImage(context.Background(), d.Id(), updateOpts)
 	if err != nil {
 		return err

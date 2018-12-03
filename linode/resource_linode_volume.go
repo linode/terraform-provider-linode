@@ -218,7 +218,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange("label") {
-		updateOpts.Label = d.Get("label")
+		updateOpts.Label = d.Get("label").(string)
 		doUpdate = true
 	}
 

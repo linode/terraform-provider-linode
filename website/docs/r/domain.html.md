@@ -19,6 +19,7 @@ The following example shows how one might use this resource to configure a Domai
 resource "linode_domain" "foobar" {
     domain = "foobar.example"
     soa_email = "example@foobar.example"
+    tags = ["foo", "bar"]
 }
 
 resource "linode_domain_record" "foobar" {
@@ -58,6 +59,8 @@ The following arguments are supported:
 * `refresh_sec` - (Optional) The amount of time in seconds before this Domain should be refreshed. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
 
 * `axfr_ips` - (Optional) The list of IPs that may perform a zone transfer for this Domain. This is potentially dangerous, and should be set to an empty list unless you intend to use it.
+
+* `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
 ## Attributes
 
