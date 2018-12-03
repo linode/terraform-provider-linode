@@ -21,10 +21,11 @@ type TaggedObject struct {
 
 // SortedObjects currently only includes Instances
 type SortedObjects struct {
-	Instances []Instance
+	Instances     []Instance
+	Domains       []Domain
+	Volumes       []Volume
+	NodeBalancers []NodeBalancer
 	/*
-		NodeBalancers []NodeBalancer
-		Domains       []Domain
 		StackScripts  []Stackscript
 	*/
 }
@@ -34,8 +35,11 @@ type TaggedObjectList []TaggedObject
 
 // TagCreateOptions fields are those accepted by CreateTag
 type TagCreateOptions struct {
-	Label   string `json:"label"`
-	Linodes []int  `json:"linodes,omitempty"`
+	Label         string `json:"label"`
+	Linodes       []int  `json:"linodes,omitempty"`
+	Domains       []int  `json:"domains,omitempty"`
+	Volumes       []int  `json:"volumes,omitempty"`
+	NodeBalancers []int  `json:"nodebalancers,omitempty"`
 }
 
 // GetCreateOptions converts a Tag to TagCreateOptions for use in CreateTag
@@ -99,12 +103,31 @@ func (c *Client) ListTags(ctx context.Context, opts *ListOptions) ([]Tag, error)
 func (i *TaggedObject) fixData() (*TaggedObject, error) {
 	switch i.Type {
 	case "linode":
-		instance := Instance{}
-		if err := json.Unmarshal(i.RawData, &instance); err != nil {
+		obj := Instance{}
+		if err := json.Unmarshal(i.RawData, &obj); err != nil {
 			return nil, err
 		}
-		i.Data = instance
+		i.Data = obj
+	case "nodebalancer":
+		obj := NodeBalancer{}
+		if err := json.Unmarshal(i.RawData, &obj); err != nil {
+			return nil, err
+		}
+		i.Data = obj
+	case "domain":
+		obj := Domain{}
+		if err := json.Unmarshal(i.RawData, &obj); err != nil {
+			return nil, err
+		}
+		i.Data = obj
+	case "volume":
+		obj := Volume{}
+		if err := json.Unmarshal(i.RawData, &obj); err != nil {
+			return nil, err
+		}
+		i.Data = obj
 	}
+
 	return i, nil
 }
 
@@ -133,6 +156,24 @@ func (t TaggedObjectList) SortedObjects() (SortedObjects, error) {
 				so.Instances = append(so.Instances, instance)
 			} else {
 				return so, errors.New("Expected an Instance when Type was \"linode\"")
+			}
+		case "domain":
+			if domain, ok := o.Data.(Domain); ok {
+				so.Domains = append(so.Domains, domain)
+			} else {
+				return so, errors.New("Expected a Domain when Type was \"domain\"")
+			}
+		case "volume":
+			if volume, ok := o.Data.(Volume); ok {
+				so.Volumes = append(so.Volumes, volume)
+			} else {
+				return so, errors.New("Expected an Volume when Type was \"volume\"")
+			}
+		case "nodebalancer":
+			if nodebalancer, ok := o.Data.(NodeBalancer); ok {
+				so.NodeBalancers = append(so.NodeBalancers, nodebalancer)
+			} else {
+				return so, errors.New("Expected an NodeBalancer when Type was \"nodebalancer\"")
 			}
 		}
 	}

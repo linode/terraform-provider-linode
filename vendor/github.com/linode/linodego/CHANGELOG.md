@@ -6,7 +6,21 @@
 
 ### Features
 
+<a name-"v0.7.0"></a>
+
+## [v0.7.0](https://github.com/linode/linodego/compare/v0.6.2..v0.7.0) (2018-12-03)
+
+### Features
+
+* add `Tags` field in: `NodeBalancer`, `Domain`, `Volume`
+* add `UpdateIPAddress` (for setting RDNS)
+
+### Fixes
+
+* invalid URL for `/v4/networking/` enpoints (IPv6 Ranges and Pools) has been correcrted
+
 <a name-"v0.6.2"></a>
+
 ## [v0.6.2](https://github.com/linode/linodego/compare/v0.6.1..v0.6.2) (2018-10-26)
 
 ### Fixes

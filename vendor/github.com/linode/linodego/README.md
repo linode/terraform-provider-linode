@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/linode/linodego)](https://goreportcard.com/report/github.com/linode/linodego)
 [![codecov](https://codecov.io/gh/linode/linodego/branch/master/graph/badge.svg)](https://codecov.io/gh/linode/linodego)
 
-Go client for [Linode REST v4 API](https://developers.linode.com/v4/introduction)
+Go client for [Linode REST v4 API](https://developers.linode.com/api/v4)
 
 ## Installation
 

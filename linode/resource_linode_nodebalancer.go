@@ -88,6 +88,12 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 					},
 				},
 			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+			},
 		},
 	}
 }
@@ -143,6 +149,7 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("region", nodebalancer.Region)
 	d.Set("ipv4", nodebalancer.IPv4)
 	d.Set("ipv6", nodebalancer.IPv6)
+	d.Set("tags", nodebalancer.Tags)
 	d.Set("client_conn_throttle", nodebalancer.ClientConnThrottle)
 	d.Set("created", nodebalancer.Created.Format(time.RFC3339))
 	d.Set("updated", nodebalancer.Updated.Format(time.RFC3339))
@@ -172,6 +179,13 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 		Label:              &label,
 		ClientConnThrottle: &clientConnThrottle,
 	}
+
+	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+		for _, tag := range tagsRaw.([]interface{}) {
+			createOpts.Tags = append(createOpts.Tags, tag.(string))
+		}
+	}
+
 	nodebalancer, err := client.CreateNodeBalancer(context.Background(), createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode NodeBalancer: %s", err)

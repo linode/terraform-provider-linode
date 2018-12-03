@@ -101,6 +101,12 @@ func resourceLinodeDomain() *schema.Resource {
 				Description: "Start of Authority email address. This is required for master Domains.",
 				Optional:    true,
 			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+			},
 		},
 	}
 }
@@ -185,6 +191,7 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("expire_sec", domain.ExpireSec)
 	d.Set("refresh_sec", domain.RefreshSec)
 	d.Set("soa_email", domain.SOAEmail)
+	d.Set("tags", domain.Tags)
 
 	return nil
 }
@@ -205,6 +212,12 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 		ExpireSec:   d.Get("expire_sec").(int),
 		RefreshSec:  d.Get("refresh_sec").(int),
 		TTLSec:      d.Get("ttl_sec").(int),
+	}
+
+	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+		for _, tag := range tagsRaw.([]interface{}) {
+			createOpts.Tags = append(createOpts.Tags, tag.(string))
+		}
 	}
 
 	if v, ok := d.GetOk("master_ips"); ok {
@@ -270,6 +283,15 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 
 		updateOpts.AXfrIPs = AXfrIPs
+	}
+
+	if d.HasChange("tags") {
+		tags := []string{}
+		for _, tag := range d.Get("tags").([]interface{}) {
+			tags = append(tags, tag.(string))
+		}
+
+		updateOpts.Tags = &tags
 	}
 
 	_, err = client.UpdateDomain(context.Background(), int(id), updateOpts)
