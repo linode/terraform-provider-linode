@@ -59,12 +59,15 @@ resource "linode_nodebalancer_node" "foonode" {
 
 The following arguments are supported:
 
-* `label` - (Required) The label of the Linode NodeBalancer Node. This is for display purposes only.
+* `nodebalancer_id` - (Required) The ID of the NodeBalancer to access.
 
-* `region` - (Required) The region where this nodebalancer_node will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc.  *Changing `region` forces the creation of a new Linode NodeBalancer Node.*.
+* `config_id` - (Required) The ID of the NodeBalancerConfig to access.
+
 * `address` - (Required) The private IP Address where this backend can be reached. This must be a private IP address.
 
 - - -
+
+* `label` - (Optional) The label of the Linode NodeBalancer Node. This is for display purposes only.
 
 * `mode` - (Optional) The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it
 
