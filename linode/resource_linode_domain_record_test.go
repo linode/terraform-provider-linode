@@ -23,7 +23,7 @@ func TestAccLinodeDomainRecord_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeDomainRecordConfigBasic(domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeDomainRecordExists,
@@ -31,7 +31,7 @@ func TestAccLinodeDomainRecord_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -71,14 +71,14 @@ func TestAccLinodeDomainRecord_update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeDomainRecordConfigBasic(domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeDomainRecordExists,
 					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainRecordName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeDomainRecordConfigUpdates(domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeDomainRecordExists,

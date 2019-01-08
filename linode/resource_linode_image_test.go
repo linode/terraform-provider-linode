@@ -55,7 +55,7 @@ func TestAccLinodeImage_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeImageDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeImageConfigBasic(ImageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeImageExists,
@@ -69,7 +69,7 @@ func TestAccLinodeImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -90,7 +90,7 @@ func TestAccLinodeImage_update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeImageDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeImageConfigBasic(imageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeImageExists,
@@ -98,7 +98,7 @@ func TestAccLinodeImage_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "description", "descriptive text"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeImageConfigUpdates(imageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeImageExists,
@@ -112,7 +112,7 @@ func TestAccLinodeImage_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,

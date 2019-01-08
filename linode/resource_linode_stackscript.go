@@ -21,71 +21,71 @@ func resourceLinodeStackscript() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"label": &schema.Schema{
+			"label": {
 				Type:        schema.TypeString,
 				Description: "The StackScript's label is for display purposes only.",
 				Required:    true,
 			},
-			"script": &schema.Schema{
+			"script": {
 				Type:        schema.TypeString,
 				Description: "The script to execute when provisioning a new Linode with this StackScript.",
 				Required:    true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "A description for the StackScript.",
 				Required:    true,
 			},
-			"rev_note": &schema.Schema{
+			"rev_note": {
 				Type:        schema.TypeString,
 				Description: "This field allows you to add notes for the set of revisions made to this StackScript.",
 				Optional:    true,
 			},
-			"is_public": &schema.Schema{
+			"is_public": {
 				Type:        schema.TypeBool,
 				Description: "This determines whether other users can use your StackScript. Once a StackScript is made public, it cannot be made private.",
 				Default:     false,
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"images": &schema.Schema{
+			"images": {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "An array of Image IDs representing the Images that this StackScript is compatible for deploying with.",
 				Required:    true,
 			},
 
-			"deployments_active": &schema.Schema{
+			"deployments_active": {
 				Type:        schema.TypeInt,
 				Description: "Count of currently active, deployed Linodes created from this StackScript.",
 				Computed:    true,
 			},
-			"user_gravatar_id": &schema.Schema{
+			"user_gravatar_id": {
 				Type:        schema.TypeString,
 				Description: "The Gravatar ID for the User who created the StackScript.",
 				Computed:    true,
 			},
-			"deployments_total": &schema.Schema{
+			"deployments_total": {
 				Type:        schema.TypeInt,
 				Description: "The total number of times this StackScript has been deployed.",
 				Computed:    true,
 			},
-			"username": &schema.Schema{
+			"username": {
 				Type:        schema.TypeString,
 				Description: "The User who created the StackScript.",
 				Computed:    true,
 			},
-			"created": &schema.Schema{
+			"created": {
 				Type:        schema.TypeString,
 				Description: "The date this StackScript was created.",
 				Computed:    true,
 			},
-			"updated": &schema.Schema{
+			"updated": {
 				Type:        schema.TypeString,
 				Description: "The date this StackScript was updated.",
 				Computed:    true,
 			},
-			"user_defined_fields": &schema.Schema{
+			"user_defined_fields": {
 				Description: "This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment.",
 				Type:        schema.TypeSet,
 				Computed:    true,

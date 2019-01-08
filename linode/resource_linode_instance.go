@@ -34,28 +34,28 @@ func resourceLinodeInstance() *schema.Resource {
 			Delete: schema.DefaultTimeout(LinodeInstanceDeleteTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"image": &schema.Schema{
+			"image": {
 				Type:          schema.TypeString,
 				Description:   "An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use.",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"disk", "config", "backup_id"},
 			},
-			"backup_id": &schema.Schema{
+			"backup_id": {
 				Type:          schema.TypeInt,
 				Description:   "A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive.",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"image", "disk", "config"},
 			},
-			"stackscript_id": &schema.Schema{
+			"stackscript_id": {
 				Type:          schema.TypeInt,
 				Description:   "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"disk", "config"},
 			},
-			"stackscript_data": &schema.Schema{
+			"stackscript_data": {
 				Type: schema.TypeMap,
 				Elem: &schema.Schema{Type: schema.TypeString},
 
@@ -65,77 +65,77 @@ func resourceLinodeInstance() *schema.Resource {
 				Sensitive:     true,
 				ConflictsWith: []string{"disk", "config"},
 			},
-			"label": &schema.Schema{
+			"label": {
 				Type:         schema.TypeString,
 				Description:  "The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(3, 50),
 			},
-			"group": &schema.Schema{
+			"group": {
 				Type:        schema.TypeString,
 				Description: "The display group of the Linode instance.",
 				Optional:    true,
 			},
-			"tags": &schema.Schema{
+			"tags": {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 			},
-			"boot_config_label": &schema.Schema{
+			"boot_config_label": {
 				Type:        schema.TypeString,
 				Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
 				Optional:    true,
 				Computed:    true,
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:         schema.TypeString,
 				Description:  "This is the location where the Linode was deployed. This cannot be changed without opening a support ticket.",
 				Required:     true,
 				ForceNew:     true,
 				InputDefault: "us-east",
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:        schema.TypeString,
 				Description: "The type of instance to be deployed, determining the price and size.",
 				Optional:    true,
 				Default:     "g6-standard-1",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Description: "The status of the instance, indicating the current readiness state.",
 				Computed:    true,
 			},
-			"ip_address": &schema.Schema{
+			"ip_address": {
 				Type:        schema.TypeString,
 				Description: "This Linode's Public IPv4 Address. If there are multiple public IPv4 addresses on this Instance, an arbitrary address will be used for this field.",
 				Computed:    true,
 			},
-			"ipv6": &schema.Schema{
+			"ipv6": {
 				Type:        schema.TypeString,
 				Description: "This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.",
 				Computed:    true,
 			},
 
-			"ipv4": &schema.Schema{
+			"ipv4": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.",
 				Computed:    true,
 			},
 
-			"private_ip": &schema.Schema{
+			"private_ip": {
 				Type:        schema.TypeBool,
 				Description: "If true, the created Linode will have private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region.",
 				Optional:    true,
 			},
-			"private_ip_address": &schema.Schema{
+			"private_ip_address": {
 				Type:        schema.TypeString,
 				Description: "This Linode's Private IPv4 Address.  The regional private IP address range is 192.168.128/17 address shared by all Linode Instances in a region.",
 				Computed:    true,
 			},
-			"authorized_keys": &schema.Schema{
+			"authorized_keys": {
 				Type:          schema.TypeList,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Description:   "A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if 'image' is provided.",
@@ -144,7 +144,7 @@ func resourceLinodeInstance() *schema.Resource {
 				StateFunc:     sshKeyState,
 				ConflictsWith: []string{"disk", "config"},
 			},
-			"authorized_users": &schema.Schema{
+			"authorized_users": {
 				Type:          schema.TypeList,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Description:   "A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. Only accepted if 'image' is provided.",
@@ -153,7 +153,7 @@ func resourceLinodeInstance() *schema.Resource {
 				StateFunc:     sshKeyState,
 				ConflictsWith: []string{"disk", "config"},
 			},
-			"root_pass": &schema.Schema{
+			"root_pass": {
 				Type:          schema.TypeString,
 				Description:   "The password that will be initialially assigned to the 'root' user account.",
 				Sensitive:     true,
@@ -162,7 +162,7 @@ func resourceLinodeInstance() *schema.Resource {
 				StateFunc:     rootPasswordState,
 				ConflictsWith: []string{"disk", "config"},
 			},
-			"swap_size": &schema.Schema{
+			"swap_size": {
 				Type:          schema.TypeInt,
 				Description:   "When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.",
 				Optional:      true,
@@ -170,20 +170,20 @@ func resourceLinodeInstance() *schema.Resource {
 				Default:       nil,
 				ConflictsWith: []string{"disk", "config"},
 			},
-			"backups_enabled": &schema.Schema{
+			"backups_enabled": {
 				Type:        schema.TypeBool,
 				Description: "If this field is set to true, the created Linode will automatically be enrolled in the Linode Backup service. This will incur an additional charge. The cost for the Backup service is dependent on the Type of Linode deployed.",
 				Optional:    true,
 				Computed:    true,
 				Default:     nil,
 			},
-			"watchdog_enabled": &schema.Schema{
+			"watchdog_enabled": {
 				Type:        schema.TypeBool,
 				Description: "The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.",
 				Optional:    true,
 				Default:     true,
 			},
-			"specs": &schema.Schema{
+			"specs": {
 				Computed: true,
 				Type:     schema.TypeList,
 				MaxItems: 1,
@@ -213,7 +213,7 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 
-			"alerts": &schema.Schema{
+			"alerts": {
 				Computed: true,
 				Type:     schema.TypeList,
 				Optional: true,
@@ -253,7 +253,7 @@ func resourceLinodeInstance() *schema.Resource {
 					},
 				},
 			},
-			"backups": &schema.Schema{
+			"backups": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Description: "Information about this Linode's backups status.",
@@ -288,7 +288,7 @@ func resourceLinodeInstance() *schema.Resource {
 					},
 				},
 			},
-			"config": &schema.Schema{
+			"config": {
 				Optional:      true,
 				Description:   "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
 				Type:          schema.TypeList,
@@ -593,7 +593,7 @@ func resourceLinodeInstance() *schema.Resource {
 					},
 				},
 			},
-			"disk": &schema.Schema{
+			"disk": {
 				Optional:      true,
 				ConflictsWith: []string{"image", "root_pass", "authorized_keys", "authorized_users", "swap_size", "backup_id", "stackscript_id"},
 				Type:          schema.TypeList,
@@ -669,7 +669,7 @@ func resourceLinodeInstance() *schema.Resource {
 							ForceNew:  true,
 							StateFunc: sshKeyState,
 						},
-						"stackscript_id": &schema.Schema{
+						"stackscript_id": {
 							Type:        schema.TypeInt,
 							Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript.",
 							Computed:    true,
@@ -681,7 +681,7 @@ func resourceLinodeInstance() *schema.Resource {
 							},
 							Default: nil,
 						},
-						"stackscript_data": &schema.Schema{
+						"stackscript_data": {
 							Type:        schema.TypeMap,
 							Description: "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
 							Optional:    true,
@@ -694,7 +694,7 @@ func resourceLinodeInstance() *schema.Resource {
 							},
 							Default: nil,
 						},
-						"root_pass": &schema.Schema{
+						"root_pass": {
 							Type:        schema.TypeString,
 							Description: "The password that will be initialially assigned to the 'root' user account.",
 							Sensitive:   true,
