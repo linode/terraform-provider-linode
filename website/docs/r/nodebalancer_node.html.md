@@ -61,7 +61,10 @@ The following arguments are supported:
 
 * `label` - (Required) The label of the Linode NodeBalancer Node. This is for display purposes only.
 
-* `region` - (Required) The region where this nodebalancer_node will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc.  *Changing `region` forces the creation of a new Linode NodeBalancer Node.*.
+* `nodebalancer_id` - (Required) The ID of the NodeBalancer to access.
+
+* `config_id` - (Required) The ID of the NodeBalancerConfig to access.
+
 * `address` - (Required) The private IP Address where this backend can be reached. This must be a private IP address.
 
 - - -
