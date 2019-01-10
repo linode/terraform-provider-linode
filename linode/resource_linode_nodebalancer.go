@@ -89,7 +89,7 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 				},
 			},
 			"tags": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
@@ -181,7 +181,7 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
-		for _, tag := range tagsRaw.([]interface{}) {
+		for _, tag := range tagsRaw.(*schema.Set).List() {
 			createOpts.Tags = append(createOpts.Tags, tag.(string))
 		}
 	}
@@ -219,7 +219,7 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 
 		tags := []string{}
-		for _, tag := range d.Get("tags").([]interface{}) {
+		for _, tag := range d.Get("tags").(*schema.Set).List() {
 			tags = append(tags, tag.(string))
 		}
 

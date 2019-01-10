@@ -1,5 +1,9 @@
 ## 1.4.0 (Unreleased)
 
+BACKWARDS INCOMPATIBILITIES / NOTES:
+
+* resource/linode\_instance: `tags` field is now a `TypeSet` instead of a `TypeList` ([#16](https://github.com/terraform-providers/terraform-provider-linode/issues/16))
+
 ENHANCEMENTS:
 
 * resource/linode\_domain: Add `tags` field
