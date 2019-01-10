@@ -6,6 +6,10 @@ ENHANCEMENTS:
 * resource/linode\_nodebalancer: Add `tags` field
 * resource/linode\_volume: Add `tags` field
 
+BUG FIXES:
+
+* `linode_nodebalancer_node.label` was updated from optional to required, the Linode API has always required this field
+
 ## 1.3.0 (November 27, 2018)
 
 ENHANCEMENTS:
