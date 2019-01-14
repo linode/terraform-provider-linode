@@ -24,7 +24,7 @@ func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
 		Providers:                 testAccProviders,
 		CheckDestroy:              testAccCheckLinodeNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config:       config,
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -48,7 +48,7 @@ func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resName, "ssl_cert"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,

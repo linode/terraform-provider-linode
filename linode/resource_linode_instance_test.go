@@ -61,7 +61,7 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -74,7 +74,7 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -100,7 +100,7 @@ func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceAuthorizedUsers(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -113,7 +113,7 @@ func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -139,7 +139,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -155,7 +155,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -180,7 +180,7 @@ func TestAccLinodeInstance_configPair(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -195,7 +195,7 @@ func TestAccLinodeInstance_configPair(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -218,7 +218,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskRaw(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -236,7 +236,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -262,7 +262,7 @@ func TestAccLinodeInstance_diskImage(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDisk(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -277,7 +277,7 @@ func TestAccLinodeInstance_diskImage(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -303,7 +303,7 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceMultipleDisks(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -320,7 +320,7 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -345,7 +345,7 @@ func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -362,7 +362,7 @@ func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -392,7 +392,7 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 			testAccCheckLinodeVolumeDestroy,
 		),
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -413,7 +413,7 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -443,7 +443,7 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithVolumeAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -463,7 +463,7 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -487,7 +487,7 @@ func TestAccLinodeInstance_updateSimple(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceBasic(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -495,7 +495,7 @@ func TestAccLinodeInstance_updateSimple(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceSimpleUpdates(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -522,7 +522,7 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -534,7 +534,7 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceConfigSimpleUpdates(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -591,7 +591,7 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -605,7 +605,7 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 					),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -626,13 +626,13 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 					),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -646,13 +646,13 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 					),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithMultipleConfigsAllUpdated(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -689,7 +689,7 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -698,7 +698,7 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 				),
 			},
 			// Bump it to a 2048, but don't expand the disk
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceConfigUpsizeBigger(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -707,7 +707,7 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 				),
 			},
 			// Go back down to a 1024
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -731,7 +731,7 @@ func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskRaw(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -746,7 +746,7 @@ func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 				),
 			},
 			// Bump it to a 2048, and expand the disk
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskRawResizedAndExpanded(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -776,7 +776,7 @@ func TestAccLinodeInstance_tag(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a single tag
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithTag(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -785,7 +785,7 @@ func TestAccLinodeInstance_tag(t *testing.T) {
 				),
 			},
 			// Apply updated tags
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithUpdatedTag(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -810,7 +810,7 @@ func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskRaw(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -825,7 +825,7 @@ func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 				),
 			},
 			// Bump it to a 2048, and expand the disk
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskRawDeleted(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -856,7 +856,7 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -869,7 +869,7 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 				),
 			},
 			// Bump it to a 2048, and expand the disk
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskAndConfigResizedAndExpanded(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -906,7 +906,7 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -921,7 +921,7 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 				),
 			},
 			// Add a disk, reorder the disks
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceWithDiskAndConfigAddedAndReordered(instanceName, publicKeyMaterial),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
@@ -964,7 +964,7 @@ func TestAccLinodeInstance_privateNetworking(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeInstanceConfigPrivateNetworking(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),

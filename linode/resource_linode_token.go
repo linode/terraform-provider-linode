@@ -22,18 +22,18 @@ func resourceLinodeToken() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"label": &schema.Schema{
+			"label": {
 				Type:        schema.TypeString,
 				Description: "The label of the Linode Token.",
 				Optional:    true,
 			},
-			"scopes": &schema.Schema{
+			"scopes": {
 				Type:        schema.TypeString,
 				Description: "The scopes this token was created with. These define what parts of the Account the token can be used to access. Many command-line tools, such as the Linode CLI, require tokens with access to *. Tokens with more restrictive scopes are generally more secure.",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"expiry": &schema.Schema{
+			"expiry": {
 				Type:             schema.TypeString,
 				Description:      "When this token will expire. Personal Access Tokens cannot be renewed, so after this time the token will be completely unusable and a new token will need to be generated. Tokens may be created with 'null' as their expiry and will never expire unless revoked.",
 				Optional:         true,
@@ -41,12 +41,12 @@ func resourceLinodeToken() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: equivalentDate,
 			},
-			"created": &schema.Schema{
+			"created": {
 				Type:        schema.TypeString,
 				Description: "The date and time this token was created.",
 				Computed:    true,
 			},
-			"token": &schema.Schema{
+			"token": {
 				Type:        schema.TypeString,
 				Description: "The token used to access the API.",
 				Computed:    true,

@@ -76,7 +76,7 @@ func TestAccLinodeVolume_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeVolumeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
@@ -90,7 +90,7 @@ func TestAccLinodeVolume_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -111,14 +111,14 @@ func TestAccLinodeVolume_update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeVolumeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists(resName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigUpdates(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists(resName, &volume),
@@ -143,14 +143,14 @@ func TestAccLinodeVolume_resized(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeVolumeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigResized(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
@@ -173,7 +173,7 @@ func TestAccLinodeVolume_attached(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeVolumeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
@@ -181,7 +181,7 @@ func TestAccLinodeVolume_attached(t *testing.T) {
 					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
@@ -189,7 +189,7 @@ func TestAccLinodeVolume_attached(t *testing.T) {
 					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -210,21 +210,21 @@ func TestAccLinodeVolume_detached(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeVolumeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config:            testAccCheckLinodeVolumeConfigAttached(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
-			resource.TestStep{
+			{
 				Config:            testAccCheckLinodeVolumeConfigBasic(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
@@ -246,7 +246,7 @@ func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeVolumeDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
@@ -254,19 +254,19 @@ func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeVolumeConfigReattachedBetweenInstances(volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "linode_instance.foobar",
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "linode_instance.foobaz",
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
 				ImportState:       true,

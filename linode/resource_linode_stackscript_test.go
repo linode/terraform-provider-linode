@@ -55,7 +55,7 @@ func TestAccLinodeStackscript_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeStackscriptDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeStackscriptBasic(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeStackscriptExists,
@@ -66,7 +66,7 @@ func TestAccLinodeStackscript_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -85,7 +85,7 @@ func TestAccLinodeStackscript_update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeStackscriptDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeStackscriptBasic(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeStackscriptExists,
@@ -95,7 +95,7 @@ func TestAccLinodeStackscript_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeStackscriptBasicRenamed(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeStackscriptExists,
@@ -105,7 +105,7 @@ func TestAccLinodeStackscript_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", stackscriptName)),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -124,7 +124,7 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeStackscriptDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeStackscriptBasic(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeStackscriptExists,
@@ -136,7 +136,7 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeStackscriptCodeChange(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeStackscriptExists,
@@ -152,7 +152,7 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s", stackscriptName)),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
