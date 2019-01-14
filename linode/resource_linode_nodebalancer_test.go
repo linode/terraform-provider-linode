@@ -69,6 +69,8 @@ func TestAccLinodeNodeBalancer_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttr(resName, "transfer.%", "3"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
 				),
 			},
 
@@ -106,6 +108,9 @@ func TestAccLinodeNodeBalancer_update(t *testing.T) {
 					testAccCheckLinodeNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodebalancerName)),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.2667398925", "tf_test_2"),
 				),
 			},
 		},
@@ -172,6 +177,7 @@ resource "linode_nodebalancer" "foobar" {
 	label = "%s"
 	region = "us-east"
 	client_conn_throttle = 20
+	tags = ["tf_test"]
 }
 `, nodebalancer)
 }
@@ -182,6 +188,7 @@ resource "linode_nodebalancer" "foobar" {
 	label = "%s_r"
 	region = "us-east"
 	client_conn_throttle = 0
+	tags = ["tf_test", "tf_test_2"]
 }
 `, nodebalancer)
 }

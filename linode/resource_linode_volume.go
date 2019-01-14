@@ -67,6 +67,12 @@ func resourceLinodeVolume() *schema.Resource {
 				Description: "The full filesystem path for the Volume based on the Volume's label. Path is /dev/disk/by-id/scsi-0Linode_Volume_ + Volume label.",
 				Computed:    true,
 			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+			},
 		},
 	}
 }
@@ -113,6 +119,7 @@ func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("size", volume.Size)
 	d.Set("linode_id", volume.LinodeID)
 	d.Set("filesystem_path", volume.FilesystemPath)
+	d.Set("tags", volume.Tags)
 
 	return nil
 }
@@ -136,6 +143,12 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		lidInt := lID.(int)
 		linodeID = &lidInt
 		createOpts.LinodeID = *linodeID
+	}
+
+	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+		for _, tag := range tagsRaw.(*schema.Set).List() {
+			createOpts.Tags = append(createOpts.Tags, tag.(string))
+		}
 	}
 
 	volume, err := client.CreateVolume(context.Background(), createOpts)
@@ -175,7 +188,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	volume, errVolume := client.GetVolume(context.Background(), int(id))
 	if errVolume != nil {
-		return fmt.Errorf("Error fetching data about the current linode: %s", errVolume)
+		return fmt.Errorf("Error fetching data about the volume %d: %s", int(id), errVolume)
 	}
 
 	if d.HasChange("size") {
@@ -192,10 +205,29 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 		d.SetPartial("size")
 	}
 
+	updateOpts := linodego.VolumeUpdateOptions{}
+	doUpdate := false
+	if d.HasChange("tags") {
+		tags := []string{}
+		for _, tag := range d.Get("tags").(*schema.Set).List() {
+			tags = append(tags, tag.(string))
+		}
+
+		updateOpts.Tags = &tags
+		doUpdate = true
+	}
+
 	if d.HasChange("label") {
-		if volume, err = client.RenameVolume(context.Background(), volume.ID, d.Get("label").(string)); err != nil {
+		updateOpts.Label = d.Get("label").(string)
+		doUpdate = true
+	}
+
+	if doUpdate {
+		if volume, err = client.UpdateVolume(context.Background(), volume.ID, updateOpts); err != nil {
 			return err
 		}
+		d.Set("tags", volume.Tags)
+		d.SetPartial("tags")
 		d.Set("label", volume.Label)
 		d.SetPartial("label")
 	}
@@ -260,7 +292,6 @@ func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error 
 	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
 	if err := client.DetachVolume(context.Background(), id); err != nil {
 		return fmt.Errorf("Error detaching Linode Volume %d: %s", id, err)
-
 	}
 
 	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)

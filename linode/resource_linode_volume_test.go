@@ -85,6 +85,8 @@ func TestAccLinodeVolume_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 					resource.TestCheckResourceAttr(resName, "region", "us-west"),
 					resource.TestCheckResourceAttr(resName, "linode_id", "0"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
 				),
 			},
 
@@ -102,6 +104,7 @@ func TestAccLinodeVolume_update(t *testing.T) {
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
 	var volume = linodego.Volume{}
+	var resName = "linode_volume.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -111,15 +114,18 @@ func TestAccLinodeVolume_update(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
-					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
+					testAccCheckLinodeVolumeExists(resName, &volume),
+					resource.TestCheckResourceAttr(resName, "label", volumeName),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckLinodeVolumeConfigUpdates(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
-					resource.TestCheckResourceAttr("linode_volume.foobar", "label", fmt.Sprintf("%s_r", volumeName)),
+					testAccCheckLinodeVolumeExists(resName, &volume),
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", volumeName)),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.2667398925", "tf_test_2"),
 				),
 			},
 		},
@@ -149,6 +155,7 @@ func TestAccLinodeVolume_resized(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "size", "30"),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "tags.#", "0"),
 				),
 			},
 		},
@@ -211,18 +218,14 @@ func TestAccLinodeVolume_detached(t *testing.T) {
 				),
 			},
 			resource.TestStep{
+				Config:            testAccCheckLinodeVolumeConfigAttached(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
-				),
-			},
-			resource.TestStep{
+				Config:            testAccCheckLinodeVolumeConfigBasic(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -340,6 +343,7 @@ func testAccCheckLinodeVolumeConfigBasic(volume string) string {
 resource "linode_volume" "foobar" {
 	label = "%s"
 	region = "us-west"
+	tags = ["tf_test"]
 }`, volume)
 }
 
@@ -348,6 +352,7 @@ func testAccCheckLinodeVolumeConfigUpdates(volume string) string {
 resource "linode_volume" "foobar" {
 	label = "%s_r"
 	region = "us-west"
+	tags = ["tf_test", "tf_test_2"]
 }`, volume)
 }
 

@@ -20,6 +20,8 @@ resource "linode_nodebalancer" "foobar" {
     label = "mynodebalancer"
     region = "us-east"
     client_conn_throttle = 20
+    tags = ["foobar"]
+
 }
 ```
 
@@ -36,6 +38,8 @@ The following arguments are supported:
 * `client_conn_throttle` - (Optional) Throttle connections per second (0-20). Set to 0 (default) to disable throttling.
 
 * `linode_id` - (Optional) The ID of a Linode Instance where the the NodeBalancer should be attached.
+
+* `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
 ## Attributes
 

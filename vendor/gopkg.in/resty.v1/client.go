@@ -103,6 +103,8 @@ type Client struct {
 	udBeforeRequest    []func(*Client, *Request) error
 	preReqHook         func(*Client, *Request) error
 	afterResponse      []func(*Client, *Response) error
+	requestLog         func(*RequestLog) error
+	responseLog        func(*ResponseLog) error
 }
 
 // User type is to hold an username and password information
@@ -380,6 +382,26 @@ func (c *Client) SetDebug(d bool) *Client {
 //
 func (c *Client) SetDebugBodyLimit(sl int64) *Client {
 	c.debugBodySizeLimit = sl
+	return c
+}
+
+// OnRequestLog method used to set request log callback into resty. Registered callback gets
+// called before the resty actually logs the information.
+func (c *Client) OnRequestLog(rl func(*RequestLog) error) *Client {
+	if c.requestLog != nil {
+		c.Log.Printf("Overwriting an existing on-request-log callback from=%s to=%s", functionName(c.requestLog), functionName(rl))
+	}
+	c.requestLog = rl
+	return c
+}
+
+// OnResponseLog method used to set response log callback into resty. Registered callback gets
+// called before the resty actually logs the information.
+func (c *Client) OnResponseLog(rl func(*ResponseLog) error) *Client {
+	if c.responseLog != nil {
+		c.Log.Printf("Overwriting an existing on-response-log callback from=%s to=%s", functionName(c.responseLog), functionName(rl))
+	}
+	c.responseLog = rl
 	return c
 }
 
@@ -810,8 +832,8 @@ func (c *Client) execute(req *Request) (*Response, error) {
 		defer closeq(resp.Body)
 		body := resp.Body
 
-		// GitHub #142
-		if strings.EqualFold(resp.Header.Get(hdrContentEncodingKey), "gzip") && resp.ContentLength > 0 {
+		// GitHub #142 & #187
+		if strings.EqualFold(resp.Header.Get(hdrContentEncodingKey), "gzip") && resp.ContentLength != 0 {
 			if _, ok := body.(*gzip.Reader); !ok {
 				body, err = gzip.NewReader(body)
 				if err != nil {

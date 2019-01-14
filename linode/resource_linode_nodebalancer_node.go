@@ -38,7 +38,7 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "The label for this node. This is for display purposes only.",
-				Optional:    true,
+				Required:    true,
 			},
 			"weight": &schema.Schema{
 				Type:         schema.TypeInt,
