@@ -26,7 +26,7 @@ Additional documentation and examples are provided in the Linode Guide, [Using T
 
 ### Building the provider
 
-If you wish to build or contribute code to the provider, you'll first need [Git](https://git-scm.com/downloads) and [Go](http://www.golang.org) installed on your machine (version 1.8+ is *required*).
+If you wish to build or contribute code to the provider, you'll first need [Git](https://git-scm.com/downloads) and [Go](http://www.golang.org) installed on your machine (version 1.11+ is *required*).
 
 You'll also need to correctly configure a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 

@@ -55,7 +55,7 @@ func TestAccLinodeNodeBalancer_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeNodeBalancerBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
@@ -74,7 +74,7 @@ func TestAccLinodeNodeBalancer_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -94,7 +94,7 @@ func TestAccLinodeNodeBalancer_update(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeNodeBalancerBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,
@@ -102,7 +102,7 @@ func TestAccLinodeNodeBalancer_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckLinodeNodeBalancerUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerExists,

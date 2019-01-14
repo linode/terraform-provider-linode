@@ -33,41 +33,41 @@ func resourceLinodeVolume() *schema.Resource {
 			Delete: schema.DefaultTimeout(LinodeVolumeDeleteTimeout),
 		},
 		Schema: map[string]*schema.Schema{
-			"label": &schema.Schema{
+			"label": {
 				Type:        schema.TypeString,
 				Description: "The label of the Linode Volume.",
 				Required:    true,
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Description: "The status of the volume, indicating the current readiness state.",
 				Computed:    true,
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:         schema.TypeString,
 				Description:  "The region where this volume will be deployed.",
 				Required:     true,
 				ForceNew:     true,
 				InputDefault: "us-east",
 			},
-			"size": &schema.Schema{
+			"size": {
 				Type:        schema.TypeInt,
 				Description: "Size of the Volume in GB",
 				Optional:    true,
 				Computed:    true,
 			},
-			"linode_id": &schema.Schema{
+			"linode_id": {
 				Type:        schema.TypeInt,
 				Description: "The Linode ID where the Volume should be attached.",
 				Optional:    true,
 				Computed:    true,
 			},
-			"filesystem_path": &schema.Schema{
+			"filesystem_path": {
 				Type:        schema.TypeString,
 				Description: "The full filesystem path for the Volume based on the Volume's label. Path is /dev/disk/by-id/scsi-0Linode_Volume_ + Volume label.",
 				Computed:    true,
 			},
-			"tags": &schema.Schema{
+			"tags": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,

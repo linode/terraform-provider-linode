@@ -30,12 +30,12 @@ func resourceLinodeTemplate() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"label": &schema.Schema{
+			"label": {
 				Type:        schema.TypeString,
 				Description: "The label of the Linode Template.",
 				Optional:    true,
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeInt,
 				Description: "The status of the template, indicating the current readiness state.",
 				Computed:    true,
