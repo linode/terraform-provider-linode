@@ -188,7 +188,7 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	volume, errVolume := client.GetVolume(context.Background(), int(id))
 	if errVolume != nil {
-		return fmt.Errorf("Error fetching data about the current linode: %s", errVolume)
+		return fmt.Errorf("Error fetching data about the volume %d: %s", int(id), errVolume)
 	}
 
 	if d.HasChange("size") {
@@ -292,7 +292,6 @@ func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error 
 	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
 	if err := client.DetachVolume(context.Background(), id); err != nil {
 		return fmt.Errorf("Error detaching Linode Volume %d: %s", id, err)
-
 	}
 
 	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)

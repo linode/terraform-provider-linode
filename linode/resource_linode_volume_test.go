@@ -218,18 +218,14 @@ func TestAccLinodeVolume_detached(t *testing.T) {
 				),
 			},
 			resource.TestStep{
+				Config:            testAccCheckLinodeVolumeConfigAttached(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 			resource.TestStep{
-				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
-				),
-			},
-			resource.TestStep{
+				Config:            testAccCheckLinodeVolumeConfigBasic(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
