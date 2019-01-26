@@ -16,6 +16,10 @@ data "linode_image" "ubuntu" {
   id = "linode/ubuntu18.04"
 }
 
+data "linode_domain" "linode_com" {
+  id = "1234566"
+}
+
 resource "linode_nodebalancer" "foo-nb" {
   label                = "${random_pet.project.id}"
   region               = "${data.linode_region.main.id}"
