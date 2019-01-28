@@ -24,7 +24,7 @@ data "linode_image" "k8_master" {
 
 The following arguments are supported:
 
-* `id` - (Required) The unique ID of this Image.
+* `id` - (Required) The unique ID of this Image.  The ID of private images begin with `private/` followed by the numeric identifier of the private image, for example `private/12345`.
 
 ## Attributes
 
