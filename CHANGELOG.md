@@ -1,4 +1,9 @@
 ## 1.5.0 (Unreleased)
+
+BUG FIXES:
+
+* `linode_instance.alerts.0.network_out` and `linode_instance.alerts.0.transfer_quota` were not created or updating correctly ([#27](https://github.com/terraform-providers/terraform-provider-linode/issues/27))
+
 ## 1.4.0 (January 14, 2019)
 
 BACKWARDS INCOMPATIBILITIES / NOTES:

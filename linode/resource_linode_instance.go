@@ -989,7 +989,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
 		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
-		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.transfer_quota").(int)
+		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
 	}
 
 	if doUpdate {
@@ -1131,7 +1131,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		updateOpts.Alerts.IO = d.Get("alerts.0.io").(int)
 		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
-		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.transfer_quota").(int)
+		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
 		d.SetPartial("alerts")
 
 		simpleUpdate = true
