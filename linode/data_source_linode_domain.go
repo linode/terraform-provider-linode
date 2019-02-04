@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -16,12 +17,12 @@ func dataSourceLinodeDomain() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"domain": {
 				Type:        schema.TypeString,
-				Description: "The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.",
-				Computed:    true,
+				Description: "The domain this Domain represents. These must be unique in Linode's system; there cannot be two Domain records representing the same domain.",
+				Optional:    true,
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -97,21 +98,41 @@ func dataSourceLinodeDomain() *schema.Resource {
 func dataSourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 
-	reqDomain := d.Get("id").(string)
+	reqIDString := d.Get("id").(string)
+	reqDomain := d.Get("domain").(string)
 
-	if reqDomain == "" {
-		return fmt.Errorf("Domain id is required")
+	if reqDomain == "" && reqIDString == "" {
+		return fmt.Errorf("Domain or Domain ID is required")
 	}
 
-	reqDomainInt, err := strconv.Atoi(reqDomain)
+	var domain *linodego.Domain
 
-	if err != nil {
-		return fmt.Errorf("Domain id number be a valid integer")
-	}
+	d.SetId("")
 
-	domain, err := client.GetDomain(context.Background(), reqDomainInt)
-	if err != nil {
-		return fmt.Errorf("Error listing domain: %s", err)
+	if reqIDString != "" {
+		reqID, err := strconv.Atoi(reqIDString)
+		if err != nil {
+			return fmt.Errorf("Domain ID %q must be numeric", reqIDString)
+		}
+
+		domain, err = client.GetDomain(context.Background(), reqID)
+		if err != nil {
+			return fmt.Errorf("Error listing domain: %s", err)
+		}
+		if reqDomain != "" && domain.Domain != reqDomain {
+			return fmt.Errorf("Domain ID was found but did not match the requested Domain name")
+		}
+	} else if reqDomain != "" {
+		filter, _ := json.Marshal(map[string]interface{}{"domain": reqDomain})
+		domains, err := client.ListDomains(context.Background(), linodego.NewListOptions(0, string(filter)))
+		if err != nil {
+			return fmt.Errorf("Error listing Domains: %s", err)
+		}
+		if len(domains) != 1 || domains[0].Domain != reqDomain {
+			return fmt.Errorf("Domain %s was not found", reqDomain)
+
+		}
+		domain = &domains[0]
 	}
 
 	if domain != nil {
@@ -128,11 +149,11 @@ func dataSourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("expire_sec", domain.ExpireSec)
 		d.Set("refresh_sec", domain.RefreshSec)
 		d.Set("soa_email", domain.SOAEmail)
-		d.Set("tags", domain.Tags)
+		if err := d.Set("tags", domain.Tags); err != nil {
+			return fmt.Errorf("Error setting tags: %s", err)
+		}
 		return nil
 	}
 
-	d.SetId("")
-
-	return fmt.Errorf("Domain %s was not found", reqDomain)
+	return fmt.Errorf("Domain %s%s was not found", reqIDString, reqDomain)
 }
