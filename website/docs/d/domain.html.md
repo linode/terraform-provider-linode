@@ -15,20 +15,28 @@ Provides information about a Linode domain.
 The following example shows how one might use this data source to access information about a Linode domain.
 
 ```hcl
-data "linode_domain" "linode_com" {
+data "linode_domain" "foo" {
     id = "1234567"
+}
+
+data "linode_domain" "bar" {
+    domain = "bar.example.com"
 }
 ```
 
 ## Argument Reference
 
-The following arguments are supported:
+The following arguments are supported, at least one is required:
 
-* `id` - (Required) The unique ID of this Domain.
+* `id` - (Optional) The unique numeric ID of the Domain record to query.
+
+* `domain` - (Optional) The unique domain name of the Domain record to query.
 
 ## Attributes
 
 The Linode Domain resource exports the following attributes:
+
+* `id` - The unique ID of this Domain.
 
 * `domain` - The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain
 
