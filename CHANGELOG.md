@@ -1,5 +1,9 @@
 ## 1.5.0 (Unreleased)
 
+FEATURES:
+
+* **New Data Resource** `linode_domain`
+
 BUG FIXES:
 
 * `linode_instance.alerts.0.network_out` and `linode_instance.alerts.0.transfer_quota` were not created or updating correctly ([#27](https://github.com/terraform-providers/terraform-provider-linode/issues/27))
