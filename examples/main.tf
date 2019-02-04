@@ -16,6 +16,10 @@ data "linode_image" "ubuntu" {
   id = "linode/ubuntu18.04"
 }
 
+data "linode_domain" "foo-com" {
+  domain = "${linode_domain.foo-com.domain}"
+}
+
 resource "linode_nodebalancer" "foo-nb" {
   label                = "${random_pet.project.id}"
   region               = "${data.linode_region.main.id}"
@@ -219,19 +223,19 @@ EOF
 
 resource "linode_sshkey" "mykey" {
   ssh_key = "${chomp(file(var.ssh_key))}"
-  label = "Terraform SSHKey"
+  label   = "Terraform SSHKey"
 }
 
 resource "linode_instance" "simple" {
   image = "linode/ubuntu18.04"
   label = "${random_pet.project.id}-simple"
 
-  group           = "foo"
-  tags            = [ "terraform" ]
-  region          = "${var.region}"
-  type            = "g6-nanode-1"
-  authorized_users = [ "${data.linode_profile.me.username}" ]
-  stackscript_id  = "${linode_stackscript.install-nginx.id}"
+  group            = "foo"
+  tags             = ["terraform"]
+  region           = "${var.region}"
+  type             = "g6-nanode-1"
+  authorized_users = ["${data.linode_profile.me.username}"]
+  stackscript_id   = "${linode_stackscript.install-nginx.id}"
 
   stackscript_data = {
     "package" = "nginx"

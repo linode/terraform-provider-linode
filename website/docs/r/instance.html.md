@@ -49,7 +49,7 @@ resource "linode_instance" "web" {
   region     = "us-central"
   type       = "g6-nanode-1"
   private_ip = true
-  
+
   disk {
     label = "boot"
     size = 3000
@@ -139,13 +139,13 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 * `boot_config_label` - (Optional) The Label of the Instance Config that should be used to boot the Linode instance.  If there is only one `config`, the `label` of that `config` will be used as the `boot_config_label`. *This value can not be imported.*
 
 #### Disks
-  
+
 * `disk`
 
   * `label` - (Required) The disks label, which acts as an identifier in Terraform.  This must be unique within each Linode Instance.
 
   * `size` - (Required) The size of the Disk in MB.
-  
+
   * `id` - (Computed) The ID of the disk in the Linode API.
 
   * `filesystem` - (Optional) The Disk filesystem can be one of: `"raw"`, `"swap"`, `"ext3"`, `"ext4"`, or `"initrd"` which has a max size of 32mb and can be used in the config `initrd` (not currently supported in this Terraform Provider).
