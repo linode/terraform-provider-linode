@@ -11,6 +11,8 @@ description: |-
 Provides a Linode Instance resource.  This can be used to create, modify, and delete Linodes.
 For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createLinodeInstance).
 
+The Linode Guide, [Use Terraform to Provision Linode Environments](https://www.linode.com/docs/applications/configuration-management/how-to-build-your-infrastructure-using-terraform-and-linode/), provides step-by-step guidance and additional examples.
+
 Linode Instances can also use [provisioners](/docs/provisioners/index.html).
 
 ## Example Usage
@@ -257,3 +259,5 @@ When importing an instance, all `disk` and `config` values must be represented.
 Imported disks must include their `label` value.  **Any disk that is not precisely represented may be removed resulting in data loss.**
 
 Imported configs should include all `devices`, and must include `label`, `kernel`, and the `root_device`.  The instance must include a `boot_config_label` referring to the correct configuration profile.
+
+The Linode Guide, [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/), offers resource importing examples for Instances and other Linode resource types.

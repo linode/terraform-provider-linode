@@ -8,25 +8,31 @@ description: |-
 
 # linode\_image
 
-Provides a Linode Image resource.  This can be used to create, modify, and delete Linodes Images.
+Provides a Linode Image resource.  This can be used to create, modify, and delete Linodes Images.  Linode Images are snapshots of a Linode Instance Disk which can then be used to provision more Linode Instances.  Images can be used across regions.
+
 For more information, see [Linode's documentation on Images](https://www.linode.com/docs/platform/disk-images/linode-images/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createImage).
 
 ## Example Usage
 
-The following example shows how one might use this resource to configure an Image from a Linode Instance Disk.
+The following example shows how one might use this resource to create an Image from a Linode Instance Disk and then deploy a new Linode Instance in another region using that Image.
 
 ```hcl
-resource "linode_instance" "foobaz" {
-    root_pass = "3X4mp13"
+resource "linode_instance" "foo" {
     type = "g6-nanode-1"
-    region = "us-west"
+    region = "us-central"
 }
 
-resource "linode_image" "foobar" {
-    label = "foo-volume"
-    description = "My new disk image"
-    disk_id = "${linode_instance.foobaz.disk.0.id}"
-    linode_id = "${linode_instance.foobaz.id}"
+resource "linode_image" "bar" {
+    label = "foo-sda-image"
+    description = "Image taken from foo"
+    disk_id = "${linode_instance.foo.disk.0.id}"
+    linode_id = "${linode_instance.foo.id}"
+}
+
+resource "linode_instance" "bar_based" {
+    type = "${linode_instance.foo.type}"
+    region = "eu-west"
+    image = "${linode_image.bar.id}"
 }
 ```
 
@@ -53,6 +59,8 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 ## Attributes
 
 This resource exports the following attributes:
+
+* `id` - The unique ID of this Image.  The ID of private images begin with `private/` followed by the numeric identifier of the private image, for example `private/12345`.
 
 * `created` - When this Image was created.
 

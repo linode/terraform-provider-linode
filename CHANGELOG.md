@@ -4,6 +4,10 @@ FEATURES:
 
 * **New Data Resource** `linode_domain`
 
+ENHANCEMENTS:
+
+* Documentation has been revised with links to relevant Linode Guides & Tutorials
+
 BUG FIXES:
 
 * `linode_instance.alerts.0.network_out` and `linode_instance.alerts.0.transfer_quota` were not created or updating correctly ([#27](https://github.com/terraform-providers/terraform-provider-linode/issues/27))

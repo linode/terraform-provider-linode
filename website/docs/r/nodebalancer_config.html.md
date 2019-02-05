@@ -11,6 +11,8 @@ description: |-
 Provides a Linode NodeBalancer Config resource.  This can be used to create, modify, and delete Linodes NodeBalancer Configs.
 For more information, see [Getting Started with NodeBalancers](https://www.linode.com/docs/platform/nodebalancer/getting-started-with-nodebalancers/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createNodeBalancerConfig).
 
+The Linode Guide, [Create a NodeBalancer with Terraform](https://www.linode.com/docs/applications/configuration-management/create-a-nodebalancer-with-terraform/), provides step-by-step guidance and additional examples.
+
 ## Example Usage
 
 The following example shows how one might use this resource to configure a NodeBalancer Config attached to a Linode instance.
@@ -91,3 +93,5 @@ NodeBalancer Configs can be imported using the NodeBalancer `nodebalancer_id` fo
 ```sh
 terraform import linode_nodebalancer_config.http-foobar 1234567,7654321
 ```
+
+The Linode Guide, [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/), offers resource importing examples for NodeBalancer Configs and other Linode resource types.

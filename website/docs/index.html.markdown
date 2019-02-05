@@ -8,7 +8,7 @@ description: |-
 
 # Linode Provider
 
-The Linode provider exposes data sources to interact with [Linode services](https://www.linode.com/).
+The Linode provider exposes resources and data sources to interact with [Linode](https://www.linode.com/) services.
 The provider needs to be configured with the proper credentials before it can be used.
 
 Use the navigation to the left to read about the available data sources.
@@ -33,6 +33,21 @@ The following keys can be used to configure the provider.
 * `token` - (Required) This is your [Linode APIv4 Token](https://developers.linode.com/api/v4#section/Personal-Access-Token).
 
    The Linode Token can also be specified using the `LINODE_TOKEN` environment variable.
+
+## Linode Guides
+
+Several [Linode Guides & Tutorials](https://www.linode.com/docs/) are available that explore Terraform usage with Linode resources:
+
+* [A Beginner's Guide to Terraform](https://www.linode.com/docs/applications/configuration-management/beginners-guide-to-terraform/)
+* [Introduction to HashiCorp Configuration Language (HCL)](https://www.linode.com/docs/applications/configuration-management/introduction-to-hcl/)
+* [Use Terraform to Provision Linode Environments](https://www.linode.com/docs/applications/configuration-management/how-to-build-your-infrastructure-using-terraform-and-linode/)
+* [Deploy a WordPress Site Using Terraform and Linode StackScripts](https://www.linode.com/docs/applications/configuration-management/deploy-a-wordpress-site-using-terraform-and-linode-stackscripts/)
+* [Create a NodeBalancer with Terraform](https://www.linode.com/docs/applications/configuration-management/create-a-nodebalancer-with-terraform/)
+* [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/)
+* [Create a Terraform Module](https://www.linode.com/docs/applications/configuration-management/create-terraform-module/)
+* [Secrets Management with Terraform](https://www.linode.com/docs/applications/configuration-management/secrets-management-with-terraform/)
+
+These guides are maintained by Linode and are not officially endorsed by HashiCorp.
 
 ## Debugging
 
