@@ -10,7 +10,7 @@ description: |-
 
 Provides a Linode Token resource.  This can be used to create, modify, and delete Linode API Personal Access Tokens.  Personal Access Tokens proxy user credentials for Linode API access.  This is necessary for tools, such as Terraform, to interact with Linode services on a user's behalf.
 
-It is common for Terraform itself to be configured with broadly scoped Personal Access Tokens.  Provisioning scripts or tools configured within a Linode Instance should follow the principle of least privilege to afford only the required roles for these tools to perform their necessary tasks.  The `linode_token` resource allows for the creation of additional Personal Access Tokens with scopes mirroring the parent token or a narrowed scope.
+It is common for Terraform itself to be configured with broadly scoped Personal Access Tokens.  Provisioning scripts or tools configured within a Linode Instance should follow the principle of least privilege to afford only the required roles for tools to perform their necessary tasks.  The `linode_token` resource allows for the management of Personal Access Tokens with scopes mirroring or narrowing the scope of the parent token.
 
 For more information, see the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/getTokens).
 

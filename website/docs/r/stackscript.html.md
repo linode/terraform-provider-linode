@@ -8,7 +8,7 @@ description: |-
 
 # linode\_stackscript
 
-Provides a Linode StackScript resource.  This can be used to create, modify, and delete Linodes StackScripts.
+Provides a Linode StackScript resource.  This can be used to create, modify, and delete Linode StackScripts.
 
 StackScripts are private or public managed scripts which run within an instance during startup using variables defined when the Instance was created.  For more information, see [Automate Deployment with StackScripts](https://www.linode.com/docs/platform/stackscripts/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#tag/StackScripts).
 
