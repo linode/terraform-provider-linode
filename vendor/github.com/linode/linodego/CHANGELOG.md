@@ -6,6 +6,15 @@
 
 ### Features
 
+<a name-"v0.7.1"></a>
+
+## [v0.7.1](https://github.com/linode/linodego/compare/v0.7.0..v0.7.1) (2018-02-05)
+
+### Features
+
+* add `ClassDedicated` constant (`dedicated`) for use in `LinodeType` `Class` values
+  See the [Dedicated CPU Announcement](https://blog.linode.com/2019/02/05/introducing-linode-dedicated-cpu-instances/)
+
 <a name-"v0.7.0"></a>
 
 ## [v0.7.0](https://github.com/linode/linodego/compare/v0.6.2..v0.7.0) (2018-12-03)

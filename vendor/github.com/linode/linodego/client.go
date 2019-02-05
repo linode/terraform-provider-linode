@@ -171,6 +171,7 @@ func NewClient(hc *http.Client) (client Client) {
 		nodebalancersName:         NewResource(&client, nodebalancersName, nodebalancersEndpoint, false, NodeBalancer{}, NodeBalancerConfigsPagedResponse{}),
 		nodebalancerconfigsName:   NewResource(&client, nodebalancerconfigsName, nodebalancerconfigsEndpoint, true, NodeBalancerConfig{}, NodeBalancerConfigsPagedResponse{}),
 		nodebalancernodesName:     NewResource(&client, nodebalancernodesName, nodebalancernodesEndpoint, true, NodeBalancerNode{}, NodeBalancerNodesPagedResponse{}),
+		notificationsName:         NewResource(&client, notificationsName, notificationsEndpoint, false, Notification{}, NotificationsPagedResponse{}),
 		sshkeysName:               NewResource(&client, sshkeysName, sshkeysEndpoint, false, SSHKey{}, SSHKeysPagedResponse{}),
 		ticketsName:               NewResource(&client, ticketsName, ticketsEndpoint, false, Ticket{}, TicketsPagedResponse{}),
 		tokensName:                NewResource(&client, tokensName, tokensEndpoint, false, Token{}, TokensPagedResponse{}),
@@ -209,6 +210,7 @@ func NewClient(hc *http.Client) (client Client) {
 	client.NodeBalancers = resources[nodebalancersName]
 	client.NodeBalancerConfigs = resources[nodebalancerconfigsName]
 	client.NodeBalancerNodes = resources[nodebalancernodesName]
+	client.Notifications = resources[notificationsName]
 	client.SSHKeys = resources[sshkeysName]
 	client.Tickets = resources[ticketsName]
 	client.Tokens = resources[tokensName]

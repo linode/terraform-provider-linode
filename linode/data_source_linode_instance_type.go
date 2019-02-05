@@ -30,7 +30,7 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 			},
 			"class": {
 				Type:        schema.TypeString,
-				Description: "The class of the Linode Type. There are currently three classes of Linodes: nanode, standard, highmem",
+				Description: "The class of the Linode Type. There are currently three classes of Linodes: nanode, standard, highmem, dedicated",
 				Computed:    true,
 			},
 			"price": {
