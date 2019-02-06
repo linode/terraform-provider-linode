@@ -8,7 +8,7 @@ description: |-
 
 # linode\_sshkey
 
-Provides a Linode SSH Key resource.  This can be used to create, modify, and delete Linodes sshkeys.
+Provides a Linode SSH Key resource.  This can be used to create, modify, and delete Linodes SSH Keys.  Managed SSH Keys allow instances to be created with a list of Linode usernames, whose SSH keys will be automatically applied to the root account's `~/.ssh/authorized_keys` file.
 For more information, see the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/getSSHKeys).
 
 ## Example Usage

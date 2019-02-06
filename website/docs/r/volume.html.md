@@ -8,7 +8,8 @@ description: |-
 
 # linode\_volume
 
-Provides a Linode Volume resource.  This can be used to create, modify, and delete Linodes Block Storage Volumes.
+Provides a Linode Volume resource.  This can be used to create, modify, and delete Linodes Block Storage Volumes.  Block Storage Volumes are removable storage disks that persist outside the life-cycle of Linode Instances. These volumes can be attached to and detached from Linode instances throughout a region.
+
 For more information, see [How to Use Block Storage with Your Linode](https://www.linode.com/docs/platform/block-storage/how-to-use-block-storage-with-your-linode/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createVolume).
 
 ## Example Usage
@@ -87,3 +88,5 @@ Linodes Volumes can be imported using the Linode Volume `id`, e.g.
 ```sh
 terraform import linode_volume.myvolume 1234567
 ```
+
+The Linode Guide, [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/), offers resource importing examples for Block Storage Volumes and other Linode resource types.

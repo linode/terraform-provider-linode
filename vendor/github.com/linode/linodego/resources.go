@@ -33,6 +33,7 @@ const (
 	nodebalancersName         = "nodebalancers"
 	nodebalancerconfigsName   = "nodebalancerconfigs"
 	nodebalancernodesName     = "nodebalancernodes"
+	notificationsName         = "notifications"
 	sshkeysName               = "sshkeys"
 	ticketsName               = "tickets"
 	tokensName                = "tokens"
@@ -84,7 +85,7 @@ const (
 	managedEndpoint             = "managed"
 	tagsEndpoint                = "tags"
 	usersEndpoint               = "account/users"
-	// notificationsEndpoint       = "account/notifications"
+	notificationsEndpoint       = "account/notifications"
 )
 
 // Resource represents a linode API resource

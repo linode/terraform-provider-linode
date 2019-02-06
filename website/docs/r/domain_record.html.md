@@ -67,3 +67,5 @@ Linodes Domain Records can be imported using the Linode Domain `id` followed by 
 ```sh
 terraform import linode_domain_record.www-foobar 1234567,7654321
 ```
+
+The Linode Guide, [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/), offers resource importing examples for Domain Records and other Linode resource types.

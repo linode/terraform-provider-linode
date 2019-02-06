@@ -8,8 +8,10 @@ description: |-
 
 # linode\_domain
 
-Provides a Linode Domain resource.  This can be used to create, modify, and delete Linodes Domains.
+Provides a Linode Domain resource.  This can be used to create, modify, and delete Linode Domains through Linode's managed DNS service.
 For more information, see [DNS Manager](https://www.linode.com/docs/platform/manager/dns-manager/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createDomain).
+
+The Linode Guide, [Deploy a WordPress Site Using Terraform and Linode StackScripts](https://www.linode.com/docs/applications/configuration-management/deploy-a-wordpress-site-using-terraform-and-linode-stackscripts/), demonstrates the management of Linode Domain resources in the context of Linode Instance running WordPress.
 
 ## Example Usage
 
@@ -73,3 +75,5 @@ Linodes Domains can be imported using the Linode Domain `id`, e.g.
 ```sh
 terraform import linode_domain_record.foobar 1234567
 ```
+
+The Linode Guide, [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/), offers resource importing examples for Domains and other Linode resource types.
