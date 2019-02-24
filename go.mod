@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/hcl2 v0.0.0-20190130225218-89dbc5eb3d9e // indirect
 	github.com/hashicorp/hil v0.0.0-20190129155652-59d7c1fee952 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/terraform v0.11.11
+	github.com/hashicorp/terraform v0.11.12-beta1.0.20190214175014-182daa619826
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/linode/linodego v0.7.1
 	github.com/mitchellh/cli v1.0.0 // indirect

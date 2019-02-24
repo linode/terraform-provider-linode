@@ -107,7 +107,7 @@ github.com/hashicorp/hil/parser
 github.com/hashicorp/hil/scanner
 # github.com/hashicorp/logutils v1.0.0
 github.com/hashicorp/logutils
-# github.com/hashicorp/terraform v0.11.11
+# github.com/hashicorp/terraform v0.11.12-beta1.0.20190214175014-182daa619826
 github.com/hashicorp/terraform/plugin
 github.com/hashicorp/terraform/helper/logging
 github.com/hashicorp/terraform/helper/schema
