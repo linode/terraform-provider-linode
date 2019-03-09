@@ -21,6 +21,7 @@ The following example shows how one might use this resource to configure a Domai
 resource "linode_domain" "foobar" {
     domain = "foobar.example"
     soa_email = "example@foobar.example"
+    type = "master"
     tags = ["foo", "bar"]
 }
 
