@@ -71,7 +71,7 @@ This resource exports the following attributes:
 
 * `deployments_active` - Count of currently active, deployed Linodes created from this StackScript.
 
-* `user_gravatar_id"` - The Gravatar ID for the User who created the StackScript.
+* `user_gravatar_id` - The Gravatar ID for the User who created the StackScript.
 
 * `deployments_total` - The total number of times this StackScript has been deployed.
 
