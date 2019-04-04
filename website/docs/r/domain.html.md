@@ -19,6 +19,7 @@ The following example shows how one might use this resource to configure a Domai
 
 ```hcl
 resource "linode_domain" "foobar" {
+    type = "master"
     domain = "foobar.example"
     soa_email = "example@foobar.example"
     type = "master"
