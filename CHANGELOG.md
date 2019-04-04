@@ -1,4 +1,17 @@
 ## 1.6.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource** `linode_rdns`
+
+ENHANCEMENTS:
+
+* Builds now use `go mod`
+
+BUG FIXES:
+
+* Documentation and examples for `linode_domain` resource were missing required `type` field
+
 ## 1.5.0 (February 06, 2019)
 
 FEATURES:
