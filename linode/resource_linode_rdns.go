@@ -3,7 +3,6 @@ package linode
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -29,10 +28,10 @@ func resourceLinodeRDNS() *schema.Resource {
 				ValidateFunc: validation.SingleIP(),
 			},
 			"rdns": {
-				Type:        schema.TypeString,
-				Description: "The reverse DNS assigned to this address. For public IPv4 addresses, this will be set to a default value provided by Linode if not explicitly set.",
-				Optional:    true,
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "The reverse DNS assigned to this address. For public IPv4 addresses, this will be set to a default value provided by Linode if not explicitly set.",
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(3, 254),
 			},
 		},
 	}
@@ -113,7 +112,6 @@ func resourceLinodeRDNSUpdate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error parsing Linode RDNS ID %s as IP string", ipStr)
 	}
 
-	log.Printf("[WARN] MARQUES UPDATING %s with %s", d.Id(), d.Get("rdns"))
 	var rdns *string
 
 	if rdnsRaw, ok := d.GetOk("rdns"); ok && len(rdnsRaw.(string)) > 0 {

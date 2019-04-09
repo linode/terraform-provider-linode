@@ -8,7 +8,7 @@ description: |-
 
 # linode\_rdns
 
-Provides a Linode RDNS resource.  This can be used to create, modify, and reset RDNS records.
+Provides a Linode RDNS resource.  This can be used to create and modify RDNS records.
 
 Linode RDNS names must have a matching address value in an A or AAAA record.  This A or AAAA name must be resolvable at the time the RDNS resource is being associated.
 
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 * `address` - The Public IPv4 or IPv6 address that will receive the `PTR` record.  A matching `A` or `AAAA` record must exist.
 
-* `rdns` - The name of the RDNS 
+* `rdns` - The name of the RDNS address.
 
 ## Import
 
