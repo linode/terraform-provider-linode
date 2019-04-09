@@ -87,14 +87,23 @@ func TestAccLinodeRDNS_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeRDNSExists,
 					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
-					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`)),
 				),
 			},
 			{
-				Config: testAccCheckLinodeRDNSReset(label),
+				Config: testAccCheckLinodeRDNSChanged(label),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeRDNSExists,
-					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.members.linode.com$`)),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
+				),
+			},
+			{
+				Config: testAccCheckLinodeRDNSDeleted(label),
+			},
+			{
+				Config: testAccCheckLinodeRDNSDeleted(label),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.members.linode.com$`)),
 				),
 			},
 		},
@@ -164,7 +173,7 @@ resource "linode_rdns" "foobar" {
 }`, label)
 }
 
-func testAccCheckLinodeRDNSReset(label string) string {
+func testAccCheckLinodeRDNSChanged(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -175,7 +184,23 @@ resource "linode_instance" "foobar" {
 }
 
 resource "linode_rdns" "foobar" {
-	rdns    = ""
+	rdns    = "${replace(linode_instance.foobar.ip_address, ".", "-")}.nip.io"
+	address = "${linode_instance.foobar.ip_address}"
+}
+`, label)
+}
+
+func testAccCheckLinodeRDNSDeleted(label string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	image = "linode/containerlinux"
+	type = "g6-standard-1"
+	region = "us-east"
+}
+
+data "linode_networking_ip" "foobar" {
 	address = "${linode_instance.foobar.ip_address}"
 }
 `, label)

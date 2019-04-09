@@ -4,6 +4,8 @@ FEATURES:
 
 * **New Resource** `linode_rdns`
 
+* **New Data Resource** `linode_network_ip`
+
 ENHANCEMENTS:
 
 * Builds now use `go mod`
