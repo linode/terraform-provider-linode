@@ -4,11 +4,13 @@ FEATURES:
 
 * **New Resource** `linode_rdns`
 
-* **New Data Resource** `linode_network_ip`
+* **New Data Resource** `linode_networking_ip`
 
 ENHANCEMENTS:
 
 * Builds now use `go mod`
+* provider: Support custom `ua_prefix`
+* provider: Support custom API endpoint `url`
 
 BUG FIXES:
 

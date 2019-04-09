@@ -13,6 +13,9 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// DefaultLinodeURL is the Linode APIv4 URL to use
+const DefaultLinodeURL = "https://api.linode.com/v4"
+
 // Provider creates and manages the resources in a Linode configuration.
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
@@ -22,6 +25,18 @@ func Provider() terraform.ResourceProvider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LINODE_TOKEN", nil),
 				Description: "The token that allows you access to your Linode account",
+			},
+			"url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_URL", ""),
+				Description: "The HTTP(S) API address of the Linode API to use.",
+			},
+			"ua_prefix": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_UA_PREFIX", nil),
+				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
 			},
 		},
 
@@ -62,7 +77,17 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, fmt.Errorf("The Linode API Token was not valid")
 	}
 
-	client := getLinodeClient(token)
+	url, ok := d.Get("url").(string)
+	if !ok {
+		return nil, fmt.Errorf("The Linode API URL was not valid")
+	}
+
+	ua_prefix, ok := d.Get("ua_prefix").(string)
+	if !ok {
+		return nil, fmt.Errorf("The Linode UA Prefix was not valid")
+	}
+
+	client := getLinodeClient(token, url, ua_prefix)
 	// Ping the API for an empty response to verify the configuration works
 	_, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, ""))
 	if err != nil {
@@ -72,7 +97,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	return client, nil
 }
 
-func getLinodeClient(token string) linodego.Client {
+func getLinodeClient(token, url, ua_prefix string) linodego.Client {
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 
 	oauthTransport := &oauth2.Transport{
@@ -89,6 +114,16 @@ func getLinodeClient(token string) linodego.Client {
 	userAgent := fmt.Sprintf("Terraform/%s (+%s) linodego/%s",
 		version.String(), projectURL, linodego.Version)
 
+	if len(ua_prefix) > 0 {
+		userAgent = ua_prefix + " " + userAgent
+	}
+
+	var baseURL = DefaultLinodeURL
+	if len(url) > 0 {
+		baseURL = url
+	}
+
+	client.SetBaseURL(baseURL)
 	client.SetUserAgent(userAgent)
 	return client
 }

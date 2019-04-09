@@ -1,18 +1,18 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_network_ip"
-sidebar_current: "docs-linode-datasource-network-ip"
+page_title: "Linode: linode_networking_ip"
+sidebar_current: "docs-linode-datasource-networking-ip"
 description: |-
-  Provides details about a Linode Network IP Address.
+  Provides details about a Linode Networking IP Address.
 ---
 
 # Data Source: linode\_network\_ip
 
-Provides information about a Linode Network IP Address
+Provides information about a Linode Networking IP Address
 
 ## Example Usage
 
-The following example shows how one might use this data source to access information about a Linode Network IP Address.
+The following example shows how one might use this data source to access information about a Linode Networking IP Address.
 
 ```hcl
 data "linode_image" "ns1_linode_com" {

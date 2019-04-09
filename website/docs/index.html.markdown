@@ -34,6 +34,14 @@ The following keys can be used to configure the provider.
 
    The Linode Token can also be specified using the `LINODE_TOKEN` environment variable.
 
+* `url` - (Optional) The HTTP(S) API address of the Linode API to use.
+
+   The Linode API URL can also be specified using the `LINODE_URL` environment variable.
+
+* `ua_prefix` - (Optional) An HTTP User-Agent Prefix to prepend in API requests.
+
+   The User-Agent Prefix can also be specified using the `LINODE_UA_PREFIX` environment variable.
+
 ## Linode Guides
 
 Several [Linode Guides & Tutorials](https://www.linode.com/docs/) are available that explore Terraform usage with Linode resources:
