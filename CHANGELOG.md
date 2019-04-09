@@ -1,4 +1,21 @@
 ## 1.6.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource** `linode_rdns`
+
+* **New Data Resource** `linode_networking_ip`
+
+ENHANCEMENTS:
+
+* Builds now use `go mod`
+* provider: Support custom `ua_prefix`
+* provider: Support custom API endpoint `url`
+
+BUG FIXES:
+
+* Documentation and examples for `linode_domain` resource were missing required `type` field
+
 ## 1.5.0 (February 06, 2019)
 
 FEATURES:

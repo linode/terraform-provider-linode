@@ -21,7 +21,7 @@ func getClientForSweepers() (*linodego.Client, error) {
 	if token == "" {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
 	}
-	client := getLinodeClient(token)
+	client := getLinodeClient(token, "", "")
 	return &client, nil
 }
 

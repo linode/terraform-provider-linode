@@ -241,3 +241,11 @@ resource "linode_instance" "simple" {
     "package" = "nginx"
   }
 }
+
+data "linode_networking_ip" "simple_v4" {
+  address = "${linode_instance.simple.ip_address}"
+}
+
+data "linode_networking_ip" "simple_v6" {
+  address = "${replace(linode_instance.simple.ipv6, "/64", "")}"
+}
