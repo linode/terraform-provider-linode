@@ -29,7 +29,7 @@ func Provider() terraform.ResourceProvider {
 			"url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_URL", ""),
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_URL", nil),
 				Description: "The HTTP(S) API address of the Linode API to use.",
 			},
 			"ua_prefix": {
@@ -82,12 +82,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, fmt.Errorf("The Linode API URL was not valid")
 	}
 
-	ua_prefix, ok := d.Get("ua_prefix").(string)
+	uaPrefix, ok := d.Get("ua_prefix").(string)
 	if !ok {
 		return nil, fmt.Errorf("The Linode UA Prefix was not valid")
 	}
 
-	client := getLinodeClient(token, url, ua_prefix)
+	client := getLinodeClient(token, url, uaPrefix)
 	// Ping the API for an empty response to verify the configuration works
 	_, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, ""))
 	if err != nil {
@@ -97,7 +97,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	return client, nil
 }
 
-func getLinodeClient(token, url, ua_prefix string) linodego.Client {
+func getLinodeClient(token, url, uaPrefix string) linodego.Client {
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 
 	oauthTransport := &oauth2.Transport{
@@ -114,8 +114,8 @@ func getLinodeClient(token, url, ua_prefix string) linodego.Client {
 	userAgent := fmt.Sprintf("Terraform/%s (+%s) linodego/%s",
 		version.String(), projectURL, linodego.Version)
 
-	if len(ua_prefix) > 0 {
-		userAgent = ua_prefix + " " + userAgent
+	if len(uaPrefix) > 0 {
+		userAgent = uaPrefix + " " + userAgent
 	}
 
 	var baseURL = DefaultLinodeURL

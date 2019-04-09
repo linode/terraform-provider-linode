@@ -15,6 +15,8 @@ ENHANCEMENTS:
 BUG FIXES:
 
 * Documentation and examples for `linode_domain` resource were missing required `type` field
+* `linode_domain_record` field `ttl_sec` accepts `0`, as the API does (#35)
+* `linode_domain` fields `ttl_sec`, `retry_sec`, `expire_sec`, and `refresh_sec` now accept `0`, as the API does
 
 ## 1.5.0 (February 06, 2019)
 
