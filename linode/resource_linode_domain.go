@@ -74,25 +74,25 @@ func resourceLinodeDomain() *schema.Resource {
 			},
 			"ttl_sec": {
 				Type:         schema.TypeInt,
-				Description:  "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Description:  "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
 				ValidateFunc: validDomainSeconds,
 				Optional:     true,
 			},
 			"retry_sec": {
 				Type:         schema.TypeInt,
-				Description:  "The interval, in seconds, at which a failed refresh should be retried. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Description:  "The interval, in seconds, at which a failed refresh should be retried. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
 				ValidateFunc: validDomainSeconds,
 				Optional:     true,
 			},
 			"expire_sec": {
 				Type:         schema.TypeInt,
-				Description:  "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Description:  "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 0, 00, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
 				ValidateFunc: validDomainSeconds,
 				Optional:     true,
 			},
 			"refresh_sec": {
 				Type:         schema.TypeInt,
-				Description:  "The amount of time in seconds before this Domain should be refreshed. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Description:  "The amount of time in seconds before this Domain should be refreshed. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
 				ValidateFunc: validDomainSeconds,
 				Optional:     true,
 			},
@@ -133,7 +133,7 @@ func intInSlice(valid []int) schema.SchemaValidateFunc {
 }
 
 func domainSecondsValidator() schema.SchemaValidateFunc {
-	validSeconds := []int{300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200}
+	validSeconds := []int{0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200}
 	return intInSlice(validSeconds)
 }
 
