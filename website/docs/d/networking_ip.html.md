@@ -15,7 +15,7 @@ Provides information about a Linode Networking IP Address
 The following example shows how one might use this data source to access information about a Linode Networking IP Address.
 
 ```hcl
-data "linode_image" "ns1_linode_com" {
+data "linode_network_ip" "ns1_linode_com" {
     address = "162.159.27.72"
 }
 ```
