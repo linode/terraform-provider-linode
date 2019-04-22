@@ -22,7 +22,6 @@ resource "linode_domain" "foobar" {
     type = "master"
     domain = "foobar.example"
     soa_email = "example@foobar.example"
-    type = "master"
     tags = ["foo", "bar"]
 }
 
