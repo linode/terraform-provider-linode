@@ -526,6 +526,7 @@ func createInstanceDisk(client linodego.Client, instance linodego.Instance, v in
 		}
 
 		if stackscriptData, ok := disk["stackscript_data"]; ok {
+			diskOpts.StackscriptData = make(map[string]string, len(stackscriptData))
 			for name, value := range stackscriptData.(map[string]interface{}) {
 				diskOpts.StackscriptData[name] = value.(string)
 			}
