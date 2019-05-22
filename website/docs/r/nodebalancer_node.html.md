@@ -49,9 +49,10 @@ resource "linode_nodebalancer_config" "foofig" {
 }
 
 resource "linode_nodebalancer_node" "foonode" {
+    count = "3"
     nodebalancer_id = "${linode_nodebalancer.foobar.id}"
     config_id = "${linode_nodebalancer_config.foofig.id}"
-    address = "${linode_instance.web.*.private_ip_address}:80"
+    address = "${element(linode_instance.web.*.private_ip_address, count.index)}:80"
     label = "mynodebalancernode"
     weight = 50
 }
