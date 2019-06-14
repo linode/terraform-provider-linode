@@ -6,9 +6,14 @@ variable "region" {
   default = "us-central"
 }
 
-variable "ssh_key" {
+variable "public_ssh_key" {
   description = "SSH Public Key Fingerprint"
   default     = "~/.ssh/id_rsa.pub"
+}
+
+variable "private_ssh_key" {
+  description = "SSH Public Key Fingerprint"
+  default     = "~/.ssh/id_rsa"
 }
 
 // random_pet is used for convenience in the example.
