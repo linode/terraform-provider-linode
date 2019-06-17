@@ -717,10 +717,17 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 
 func changeInstanceDiskSize(client *linodego.Client, instance linodego.Instance, disk linodego.InstanceDisk, targetSize int, d *schema.ResourceData) error {
 	if instance.Specs.Disk > targetSize {
-		client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize)
+		// This is idempotent, so we don't need to check the status of the instance.
+		client.ShutdownInstance(context.Background(), instance.ID)
 
-		// Wait for the Disk Resize Operation to Complete
-		// waitForEventComplete(client, instance.ID, "linode_resize", waitMinutes)
+		// Wait for instance to go offline. Resize the disk once Linode is shut down.
+		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
+			return fmt.Errorf("Error waiting for instance %d to go offline: %s", instance.ID, err)
+		} else {
+			client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize)
+		}
+
+		// Wait for the Disk Resize Operation to Complete, and boot instance.
 		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, disk.Updated, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
