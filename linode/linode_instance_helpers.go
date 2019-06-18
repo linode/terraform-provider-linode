@@ -724,7 +724,9 @@ func changeInstanceDiskSize(client *linodego.Client, instance linodego.Instance,
 		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 			return fmt.Errorf("Error waiting for instance %d to go offline: %s", instance.ID, err)
 		} else {
-			client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize)
+			if err := client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize); err != nil {
+				return fmt.Errorf("Error resizing Disk %d for Instance %d: %s", disk.ID, instance.ID, err)
+			}
 		}
 
 		// Wait for the Disk Resize Operation to Complete, and boot instance.
