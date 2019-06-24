@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
-
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
@@ -14,7 +13,6 @@ func TestAccDataSourceLinodeDomain(t *testing.T) {
 
 	resourceName := "data.linode_domain.foobar"
 	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -40,6 +38,7 @@ func TestAccDataSourceLinodeDomain(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 				),
+				Destroy: true,
 			},
 			{
 				Config:      testDataSourceLinodeDomain(domainName),
