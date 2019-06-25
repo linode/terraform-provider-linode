@@ -933,8 +933,6 @@ func TestAccLinodeInstance_diskResizeAndExpanded(t *testing.T) {
 	})
 }
 
-
-
 func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 	t.Parallel()
 	var (
@@ -1655,7 +1653,6 @@ resource "linode_instance" "foobar" {
 	}
 }`, instance, pubkey)
 }
-
 
 func testAccCheckLinodeInstanceWithDiskAndConfigAddedAndReordered(instance string, pubkey string) string {
 	return fmt.Sprintf(`

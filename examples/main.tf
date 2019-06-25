@@ -143,7 +143,7 @@ resource "linode_instance" "nginx" {
     label           = "boot"
     size            = data.linode_instance_type.default.disk / 2
     authorized_keys = [chomp(file(var.public_ssh_key))]
-    root_pass       = "b4dp4ssw0rd"
+    root_pass       = "${random_string.password.result}"
     image           = data.linode_image.ubuntu.id
   }
 

@@ -374,12 +374,14 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
-		devices = {
-			sda = { volume_id = "${linode_volume.foobar.id}" }, 
+		devices {
+			sda {
+				volume_id = "${linode_volume.foobar.id}"
+			}
 		}
 	}
 }
-	
+
 resource "linode_volume" "foobar" {
 	label = "%s"
 	region = "us-west"
@@ -395,12 +397,14 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
-		devices = {
-			sda = { volume_id = "${linode_volume.foobaz.id}" }, 
+		devices {
+			sda {
+				volume_id = "${linode_volume.foobaz.id}"
+			}
 		}
 	}
 }
-	
+
 resource "linode_instance" "foobaz" {
 	type = "g6-nanode-1"
 	region = "us-west"
@@ -408,12 +412,14 @@ resource "linode_instance" "foobaz" {
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
-		devices = {
-			sda = { volume_id = "${linode_volume.foobar.id}" }, 
+		devices {
+			sda {
+				volume_id = "${linode_volume.foobar.id}"
+			}
 		}
 	}
 }
-	
+
 resource "linode_volume" "foobar" {
 	label = "%s"
 	region = "us-west"
