@@ -1,5 +1,21 @@
 # Change Log
 
+## [v0.10.0](https://github.com/linode/linodego/compare/v0.9.2..v0.10.0) (2019-06-25)
+
+### Breaking Changes
+
+* Change to `AllowAutoDiskResize` to `*bool` is a breaking change, so bump minor version.
+
+## [v0.9.2](https://github.com/linode/linodego/compare/v0.9.1..v0.9.2) (2019-06-25)
+
+### Breaking Changes
+
+* `AllowAutoDiskResize` on `InstanceResizeOptions` is now a pointer, allowing it to be set to false.
+
+### Features
+
+* Support the `PersistAcrossBoots` flag, allowing users to set it to false and attach more disks.
+
 ## [v0.9.1](https://github.com/linode/linodego/compare/v0.9.0..v0.9.1) (2019-06-18)
 
 ### Fixes
