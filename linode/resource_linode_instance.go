@@ -1180,7 +1180,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		newDiskSize += disk.(map[string]interface{})["size"].(int)
 	}
 
-	if(newDiskSize > oldDiskSize) {
+	if newDiskSize > oldDiskSize {
 		if d.HasChange("type") {
 			if err = changeInstanceType(&client, instance, d.Get("type").(string), d); err != nil {
 				return err

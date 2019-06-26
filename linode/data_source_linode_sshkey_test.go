@@ -27,7 +27,7 @@ func TestAccDataSourceLinodeSSHKey(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeSSHKeyConfigBasic(label, publicKeyMaterial),
+				Config:  testAccCheckLinodeSSHKeyConfigBasic(label, publicKeyMaterial),
 				Destroy: true,
 			},
 			// {

@@ -90,7 +90,7 @@ func resourceLinodeStackscript() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Optional:    true,
-				ConfigMode: schema.SchemaConfigModeAttr,
+				ConfigMode:  schema.SchemaConfigModeAttr,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
