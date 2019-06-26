@@ -176,7 +176,7 @@ github.com/hashicorp/terraform-config-inspect/tfconfig
 github.com/hashicorp/yamux
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
-# github.com/linode/linodego v0.7.1
+# github.com/linode/linodego v0.9.2-0.20190625154108-2c0e083273ca
 github.com/linode/linodego
 # github.com/mattn/go-colorable v0.1.1
 github.com/mattn/go-colorable
