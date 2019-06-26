@@ -15,6 +15,7 @@ func TestAccDataSourceLinodeDomain(t *testing.T) {
 	resourceName := "data.linode_domain.foobar"
 	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
 
+	// Bellis TODO -- This test passes because of the Destroy: true statement. This needs some attention.
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -40,6 +41,7 @@ func TestAccDataSourceLinodeDomain(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 				),
+				Destroy: true,
 			},
 			{
 				Config:      testDataSourceLinodeDomain(domainName),
