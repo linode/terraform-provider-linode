@@ -132,10 +132,10 @@ resource "linode_instance" "nginx" {
   boot_config_label = "nginx"
 
   connection {
-    host     = "${self.ip_address}"
-    type     = "ssh"
-    user     = "root"
-    agent = "false"
+    host        = "${self.ip_address}"
+    type        = "ssh"
+    user        = "root"
+    agent       = "false"
     private_key = chomp(file(var.private_ssh_key))
   }
 
@@ -192,10 +192,10 @@ resource "linode_volume" "simple-vol-lateattachment" {
   linode_id = linode_instance.simple.id
 
   connection {
-    host     = linode_instance.simple.ip_address
-    type     = "ssh"
-    user     = "root"
-    agent    = "false"
+    host        = linode_instance.simple.ip_address
+    type        = "ssh"
+    user        = "root"
+    agent       = "false"
     private_key = chomp(file(var.private_ssh_key))
   }
 
