@@ -15,7 +15,8 @@ func TestAccDataSourceLinodeDomain(t *testing.T) {
 	resourceName := "data.linode_domain.foobar"
 	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
 
-	// Bellis TODO -- This test passes because of the Destroy: true statement. This needs some attention.
+	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

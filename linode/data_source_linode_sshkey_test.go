@@ -19,8 +19,7 @@ func TestAccDataSourceLinodeSSHKey(t *testing.T) {
 	}
 	// resourceName := "data.linode_sshkey.foobar"
 
-	// Bellis TODO -- This test passes only because of the Destroy: true statement and needs attention.
-
+	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
