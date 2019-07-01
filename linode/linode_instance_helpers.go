@@ -733,7 +733,7 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 	// Wait for instance status to go online if necessary
 	if waitForOnline == true {
 		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for instance %d to enter offline state: %s", instance.ID, err)
+			return fmt.Errorf("Error waiting for instance %d to enter online state: %s", instance.ID, err)
 		}
 	}
 	return nil
