@@ -132,7 +132,7 @@ resource "linode_instance" "nginx" {
   boot_config_label = "nginx"
 
   connection {
-    host        = "${self.ip_address}"
+    host        = self.ip_address
     type        = "ssh"
     user        = "root"
     agent       = "false"
