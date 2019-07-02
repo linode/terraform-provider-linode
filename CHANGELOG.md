@@ -10,7 +10,7 @@ BUG FIXES:
 
 * The Linode API resizes disks by default when an instance is resized. This behavior is now accounted for -- Terraform will not resize disks unless a new size is specified in the config.
 * The provider now waits for instance resizing to complete before attempting to issue disk resize jobs against an instance. This was required because new jobs issued to actively-resizing instances fail.
-* Disk resizing and instance resizing is now executed in the correct order.
+* Disk resizing and instance resizing are now executed in the correct order.
 
 
 ## 1.6.0 (April 10, 2019)

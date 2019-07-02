@@ -1164,37 +1164,28 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	var diskIDLabelMap map[string]int
 
 	tfDisksOld, tfDisksNew := d.GetChange("disk")
-
-	tfDisksOldInterface := tfDisksOld.([]interface{})
-	tfDisksNewInterface := tfDisksNew.([]interface{})
-
-	oldDiskSize := 0
-	newDiskSize := 0
-
-	// Get total amount of disk usage before & after
-	for _, disk := range tfDisksOldInterface {
-		oldDiskSize += disk.(map[string]interface{})["size"].(int)
-	}
-
-	for _, disk := range tfDisksNewInterface {
-		newDiskSize += disk.(map[string]interface{})["size"].(int)
-	}
+	oldDiskSize, newDiskSize := getDiskSizeChange(tfDisksOld, tfDisksNew)
+	targetType := d.Get("type").(string)
 
 	if newDiskSize > oldDiskSize {
 		if d.HasChange("type") {
-			if err = changeInstanceType(&client, instance, d.Get("type").(string), d); err != nil {
+			if err = changeInstanceType(&client, instance, targetType, d); err != nil {
 				return err
 			}
-			d.Set("type", d.Get("type").(string))
+			d.Set("type", targetType)
 		}
-		rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew)
+		if rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew); err != nil {
+			return err
+		}
 	} else {
-		rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew)
+		if rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew); err != nil {
+			return err
+		}
 		if d.HasChange("type") {
-			if err = changeInstanceType(&client, instance, d.Get("type").(string), d); err != nil {
+			if err = changeInstanceType(&client, instance, targetType, d); err != nil {
 				return err
 			}
-			d.Set("type", d.Get("type").(string))
+			d.Set("type", targetType)
 		}
 	}
 

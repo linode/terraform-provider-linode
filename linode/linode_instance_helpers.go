@@ -705,11 +705,11 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 	if instance.Status == linodego.InstanceOffline || instance.Status == linodego.InstanceShuttingDown {
 		waitForOnline = false
 		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for instance %d to go offline: %s", instance.ID, err)
+			return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 		}
 	} else {
 		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for instance %d readiness: %s", instance.ID, err)
+			return fmt.Errorf("Error waiting for Instance %d readiness: %s", instance.ID, err)
 		}
 	}
 	// We have to wait through the resize process because if we issue jobs before the complete process is complete, the API
@@ -717,54 +717,79 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 
 	// Issue the resize job
 	if err := client.ResizeInstance(context.Background(), instance.ID, resizeOpts); err != nil {
-		return fmt.Errorf("Error resizing instance %d: %s", instance.ID, err)
+		return fmt.Errorf("Error resizing Instance %d: %s", instance.ID, err)
 	}
 
 	// wait for instance to begin resizing after issuing resize job
 	if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceResizing, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for instance %d to enter resizing state: %s", instance.ID, err)
+		return fmt.Errorf("Error waiting for Instance %d to enter resizing state: %s", instance.ID, err)
 	}
 
 	// Wait for instance status to go offline
 	if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for instance %d to enter offline state: %s", instance.ID, err)
+		return fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
 	}
 
 	// Wait for instance status to go online if necessary
 	if waitForOnline == true {
 		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for instance %d to enter online state: %s", instance.ID, err)
+			return fmt.Errorf("Error waiting for Instance %d to enter online state: %s", instance.ID, err)
 		}
 	}
 	return nil
 }
 
+// returns the amount of disk space used by the new plan and old plan
+func getDiskSizeChange(oldDisk interface{}, newDisk interface{}) (int, int)  {
+
+	tfDisksOldInterface := oldDisk.([]interface{})
+	tfDisksNewInterface := newDisk.([]interface{})
+
+	oldDiskSize := 0
+	newDiskSize := 0
+
+	// Get total amount of disk usage before & after
+	for _, disk := range tfDisksOldInterface {
+		oldDiskSize += disk.(map[string]interface{})["size"].(int)
+	}
+
+	for _, disk := range tfDisksNewInterface {
+		newDiskSize += disk.(map[string]interface{})["size"].(int)
+	}
+
+	return oldDiskSize, newDiskSize
+}
+
 func changeInstanceDiskSize(client *linodego.Client, instance linodego.Instance, disk linodego.InstanceDisk, targetSize int, d *schema.ResourceData) error {
 	if instance.Specs.Disk > targetSize {
-		if instance.Status == linodego.InstanceOffline || instance.Status == linodego.InstanceShuttingDown {
+		switch instance.Status {
+		case linodego.InstanceShuttingDown:
 			if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-				return fmt.Errorf("Error waiting for instance %d to go offline: %s", instance.ID, err)
+				return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 			}
-		} else {
-			client.ShutdownInstance(context.Background(), instance.ID)
+		case linodego.InstanceOffline:
+		default:
+			if err := client.ShutdownInstance(context.Background(), instance.ID); err != nil {
+				return err
+			}
 		}
 
 		// Wait for instance to go offline. Resize the disk once Linode is shut down.
 		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for instance %d to go offline: %s", instance.ID, err)
+			return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 		} else {
 			if err := client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize); err != nil {
-				return fmt.Errorf("Error resizing Disk %d for Instance %d: %s", disk.ID, instance.ID, err)
+				return fmt.Errorf("Error resizing disk %d for Instance %d: %s", disk.ID, instance.ID, err)
 			}
 		}
 
-		// Wait for the Disk Resize Operation to Complete, and boot instance.
+		// Wait for the disk resize operation to complete, and boot instance.
 		_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, disk.Updated, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
 		}
 	} else {
-		return fmt.Errorf("Error resizing Disk %d: size exceeds disk size for Instance %d", disk.ID, instance.ID)
+		return fmt.Errorf("Error resizing disk %d: size exceeds disk size for Instance %d", disk.ID, instance.ID)
 	}
 	return nil
 }
