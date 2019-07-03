@@ -740,7 +740,7 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 }
 
 // returns the amount of disk space used by the new plan and old plan
-func getDiskSizeChange(oldDisk interface{}, newDisk interface{}) (int, int)  {
+func getDiskSizeChange(oldDisk interface{}, newDisk interface{}) (int, int) {
 
 	tfDisksOldInterface := oldDisk.([]interface{})
 	tfDisksNewInterface := newDisk.([]interface{})
