@@ -720,9 +720,9 @@ func changeInstanceType(client *linodego.Client, instance *linodego.Instance, ta
 		return fmt.Errorf("Error resizing Instance %d: %s", instance.ID, err)
 	}
 
-	// wait for instance to begin resizing after issuing resize job
-	if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceResizing, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for Instance %d to enter resizing state: %s", instance.ID, err)
+	_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+	if err != nil {
+		return fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
 
 	// Wait for instance status to go offline
