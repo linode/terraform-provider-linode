@@ -13,7 +13,7 @@ This provider plugin is maintained by Linode.
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.10+
+- [Terraform](https://www.terraform.io/downloads.html) 0.12.0+
 - [Go](https://golang.org/doc/install) 1.11.0 or higher (to build the provider plugin)
 
 ## Using the provider

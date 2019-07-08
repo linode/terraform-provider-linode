@@ -68,8 +68,12 @@ resource "linode_instance" "web" {
     label = "boot_config"
     kernel = "linode/latest-64bit"
     devices {
-      sda = { disk_label = "boot" },
-      sdb = { volume_id = "${linode_volume.web_volume.id}" }
+      sda {
+        disk_label = "boot"
+      }
+      sdb {
+        volume_id = "${linode_volume.web_volume.id}"
+      }
     }
     root_device = "/dev/sda"
   }

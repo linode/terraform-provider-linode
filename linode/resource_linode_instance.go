@@ -1160,16 +1160,35 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		d.Partial(false)
 	}
 
-	if d.HasChange("type") {
-		if err = changeInstanceType(&client, instance, d.Get("type").(string), d); err != nil {
-			return err
-		}
-		d.Set("type", d.Get("type").(string))
-	}
+	var rebootInstance bool
+	var diskIDLabelMap map[string]int
 
 	tfDisksOld, tfDisksNew := d.GetChange("disk")
+	oldDiskSize, newDiskSize := getDiskSizeChange(tfDisksOld, tfDisksNew)
+	targetType := d.Get("type").(string)
 
-	rebootInstance, diskIDLabelMap, err := updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew)
+	if newDiskSize > oldDiskSize {
+		if d.HasChange("type") {
+			if err = changeInstanceType(&client, instance, targetType, d); err != nil {
+				return err
+			}
+			d.Set("type", targetType)
+		}
+		if rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew); err != nil {
+			return err
+		}
+	} else {
+		if rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew); err != nil {
+			return err
+		}
+		if d.HasChange("type") {
+			if err = changeInstanceType(&client, instance, targetType, d); err != nil {
+				return err
+			}
+			d.Set("type", targetType)
+		}
+	}
+
 	if err != nil {
 		return err
 	}

@@ -87,8 +87,10 @@ func resourceLinodeStackscript() *schema.Resource {
 			},
 			"user_defined_fields": {
 				Description: "This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment.",
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
+				ConfigMode:  schema.SchemaConfigModeAttr,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {

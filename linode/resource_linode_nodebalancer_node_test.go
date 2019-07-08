@@ -30,7 +30,7 @@ func TestAccLinodeNodeBalancerNode_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
-					resource.TestCheckResourceAttr(resName, "address", "192.168.200.1:80"),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.200.2:80"),
 
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttr(resName, "mode", "accept"),
@@ -63,7 +63,7 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
-					resource.TestCheckResourceAttr(resName, "address", "192.168.200.1:80"),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.200.2:80"),
 					resource.TestCheckResourceAttr(resName, "weight", "50"),
 				),
 			},
@@ -72,7 +72,7 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodeName)),
-					resource.TestCheckResourceAttr(resName, "address", "192.168.200.1:8080"),
+					resource.TestCheckResourceAttr(resName, "address", "192.168.200.2:8080"),
 					resource.TestCheckResourceAttr(resName, "weight", "200"),
 				),
 			},
@@ -191,7 +191,7 @@ func testAccCheckLinodeNodeBalancerNodeBasic(label string) string {
 resource "linode_nodebalancer_node" "foonode" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"
-	address = "192.168.200.1:80"
+	address = "192.168.200.2:80"
 	label = "%s"
 	weight = 50
 }
@@ -203,7 +203,7 @@ func testAccCheckLinodeNodeBalancerNodeUpdates(label string) string {
 resource "linode_nodebalancer_node" "foonode" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"
-	address = "192.168.200.1:8080"
+	address = "192.168.200.2:8080"
 	label = "%s_r"
 	weight = 200
 }

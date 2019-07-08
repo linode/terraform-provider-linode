@@ -43,7 +43,9 @@ resource "linode_instance" "foo" {
     label = "boot-existing-volume"
     kernel = "linode/latest-64bit"
     devices {
-      sda = { volume_id = "123" }
+      sda {
+        volume_id = "123"
+      }
     }
   }
 }
