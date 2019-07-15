@@ -529,7 +529,7 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/root"),
+					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
 				),
@@ -543,7 +543,7 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 					// changed kerel, not label
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
-					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/root"),
+					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
 					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "false"),
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "80"),
 				),
@@ -1381,7 +1381,7 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 		helpers {
 			network = true
 		}
@@ -1401,12 +1401,12 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "configa"
 		kernel = "linode/latest-64bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 	config {
 		label = "configb"
 		kernel = "linode/latest-32bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 
 	boot_config_label = "configa"
@@ -1423,12 +1423,12 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "configa"
 		kernel = "linode/latest-64bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 	config {
 		label = "configb"
 		kernel = "linode/latest-32bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 
 	boot_config_label = "configa"
@@ -1446,19 +1446,19 @@ resource "linode_instance" "foobar" {
 		label = "configa"
 		comments = "configa"
 		kernel = "linode/latest-32bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 	config {
 		label = "configb"
 		comments = "configb"
 		kernel = "linode/latest-64bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 	config {
 		label = "configc"
 		comments = "configc"
 		kernel = "linode/latest-64bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 
 	boot_config_label = "configa"
@@ -1795,7 +1795,7 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 	}
 
 	boot_config_label = "config"
@@ -1818,7 +1818,7 @@ resource "linode_instance" "foobar" {
 	config {
 		label = "config"
 		kernel = "linode/latest-32bit"
-		root_device = "/dev/root"
+		root_device = "/dev/sda"
 		helpers {
 			network = false
 		}
