@@ -41,15 +41,16 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_account":       dataSourceLinodeAccount(),
-			"linode_domain":        dataSourceLinodeDomain(),
-			"linode_image":         dataSourceLinodeImage(),
-			"linode_instance_type": dataSourceLinodeInstanceType(),
-			"linode_networking_ip": dataSourceLinodeNetworkingIP(),
-			"linode_profile":       dataSourceLinodeProfile(),
-			"linode_region":        dataSourceLinodeRegion(),
-			"linode_sshkey":        dataSourceLinodeSSHKey(),
-			"linode_user":          dataSourceLinodeUser(),
+			"linode_account":               dataSourceLinodeAccount(),
+			"linode_domain":                dataSourceLinodeDomain(),
+			"linode_image":                 dataSourceLinodeImage(),
+			"linode_instance_type":         dataSourceLinodeInstanceType(),
+			"linode_networking_ip":         dataSourceLinodeNetworkingIP(),
+			"linode_profile":               dataSourceLinodeProfile(),
+			"linode_region":                dataSourceLinodeRegion(),
+			"linode_sshkey":                dataSourceLinodeSSHKey(),
+			"linode_user":                  dataSourceLinodeUser(),
+			"linode_objectstorage_cluster": dataSourceLinodeObjectStorageCluster(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
