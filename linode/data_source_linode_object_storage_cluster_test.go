@@ -12,7 +12,7 @@ func TestAccDataSourceLinodeObjectStorageCluster(t *testing.T) {
 
 	objectStorageClusterID := "us-east-1"
 	region := "us-east"
-	resourceName := "data.linode_objectstorage_cluster.foobar"
+	resourceName := "data.linode_object_storage_cluster.foobar"
 	staticSiteDomain := "website-us-east-1.linodeobjects.com"
 
 	resource.Test(t, resource.TestCase{
@@ -33,7 +33,7 @@ func TestAccDataSourceLinodeObjectStorageCluster(t *testing.T) {
 
 func testDataSourceLinodeObjectStorageCluster(objectStorageClusterID string) string {
 	return fmt.Sprintf(`
-data "linode_objectstorage_cluster" "foobar" {
+data "linode_object_storage_cluster" "foobar" {
     id = "%s"
 }`, objectStorageClusterID)
 }
