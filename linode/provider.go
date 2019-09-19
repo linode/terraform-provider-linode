@@ -38,6 +38,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("LINODE_UA_PREFIX", nil),
 				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
 			},
+			"api_version": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_API_VERSION", nil),
+				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -88,7 +94,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, fmt.Errorf("The Linode UA Prefix was not valid")
 	}
 
-	client := getLinodeClient(token, url, uaPrefix)
+	apiVersion, ok := d.Get("api_version").(string)
+	if !ok {
+		return nil, fmt.Errorf("The Linode API Version was not valid")
+	}
+
+	client := getLinodeClient(token, url, uaPrefix, apiVersion)
 	// Ping the API for an empty response to verify the configuration works
 	_, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, ""))
 	if err != nil {
@@ -98,7 +109,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	return client, nil
 }
 
-func getLinodeClient(token, url, uaPrefix string) linodego.Client {
+func getLinodeClient(token, url, uaPrefix, apiVersion string) linodego.Client {
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 
 	oauthTransport := &oauth2.Transport{
@@ -120,12 +131,14 @@ func getLinodeClient(token, url, uaPrefix string) linodego.Client {
 		userAgent = uaPrefix + " " + userAgent
 	}
 
-	var baseURL = DefaultLinodeURL
 	if len(url) > 0 {
-		baseURL = url
+		client.SetBaseURL(url)
+	} else if len(apiVersion) > 0 {
+		client.SetAPIVersion(apiVersion)
+	} else {
+		client.SetBaseURL(DefaultLinodeURL)
 	}
 
-	client.SetBaseURL(baseURL)
 	client.SetUserAgent(userAgent)
 	return client
 }

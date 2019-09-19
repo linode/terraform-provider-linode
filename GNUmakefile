@@ -19,7 +19,9 @@ test: fmtcheck
 		xargs -t -n4 go test -parallel=2 -timeout=30s
 
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m -parallel=2
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	go test $(TEST) -v $(TESTARGS) -timeout 120m -parallel=2
 
 vet:
 	@echo "go vet ."
