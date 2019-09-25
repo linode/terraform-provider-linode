@@ -67,6 +67,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_nodebalancer":        resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config": resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":   resourceLinodeNodeBalancerNode(),
+			"linode_object_storage_key":  resourceLinodeObjectStorageKey(),
 			"linode_rdns":                resourceLinodeRDNS(),
 			"linode_sshkey":              resourceLinodeSSHKey(),
 			"linode_stackscript":         resourceLinodeStackscript(),
