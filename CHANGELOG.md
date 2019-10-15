@@ -1,4 +1,12 @@
 ## 1.9.0 (Unreleased)
+
+FEATURES:
+
+* **New Data Source** `linode_object_storage_cluster`
+* **New Resource** `linode_object_storage_key`
+* **New Resource** `linode_object_storage_bucket`
+
+
 ## 1.8.0 (July 16, 2019)
 
 BACKWARDS INCOMPATIBILITIES / NOTES:
