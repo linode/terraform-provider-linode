@@ -1,6 +1,5 @@
 SWEEP?="tf_test,tf-test"
 TEST?=$$(go list ./... |grep -v 'vendor')
-TESTARGS?=$("-parallel=2","-timeout=120m")
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode
@@ -20,7 +19,9 @@ test: fmtcheck
 		xargs -t -n4 go test -parallel=2 -timeout=30s
 
 testacc: fmtcheck
-	TF_ACC=1 go test -v $(TEST) $(TESTARGS)
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	go test $(TEST) -v $(TESTARGS) -timeout 120m -parallel=2
 
 vet:
 	@echo "go vet ."
@@ -46,7 +47,7 @@ test-compile:
 		echo "  make test-compile TEST=./$(PKG_NAME)"; \
 		exit 1; \
 	fi
-	go test -c $(TEST) $(TESTARGS)
+	go test -c $(TEST) $(TESTARGS) -timeout 120m -parallel=2
 
 website:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
