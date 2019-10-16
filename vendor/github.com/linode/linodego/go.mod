@@ -12,3 +12,5 @@ require (
 	gopkg.in/resty.v1 v1.9.1
 	gopkg.in/yaml.v2 v2.2.1 // indirect
 )
+
+go 1.13

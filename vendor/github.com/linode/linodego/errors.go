@@ -49,6 +49,18 @@ func coupleAPIErrors(r *resty.Response, err error) (*resty.Response, error) {
 	}
 
 	if r.Error() != nil {
+		// Check that response is of the correct content-type before unmarshalling
+		expectedContentType := r.Request.Header.Get("Accept")
+		responseContentType := r.Header().Get("Content-Type")
+		if responseContentType != expectedContentType {
+			msg := fmt.Sprintf(
+				"Unexpected Content-Type: Expected: %v, Received: %v",
+				expectedContentType,
+				responseContentType,
+			)
+			return nil, NewError(msg)
+		}
+
 		apiError, ok := r.Error().(*APIError)
 		if !ok || (ok && len(apiError.Errors) == 0) {
 			return r, nil

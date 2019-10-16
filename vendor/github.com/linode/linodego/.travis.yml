@@ -8,7 +8,7 @@ env:
   - GO111MODULE=on
 
 go:
-  - "1.11"
+  - "1.12.6"
   - tip
 
 script:

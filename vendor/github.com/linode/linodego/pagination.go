@@ -38,6 +38,7 @@ func NewListOptions(page int, filter string) *ListOptions {
 // When opts (or opts.Page) is nil, all pages will be fetched and
 // returned in a single (endpoint-specific)PagedResponse
 // opts.results and opts.pages will be updated from the API response
+// nolint
 func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOptions) error {
 	req := c.R(ctx)
 	if opts != nil && opts.PageOptions != nil && opts.Page > 0 {
@@ -209,6 +210,24 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 			results = r.Result().(*UsersPagedResponse).Results
 			v.appendData(r.Result().(*UsersPagedResponse))
 		}
+	case *ObjectStorageBucketsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(ObjectStorageBucketsPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*ObjectStorageBucketsPagedResponse).Pages
+			results = r.Result().(*ObjectStorageBucketsPagedResponse).Results
+			v.appendData(r.Result().(*ObjectStorageBucketsPagedResponse))
+		}
+	case *ObjectStorageClustersPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(ObjectStorageClustersPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*ObjectStorageClustersPagedResponse).Pages
+			results = r.Result().(*ObjectStorageClustersPagedResponse).Results
+			v.appendData(r.Result().(*ObjectStorageClustersPagedResponse))
+		}
+	case *ObjectStorageKeysPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(ObjectStorageKeysPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*ObjectStorageKeysPagedResponse).Pages
+			results = r.Result().(*ObjectStorageKeysPagedResponse).Results
+			v.appendData(r.Result().(*ObjectStorageKeysPagedResponse))
+		}
 	/**
 	case ProfileAppsPagedResponse:
 	case ProfileWhitelistPagedResponse:
@@ -257,6 +276,7 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 // When opts (or opts.Page) is nil, all pages will be fetched and
 // returned in a single (endpoint-specific)PagedResponse
 // opts.results and opts.pages will be updated from the API response
+// nolint
 func (c *Client) listHelperWithID(ctx context.Context, i interface{}, idRaw interface{}, opts *ListOptions) error {
 	req := c.R(ctx)
 	if opts != nil && opts.Page > 0 {
