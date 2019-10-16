@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -25,13 +26,12 @@ func testSweepLinodeObjectStorageKey(prefix string) error {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
-	objectStorageKeys, err := client.ListObjectStorageKeys(context.Background(), listOpts)
+	objectStorageKeys, err := client.ListObjectStorageKeys(context.Background(), nil)
 	if err != nil {
 		return fmt.Errorf("Error getting object storage keys: %s", err)
 	}
 	for _, objectStorageKey := range objectStorageKeys {
-		if !shouldSweepAcceptanceTestResource(prefix, objectStorageKey.Label) {
+		if !shouldSweepAcceptanceTestResource(prefix, objectStorageKey.Label) || !strings.HasPrefix(objectStorageKey.Label, prefix) {
 			continue
 		}
 		err := client.DeleteObjectStorageKey(context.Background(), objectStorageKey.ID)
