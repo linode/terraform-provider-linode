@@ -60,15 +60,15 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_image":                 resourceLinodeImage(),
-			"linode_instance":              resourceLinodeInstance(),
 			"linode_domain":                resourceLinodeDomain(),
 			"linode_domain_record":         resourceLinodeDomainRecord(),
+			"linode_image":                 resourceLinodeImage(),
+			"linode_instance":              resourceLinodeInstance(),
 			"linode_nodebalancer":          resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config":   resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":     resourceLinodeNodeBalancerNode(),
-			"linode_object_storage_key":    resourceLinodeObjectStorageKey(),
 			"linode_object_storage_bucket": resourceLinodeObjectStorageBucket(),
+			"linode_object_storage_key":    resourceLinodeObjectStorageKey(),
 			"linode_rdns":                  resourceLinodeRDNS(),
 			"linode_sshkey":                resourceLinodeSSHKey(),
 			"linode_stackscript":           resourceLinodeStackscript(),
