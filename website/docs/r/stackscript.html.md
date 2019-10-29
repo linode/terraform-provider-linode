@@ -56,14 +56,13 @@ The following arguments are supported:
 
 * `description` - (Required) A description for the StackScript.
 
+* `images` - (Required) An array of Image IDs representing the Images that this StackScript is compatible for deploying with.
+
 - - -
 
 * `rev_note` - (Optional) This field allows you to add notes for the set of revisions made to this StackScript.
 
 * `is_public` - (Optional) This determines whether other users can use your StackScript. Once a StackScript is made public, it cannot be made private. *Changing `is_public` forces the creation of a new StackScript*
-
-* `images` - (Optional) An array of Image IDs representing the Images that this StackScript is compatible for deploying with.
-
 
 ## Attributes
 
