@@ -73,6 +73,12 @@ func resourceLinodeVolume() *schema.Resource {
 				Optional:    true,
 				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 			},
+			"persist_across_boots": {
+				Type:        schema.TypeBool,
+				Description: "If false, volumes will not be reattached by Linode on reboot.",
+				Optional:    true,
+				Default:     true,
+			},
 		},
 	}
 }
@@ -149,6 +155,11 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		for _, tag := range tagsRaw.(*schema.Set).List() {
 			createOpts.Tags = append(createOpts.Tags, tag.(string))
 		}
+	}
+
+	if persistAcrossBoots, persistOk := d.GetOkExists("persist_across_boots"); persistOk {
+		persistAcrossBootsRaw := persistAcrossBoots.(bool)
+		createOpts.PersistAcrossBoots = &persistAcrossBootsRaw
 	}
 
 	volume, err := client.CreateVolume(context.Background(), createOpts)
@@ -239,10 +250,12 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 		linodeID = &lidInt
 	}
 
+	persistAcrossBootsRaw := d.Get("persist_across_boots")
+
 	// We can't use d.HasChange("linode_id") - see https://github.com/hashicorp/terraform/pull/1445
 	// compare nils to ints cautiously
 
-	if detectVolumeIDChange(linodeID, volume.LinodeID) {
+	if detectVolumeIDChange(linodeID, volume.LinodeID) || persistAcrossBootsRaw == nil || d.HasChange("persist_across_boots") {
 		if linodeID == nil || volume.LinodeID != nil {
 			log.Printf("[INFO] Detaching Linode Volume %d", volume.ID)
 			if err = client.DetachVolume(context.Background(), volume.ID); err != nil {
@@ -260,6 +273,14 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 				LinodeID: *linodeID,
 				ConfigID: 0,
 			}
+
+			var persistAcrossBoots bool
+			if persistAcrossBootsRaw == nil {
+				persistAcrossBoots = true
+			} else {
+				persistAcrossBoots = persistAcrossBootsRaw.(bool)
+			}
+			attachOptions.PersistAcrossBoots = &persistAcrossBoots
 
 			log.Printf("[INFO] Attaching Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
 

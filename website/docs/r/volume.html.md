@@ -67,6 +67,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
+* `persist_across_boots` - (Optional) If false, volumes will not be reattached by Linode on reboot.
+
 ### Timeouts
 
 The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:

@@ -87,6 +87,7 @@ func TestAccLinodeVolume_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "linode_id", "0"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "persist_across_boots", "true"),
 				),
 			},
 
@@ -276,6 +277,36 @@ func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 	})
 }
 
+func TestAccLinodeVolume_persistAccrossBootsDisabled(t *testing.T) {
+	t.Parallel()
+
+	var volumeName = acctest.RandomWithPrefix("tf_test")
+	var volume = linodego.Volume{}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "persist_across_boots", "true"),
+				),
+			},
+			{
+				Config: testAccCheckLinodeVolumeConfigPersistAccrossBootsDisabled(volumeName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "persist_across_boots", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(linodego.Client)
@@ -430,4 +461,14 @@ resource "linode_volume" "foobaz" {
 	region = "us-west"
 }
 `, volume, volume)
+}
+
+func testAccCheckLinodeVolumeConfigPersistAccrossBootsDisabled(volume string) string {
+	return fmt.Sprintf(`
+resource "linode_volume" "foobar" {
+	label = "%s"
+	region = "us-west"
+	tags = ["tf_test"]
+	persist_across_boots = "false"
+}`, volume)
 }
