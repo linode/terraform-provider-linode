@@ -67,7 +67,7 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
-* `persist_across_boots` - (Optional) If false, volumes will not be reattached by Linode on reboot.
+* `persist_across_boots` - (Optional) If false, volumes will not be reattached by Linode on reboot. Defaults to true.
 
 ### Timeouts
 
