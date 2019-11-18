@@ -1022,6 +1022,40 @@ func TestAccLinodeInstance_privateNetworking(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_stackScript(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceStackScript(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "image", "linode/debian9"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+				),
+			},
+
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       false,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image"},
+			},
+		},
+	})
+}
+
 func testAccCheckLinodeInstanceExists(name string, instance *linodego.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(linodego.Client)
@@ -1918,4 +1952,19 @@ resource "linode_instance" "foobar" {
 	swap_size = 256
 	authorized_users = [ "${data.linode_profile.profile.username}" ]
 }`, pubkey, instance)
+}
+
+func testAccCheckLinodeInstanceStackScript(instance string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "g6-nanode-1"
+	region = "us-east"
+	stackscript_id = "514388"
+	stackscript_data = {
+		"hostname" = "pulumtesting"
+	}
+	image = "linode/debian9"
+}`, instance)
 }
