@@ -1022,7 +1022,7 @@ func TestAccLinodeInstance_privateNetworking(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_stackScript(t *testing.T) {
+func TestAccLinodeInstance_stackScriptInstance(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -1051,6 +1051,37 @@ func TestAccLinodeInstance_stackScript(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       false,
 				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image"},
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_stackScriptDisk(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceDiskStackScript(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					// resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					// resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					// resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					// testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+				),
 			},
 		},
 	})
@@ -1963,8 +1994,55 @@ resource "linode_instance" "foobar" {
 	region = "us-east"
 	stackscript_id = "514388"
 	stackscript_data = {
-		"hostname" = "pulumtesting"
+		"hostname" = "pulumitesting"
 	}
 	image = "linode/debian9"
 }`, instance)
+}
+
+func testAccCheckLinodeInstanceDiskStackScript(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+
+resource "linode_stackscript" "foo-script" {
+	label = "foo-label"
+	description = "Installs a Package"
+
+	script = <<EOF
+#!/bin/bash
+# <UDF name="hello" label="Hiya" example="example" default="">
+echo "hello this is a stack script"
+	EOF
+	images = ["linode/debian9"]
+	rev_note = "hello version"
+}
+
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-nanode-1"
+	region = "us-east"
+	group = "tf_test"
+
+	disk {
+		label = "disk"
+		image = "linode/debian9"
+		root_pass = "b4d_p4s5"
+		authorized_keys = ["%s"]
+		size = 3000
+		stackscript_id = "${linode_stackscript.foo-script.id}"
+		stackscript_data = {
+			"hello" = "world"
+		}
+	}
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices {
+			sda {
+				disk_label = "disk"
+			}
+		}
+	}
+
+}`, instance, pubkey)
 }
