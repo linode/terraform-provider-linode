@@ -6,6 +6,9 @@ FEATURES:
 * **New Resource** `linode_object_storage_key`
 * **New Resource** `linode_object_storage_bucket`
 
+BUG FIXES:
+
+* providing stackscript data on a disk would cause a `panic: assignment to entry in nil map` ([#62](https://github.com/terraform-providers/terraform-provider-linode/pull/62))
 
 ## 1.8.0 (July 16, 2019)
 
