@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -159,12 +159,10 @@ func (r *Request) SetMultiValueFormData(params url.Values) *Request {
 	return r
 }
 
-// SetBody method sets the request body for the request. It supports various realtime needs as easy.
-// We can say its quite handy or powerful. Supported request body data types is `string`,
-// `[]byte`, `struct`, `map`, `slice` and `io.Reader`. Body value can be pointer or non-pointer.
-// Automatic marshalling for JSON and XML content type, if it is `struct`, `map`, or `slice`.
-//
-// Note: `io.Reader` is processed as bufferless mode while sending request.
+// SetBody method sets the request body for the request. It supports various realtime need easy.
+// We can say its quite handy or powerful. Supported request body data types is `string`, `[]byte`,
+// `struct` and `map`. Body value can be pointer or non-pointer. Automatic marshalling
+// for JSON and XML content type, if it is `struct` or `map`.
 //
 // Example:
 //

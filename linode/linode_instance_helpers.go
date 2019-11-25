@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/linode/linodego"
 	"golang.org/x/crypto/sha3"
 )

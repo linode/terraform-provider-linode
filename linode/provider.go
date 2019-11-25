@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform/helper/logging"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/httpclient"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/linode/linodego"
 	"golang.org/x/oauth2"
 )
@@ -124,10 +123,7 @@ func getLinodeClient(token, url, uaPrefix, apiVersion string) linodego.Client {
 
 	client := linodego.NewClient(oauth2Client)
 
-	terraformVersion := httpclient.UserAgentString()
-	projectURL := "(+https://www.terraform.io)"
-	sdkVersion := fmt.Sprintf("linodego/%s", linodego.Version)
-	userAgent := fmt.Sprintf("%s %s %s", terraformVersion, projectURL, sdkVersion)
+	userAgent := fmt.Sprintf("linodego/%s", linodego.Version)
 
 	if len(uaPrefix) > 0 {
 		userAgent = uaPrefix + " " + userAgent
