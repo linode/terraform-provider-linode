@@ -201,7 +201,7 @@ resource "linode_object_storage_bucket" "foobar" {
 func testAccCheckLinodeObjectStorageBucketConfigDataSource(object_storage_bucket string) string {
 	return fmt.Sprintf(`
 data "linode_object_storage_cluster" "baz" {
-    id = "us-east-1"
+	id = "us-east-1"
 }
 
 resource "linode_object_storage_bucket" "foobar" {

@@ -1,0 +1,36 @@
+---
+layout: "linode"
+page_title: "Linode: linode_object_storage_bucket"
+sidebar_current: "docs-linode-resource-object-storage-bucket"
+description: |-
+  Manages a Linode Object Storage Bucket.
+---
+
+# linode\_object\_storage\_bucket
+
+Provides a Linode Object Storage Bucket resource. This can be used to create, modify, and delete Linodes Object Storage Buckets.
+
+## Example Usage
+
+The following example shows how one might use this resource to create an Object Storage Bucket.
+
+```hcl
+data "linode_object_storage_cluster" "primary" {
+    id = "us-east-1"
+}
+
+resource "linode_object_storage_bucket" "foobar" {
+	cluster = data.linode_object_storage_cluster.primary.id
+	label = "%s"
+}
+
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `cluster` - (Required) The cluster of the Linode Object Storage Bucket.
+
+* `label` - (Required) The label of the Linode Object Storage Bucket.
+
