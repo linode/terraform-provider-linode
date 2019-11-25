@@ -124,10 +124,9 @@ func getLinodeClient(token, url, uaPrefix, apiVersion string) linodego.Client {
 
 	client := linodego.NewClient(oauth2Client)
 
-	terraformVersion := httpclient.UserAgentString()
-	projectURL := "(+https://www.terraform.io)"
+	terraformVersion := httpclient.TerraformUserAgent("0.0.0")
 	sdkVersion := fmt.Sprintf("linodego/%s", linodego.Version)
-	userAgent := fmt.Sprintf("%s %s %s", terraformVersion, projectURL, sdkVersion)
+	userAgent := fmt.Sprintf("%s %s", terraformVersion, sdkVersion)
 
 	if len(uaPrefix) > 0 {
 		userAgent = uaPrefix + " " + userAgent
