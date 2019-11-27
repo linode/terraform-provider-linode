@@ -57,6 +57,20 @@ Several [Linode Guides & Tutorials](https://www.linode.com/docs/) are available 
 
 These guides are maintained by Linode and are not officially endorsed by HashiCorp.
 
+## Rate Limiting
+
+The Linode API may apply rate limiting when you update the state for a large inventory:
+
+```
+Error: Error getting Linode DomainRecord ID 123456: [002] unexpected end of JSON input
+
+
+
+Error: Error finding the specified Linode DomainRecord: [002] unexpected end of JSON input
+```
+
+If this affects you, run Terraform with [--parallelism=1](/docs/commands/apply.html#parallelism-n)
+
 ## Debugging
 
 The [Linode APIv4 wrapper](https://github.com/linode/linodego) used by this provider accepts a `LINODE_DEBUG` environment variable.
