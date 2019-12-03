@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -20,20 +21,22 @@ import (
 	"time"
 )
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+const debugRequestLogKey = "__restyDebugRequestLog"
+
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Request Middleware(s)
-//___________________________________
+//_______________________________________________________________________
 
 func parseRequestURL(c *Client, r *Request) error {
 	// GitHub #103 Path Params
 	if len(r.pathParams) > 0 {
 		for p, v := range r.pathParams {
-			r.URL = strings.Replace(r.URL, "{"+p+"}", v, -1)
+			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
 		}
 	}
 	if len(c.pathParams) > 0 {
 		for p, v := range c.pathParams {
-			r.URL = strings.Replace(r.URL, "{"+p+"}", v, -1)
+			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
 		}
 	}
 
@@ -104,7 +107,7 @@ func parseRequestHeader(c *Client, r *Request) error {
 	}
 
 	if IsStringEmpty(hdr.Get(hdrUserAgentKey)) {
-		hdr.Set(hdrUserAgentKey, fmt.Sprintf(hdrUserAgentValue, Version))
+		hdr.Set(hdrUserAgentKey, hdrUserAgentValue)
 	}
 
 	ct := hdr.Get(hdrContentTypeKey)
@@ -176,8 +179,13 @@ func createHTTPRequest(c *Client, r *Request) (err error) {
 	// Add headers into http request
 	r.RawRequest.Header = r.Header
 
-	// Add cookies into http request
+	// Add cookies from client instance into http request
 	for _, cookie := range c.Cookies {
+		r.RawRequest.AddCookie(cookie)
+	}
+
+	// Add cookies from request instance into http request
+	for _, cookie := range r.Cookies {
 		r.RawRequest.AddCookie(cookie)
 	}
 
@@ -187,8 +195,42 @@ func createHTTPRequest(c *Client, r *Request) (err error) {
 		r.RawRequest.URL.Host = r.URL
 	}
 
+	// Enable trace
+	if c.trace || r.trace {
+		r.clientTrace = &clientTrace{}
+		r.ctx = r.clientTrace.createContext(r.Context())
+	}
+
 	// Use context if it was specified
-	r.addContextIfAvailable()
+	if r.ctx != nil {
+		r.RawRequest = r.RawRequest.WithContext(r.ctx)
+	}
+
+	// assign get body func for the underlying raw request instance
+	r.RawRequest.GetBody = func() (io.ReadCloser, error) {
+		// If r.bodyBuf present, return the copy
+		if r.bodyBuf != nil {
+			return ioutil.NopCloser(bytes.NewReader(r.bodyBuf.Bytes())), nil
+		}
+
+		// Maybe body is `io.Reader`.
+		// Note: Resty user have to watchout for large body size of `io.Reader`
+		if r.RawRequest.Body != nil {
+			b, err := ioutil.ReadAll(r.RawRequest.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			// Restore the Body
+			closeq(r.RawRequest.Body)
+			r.RawRequest.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+
+			// Return the Body bytes
+			return ioutil.NopCloser(bytes.NewBuffer(b)), nil
+		}
+
+		return nil, nil
+	}
 
 	return
 }
@@ -206,7 +248,7 @@ func addCredentials(c *Client, r *Request) error {
 
 	if !c.DisableWarn {
 		if isBasicAuth && !strings.HasPrefix(r.URL, "https") {
-			c.Log.Println("WARNING - Using Basic Auth in HTTP mode is not secure.")
+			c.log.Warnf("Using Basic Auth in HTTP mode is not secure, use HTTPS")
 		}
 	}
 
@@ -223,52 +265,72 @@ func addCredentials(c *Client, r *Request) error {
 func requestLogger(c *Client, r *Request) error {
 	if c.Debug {
 		rr := r.RawRequest
-		reqLog := "\n---------------------- REQUEST LOG -----------------------\n" +
+		rl := &RequestLog{Header: copyHeaders(rr.Header), Body: r.fmtBodyString()}
+		if c.requestLog != nil {
+			if err := c.requestLog(rl); err != nil {
+				return err
+			}
+		}
+		// fmt.Sprintf("COOKIES:\n%s\n", composeCookies(c.GetClient().Jar, *rr.URL)) +
+
+		reqLog := "\n==============================================================================\n" +
+			"~~~ REQUEST ~~~\n" +
 			fmt.Sprintf("%s  %s  %s\n", r.Method, rr.URL.RequestURI(), rr.Proto) +
 			fmt.Sprintf("HOST   : %s\n", rr.URL.Host) +
-			fmt.Sprintf("HEADERS:\n") +
-			composeHeaders(rr.Header) + "\n" +
-			fmt.Sprintf("BODY   :\n%v\n", r.fmtBodyString()) +
-			"----------------------------------------------------------\n"
+			fmt.Sprintf("HEADERS:\n%s\n", composeHeaders(c, r, rl.Header)) +
+			fmt.Sprintf("BODY   :\n%v\n", rl.Body) +
+			"------------------------------------------------------------------------------\n"
 
-		c.Log.Print(reqLog)
+		r.initValuesMap()
+		r.values[debugRequestLogKey] = reqLog
 	}
 
 	return nil
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Response Middleware(s)
-//___________________________________
+//_______________________________________________________________________
 
 func responseLogger(c *Client, res *Response) error {
 	if c.Debug {
-		resLog := "\n---------------------- RESPONSE LOG -----------------------\n" +
-			fmt.Sprintf("STATUS 		: %s\n", res.Status()) +
-			fmt.Sprintf("RECEIVED AT	: %v\n", res.ReceivedAt().Format(time.RFC3339Nano)) +
-			fmt.Sprintf("RESPONSE TIME	: %v\n", res.Time()) +
-			"HEADERS:\n" +
-			composeHeaders(res.Header()) + "\n"
-
-		if res.Request.isSaveResponse {
-			resLog += fmt.Sprintf("BODY   :\n***** RESPONSE WRITTEN INTO FILE *****\n")
-		} else {
-			resLog += fmt.Sprintf("BODY   :\n%v\n", res.fmtBodyString(c.debugBodySizeLimit))
+		rl := &ResponseLog{Header: copyHeaders(res.Header()), Body: res.fmtBodyString(c.debugBodySizeLimit)}
+		if c.responseLog != nil {
+			if err := c.responseLog(rl); err != nil {
+				return err
+			}
 		}
-		resLog += "----------------------------------------------------------\n"
 
-		c.Log.Print(resLog)
+		debugLog := res.Request.values[debugRequestLogKey].(string)
+		debugLog += "~~~ RESPONSE ~~~\n" +
+			fmt.Sprintf("STATUS       : %s\n", res.Status()) +
+			fmt.Sprintf("RECEIVED AT  : %v\n", res.ReceivedAt().Format(time.RFC3339Nano)) +
+			fmt.Sprintf("TIME DURATION: %v\n", res.Time()) +
+			"HEADERS      :\n" +
+			composeHeaders(c, res.Request, rl.Header) + "\n"
+		if res.Request.isSaveResponse {
+			debugLog += fmt.Sprintf("BODY         :\n***** RESPONSE WRITTEN INTO FILE *****\n")
+		} else {
+			debugLog += fmt.Sprintf("BODY         :\n%v\n", rl.Body)
+		}
+		debugLog += "==============================================================================\n"
+
+		c.log.Debugf(debugLog)
 	}
 
 	return nil
 }
 
 func parseResponseBody(c *Client, res *Response) (err error) {
+	if res.StatusCode() == http.StatusNoContent {
+		return
+	}
 	// Handles only JSON or XML content type
 	ct := firstNonEmpty(res.Header().Get(hdrContentTypeKey), res.Request.fallbackContentType)
 	if IsJSONType(ct) || IsXMLType(ct) {
 		// HTTP status code > 199 and < 300, considered as Result
 		if res.IsSuccess() {
+			res.Request.Error = nil
 			if res.Request.Result != nil {
 				err = Unmarshalc(c, ct, res.body, res.Request.Result)
 				return

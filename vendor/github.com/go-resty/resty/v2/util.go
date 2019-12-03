@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,6 @@ package resty
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -22,9 +21,52 @@ import (
 	"strings"
 )
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// Logger interface
+//_______________________________________________________________________
+
+// Logger interface is to abstract the logging from Resty. Gives control to
+// the Resty users, choice of the logger.
+type Logger interface {
+	Errorf(format string, v ...interface{})
+	Warnf(format string, v ...interface{})
+	Debugf(format string, v ...interface{})
+}
+
+func createLogger() *logger {
+	l := &logger{l: log.New(os.Stderr, "", log.Ldate|log.Lmicroseconds)}
+	return l
+}
+
+var _ Logger = (*logger)(nil)
+
+type logger struct {
+	l *log.Logger
+}
+
+func (l *logger) Errorf(format string, v ...interface{}) {
+	l.output("ERROR RESTY "+format, v...)
+}
+
+func (l *logger) Warnf(format string, v ...interface{}) {
+	l.output("WARN RESTY "+format, v...)
+}
+
+func (l *logger) Debugf(format string, v ...interface{}) {
+	l.output("DEBUG RESTY "+format, v...)
+}
+
+func (l *logger) output(format string, v ...interface{}) {
+	if len(v) == 0 {
+		l.l.Print(format)
+		return
+	}
+	l.l.Printf(format, v...)
+}
+
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Package Helper methods
-//___________________________________
+//_______________________________________________________________________
 
 // IsStringEmpty method tells whether given string is empty or not
 func IsStringEmpty(str string) bool {
@@ -61,18 +103,6 @@ func IsXMLType(ct string) bool {
 	return xmlCheck.MatchString(ct)
 }
 
-// Unmarshal content into object from JSON or XML
-// Deprecated: kept for backward compatibility
-func Unmarshal(ct string, b []byte, d interface{}) (err error) {
-	if IsJSONType(ct) {
-		err = json.Unmarshal(b, d)
-	} else if IsXMLType(ct) {
-		err = xml.Unmarshal(b, d)
-	}
-
-	return
-}
-
 // Unmarshalc content into object from JSON or XML
 func Unmarshalc(c *Client, ct string, b []byte, d interface{}) (err error) {
 	if IsJSONType(ct) {
@@ -84,6 +114,30 @@ func Unmarshalc(c *Client, ct string, b []byte, d interface{}) (err error) {
 	return
 }
 
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// RequestLog and ResponseLog type
+//_______________________________________________________________________
+
+// RequestLog struct is used to collected information from resty request
+// instance for debug logging. It sent to request log callback before resty
+// actually logs the information.
+type RequestLog struct {
+	Header http.Header
+	Body   string
+}
+
+// ResponseLog struct is used to collected information from resty response
+// instance for debug logging. It sent to response log callback before resty
+// actually logs the information.
+type ResponseLog struct {
+	Header http.Header
+	Body   string
+}
+
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// Package Unexported methods
+//_______________________________________________________________________
+
 // way to disable the HTML escape as opt-in
 func jsonMarshal(c *Client, r *Request, d interface{}) ([]byte, error) {
 	if !r.jsonEscapeHTML {
@@ -94,10 +148,6 @@ func jsonMarshal(c *Client, r *Request, d interface{}) ([]byte, error) {
 	return c.JSONMarshal(d)
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-// Package Unexported methods
-//___________________________________
-
 func firstNonEmpty(v ...string) string {
 	for _, s := range v {
 		if !IsStringEmpty(s) {
@@ -105,10 +155,6 @@ func firstNonEmpty(v ...string) string {
 		}
 	}
 	return ""
-}
-
-func getLogger(w io.Writer) *log.Logger {
-	return log.New(w, "RESTY ", log.LstdFlags)
 }
 
 var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
@@ -119,13 +165,23 @@ func escapeQuotes(s string) string {
 
 func createMultipartHeader(param, fileName, contentType string) textproto.MIMEHeader {
 	hdr := make(textproto.MIMEHeader)
-	hdr.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-		escapeQuotes(param), escapeQuotes(fileName)))
-	hdr.Set("Content-Type", contentType)
+
+	var contentDispositionValue string
+	if IsStringEmpty(fileName) {
+		contentDispositionValue = fmt.Sprintf(`form-data; name="%s"`, param)
+	} else {
+		contentDispositionValue = fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+			param, escapeQuotes(fileName))
+	}
+	hdr.Set("Content-Disposition", contentDispositionValue)
+
+	if !IsStringEmpty(contentType) {
+		hdr.Set(hdrContentTypeKey, contentType)
+	}
 	return hdr
 }
 
-func addMultipartFormField(w *multipart.Writer, mf *multipartField) error {
+func addMultipartFormField(w *multipart.Writer, mf *MultipartField) error {
 	partWriter, err := w.CreatePart(createMultipartHeader(mf.Param, mf.FileName, mf.ContentType))
 	if err != nil {
 		return err
@@ -209,7 +265,7 @@ func createDirectory(dir string) (err error) {
 }
 
 func canJSONMarshal(contentType string, kind reflect.Kind) bool {
-	return IsJSONType(contentType) && (kind == reflect.Struct || kind == reflect.Map)
+	return IsJSONType(contentType) && (kind == reflect.Struct || kind == reflect.Map || kind == reflect.Slice)
 }
 
 func functionName(i interface{}) string {
@@ -235,19 +291,43 @@ func closeq(v interface{}) {
 
 func sliently(_ ...interface{}) {}
 
-func composeHeaders(hdrs http.Header) string {
-	var str []string
+func composeHeaders(c *Client, r *Request, hdrs http.Header) string {
+	str := make([]string, 0, len(hdrs))
 	for _, k := range sortHeaderKeys(hdrs) {
-		str = append(str, fmt.Sprintf("%25s: %s", k, strings.Join(hdrs[k], ", ")))
+		var v string
+		if k == "Cookie" {
+			cv := strings.TrimSpace(strings.Join(hdrs[k], ", "))
+			for _, c := range c.GetClient().Jar.Cookies(r.RawRequest.URL) {
+				if cv != "" {
+					cv = cv + "; " + c.String()
+				} else {
+					cv = c.String()
+				}
+			}
+			v = strings.TrimSpace(fmt.Sprintf("%25s: %s", k, cv))
+		} else {
+			v = strings.TrimSpace(fmt.Sprintf("%25s: %s", k, strings.Join(hdrs[k], ", ")))
+		}
+		if v != "" {
+			str = append(str, "\t"+v)
+		}
 	}
 	return strings.Join(str, "\n")
 }
 
 func sortHeaderKeys(hdrs http.Header) []string {
-	var keys []string
+	keys := make([]string, 0, len(hdrs))
 	for key := range hdrs {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+func copyHeaders(hdrs http.Header) http.Header {
+	nh := http.Header{}
+	for k, v := range hdrs {
+		nh[k] = v
+	}
+	return nh
 }

@@ -58,6 +58,8 @@ github.com/bgentry/speakeasy
 github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
+# github.com/go-resty/resty/v2 v2.1.1-0.20191201195748-d7b97669fe48
+github.com/go-resty/resty/v2
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
@@ -132,7 +134,6 @@ github.com/hashicorp/terraform-plugin-sdk/helper/resource
 github.com/hashicorp/terraform-plugin-sdk/helper/schema
 github.com/hashicorp/terraform-plugin-sdk/helper/structure
 github.com/hashicorp/terraform-plugin-sdk/helper/validation
-github.com/hashicorp/terraform-plugin-sdk/httpclient
 github.com/hashicorp/terraform-plugin-sdk/internal/addrs
 github.com/hashicorp/terraform-plugin-sdk/internal/command/format
 github.com/hashicorp/terraform-plugin-sdk/internal/configs
@@ -169,14 +170,13 @@ github.com/hashicorp/terraform-plugin-sdk/internal/svchost/disco
 github.com/hashicorp/terraform-plugin-sdk/internal/tfdiags
 github.com/hashicorp/terraform-plugin-sdk/internal/tfplugin5
 github.com/hashicorp/terraform-plugin-sdk/internal/version
-github.com/hashicorp/terraform-plugin-sdk/meta
 github.com/hashicorp/terraform-plugin-sdk/plugin
 github.com/hashicorp/terraform-plugin-sdk/terraform
 # github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d
 github.com/hashicorp/yamux
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
-# github.com/linode/linodego v0.11.0
+# github.com/linode/linodego v0.12.2
 github.com/linode/linodego
 # github.com/mattn/go-colorable v0.0.9
 github.com/mattn/go-colorable
@@ -262,7 +262,7 @@ golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/sha3
 golang.org/x/crypto/ssh
-# golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
+# golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -354,5 +354,3 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/test/bufconn
-# gopkg.in/resty.v1 v1.9.1
-gopkg.in/resty.v1
