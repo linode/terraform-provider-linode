@@ -1,4 +1,9 @@
 ## 1.9.1 (Unreleased)
+
+ENHANCEMENTS:
+
+* Updates linodego to v0.12.2 which retries `Linode Busy.` errors.
+
 ## 1.9.0 (November 25, 2019)
 
 FEATURES:
