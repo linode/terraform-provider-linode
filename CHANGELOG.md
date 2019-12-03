@@ -1,4 +1,4 @@
-## 1.9.1 (Unreleased)
+## 1.9.1 (December 03, 2019)
 
 ENHANCEMENTS:
 
