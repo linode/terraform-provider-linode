@@ -472,6 +472,43 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_privateImage(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	var instanceName = acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithPrivateImage(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDisk("boot", testDiskSize(1000)),
+						testDisk("swap", testDiskSize(800)),
+						testDisk("logs", testDiskSize(600)),
+					),
+				),
+			},
+
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_updateSimple(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
@@ -1846,6 +1883,51 @@ resource "linode_instance" "foobar" {
 		}
 	}
 }`, instance, instance, pubkey)
+}
+func testAccCheckLinodeInstanceWithPrivateImage(instance string) string {
+	return fmt.Sprintf(`
+	resource "linode_instance" "foobar-orig" {
+		label = "%s-orig"
+		group = "tf_test"
+		type = "g6-nanode-1"
+		region = "us-east"
+		disk {
+			label = "disk"
+			size = 1000
+			filesystem = "ext4"
+		}
+	}
+
+	resource "linode_image" "foobar" {
+		linode_id = "${linode_instance.foobar-orig.id}"
+		disk_id = "${linode_instance.foobar-orig.disk.0.id}"
+		label = "%s"
+		description = "descriptive text"
+	}
+
+	resource "linode_instance" "foobar" {
+		label = "%s"
+		group = "tf_test"
+		type = "g6-nanode-1"
+		region = "us-east"
+		disk {
+			label = "boot"
+			size = 1000
+			filesystem = "ext4"
+			image = "${linode_image.foobar.id}"
+		}
+		disk {
+			label = "swap"
+			size = 800
+			filesystem = "ext4"
+		}
+		disk {
+			label = "logs"
+			size = 600
+			filesystem = "ext4"
+		}
+	}
+`, instance, instance, instance)
 }
 
 // testAccCheckLinodeInstanceSimpleUpdates is testAccCheckLinodeInstanceWithConfig with an instance and group rename
