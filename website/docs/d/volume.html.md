@@ -42,7 +42,7 @@ The Linode Volume resource exports the following attributes:
 
 - `size` - The Volume's size, in GiB.
 
-- `region` - The region in which this Volume is located.
+- `region` - The datacenter in which this Volume is located.
 
 - `updated` - When this Volume was last updated.
 
