@@ -62,7 +62,7 @@ func resourceLinodeLKE() *schema.Resource {
 				Description: "This Kubernetes cluster's location.",
 			},
 			"node_pools": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeMap},
 				Required:    true,
 				ForceNew:    true,
@@ -136,17 +136,28 @@ func resourceLinodeLKECreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	// FIX: Iterate through the pool and create the LKEClusterPoolCreateOptions.
-	// for _, nodePoolsRaw := range d.Get("node_pool").([]interface{}) {
-	// 	//createOpts.NodePools = append(createOpts.NodePools, v.(linodego.LKEClusterPoolCreateOptions))
-	// }
+	for _, nodePool := range d.Get("node_pools").([]interface{}) {
+
+		v := nodePool.(map[string]interface{})
+		instanceType := v["type"].(string)
+		count, err := strconv.Atoi((v["count"].(string)))
+
+		if err != nil {
+			return fmt.Errorf("Error converting node_pools count %s", err)
+		}
+
+		createOpts.NodePools = append(createOpts.NodePools, linodego.LKEClusterPoolCreateOptions{
+			Type:  instanceType,
+			Count: count,
+		})
+	}
 
 	clusterLKE, err := client.CreateLKECluster(context.Background(), createOpts)
 	if err != nil {
 		return fmt.Errorf("error createing LKE cluster %s", err)
 	}
 
-	client.WaitForEventFinished(context.Background(), clusterLKE.ID, linodego.EntityLinode, linodego.ActionLKECreate, *clusterLKE.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	client.WaitForLKEClusterStatus(context.Background(), clusterLKE.ID, "ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	if err != nil {
 		return fmt.Errorf("Error waiting for Instance to finish creating")
 	}
