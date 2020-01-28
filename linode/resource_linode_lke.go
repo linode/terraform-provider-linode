@@ -174,14 +174,12 @@ func resourceLinodeLKEDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error parsing Linode LKE ID %s as int: %s", d.Id(), err)
 	}
 
-	minDelete := time.Now().AddDate(0, 0, -1)
-
 	err = client.DeleteLKECluster(context.Background(), id)
 
 	if err != nil {
 		return fmt.Errorf("Error deleting Linode LKE cluster %d: %s", id, err)
 	}
-	client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLKEDelete, minDelete, int(d.Timeout(schema.TimeoutDelete).Seconds()))
+	client.WaitForLKEClusterStatus(context.Background(), id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
 
 	d.SetId("")
 	return nil
