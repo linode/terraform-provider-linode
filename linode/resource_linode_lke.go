@@ -21,11 +21,11 @@ func resourceLinodeLKE() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeLKECreate,
 		Read:   resourceLinodeLKERead,
-		Update: nil,
+		Update: resourceLinodeLKEUpdate,
 		Delete: resourceLinodeLKEDelete,
 		Exists: resourceLinodeLKEExists,
 		Importer: &schema.ResourceImporter{
-			State: nil,
+			State: schema.ImportStatePassthrough,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(LinodeLKECreateTimeout),
@@ -37,7 +37,7 @@ func resourceLinodeLKE() *schema.Resource {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 			},
 			"version": {
@@ -51,7 +51,7 @@ func resourceLinodeLKE() *schema.Resource {
 				Type:        schema.TypeString,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Required:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "Cluster label.",
 			},
 			"region": {
@@ -156,13 +156,14 @@ func resourceLinodeLKECreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error createing LKE cluster %s", err)
 	}
+	d.SetId(fmt.Sprintf("%d", clusterLKE.ID))
 
 	client.WaitForLKEClusterStatus(context.Background(), clusterLKE.ID, "ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	if err != nil {
 		return fmt.Errorf("Error waiting for Instance to finish creating")
 	}
-	d.SetId(fmt.Sprintf("%d", clusterLKE.ID))
 
+	d.Partial(false)
 	return resourceLinodeLKERead(d, meta)
 }
 
@@ -183,4 +184,31 @@ func resourceLinodeLKEDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
 	return nil
+}
+
+func resourceLinodeLKEUpdate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(linodego.Client)
+
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return fmt.Errorf("Error parsing Linode LKE ID %s as int: %s", d.Id(), err)
+	}
+
+	clusterLKE, err := client.GetLKECluster(context.Background(), id)
+	if err != nil {
+		return fmt.Errorf("Error deleting Linode LKE cluster %d: %s", id, err)
+	}
+	updateOpts := linodego.LKEClusterUpdateOptions{}
+
+	if d.HasChange("label") {
+		updateOpts.Label = d.Get("label").(string)
+		d.SetPartial("label")
+	}
+
+	if updatedClusterLKE, err := client.UpdateLKECluster(context.Background(), clusterLKE.ID, updateOpts); err != nil {
+		return fmt.Errorf("error updating LKE Cluster %d: %s", updatedClusterLKE.ID, err)
+	}
+	d.Partial(false)
+
+	return resourceLinodeLKERead(d, meta)
 }
