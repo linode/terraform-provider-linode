@@ -134,8 +134,8 @@ github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348 h1:MtvEpTB6LX3v
 github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LEHPfb2qLo0BaaOLcbitczOKLWTsrBG9LczfCD4k=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
-github.com/linode/linodego v0.12.2 h1:ZAbVpXRK0FdhlGLA2LrcRF8Hzec5SRWNtzQVznrRGNY=
-github.com/linode/linodego v0.12.2/go.mod h1:2ce3S00NrDqJfp4i55ZuSlT0U3cKNELNYACWBPI8Tnw=
+github.com/linode/linodego v0.12.3-0.20200123185249-295dfd0bfff1 h1:ba5mJFzcXIYeowE1T19h0v47wiHKyDDrHyDhCuDd2VA=
+github.com/linode/linodego v0.12.3-0.20200123185249-295dfd0bfff1/go.mod h1:2ce3S00NrDqJfp4i55ZuSlT0U3cKNELNYACWBPI8Tnw=
 github.com/mattn/go-colorable v0.0.9 h1:UVL0vNpWh04HeJXV0KLcaT7r06gOH2l4OW6ddYRUIY4=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
