@@ -27,19 +27,6 @@ func TestAccDataSourceLinodeLKE(t *testing.T) {
 	})
 }
 
-// TODO(sgmac): test passes, destroy leaves linode nodes behind even though
-// the cluster is destroyed.
-func testAccCheckLinodeLKEConfigBasic(label string) string {
-	return fmt.Sprintf(`
-resource "linode_lke" "foobar" {
-	label = "%s"
-	region = "us-central"
-	version = "1.16"
-	node_pools = [
-		{ "count" = 3, "type" = "g6-standard-2"}
-	]
-}`, label)
-}
 func testDataSourceLinodeLKE() string {
 	return fmt.Sprintf(`
 data "linode_lke" "foobar" {
