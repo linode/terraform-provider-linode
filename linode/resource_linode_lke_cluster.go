@@ -17,7 +17,7 @@ const (
 	LinodeLKEDeleteTimeout = 10 * time.Minute
 )
 
-func resourceLinodeLKE() *schema.Resource {
+func resourceLinodeLKECluster() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeLKECreate,
 		Read:   resourceLinodeLKERead,

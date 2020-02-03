@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeLKE(t *testing.T) {
+func TestAccDataSourceLinodeLKECluster(t *testing.T) {
 	t.Parallel()
 	resourceName := "data.linode_lke.foobar"
 
@@ -16,7 +16,7 @@ func TestAccDataSourceLinodeLKE(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeLKEConfigBasic("k8s-acc") + testDataSourceLinodeLKE(),
+				Config: testAccCheckLinodeLKEClusterConfigBasic("k8s-acc") + testDataSourceLinodeLKECluster(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "label", "k8s-acc"),
 					resource.TestCheckResourceAttr(resourceName, "region", "us-central"),
@@ -27,9 +27,9 @@ func TestAccDataSourceLinodeLKE(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeLKE() string {
+func testDataSourceLinodeLKECluster() string {
 	return fmt.Sprintf(`
-data "linode_lke" "foobar" {
+data "linode_lke_cluster" "foobar" {
 	id = "${linode_lke.foobar.id}"
 }`)
 }

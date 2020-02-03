@@ -57,7 +57,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_sshkey":                 dataSourceLinodeSSHKey(),
 			"linode_user":                   dataSourceLinodeUser(),
 			"linode_volume":                 dataSourceLinodeVolume(),
-			"linode_lke":                    dataSourceLinodeLKE(),
+			"linode_lke_cluster":            dataSourceLinodeLKECluster(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -75,7 +75,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_stackscript":           resourceLinodeStackscript(),
 			"linode_token":                 resourceLinodeToken(),
 			"linode_volume":                resourceLinodeVolume(),
-			"linode_lke":                   resourceLinodeLKE(),
+			"linode_lke_cluster":           resourceLinodeLKECluster(),
 		},
 
 		ConfigureFunc: providerConfigure,

@@ -9,9 +9,9 @@ import (
 	"github.com/linode/linodego"
 )
 
-func dataSourceLinodeLKE() *schema.Resource {
+func dataSourceLinodeLKECluster() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeLKERead,
+		Read: dataSourceLinodeLKEClusterRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeInt,
@@ -53,7 +53,7 @@ func dataSourceLinodeLKE() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeLKERead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeLKEClusterRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	reqLKEID := d.Get("id").(int)
 

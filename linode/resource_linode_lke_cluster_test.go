@@ -13,8 +13,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("linode_lke", &resource.Sweeper{
-		Name: "linode_lke",
+	resource.AddTestSweepers("linode_lke_cluster", &resource.Sweeper{
+		Name: "linode_lke_cluster",
 		F:    testSweepLinodeLKE,
 	})
 }
@@ -47,18 +47,18 @@ func testSweepLinodeLKE(prefix string) error {
 func TestAccLinodeLKE_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_lke.foobar"
+	resName := "linode_lke_cluster.foobar"
 	lkeName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEDelete,
+		CheckDestroy: testAccCheckLinodeLKEClusterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeLKEConfigBasic(lkeName),
+				Config: testAccCheckLinodeLKEClusterConfigBasic(lkeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLKEExists,
+					testAccCheckLinodeLKEClusterExists,
 					resource.TestCheckResourceAttr(resName, "label", lkeName),
 					resource.TestCheckResourceAttr(resName, "region", "us-central"),
 				),
@@ -75,25 +75,25 @@ func TestAccLinodeLKE_basic(t *testing.T) {
 func TestAccLinodeLKE_update(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_lke.foobar"
+	resName := "linode_lke_cluster.foobar"
 	lkeName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEDelete,
+		CheckDestroy: testAccCheckLinodeLKEClusterDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeLKEConfigBasic(lkeName),
+				Config: testAccCheckLinodeLKEClusterConfigBasic(lkeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLKEExists,
+					testAccCheckLinodeLKEClusterExists,
 					resource.TestCheckResourceAttr(resName, "label", lkeName),
 				),
 			},
 			{
-				Config: testAccCheckLinodeLKEUpdates(lkeName),
+				Config: testAccCheckLinodeLKEClusterUpdates(lkeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeLKEExists,
+					testAccCheckLinodeLKEClusterExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_u", lkeName)),
 				),
 			},
@@ -101,14 +101,14 @@ func TestAccLinodeLKE_update(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeLKEDelete(s *terraform.State) error {
+func testAccCheckLinodeLKEClusterDelete(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
 		return fmt.Errorf("Error getting Linode client")
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_lke" {
+		if rs.Type != "linode_lke_cluster" {
 			continue
 		}
 
@@ -123,7 +123,7 @@ func testAccCheckLinodeLKEDelete(s *terraform.State) error {
 
 		_, err = client.GetLKECluster(context.Background(), id)
 		if err == nil {
-			return fmt.Errorf("Linode LKE  with id %d still exists", id)
+			return fmt.Errorf("Linode LKE with id %d still exists", id)
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
@@ -133,10 +133,10 @@ func testAccCheckLinodeLKEDelete(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeLKEExists(s *terraform.State) error {
+func testAccCheckLinodeLKEClusterExists(s *terraform.State) error {
 	client := testAccProvider.Meta().(linodego.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_lke" {
+		if rs.Type != "linode_lke_cluster" {
 			continue
 		}
 
@@ -155,9 +155,9 @@ func testAccCheckLinodeLKEExists(s *terraform.State) error {
 
 // TODO(sgmac): test passes, destroy leaves linode nodes behind even though
 // the cluster is destroyed.
-func testAccCheckLinodeLKEConfigBasic(label string) string {
+func testAccCheckLinodeLKEClusterConfigBasic(label string) string {
 	return fmt.Sprintf(`
-resource "linode_lke" "foobar" {
+resource "linode_lke_cluster" "foobar" {
 	label = "%s"
 	region = "us-central"
 	version = "1.16"
@@ -167,9 +167,9 @@ resource "linode_lke" "foobar" {
 }`, label)
 }
 
-func testAccCheckLinodeLKEUpdates(label string) string {
+func testAccCheckLinodeLKEClusterUpdates(label string) string {
 	return fmt.Sprintf(`
-resource "linode_lke" "foobar" {
+resource "linode_lke_cluster" "foobar" {
 	label = "%s_u"
 	region = "us-central"
 	version = "1.16"
