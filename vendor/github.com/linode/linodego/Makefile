@@ -2,15 +2,21 @@ include .env
 BIN_DIR := $(GOPATH)/bin
 GOLANGCILINT := golangci-lint
 GOLANGCILINT_ARGS := run
+PACKAGES := $(shell go list ./... | grep -v integration)
 
-.PHONY: build vet test example refresh-fixtures clean-fixtures lint run_fixtures sanitize fixtures godoc
+.PHONY: build vet test refresh-fixtures clean-fixtures lint run_fixtures sanitize fixtures godoc testint testunit
 
-test: build lint
+test: testunit testint
+
+testunit: build lint
+	go test -v $(PACKAGES) $(ARGS)
+
+testint: build lint
 	@LINODE_FIXTURE_MODE="play" \
 	LINODE_TOKEN="awesometokenawesometokenawesometoken" \
 	LINODE_API_VERSION="v4beta" \
 	GO111MODULE="on" \
-	go test $(ARGS)
+	go test -v ./test/integration $(ARGS)
 
 build: vet lint
 	go build ./...
@@ -35,7 +41,7 @@ run_fixtures:
 	go test -timeout=60m $(ARGS)
 
 sanitize:
-	@echo "* Santizing fixtures"
+	@echo "* Sanitizing fixtures"
 	@for yaml in fixtures/*yaml; do \
 		sed -E -i.bak -e "s/$(LINODE_TOKEN)/awesometokenawesometokenawesometoken/g" \
 			-e 's_stats/20[0-9]{2}/[1-9][0-2]?_stats/2018/1_g' \

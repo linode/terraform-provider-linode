@@ -114,6 +114,18 @@ func (c *Client) listHelper(ctx context.Context, i interface{}, opts *ListOption
 			results = r.Result().(*EventsPagedResponse).Results
 			v.appendData(r.Result().(*EventsPagedResponse))
 		}
+	case *LKEClustersPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(LKEClustersPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*LKEClustersPagedResponse).Pages
+			results = r.Result().(*LKEClustersPagedResponse).Results
+			v.appendData(r.Result().(*LKEClustersPagedResponse))
+		}
+	case *LKEVersionsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(LKEVersionsPagedResponse{}).Get(v.endpoint(c))); err == nil {
+			pages = r.Result().(*LKEVersionsPagedResponse).Pages
+			results = r.Result().(*LKEVersionsPagedResponse).Results
+			v.appendData(r.Result().(*LKEVersionsPagedResponse))
+		}
 	case *LongviewSubscriptionsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(LongviewSubscriptionsPagedResponse{}).Get(v.endpoint(c))); err == nil {
 			pages = r.Result().(*LongviewSubscriptionsPagedResponse).Pages
@@ -296,12 +308,6 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, idRaw inte
 	}
 
 	switch v := i.(type) {
-	case *InvoiceItemsPagedResponse:
-		if r, err = coupleAPIErrors(req.SetResult(InvoiceItemsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
-			pages = r.Result().(*InvoiceItemsPagedResponse).Pages
-			results = r.Result().(*InvoiceItemsPagedResponse).Results
-			v.appendData(r.Result().(*InvoiceItemsPagedResponse))
-		}
 	case *DomainRecordsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(DomainRecordsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
 			response, ok := r.Result().(*DomainRecordsPagedResponse)
@@ -324,17 +330,29 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, idRaw inte
 			results = r.Result().(*InstanceDisksPagedResponse).Results
 			v.appendData(r.Result().(*InstanceDisksPagedResponse))
 		}
-	case *NodeBalancerConfigsPagedResponse:
-		if r, err = coupleAPIErrors(req.SetResult(NodeBalancerConfigsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
-			pages = r.Result().(*NodeBalancerConfigsPagedResponse).Pages
-			results = r.Result().(*NodeBalancerConfigsPagedResponse).Results
-			v.appendData(r.Result().(*NodeBalancerConfigsPagedResponse))
-		}
 	case *InstanceVolumesPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(InstanceVolumesPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
 			pages = r.Result().(*InstanceVolumesPagedResponse).Pages
 			results = r.Result().(*InstanceVolumesPagedResponse).Results
 			v.appendData(r.Result().(*InstanceVolumesPagedResponse))
+		}
+	case *InvoiceItemsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(InvoiceItemsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
+			pages = r.Result().(*InvoiceItemsPagedResponse).Pages
+			results = r.Result().(*InvoiceItemsPagedResponse).Results
+			v.appendData(r.Result().(*InvoiceItemsPagedResponse))
+		}
+	case *LKEClusterPoolsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(LKEClusterPoolsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
+			pages = r.Result().(*LKEClusterPoolsPagedResponse).Pages
+			results = r.Result().(*LKEClusterPoolsPagedResponse).Results
+			v.appendData(r.Result().(*LKEClusterPoolsPagedResponse))
+		}
+	case *NodeBalancerConfigsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(NodeBalancerConfigsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
+			pages = r.Result().(*NodeBalancerConfigsPagedResponse).Pages
+			results = r.Result().(*NodeBalancerConfigsPagedResponse).Results
+			v.appendData(r.Result().(*NodeBalancerConfigsPagedResponse))
 		}
 	case *TaggedObjectsPagedResponse:
 		idStr := idRaw.(string)

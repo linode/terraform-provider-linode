@@ -176,8 +176,10 @@ github.com/hashicorp/terraform-plugin-sdk/terraform
 github.com/hashicorp/yamux
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
-# github.com/linode/linodego v0.12.2
+# github.com/linode/linodego v0.12.3-0.20200201185556-6fd182952bcc
 github.com/linode/linodego
+github.com/linode/linodego/internal/duration
+github.com/linode/linodego/internal/parseabletime
 # github.com/mattn/go-colorable v0.0.9
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.4

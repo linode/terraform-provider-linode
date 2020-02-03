@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net"
 	"time"
+
+	"github.com/linode/linodego/internal/parseabletime"
 )
 
 /*
@@ -33,9 +35,6 @@ const (
 
 // Instance represents a linode object
 type Instance struct {
-	CreatedStr string `json:"created"`
-	UpdatedStr string `json:"updated"`
-
 	ID              int             `json:"id"`
 	Created         *time.Time      `json:"-"`
 	Updated         *time.Time      `json:"-"`
@@ -125,15 +124,36 @@ type InstanceUpdateOptions struct {
 	Tags            *[]string       `json:"tags,omitempty"`
 }
 
+func (i *Instance) UnmarshalJSON(b []byte) error {
+	type Mask Instance
+
+	p := struct {
+		*Mask
+		Created *parseabletime.ParseableTime `json:"created"`
+		Updated *parseabletime.ParseableTime `json:"updated"`
+	}{
+		Mask: (*Mask)(i),
+	}
+
+	if err := json.Unmarshal(b, &p); err != nil {
+		return err
+	}
+
+	i.Created = (*time.Time)(p.Created)
+	i.Updated = (*time.Time)(p.Updated)
+
+	return nil
+}
+
 // GetUpdateOptions converts an Instance to InstanceUpdateOptions for use in UpdateInstance
-func (l *Instance) GetUpdateOptions() InstanceUpdateOptions {
+func (i *Instance) GetUpdateOptions() InstanceUpdateOptions {
 	return InstanceUpdateOptions{
-		Label:           l.Label,
-		Group:           l.Group,
-		Backups:         l.Backups,
-		Alerts:          l.Alerts,
-		WatchdogEnabled: &l.WatchdogEnabled,
-		Tags:            &l.Tags,
+		Label:           i.Label,
+		Group:           i.Group,
+		Backups:         i.Backups,
+		Alerts:          i.Alerts,
+		WatchdogEnabled: &i.WatchdogEnabled,
+		Tags:            &i.Tags,
 	}
 }
 
@@ -157,12 +177,6 @@ type InstanceResizeOptions struct {
 
 	// When enabled, an instance resize will also resize a data disk if the instance has no more than one data disk and one swap disk
 	AllowAutoDiskResize *bool `json:"allow_auto_disk_resize,omitempty"`
-}
-
-func (l *Instance) fixDates() *Instance {
-	l.Created, _ = parseDates(l.CreatedStr)
-	l.Updated, _ = parseDates(l.UpdatedStr)
-	return l
 }
 
 // InstancesPagedResponse represents a linode API response for listing
@@ -190,10 +204,6 @@ func (c *Client) ListInstances(ctx context.Context, opts *ListOptions) ([]Instan
 	response := InstancesPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +223,7 @@ func (c *Client) GetInstance(ctx context.Context, linodeID int) (*Instance, erro
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*Instance).fixDates(), nil
+	return r.Result().(*Instance), nil
 }
 
 // GetInstance gets the instance with the provided ID
@@ -255,7 +265,7 @@ func (c *Client) CreateInstance(ctx context.Context, instance InstanceCreateOpti
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*Instance).fixDates(), nil
+	return r.Result().(*Instance), nil
 }
 
 // UpdateInstance creates a Linode instance
@@ -282,7 +292,7 @@ func (c *Client) UpdateInstance(ctx context.Context, id int, instance InstanceUp
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*Instance).fixDates(), nil
+	return r.Result().(*Instance), nil
 }
 
 // RenameInstance renames an Instance
@@ -354,7 +364,7 @@ func (c *Client) CloneInstance(ctx context.Context, id int, options InstanceClon
 		return nil, err
 	}
 
-	return r.Result().(*Instance).fixDates(), nil
+	return r.Result().(*Instance), nil
 }
 
 // RebootInstance reboots a Linode instance
@@ -416,7 +426,7 @@ func (c *Client) RebuildInstance(ctx context.Context, id int, opts InstanceRebui
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*Instance).fixDates(), nil
+	return r.Result().(*Instance), nil
 }
 
 // InstanceRescueOptions fields are those accepted by RescueInstance

@@ -160,6 +160,33 @@ func (client Client) WaitForVolumeLinodeID(ctx context.Context, volumeID int, li
 	}
 }
 
+// WaitForLKEClusterStatus waits for the LKECluster to reach the desired state
+// before returning. It will timeout with an error after timeoutSeconds.
+func (client Client) WaitForLKEClusterStatus(ctx context.Context, clusterID int, status LKEClusterStatus, timeoutSeconds int) (*LKECluster, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+
+	ticker := time.NewTicker(client.millisecondsPerPoll * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			cluster, err := client.GetLKECluster(ctx, clusterID)
+			if err != nil {
+				return cluster, err
+			}
+			complete := (cluster.Status == status)
+
+			if complete {
+				return cluster, nil
+			}
+		case <-ctx.Done():
+			return nil, fmt.Errorf("Error waiting for Cluster %d status %s: %s", clusterID, status, ctx.Err())
+		}
+	}
+}
+
 // WaitForEventFinished waits for an entity action to reach the 'finished' state
 // before returning. It will timeout with an error after timeoutSeconds.
 // If the event indicates a failure both the failed event and the error will be returned.
@@ -283,7 +310,7 @@ func (client Client) WaitForEventFinished(ctx context.Context, id interface{}, e
 				// @TODO(displague) This event.Created check shouldn't be needed, but it appears
 				// that the ListEvents method is not populating it correctly
 				if event.Created == nil {
-					log.Printf("[WARN] event.Created is nil when API returned: %#+v", event.CreatedStr)
+					log.Printf("[WARN] event.Created is nil when API returned: %#+v", event.Created)
 				} else if *event.Created != minStart && !event.Created.After(minStart) {
 					// Not the event we were looking for
 					// log.Println(event.Created, "is not >=", minStart)

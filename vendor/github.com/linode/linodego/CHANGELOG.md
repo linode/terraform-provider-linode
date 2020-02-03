@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!--- end unreleased changes --->
 <!--- remember to add diff link to footer --->
 
+### Changed
+
+* adds `LKEClusters` to tag lists
+
+### Features
+
+* add `CreateLKECluster`, `GetLKECluster`, `ListLKEClusters`, `UpdateLKECluster`, `DeleteLKECluster`
+* add `CreateLKEClusterPool`, `GetLKEClusterPool`, `ListLKEClusterPools`, `UpdateLKEClusterPool`, `DeleteLKEClusterPool`, `WaitForLKEClusterStatus`
+* add `ListLKEVersions`, `GetLKEVersion`, `GetLKEClusterAPIEndpoint`, `GetLKEClusterKubeconfig`
+
 ## [v0.12.2] (2019-12-03)
 
 ### Added
