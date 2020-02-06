@@ -49,8 +49,8 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 			},
 			"mode": {
 				Type:         schema.TypeString,
-				Description:  "The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it.",
-				ValidateFunc: validation.StringInSlice([]string{"accept", "reject", "drain"}, false),
+				Description:  "The mode this NodeBalancer should use when sending traffic to this backend. If set to `accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. If set to `drain` this backend will not receive new traffic, but connections already pinned to it will continue to be routed to it. If set to `backup` this backend will only accept traffic if all other nodes are down.",
+				ValidateFunc: validation.StringInSlice([]string{"accept", "reject", "drain", "backup"}, false),
 				Optional:     true,
 				Computed:     true,
 			},
