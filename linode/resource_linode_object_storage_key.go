@@ -33,6 +33,7 @@ func resourceLinodeObjectStorageKey() *schema.Resource {
 			"secret_key": {
 				Type:        schema.TypeString,
 				Description: "This keypair's secret key.",
+				Sensitive:   true,
 				Computed:    true,
 			},
 		},
