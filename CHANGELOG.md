@@ -1,4 +1,9 @@
 ## 1.9.2 (Unreleased)
+
+FEATURES:
+
+* **New Data Source** `linode_stackscript`
+
 ## 1.9.1 (December 03, 2019)
 
 ENHANCEMENTS:
