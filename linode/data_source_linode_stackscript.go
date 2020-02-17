@@ -145,5 +145,5 @@ func dataSourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	return fmt.Errorf("Stackscript %d not found", id)
+	return fmt.Errorf("StackScript %d not found", id)
 }
