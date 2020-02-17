@@ -21,7 +21,7 @@ func dataSourceLinodeDomainRecord() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the Reocrd.",
+				Description: "The name of the Record.",
 				Optional:    true,
 			},
 			"domain_id": {
