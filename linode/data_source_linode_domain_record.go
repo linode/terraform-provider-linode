@@ -16,7 +16,7 @@ func dataSourceLinodeDomainRecord() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Optional: true,
 			},
 			"name": {
@@ -25,7 +25,7 @@ func dataSourceLinodeDomainRecord() *schema.Resource {
 				Optional:    true,
 			},
 			"domain_id": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Description: "The associated domain's ID.",
 				Required:    true,
 			},
@@ -81,31 +81,22 @@ func dataSourceLinodeDomainRecord() *schema.Resource {
 func dataSourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 
-	domainIDString := d.Get("domain_id").(string)
+	domainID := d.Get("domain_id").(int)
 	recordName := d.Get("name").(string)
-	recordIDString := d.Get("id").(string)
+	recordID := d.Get("id").(int)
 
-	if recordName == "" && recordIDString == "" {
+	if recordName == "" && recordID == 0 {
 		return fmt.Errorf("Record name or ID is required")
-	}
-
-	domainID, err := strconv.Atoi(domainIDString)
-	if err != nil {
-		return fmt.Errorf(`Domain ID "%s" must be numeric`, domainIDString)
 	}
 
 	var record *linodego.DomainRecord
 
-	if recordIDString != "" {
-		id, err := strconv.Atoi(recordIDString)
-		if err != nil {
-			return fmt.Errorf(`Domain record ID "%s" must be numeric`, recordIDString)
-		}
-
-		record, err = client.GetDomainRecord(context.Background(), domainID, id)
+	if recordID != 0 {
+		rec, err := client.GetDomainRecord(context.Background(), domainID, recordID)
 		if err != nil {
 			return fmt.Errorf("Error fetching domain record: %v", err)
 		}
+		record = rec
 	} else if recordName != "" {
 		filter, _ := json.Marshal(map[string]interface{}{"name": recordName})
 		records, err := client.ListDomainRecords(context.Background(), domainID, linodego.NewListOptions(0, string(filter)))
@@ -114,12 +105,11 @@ func dataSourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) 
 		}
 		if len(records) > 0 {
 			record = &records[0]
-			recordIDString = strconv.Itoa(record.ID)
 		}
 	}
 
 	if record != nil {
-		d.SetId(recordIDString)
+		d.SetId(strconv.Itoa(recordID))
 		d.Set("id", record.ID)
 		d.Set("name", record.Name)
 		d.Set("type", record.Type)

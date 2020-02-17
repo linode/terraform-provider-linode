@@ -110,7 +110,7 @@ resource "linode_domain" "domain" {
 }
 
 resource "linode_domain_record" "record" {
-	domain_id = "${linode_domain.domain.id}"
+	domain_id = linode_domain.domain.id
 	name = "www"
 	record_type = "CNAME"
 	target = "%[1]s"
@@ -118,8 +118,8 @@ resource "linode_domain_record" "record" {
 }
 
 data "linode_domain_record" "record" {
-	domain_id = "${linode_domain.domain.id}"
-	id = "${linode_domain_record.record.id}"
+	domain_id = linode_domain.domain.id
+	id = linode_domain_record.record.id
 }
 `, domain)
 }
@@ -133,15 +133,15 @@ resource "linode_domain" "domain" {
 }
 
 resource "linode_domain_record" "record" {
-	domain_id = "${linode_domain.domain.id}"
+	domain_id = linode_domain.domain.id
 	name = "www"
 	record_type = "CNAME"
 	target = "%[1]s"
 }
 
 data "linode_domain_record" "record" {
-	domain_id = "${linode_domain.domain.id}"
-	name = "${linode_domain_record.record.name}"
+	domain_id = linode_domain.domain.id
+	name = linode_domain_record.record.name
 }
 `, domain)
 }
@@ -156,7 +156,7 @@ resource "linode_domain" "domain" {
 
 resource "linode_domain_record" "record" {
 	name = "_sip._tcp"
-	domain_id = "${linode_domain.domain.id}"
+	domain_id = linode_domain.domain.id
 	record_type = "SRV"
 	target = "%[1]s"
 	port = 80
@@ -167,8 +167,8 @@ resource "linode_domain_record" "record" {
 }
 
 data "linode_domain_record" "record" {
-	domain_id = "${linode_domain.domain.id}"
-	name = "${linode_domain_record.record.name}"
+	domain_id = linode_domain.domain.id
+	name = linode_domain_record.record.name
 }
 `, domain)
 }
@@ -183,15 +183,15 @@ resource "linode_domain" "domain" {
 
 resource "linode_domain_record" "record" {
 	name = "caa_test"
-	domain_id = "${linode_domain.domain.id}"
+	domain_id = linode_domain.domain.id
 	record_type = "CAA"
 	tag = "issue"
 	target = "test"
 }
 
 data "linode_domain_record" "record" {
-	domain_id = "${linode_domain.domain.id}"
-	id = "${linode_domain_record.record.id}"
+	domain_id = linode_domain.domain.id
+	id = linode_domain_record.record.id
 }
 `, domain)
 }
