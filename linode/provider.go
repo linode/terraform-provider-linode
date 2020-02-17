@@ -55,6 +55,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_profile":                dataSourceLinodeProfile(),
 			"linode_region":                 dataSourceLinodeRegion(),
 			"linode_sshkey":                 dataSourceLinodeSSHKey(),
+			"linode_stackscript":            dataSourceLinodeStackscript(),
 			"linode_user":                   dataSourceLinodeUser(),
 			"linode_volume":                 dataSourceLinodeVolume(),
 		},
