@@ -141,7 +141,7 @@ func dataSourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("username", ss.Username)
 		d.Set("created", ss.Created)
 		d.Set("updated", ss.Updated)
-		d.Set("user_defined_fields", ss.UserDefinedFields)
+		setStackScriptUserDefinedFields(d, ss)
 		return nil
 	}
 
