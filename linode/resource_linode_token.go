@@ -48,6 +48,7 @@ func resourceLinodeToken() *schema.Resource {
 			},
 			"token": {
 				Type:        schema.TypeString,
+				Sensitive:   true,
 				Description: "The token used to access the API.",
 				Computed:    true,
 			},
