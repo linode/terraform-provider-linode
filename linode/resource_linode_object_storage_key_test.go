@@ -59,16 +59,11 @@ func TestAccLinodeObjectStorageKey_basic(t *testing.T) {
 				Config: testAccCheckLinodeObjectStorageKeyConfigBasic(objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeObjectStorageKeyExists,
+					testAccCheckLinodeObjectStorageKeySecretKeyAccessible,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageKeyLabel),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 					resource.TestCheckResourceAttrSet(resName, "secret_key"),
 				),
-			},
-
-			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -88,27 +83,43 @@ func TestAccLinodeObjectStorageKey_update(t *testing.T) {
 				Config: testAccCheckLinodeObjectStorageKeyConfigBasic(objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeObjectStorageKeyExists,
+					testAccCheckLinodeObjectStorageKeySecretKeyAccessible,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageKeyLabel),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
-					resource.TestCheckResourceAttr(resName, "secret_key", "[REDACTED]"),
 				),
 			},
 			{
 				Config: testAccCheckLinodeObjectStorageKeyConfigUpdates(objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeObjectStorageKeyExists,
+					testAccCheckLinodeObjectStorageKeySecretKeyAccessible, // should be preserved in state
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", objectStorageKeyLabel)),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
-					resource.TestCheckResourceAttr(resName, "secret_key", "[REDACTED]"),
 				),
-			},
-			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
+}
+
+func findObjectStorageKeyResources(s *terraform.State) []*terraform.ResourceState {
+	keys := []*terraform.ResourceState{}
+	for _, res := range s.RootModule().Resources {
+		if res.Type != "linode_object_storage_key" {
+			continue
+		}
+		keys = append(keys, res)
+	}
+	return keys
+}
+
+func testAccCheckLinodeObjectStorageKeySecretKeyAccessible(s *terraform.State) error {
+	keys := findObjectStorageKeyResources(s)
+	secret := keys[0].Primary.Attributes["secret_key"]
+
+	if secret == "[REDACTED]" {
+		return fmt.Errorf("Expected secret_key to be accessible but got '%s'", secret)
+	}
+	return nil
 }
 
 func testAccCheckLinodeObjectStorageKeyExists(s *terraform.State) error {

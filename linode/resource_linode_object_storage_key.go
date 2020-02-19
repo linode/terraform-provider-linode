@@ -15,9 +15,6 @@ func resourceLinodeObjectStorageKey() *schema.Resource {
 		Read:   resourceLinodeObjectStorageKeyRead,
 		Update: resourceLinodeObjectStorageKeyUpdate,
 		Delete: resourceLinodeObjectStorageKeyDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
 
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -57,6 +54,9 @@ func resourceLinodeObjectStorageKeyCreate(d *schema.ResourceData, meta interface
 	d.Set("label", objectStorageKey.Label)
 	d.Set("access_key", objectStorageKey.AccessKey)
 
+	// secret_key only available on creation
+	d.Set("secret_key", objectStorageKey.SecretKey)
+
 	return resourceLinodeObjectStorageKeyRead(d, meta)
 }
 
@@ -75,8 +75,6 @@ func resourceLinodeObjectStorageKeyRead(d *schema.ResourceData, meta interface{}
 
 	d.Set("label", objectStorageKey.Label)
 	d.Set("access_key", objectStorageKey.AccessKey)
-	d.Set("secret_key", objectStorageKey.SecretKey)
-
 	return nil
 }
 
