@@ -2,6 +2,7 @@
 
 FEATURES:
 
+* **New Data Source** `linode_stackscript`
 * **New Data Source** `linode_domain_record`
 
 ## 1.9.1 (December 03, 2019)
