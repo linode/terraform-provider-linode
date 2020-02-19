@@ -228,25 +228,25 @@ apt-get -q -y install unattended-upgrades $PACKAGE
 EOF
 
 
-  images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+  images   = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
   rev_note = "initial script"
 }
 
 resource "linode_sshkey" "mykey" {
   ssh_key = chomp(file(var.public_ssh_key))
-  label = "Terraform SSHKey"
+  label   = "Terraform SSHKey"
 }
 
 resource "linode_instance" "simple" {
   image = "linode/ubuntu18.04"
   label = "${random_pet.project.id}-simple"
 
-  group = "foo"
-  tags = ["terraform"]
-  region = var.region
-  type = "g6-nanode-1"
+  group            = "foo"
+  tags             = ["terraform"]
+  region           = var.region
+  type             = "g6-nanode-1"
   authorized_users = [data.linode_profile.me.username]
-  stackscript_id = linode_stackscript.install-nginx.id
+  stackscript_id   = linode_stackscript.install-nginx.id
 
   stackscript_data = {
     "package" = "nginx"
