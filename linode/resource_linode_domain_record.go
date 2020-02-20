@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -10,6 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/linode/linodego"
+)
+
+const (
+	errLinodeDomainRecordSRVNameComputed = "name is computed for SRV records"
+	errLinodeDomainRecordNameRequired    = "name is required for non-SRV records"
 )
 
 func resourceLinodeDomainRecord() *schema.Resource {
@@ -33,8 +39,9 @@ func resourceLinodeDomainRecord() *schema.Resource {
 			},
 			"name": {
 				Type:         schema.TypeString,
-				Description:  "The name of this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the subdomain being associated with an IP address.",
-				Required:     true,
+				Description:  "The name of this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the subdomain being associated with an IP address. Required for non-SRV records. Generated for SRV records.",
+				Optional:     true,
+				Computed:     true, // This is true for non-SRV records
 				ValidateFunc: validation.StringLenBetween(0, 100),
 			},
 			"record_type": {
@@ -192,18 +199,49 @@ func resourceDataIntOrNil(d *schema.ResourceData, name string) *int {
 	return nil
 }
 
+// validateSRVRecordTarget ensures an SRV domain record's target is a the domain itself or
+// a Fully Qualified Domain Name based on the associated domain.
+func validateSRVRecordTarget(c *linodego.Client, domainID int, target string) error {
+	domain, err := c.GetDomain(context.Background(), domainID)
+	if err != nil {
+		return err
+	}
+
+	if target != domain.Domain && !strings.HasSuffix(target, "."+domain.Domain) {
+		return fmt.Errorf(`Target for SRV records must be the associated domain or a related FQDN. Did you mean "%s.%s"?`, target, domain.Domain)
+	}
+	return nil
+}
+
 func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) error {
 	client, ok := meta.(linodego.Client)
 	if !ok {
 		return fmt.Errorf("Invalid Client when creating Linode DomainRecord")
 	}
 	domainID := d.Get("domain_id").(int)
+	name := d.Get("name").(string)
+	target := d.Get("target").(string)
+
+	typ := linodego.DomainRecordType(d.Get("record_type").(string))
+	isSRVRecord := typ == linodego.RecordTypeSRV
+
+	if name == "" && !isSRVRecord {
+		return errors.New(errLinodeDomainRecordNameRequired)
+	}
+	if name != "" && isSRVRecord {
+		return errors.New(errLinodeDomainRecordSRVNameComputed)
+	}
+	if isSRVRecord {
+		if err := validateSRVRecordTarget(&client, domainID, target); err != nil {
+			return fmt.Errorf("Error validating SRV domain record: %s", err.Error())
+		}
+	}
 
 	createOpts := linodego.DomainRecordCreateOptions{
-		Type:     linodego.DomainRecordType(d.Get("record_type").(string)),
-		Name:     d.Get("name").(string),
+		Type:     typ,
+		Name:     name,
+		Target:   target,
 		Priority: resourceDataIntOrNil(d, "priority"),
-		Target:   d.Get("target").(string),
 		Weight:   resourceDataIntOrNil(d, "weight"),
 		Port:     resourceDataIntOrNil(d, "port"),
 		Service:  resourceDataStringOrNil(d, "service"),
@@ -225,16 +263,33 @@ func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) 
 func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	domainID := d.Get("domain_id").(int)
+	name := d.Get("name").(string)
+	target := d.Get("target").(string)
+
+	typ := linodego.DomainRecordType(d.Get("record_type").(string))
+	isSRVRecord := typ == linodego.RecordTypeSRV
+
+	if name == "" && !isSRVRecord {
+		return errors.New(errLinodeDomainRecordNameRequired)
+	}
+	if name != "" && isSRVRecord {
+		return errors.New(errLinodeDomainRecordSRVNameComputed)
+	}
+	if isSRVRecord {
+		if err := validateSRVRecordTarget(&client, domainID, target); err != nil {
+			return fmt.Errorf("Error validating SRV domain record: %s", err.Error())
+		}
+	}
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode DomainRecord id %s as int: %s", d.Id(), err)
 	}
 	updateOpts := linodego.DomainRecordUpdateOptions{
-		Type:     linodego.DomainRecordType(d.Get("record_type").(string)),
-		Name:     d.Get("name").(string),
+		Type:     typ,
+		Name:     name,
+		Target:   target,
 		Priority: resourceDataIntOrNil(d, "priority"),
-		Target:   d.Get("target").(string),
 		Weight:   resourceDataIntOrNil(d, "weight"),
 		Port:     resourceDataIntOrNil(d, "port"),
 		Service:  resourceDataStringOrNil(d, "service"),
