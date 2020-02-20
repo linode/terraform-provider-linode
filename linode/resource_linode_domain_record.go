@@ -41,7 +41,7 @@ func resourceLinodeDomainRecord() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "The name of this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the subdomain being associated with an IP address. Required for non-SRV records. Generated for SRV records.",
 				Optional:     true,
-				Computed:     true, // This is true for non-SRV records
+				Computed:     true, // This is true for SRV records
 				ValidateFunc: validation.StringLenBetween(0, 100),
 			},
 			"record_type": {
