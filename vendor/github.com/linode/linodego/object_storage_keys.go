@@ -94,7 +94,7 @@ func (c *Client) GetObjectStorageKey(ctx context.Context, id int) (*ObjectStorag
 	return r.Result().(*ObjectStorageKey), nil
 }
 
-// UpdateObjKey updates the object storage key with the specified id
+// UpdateObjectStorageKey updates the object storage key with the specified id
 func (c *Client) UpdateObjectStorageKey(ctx context.Context, id int, updateOpts ObjectStorageKeyUpdateOptions) (*ObjectStorageKey, error) {
 	var body string
 	e, err := c.ObjectStorageKeys.Endpoint()

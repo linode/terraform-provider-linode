@@ -141,6 +141,27 @@ See `template.go` and `template_test.go` for tips on adding new endpoints.
   - [X] `PUT`
   - [X] `DELETE`
 
+## LKE
+
+- `/lke/clusters`
+  - [X] `POST`
+  - [X] `GET`
+  - [X] `PUT`
+  - [X] `DELETE`
+- `/lke/clusters/$id/pools`
+  - [X] `POST`
+  - [X] `GET`
+  - [X] `PUT`
+  - [X] `DELETE`
+- `/lke/clusters/$id/api-endpoint`
+  - [X] `GET`
+- `/lke/clusters/$id/kubeconfig`
+  - [X] `GET`
+- `/lke/clusters/$id/versions`
+  - [X] `GET`
+- `/lke/clusters/$id/versions/$id`
+  - [X] `GET`
+
 ## Longview
 
 - `/longview/clients`
@@ -167,6 +188,8 @@ See `template.go` and `template_test.go` for tips on adding new endpoints.
   - [X] `GET`
   - [X] `PUT`
   - [X] `DELETE`
+- `/nodebalancers/$id/stats`
+  - [X] `GET`
 
 ### NodeBalancer Configs
 

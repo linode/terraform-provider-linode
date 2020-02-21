@@ -212,19 +212,10 @@ func (c *Client) ListNodeBalancerConfigs(ctx context.Context, nodebalancerID int
 	response := NodeBalancerConfigsPagedResponse{}
 	err := c.listHelperWithID(ctx, &response, nodebalancerID, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}
 	return response.Data, nil
-}
-
-// fixDates converts JSON timestamps to Go time.Time values
-func (i *NodeBalancerConfig) fixDates() *NodeBalancerConfig {
-	return i
 }
 
 // GetNodeBalancerConfig gets the template with the provided ID
@@ -238,7 +229,7 @@ func (c *Client) GetNodeBalancerConfig(ctx context.Context, nodebalancerID int, 
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*NodeBalancerConfig).fixDates(), nil
+	return r.Result().(*NodeBalancerConfig), nil
 }
 
 // CreateNodeBalancerConfig creates a NodeBalancerConfig
@@ -266,7 +257,7 @@ func (c *Client) CreateNodeBalancerConfig(ctx context.Context, nodebalancerID in
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*NodeBalancerConfig).fixDates(), nil
+	return r.Result().(*NodeBalancerConfig), nil
 }
 
 // UpdateNodeBalancerConfig updates the NodeBalancerConfig with the specified id
@@ -293,7 +284,7 @@ func (c *Client) UpdateNodeBalancerConfig(ctx context.Context, nodebalancerID in
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*NodeBalancerConfig).fixDates(), nil
+	return r.Result().(*NodeBalancerConfig), nil
 }
 
 // DeleteNodeBalancerConfig deletes the NodeBalancerConfig with the specified id
@@ -332,5 +323,5 @@ func (c *Client) RebuildNodeBalancerConfig(ctx context.Context, nodeBalancerID i
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*NodeBalancerConfig).fixDates(), nil
+	return r.Result().(*NodeBalancerConfig), nil
 }

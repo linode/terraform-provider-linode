@@ -214,11 +214,6 @@ func (c *Client) ListDomains(ctx context.Context, opts *ListOptions) ([]Domain, 
 	return response.Data, nil
 }
 
-// fixDates converts JSON timestamps to Go time.Time values
-func (d *Domain) fixDates() *Domain {
-	return d
-}
-
 // GetDomain gets the domain with the provided ID
 func (c *Client) GetDomain(ctx context.Context, id int) (*Domain, error) {
 	e, err := c.Domains.Endpoint()
@@ -233,7 +228,7 @@ func (c *Client) GetDomain(ctx context.Context, id int) (*Domain, error) {
 		return nil, err
 	}
 
-	return r.Result().(*Domain).fixDates(), nil
+	return r.Result().(*Domain), nil
 }
 
 // CreateDomain creates a Domain
@@ -263,7 +258,7 @@ func (c *Client) CreateDomain(ctx context.Context, domain DomainCreateOptions) (
 		return nil, err
 	}
 
-	return r.Result().(*Domain).fixDates(), nil
+	return r.Result().(*Domain), nil
 }
 
 // UpdateDomain updates the Domain with the specified id
@@ -294,7 +289,7 @@ func (c *Client) UpdateDomain(ctx context.Context, id int, domain DomainUpdateOp
 		return nil, err
 	}
 
-	return r.Result().(*Domain).fixDates(), nil
+	return r.Result().(*Domain), nil
 }
 
 // DeleteDomain deletes the Domain with the specified id

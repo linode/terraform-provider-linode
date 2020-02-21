@@ -73,20 +73,11 @@ func (c *Client) ListUsers(ctx context.Context, opts *ListOptions) ([]User, erro
 	response := UsersPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}
 
 	return response.Data, nil
-}
-
-// fixDates converts JSON timestamps to Go time.Time values
-func (i *User) fixDates() *User {
-	return i
 }
 
 // GetUser gets the user with the provided ID
@@ -103,7 +94,7 @@ func (c *Client) GetUser(ctx context.Context, id string) (*User, error) {
 		return nil, err
 	}
 
-	return r.Result().(*User).fixDates(), nil
+	return r.Result().(*User), nil
 }
 
 // CreateUser creates a User.  The email address must be confirmed before the
@@ -133,7 +124,7 @@ func (c *Client) CreateUser(ctx context.Context, createOpts UserCreateOptions) (
 		return nil, err
 	}
 
-	return r.Result().(*User).fixDates(), nil
+	return r.Result().(*User), nil
 }
 
 // UpdateUser updates the User with the specified id
@@ -164,7 +155,7 @@ func (c *Client) UpdateUser(ctx context.Context, id string, updateOpts UserUpdat
 		return nil, err
 	}
 
-	return r.Result().(*User).fixDates(), nil
+	return r.Result().(*User), nil
 }
 
 // DeleteUser deletes the User with the specified id

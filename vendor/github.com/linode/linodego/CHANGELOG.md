@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!--- end unreleased changes --->
 <!--- remember to add diff link to footer --->
 
+## [v0.13.0] (2020-02-21)
+
+### Changed
+
+* adds `LKEClusters` to tag lists
+
+### Features
+
+* add `CreateLKECluster`, `GetLKECluster`, `ListLKEClusters`, `UpdateLKECluster`, `DeleteLKECluster`
+* add `CreateLKEClusterPool`, `GetLKEClusterPool`, `ListLKEClusterPools`, `UpdateLKEClusterPool`, `DeleteLKEClusterPool`, `WaitForLKEClusterStatus`
+* add `ListLKEVersions`, `GetLKEVersion`, `GetLKEClusterAPIEndpoint`, `GetLKEClusterKubeconfig`
+* add `BalanceUninvoiced` to Account
+* add `NodeBalancerStats`
+* 429 Rate Limit errors are now retried and the Retry-After header is respected.
+
 ## [v0.12.2] (2019-12-03)
 
 ### Added
@@ -322,7 +337,8 @@ Deals with NewClient and context for all http requests
 * Initial tagged release
 
 
-[unreleased]: https://github.com/linode/linodego/compare/v0.12.1...HEAD
+[unreleased]: https://github.com/linode/linodego/compare/v0.13.0...HEAD
+[v0.13.0]: https://github.com/linode/linodego/compare/v0.12.2...v0.13.0
 [v0.12.2]: https://github.com/linode/linodego/compare/v0.12.1...v0.12.2
 [v0.12.1]: https://github.com/linode/linodego/compare/v0.12.0...v0.12.1
 [v0.12.0]: https://github.com/linode/linodego/compare/v0.11.0..v0.12.0
