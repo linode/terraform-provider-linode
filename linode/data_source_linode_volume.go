@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/linode/linodego"
@@ -92,8 +93,8 @@ func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("label", volume.Label)
 		d.Set("linode_id", volume.LinodeID)
 		d.Set("status", volume.Status)
-		d.Set("created", volume.Created)
-		d.Set("updated", volume.Updated)
+		d.Set("created", volume.Created.Format(time.RFC3339))
+		d.Set("updated", volume.Updated.Format(time.RFC3339))
 		if err := d.Set("tags", volume.Tags); err != nil {
 			return fmt.Errorf("Error setting tags: %s", err)
 		}
