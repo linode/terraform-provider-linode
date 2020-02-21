@@ -25,6 +25,8 @@ func TestAccDataSourceLinodeVolume(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "label", volumeName),
 					resource.TestCheckResourceAttr(resourceName, "tags.4106436895", "tf_test"),
 					resource.TestCheckResourceAttr(resourceName, "linode_id", "0"),
+					resource.TestCheckResourceAttrSet(resourceName, "created"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated"),
 				),
 			},
 			// Checking with Volume attached to Linode
