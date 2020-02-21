@@ -199,16 +199,42 @@ func resourceDataIntOrNil(d *schema.ResourceData, name string) *int {
 	return nil
 }
 
-// validateSRVRecordTarget ensures an SRV domain record's target is a the domain itself or
-// a Fully Qualified Domain Name based on the associated domain.
-func validateSRVRecordTarget(c *linodego.Client, domainID int, target string) error {
+func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord {
+	return &linodego.DomainRecord{
+		Name:     d.Get("name").(string),
+		Type:     linodego.DomainRecordType(d.Get("record_type").(string)),
+		Target:   d.Get("target").(string),
+		Priority: d.Get("priority").(int),
+		Weight:   d.Get("weight").(int),
+		Port:     d.Get("port").(int),
+		Service:  resourceDataStringOrNil(d, "service"),
+		Protocol: resourceDataStringOrNil(d, "protocol"),
+		TTLSec:   d.Get("ttl_sec").(int),
+		Tag:      resourceDataStringOrNil(d, "tag"),
+	}
+}
+
+func validateDomainRecord(c *linodego.Client, rec *linodego.DomainRecord, domainID int) error {
+	if rec.Type == linodego.RecordTypeSRV {
+		return validateSRVDomainRecord(c, rec, domainID)
+	}
+	if rec.Name == "" {
+		return errors.New(errLinodeDomainRecordNameRequired)
+	}
+	return nil
+}
+
+func validateSRVDomainRecord(c *linodego.Client, rec *linodego.DomainRecord, domainID int) error {
 	domain, err := c.GetDomain(context.Background(), domainID)
 	if err != nil {
 		return err
 	}
 
-	if target != domain.Domain && !strings.HasSuffix(target, "."+domain.Domain) {
-		return fmt.Errorf(`Target for SRV records must be the associated domain or a related FQDN. Did you mean "%s.%s"?`, target, domain.Domain)
+	if rec.Name != "" {
+		return errors.New(errLinodeDomainRecordSRVNameComputed)
+	}
+	if rec.Target != domain.Domain && !strings.HasSuffix(rec.Target, "."+domain.Domain) {
+		return fmt.Errorf(`Target for SRV records must be the associated domain or a related FQDN. Did you mean "%s.%s"?`, rec.Target, domain.Domain)
 	}
 	return nil
 }
@@ -219,34 +245,21 @@ func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Invalid Client when creating Linode DomainRecord")
 	}
 	domainID := d.Get("domain_id").(int)
-	name := d.Get("name").(string)
-	target := d.Get("target").(string)
-
-	typ := linodego.DomainRecordType(d.Get("record_type").(string))
-	isSRVRecord := typ == linodego.RecordTypeSRV
-
-	if name == "" && !isSRVRecord {
-		return errors.New(errLinodeDomainRecordNameRequired)
-	}
-	if name != "" && isSRVRecord {
-		return errors.New(errLinodeDomainRecordSRVNameComputed)
-	}
-	if isSRVRecord {
-		if err := validateSRVRecordTarget(&client, domainID, target); err != nil {
-			return fmt.Errorf("Error validating SRV domain record: %s", err.Error())
-		}
+	rec := domainRecordFromResourceData(d)
+	if err := validateDomainRecord(&client, rec, domainID); err != nil {
+		return err
 	}
 
 	createOpts := linodego.DomainRecordCreateOptions{
-		Type:     typ,
-		Name:     name,
-		Target:   target,
+		Type:     rec.Type,
+		Name:     rec.Name,
+		Target:   rec.Target,
 		Priority: resourceDataIntOrNil(d, "priority"),
 		Weight:   resourceDataIntOrNil(d, "weight"),
 		Port:     resourceDataIntOrNil(d, "port"),
 		Service:  resourceDataStringOrNil(d, "service"),
 		Protocol: resourceDataStringOrNil(d, "protocol"),
-		TTLSec:   d.Get("ttl_sec").(int),
+		TTLSec:   rec.TTLSec,
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
@@ -263,22 +276,9 @@ func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) 
 func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	domainID := d.Get("domain_id").(int)
-	name := d.Get("name").(string)
-	target := d.Get("target").(string)
-
-	typ := linodego.DomainRecordType(d.Get("record_type").(string))
-	isSRVRecord := typ == linodego.RecordTypeSRV
-
-	if name == "" && !isSRVRecord {
-		return errors.New(errLinodeDomainRecordNameRequired)
-	}
-	if name != "" && isSRVRecord {
-		return errors.New(errLinodeDomainRecordSRVNameComputed)
-	}
-	if isSRVRecord {
-		if err := validateSRVRecordTarget(&client, domainID, target); err != nil {
-			return fmt.Errorf("Error validating SRV domain record: %s", err.Error())
-		}
+	rec := domainRecordFromResourceData(d)
+	if err := validateDomainRecord(&client, rec, domainID); err != nil {
+		return err
 	}
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -286,15 +286,15 @@ func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error parsing Linode DomainRecord id %s as int: %s", d.Id(), err)
 	}
 	updateOpts := linodego.DomainRecordUpdateOptions{
-		Type:     typ,
-		Name:     name,
-		Target:   target,
+		Type:     rec.Type,
+		Name:     rec.Name,
+		Target:   rec.Target,
 		Priority: resourceDataIntOrNil(d, "priority"),
 		Weight:   resourceDataIntOrNil(d, "weight"),
 		Port:     resourceDataIntOrNil(d, "port"),
 		Service:  resourceDataStringOrNil(d, "service"),
 		Protocol: resourceDataStringOrNil(d, "protocol"),
-		TTLSec:   d.Get("ttl_sec").(int),
+		TTLSec:   rec.TTLSec,
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
