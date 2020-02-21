@@ -5,6 +5,10 @@ FEATURES:
 * **New Data Source** `linode_stackscript`
 * **New Data Source** `linode_domain_record`
 
+ENHANCEMENTS:
+
+* Updates linodego to v0.13.0 which enables retrying on 429 errors.
+
 ## 1.9.1 (December 03, 2019)
 
 ENHANCEMENTS:
