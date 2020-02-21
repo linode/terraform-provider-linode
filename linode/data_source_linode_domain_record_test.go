@@ -63,7 +63,6 @@ func TestAccDataSourceLinodeDomainRecord_srv(t *testing.T) {
 			{
 				Config: testAccDataSourceLinodeDomainRecordConfigSRV(domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceName, "name", "_sip._tcp"),
 					resource.TestCheckResourceAttr(datasourceName, "type", "SRV"),
 					resource.TestCheckResourceAttr(datasourceName, "port", "80"),
 					resource.TestCheckResourceAttr(datasourceName, "protocol", "tcp"),
@@ -156,7 +155,6 @@ resource "linode_domain" "domain" {
 }
 
 resource "linode_domain_record" "record" {
-	name = "_sip._tcp"
 	domain_id = linode_domain.domain.id
 	record_type = "SRV"
 	target = "%[1]s"
