@@ -5,17 +5,37 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/linode/linodego/internal/parseabletime"
 )
 
 // ObjectStorageBucket represents a ObjectStorage object
 type ObjectStorageBucket struct {
-	CreatedStr string `json:"created"`
-
 	Label   string `json:"label"`
 	Cluster string `json:"cluster"`
 
 	Created  *time.Time `json:"-"`
 	Hostname string     `json:"hostname"`
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+func (i *ObjectStorageBucket) UnmarshalJSON(b []byte) error {
+	type Mask ObjectStorageBucket
+
+	p := struct {
+		*Mask
+		Created *parseabletime.ParseableTime `json:"created"`
+	}{
+		Mask: (*Mask)(i),
+	}
+
+	if err := json.Unmarshal(b, &p); err != nil {
+		return err
+	}
+
+	i.Created = (*time.Time)(p.Created)
+
+	return nil
 }
 
 // ObjectStorageBucketCreateOptions fields are those accepted by CreateObjectStorageBucket
@@ -49,20 +69,10 @@ func (c *Client) ListObjectStorageBuckets(ctx context.Context, opts *ListOptions
 	response := ObjectStorageBucketsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}
 	return response.Data, nil
-}
-
-// fixDates converts JSON timestamps to Go time.Time values
-func (i *ObjectStorageBucket) fixDates() *ObjectStorageBucket {
-	i.Created, _ = parseDates(i.CreatedStr)
-	return i
 }
 
 // GetObjectStorageBucket gets the ObjectStorageBucket with the provided label
@@ -76,7 +86,7 @@ func (c *Client) GetObjectStorageBucket(ctx context.Context, clusterID, label st
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*ObjectStorageBucket).fixDates(), nil
+	return r.Result().(*ObjectStorageBucket), nil
 }
 
 // CreateObjectStorageBucket creates an ObjectStorageBucket
@@ -102,7 +112,7 @@ func (c *Client) CreateObjectStorageBucket(ctx context.Context, createOpts Objec
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*ObjectStorageBucket).fixDates(), nil
+	return r.Result().(*ObjectStorageBucket), nil
 }
 
 // DeleteObjectStorageBucket deletes the ObjectStorageBucket with the specified label

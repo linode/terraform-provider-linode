@@ -29,10 +29,6 @@ func (c *Client) ListInstanceVolumes(ctx context.Context, linodeID int, opts *Li
 	response := InstanceVolumesPagedResponse{}
 	err := c.listHelperWithID(ctx, &response, linodeID, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}

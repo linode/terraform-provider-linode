@@ -30,6 +30,9 @@ var (
 
 	// ModeDrain is the NodeMode indicating a NodeBalancer Node is not receiving new traffic, but may continue receiving traffic from pinned connections
 	ModeDrain NodeMode = "drain"
+
+	// ModeBackup is the NodeMode indicating a NodeBalancer Node will only receive traffic if all "accept" Nodes are down
+	ModeBackup NodeMode = "backup"
 )
 
 // NodeBalancerNodeCreateOptions fields are those accepted by CreateNodeBalancerNode
@@ -93,19 +96,10 @@ func (c *Client) ListNodeBalancerNodes(ctx context.Context, nodebalancerID int, 
 	response := NodeBalancerNodesPagedResponse{}
 	err := c.listHelperWithTwoIDs(ctx, &response, nodebalancerID, configID, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}
 	return response.Data, nil
-}
-
-// fixDates converts JSON timestamps to Go time.Time values
-func (i *NodeBalancerNode) fixDates() *NodeBalancerNode {
-	return i
 }
 
 // GetNodeBalancerNode gets the template with the provided ID
@@ -119,7 +113,7 @@ func (c *Client) GetNodeBalancerNode(ctx context.Context, nodebalancerID int, co
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*NodeBalancerNode).fixDates(), nil
+	return r.Result().(*NodeBalancerNode), nil
 }
 
 // CreateNodeBalancerNode creates a NodeBalancerNode
@@ -145,7 +139,7 @@ func (c *Client) CreateNodeBalancerNode(ctx context.Context, nodebalancerID int,
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*NodeBalancerNode).fixDates(), nil
+	return r.Result().(*NodeBalancerNode), nil
 }
 
 // UpdateNodeBalancerNode updates the NodeBalancerNode with the specified id
@@ -172,7 +166,7 @@ func (c *Client) UpdateNodeBalancerNode(ctx context.Context, nodebalancerID int,
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*NodeBalancerNode).fixDates(), nil
+	return r.Result().(*NodeBalancerNode), nil
 }
 
 // DeleteNodeBalancerNode deletes the NodeBalancerNode with the specified id

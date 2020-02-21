@@ -42,5 +42,6 @@ linters:
     - staticcheck
     - stylecheck
     - wsl
+    - interfacer
+    - gomnd
   fast: false
-

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/linode/linodego/internal/parseabletime"
 )
 
 // Payment represents a Payment object
@@ -16,8 +18,7 @@ type Payment struct {
 	USD json.Number `json:"usd,Number"`
 
 	// When the Payment was made.
-	DateStr string     `json:"date"`
-	Date    *time.Time `json:"-"`
+	Date *time.Time `json:"-"`
 }
 
 // PaymentCreateOptions fields are those accepted by CreatePayment
@@ -27,6 +28,26 @@ type PaymentCreateOptions struct {
 
 	// The amount, in US dollars, of the Payment
 	USD json.Number `json:"usd,Number"`
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+func (i *Payment) UnmarshalJSON(b []byte) error {
+	type Mask Payment
+
+	p := struct {
+		*Mask
+		Date *parseabletime.ParseableTime `json:"date"`
+	}{
+		Mask: (*Mask)(i),
+	}
+
+	if err := json.Unmarshal(b, &p); err != nil {
+		return err
+	}
+
+	i.Date = (*time.Time)(p.Date)
+
+	return nil
 }
 
 // GetCreateOptions converts a Payment to PaymentCreateOptions for use in CreatePayment
@@ -61,21 +82,11 @@ func (c *Client) ListPayments(ctx context.Context, opts *ListOptions) ([]Payment
 	response := PaymentsPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}
 
 	return response.Data, nil
-}
-
-// fixDates converts JSON timestamps to Go time.Time values
-func (i *Payment) fixDates() *Payment {
-	i.Date, _ = parseDates(i.DateStr)
-	return i
 }
 
 // GetPayment gets the payment with the provided ID
@@ -92,7 +103,7 @@ func (c *Client) GetPayment(ctx context.Context, id int) (*Payment, error) {
 		return nil, err
 	}
 
-	return r.Result().(*Payment).fixDates(), nil
+	return r.Result().(*Payment), nil
 }
 
 // CreatePayment creates a Payment
@@ -121,5 +132,5 @@ func (c *Client) CreatePayment(ctx context.Context, createOpts PaymentCreateOpti
 		return nil, err
 	}
 
-	return r.Result().(*Payment).fixDates(), nil
+	return r.Result().(*Payment), nil
 }

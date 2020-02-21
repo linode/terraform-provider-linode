@@ -32,6 +32,8 @@ const (
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events or Status in WaitFor functions
 	APISecondsPerPoll = 3
+	// Maximum wait time for retries
+	APIRetryMaxWaitTime = time.Duration(30) * time.Second
 	// DefaultUserAgent is the default User-Agent sent in HTTP request headers
 	DefaultUserAgent = "linodego " + Version + " https://github.com/linode/linodego"
 )
@@ -42,10 +44,11 @@ var (
 
 // Client is a wrapper around the Resty client
 type Client struct {
-	resty     *resty.Client
-	userAgent string
-	resources map[string]*Resource
-	debug     bool
+	resty             *resty.Client
+	userAgent         string
+	resources         map[string]*Resource
+	debug             bool
+	retryConditionals []RetryConditional
 
 	millisecondsPerPoll time.Duration
 
@@ -68,12 +71,16 @@ type Client struct {
 	InvoiceItems          *Resource
 	Invoices              *Resource
 	Kernels               *Resource
+	LKEClusters           *Resource
+	LKEClusterPools       *Resource
+	LKEVersions           *Resource
 	Longview              *Resource
 	LongviewClients       *Resource
 	LongviewSubscriptions *Resource
 	Managed               *Resource
 	NodeBalancerConfigs   *Resource
 	NodeBalancerNodes     *Resource
+	NodeBalancerStats     *Resource
 	NodeBalancers         *Resource
 	Notifications         *Resource
 	OAuthClients          *Resource
@@ -137,11 +144,13 @@ func (c *Client) SetBaseURL(url string) *Client {
 	return c
 }
 
+// SetAPIVersion sets the version of the API to interface with
 func (c *Client) SetAPIVersion(apiVersion string) *Client {
 	c.SetBaseURL(fmt.Sprintf("%s://%s/%s", APIProto, APIHost, apiVersion))
 	return c
 }
 
+// SetRootCertificate adds a root certificate to the underlying TLS client config
 func (c *Client) SetRootCertificate(path string) *Client {
 	c.resty.SetRootCertificate(path)
 	return c
@@ -154,24 +163,23 @@ func (c *Client) SetToken(token string) *Client {
 	return c
 }
 
-// SetLinodeBusyRetry configures resty to retry specifically on "Linode busy." errors
-// The retry wait time is configured in SetPollDelay
-func (c *Client) SetLinodeBusyRetry() *Client {
-	c.resty.
-		SetRetryCount(1000).
-		SetRetryMaxWaitTime(30 * time.Second).
-		AddRetryCondition(
-			func(r *resty.Response, _ error) bool {
-				apiError, ok := r.Error().(*APIError)
-				linodeBusy := ok && apiError.Error() == "Linode busy."
-				retry := r.StatusCode() == http.StatusBadRequest && linodeBusy
-				if retry {
-					log.Printf("[INFO] Received error %s - Retrying", apiError)
-				}
-				return retry
-			},
-		)
+// SetRetries adds retry conditions for "Linode Busy." errors and 429s.
+func (c *Client) SetRetries() *Client {
+	c.
+		addRetryConditional(linodeBusyRetryCondition).
+		addRetryConditional(tooManyRequestsRetryCondition).
+		SetRetryMaxWaitTime(APIRetryMaxWaitTime)
+	configureRetries(c)
+	return c
+}
 
+func (c *Client) addRetryConditional(retryConditional RetryConditional) *Client {
+	c.retryConditionals = append(c.retryConditionals, retryConditional)
+	return c
+}
+
+func (c *Client) SetRetryMaxWaitTime(max time.Duration) *Client {
+	c.resty.SetRetryMaxWaitTime(max)
 	return c
 }
 
@@ -233,7 +241,7 @@ func NewClient(hc *http.Client) (client Client) {
 
 	client.
 		SetPollDelay(1000 * APISecondsPerPoll).
-		SetLinodeBusyRetry().
+		SetRetries().
 		SetDebug(envDebug)
 
 	addResources(&client)
@@ -263,12 +271,16 @@ func addResources(client *Client) {
 		ipv6poolsName:             NewResource(client, ipv6poolsName, ipv6poolsEndpoint, false, nil, IPv6PoolsPagedResponse{}),       // really?
 		ipv6rangesName:            NewResource(client, ipv6rangesName, ipv6rangesEndpoint, false, IPv6Range{}, IPv6RangesPagedResponse{}),
 		kernelsName:               NewResource(client, kernelsName, kernelsEndpoint, false, LinodeKernel{}, LinodeKernelsPagedResponse{}),
+		lkeClustersName:           NewResource(client, lkeClustersName, lkeClustersEndpoint, false, LKECluster{}, LKEClustersPagedResponse{}),
+		lkeClusterPoolsName:       NewResource(client, lkeClusterPoolsName, lkeClusterPoolsEndpoint, true, LKEClusterPool{}, LKEClusterPoolsPagedResponse{}),
+		lkeVersionsName:           NewResource(client, lkeVersionsName, lkeVersionsEndpoint, false, LKEVersion{}, LKEVersionsPagedResponse{}),
 		longviewName:              NewResource(client, longviewName, longviewEndpoint, false, nil, nil), // really?
 		longviewclientsName:       NewResource(client, longviewclientsName, longviewclientsEndpoint, false, LongviewClient{}, LongviewClientsPagedResponse{}),
 		longviewsubscriptionsName: NewResource(client, longviewsubscriptionsName, longviewsubscriptionsEndpoint, false, LongviewSubscription{}, LongviewSubscriptionsPagedResponse{}),
 		managedName:               NewResource(client, managedName, managedEndpoint, false, nil, nil), // really?
 		nodebalancerconfigsName:   NewResource(client, nodebalancerconfigsName, nodebalancerconfigsEndpoint, true, NodeBalancerConfig{}, NodeBalancerConfigsPagedResponse{}),
 		nodebalancernodesName:     NewResource(client, nodebalancernodesName, nodebalancernodesEndpoint, true, NodeBalancerNode{}, NodeBalancerNodesPagedResponse{}),
+		nodebalancerStatsName:     NewResource(client, nodebalancerStatsName, nodebalancerStatsEndpoint, true, NodeBalancerStats{}, nil),
 		nodebalancersName:         NewResource(client, nodebalancersName, nodebalancersEndpoint, false, NodeBalancer{}, NodeBalancerConfigsPagedResponse{}),
 		notificationsName:         NewResource(client, notificationsName, notificationsEndpoint, false, Notification{}, NotificationsPagedResponse{}),
 		oauthClientsName:          NewResource(client, oauthClientsName, oauthClientsEndpoint, false, OAuthClient{}, OAuthClientsPagedResponse{}),
@@ -307,11 +319,15 @@ func addResources(client *Client) {
 	client.Instances = resources[instancesName]
 	client.Invoices = resources[invoicesName]
 	client.Kernels = resources[kernelsName]
+	client.LKEClusters = resources[lkeClustersName]
+	client.LKEClusterPools = resources[lkeClusterPoolsName]
+	client.LKEVersions = resources[lkeVersionsName]
 	client.Longview = resources[longviewName]
 	client.LongviewSubscriptions = resources[longviewsubscriptionsName]
 	client.Managed = resources[managedName]
 	client.NodeBalancerConfigs = resources[nodebalancerconfigsName]
 	client.NodeBalancerNodes = resources[nodebalancernodesName]
+	client.NodeBalancerStats = resources[nodebalancerStatsName]
 	client.NodeBalancers = resources[nodebalancersName]
 	client.Notifications = resources[notificationsName]
 	client.OAuthClients = resources[oauthClientsName]

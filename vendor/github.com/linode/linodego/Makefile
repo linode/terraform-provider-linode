@@ -1,16 +1,29 @@
-include .env
+-include .env
 BIN_DIR := $(GOPATH)/bin
-GOLANGCILINT := golangci-lint
+
+GOLANGCILINT      := golangci-lint
+GOLANGCILINT_IMG  := golangci/golangci-lint:v1.23-alpine
 GOLANGCILINT_ARGS := run
 
-.PHONY: build vet test example refresh-fixtures clean-fixtures lint run_fixtures sanitize fixtures godoc
+PACKAGES := $(shell go list ./... | grep -v integration)
 
-test: build lint
+SKIP_LINT ?= 0
+
+.PHONY: build vet test refresh-fixtures clean-fixtures lint run_fixtures sanitize fixtures godoc testint testunit
+
+test: testunit testint
+
+citest: lint test
+
+testunit: build lint
+	go test -v $(PACKAGES) $(ARGS)
+
+testint: build lint
 	@LINODE_FIXTURE_MODE="play" \
 	LINODE_TOKEN="awesometokenawesometokenawesometoken" \
 	LINODE_API_VERSION="v4beta" \
 	GO111MODULE="on" \
-	go test $(ARGS)
+	go test -v ./test/integration $(ARGS)
 
 build: vet lint
 	go build ./...
@@ -19,7 +32,11 @@ vet:
 	go vet ./...
 
 lint:
-	$(GOLANGCILINT) $(GOLANGCILINT_ARGS)
+ifeq ($(SKIP_LINT), 1)
+	@echo Skipping lint stage
+else
+	docker run --rm -v $(shell pwd):/app -w /app $(GOLANGCILINT_IMG) $(GOLANGCILINT) run
+endif
 
 clean-fixtures:
 	@-rm fixtures/*.yaml
@@ -32,10 +49,10 @@ run_fixtures:
 	LINODE_TOKEN=$(LINODE_TOKEN) \
 	LINODE_API_VERSION="v4beta" \
 	GO111MODULE="on" \
-	go test -timeout=60m $(ARGS)
+	go test -timeout=60m -v ./test/integration $(ARGS)
 
 sanitize:
-	@echo "* Santizing fixtures"
+	@echo "* Sanitizing fixtures"
 	@for yaml in fixtures/*yaml; do \
 		sed -E -i.bak -e "s/$(LINODE_TOKEN)/awesometokenawesometokenawesometoken/g" \
 			-e 's_stats/20[0-9]{2}/[1-9][0-2]?_stats/2018/1_g' \

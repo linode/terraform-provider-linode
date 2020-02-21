@@ -114,11 +114,6 @@ func (c *Client) ListDomainRecords(ctx context.Context, domainID int, opts *List
 	return response.Data, nil
 }
 
-// fixDates converts JSON timestamps to Go time.Time values
-func (d *DomainRecord) fixDates() *DomainRecord {
-	return d
-}
-
 // GetDomainRecord gets the domainrecord with the provided ID
 func (c *Client) GetDomainRecord(ctx context.Context, domainID int, id int) (*DomainRecord, error) {
 	e, err := c.DomainRecords.endpointWithID(domainID)
@@ -163,7 +158,7 @@ func (c *Client) CreateDomainRecord(ctx context.Context, domainID int, domainrec
 		return nil, err
 	}
 
-	return r.Result().(*DomainRecord).fixDates(), nil
+	return r.Result().(*DomainRecord), nil
 }
 
 // UpdateDomainRecord updates the DomainRecord with the specified id
@@ -194,7 +189,7 @@ func (c *Client) UpdateDomainRecord(ctx context.Context, domainID int, id int, d
 		return nil, err
 	}
 
-	return r.Result().(*DomainRecord).fixDates(), nil
+	return r.Result().(*DomainRecord), nil
 }
 
 // DeleteDomainRecord deletes the DomainRecord with the specified id

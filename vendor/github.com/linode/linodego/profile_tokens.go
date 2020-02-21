@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/linode/linodego/internal/parseabletime"
 )
 
 // Token represents a Token object
@@ -23,12 +25,10 @@ type Token struct {
 	Token string `json:"token"`
 
 	// The date and time this token was created.
-	Created    *time.Time `json:"-"`
-	CreatedStr string     `json:"created"`
+	Created *time.Time `json:"-"`
 
 	// When this token will expire. Personal Access Tokens cannot be renewed, so after this time the token will be completely unusable and a new token will need to be generated. Tokens may be created with "null" as their expiry and will never expire unless revoked.
-	Expiry    *time.Time `json:"-"`
-	ExpiryStr string     `json:"expiry"`
+	Expiry *time.Time `json:"-"`
 }
 
 // TokenCreateOptions fields are those accepted by CreateToken
@@ -47,6 +47,28 @@ type TokenCreateOptions struct {
 type TokenUpdateOptions struct {
 	// This token's label. This is for display purposes only, but can be used to more easily track what you're using each token for. (1-100 Characters)
 	Label string `json:"label"`
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+func (i *Token) UnmarshalJSON(b []byte) error {
+	type Mask Token
+
+	p := struct {
+		*Mask
+		Created *parseabletime.ParseableTime `json:"created"`
+		Expiry  *parseabletime.ParseableTime `json:"expiry"`
+	}{
+		Mask: (*Mask)(i),
+	}
+
+	if err := json.Unmarshal(b, &p); err != nil {
+		return err
+	}
+
+	i.Created = (*time.Time)(p.Created)
+	i.Expiry = (*time.Time)(p.Expiry)
+
+	return nil
 }
 
 // GetCreateOptions converts a Token to TokenCreateOptions for use in CreateToken
@@ -88,21 +110,10 @@ func (c *Client) ListTokens(ctx context.Context, opts *ListOptions) ([]Token, er
 	response := TokensPagedResponse{}
 	err := c.listHelper(ctx, &response, opts)
 
-	for i := range response.Data {
-		response.Data[i].fixDates()
-	}
-
 	if err != nil {
 		return nil, err
 	}
 	return response.Data, nil
-}
-
-// fixDates converts JSON timestamps to Go time.Time values
-func (i *Token) fixDates() *Token {
-	i.Created, _ = parseDates(i.CreatedStr)
-	i.Expiry, _ = parseDates(i.ExpiryStr)
-	return i
 }
 
 // GetToken gets the token with the provided ID
@@ -116,7 +127,7 @@ func (c *Client) GetToken(ctx context.Context, id int) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*Token).fixDates(), nil
+	return r.Result().(*Token), nil
 }
 
 // CreateToken creates a Token
@@ -155,7 +166,7 @@ func (c *Client) CreateToken(ctx context.Context, createOpts TokenCreateOptions)
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*Token).fixDates(), nil
+	return r.Result().(*Token), nil
 }
 
 // UpdateToken updates the Token with the specified id
@@ -182,7 +193,7 @@ func (c *Client) UpdateToken(ctx context.Context, id int, updateOpts TokenUpdate
 	if err != nil {
 		return nil, err
 	}
-	return r.Result().(*Token).fixDates(), nil
+	return r.Result().(*Token), nil
 }
 
 // DeleteToken deletes the Token with the specified id
