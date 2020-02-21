@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccDataSourceLinodeDomainRecord_basic(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
-	domain := "recordtest.xyz"
+	domain := acctest.RandomWithPrefix("recordtest") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -32,7 +33,7 @@ func TestAccDataSourceLinodeDomainRecord_basic(t *testing.T) {
 
 func TestAccDataSourceLinodeDomainRecord_idLookup(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
-	domain := "linode.xyz"
+	domain := acctest.RandomWithPrefix("idloikup") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -53,7 +54,7 @@ func TestAccDataSourceLinodeDomainRecord_idLookup(t *testing.T) {
 
 func TestAccDataSourceLinodeDomainRecord_srv(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
-	domain := "srvtest.xyz"
+	domain := acctest.RandomWithPrefix("srv") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -62,7 +63,6 @@ func TestAccDataSourceLinodeDomainRecord_srv(t *testing.T) {
 			{
 				Config: testAccDataSourceLinodeDomainRecordConfigSRV(domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceName, "name", "_sip._tcp"),
 					resource.TestCheckResourceAttr(datasourceName, "type", "SRV"),
 					resource.TestCheckResourceAttr(datasourceName, "port", "80"),
 					resource.TestCheckResourceAttr(datasourceName, "protocol", "tcp"),
@@ -79,7 +79,7 @@ func TestAccDataSourceLinodeDomainRecord_srv(t *testing.T) {
 
 func TestAccDataSourceLinodeDomainRecord_caa(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
-	domain := "linode.xyz"
+	domain := acctest.RandomWithPrefix("caa") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -155,7 +155,6 @@ resource "linode_domain" "domain" {
 }
 
 resource "linode_domain_record" "record" {
-	name = "_sip._tcp"
 	domain_id = linode_domain.domain.id
 	record_type = "SRV"
 	target = "%[1]s"
