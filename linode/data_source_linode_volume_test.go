@@ -29,13 +29,6 @@ func TestAccDataSourceLinodeVolume(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
 				),
 			},
-			// Checking with Volume attached to Linode
-			{
-				ResourceName:      "linode_volume.foobar",
-				ImportState:       true,
-				ImportStateVerify: true,
-				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
-			},
 		},
 	})
 }
