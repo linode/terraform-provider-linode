@@ -31,6 +31,27 @@ resource "linode_instance" "foo" {
 }
 ```
 
+The following example shows how one might use this resource to configure RDNS for multiple IP addresses.
+
+```hcl
+resource "linode_instance" "my_instance" {
+  count = 3
+
+  label = "simple_instance-${count.index + 1}"
+  image = "linode/ubuntu18.04"
+  region = "us-central"
+  type = "g6-standard-1"
+  root_pass = "terr4form-test"
+}
+
+resource "linode_rdns" "my_rdns" {
+  count = length(linode_instance.my_instance)
+
+  address = linode_instance.my_instance[count.index].ip_address
+  rdns = "${linode_instance.my_instance[count.index].ip_address}.nip.io"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
