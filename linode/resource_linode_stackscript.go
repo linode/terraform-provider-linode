@@ -160,45 +160,20 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Error finding the specified Linode Stackscript: %s", err)
 	}
 
-	if err := d.Set("label", stackscript.Label); err != nil {
-		return err
-	}
-	if err := d.Set("script", stackscript.Script); err != nil {
-		return err
-	}
-	if err := d.Set("description", stackscript.Description); err != nil {
-		return err
-	}
-	if err := d.Set("is_public", stackscript.IsPublic); err != nil {
-		return err
-	}
-	if err := d.Set("images", stackscript.Images); err != nil {
-		return err
-	}
-	if err := d.Set("rev_note", stackscript.RevNote); err != nil {
-		return err
-	}
+	d.Set("label", stackscript.Label)
+	d.Set("script", stackscript.Script)
+	d.Set("description", stackscript.Description)
+	d.Set("is_public", stackscript.IsPublic)
+	d.Set("images", stackscript.Images)
+	d.Set("rev_note", stackscript.RevNote)
 
 	// Computed
-	if err := d.Set("deployments_active", stackscript.DeploymentsActive); err != nil {
-		return err
-	}
-	if err := d.Set("deployments_total", stackscript.DeploymentsTotal); err != nil {
-		return err
-	}
-	if err := d.Set("username", stackscript.Username); err != nil {
-		return err
-	}
-	if err := d.Set("user_gravatar_id", stackscript.UserGravatarID); err != nil {
-		return err
-	}
-	if err := d.Set("created", stackscript.Created.String()); err != nil {
-		return err
-	}
-	if err := d.Set("updated", stackscript.Updated.String()); err != nil {
-		return err
-	}
-
+	d.Set("deployments_active", stackscript.DeploymentsActive)
+	d.Set("deployments_total", stackscript.DeploymentsTotal)
+	d.Set("username", stackscript.Username)
+	d.Set("user_gravatar_id", stackscript.UserGravatarID)
+	d.Set("created", stackscript.Created.String())
+	d.Set("updated", stackscript.Updated.String())
 	setStackScriptUserDefinedFields(d, stackscript)
 	return nil
 }

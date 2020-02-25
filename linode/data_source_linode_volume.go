@@ -95,9 +95,7 @@ func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error 
 		d.Set("status", volume.Status)
 		d.Set("created", volume.Created.Format(time.RFC3339))
 		d.Set("updated", volume.Updated.Format(time.RFC3339))
-		if err := d.Set("tags", volume.Tags); err != nil {
-			return fmt.Errorf("Error setting tags: %s", err)
-		}
+		d.Set("tags", volume.Tags)
 		return nil
 	}
 

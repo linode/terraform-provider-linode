@@ -240,13 +240,12 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 	d.Set("ssl_key", config.SSLKey)
 	d.Set("ssl_fingerprint", config.SSLFingerprint)
 	d.Set("ssl_commonname", config.SSLCommonName)
+
 	nodeStatus := map[string]interface{}{
 		"up":   fmt.Sprintf("%d", config.NodesStatus.Up),
 		"down": fmt.Sprintf("%d", config.NodesStatus.Down),
 	}
-	if err := d.Set("node_status", nodeStatus); err != nil {
-		return fmt.Errorf("Error setting node_status: %s", err)
-	}
+	d.Set("node_status", nodeStatus)
 
 	return nil
 }

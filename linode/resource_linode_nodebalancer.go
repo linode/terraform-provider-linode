@@ -159,9 +159,7 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 		"total": floatString(nodebalancer.Transfer.Total),
 	}
 
-	if err := d.Set("transfer", transfer); err != nil {
-		return fmt.Errorf("Error setting transfer: %s", err)
-	}
+	d.Set("transfer", transfer)
 
 	return nil
 }
