@@ -18,6 +18,29 @@ const (
 	LinodeInstanceDeleteTimeout = 10 * time.Minute
 )
 
+func resourceLinodeInstanceDeviceDisk() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"disk_label": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The `label` of the `disk` to map to this `device` slot.",
+			},
+			"disk_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The Disk ID to map to this disk slot",
+			},
+			"volume_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The Block Storage volume ID to map to this disk slot",
+			},
+		},
+	}
+}
+
 func resourceLinodeInstance() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeInstanceCreate,
@@ -361,26 +384,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Computed: true,
 										Optional: true,
 										Default:  nil,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The `label` of the `disk` to map to this `device` slot.",
-												},
-												"disk_id": {
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Computed:    true,
-													Description: "The Disk ID to map to this disk slot",
-												},
-												"volume_id": {
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Description: "The Block Storage volume ID to map to this disk slot",
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdb": {
 										Type:     schema.TypeList,
@@ -388,23 +392,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Optional: true,
 										Computed: true,
 										Default:  nil,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
-												},
-												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
-												},
-												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdc": {
 										Type:     schema.TypeList,
@@ -412,23 +400,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Optional: true,
 										Computed: true,
 										Default:  nil,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
-												},
-												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
-												},
-												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdd": {
 										Type:     schema.TypeList,
@@ -436,23 +408,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Optional: true,
 										Computed: true,
 										Default:  nil,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
-												},
-												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
-												},
-												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sde": {
 										Type:     schema.TypeList,
@@ -460,23 +416,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Optional: true,
 										Computed: true,
 										Default:  nil,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
-												},
-												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
-												},
-												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdf": {
 										Type:     schema.TypeList,
@@ -484,23 +424,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Optional: true,
 										Computed: true,
 										Default:  nil,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
-												},
-												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
-												},
-												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdg": {
 										Type:     schema.TypeList,
@@ -508,23 +432,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Optional: true,
 										Computed: true,
 										Default:  nil,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
-												},
-												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
-												},
-												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdh": {
 										Type:     schema.TypeList,
@@ -532,24 +440,7 @@ func resourceLinodeInstance() *schema.Resource {
 										Optional: true,
 										Computed: true,
 										Default:  nil,
-
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"disk_label": {
-													Type:     schema.TypeString,
-													Optional: true,
-												},
-												"disk_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-													Computed: true,
-												},
-												"volume_id": {
-													Type:     schema.TypeInt,
-													Optional: true,
-												},
-											},
-										},
+										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 								},
 							},
