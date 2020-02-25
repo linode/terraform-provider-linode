@@ -178,13 +178,9 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("group", domain.Group)
 	d.Set("status", domain.Status)
 	d.Set("description", domain.Description)
-	if err = d.Set("master_ips", domain.MasterIPs); err != nil {
-		return fmt.Errorf("Error setting master_ips: %s", err)
-	}
+	d.Set("master_ips", domain.MasterIPs)
 	if len(domain.AXfrIPs) > 0 {
-		if err = d.Set("afxr_ips", domain.AXfrIPs); err != nil {
-			return fmt.Errorf("Error setting axfr_ips: %s", err)
-		}
+		d.Set("afxr_ips", domain.AXfrIPs)
 	}
 	d.Set("ttl_sec", domain.TTLSec)
 	d.Set("retry_sec", domain.RetrySec)

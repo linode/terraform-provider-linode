@@ -810,30 +810,17 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	flatAlerts := flattenInstanceAlerts(*instance)
 	flatBackups := flattenInstanceBackups(*instance)
 
-	if err := d.Set("backups", flatBackups); err != nil {
-		return fmt.Errorf("Error setting Linode Instance backups: %s", err)
-	}
-
-	if err := d.Set("specs", flatSpecs); err != nil {
-		return fmt.Errorf("Error setting Linode Instance specs: %s", err)
-	}
-
-	if err := d.Set("alerts", flatAlerts); err != nil {
-		return fmt.Errorf("Error setting Linode Instance alerts: %s", err)
-	}
+	d.Set("backups", flatBackups)
+	d.Set("specs", flatSpecs)
+	d.Set("alerts", flatAlerts)
 
 	instanceDisks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
-
 	if err != nil {
 		return fmt.Errorf("Error getting the disks for the Linode instance %d: %s", id, err)
 	}
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
-
-	if err := d.Set("disk", disks); err != nil {
-		return fmt.Errorf("Erroring setting Linode Instance disk: %s", err)
-	}
-
+	d.Set("disk", disks)
 	d.Set("swap_size", swapSize)
 
 	instanceConfigs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
@@ -849,10 +836,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	configs := flattenInstanceConfigs(instanceConfigs, diskLabelIDMap)
 
-	if err := d.Set("config", configs); err != nil {
-		return fmt.Errorf("Erroring setting Linode Instance config: %s", err)
-	}
-
+	d.Set("config", configs)
 	if len(instanceConfigs) == 1 {
 		d.Set("boot_config_label", instanceConfigs[0].Label)
 	}
