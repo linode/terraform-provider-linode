@@ -48,11 +48,7 @@ func TestAccLinodeSSHKey_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_sshkey.foobar"
-	var sshkeyName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -81,11 +77,7 @@ func TestAccLinodeSSHKey_basic(t *testing.T) {
 func TestAccLinodeSSHKey_update(t *testing.T) {
 	t.Parallel()
 	resName := "linode_sshkey.foobar"
-	var sshkeyName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
