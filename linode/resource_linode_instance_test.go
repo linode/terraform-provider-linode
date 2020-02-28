@@ -51,11 +51,7 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -90,11 +86,7 @@ func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -129,11 +121,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -170,11 +158,7 @@ func TestAccLinodeInstance_configPair(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -211,7 +195,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -251,11 +235,7 @@ func TestAccLinodeInstance_diskImage(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -293,11 +273,7 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	var instanceDisk linodego.InstanceDisk
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -335,11 +311,7 @@ func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -379,11 +351,7 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 	var instance linodego.Instance
 	var instanceDisk linodego.InstanceDisk
 
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -433,11 +401,7 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 	var instance linodego.Instance
 	var instanceDisk linodego.InstanceDisk
 	var volume linodego.Volume
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -478,7 +442,7 @@ func TestAccLinodeInstance_privateImage(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -513,12 +477,8 @@ func TestAccLinodeInstance_privateImage(t *testing.T) {
 func TestAccLinodeInstance_updateSimple(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -548,12 +508,8 @@ func TestAccLinodeInstance_updateSimple(t *testing.T) {
 func TestAccLinodeInstance_configUpdate(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -618,11 +574,7 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -714,12 +666,8 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 func TestAccLinodeInstance_resize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -760,7 +708,7 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -805,7 +753,7 @@ func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 func TestAccLinodeInstance_tag(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -839,7 +787,7 @@ func TestAccLinodeInstance_tag(t *testing.T) {
 func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -881,12 +829,8 @@ func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 func TestAccLinodeInstance_diskResize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -929,10 +873,6 @@ func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -964,10 +904,6 @@ func TestAccLinodeInstance_swapUpsize(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -1004,10 +940,6 @@ func TestAccLinodeInstance_swapDownsize(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -1041,12 +973,8 @@ func TestAccLinodeInstance_swapDownsize(t *testing.T) {
 func TestAccLinodeInstance_diskResizeAndExpanded(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -1092,12 +1020,8 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 		instance     linodego.Instance
 		instanceDisk linodego.InstanceDisk
 	)
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -1151,12 +1075,8 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 func TestAccLinodeInstance_privateNetworking(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Error generating test SSH key pair: %s", err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -1180,7 +1100,7 @@ func TestAccLinodeInstance_stackScriptInstance(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -1214,11 +1134,7 @@ func TestAccLinodeInstance_stackScriptDisk(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
-	var instanceName = acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
+	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

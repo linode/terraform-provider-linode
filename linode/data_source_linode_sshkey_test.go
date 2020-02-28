@@ -13,10 +13,6 @@ func TestAccDataSourceLinodeSSHKey(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf_test")
-	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
-	if err != nil {
-		t.Fatalf("Cannot generate test SSH key pair: %s", err)
-	}
 	// resourceName := "data.linode_sshkey.foobar"
 
 	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
