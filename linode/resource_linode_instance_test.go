@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -922,6 +923,121 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Error generating test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithFullDisk(instanceName, publicKeyMaterial, 256),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
+					),
+				),
+			},
+			{
+				Config:      testAccCheckLinodeInstanceWithFullDisk(instanceName, publicKeyMaterial, 512),
+				ExpectError: regexp.MustCompile("Error waiting for resize of Instance \\d+ Disk \\d+"),
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_swapUpsize(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Error generating test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 256),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
+					),
+				),
+			},
+			{
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 512),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25088)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(512)),
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_swapDownsize(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Error generating test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 512),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25088)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(512)),
+					),
+				),
+			},
+			{
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 256),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
+					),
+				),
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_diskResizeAndExpanded(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
@@ -1241,6 +1357,22 @@ func testDisk(label string, diskTests ...testDiskFunc) testDisksFunc {
 	}
 }
 
+func testDiskByFS(fs linodego.DiskFilesystem, diskTests ...testDiskFunc) testDisksFunc {
+	return func(disks []linodego.InstanceDisk) error {
+		for _, disk := range disks {
+			if disk.Filesystem == fs {
+				for _, test := range diskTests {
+					if err := test(disk); err != nil {
+						return err
+					}
+				}
+				return nil
+			}
+		}
+		return fmt.Errorf("should have found Instance disk with filesystem: %s", fs)
+	}
+}
+
 func testDiskExists(diskPtr *linodego.InstanceDisk) testDiskFunc {
 	return func(disk linodego.InstanceDisk) error {
 		*diskPtr = disk
@@ -1468,6 +1600,70 @@ resource "linode_instance" "foobar" {
 	swap_size = 256
 	authorized_keys = ["%s"]
 }`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithSwapSize(instance string, pubkey string, swapSize int) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	root_pass = "terraform-test"
+	swap_size = %d
+	authorized_keys = ["%s"]
+}`, instance, swapSize, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithFullDisk(instance string, pubkey string, swapSize int) string {
+	ssName := acctest.RandomWithPrefix("tf_test")
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "g6-nanode-1"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	root_pass = "terraform-test"
+	swap_size = %d
+	authorized_keys = ["%s"]
+	stackscript_id = linode_stackscript.flooddisk.id
+}
+
+resource "linode_stackscript" "flooddisk" {
+	label = "%s"
+	script = <<EOF
+#!/usr/bin/env bash
+
+set -e
+
+get_disk_info() {
+	echo $(df /dev/sda --block-size=1 | tail -n-1)
+}
+
+# fills free space according to df after this df will report 100%% usage
+preallocate_free_space() {
+	local free_space=$(get_disk_info | awk '{print $4}')
+	fallocate -l "$free_space" blob
+}
+
+# get minimum size disk can be and fill the difference of what is available
+fill_disk() {
+	local min_blocks=$(resize2fs -P /dev/sda | tail -1 | awk '{print $7}')
+	local block_size=$(blockdev --getbsz /dev/sda)
+	local min_bytes=$(($min_blocks * $block_size))
+	local total_bytes=$(get_disk_info | awk '{print $2}')
+	local blob_size=$(($total_bytes-$min_bytes))
+	dd if=/dev/zero of=blob1 bs=1024 count=$blob_size
+}
+
+preallocate_free_space
+fill_disk
+EOF
+	description = "script to max out disk"
+	images = ["linode/ubuntu18.04"]
+}`, instance, swapSize, pubkey, ssName)
 }
 
 func testAccCheckLinodeInstanceWithConfig(instance string, pubkey string) string {

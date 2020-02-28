@@ -951,6 +951,66 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	return resourceLinodeInstanceRead(d, meta)
 }
 
+func findDiskByFS(disks []linodego.InstanceDisk, fs linodego.DiskFilesystem) *linodego.InstanceDisk {
+	for _, disk := range disks {
+		if disk.Filesystem == fs {
+			return &disk
+		}
+	}
+	return nil
+}
+
+// adjustSwapSizeIfNeeded handles changes to the swap_size attribute if needed. If there is a change, this means resizing
+// the underlying main/swap disks on the instance to match the declared swap size allocation.
+//
+// returns bool describing whether the linode needs to be restarted
+func adjustSwapSizeIfNeeded(d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance) (bool, error) {
+	disks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
+	if err != nil {
+		return false, fmt.Errorf("Error fetching disks on instance %d: %s", instance.ID, err)
+	}
+
+	if !d.HasChange("swap_size") {
+		return false, nil
+	}
+
+	// If the swap_size attribute is set, there are two default disks attached to the instance (the main disk of type ext4
+	// and a swap disk), as custom disk configuration via "disk" nested attributes conflicts with the swap_size.
+	mainDisk := findDiskByFS(disks, linodego.FilesystemExt4)
+	swapDisk := findDiskByFS(disks, linodego.FilesystemSwap)
+
+	oldSwapVal, newSwapVal := d.GetChange("swap_size")
+	oldSwap, newSwap := oldSwapVal.(int), newSwapVal.(int)
+	diff := newSwap - oldSwap
+	newMainDiskSize := mainDisk.Size - diff
+
+	toResize := []struct {
+		size int
+		disk *linodego.InstanceDisk
+	}{
+		{
+			size: newMainDiskSize,
+			disk: mainDisk,
+		},
+		{
+			size: newSwap,
+			disk: swapDisk,
+		},
+	}
+
+	if mainDisk.Size < newMainDiskSize {
+		// swap disk needs to be downsized first to upsize main disk
+		toResize[0], toResize[1] = toResize[1], toResize[0]
+	}
+
+	for _, resizeOp := range toResize {
+		if err := changeInstanceDiskSize(client, *instance, *resizeOp.disk, resizeOp.size, d); err != nil {
+			return true, err
+		}
+	}
+	return true, nil
+}
+
 func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 
@@ -1066,6 +1126,12 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	if err != nil {
 		return err
+	}
+
+	if didChange, err := adjustSwapSizeIfNeeded(d, &client, instance); err != nil {
+		return err
+	} else if didChange {
+		rebootInstance = true
 	}
 
 	if d.HasChange("private_ip") {
