@@ -4,6 +4,12 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode
 
+TFPROVIDERLINT_IMG := bflad/tfproviderlint
+TFPROVIDERLINT_TAG := 0.10.0
+
+lint:
+	docker run --rm -v $$(pwd):/src:ro $(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) ./...
+
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
 	go test $(TEST) -v -sweep=$(SWEEP) $(SWEEPARGS)
