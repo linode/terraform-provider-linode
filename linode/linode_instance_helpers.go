@@ -876,7 +876,7 @@ func diskState(v interface{}) string {
 func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int) error {
 	if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
 		if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
-			return fmt.Errorf("Error mapping disk label %s to ID", dev["disk_label"])
+			return fmt.Errorf(`Error mapping disk label "%s" to ID`, dev["disk_label"])
 		}
 	}
 	expanded := expandInstanceConfigDevice(dev)
