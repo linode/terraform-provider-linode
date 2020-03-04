@@ -39,7 +39,6 @@ The following arguments are supported:
 
 * `ssh_key` - The public SSH Key, which is used to authenticate to the root user of the Linodes you deploy.
 
-
 ## Attributes
 
 This resource exports the following attributes:

@@ -46,4 +46,4 @@ The Linode Image resource exports the following attributes:
 
 * `type` - How the Image was created. Manual Images can be created at any time. image"Automatic" Images are created automatically from a deleted Linode.
 
-* `vendor` - The upstream distribution vendor. `None` for private Images. 
+* `vendor` - The upstream distribution vendor. `None` for private Images.

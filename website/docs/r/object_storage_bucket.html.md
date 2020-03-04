@@ -16,12 +16,12 @@ The following example shows how one might use this resource to create an Object 
 
 ```hcl
 data "linode_object_storage_cluster" "primary" {
-    id = "us-east-1"
+  id = "us-east-1"
 }
 
 resource "linode_object_storage_bucket" "foobar" {
-	cluster = data.linode_object_storage_cluster.primary.id
-	label = "%s"
+  cluster = data.linode_object_storage_cluster.primary.id
+  label = "%s"
 }
 
 ```
@@ -33,4 +33,3 @@ The following arguments are supported:
 * `cluster` - (Required) The cluster of the Linode Object Storage Bucket.
 
 * `label` - (Required) The label of the Linode Object Storage Bucket.
-

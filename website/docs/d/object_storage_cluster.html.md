@@ -24,7 +24,7 @@ data "linode_object_storage_cluster" "primary" {
 
 The following arguments are supported:
 
-* `id` - (Required) The unique ID of this cluster. 
+* `id` - (Required) The unique ID of this cluster.
 
 ## Attributes
 
