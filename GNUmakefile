@@ -7,8 +7,18 @@ PKG_NAME=linode
 TFPROVIDERLINT_IMG := bflad/tfproviderlint
 TFPROVIDERLINT_TAG := 0.10.0
 
+MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
+MARKDOWNLINT_TAG := 0.19.0
+
 lint:
 	docker run --rm -v $$(pwd):/src:ro $(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) ./...
+
+doclint:
+	docker run --rm \
+		-v $$(pwd):/markdown:ro \
+		$(MARKDOWNLINT_IMG):$(MARKDOWNLINT_TAG) \
+		--config .markdownlint.yml \
+		website
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
