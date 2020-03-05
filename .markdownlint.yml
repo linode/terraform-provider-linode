@@ -1,0 +1,8 @@
+# Configuration for markdownlint
+# https://github.com/DavidAnson/markdownlint#configuration
+default: true
+
+# Disabled Rules
+# https://github.com/DavidAnson/markdownlint/blob/master/doc/Rules.md
+line-length: false
+fenced-code-language: false
