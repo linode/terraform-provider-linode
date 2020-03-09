@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeNetworkingIP(t *testing.T) {
+func TestAccDataSourceLinodeNetworkingIP_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "linode_instance.foobar"
@@ -22,10 +22,10 @@ func TestAccDataSourceLinodeNetworkingIP(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeNetworkingIP(label),
+				Config: testDataSourceLinodeNetworkingIPBasic(label),
 			},
 			{
-				Config: testDataSourceLinodeNetworkingIP(label),
+				Config: testDataSourceLinodeNetworkingIPBasic(label),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(dataResourceName, "address", resourceName, "ip_address"),
 					resource.TestCheckResourceAttrPair(dataResourceName, "linode_id", resourceName, "id"),
@@ -41,7 +41,7 @@ func TestAccDataSourceLinodeNetworkingIP(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeNetworkingIP(label string) string {
+func testDataSourceLinodeNetworkingIPBasic(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"

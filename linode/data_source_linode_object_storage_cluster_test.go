@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeObjectStorageCluster(t *testing.T) {
+func TestAccDataSourceLinodeObjectStorageCluster_basic(t *testing.T) {
 	t.Parallel()
 
 	objectStorageClusterID := "us-east-1"
@@ -20,7 +20,7 @@ func TestAccDataSourceLinodeObjectStorageCluster(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeObjectStorageCluster(objectStorageClusterID),
+				Config: testDataSourceLinodeObjectStorageClusterBasic(objectStorageClusterID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "region", region),
 					resource.TestCheckResourceAttr(resourceName, "id", objectStorageClusterID),
@@ -31,7 +31,7 @@ func TestAccDataSourceLinodeObjectStorageCluster(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeObjectStorageCluster(objectStorageClusterID string) string {
+func testDataSourceLinodeObjectStorageClusterBasic(objectStorageClusterID string) string {
 	return fmt.Sprintf(`
 data "linode_object_storage_cluster" "foobar" {
     id = "%s"

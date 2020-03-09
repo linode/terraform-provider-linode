@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeInstanceType(t *testing.T) {
+func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 	t.Parallel()
 
 	instanceTypeID := "g6-standard-2"
@@ -18,7 +18,7 @@ func TestAccDataSourceLinodeInstanceType(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeInstanceType(instanceTypeID),
+				Config: testDataSourceLinodeInstanceTypeBasic(instanceTypeID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", instanceTypeID),
 					resource.TestCheckResourceAttr(resourceName, "label", "Linode 4GB"),
@@ -37,7 +37,7 @@ func TestAccDataSourceLinodeInstanceType(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeInstanceType(instanceTypeID string) string {
+func testDataSourceLinodeInstanceTypeBasic(instanceTypeID string) string {
 	return fmt.Sprintf(`
 data "linode_instance_type" "foobar" {
 	id = "%s"

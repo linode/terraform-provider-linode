@@ -17,7 +17,6 @@ lint:
 	docker run --rm \
 		-v $$(pwd):/src:ro \
 		$(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) \
-		-AT003=false \
 		-R003=false \
 		-R004=false \
 		-R005=false \

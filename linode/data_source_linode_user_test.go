@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeUser(t *testing.T) {
+func TestAccDataSourceLinodeUser_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_user.user"
@@ -17,7 +17,7 @@ func TestAccDataSourceLinodeUser(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeProfile() + testDataSourceLinodeUser(),
+				Config: testDataSourceLinodeProfileBasic() + testDataSourceLinodeUserBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("data.linode_user.user", "username", resourceName, "username"),
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
@@ -31,7 +31,7 @@ func TestAccDataSourceLinodeUser(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeUser() string {
+func testDataSourceLinodeUserBasic() string {
 	return `
 		data "linode_user" "user" {
 			username = "${data.linode_profile.user.username}"

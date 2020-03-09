@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeSSHKey(t *testing.T) {
+func TestAccDataSourceLinodeSSHKey_basic(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf_test")
@@ -33,14 +33,14 @@ func TestAccDataSourceLinodeSSHKey(t *testing.T) {
 			// 	),
 			// },
 			{
-				Config:      testDataSourceLinodeSSHKey(label, publicKeyMaterial),
+				Config:      testDataSourceLinodeSSHKeyBasic(label, publicKeyMaterial),
 				ExpectError: regexp.MustCompile(label + " was not found"),
 			},
 		},
 	})
 }
 
-func testDataSourceLinodeSSHKey(label, sshKey string) string {
+func testDataSourceLinodeSSHKeyBasic(label, sshKey string) string {
 	return fmt.Sprintf(`
 data "linode_sshkey" "foobar" {
 	label = "%s"

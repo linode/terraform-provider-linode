@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeRegion(t *testing.T) {
+func TestAccDataSourceLinodeRegion_basic(t *testing.T) {
 	t.Parallel()
 
 	country := "us"
@@ -19,7 +19,7 @@ func TestAccDataSourceLinodeRegion(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeRegion(regionID),
+				Config: testDataSourceLinodeRegionBasic(regionID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "country", country),
 					resource.TestCheckResourceAttr(resourceName, "id", regionID),
@@ -29,7 +29,7 @@ func TestAccDataSourceLinodeRegion(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeRegion(regionID string) string {
+func testDataSourceLinodeRegionBasic(regionID string) string {
 	return fmt.Sprintf(`
 data "linode_region" "foobar" {
 	id = "%s"
