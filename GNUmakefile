@@ -24,7 +24,6 @@ lint:
 		-S006=false \
 		-S008=false \
 		-S022=false \
-		-S031=false \
 		-V004=false \
 		./...
 	
