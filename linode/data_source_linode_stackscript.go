@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/linode/linodego"
@@ -139,8 +140,8 @@ func dataSourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("deployments_active", ss.DeploymentsActive)
 		d.Set("deployments_total", ss.DeploymentsTotal)
 		d.Set("username", ss.Username)
-		d.Set("created", ss.Created)
-		d.Set("updated", ss.Updated)
+		d.Set("created", ss.Created.Format(time.RFC3339))
+		d.Set("updated", ss.Created.Format(time.RFC3339))
 		setStackScriptUserDefinedFields(d, ss)
 		return nil
 	}
