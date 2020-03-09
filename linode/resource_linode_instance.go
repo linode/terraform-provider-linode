@@ -209,7 +209,6 @@ func resourceLinodeInstance() *schema.Resource {
 			"specs": {
 				Computed: true,
 				Type:     schema.TypeList,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk": {
@@ -278,7 +277,6 @@ func resourceLinodeInstance() *schema.Resource {
 			},
 			"backups": {
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Description: "Information about this Linode's backups status.",
 				Computed:    true,
 				Elem: &schema.Resource{

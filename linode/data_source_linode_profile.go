@@ -60,7 +60,6 @@ func dataSourceLinodeProfile() *schema.Resource {
 			},
 			"referrals": {
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Description: "Credit Card information associated with this Account.",
 				Computed:    true,
 				Elem: &schema.Resource{
