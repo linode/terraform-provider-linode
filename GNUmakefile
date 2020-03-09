@@ -10,10 +10,33 @@ TFPROVIDERLINT_TAG := 0.10.0
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.19.0
 
-lint:
-	docker run --rm -v $$(pwd):/src:ro $(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) ./...
+GOLANGCILINT     := golangci-lint
+GOLANGCILINT_IMG := golangci/golangci-lint:v1.23-alpine
 
-doclint:
+lint:
+	docker run --rm \
+		-v $$(pwd):/src:ro \
+		$(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) \
+		-AT003=false \
+		-R003=false \
+		-R004=false \
+		-R005=false \
+		-R007=false \
+		-R008=false \
+		-R009=false \
+		-S006=false \
+		-S008=false \
+		-S022=false \
+		-S031=false \
+		-V004=false \
+		./...
+	
+	docker run --rm \
+		-v $$(pwd):/src:ro -w /src \
+		$(GOLANGCILINT_IMG) $(GOLANGCILINT) \
+		run
+
+docscheck:
 	docker run --rm \
 		-v $$(pwd):/markdown:ro \
 		$(MARKDOWNLINT_IMG):$(MARKDOWNLINT_TAG) \
