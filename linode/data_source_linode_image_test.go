@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeImage(t *testing.T) {
+func TestAccDataSourceLinodeImage_basic(t *testing.T) {
 	t.Parallel()
 
 	imageID := "linode/debian8"
@@ -18,7 +18,7 @@ func TestAccDataSourceLinodeImage(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeImage(imageID),
+				Config: testDataSourceLinodeImageBasic(imageID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", imageID),
 					resource.TestCheckResourceAttr(resourceName, "label", "Debian 8"),
@@ -33,7 +33,7 @@ func TestAccDataSourceLinodeImage(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeImage(imageID string) string {
+func testDataSourceLinodeImageBasic(imageID string) string {
 	return fmt.Sprintf(`
 data "linode_image" "foobar" {
 	id = "%s"

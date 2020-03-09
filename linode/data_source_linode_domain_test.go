@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceLinodeDomain(t *testing.T) {
+func TestAccDataSourceLinodeDomain_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_domain.foobar"
@@ -25,7 +25,7 @@ func TestAccDataSourceLinodeDomain(t *testing.T) {
 				Config: testAccCheckLinodeDomainConfigBasic(domainName),
 			},
 			{
-				Config: testAccCheckLinodeDomainConfigBasic(domainName) + testDataSourceLinodeDomain(domainName),
+				Config: testAccCheckLinodeDomainConfigBasic(domainName) + testDataSourceLinodeDomainBasic(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 					resource.TestCheckResourceAttr(resourceName, "type", "master"),
@@ -45,14 +45,14 @@ func TestAccDataSourceLinodeDomain(t *testing.T) {
 				Destroy: true,
 			},
 			{
-				Config:      testDataSourceLinodeDomain(domainName),
+				Config:      testDataSourceLinodeDomainBasic(domainName),
 				ExpectError: regexp.MustCompile(domainName + " was not found"),
 			},
 		},
 	})
 }
 
-func testDataSourceLinodeDomain(domainName string) string {
+func testDataSourceLinodeDomainBasic(domainName string) string {
 	return fmt.Sprintf(`
 data "linode_domain" "foobar" {
 	domain = "%s"
