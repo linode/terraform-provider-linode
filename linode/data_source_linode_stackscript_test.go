@@ -23,6 +23,8 @@ func TestAccDataSourceLinodeStackscript_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "deployments_active"),
 					resource.TestCheckResourceAttrSet(resourceName, "deployments_total"),
 					resource.TestCheckResourceAttrSet(resourceName, "username"),
+					resource.TestCheckResourceAttrSet(resourceName, "created"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated"),
 					resource.TestCheckResourceAttr(resourceName, "label", "my_stackscript"),
 					resource.TestCheckResourceAttr(resourceName, "description", "test"),
 					resource.TestCheckResourceAttr(resourceName, "is_public", "false"),
