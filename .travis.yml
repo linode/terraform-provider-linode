@@ -17,6 +17,8 @@ install:
 - bash scripts/gogetcookie.sh
 
 script:
+- make docscheck
+- make lint
 - make test
 - make vet
 - make website-test
