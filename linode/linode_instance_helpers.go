@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -795,82 +794,6 @@ func privateIP(ip net.IP) bool {
 	_, private16BitBlock, _ := net.ParseCIDR("192.168.0.0/16")
 	private := private24BitBlock.Contains(ip) || private20BitBlock.Contains(ip) || private16BitBlock.Contains(ip)
 	return private
-}
-
-func diskHashCode(v interface{}) int {
-	switch t := v.(type) {
-	case linodego.InstanceDisk:
-		return schema.HashString(t.Label + ":" + strconv.Itoa(t.Size))
-	case map[string]interface{}:
-		if _, found := t["size"]; found {
-			if size, ok := t["size"].(int); ok {
-				if _, found := t["label"]; found {
-					if label, ok := t["label"].(string); ok {
-						return schema.HashString(label + ":" + strconv.Itoa(size))
-					}
-				}
-			}
-		}
-		panic(fmt.Sprintf("Error hashing disk for invalid map: %#v", v))
-	default:
-		panic(fmt.Sprintf("Error hashing config for unknown interface: %#v", v))
-	}
-}
-
-func labelHashcode(v interface{}) int {
-	switch t := v.(type) {
-	case string:
-		return schema.HashString(v)
-	case linodego.InstanceDisk:
-		return schema.HashString(t.Label)
-	case linodego.InstanceConfig:
-		return schema.HashString(t.Label)
-	case map[string]interface{}:
-		if _, found := t["label"]; found {
-			if label, ok := t["label"].(string); ok {
-				return schema.HashString(label)
-			}
-		}
-		panic(fmt.Sprintf("Error hashing label for unknown map: %#v", v))
-	default:
-		panic(fmt.Sprintf("Error hashing label for unknown interface: %#v", v))
-	}
-}
-
-func configHashcode(v interface{}) int {
-	switch t := v.(type) {
-	case string:
-		return schema.HashString(v)
-	case linodego.InstanceConfig:
-		return schema.HashString(t.Label)
-	case map[string]interface{}:
-		if _, found := t["label"]; found {
-			if label, ok := t["label"].(string); ok {
-				return schema.HashString(label)
-			}
-		}
-		panic(fmt.Sprintf("Error hashing config for unknown map: %#v", v))
-	default:
-		panic(fmt.Sprintf("Error hashing config for unknown interface: %#v", v))
-	}
-}
-
-func diskState(v interface{}) string {
-	switch t := v.(type) {
-	case map[string]interface{}:
-		if _, found := t["size"]; found {
-			if size, ok := t["size"].(int); ok {
-				if _, found := t["label"]; found {
-					if label, ok := t["label"].(string); ok {
-						return label + ":" + strconv.Itoa(size)
-					}
-				}
-			}
-		}
-		panic(fmt.Sprintf("Error generating disk state for invalid map: %#v", v))
-	default:
-		panic(fmt.Sprintf("Error generating disk for unknown interface: %#v", v))
-	}
 }
 
 func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int) error {
