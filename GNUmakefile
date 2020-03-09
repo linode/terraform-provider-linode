@@ -18,7 +18,6 @@ lint:
 		-v $$(pwd):/src:ro \
 		$(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) \
 		-R003=false \
-		-R004=false \
 		-R005=false \
 		-R007=false \
 		-R008=false \
