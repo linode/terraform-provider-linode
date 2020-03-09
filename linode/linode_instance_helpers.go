@@ -61,22 +61,13 @@ func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
 	}}
 }
 
-type flattenedInstanceBackupSchedule [1]struct {
-	day, window string
-}
-
-type flattenedInstanceBackup [1]struct {
-	enabled  bool
-	schedule flattenedInstanceBackupSchedule
-}
-
-func flattenInstanceBackups(instance linodego.Instance) flattenedInstanceBackup {
-	return flattenedInstanceBackup{{
-		instance.Backups.Enabled,
-		flattenedInstanceBackupSchedule{{
-			instance.Backups.Schedule.Day,
-			instance.Backups.Schedule.Window,
-		}},
+func flattenInstanceBackups(instance linodego.Instance) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"enabled": instance.Backups.Enabled,
+		"schedule": map[string]interface{}{
+			"day":    instance.Backups.Schedule.Day,
+			"window": instance.Backups.Schedule.Window,
+		},
 	}}
 }
 

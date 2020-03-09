@@ -290,7 +290,6 @@ func resourceLinodeInstance() *schema.Resource {
 						},
 						"schedule": {
 							Type:     schema.TypeList,
-							MaxItems: 1,
 							Computed: true,
 							Elem: &schema.Resource{
 								// TODO(displague) these fields are updatable via PUT to instance
