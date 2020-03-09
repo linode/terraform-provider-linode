@@ -22,7 +22,6 @@ lint:
 		-R005=false \
 		-R007=false \
 		-R008=false \
-		-R009=false \
 		-S006=false \
 		-S008=false \
 		-S022=false \
