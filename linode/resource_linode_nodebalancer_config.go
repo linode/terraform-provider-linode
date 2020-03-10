@@ -133,20 +133,7 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 			"node_status": {
 				Type:     schema.TypeMap,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"status_up": {
-							Type:        schema.TypeInt,
-							Description: "The number of backends considered to be 'UP' and healthy, and that are serving requests.",
-							Computed:    true,
-						},
-						"status_down": {
-							Type:        schema.TypeInt,
-							Description: "The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.",
-							Computed:    true,
-						},
-					},
-				},
+				Elem:     schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
