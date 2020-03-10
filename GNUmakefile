@@ -23,7 +23,6 @@ lint:
 		-R008=false \
 		-S006=false \
 		-S022=false \
-		-V004=false \
 		./...
 	
 	docker run --rm \
