@@ -25,7 +25,7 @@ func resourceLinodeRDNS() *schema.Resource {
 				Description:  "The public Linode IPv4 or IPv6 address to operate on.",
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.SingleIP(),
+				ValidateFunc: validation.IsIPAddress,
 			},
 			"rdns": {
 				Type:         schema.TypeString,
