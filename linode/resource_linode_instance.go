@@ -372,7 +372,6 @@ func resourceLinodeInstance() *schema.Resource {
 							MaxItems:    1,
 							Optional:    true,
 							Computed:    true,
-							Default:     nil,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"sda": {
@@ -380,7 +379,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Computed: true,
 										Optional: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdb": {
@@ -388,7 +386,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Optional: true,
 										Computed: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdc": {
@@ -396,7 +393,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Optional: true,
 										Computed: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdd": {
@@ -404,7 +400,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Optional: true,
 										Computed: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sde": {
@@ -412,7 +407,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Optional: true,
 										Computed: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdf": {
@@ -420,7 +414,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Optional: true,
 										Computed: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdg": {
@@ -428,7 +421,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Optional: true,
 										Computed: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdh": {
@@ -436,7 +428,6 @@ func resourceLinodeInstance() *schema.Resource {
 										MaxItems: 1,
 										Optional: true,
 										Computed: true,
-										Default:  nil,
 										Elem:     resourceLinodeInstanceDeviceDisk(),
 									},
 								},
