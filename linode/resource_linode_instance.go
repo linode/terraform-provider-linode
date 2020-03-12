@@ -79,9 +79,7 @@ func resourceLinodeInstance() *schema.Resource {
 				ConflictsWith: []string{"disk", "config"},
 			},
 			"stackscript_data": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{Type: schema.TypeString},
-
+				Type:          schema.TypeMap,
 				Description:   "An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.",
 				Optional:      true,
 				ForceNew:      true,
@@ -872,7 +870,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	if disksOk {
 		_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeCreate, *instance.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
 		if err != nil {
-			return fmt.Errorf("Error waiting for Instance to finish creating")
+			return fmt.Errorf("Error waiting for Instance to finish creating: %s", err)
 		}
 
 		dsetRaw := d.Get("disk").([]interface{})
