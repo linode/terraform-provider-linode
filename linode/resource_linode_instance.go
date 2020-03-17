@@ -736,7 +736,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	if !ok {
 		return fmt.Errorf("Invalid Client when creating Linode Instance")
 	}
-	d.Partial(true)
 
 	bootConfig := 0
 	createOpts := linodego.InstanceCreateOptions{
@@ -802,19 +801,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(fmt.Sprintf("%d", instance.ID))
-
-	// d.Set("backups_enabled", instance.BackupsEnabled)
-
-	d.SetPartial("private_ip")
-	d.SetPartial("authorized_keys")
-	d.SetPartial("authorized_users")
-	d.SetPartial("root_pass")
-	d.SetPartial("kernel")
-	d.SetPartial("image")
-	d.SetPartial("backup_id")
-	d.SetPartial("stackscript_id")
-	d.SetPartial("stackscript_data")
-	d.SetPartial("swap_size")
 
 	var ips []string
 	for _, ip := range instance.IPv4 {
@@ -907,8 +893,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			configIDLabelMap[v.Label] = k
 		}
 	}
-
-	d.Partial(false)
 
 	if createOpts.Booted == nil || !*createOpts.Booted {
 		if disksOk && configsOk {
@@ -1010,42 +994,30 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
-	// Handle all simple updates that don't require reboots, configs, or disks
-	d.Partial(true)
-
 	updateOpts := linodego.InstanceUpdateOptions{}
 	simpleUpdate := false
 
 	if d.HasChange("label") {
 		updateOpts.Label = d.Get("label").(string)
-		d.SetPartial("label")
 		simpleUpdate = true
 	}
-
 	if d.HasChange("group") {
 		updateOpts.Group = d.Get("group").(string)
-		d.SetPartial("group")
 		simpleUpdate = true
 	}
-
 	if d.HasChange("tags") {
 		tags := []string{}
 		for _, tag := range d.Get("tags").(*schema.Set).List() {
 			tags = append(tags, tag.(string))
 		}
-
 		updateOpts.Tags = &tags
-		d.SetPartial("tags")
 		simpleUpdate = true
 	}
-
 	if d.HasChange("watchdog_enabled") {
 		watchdogEnabled := d.Get("watchdog_enabled").(bool)
 		updateOpts.WatchdogEnabled = &watchdogEnabled
-		d.SetPartial("watchdog_enabled")
 		simpleUpdate = true
 	}
-
 	if d.HasChange("alerts") {
 		updateOpts.Alerts = &linodego.InstanceAlert{}
 		updateOpts.Alerts.CPU = d.Get("alerts.0.cpu").(int)
@@ -1053,7 +1025,6 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
 		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
-		d.SetPartial("alerts")
 
 		simpleUpdate = true
 	}
@@ -1064,10 +1035,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	d.Partial(false)
-
 	if d.HasChange("backups_enabled") {
-		d.Partial(true)
 		if d.Get("backups_enabled").(bool) {
 			if err = client.EnableInstanceBackups(context.Background(), instance.ID); err != nil {
 				return err
@@ -1077,8 +1045,6 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 				return err
 			}
 		}
-		d.SetPartial("backups_enabled")
-		d.Partial(false)
 	}
 
 	var rebootInstance bool
@@ -1121,21 +1087,15 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if d.HasChange("private_ip") {
-		if !d.Get("private_ip").(bool) {
+		if _, ok := d.GetOk("private_ip"); !ok {
 			return fmt.Errorf("Error removing private IP address for Instance %d: Removing a Private IP address must be handled through a support ticket", instance.ID)
 		}
 
-		d.Partial(true)
 		resp, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
-
 		if err != nil {
 			return fmt.Errorf("Error activating private networking on Instance %d: %s", instance.ID, err)
 		}
-
-		d.SetPartial("private_ip")
 		d.Set("private_ip_address", resp.Address)
-		d.SetPartial("private_ip_address")
-		d.Partial(false)
 		rebootInstance = true
 	}
 
