@@ -867,6 +867,119 @@ func TestAccLinodeInstance_diskResize(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_withDiskLinodeUpsize(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Start with g6-nanode-1
+			{
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+				),
+			},
+			// Upsize to g6-standard-1 with fully allocated disk
+			{
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigLarger(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "51200"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(51200))),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_withDiskLinodeDownsize(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Start with g6-standard-1 with fully allocated disk
+			{
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigLarger(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "51200"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(51200))),
+				),
+			},
+			// Downsize to g6-nanode-1
+			{
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
+					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-standard-1"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(50944)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
+					),
+				),
+			},
+			{
+				Config:      testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
+				ExpectError: regexp.MustCompile(linodeInstanceDownsizeFailedMessage),
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
 	t.Parallel()
 
@@ -1518,6 +1631,20 @@ resource "linode_instance" "foobar" {
 }`, instance, pubkey)
 }
 
+func testAccCheckLinodeInstanceWithType(instance string, pubkey string, typ string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "%s"
+	image = "linode/ubuntu18.04"
+	region = "us-east"
+	root_pass = "terraform-test"
+	swap_size = 256
+	authorized_keys = ["%s"]
+}`, instance, typ, pubkey)
+}
+
 func testAccCheckLinodeInstanceWithSwapSize(instance string, pubkey string, swapSize int) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
@@ -1798,6 +1925,34 @@ resource "linode_instance" "foobar" {
 		root_pass = "b4d_p4s5"
 		authorized_keys = ["%s"]
 		size = 3000
+	}
+
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		devices {
+			sda {
+				disk_label = "disk"
+			}
+		}
+	}
+}`, instance, pubkey)
+}
+
+func testAccCheckLinodeInstanceWithDiskAndConfigLarger(instance string, pubkey string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	type = "g6-standard-1"
+	region = "us-east"
+	group = "tf_test"
+
+	disk {
+		label = "disk"
+		image = "linode/ubuntu18.04"
+		root_pass = "terraform-test"
+		authorized_keys = ["%s"]
+		size = 51200
 	}
 
 	config {

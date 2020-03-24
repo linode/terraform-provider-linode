@@ -18,6 +18,14 @@ const (
 	LinodeInstanceDeleteTimeout = 10 * time.Minute
 )
 
+var linodeInstanceDownsizeFailedMessage = `
+Did you try to resize a linode with implicit, default disks to a smaller type? The provider does
+not automatically scale the boot disk to fit an updated instance type. You may need to switch to
+an explicit disk configuration.
+
+Take a look at the example here:
+https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
+
 func resourceLinodeInstanceDeviceDisk() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -935,32 +943,29 @@ func findDiskByFS(disks []linodego.InstanceDisk, fs linodego.DiskFilesystem) *li
 //
 // returns bool describing whether the linode needs to be restarted
 func adjustSwapSizeIfNeeded(d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance) (bool, error) {
-	disks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
-	if err != nil {
-		return false, fmt.Errorf("Error fetching disks on instance %d: %s", instance.ID, err)
-	}
-
 	if !d.HasChange("swap_size") {
 		return false, nil
 	}
 
 	// If the swap_size attribute is set, there are two default disks attached to the instance (the main disk of type ext4
 	// and a swap disk), as custom disk configuration via "disk" nested attributes conflicts with the swap_size.
-	mainDisk := findDiskByFS(disks, linodego.FilesystemExt4)
-	swapDisk := findDiskByFS(disks, linodego.FilesystemSwap)
+	bootDisk, swapDisk, err := getInstanceDefaultDisks(instance.ID, client)
+	if err != nil {
+		return false, err
+	}
 
 	oldSwapVal, newSwapVal := d.GetChange("swap_size")
 	oldSwap, newSwap := oldSwapVal.(int), newSwapVal.(int)
 	diff := newSwap - oldSwap
-	newMainDiskSize := mainDisk.Size - diff
+	newBootDiskSize := bootDisk.Size - diff
 
 	toResize := []struct {
 		size int
 		disk *linodego.InstanceDisk
 	}{
 		{
-			size: newMainDiskSize,
-			disk: mainDisk,
+			size: newBootDiskSize,
+			disk: bootDisk,
 		},
 		{
 			size: newSwap,
@@ -968,7 +973,7 @@ func adjustSwapSizeIfNeeded(d *schema.ResourceData, client *linodego.Client, ins
 		},
 	}
 
-	if mainDisk.Size < newMainDiskSize {
+	if bootDisk.Size < newBootDiskSize {
 		// swap disk needs to be downsized first to upsize main disk
 		toResize[0], toResize[1] = toResize[1], toResize[0]
 	}
@@ -1029,6 +1034,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		simpleUpdate = true
 	}
 
+	// apply staged simple updates early
 	if simpleUpdate {
 		if instance, err = client.UpdateInstance(context.Background(), instance.ID, updateOpts); err != nil {
 			return fmt.Errorf("Error updating Instance %d: %s", instance.ID, err)
@@ -1050,42 +1056,6 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	var rebootInstance bool
 	var diskIDLabelMap map[string]int
 
-	tfDisksOld, tfDisksNew := d.GetChange("disk")
-	oldDiskSize, newDiskSize := getDiskSizeChange(tfDisksOld, tfDisksNew)
-	targetType := d.Get("type").(string)
-
-	if newDiskSize > oldDiskSize {
-		if d.HasChange("type") {
-			if err = changeInstanceType(&client, instance, targetType, d); err != nil {
-				return err
-			}
-			d.Set("type", targetType)
-		}
-		if rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew); err != nil {
-			return err
-		}
-	} else {
-		if rebootInstance, diskIDLabelMap, err = updateInstanceDisks(client, d, *instance, tfDisksOld, tfDisksNew); err != nil {
-			return err
-		}
-		if d.HasChange("type") {
-			if err = changeInstanceType(&client, instance, targetType, d); err != nil {
-				return err
-			}
-			d.Set("type", targetType)
-		}
-	}
-
-	if err != nil {
-		return err
-	}
-
-	if didChange, err := adjustSwapSizeIfNeeded(d, &client, instance); err != nil {
-		return err
-	} else if didChange {
-		rebootInstance = true
-	}
-
 	if d.HasChange("private_ip") {
 		if _, ok := d.GetOk("private_ip"); !ok {
 			return fmt.Errorf("Error removing private IP address for Instance %d: Removing a Private IP address must be handled through a support ticket", instance.ID)
@@ -1096,6 +1066,52 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 			return fmt.Errorf("Error activating private networking on Instance %d: %s", instance.ID, err)
 		}
 		d.Set("private_ip_address", resp.Address)
+		rebootInstance = true
+	}
+
+	oldSpec, newSpec, err := getInstanceTypeChange(d, &client)
+	if err != nil {
+		return fmt.Errorf("Error getting resize info for instance: %s", err)
+	}
+
+	if d.HasChange("disk") {
+		upsized := newSpec.Disk > oldSpec.Disk
+		if upsized {
+			// The linode was upsized; apply before disk changes to allocate more disk
+			if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
+				return err
+			}
+			rebootInstance = true
+		}
+		didChangeType, diskMap, err := applyInstanceDiskChanges(d, &client, instance, newSpec)
+		if err != nil {
+			return err
+		}
+		rebootInstance = rebootInstance || didChangeType
+		diskIDLabelMap = diskMap
+		if oldSpec.ID != newSpec.ID && !upsized {
+			// linode was downsized or changed to a type with the same disk allocation
+			if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
+				return err
+			}
+			rebootInstance = true
+		}
+	} else if newSpec.ID != oldSpec.ID {
+		// The linode type was changed but the disk config not change
+		instance, err = applyInstanceTypeChange(d, &client, instance, newSpec)
+		if err != nil && newSpec.Disk < oldSpec.Disk {
+			// Linode was downsized but the pre-existing disk config does not fit new instance spec
+			// This might mean the user tried to downsize an instance with an implicit, default
+			return fmt.Errorf("Error changing instance type: %s."+linodeInstanceDownsizeFailedMessage, err)
+		} else if err != nil {
+			return fmt.Errorf("Error changing instance type: %s", err)
+		}
+		rebootInstance = true
+	}
+
+	if didChange, err := adjustSwapSizeIfNeeded(d, &client, instance); err != nil {
+		return err
+	} else if didChange {
 		rebootInstance = true
 	}
 

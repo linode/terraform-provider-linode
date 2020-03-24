@@ -666,65 +666,56 @@ func createRandomRootPassword() (string, error) {
 	return rootPass, nil
 }
 
+// ensureInstanceOffline ensures that a given instance is offline.
+func ensureInstanceOffline(client *linodego.Client, instanceID, timeout int) (instance *linodego.Instance, err error) {
+	if instance, err = client.GetInstance(context.Background(), instanceID); err != nil {
+		return
+	}
+
+	if instance.Status == linodego.InstanceOffline {
+		return
+	} else if instance.Status != linodego.InstanceShuttingDown {
+		err = client.ShutdownInstance(context.Background(), instanceID)
+	}
+
+	if err != nil {
+		return
+	}
+	return client.WaitForInstanceStatus(context.Background(), instanceID, linodego.InstanceOffline, timeout)
+}
+
 // changeInstanceType resizes the Linode Instance
-func changeInstanceType(client *linodego.Client, instance *linodego.Instance, targetType string, d *schema.ResourceData) error {
-
+func changeInstanceType(client *linodego.Client, instanceID int, targetType string, d *schema.ResourceData) (*linodego.Instance, error) {
+	instance, err := ensureInstanceOffline(client, instanceID, int(d.Timeout(schema.TimeoutUpdate)))
 	diskResize := false
-	waitForOnline := true
-
 	resizeOpts := linodego.InstanceResizeOptions{
 		AllowAutoDiskResize: &diskResize,
 		Type:                targetType,
 	}
 
-	// Instance must be either offline or running (with no extra activity) to resize.
-	if instance.Status == linodego.InstanceOffline || instance.Status == linodego.InstanceShuttingDown {
-		waitForOnline = false
-		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
-		}
-	} else {
-		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for Instance %d readiness: %s", instance.ID, err)
-		}
-	}
-	// We have to wait through the resize process because if we issue jobs before the complete process is complete, the API
-	// Will raise an error.
-
-	// Issue the resize job
 	if err := client.ResizeInstance(context.Background(), instance.ID, resizeOpts); err != nil {
-		return fmt.Errorf("Error resizing Instance %d: %s", instance.ID, err)
+		return nil, fmt.Errorf("Error resizing Instance %d: %s", instance.ID, err)
 	}
-
-	_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 	if err != nil {
-		return fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
+		return nil, fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
 
-	// Wait for instance status to go offline
-	if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
+	// Wait for instance status to go back to idle, offline state
+	if instance, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
+		return nil, fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
 	}
-
-	// Wait for instance status to go online if necessary
-	if waitForOnline == true {
-		if _, err := client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return fmt.Errorf("Error waiting for Instance %d to enter online state: %s", instance.ID, err)
-		}
-	}
-	return nil
+	return instance, nil
 }
 
 // returns the amount of disk space used by the new plan and old plan
 func getDiskSizeChange(oldDisk interface{}, newDisk interface{}) (int, int) {
-
 	tfDisksOldInterface := oldDisk.([]interface{})
 	tfDisksNewInterface := newDisk.([]interface{})
 
 	oldDiskSize := 0
 	newDiskSize := 0
-
-	// Get total amount of disk usage before & after
+	// Get total amount of disk usage before and after
 	for _, disk := range tfDisksOldInterface {
 		oldDiskSize += disk.(map[string]interface{})["size"].(int)
 	}
@@ -732,7 +723,6 @@ func getDiskSizeChange(oldDisk interface{}, newDisk interface{}) (int, int) {
 	for _, disk := range tfDisksNewInterface {
 		newDiskSize += disk.(map[string]interface{})["size"].(int)
 	}
-
 	return oldDiskSize, newDiskSize
 }
 
@@ -798,6 +788,81 @@ func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]in
 		*device = *expanded
 	}
 	return nil
+}
+
+// getInstanceDefaultDisks gets the boot and swap disk for an instance which has implicit, default disks.
+func getInstanceDefaultDisks(instanceID int, client *linodego.Client) (bootDisk, swapDisk *linodego.InstanceDisk, err error) {
+	var disks []linodego.InstanceDisk
+	disks, err = client.ListInstanceDisks(context.Background(), instanceID, nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error getting instance managed disks: %s", err)
+	}
+	bootDisk = findDiskByFS(disks, linodego.FilesystemExt4)
+	swapDisk = findDiskByFS(disks, linodego.FilesystemSwap)
+	return
+}
+
+// getInstanceTypeChange checks to see if the linode itself was resized.
+func getInstanceTypeChange(d *schema.ResourceData, client *linodego.Client) (oldSpec, newSpec *linodego.LinodeType, err error) {
+	old, new := d.GetChange("type")
+	oldType, newType := old.(string), new.(string)
+	if oldType == newType {
+		return
+	}
+
+	oldSpec, err = client.GetType(context.Background(), oldType)
+	if err != nil {
+		return
+	}
+	newSpec, err = client.GetType(context.Background(), newType)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// applyInstanceDiskChanges checks to see if the staged disk changes can be supported by the instance specification's
+// capacity. If there is sufficient space, it attempts to update the disks.
+//
+// returns a bool describing whether the instance needs to be rebooted and a map of disk labels to IDs.
+func applyInstanceDiskChanges(
+	d *schema.ResourceData,
+	client *linodego.Client,
+	instance *linodego.Instance,
+	typ *linodego.LinodeType,
+) (bool, map[string]int, error) {
+	oldDisks, newDisks := d.GetChange("disk")
+	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
+		return false, nil, err
+	}
+	return updateInstanceDisks(*client, d, *instance, oldDisks, newDisks)
+}
+
+// assertDiskConfigFitsInstanceType asserts that the cumulitive disk space used by a given disk config fits a given
+// linode type spec for disk capacity.
+func assertDiskConfigFitsInstanceType(d *schema.ResourceData, typ *linodego.LinodeType) error {
+	oldDisks, newDisks := d.GetChange("disk")
+	_, newDiskSize := getDiskSizeChange(oldDisks, newDisks)
+	if typ.Disk < newDiskSize {
+		return fmt.Errorf(
+			"Linode type %s has insufficient disk capacity for the config. Have %d; want %d",
+			typ.Label, typ.Disk, newDiskSize)
+	}
+	return nil
+}
+
+// applyInstanceTypeChange checks to see if the staged disk changes can be supported by the new instance
+// specification. If there is sufficient space, it attempts to update the instance type.
+func applyInstanceTypeChange(
+	d *schema.ResourceData,
+	client *linodego.Client,
+	instance *linodego.Instance,
+	typ *linodego.LinodeType,
+) (*linodego.Instance, error) {
+	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
+		return nil, err
+	}
+	return changeInstanceType(client, instance.ID, typ.ID, d)
 }
 
 // detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct
