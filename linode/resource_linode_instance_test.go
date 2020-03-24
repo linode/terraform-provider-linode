@@ -973,7 +973,7 @@ func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
+				Config:      testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
 				ExpectError: regexp.MustCompile(linodeInstanceDownsizeFailedMessage),
 			},
 		},
@@ -1642,7 +1642,7 @@ resource "linode_instance" "foobar" {
 	root_pass = "terraform-test"
 	swap_size = 256
 	authorized_keys = ["%s"]
-}`, type, instance, pubkey)
+}`, typ, instance, pubkey)
 }
 
 func testAccCheckLinodeInstanceWithSwapSize(instance string, pubkey string, swapSize int) string {
