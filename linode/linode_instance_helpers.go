@@ -800,6 +800,81 @@ func assignConfigDevice(device *linodego.InstanceConfigDevice, dev map[string]in
 	return nil
 }
 
+// getInstanceDefaultDisks gets the boot and swap disk for an instance which has implicit, default disks.
+func getInstanceDefaultDisks(instanceID int, client *linodego.Client) (bootDisk, swapDisk *linodego.InstanceDisk, err error) {
+	var disks []linodego.InstanceDisk
+	disks, err = client.ListInstanceDisks(context.Background(), instanceID, nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error getting instance managed disks: %s", err)
+	}
+	bootDisk = findDiskByFS(disks, linodego.FilesystemExt4)
+	swapDisk = findDiskByFS(disks, linodego.FilesystemSwap)
+	return
+}
+
+// getInstanceTypeChange checks to see if the linode itself was resized.
+func getInstanceTypeChange(d *schema.ResourceData, client *linodego.Client) (oldSpec, newSpec *linodego.LinodeType, err error) {
+	old, new := d.GetChange("type")
+	oldType, newType := old.(string), new.(string)
+	if oldType == newType {
+		return
+	}
+
+	oldSpec, err = client.GetType(context.Background(), oldType)
+	if err != nil {
+		return
+	}
+	newSpec, err = client.GetType(context.Background(), newType)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// applyInstanceDiskChanges checks to see if the staged disk changes can be supported by the instance specification's
+// capacity. If there is sufficient space, it attempts to update the disks.
+//
+// returns a bool describing whether the instance needs to be rebooted and a map of disk labels to IDs.
+func applyInstanceDiskChanges(
+	d *schema.ResourceData,
+	client *linodego.Client,
+	instance *linodego.Instance,
+	typ *linodego.LinodeType,
+) (bool, map[string]int, error) {
+	oldDisks, newDisks := d.GetChange("disk")
+	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
+		return false, nil, err
+	}
+	return updateInstanceDisks(*client, d, *instance, oldDisks, newDisks)
+}
+
+// assertDiskConfigFitsInstanceType asserts that the cumulitive disk space used by a given disk config fits a given
+// linode type spec for disk capacity.
+func assertDiskConfigFitsInstanceType(d *schema.ResourceData, typ *linodego.LinodeType) error {
+	oldDisks, newDisks := d.GetChange("disk")
+	_, newDiskSize := getDiskSizeChange(oldDisks, newDisks)
+	if typ.Disk < newDiskSize {
+		return fmt.Errorf(
+			"Linode type %s has insufficient disk capacity for the config. Have %d; want %d",
+			typ.Label, typ.Disk, newDiskSize)
+	}
+	return nil
+}
+
+// applyInstanceTypeChange checks to see if the staged disk changes can be supported by the new instance
+// specification. If there is sufficient space, it attempts to update the instance type.
+func applyInstanceTypeChange(
+	d *schema.ResourceData,
+	client *linodego.Client,
+	instance *linodego.Instance,
+	typ *linodego.LinodeType,
+) error {
+	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
+		return err
+	}
+	return changeInstanceType(client, instance, typ.ID, d)
+}
+
 // detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct
 func detachConfigVolumes(dmap linodego.InstanceConfigDeviceMap, detacher volumeDetacher) error {
 	// Preallocate our slice of config devices
