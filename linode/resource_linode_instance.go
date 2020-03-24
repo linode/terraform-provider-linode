@@ -19,9 +19,9 @@ const (
 )
 
 var linodeInstanceDownsizeFailedMessage = `
-Did you try to downsize a linode with implicit, default disks? The provider does not automatically
-scale the boot disk to fit an updated instance type. You may need to switch to an explicit disk
-configuration.
+Did you try to resize a linode with implicit, default disks to a smaller type? The provider does
+not automatically scale the boot disk to fit an updated instance type. You may need to switch to
+an explicit disk configuration.
 
 Take a look at the example here:
 https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
@@ -1100,7 +1100,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		if err := applyInstanceTypeChange(d, &client, instance, newSpec); err != nil && newSpec.Disk < oldSpec.Disk {
 			// Linode was downsized but the pre-existing disk config does not fit new instance spec
 			// This might mean the user tried to downsize an instance with an implicit, default
-			return fmt.Errorf("Error changing instance type: %s"+linodeInstanceDownsizeFailedMessage, err)
+			return fmt.Errorf("Error changing instance type: %s."+linodeInstanceDownsizeFailedMessage, err)
 		} else if err != nil {
 			return fmt.Errorf("Error changing instance type: %s", err)
 		}
