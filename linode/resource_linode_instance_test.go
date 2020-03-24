@@ -967,7 +967,7 @@ func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					testAccCheckComputeInstanceDisks(&instance,
-						testDiskByFS(linodego.FilesystemExt4, testDiskSize(50994)),
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(50944)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
 					),
 				),
@@ -1642,7 +1642,7 @@ resource "linode_instance" "foobar" {
 	root_pass = "terraform-test"
 	swap_size = 256
 	authorized_keys = ["%s"]
-}`, typ, instance, pubkey)
+}`, instance, typ, pubkey)
 }
 
 func testAccCheckLinodeInstanceWithSwapSize(instance string, pubkey string, swapSize int) string {
