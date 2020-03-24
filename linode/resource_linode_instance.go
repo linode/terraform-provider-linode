@@ -1075,9 +1075,10 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if d.HasChange("disk") {
-		if newSpec.Disk > oldSpec.Disk {
+		upsized := newSpec.Disk > oldSpec.Disk
+		if upsized {
 			// The linode was upsized; apply before disk changes to allocate more disk
-			if err := applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
+			if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
 				return err
 			}
 			rebootInstance = true
@@ -1088,22 +1089,24 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 		rebootInstance = rebootInstance || didChangeType
 		diskIDLabelMap = diskMap
-		if newSpec.Disk < oldSpec.Disk || oldSpec.ID != newSpec.ID {
+		if oldSpec.ID != newSpec.ID && !upsized {
 			// linode was downsized or changed to a type with the same disk allocation
-			if err := applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
+			if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
 				return err
 			}
 			rebootInstance = true
 		}
 	} else if newSpec.ID != oldSpec.ID {
 		// The linode type was changed but the disk config not change
-		if err := applyInstanceTypeChange(d, &client, instance, newSpec); err != nil && newSpec.Disk < oldSpec.Disk {
+		instance, err = applyInstanceTypeChange(d, &client, instance, newSpec)
+		if err != nil && newSpec.Disk < oldSpec.Disk {
 			// Linode was downsized but the pre-existing disk config does not fit new instance spec
 			// This might mean the user tried to downsize an instance with an implicit, default
 			return fmt.Errorf("Error changing instance type: %s."+linodeInstanceDownsizeFailedMessage, err)
 		} else if err != nil {
 			return fmt.Errorf("Error changing instance type: %s", err)
 		}
+		rebootInstance = true
 	}
 
 	if didChange, err := adjustSwapSizeIfNeeded(d, &client, instance); err != nil {
