@@ -687,6 +687,10 @@ func ensureInstanceOffline(client *linodego.Client, instanceID, timeout int) (in
 // changeInstanceType resizes the Linode Instance
 func changeInstanceType(client *linodego.Client, instanceID int, targetType string, d *schema.ResourceData) (*linodego.Instance, error) {
 	instance, err := ensureInstanceOffline(client, instanceID, int(d.Timeout(schema.TimeoutUpdate)))
+	if err != nil {
+		return nil, err
+	}
+
 	diskResize := false
 	resizeOpts := linodego.InstanceResizeOptions{
 		AllowAutoDiskResize: &diskResize,
@@ -838,7 +842,7 @@ func applyInstanceDiskChanges(
 	return updateInstanceDisks(*client, d, *instance, oldDisks, newDisks)
 }
 
-// assertDiskConfigFitsInstanceType asserts that the cumulitive disk space used by a given disk config fits a given
+// assertDiskConfigFitsInstanceType asserts that the cumulative disk space used by a given disk config fits a given
 // linode type spec for disk capacity.
 func assertDiskConfigFitsInstanceType(d *schema.ResourceData, typ *linodego.LinodeType) error {
 	oldDisks, newDisks := d.GetChange("disk")
