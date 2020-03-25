@@ -4,6 +4,8 @@ BUG FIXES:
 
 * `swap_size` attribute changes would not change the underlying swap disk's size as the boot disk size was fixed from creation. This will now actually change the swap disk size and scale the boot disk as needed.
 
+* Resizing a linode while resizing disk failed in certain cases, mostly due to the order of resizing operations. For instance, expanding a disk while upgrading a linode to a type with more disk capacity failed when the current linode type did not support the staged disk changes. The inverse also happened with downgrading a linode to a type with less capacity and shrinking the disks to fit the new spec; it would fail because the linode resize would occur before the disk changes were applied. Both cases are now fixed.
+
 ## 1.9.2 (February 24, 2020)
 
 FEATURES:
