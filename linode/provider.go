@@ -3,21 +3,16 @@ package linode
 import (
 	"context"
 	"fmt"
-	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/linode/linodego"
-	"golang.org/x/oauth2"
 )
-
-// DefaultLinodeURL is the Linode APIv4 URL to use
-const DefaultLinodeURL = "https://api.linode.com/v4"
 
 // Provider creates and manages the resources in a Linode configuration.
 func Provider() terraform.ResourceProvider {
-	return &schema.Provider{
+	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"token": {
 				Type:        schema.TypeString,
@@ -26,10 +21,11 @@ func Provider() terraform.ResourceProvider {
 				Description: "The token that allows you access to your Linode account",
 			},
 			"url": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_URL", nil),
-				Description: "The HTTP(S) API address of the Linode API to use.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("LINODE_URL", nil),
+				Description:  "The HTTP(S) API address of the Linode API to use.",
+				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 			"ua_prefix": {
 				Type:        schema.TypeString,
@@ -77,69 +73,33 @@ func Provider() terraform.ResourceProvider {
 			"linode_token":                 resourceLinodeToken(),
 			"linode_volume":                resourceLinodeVolume(),
 		},
-
-		ConfigureFunc: providerConfigure,
 	}
+
+	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		terraformVersion := provider.TerraformVersion
+		if terraformVersion == "" {
+			// Terraform 0.12 introduced this field to the protocol
+			// We can therefore assume that if it's missing it's 0.10 or 0.11
+			terraformVersion = "0.11+compatible"
+		}
+		return providerConfigure(d, terraformVersion)
+	}
+	return provider
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	token, ok := d.Get("token").(string)
-	if !ok {
-		return nil, fmt.Errorf("The Linode API Token was not valid")
+func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
+	config := &Config{
+		AccessToken: d.Get("token").(string),
+		APIURL:      d.Get("url").(string),
+		APIVersion:  d.Get("api_version").(string),
+		UAPrefix:    d.Get("ua_prefix").(string),
 	}
+	config.terraformVersion = terraformVersion
+	client := config.Client()
 
-	url, ok := d.Get("url").(string)
-	if !ok {
-		return nil, fmt.Errorf("The Linode API URL was not valid")
-	}
-
-	uaPrefix, ok := d.Get("ua_prefix").(string)
-	if !ok {
-		return nil, fmt.Errorf("The Linode UA Prefix was not valid")
-	}
-
-	apiVersion, ok := d.Get("api_version").(string)
-	if !ok {
-		return nil, fmt.Errorf("The Linode API Version was not valid")
-	}
-
-	client := getLinodeClient(token, url, uaPrefix, apiVersion)
 	// Ping the API for an empty response to verify the configuration works
-	_, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, ""))
-	if err != nil {
+	if _, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, "")); err != nil {
 		return nil, fmt.Errorf("Error connecting to the Linode API: %s", err)
 	}
-
-	return client, nil
-}
-
-func getLinodeClient(token, url, uaPrefix, apiVersion string) linodego.Client {
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-
-	oauthTransport := &oauth2.Transport{
-		Source: tokenSource,
-	}
-	loggingTransport := logging.NewTransport("Linode", oauthTransport)
-	oauth2Client := &http.Client{
-		Transport: loggingTransport,
-	}
-
-	client := linodego.NewClient(oauth2Client)
-
-	userAgent := fmt.Sprintf("linodego/%s", linodego.Version)
-
-	if len(uaPrefix) > 0 {
-		userAgent = uaPrefix + " " + userAgent
-	}
-
-	if len(url) > 0 {
-		client.SetBaseURL(url)
-	} else if len(apiVersion) > 0 {
-		client.SetAPIVersion(apiVersion)
-	} else {
-		client.SetBaseURL(DefaultLinodeURL)
-	}
-
-	client.SetUserAgent(userAgent)
-	return client
+	return config.Client(), nil
 }
