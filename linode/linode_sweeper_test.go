@@ -17,11 +17,12 @@ func TestMain(m *testing.M) {
 
 func getClientForSweepers() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")
-
 	if token == "" {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
 	}
-	client := getLinodeClient(token, "", "", "v4beta")
+
+	config := &Config{AccessToken: token, APIVersion: "v4beta"}
+	client := config.Client()
 	return &client, nil
 }
 
