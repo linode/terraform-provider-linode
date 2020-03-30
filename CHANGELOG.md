@@ -1,5 +1,9 @@
 ## 1.10.0 (Unreleased)
 
+ENHANCEMENTS:
+
+* Provide more version/client information in the User-Agent header. By default now, the header will include the Terraform CLI, terraform-provider-linode, and linodego versions.
+
 BUG FIXES:
 
 * `swap_size` attribute changes would not change the underlying swap disk's size as the boot disk size was fixed from creation. This will now actually change the swap disk size and scale the boot disk as needed.
