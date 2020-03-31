@@ -973,8 +973,11 @@ func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
 				),
 			},
 			{
-				Config:      testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
-				ExpectError: regexp.MustCompile(linodeInstanceDownsizeFailedMessage),
+				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
+				ExpectError: regexp.MustCompile(
+					"errors during apply: failed to apply instance disk spec: Linode type Nanode 1GB has " +
+						"insufficient disk capacity for the config. Have 25600; want 51200\n" +
+						linodeInstanceDownsizeFailedMessage),
 			},
 		},
 	})
