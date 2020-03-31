@@ -859,7 +859,6 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	// - so configs can be referenced as a boot_config_label param
 	var diskIDLabelMap map[string]int
 	var configIDLabelMap map[string]int
-	var diskIDOrdered []int
 
 	if disksOk {
 		_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeCreate, *instance.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
@@ -867,31 +866,29 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			return fmt.Errorf("Error waiting for Instance to finish creating: %s", err)
 		}
 
-		dsetRaw := d.Get("disk").([]interface{})
-		diskIDLabelMap = make(map[string]int, len(dsetRaw))
-		diskIDOrdered = make([]int, len(dsetRaw))
+		diskSpecs := d.Get("disk").([]interface{})
+		diskIDLabelMap = make(map[string]int, len(diskSpecs))
 
-		for index, dset := range dsetRaw {
-			v := dset.(map[string]interface{})
+		for _, diskSpec := range diskSpecs {
+			diskSpec := diskSpec.(map[string]interface{})
 
-			instanceDisk, err := createInstanceDisk(client, *instance, v, d)
+			instanceDisk, err := createInstanceDisk(client, *instance, diskSpec, d)
 			if err != nil {
 				return err
 			}
-
 			diskIDLabelMap[instanceDisk.Label] = instanceDisk.ID
-			diskIDOrdered[index] = instanceDisk.ID
 		}
 	}
 
 	if configsOk {
-		cset := d.Get("config").([]interface{})
+		configSpecs := d.Get("config").([]interface{})
 		detacher := makeVolumeDetacher(client, d)
 
-		configIDMap, err := createInstanceConfigsFromSet(client, instance.ID, cset, diskIDLabelMap, detacher)
+		configIDMap, err := createInstanceConfigsFromSet(client, instance.ID, configSpecs, diskIDLabelMap, detacher)
 		if err != nil {
 			return err
 		}
+
 		configIDLabelMap = make(map[string]int, len(configIDMap))
 		for k, v := range configIDMap {
 			if len(configIDLabelMap) == 1 {
@@ -988,7 +985,6 @@ func adjustSwapSizeIfNeeded(d *schema.ResourceData, client *linodego.Client, ins
 
 func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
-
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
@@ -1011,7 +1007,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		simpleUpdate = true
 	}
 	if d.HasChange("tags") {
-		tags := []string{}
+		var tags []string
 		for _, tag := range d.Get("tags").(*schema.Set).List() {
 			tags = append(tags, tag.(string))
 		}
@@ -1030,7 +1026,6 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		updateOpts.Alerts.NetworkIn = d.Get("alerts.0.network_in").(int)
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
 		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
-
 		simpleUpdate = true
 	}
 
@@ -1053,19 +1048,18 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	var rebootInstance bool
-	var diskIDLabelMap map[string]int
+	rebootInstance := false
 
 	if d.HasChange("private_ip") {
 		if _, ok := d.GetOk("private_ip"); !ok {
 			return fmt.Errorf("Error removing private IP address for Instance %d: Removing a Private IP address must be handled through a support ticket", instance.ID)
 		}
 
-		resp, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
+		privateIP, err := client.AddInstanceIPAddress(context.Background(), instance.ID, false)
 		if err != nil {
 			return fmt.Errorf("Error activating private networking on Instance %d: %s", instance.ID, err)
 		}
-		d.Set("private_ip_address", resp.Address)
+		d.Set("private_ip_address", privateIP.Address)
 		rebootInstance = true
 	}
 
@@ -1073,40 +1067,31 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return fmt.Errorf("Error getting resize info for instance: %s", err)
 	}
+	upsized := newSpec.Disk > oldSpec.Disk
 
-	if d.HasChange("disk") {
-		upsized := newSpec.Disk > oldSpec.Disk
-		if upsized {
-			// The linode was upsized; apply before disk changes to allocate more disk
-			if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
-				return err
-			}
-			rebootInstance = true
-		}
-		didChangeType, diskMap, err := applyInstanceDiskChanges(d, &client, instance, newSpec)
-		if err != nil {
-			return err
-		}
-		rebootInstance = rebootInstance || didChangeType
-		diskIDLabelMap = diskMap
-		if oldSpec.ID != newSpec.ID && !upsized {
-			// linode was downsized or changed to a type with the same disk allocation
-			if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
-				return err
-			}
-			rebootInstance = true
-		}
-	} else if newSpec.ID != oldSpec.ID {
-		// The linode type was changed but the disk config not change
-		instance, err = applyInstanceTypeChange(d, &client, instance, newSpec)
-		if err != nil && newSpec.Disk < oldSpec.Disk {
-			// Linode was downsized but the pre-existing disk config does not fit new instance spec
-			// This might mean the user tried to downsize an instance with an implicit, default
-			return fmt.Errorf("Error changing instance type: %s."+linodeInstanceDownsizeFailedMessage, err)
-		} else if err != nil {
-			return fmt.Errorf("Error changing instance type: %s", err)
+	if upsized {
+		// The linode was upsized; apply before disk changes to allocate more disk
+		if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
+			return fmt.Errorf("failed to change instance type: %s", err)
 		}
 		rebootInstance = true
+	}
+
+	if didChange, err := applyInstanceDiskSpec(d, &client, instance, newSpec); err == nil && didChange {
+		rebootInstance = true
+	} else if err != nil && newSpec.Disk < oldSpec.Disk && !d.HasChange("disk") {
+		// Linode was downsized but the pre-existing disk config does not fit new instance spec
+		// This might mean the user tried to downsize an instance with an implicit, default
+		return fmt.Errorf("failed to apply instance disk spec: %s\n"+linodeInstanceDownsizeFailedMessage, err)
+	} else if err != nil {
+		return fmt.Errorf("failed to apply instance disk spec: %s", err)
+	}
+
+	if oldSpec.ID != newSpec.ID && !upsized {
+		// linode was downsized or changed to a type with the same disk allocation
+		if instance, err = applyInstanceTypeChange(d, &client, instance, newSpec); err != nil {
+			return fmt.Errorf("failed to change instance type: %s", err)
+		}
 	}
 
 	if didChange, err := adjustSwapSizeIfNeeded(d, &client, instance); err != nil {
@@ -1115,18 +1100,21 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		rebootInstance = true
 	}
 
+	diskIDLabelMap, err := getInstanceDiskLabelIDMap(client, d, instance.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get disk label to ID mappings")
+	}
+
 	tfConfigsOld, tfConfigsNew := d.GetChange("config")
-	cRebootInstance, updatedConfigMap, updatedConfigs, err := updateInstanceConfigs(client, d, *instance, tfConfigsOld, tfConfigsNew, diskIDLabelMap)
+	didChangeConfig, updatedConfigMap, updatedConfigs, err := updateInstanceConfigs(client, d, *instance, tfConfigsOld, tfConfigsNew, diskIDLabelMap)
 	if err != nil {
 		return err
 	}
-	rebootInstance = rebootInstance || cRebootInstance
+	rebootInstance = rebootInstance || didChangeConfig
 
 	bootConfig := 0
-
 	bootConfigLabel := d.Get("boot_config_label").(string)
-
-	if len(bootConfigLabel) > 0 {
+	if bootConfigLabel != "" {
 		if foundConfig, found := updatedConfigMap[bootConfigLabel]; found {
 			bootConfig = foundConfig
 		} else {
@@ -1142,16 +1130,13 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 		if err != nil {
 			return fmt.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}
-
 		_, err = client.WaitForEventFinished(context.Background(), id, linodego.EntityLinode, linodego.ActionLinodeReboot, *instance.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return fmt.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
 		}
-
 		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
 			return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 		}
-
 	}
 
 	return resourceLinodeInstanceRead(d, meta)
