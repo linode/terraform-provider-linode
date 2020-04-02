@@ -679,8 +679,8 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 				),
 			},
 			// Bump it to a 2048, but don't expand the disk
@@ -688,8 +688,8 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 				Config: testAccCheckLinodeInstanceConfigUpsizeBigger(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 				),
 			},
 			// Go back down to a 1024
@@ -697,8 +697,8 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 				),
 			},
 		},
@@ -975,9 +975,7 @@ func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
 			{
 				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
 				ExpectError: regexp.MustCompile(
-					"errors during apply: failed to apply instance disk spec: Linode type Nanode 1GB has " +
-						"insufficient disk capacity for the config. Have 25600; want 51200\n" +
-						linodeInstanceDownsizeFailedMessage),
+					"Did you try to resize a linode with implicit, default disks to a smaller type?"),
 			},
 		},
 	})

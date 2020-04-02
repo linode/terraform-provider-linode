@@ -1082,7 +1082,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 	} else if err != nil && newSpec.Disk < oldSpec.Disk && !d.HasChange("disk") {
 		// Linode was downsized but the pre-existing disk config does not fit new instance spec
 		// This might mean the user tried to downsize an instance with an implicit, default
-		return fmt.Errorf("failed to apply instance disk spec: %s\n"+linodeInstanceDownsizeFailedMessage, err)
+		return fmt.Errorf("failed to apply instance disk spec: %s."+linodeInstanceDownsizeFailedMessage, err)
 	} else if err != nil {
 		return fmt.Errorf("failed to apply instance disk spec: %s", err)
 	}
