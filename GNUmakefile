@@ -13,7 +13,7 @@ MARKDOWNLINT_TAG := 0.19.0
 GOLANGCILINT     := golangci-lint
 GOLANGCILINT_IMG := golangci/golangci-lint:v1.23-alpine
 
-lint:
+lint: fmtcheck
 	docker run --rm \
 		-v $$(pwd):/src:ro \
 		$(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) \
