@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -1005,6 +1006,12 @@ func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
 				),
 			},
 			{
+				PreConfig: func() {
+					// HACK: wait 30s for disk to be full
+					// Unfortunately we cannot guarantee that the stackscript has finished running before this test step
+					// is ran.
+					time.Sleep(30 * time.Second)
+				},
 				Config:      testAccCheckLinodeInstanceWithFullDisk(instanceName, publicKeyMaterial, 512),
 				ExpectError: regexp.MustCompile("Error waiting for resize of Instance \\d+ Disk \\d+"),
 			},
