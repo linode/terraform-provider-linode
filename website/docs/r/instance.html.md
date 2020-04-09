@@ -142,6 +142,8 @@ Just as the Linode API provides, these fields are for the most common provisioni
 
 ### Disk and Config Arguments
 
+Instances which do not explicitly declare `disk`s have default boot and swap disks created. The swap disk will be allocated with the value of the `swap_size` attribute and the boot disk will take up the remainder of disk space alotted by the instance type's specification. When the swap size is changed, the boot disk will scale as needed. When the linode's type is changed to a larger config the boot disk will scale up to fill the disk alottment, but the boot disk will _not_ scale down to a smaller type. In order to downsize an instance, you must switch to an [explicit disk configuration](#Linode-Instance-with-explicit-Configs-and-Disks).
+
 By specifying the `disk` and `config` fields for a Linode instance, it is possible to use non-standard kernels, boot with and provision multiple disks, and modify the boot behaviors (`helpers`) of the Linode.
 
 * `boot_config_label` - (Optional) The Label of the Instance Config that should be used to boot the Linode instance.  If there is only one `config`, the `label` of that `config` will be used as the `boot_config_label`. *This value can not be imported.*
