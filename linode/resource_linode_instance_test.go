@@ -664,7 +664,7 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_resize(t *testing.T) {
+func TestAccLinodeInstance_upsizeWithoutDisk(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -675,31 +675,26 @@ func TestAccLinodeInstance_resize(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
-			// Start off with a Linode 1024
 			{
-				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
+					),
 				),
 			},
-			// Bump it to a 2048, but don't expand the disk
 			{
-				Config: testAccCheckLinodeInstanceConfigUpsizeBigger(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-standard-1"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
-				),
-			},
-			// Go back down to a 1024
-			{
-				Config: testAccCheckLinodeInstanceConfigUpsizeSmall(instanceName, publicKeyMaterial),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
+					testAccCheckComputeInstanceDisks(&instance,
+						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
+						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
+					),
 				),
 			},
 		},
