@@ -218,7 +218,7 @@ func validateDomainRecord(c *linodego.Client, rec *linodego.DomainRecord, domain
 	if rec.Type == linodego.RecordTypeSRV {
 		return validateSRVDomainRecord(c, rec, domainID)
 	}
-	if rec.Name == "" {
+	if rec.Name == "" && rec.Type != linodego.RecordTypeA {
 		return errors.New(errLinodeDomainRecordNameRequired)
 	}
 	return nil
