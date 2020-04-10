@@ -599,19 +599,6 @@ func resourceLinodeInstance() *schema.Resource {
 	}
 }
 
-func validateAll(validators ...schema.SchemaValidateFunc) schema.SchemaValidateFunc {
-	var allWs []string
-	var allErrors []error
-	return func(i interface{}, k string) ([]string, []error) {
-		for _, validator := range validators {
-			ws, errors := validator(i, k)
-			allWs = append(allWs, ws...)
-			allErrors = append(allErrors, errors...)
-		}
-		return allWs, allErrors
-	}
-}
-
 func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -727,16 +714,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	return nil
-}
-
-// sliceContains tells whether a contains x.
-func sliceContains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
 }
 
 func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {

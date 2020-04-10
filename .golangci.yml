@@ -50,7 +50,6 @@ linters:
 
     # TODO(charliekenney23): enable these rules once compliant
     - prealloc
-    - deadcode
     - funlen
     - whitespace
     - godox

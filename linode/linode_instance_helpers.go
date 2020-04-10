@@ -20,17 +20,9 @@ var (
 	boolTrue  = true
 )
 
-type flattenedAccountCreditCard map[string]string
 type flattenedProfileReferrals map[string]interface{}
 
 type diskSpec map[string]interface{}
-
-func flattenAccountCreditCard(card linodego.CreditCard) []flattenedAccountCreditCard {
-	return []flattenedAccountCreditCard{{
-		"expiry":    card.Expiry,
-		"last_four": card.LastFour,
-	}}
-}
 
 func flattenProfileReferrals(referrals linodego.ProfileReferrals) []flattenedProfileReferrals {
 	return []flattenedProfileReferrals{{
@@ -652,36 +644,6 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 	}
 
 	return hasChanges, nil
-}
-
-// getTotalDiskSize returns the number of disks and their total size.
-func getTotalDiskSize(client *linodego.Client, linodeID int) (totalDiskSize int, err error) {
-	disks, err := client.ListInstanceDisks(context.Background(), linodeID, nil)
-	if err != nil {
-		return 0, err
-	}
-	for _, disk := range disks {
-		totalDiskSize += disk.Size
-	}
-	return totalDiskSize, nil
-}
-
-// getBiggestDisk returns the ID and Size of the largest disk attached to the Linode
-func getBiggestDisk(client *linodego.Client, linodeID int) (biggestDiskID int, biggestDiskSize int, err error) {
-	diskFilter := "{\"+order_by\": \"size\", \"+order\": \"desc\"}"
-	disks, err := client.ListInstanceDisks(context.Background(), linodeID, linodego.NewListOptions(1, diskFilter))
-	if err != nil {
-		return 0, 0, err
-	}
-
-	for _, disk := range disks {
-		// Find Biggest Disk ID & Size
-		if disk.Size > biggestDiskSize {
-			biggestDiskID = disk.ID
-			biggestDiskSize = disk.Size
-		}
-	}
-	return biggestDiskID, biggestDiskSize, nil
 }
 
 // sshKeyState hashes a string passed in as an interface
