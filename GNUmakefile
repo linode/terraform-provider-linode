@@ -4,19 +4,12 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode
 
-TFPROVIDERLINT_IMG := bflad/tfproviderlint
-TFPROVIDERLINT_TAG := 0.10.0
-
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.19.0
 
-GOLANGCILINT     := golangci-lint
-GOLANGCILINT_IMG := golangci/golangci-lint:v1.23-alpine
-
 lint: fmtcheck
-	docker run --rm \
-		-v $$(pwd):/src:ro \
-		$(TFPROVIDERLINT_IMG):$(TFPROVIDERLINT_TAG) \
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint run
+	go run github.com/bflad/tfproviderlint/cmd/tfproviderlint \
 		-R003=false \
 		-R005=false \
 		-R007=false \
@@ -24,11 +17,7 @@ lint: fmtcheck
 		-S006=false \
 		-S022=false \
 		./...
-	
-	docker run --rm \
-		-v $$(pwd):/src:ro -w /src \
-		$(GOLANGCILINT_IMG) $(GOLANGCILINT) \
-		run
+
 
 docscheck:
 	docker run --rm \
@@ -97,4 +86,3 @@ endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
 .PHONY: build sweep test testacc vet fmt fmtcheck errcheck test-compile website website-test
-
