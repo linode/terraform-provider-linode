@@ -42,6 +42,9 @@ type Event struct {
 	// Detailed information about the Event's entity, including ID, type, label, and URL used to access it.
 	Entity *EventEntity `json:"entity"`
 
+	// Detailed information about the Event's secondary or related entity, including ID, type, label, and URL used to access it.
+	SecondaryEntity *EventEntity `json:"secondary_entity"`
+
 	// When this Event was created.
 	Created *time.Time `json:"-"`
 }
