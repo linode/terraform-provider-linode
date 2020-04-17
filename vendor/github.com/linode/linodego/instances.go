@@ -398,13 +398,13 @@ func (c *Client) RebootInstance(ctx context.Context, id int, configID int) error
 
 // InstanceRebuildOptions is a struct representing the options to send to the rebuild linode endpoint
 type InstanceRebuildOptions struct {
-	Image           string            `json:"image"`
-	RootPass        string            `json:"root_pass"`
-	AuthorizedKeys  []string          `json:"authorized_keys"`
-	AuthorizedUsers []string          `json:"authorized_users"`
-	StackscriptID   int               `json:"stackscript_id"`
-	StackscriptData map[string]string `json:"stackscript_data"`
-	Booted          bool              `json:"booted"`
+	Image           string            `json:"image,omitempty"`
+	RootPass        string            `json:"root_pass,omitempty"`
+	AuthorizedKeys  []string          `json:"authorized_keys,omitempty"`
+	AuthorizedUsers []string          `json:"authorized_users,omitempty"`
+	StackScriptID   int               `json:"stackscript_id,omitempty"`
+	StackScriptData map[string]string `json:"stackscript_data,omitempty"`
+	Booted          *bool             `json:"booted,omitempty"`
 }
 
 // RebuildInstance Deletes all Disks and Configs on this Linode,
