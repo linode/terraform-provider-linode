@@ -41,9 +41,10 @@ func TestAccLinodeDomainRecord_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeDomainRecord_noName(t *testing.T) {
+func TestAccLinodeDomainRecord_ANoName(t *testing.T) {
 	t.Parallel()
 
+	resName := "linode_domain_record.foobar"
 	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
@@ -52,8 +53,55 @@ func TestAccLinodeDomainRecord_noName(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckLinodeDomainRecordConfigNoName(domainName),
-				ExpectError: regexp.MustCompile(errLinodeDomainRecordNameRequired),
+				Config: testAccCheckLinodeDomainRecordConfigANoName(domainName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "record_type", "A"),
+					resource.TestCheckResourceAttr(resName, "name", ""),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeDomainRecord_AAAANoName(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_domain_record.foobar"
+	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeDomainRecordConfigAAAANoName(domainName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "record_type", "AAAA"),
+					resource.TestCheckResourceAttr(resName, "name", ""),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeDomainRecord_CAANoName(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_domain_record.foobar"
+	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeDomainRecordConfigCAANoName(domainName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "record_type", "CAA"),
+					resource.TestCheckResourceAttr(resName, "name", ""),
+				),
 			},
 		},
 	})
@@ -223,12 +271,40 @@ resource "linode_domain_record" "foobar" {
 }`, domainRecord, domainRecord)
 }
 
-func testAccCheckLinodeDomainRecordConfigNoName(domainName string) string {
+func testAccCheckLinodeDomainRecordConfigSRVNoName(domainName string) string {
 	return testAccCheckLinodeDomainConfigBasic(domainName) + fmt.Sprintf(`
 resource "linode_domain_record" "foobar" {
 	domain_id = "${linode_domain.foobar.id}"
-	record_type = "CNAME"
+	record_type = "SRV"
 	target = "target.%s"
+}`, domainName)
+}
+
+func testAccCheckLinodeDomainRecordConfigANoName(domainName string) string {
+	return testAccCheckLinodeDomainConfigBasic(domainName) + `
+resource "linode_domain_record" "foobar" {
+	domain_id = "${linode_domain.foobar.id}"
+	record_type = "A"
+	target = "192.168.1.1"
+}`
+}
+
+func testAccCheckLinodeDomainRecordConfigAAAANoName(domainName string) string {
+	return testAccCheckLinodeDomainConfigBasic(domainName) + `
+resource "linode_domain_record" "foobar" {
+	domain_id = "${linode_domain.foobar.id}"
+	record_type = "AAAA"
+	target = "2400:3f00::22"
+}`
+}
+
+func testAccCheckLinodeDomainRecordConfigCAANoName(domainName string) string {
+	return testAccCheckLinodeDomainConfigBasic(domainName) + fmt.Sprintf(`
+resource "linode_domain_record" "foobar" {
+	domain_id = "${linode_domain.foobar.id}"
+	record_type = "CAA"
+	target = "target.%s"
+	tag = "issue"
 }`, domainName)
 }
 

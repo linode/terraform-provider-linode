@@ -15,7 +15,6 @@ import (
 
 const (
 	errLinodeDomainRecordSRVNameComputed = "name is computed for SRV records"
-	errLinodeDomainRecordNameRequired    = "name is required for non-SRV records"
 )
 
 func resourceLinodeDomainRecord() *schema.Resource {
@@ -39,7 +38,7 @@ func resourceLinodeDomainRecord() *schema.Resource {
 			},
 			"name": {
 				Type:         schema.TypeString,
-				Description:  "The name of this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the subdomain being associated with an IP address. Required for non-SRV records. Generated for SRV records.",
+				Description:  "The name of this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the subdomain being associated with an IP address. Generated for SRV records.",
 				Optional:     true,
 				Computed:     true, // This is true for SRV records
 				ValidateFunc: validation.StringLenBetween(0, 100),
@@ -217,9 +216,6 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 func validateDomainRecord(c *linodego.Client, rec *linodego.DomainRecord, domainID int) error {
 	if rec.Type == linodego.RecordTypeSRV {
 		return validateSRVDomainRecord(c, rec, domainID)
-	}
-	if rec.Name == "" && rec.Type != linodego.RecordTypeA {
-		return errors.New(errLinodeDomainRecordNameRequired)
 	}
 	return nil
 }
