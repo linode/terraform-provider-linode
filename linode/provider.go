@@ -62,6 +62,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_domain_record":         resourceLinodeDomainRecord(),
 			"linode_image":                 resourceLinodeImage(),
 			"linode_instance":              resourceLinodeInstance(),
+			"linode_lke_cluster":           resourceLinodeLKECluster(),
 			"linode_nodebalancer":          resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config":   resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":     resourceLinodeNodeBalancerNode(),
