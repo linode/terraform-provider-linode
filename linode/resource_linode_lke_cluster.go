@@ -229,7 +229,7 @@ func resourceLinodeLKEClusterUpdate(d *schema.ResourceData, meta interface{}) er
 	poolSpecs := getLinodeLKEClusterPoolSpecs(d.Get("pool"))
 	pools, err := client.ListLKEClusterPools(context.Background(), id, nil)
 	if err != nil {
-		return fmt.Errorf("failed ")
+		return fmt.Errorf("failed to get node pools for LKE Cluster %d: %s", id, err)
 	}
 
 	// map pool specs to provisioned clusters
