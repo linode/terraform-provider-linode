@@ -9,6 +9,8 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+const retryAfterHeaderName = "Retry-After"
+
 // type RetryConditional func(r *resty.Response) (shouldRetry bool)
 type RetryConditional resty.RetryConditionFunc
 
@@ -48,8 +50,12 @@ func tooManyRequestsRetryCondition(r *resty.Response, _ error) bool {
 	return r.StatusCode() == http.StatusTooManyRequests
 }
 
+func serviceUnavailableRetryCondition(r *resty.Response, _ error) bool {
+	return r.StatusCode() == http.StatusServiceUnavailable
+}
+
 func respectRetryAfter(client *resty.Client, resp *resty.Response) (time.Duration, error) {
-	retryAfterStr := resp.Header().Get("Retry-After")
+	retryAfterStr := resp.Header().Get(retryAfterHeaderName)
 	if retryAfterStr == "" {
 		return 0, nil
 	}

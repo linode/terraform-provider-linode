@@ -123,6 +123,24 @@ func (c *Client) CreateFirewall(ctx context.Context, createOpts FirewallCreateOp
 	return r.Result().(*Firewall), nil
 }
 
+// GetFirewall gets a single Firewall with the provided ID
+func (c *Client) GetFirewall(ctx context.Context, id int) (*Firewall, error) {
+	e, err := c.Firewalls.Endpoint()
+	if err != nil {
+		return nil, err
+	}
+
+	req := c.R(ctx)
+
+	e = fmt.Sprintf("%s/%d", e, id)
+	r, err := coupleAPIErrors(req.SetResult(&Firewall{}).Get(e))
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Result().(*Firewall), nil
+}
+
 // DeleteFirewall deletes a single Firewall with the provided ID
 func (c *Client) DeleteFirewall(ctx context.Context, id int) error {
 	e, err := c.Firewalls.Endpoint()
