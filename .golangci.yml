@@ -3,6 +3,7 @@
 
 run:
   tests: false
+  timeout: 2m
   
 linters-settings:
   errcheck:
