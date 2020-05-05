@@ -27,8 +27,7 @@ func testSweepLinodeLKECluster(prefix string) error {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
-	clusters, err := client.ListLKEClusters(context.Background(), listOpts)
+	clusters, err := client.ListLKEClusters(context.Background(), nil)
 	if err != nil {
 		return fmt.Errorf("Error getting clusters: %s", err)
 	}
@@ -36,7 +35,7 @@ func testSweepLinodeLKECluster(prefix string) error {
 		if !shouldSweepAcceptanceTestResource(prefix, cluster.Label) {
 			continue
 		}
-		if err := client.DeleteInstance(context.Background(), cluster.ID); err != nil {
+		if err := client.DeleteLKECluster(context.Background(), cluster.ID); err != nil {
 			return fmt.Errorf("Error destroying LKE cluster %d during sweep: %s", cluster.ID, err)
 		}
 	}
