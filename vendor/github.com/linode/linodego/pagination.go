@@ -348,6 +348,12 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, idRaw inte
 			results = r.Result().(*InvoiceItemsPagedResponse).Results
 			v.appendData(r.Result().(*InvoiceItemsPagedResponse))
 		}
+	case *LKEClusterAPIEndpointsPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(LKEClusterAPIEndpointsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
+			pages = r.Result().(*LKEClusterAPIEndpointsPagedResponse).Pages
+			results = r.Result().(*LKEClusterAPIEndpointsPagedResponse).Results
+			v.appendData(r.Result().(*LKEClusterAPIEndpointsPagedResponse))
+		}
 	case *LKEClusterPoolsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(LKEClusterPoolsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
 			pages = r.Result().(*LKEClusterPoolsPagedResponse).Pages

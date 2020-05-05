@@ -54,6 +54,13 @@ func coupleAPIErrors(r *resty.Response, err error) (*resty.Response, error) {
 		expectedContentType := r.Request.Header.Get("Accept")
 		responseContentType := r.Header().Get("Content-Type")
 
+		// If the upstream Linode API server being fronted fails to respond to the request,
+		// the http server will respond with a default "Bad Gateway" page with Content-Type
+		// "text/html".
+		if r.StatusCode() == http.StatusBadGateway && responseContentType == "text/html" {
+			return nil, Error{Code: http.StatusBadGateway, Message: http.StatusText(http.StatusBadGateway)}
+		}
+
 		if responseContentType != expectedContentType {
 			msg := fmt.Sprintf(
 				"Unexpected Content-Type: Expected: %v, Received: %v",

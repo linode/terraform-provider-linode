@@ -18,8 +18,9 @@ const (
 
 // LKEClusterPoolLinode represents a LKEClusterPoolLinode object
 type LKEClusterPoolLinode struct {
-	ID     string          `json:"id"`
-	Status LKELinodeStatus `json:"status"`
+	ID         string          `json:"id"`
+	InstanceID int             `json:"instance_id"`
+	Status     LKELinodeStatus `json:"status"`
 }
 
 // LKEClusterPool represents a LKEClusterPool object

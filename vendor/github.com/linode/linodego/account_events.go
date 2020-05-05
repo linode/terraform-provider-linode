@@ -98,6 +98,7 @@ const (
 	ActionLinodeConfigDelete       EventAction = "linode_config_delete"
 	ActionLinodeConfigUpdate       EventAction = "linode_config_update"
 	ActionLishBoot                 EventAction = "lish_boot"
+	ActionLKENodeCreate            EventAction = "lke_node_create"
 	ActionLongviewClientCreate     EventAction = "longviewclient_create"
 	ActionLongviewClientDelete     EventAction = "longviewclient_delete"
 	ActionLongviewClientUpdate     EventAction = "longviewclient_update"
