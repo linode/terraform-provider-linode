@@ -1,4 +1,9 @@
 ## 1.10.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource** `linode_lke_cluster`
+
 ## 1.9.3 (April 17, 2020)
 
 ENHANCEMENTS:
