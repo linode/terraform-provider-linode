@@ -8,7 +8,7 @@ description: |-
 
 # Data Source: linode\_region
 
-`linode_region` provides details about a specific Linode region.
+`linode_region` provides details about a specific Linode region. See all regions [here](https://api.linode.com/v4/regions).
 
 ## Example Usage
 
