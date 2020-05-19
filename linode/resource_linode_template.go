@@ -25,7 +25,6 @@ func resourceLinodeTemplate() *schema.Resource {
 		Read:   resourceLinodeTemplateRead,
 		Update: resourceLinodeTemplateUpdate,
 		Delete: resourceLinodeTemplateDelete,
-		Exists: resourceLinodeTemplateExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -42,25 +41,6 @@ func resourceLinodeTemplate() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceLinodeTemplateExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return false, fmt.Errorf("Error parsing Linode Template ID %s as int: %s", d.Id(), err)
-	}
-
-	_, err = client.GetTemplate(context.Background(), int(id))
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
-			return false, nil
-		}
-
-		return false, fmt.Errorf("Error getting Linode Template ID %s: %s", d.Id(), err)
-	}
-	return true, nil
 }
 
 func resourceLinodeTemplateRead(d *schema.ResourceData, meta interface{}) error {

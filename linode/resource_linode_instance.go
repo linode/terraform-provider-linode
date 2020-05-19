@@ -55,7 +55,6 @@ func resourceLinodeInstance() *schema.Resource {
 		Read:   resourceLinodeInstanceRead,
 		Update: resourceLinodeInstanceUpdate,
 		Delete: resourceLinodeInstanceDelete,
-		Exists: resourceLinodeInstanceExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -597,25 +596,6 @@ func resourceLinodeInstance() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceLinodeInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-
-	if err != nil {
-		return false, fmt.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
-	}
-
-	_, err = client.GetInstance(context.Background(), int(id))
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			return false, nil
-		}
-
-		return false, fmt.Errorf("Error getting Linode Instance %s: %s", d.Id(), err)
-	}
-	return true, nil
 }
 
 func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error {
