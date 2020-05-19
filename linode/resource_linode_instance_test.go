@@ -1245,6 +1245,45 @@ func TestAccLinodeInstance_stackScriptInstance(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_diskImageUpdate(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithBootDiskImage(instanceName, "linode/alpine3.10"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName)),
+			},
+			{
+				Config: testAccCheckLinodeInstanceWithBootDiskImage(instanceName, "linode/alpine3.11"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					// resource was tainted for recreation due to change of disk.0.image, marked
+					// with ForceNew.
+					testAccCheckResourceAttrNotEqual(resName, "id", strconv.Itoa(instance.ID)),
+				),
+			},
+
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       false,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image"},
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_stackScriptDisk(t *testing.T) {
 	t.Parallel()
 
@@ -2198,6 +2237,28 @@ func testAccCheckLinodeInstanceWithPrivateImage(instance string) string {
 		}
 	}
 `, instance, instance, instance)
+}
+
+func testAccCheckLinodeInstanceWithBootDiskImage(instance, image string) string {
+	return fmt.Sprintf(`
+	resource "linode_instance" "foobar" {
+		label = "%s"
+		group = "tf_test"
+		type = "g6-nanode-1"
+		region = "us-east"
+		disk {
+			label = "boot"
+			size = 5000
+			filesystem = "ext4"
+			image = "%s"
+		}
+		disk {
+			label = "swap"
+			size = 512
+			filesystem = "ext4"
+		}
+	}
+`, instance, image)
 }
 
 // testAccCheckLinodeInstanceSimpleUpdates is testAccCheckLinodeInstanceWithConfig with an instance and group rename
