@@ -18,7 +18,6 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 		Read:   resourceLinodeNodeBalancerRead,
 		Update: resourceLinodeNodeBalancerUpdate,
 		Delete: resourceLinodeNodeBalancerDelete,
-		Exists: resourceLinodeNodeBalancerExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -96,24 +95,6 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceLinodeNodeBalancerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return false, fmt.Errorf("Error parsing Linode NodeBalancer ID %s as int: %s", d.Id(), err)
-	}
-
-	_, err = client.GetNodeBalancer(context.Background(), int(id))
-	if err != nil {
-		if _, ok := err.(*linodego.Error); ok {
-			return false, nil
-		}
-
-		return false, fmt.Errorf("Error getting sdd marty Linode NodeBalancer ID %s: %s", d.Id(), err)
-	}
-	return true, nil
 }
 
 // floatString returns nil or the string representation of the supplied *float64

@@ -18,7 +18,6 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 		Read:   resourceLinodeNodeBalancerConfigRead,
 		Update: resourceLinodeNodeBalancerConfigUpdate,
 		Delete: resourceLinodeNodeBalancerConfigDelete,
-		Exists: resourceLinodeNodeBalancerConfigExists,
 		Importer: &schema.ResourceImporter{
 			State: resourceLinodeNodeBalancerConfigImport,
 		},
@@ -152,28 +151,6 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 	}
 }
 
-func resourceLinodeNodeBalancerConfigExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return false, fmt.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
-	}
-	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
-	if !ok {
-		return false, fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
-	}
-
-	_, err = client.GetNodeBalancerConfig(context.Background(), int(nodebalancerID), int(id))
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			return false, nil
-		}
-
-		return false, fmt.Errorf("Error getting Linode NodeBalancerConfig ID %s: %s", d.Id(), err)
-	}
-	return true, nil
-}
-
 func resourceLinodeNodeBalancerConfigImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
@@ -215,7 +192,6 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 	}
 
 	config, err := client.GetNodeBalancerConfig(context.Background(), int(nodebalancerID), int(id))
-
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing NodeBalancer Config ID %q from state because it no longer exists", d.Id())

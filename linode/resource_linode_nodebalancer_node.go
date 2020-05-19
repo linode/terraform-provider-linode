@@ -18,7 +18,6 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 		Read:   resourceLinodeNodeBalancerNodeRead,
 		Update: resourceLinodeNodeBalancerNodeUpdate,
 		Delete: resourceLinodeNodeBalancerNodeDelete,
-		Exists: resourceLinodeNodeBalancerNodeExists,
 		Importer: &schema.ResourceImporter{
 			State: resourceLinodeNodeBalancerNodeImport,
 		},
@@ -66,32 +65,6 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceLinodeNodeBalancerNodeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return false, fmt.Errorf("Error parsing Linode NodeBalancerNode ID %s as int: %s", d.Id(), err)
-	}
-
-	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
-	if !ok {
-		return false, fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
-	}
-	configID, ok := d.Get("config_id").(int)
-	if !ok {
-		return false, fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
-	}
-
-	_, err = client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			return false, nil
-		}
-		return false, fmt.Errorf("Error getting Linode NodeBalancerNode ID %s: %s", d.Id(), err)
-	}
-	return true, nil
 }
 
 func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}) error {

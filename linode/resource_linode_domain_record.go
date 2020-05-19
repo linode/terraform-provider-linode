@@ -25,7 +25,6 @@ func resourceLinodeDomainRecord() *schema.Resource {
 		Read:   resourceLinodeDomainRecordRead,
 		Update: resourceLinodeDomainRecordUpdate,
 		Delete: resourceLinodeDomainRecordDelete,
-		Exists: resourceLinodeDomainRecordExists,
 		Importer: &schema.ResourceImporter{
 			State: resourceLinodeDomainRecordImport,
 		},
@@ -94,28 +93,6 @@ func resourceLinodeDomainRecord() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceLinodeDomainRecordExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return false, fmt.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
-	}
-	if domainID, ok := d.GetOkExists("domain_id"); ok {
-		_, err = client.GetDomainRecord(context.Background(), domainID.(int), int(id))
-	} else {
-		return false, fmt.Errorf("Error parsing Linode Domain ID")
-	}
-
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			return false, nil
-		}
-
-		return false, fmt.Errorf("Error getting Linode DomainRecord ID %s: %s", d.Id(), err)
-	}
-	return true, nil
 }
 
 func resourceLinodeDomainRecordImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {

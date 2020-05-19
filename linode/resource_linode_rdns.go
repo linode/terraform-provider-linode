@@ -14,7 +14,6 @@ func resourceLinodeRDNS() *schema.Resource {
 		Create: resourceLinodeRDNSCreate,
 		Read:   resourceLinodeRDNSRead,
 		Delete: resourceLinodeRDNSDelete,
-		Exists: resourceLinodeRDNSExists,
 		Update: resourceLinodeRDNSUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -35,28 +34,6 @@ func resourceLinodeRDNS() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceLinodeRDNSExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-
-	ipStr := d.Id()
-
-	if len(ipStr) == 0 {
-		return false, fmt.Errorf("Error parsing Linode RDNS ID as IP string")
-	}
-
-	_, err := client.GetIPAddress(context.Background(), ipStr)
-
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
-			return false, nil
-		}
-
-		return false, fmt.Errorf("Error getting Linode RDNS for %s: %s", ipStr, err)
-	}
-	return true, nil
 }
 
 func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {

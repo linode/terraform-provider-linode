@@ -14,7 +14,6 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 		Create: resourceLinodeObjectStorageBucketCreate,
 		Read:   resourceLinodeObjectStorageBucketRead,
 		Delete: resourceLinodeObjectStorageBucketDelete,
-		Exists: resourceLinodeObjectStorageBucketExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -33,23 +32,6 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceLinodeObjectStorageBucketExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client := meta.(linodego.Client)
-	cluster := d.Get("cluster").(string)
-	label := d.Get("label").(string)
-
-	_, err := client.GetObjectStorageBucket(context.Background(), cluster, label)
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			d.SetId("")
-			return false, nil
-		}
-
-		return false, fmt.Errorf("Error getting Linode ObjectStorageBucket %s/%s: %s", cluster, label, err)
-	}
-	return true, nil
 }
 
 func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interface{}) error {
