@@ -14,31 +14,31 @@ Manages a Linode Firewall.
 
 ```terraform
 resource "linode_firewall" "my_firewall" {
-	label = "my_firewall"
-	tags  = ["test"]
+  label = "my_firewall"
+  tags  = ["test"]
 
-	inbound {
-		protocol  = "TCP"
-		ports     = ["80"]
-		addresses = ["0.0.0.0/0"]
-	}
+  inbound {
+    protocol  = "TCP"
+    ports     = ["80"]
+    addresses = ["0.0.0.0/0"]
+  }
 
-	outbound {
-		protocol  = "TCP"
-		ports     = ["80"]
-		addresses = ["0.0.0.0/0"]
-	}
+  outbound {
+    protocol  = "TCP"
+    ports     = ["80"]
+    addresses = ["0.0.0.0/0"]
+  }
 
-	linodes = [linode_instance.my_instance.id]
+  linodes = [linode_instance.my_instance.id]
 }
 
 resource "linode_instance" "my_instance" {
-    label      = "my_instance"
-    image      = "linode/ubuntu18.04"
-    region     = "us-east"
-    type       = "g6-standard-1"
-    root_pass  = "bogusPassword$"
-    swap_size  = 256
+  label      = "my_instance"
+  image      = "linode/ubuntu18.04"
+  region     = "us-east"
+  type       = "g6-standard-1"
+  root_pass  = "bogusPassword$"
+  swap_size  = 256
 }
 ```
 
@@ -102,7 +102,7 @@ The following attributes are available on devices:
 
 * `url` The URL of the underlying entity this device references.
 
-## Import 
+## Import
 
 Firewalls can be imported using the `id`, e.g.
 
