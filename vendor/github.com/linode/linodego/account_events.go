@@ -74,6 +74,13 @@ const (
 	ActionDNSZoneCreate            EventAction = "dns_zone_create"
 	ActionDNSZoneDelete            EventAction = "dns_zone_delete"
 	ActionDNSZoneUpdate            EventAction = "dns_zone_update"
+	ActionFirewallCreate           EventAction = "firewall_create"
+	ActionFirewallDelete           EventAction = "firewall_delete"
+	ActionFirewallDisable          EventAction = "firewall_disable"
+	ActionFirewallEnable           EventAction = "firewall_enable"
+	ActionFirewallUpdate           EventAction = "firewall_update"
+	ActionFirewallDeviceAdd        EventAction = "firewall_device_add"
+	ActionFirewallDeviceRemove     EventAction = "firewall_device_remove"
 	ActionHostReboot               EventAction = "host_reboot"
 	ActionImageDelete              EventAction = "image_delete"
 	ActionImageUpdate              EventAction = "image_update"
@@ -141,6 +148,7 @@ const (
 	EntityLinode       EntityType = "linode"
 	EntityDisk         EntityType = "disk"
 	EntityDomain       EntityType = "domain"
+	EntityFirewall     EntityType = "firewall"
 	EntityNodebalancer EntityType = "nodebalancer"
 )
 
