@@ -75,6 +75,11 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.label"),
 				),
 			},
+			{
+				ResourceName:      testFirewallResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

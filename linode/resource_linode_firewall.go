@@ -47,7 +47,9 @@ func resourceLinodeFirewall() *schema.Resource {
 		Read:   resourceLinodeFirewallRead,
 		Update: resourceLinodeFirewallUpdate,
 		Delete: resourceLinodeFirewallDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"label": {
 				Type:         schema.TypeString,
@@ -86,7 +88,7 @@ func resourceLinodeFirewall() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 				Description: "The IDs of Linodes to apply this firewall to.",
 				MinItems:    1,
-				Optional:    true,
+				Required:    true,
 				Set:         schema.HashInt,
 			},
 			"devices": {
