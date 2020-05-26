@@ -1,4 +1,9 @@
 ## 1.11.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource** `linode_firewall`
+
 ## 1.10.0 (May 05, 2020)
 
 FEATURES:
