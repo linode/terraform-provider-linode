@@ -324,6 +324,12 @@ func (c *Client) listHelperWithID(ctx context.Context, i interface{}, idRaw inte
 			results = response.Results
 			v.appendData(response)
 		}
+	case *FirewallDevicesPagedResponse:
+		if r, err = coupleAPIErrors(req.SetResult(FirewallDevicesPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
+			pages = r.Result().(*FirewallDevicesPagedResponse).Pages
+			results = r.Result().(*FirewallDevicesPagedResponse).Results
+			v.appendData(r.Result().(*FirewallDevicesPagedResponse))
+		}
 	case *InstanceConfigsPagedResponse:
 		if r, err = coupleAPIErrors(req.SetResult(InstanceConfigsPagedResponse{}).Get(v.endpointWithID(c, id))); err == nil {
 			pages = r.Result().(*InstanceConfigsPagedResponse).Pages
