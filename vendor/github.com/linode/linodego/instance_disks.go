@@ -16,8 +16,8 @@ type InstanceDisk struct {
 	Status     DiskStatus     `json:"status"`
 	Size       int            `json:"size"`
 	Filesystem DiskFilesystem `json:"filesystem"`
-	Created    time.Time      `json:"-"`
-	Updated    time.Time      `json:"-"`
+	Created    *time.Time     `json:"-"`
+	Updated    *time.Time     `json:"-"`
 }
 
 // DiskFilesystem constants start with Filesystem and include Linode API Filesystems
@@ -112,12 +112,8 @@ func (i *InstanceDisk) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if p.Created != nil {
-		i.Created = time.Time(*p.Created)
-	}
-	if p.Updated != nil {
-		i.Updated = time.Time(*p.Updated)
-	}
+	i.Created = (*time.Time)(p.Created)
+	i.Updated = (*time.Time)(p.Updated)
 
 	return nil
 }
