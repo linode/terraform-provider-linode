@@ -1,4 +1,9 @@
-## 1.12.0 (Unreleased)
+## 1.11.1 (Unreleased)
+
+BUG FIXES:
+
+* Fixed an issue where a missing `Update` timestamp for a Volume could cause a panic.
+
 ## 1.11.0 (May 26, 2020)
 
 FEATURES:
