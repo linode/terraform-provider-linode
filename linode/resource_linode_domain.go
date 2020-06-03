@@ -6,8 +6,9 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -15,12 +16,12 @@ func resourceLinodeDomain() *schema.Resource {
 	validDomainSeconds := domainSecondsValidator()
 
 	return &schema.Resource{
-		Create: resourceLinodeDomainCreate,
-		Read:   resourceLinodeDomainRead,
-		Update: resourceLinodeDomainUpdate,
-		Delete: resourceLinodeDomainDelete,
+		CreateContext: resourceLinodeDomainCreateContext,
+		ReadContext:   resourceLinodeDomainReadContext,
+		UpdateContext: resourceLinodeDomainUpdateContext,
+		DeleteContext: resourceLinodeDomainDeleteContext,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"domain": {
@@ -136,11 +137,11 @@ func domainSecondsValidator() schema.SchemaValidateFunc {
 	return intInSlice(validSeconds)
 }
 
-func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
 
 	domain, err := client.GetDomain(context.Background(), int(id))
@@ -150,7 +151,7 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding the specified Linode Domain: %s", err)
+		return diag.Errorf("Error finding the specified Linode Domain: %s", err)
 	}
 
 	d.Set("domain", domain.Domain)
@@ -172,10 +173,10 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Domain")
+		return diag.Errorf("Invalid Client when creating Linode Domain")
 	}
 
 	createOpts := linodego.DomainCreateOptions{
@@ -216,19 +217,19 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 
 	domain, err := client.CreateDomain(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Domain: %s", err)
+		return diag.Errorf("Error creating a Linode Domain: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", domain.ID))
 
-	return resourceLinodeDomainRead(d, meta)
+	return resourceLinodeDomainReadContext(ctx, d, meta)
 }
 
-func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainUpdateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Domain id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Domain id %s as int: %s", d.Id(), err)
 	}
 
 	updateOpts := linodego.DomainUpdateOptions{
@@ -272,20 +273,20 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	_, err = client.UpdateDomain(context.Background(), int(id), updateOpts)
 	if err != nil {
-		return fmt.Errorf("Error updating Linode Domain %d: %s", id, err)
+		return diag.Errorf("Error updating Linode Domain %d: %s", id, err)
 	}
-	return resourceLinodeDomainRead(d, meta)
+	return resourceLinodeDomainReadContext(ctx, d, meta)
 }
 
-func resourceLinodeDomainDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Domain id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode Domain id %s as int", d.Id())
 	}
 	err = client.DeleteDomain(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode Domain %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode Domain %d: %s", id, err)
 	}
 	d.SetId("")
 

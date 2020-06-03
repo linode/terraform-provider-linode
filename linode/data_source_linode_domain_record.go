@@ -3,16 +3,16 @@ package linode
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeDomainRecord() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeDomainRecordRead,
+		ReadContext: dataSourceLinodeDomainRecordRead,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -78,7 +78,7 @@ func dataSourceLinodeDomainRecord() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	domainID := d.Get("domain_id").(int)
@@ -86,7 +86,7 @@ func dataSourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) 
 	recordID := d.Get("id").(int)
 
 	if recordName == "" && recordID == 0 {
-		return fmt.Errorf("Record name or ID is required")
+		return diag.Diagnostics{{Severity: diag.Error, Summary: "Record name or ID is required"}}
 	}
 
 	var record *linodego.DomainRecord
@@ -94,14 +94,14 @@ func dataSourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) 
 	if recordID != 0 {
 		rec, err := client.GetDomainRecord(context.Background(), domainID, recordID)
 		if err != nil {
-			return fmt.Errorf("Error fetching domain record: %v", err)
+			return diag.Errorf("Error fetching domain record: %s", err)
 		}
 		record = rec
 	} else if recordName != "" {
 		filter, _ := json.Marshal(map[string]interface{}{"name": recordName})
 		records, err := client.ListDomainRecords(context.Background(), domainID, linodego.NewListOptions(0, string(filter)))
 		if err != nil {
-			return fmt.Errorf("Error listing domain records: %v", err)
+			return diag.Errorf("Error listing domain records: %v", err)
 		}
 		if len(records) > 0 {
 			record = &records[0]
@@ -126,5 +126,5 @@ func dataSourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId("")
 
-	return fmt.Errorf(`Domain record "%s" for domain %d was not found`, recordName, domainID)
+	return diag.Errorf(`Domain record "%s" for domain %d was not found`, recordName, domainID)
 }

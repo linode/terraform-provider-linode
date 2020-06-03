@@ -2,15 +2,15 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeNetworkingIP() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeNetworkingIPRead,
+		ReadContext: dataSourceLinodeNetworkingIPRead,
 
 		Schema: map[string]*schema.Schema{
 			"address": {
@@ -62,18 +62,18 @@ func dataSourceLinodeNetworkingIP() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeNetworkingIPRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeNetworkingIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	reqImage := d.Get("address").(string)
 
 	if reqImage == "" {
-		return fmt.Errorf("NetworkingIP address is required")
+		return diag.Errorf("NetworkingIP address is required")
 	}
 
 	address, err := client.GetIPAddress(context.Background(), reqImage)
 	if err != nil {
-		return fmt.Errorf("Error listing addresses: %s", err)
+		return diag.Errorf("Error listing addresses: %s", err)
 	}
 
 	if address != nil {
@@ -92,5 +92,5 @@ func dataSourceLinodeNetworkingIPRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId("")
 
-	return fmt.Errorf("NetworkingIP address %s was not found", reqImage)
+	return diag.Errorf("NetworkingIP address %s was not found", reqImage)
 }

@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeObjectStorageBucket() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeObjectStorageBucketCreate,
-		Read:   resourceLinodeObjectStorageBucketRead,
-		Delete: resourceLinodeObjectStorageBucketDelete,
+		CreateContext: resourceLinodeObjectStorageBucketCreateContext,
+		ReadContext:   resourceLinodeObjectStorageBucketReadContext,
+		DeleteContext: resourceLinodeObjectStorageBucketDeleteContext,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"cluster": {
@@ -34,18 +35,18 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 	}
 }
 
-func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageBucketReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
+		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
 
 	bucket, err := client.GetObjectStorageBucket(context.Background(), cluster, label)
 
 	if err != nil {
-		return fmt.Errorf("Error finding the specified Linode ObjectStorageBucket: %s", err)
+		return diag.Errorf("Error finding the specified Linode ObjectStorageBucket: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
@@ -55,10 +56,10 @@ func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageBucketCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode ObjectStorageBucket")
+		return diag.Errorf("Invalid Client when creating Linode ObjectStorageBucket")
 	}
 
 	createOpts := linodego.ObjectStorageBucketCreateOptions{
@@ -67,24 +68,24 @@ func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interf
 	}
 	bucket, err := client.CreateObjectStorageBucket(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode ObjectStorageBucket: %s", err)
+		return diag.Errorf("Error creating a Linode ObjectStorageBucket: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 	d.Set("cluster", bucket.Cluster)
 	d.Set("label", bucket.Label)
 
-	return resourceLinodeObjectStorageBucketRead(d, meta)
+	return resourceLinodeObjectStorageBucketReadContext(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageBucketDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageBucketDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
+		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
 	err = client.DeleteObjectStorageBucket(context.Background(), cluster, label)
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
+		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
 	}
 	return nil
 }

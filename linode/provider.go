@@ -2,16 +2,15 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"token": {
@@ -77,19 +76,19 @@ func Provider() terraform.ResourceProvider {
 		},
 	}
 
-	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		terraformVersion := provider.TerraformVersion
 		if terraformVersion == "" {
 			// Terraform 0.12 introduced this field to the protocol
 			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
 		}
-		return providerConfigure(d, terraformVersion)
+		return providerConfigure(ctx, d, terraformVersion)
 	}
 	return provider
 }
 
-func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
+func providerConfigure(ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
 	config := &Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),
@@ -101,7 +100,7 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 
 	// Ping the API for an empty response to verify the configuration works
 	if _, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, "")); err != nil {
-		return nil, fmt.Errorf("Error connecting to the Linode API: %s", err)
+		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
 	return config.Client(), nil
 }

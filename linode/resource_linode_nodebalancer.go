@@ -7,19 +7,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeNodeBalancer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeNodeBalancerCreate,
-		Read:   resourceLinodeNodeBalancerRead,
-		Update: resourceLinodeNodeBalancerUpdate,
-		Delete: resourceLinodeNodeBalancerDelete,
+		CreateContext: resourceLinodeNodeBalancerCreateContext,
+		ReadContext:   resourceLinodeNodeBalancerReadContext,
+		UpdateContext: resourceLinodeNodeBalancerUpdateContext,
+		DeleteContext: resourceLinodeNodeBalancerDeleteContext,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -65,7 +66,7 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 				Computed: true,
 			},
 			"transfer": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -97,20 +98,11 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 	}
 }
 
-// floatString returns nil or the string representation of the supplied *float64
-//   this is needed because ResourceData.Set will not accept *float64 and expects a string
-func floatString(f *float64) string {
-	if f == nil {
-		return ""
-	}
-	return fmt.Sprintf("%g", *f)
-}
-
-func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %s as int: %s", d.Id(), err)
 	}
 
 	nodebalancer, err := client.GetNodeBalancer(context.Background(), int(id))
@@ -122,7 +114,7 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 			return nil
 		}
 
-		return fmt.Errorf("Error finding the specified Linode NodeBalancer: %s", err)
+		return diag.Errorf("Error finding the specified Linode NodeBalancer: %s", err)
 	}
 
 	d.Set("label", nodebalancer.Label)
@@ -134,21 +126,15 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("client_conn_throttle", nodebalancer.ClientConnThrottle)
 	d.Set("created", nodebalancer.Created.Format(time.RFC3339))
 	d.Set("updated", nodebalancer.Updated.Format(time.RFC3339))
-	transfer := map[string]interface{}{
-		"in":    floatString(nodebalancer.Transfer.In),
-		"out":   floatString(nodebalancer.Transfer.Out),
-		"total": floatString(nodebalancer.Transfer.Total),
-	}
-
-	d.Set("transfer", transfer)
+	d.Set("transfer", flattenLinodeNodeBalancerTransfer(nodebalancer.Transfer))
 
 	return nil
 }
 
-func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode NodeBalancer")
+		return diag.Errorf("Invalid Client when creating Linode NodeBalancer")
 	}
 	label := d.Get("label").(string)
 	clientConnThrottle := d.Get("client_conn_throttle").(int)
@@ -167,24 +153,24 @@ func resourceLinodeNodeBalancerCreate(d *schema.ResourceData, meta interface{}) 
 
 	nodebalancer, err := client.CreateNodeBalancer(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode NodeBalancer: %s", err)
+		return diag.Errorf("Error creating a Linode NodeBalancer: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", nodebalancer.ID))
 
-	return resourceLinodeNodeBalancerRead(d, meta)
+	return resourceLinodeNodeBalancerReadContext(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerUpdateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode NodeBalancer id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode NodeBalancer id %s as int: %s", d.Id(), err)
 	}
 
 	nodebalancer, err := client.GetNodeBalancer(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Error fetching data about the current NodeBalancer: %s", err)
+		return diag.Errorf("Error fetching data about the current NodeBalancer: %s", err)
 	}
 
 	if d.HasChange("label") || d.HasChange("client_conn_throttle") || d.HasChange("tags") {
@@ -205,22 +191,36 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		updateOpts.Tags = &tags
 
 		if nodebalancer, err = client.UpdateNodeBalancer(context.Background(), nodebalancer.ID, updateOpts); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceLinodeNodeBalancerRead(d, meta)
+	return resourceLinodeNodeBalancerReadContext(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode NodeBalancer id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode NodeBalancer id %s as int", d.Id())
 	}
 	err = client.DeleteNodeBalancer(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode NodeBalancer %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode NodeBalancer %d: %s", id, err)
 	}
 	return nil
+}
+
+func flattenLinodeNodeBalancerTransfer(transfer linodego.NodeBalancerTransfer) []map[string]float64 {
+	m := map[string]float64{"in": 0, "out": 0, "total": 0}
+	if transfer.In != nil {
+		m["in"] = *transfer.In
+	}
+	if transfer.Out != nil {
+		m["out"] = *transfer.Out
+	}
+	if transfer.Total != nil {
+		m["total"] = *transfer.Total
+	}
+	return []map[string]float64{m}
 }

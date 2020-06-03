@@ -2,17 +2,17 @@ package linode
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeStackscript() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeStackscriptRead,
+		ReadContext: dataSourceLinodeStackscriptRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -119,13 +119,13 @@ func dataSourceLinodeStackscript() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeStackscriptRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id := d.Get("id").(int)
 
 	ss, err := client.GetStackscript(context.Background(), id)
 	if err != nil {
-		return fmt.Errorf("Error getting Staakscript: %s", err)
+		return diag.Errorf("Error getting Staakscript: %s", err)
 	}
 
 	if ss != nil {
@@ -146,5 +146,5 @@ func dataSourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	return fmt.Errorf("StackScript %d not found", id)
+	return diag.Errorf("StackScript %d not found", id)
 }

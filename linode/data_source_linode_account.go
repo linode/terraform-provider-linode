@@ -2,15 +2,15 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeAccountRead,
+		ReadContext: dataSourceLinodeAccountRead,
 		Schema: map[string]*schema.Schema{
 			"email": {
 				Type:        schema.TypeString,
@@ -76,20 +76,20 @@ func dataSourceLinodeAccount() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeAccountRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	account, err := client.GetAccount(context.Background())
 	if err != nil {
-		return fmt.Errorf("Error getting account: %s", err)
+		return diag.Errorf("Error getting account: %s", err)
 	}
 
+	// We exclude the credit_card and tax_id fields because they are too sensitive
 	d.SetId(account.Email)
 	d.Set("email", account.Email)
 	d.Set("first_name", account.FirstName)
 	d.Set("last_name", account.LastName)
 	d.Set("company", account.Company)
-
 	d.Set("address_1", account.Address1)
 	d.Set("address_2", account.Address2)
 	d.Set("phone", account.Phone)
@@ -97,10 +97,7 @@ func dataSourceLinodeAccountRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("state", account.State)
 	d.Set("country", account.Country)
 	d.Set("zip", account.Zip)
-
 	d.Set("balance", account.Balance)
-
-	// We exclude the credit_card and tax_id fields because they are too sensitive
 
 	return nil
 }

@@ -3,16 +3,16 @@ package linode
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeDomain() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeDomainRead,
+		ReadContext: dataSourceLinodeDomainRead,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -95,14 +95,14 @@ func dataSourceLinodeDomain() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	reqIDString := d.Get("id").(string)
 	reqDomain := d.Get("domain").(string)
 
 	if reqDomain == "" && reqIDString == "" {
-		return fmt.Errorf("Domain or Domain ID is required")
+		return diag.Errorf("Domain or Domain ID is required")
 	}
 
 	var domain *linodego.Domain
@@ -112,24 +112,24 @@ func dataSourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error 
 	if reqIDString != "" {
 		reqID, err := strconv.Atoi(reqIDString)
 		if err != nil {
-			return fmt.Errorf("Domain ID %q must be numeric", reqIDString)
+			diag.Errorf("Domain ID %q must be numeric", reqIDString)
 		}
 
 		domain, err = client.GetDomain(context.Background(), reqID)
 		if err != nil {
-			return fmt.Errorf("Error listing domain: %s", err)
+			return diag.Errorf("Error listing domain: %s", err)
 		}
 		if reqDomain != "" && domain.Domain != reqDomain {
-			return fmt.Errorf("Domain ID was found but did not match the requested Domain name")
+			return diag.Errorf("Domain ID was found but did not match the requested Domain name")
 		}
 	} else if reqDomain != "" {
 		filter, _ := json.Marshal(map[string]interface{}{"domain": reqDomain})
 		domains, err := client.ListDomains(context.Background(), linodego.NewListOptions(0, string(filter)))
 		if err != nil {
-			return fmt.Errorf("Error listing Domains: %s", err)
+			return diag.Errorf("Error listing Domains: %s", err)
 		}
 		if len(domains) != 1 || domains[0].Domain != reqDomain {
-			return fmt.Errorf("Domain %s was not found", reqDomain)
+			return diag.Errorf("Domain %s was not found", reqDomain)
 
 		}
 		domain = &domains[0]
@@ -153,5 +153,5 @@ func dataSourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
-	return fmt.Errorf("Domain %s%s was not found", reqIDString, reqDomain)
+	return diag.Errorf("Domain %s%s was not found", reqIDString, reqDomain)
 }

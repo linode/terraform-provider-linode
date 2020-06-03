@@ -2,10 +2,10 @@ package linode
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
@@ -15,12 +15,12 @@ const (
 
 func resourceLinodeImage() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeImageCreate,
-		Read:   resourceLinodeImageRead,
-		Update: resourceLinodeImageUpdate,
-		Delete: resourceLinodeImageDelete,
+		CreateContext: resourceLinodeImageCreateContext,
+		ReadContext:   resourceLinodeImageReadContext,
+		UpdateContext: resourceLinodeImageUpdateContext,
+		DeleteContext: resourceLinodeImageDeleteContext,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(LinodeImageCreateTimeout),
@@ -92,12 +92,12 @@ func resourceLinodeImage() *schema.Resource {
 	}
 }
 
-func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	image, err := client.GetImage(context.Background(), d.Id())
 	if err != nil {
-		return fmt.Errorf("Error getting Linode image %s: %s", d.Id(), err)
+		return diag.Errorf("Error getting Linode image %s: %s", d.Id(), err)
 	}
 
 	d.Set("label", image.Label)
@@ -118,18 +118,17 @@ func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Image")
+		return diag.Errorf("Invalid Client when creating Linode Image")
 	}
-	d.Partial(true)
 
 	linodeID := d.Get("linode_id").(int)
 	diskID := d.Get("disk_id").(int)
 
 	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
+		return diag.Errorf("Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
 	}
 
 	createOpts := linodego.ImageCreateOptions{
@@ -140,27 +139,23 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	image, err := client.CreateImage(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Image: %s", err)
+		return diag.Errorf("Error creating a Linode Image: %s", err)
 	}
 
 	d.SetId(image.ID)
-	d.SetPartial("label")
-	d.SetPartial("description")
-	d.Partial(false)
-
 	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
+		return diag.Errorf("Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
 	}
 
-	return resourceLinodeImageRead(d, meta)
+	return resourceLinodeImageReadContext(ctx, d, meta)
 }
 
-func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageUpdateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	image, err := client.GetImage(context.Background(), d.Id())
 	if err != nil {
-		return fmt.Errorf("Error fetching data about the current Image: %s", err)
+		return diag.Errorf("Error fetching data about the current Image: %s", err)
 	}
 
 	updateOpts := linodego.ImageUpdateOptions{}
@@ -176,21 +171,21 @@ func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	image, err = client.UpdateImage(context.Background(), d.Id(), updateOpts)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("label", image.Label)
 	d.Set("description", image.Description)
 
-	return resourceLinodeImageRead(d, meta)
+	return resourceLinodeImageReadContext(ctx, d, meta)
 }
 
-func resourceLinodeImageDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	err := client.DeleteImage(context.Background(), d.Id())
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode Image %s: %s", d.Id(), err)
+		return diag.Errorf("Error deleting Linode Image %s: %s", d.Id(), err)
 	}
 	d.SetId("")
 	return nil

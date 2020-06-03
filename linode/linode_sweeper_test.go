@@ -5,15 +5,9 @@ import (
 	"log"
 	"os"
 	"strings"
-	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/linode/linodego"
 )
-
-func TestMain(m *testing.M) {
-	resource.TestMain(m)
-}
 
 func getClientForSweepers() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")

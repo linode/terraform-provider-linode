@@ -2,13 +2,12 @@ package linode
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -43,12 +42,12 @@ func resourceLinodeFirewallRule() *schema.Resource {
 
 func resourceLinodeFirewall() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeFirewallCreate,
-		Read:   resourceLinodeFirewallRead,
-		Update: resourceLinodeFirewallUpdate,
-		Delete: resourceLinodeFirewallDelete,
+		CreateContext: resourceLinodeFirewallCreateContext,
+		ReadContext:   resourceLinodeFirewallReadContext,
+		UpdateContext: resourceLinodeFirewallUpdateContext,
+		DeleteContext: resourceLinodeFirewallDeleteContext,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -134,26 +133,26 @@ func resourceLinodeFirewall() *schema.Resource {
 	}
 }
 
-func resourceLinodeFirewallRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeFirewallReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
+		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
 	}
 
 	firewall, err := client.GetFirewall(context.Background(), id)
 	if err != nil {
-		return fmt.Errorf("failed to get firewall %d: %s", id, err)
+		return diag.Errorf("failed to get firewall %d: %s", id, err)
 	}
 
 	rules, err := client.GetFirewallRules(context.Background(), id)
 	if err != nil {
-		return fmt.Errorf("failed to get rules for firewall %d: %s", id, err)
+		return diag.Errorf("failed to get rules for firewall %d: %s", id, err)
 	}
 
 	devices, err := client.ListFirewallDevices(context.Background(), id, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get devices for firewall %d: %s", id, err)
+		return diag.Errorf("failed to get devices for firewall %d: %s", id, err)
 	}
 
 	d.Set("label", firewall.Label)
@@ -167,7 +166,7 @@ func resourceLinodeFirewallRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceLinodeFirewallCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeFirewallCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	createOpts := linodego.FirewallCreateOptions{
@@ -179,12 +178,12 @@ func resourceLinodeFirewallCreate(d *schema.ResourceData, meta interface{}) erro
 	createOpts.Rules.Outbound = expandLinodeFirewallRules(d.Get("outbound").([]interface{}))
 
 	if len(createOpts.Rules.Inbound)+len(createOpts.Rules.Outbound) == 0 {
-		return errors.New("cannot create firewall without at least one inbound or outbound rule")
+		return diag.Errorf("cannot create firewall without at least one inbound or outbound rule")
 	}
 
 	firewall, err := client.CreateFirewall(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("failed to create Firewall: %s", err)
+		return diag.Errorf("failed to create Firewall: %s", err)
 	}
 	d.SetId(strconv.Itoa(firewall.ID))
 
@@ -192,18 +191,18 @@ func resourceLinodeFirewallCreate(d *schema.ResourceData, meta interface{}) erro
 		if _, err := client.UpdateFirewall(context.Background(), firewall.ID, linodego.FirewallUpdateOptions{
 			Status: linodego.FirewallDisabled,
 		}); err != nil {
-			return fmt.Errorf("failed to disable firewall %d: %s", firewall.ID, err)
+			return diag.Errorf("failed to disable firewall %d: %s", firewall.ID, err)
 		}
 	}
 
-	return resourceLinodeFirewallRead(d, meta)
+	return resourceLinodeFirewallReadContext(ctx, d, meta)
 }
 
-func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeFirewallUpdateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
+		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
 	}
 
 	if d.HasChanges("label", "tags", "disabled") {
@@ -220,7 +219,7 @@ func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 		if _, err := client.UpdateFirewall(context.Background(), id, updateOpts); err != nil {
-			return fmt.Errorf("failed to update firewall %d: %s", id, err)
+			return diag.Errorf("failed to update firewall %d: %s", id, err)
 		}
 	}
 
@@ -228,13 +227,13 @@ func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) erro
 	outboundRules := expandLinodeFirewallRules(d.Get("outbound").([]interface{}))
 	ruleSet := linodego.FirewallRuleSet{Inbound: inboundRules, Outbound: outboundRules}
 	if _, err := client.UpdateFirewallRules(context.Background(), id, ruleSet); err != nil {
-		return fmt.Errorf("failed to update rules for firewall %d: %s", id, err)
+		return diag.Errorf("failed to update rules for firewall %d: %s", id, err)
 	}
 
 	linodes := expandIntSet(d.Get("linodes").(*schema.Set))
 	devices, err := client.ListFirewallDevices(context.Background(), id, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get devices for firewall %d: %s", id, err)
+		return diag.Errorf("failed to get devices for firewall %d: %s", id, err)
 	}
 
 	provisionedLinodes := make(map[int]linodego.FirewallDevice)
@@ -253,7 +252,7 @@ func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) erro
 				ID:   linodeID,
 				Type: linodego.FirewallDeviceLinode,
 			}); err != nil {
-				return fmt.Errorf("failed to create firewall device for linode %d: %s", linodeID, err)
+				return diag.Errorf("failed to create firewall device for linode %d: %s", linodeID, err)
 			}
 		}
 
@@ -265,7 +264,7 @@ func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) erro
 	for linodeID, device := range provisionedLinodes {
 		if _, ok := visitedLinodes[linodeID]; !ok {
 			if err := client.DeleteFirewallDevice(context.Background(), id, device.ID); err != nil {
-				return fmt.Errorf("failed to delete firewall device %d: %s", id, err)
+				return diag.Errorf("failed to delete firewall device %d: %s", id, err)
 			}
 		}
 	}
@@ -273,15 +272,15 @@ func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func resourceLinodeFirewallDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeFirewallDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
+		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
 	}
 
 	if err := client.DeleteFirewall(context.Background(), id); err != nil {
-		return fmt.Errorf("failed to delete Firewall %d: %s", id, err)
+		return diag.Errorf("failed to delete Firewall %d: %s", id, err)
 	}
 	return nil
 }

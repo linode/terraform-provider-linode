@@ -6,18 +6,19 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeStackscript() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeStackscriptCreate,
-		Read:   resourceLinodeStackscriptRead,
-		Update: resourceLinodeStackscriptUpdate,
-		Delete: resourceLinodeStackscriptDelete,
+		CreateContext: resourceLinodeStackscriptCreateContext,
+		ReadContext:   resourceLinodeStackscriptReadContext,
+		UpdateContext: resourceLinodeStackscriptUpdateContext,
+		DeleteContext: resourceLinodeStackscriptDeleteContext,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -123,11 +124,11 @@ func resourceLinodeStackscript() *schema.Resource {
 	}
 }
 
-func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeStackscriptReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Stackscript ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Stackscript ID %s as int: %s", d.Id(), err)
 	}
 
 	stackscript, err := client.GetStackscript(context.Background(), int(id))
@@ -138,7 +139,7 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding the specified Linode Stackscript: %s", err)
+		return diag.Errorf("Error finding the specified Linode Stackscript: %s", err)
 	}
 
 	d.Set("label", stackscript.Label)
@@ -159,10 +160,10 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceLinodeStackscriptCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeStackscriptCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Stackscript")
+		return diag.Errorf("Invalid Client when creating Linode Stackscript")
 	}
 
 	createOpts := linodego.StackscriptCreateOptions{
@@ -179,19 +180,19 @@ func resourceLinodeStackscriptCreate(d *schema.ResourceData, meta interface{}) e
 
 	stackscript, err := client.CreateStackscript(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Stackscript: %s", err)
+		return diag.Errorf("Error creating a Linode Stackscript: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", stackscript.ID))
 
-	return resourceLinodeStackscriptRead(d, meta)
+	return resourceLinodeStackscriptReadContext(ctx, d, meta)
 }
 
-func resourceLinodeStackscriptUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeStackscriptUpdateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Stackscript id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Stackscript id %s as int: %s", d.Id(), err)
 	}
 
 	updateOpts := linodego.StackscriptUpdateOptions{
@@ -207,24 +208,24 @@ func resourceLinodeStackscriptUpdate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if _, err = client.UpdateStackscript(context.Background(), int(id), updateOpts); err != nil {
-		return fmt.Errorf("Error updating Linode Stackscript %d: %s", int(id), err)
+		return diag.Errorf("Error updating Linode Stackscript %d: %s", int(id), err)
 	}
 
-	return resourceLinodeStackscriptRead(d, meta)
+	return resourceLinodeStackscriptReadContext(ctx, d, meta)
 }
 
-func resourceLinodeStackscriptDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeStackscriptDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Stackscript id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode Stackscript id %s as int", d.Id())
 	}
 	err = client.DeleteStackscript(context.Background(), int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			return nil
 		}
-		return fmt.Errorf("Error deleting Linode Stackscript %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode Stackscript %d: %s", id, err)
 	}
 	return nil
 }

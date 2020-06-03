@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeUser() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeUserRead,
+		ReadContext: dataSourceLinodeUserRead,
 		Schema: map[string]*schema.Schema{
 			"username": {
 				Type:        schema.TypeString,
@@ -37,19 +38,19 @@ func dataSourceLinodeUser() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeUserRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	reqUsername := d.Get("username").(string)
 
 	if reqUsername == "" {
-		return fmt.Errorf("Error User username is required")
+		return diag.Errorf("Error User username is required")
 	}
 
 	users, err := client.ListUsers(context.Background(), nil)
 	var user linodego.User
 	if err != nil {
-		return fmt.Errorf("Error listing user: %s", err)
+		return diag.Errorf("Error listing user: %s", err)
 	}
 
 	for _, testuser := range users {
@@ -69,5 +70,5 @@ func dataSourceLinodeUserRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	return fmt.Errorf("Linode User with username %s was not found", reqUsername)
+	return diag.Errorf("Linode User with username %s was not found", reqUsername)
 }

@@ -2,21 +2,21 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeRDNS() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeRDNSCreate,
-		Read:   resourceLinodeRDNSRead,
-		Delete: resourceLinodeRDNSDelete,
-		Update: resourceLinodeRDNSUpdate,
+		CreateContext: resourceLinodeRDNSCreateContext,
+		ReadContext:   resourceLinodeRDNSReadContext,
+		DeleteContext: resourceLinodeRDNSDeleteContext,
+		UpdateContext: resourceLinodeRDNSUpdateContext,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"address": {
@@ -36,18 +36,18 @@ func resourceLinodeRDNS() *schema.Resource {
 	}
 }
 
-func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeRDNSReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {
-		return fmt.Errorf("Error parsing Linode RDNS ID %s as IP string", ipStr)
+		return diag.Errorf("Error parsing Linode RDNS ID %s as IP string", ipStr)
 	}
 
 	ip, err := client.GetIPAddress(context.Background(), ipStr)
 
 	if err != nil {
-		return fmt.Errorf("Error finding the specified Linode RDNS: %s", err)
+		return diag.Errorf("Error finding the specified Linode RDNS: %s", err)
 	}
 
 	d.Set("address", d.Id())
@@ -56,10 +56,10 @@ func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeRDNSCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeRDNSCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode RDNS")
+		return diag.Errorf("Invalid Client when creating Linode RDNS")
 	}
 
 	var address = d.Get("address").(string)
@@ -73,20 +73,20 @@ func resourceLinodeRDNSCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	ip, err := client.UpdateIPAddress(context.Background(), address, updateOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode RDNS: %s", err)
+		return diag.Errorf("Error creating a Linode RDNS: %s", err)
 	}
 	d.SetId(address)
 	d.Set("rdns", ip.RDNS)
 
-	return resourceLinodeRDNSRead(d, meta)
+	return resourceLinodeRDNSReadContext(ctx, d, meta)
 }
 
-func resourceLinodeRDNSUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeRDNSUpdateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {
-		return fmt.Errorf("Error parsing Linode RDNS ID %s as IP string", ipStr)
+		return diag.Errorf("Error parsing Linode RDNS ID %s as IP string", ipStr)
 	}
 
 	var rdns *string
@@ -101,18 +101,18 @@ func resourceLinodeRDNSUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if _, err := client.UpdateIPAddress(context.Background(), d.Id(), updateOpts); err != nil {
-		return fmt.Errorf("Error updating Linode RDNS: %s", err)
+		return diag.Errorf("Error updating Linode RDNS: %s", err)
 	}
 
-	return resourceLinodeRDNSRead(d, meta)
+	return resourceLinodeRDNSReadContext(ctx, d, meta)
 }
 
-func resourceLinodeRDNSDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeRDNSDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {
-		return fmt.Errorf("Error parsing Linode RDNS ID %s as IP string", ipStr)
+		return diag.Errorf("Error parsing Linode RDNS ID %s as IP string", ipStr)
 	}
 
 	updateOpts := linodego.IPAddressUpdateOptions{
@@ -125,7 +125,7 @@ func resourceLinodeRDNSDelete(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return fmt.Errorf("Error deleting Linode RDNS: %s", err)
+		return diag.Errorf("Error deleting Linode RDNS: %s", err)
 	}
 
 	d.SetId("")

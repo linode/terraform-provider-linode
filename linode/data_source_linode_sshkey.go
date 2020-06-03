@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeSSHKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeSSHKeyRead,
+		ReadContext: dataSourceLinodeSSHKeyRead,
 
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -33,19 +34,15 @@ func dataSourceLinodeSSHKey() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	reqLabel := d.Get("label").(string)
 
-	if reqLabel == "" {
-		return fmt.Errorf("Error SSH Key label is required")
-	}
-
 	sshkeys, err := client.ListSSHKeys(context.Background(), nil)
 	var sshkey linodego.SSHKey
 	if err != nil {
-		return fmt.Errorf("Error listing sshkey: %s", err)
+		return diag.Errorf("Error listing sshkey: %s", err)
 	}
 
 	for _, testkey := range sshkeys {
@@ -66,5 +63,5 @@ func dataSourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
-	return fmt.Errorf("Linode SSH Key with label %s was not found", reqLabel)
+	return diag.Errorf("Linode SSH Key with label %s was not found", reqLabel)
 }

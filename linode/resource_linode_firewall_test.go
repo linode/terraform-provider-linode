@@ -3,10 +3,13 @@ package linode
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/linodego"
 )
 
 const testFirewallResName = "linode_firewall.test"
@@ -24,7 +27,7 @@ func testSweepLinodeFirewall(prefix string) error {
 		return fmt.Errorf("failed to get client: %s", err)
 	}
 
-	firewalls, err := client.ListLKEClusters(context.Background(), nil)
+	firewalls, err := client.ListFirewalls(context.Background(), nil)
 	if err != nil {
 		return fmt.Errorf("failed to get firewalls: %s", err)
 	}
@@ -40,6 +43,35 @@ func testSweepLinodeFirewall(prefix string) error {
 	return nil
 }
 
+func testAccCheckLinodeFirewallDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(linodego.Client)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_firewall" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("failed to parse Firewall ID: %s", err)
+		}
+
+		if id == 0 {
+			return fmt.Errorf("should not have Firewall ID of 0")
+		}
+
+		if _, err = client.GetFirewall(context.Background(), id); err == nil {
+			return fmt.Errorf("should not find Firewall %d existing after delete", id)
+		} else if apiErr, ok := err.(*linodego.Error); !ok {
+			return fmt.Errorf("expected API Error but got %#v", err)
+		} else if apiErr.Code != 404 {
+			return fmt.Errorf("expected an error 404 but got %#v", apiErr)
+		}
+	}
+
+	return nil
+}
+
 func TestAccLinodeFirewall_basic(t *testing.T) {
 	t.Parallel()
 
@@ -49,7 +81,7 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		CheckDestroy: testAccCheckLinodeFirewallDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeFirewallBasic(name, devicePrefix),
@@ -94,7 +126,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		CheckDestroy: testAccCheckLinodeFirewallDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeFirewallBasic(name, devicePrefix),

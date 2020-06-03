@@ -2,17 +2,17 @@ package linode
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeVolume() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeVolumeRead,
+		ReadContext: dataSourceLinodeVolumeRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeInt,
@@ -69,12 +69,12 @@ func dataSourceLinodeVolume() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	requestedVolumeID := d.Get("id").(int)
 
 	if requestedVolumeID == 0 {
-		return fmt.Errorf("Volume ID is required")
+		return diag.Errorf("Volume ID is required")
 	}
 
 	var volume *linodego.Volume
@@ -82,7 +82,7 @@ func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error 
 	volume, err := client.GetVolume(context.Background(), requestedVolumeID)
 
 	if err != nil {
-		return fmt.Errorf("Error requesting Volume: %s", err)
+		return diag.Errorf("Error requesting Volume: %s", err)
 	}
 
 	if volume != nil {
@@ -99,6 +99,5 @@ func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
-	return fmt.Errorf("Linode Volume %s was not found", string(requestedVolumeID))
-
+	return diag.Errorf("Linode Volume %s was not found", string(requestedVolumeID))
 }

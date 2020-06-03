@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/httpclient"
 	"github.com/linode/linodego"
 	"github.com/terraform-providers/terraform-provider-linode/version"
 	"golang.org/x/oauth2"

@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 )
 
@@ -68,7 +68,10 @@ func TestAccLinodeNodeBalancer_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
-					resource.TestCheckResourceAttr(resName, "transfer.%", "3"),
+					resource.TestCheckResourceAttr(resName, "transfer.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "transfer.0.in"),
+					resource.TestCheckResourceAttrSet(resName, "transfer.0.out"),
+					resource.TestCheckResourceAttrSet(resName, "transfer.0.total"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
 				),

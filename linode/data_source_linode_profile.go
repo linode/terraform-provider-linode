@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeProfile() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeProfileRead,
+		ReadContext: dataSourceLinodeProfileRead,
 		Schema: map[string]*schema.Schema{
 			"email": {
 				Type:        schema.TypeString,
@@ -101,12 +102,12 @@ func dataSourceLinodeProfile() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeProfileRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	profile, err := client.GetProfile(context.Background())
 	if err != nil {
-		return fmt.Errorf("Error getting profile: %s", err)
+		return diag.Errorf("Error getting profile: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%d", profile.UID))

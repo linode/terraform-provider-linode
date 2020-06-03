@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeObjectStorageKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeObjectStorageKeyCreate,
-		Read:   resourceLinodeObjectStorageKeyRead,
-		Update: resourceLinodeObjectStorageKeyUpdate,
-		Delete: resourceLinodeObjectStorageKeyDelete,
+		CreateContext: resourceLinodeObjectStorageKeyCreateContext,
+		ReadContext:   resourceLinodeObjectStorageKeyReadContext,
+		UpdateContext: resourceLinodeObjectStorageKeyUpdateContext,
+		DeleteContext: resourceLinodeObjectStorageKeyDeleteContext,
 
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -37,10 +38,10 @@ func resourceLinodeObjectStorageKey() *schema.Resource {
 	}
 }
 
-func resourceLinodeObjectStorageKeyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageKeyCreateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(linodego.Client)
 	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Object Storage Key")
+		return diag.Errorf("Invalid Client when creating Linode Object Storage Key")
 	}
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
@@ -48,7 +49,7 @@ func resourceLinodeObjectStorageKeyCreate(d *schema.ResourceData, meta interface
 	}
 	objectStorageKey, err := client.CreateObjectStorageKey(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Object Storage Key: %s", err)
+		return diag.Errorf("Error creating a Linode Object Storage Key: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", objectStorageKey.ID))
 	d.Set("label", objectStorageKey.Label)
@@ -57,20 +58,20 @@ func resourceLinodeObjectStorageKeyCreate(d *schema.ResourceData, meta interface
 	// secret_key only available on creation
 	d.Set("secret_key", objectStorageKey.SecretKey)
 
-	return resourceLinodeObjectStorageKeyRead(d, meta)
+	return resourceLinodeObjectStorageKeyReadContext(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageKeyRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageKeyReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Object Storage Key ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Object Storage Key ID %s as int: %s", d.Id(), err)
 	}
 
 	objectStorageKey, err := client.GetObjectStorageKey(context.Background(), int(id))
 
 	if err != nil {
-		return fmt.Errorf("Error finding the specified Linode Object Storage Key: %s", err)
+		return diag.Errorf("Error finding the specified Linode Object Storage Key: %s", err)
 	}
 
 	d.Set("label", objectStorageKey.Label)
@@ -78,12 +79,12 @@ func resourceLinodeObjectStorageKeyRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func resourceLinodeObjectStorageKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageKeyUpdateContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Object Storage Key id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Object Storage Key id %s as int: %s", d.Id(), err)
 	}
 
 	if d.HasChange("label") {
@@ -94,27 +95,27 @@ func resourceLinodeObjectStorageKeyUpdate(d *schema.ResourceData, meta interface
 		}
 
 		if err != nil {
-			return fmt.Errorf("Error fetching data about the current Linode Object Storage Key: %s", err)
+			return diag.Errorf("Error fetching data about the current Linode Object Storage Key: %s", err)
 		}
 
 		if objectStorageKey, err = client.UpdateObjectStorageKey(context.Background(), int(id), updateOpts); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		d.Set("label", objectStorageKey.Label)
 	}
 
-	return resourceLinodeObjectStorageKeyRead(d, meta)
+	return resourceLinodeObjectStorageKeyReadContext(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageKeyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageKeyDeleteContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Object Storage Key id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode Object Storage Key id %s as int", d.Id())
 	}
 	err = client.DeleteObjectStorageKey(context.Background(), int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode Object Storage Key %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode Object Storage Key %d: %s", id, err)
 	}
 	return nil
 }
