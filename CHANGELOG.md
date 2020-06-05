@@ -1,4 +1,9 @@
-## 1.12.0 (Unreleased)
+## 1.11.2 (Unreleased)
+
+BUG FIXES:
+
+* Fixed an issue where sometimes, creating an instance disk would appear to timeout even after `finished` was emitted.
+
 ## 1.11.1 (May 28, 2020)
 
 BUG FIXES:
