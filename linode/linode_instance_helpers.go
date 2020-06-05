@@ -474,13 +474,12 @@ func createInstanceDisk(client linodego.Client, instance linodego.Instance, disk
 		}
 	}
 
-	createTime := time.Now()
 	instanceDisk, err := client.CreateInstanceDisk(context.Background(), instance.ID, diskOpts)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
 	}
 
-	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, createTime, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	_, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate, *instanceDisk.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
 	}
