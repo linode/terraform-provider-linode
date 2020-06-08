@@ -9,7 +9,6 @@ import (
 	"net"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/linode/linodego"
@@ -758,13 +757,12 @@ func changeInstanceDiskSize(client *linodego.Client, instance linodego.Instance,
 		return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 	}
 
-	updateTime := time.Now()
 	if err := client.ResizeInstanceDisk(context.Background(), instance.ID, disk.ID, targetSize); err != nil {
 		return fmt.Errorf("Error resizing disk %d for Instance %d: %s", disk.ID, instance.ID, err)
 	}
 
 	// Wait for the disk resize operation to complete, and boot instance.
-	_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, updateTime, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+	_, err := client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionDiskResize, *disk.Updated, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 	if err != nil {
 		return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
 	}
