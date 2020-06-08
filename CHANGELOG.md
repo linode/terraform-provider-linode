@@ -1,6 +1,10 @@
 ## 1.13.0 (Unreleased)
 ## 1.12.3 (June 08, 2020)
 
+Note: This release was published incorrectly as 1.12.3, but was intended as 1.11.3.
+
+BUG FIXES:
+
 * Fixed an issue where updating a disk can timeout even after `finished` was emitted.
 
 ## 1.11.2 (June 05, 2020)
