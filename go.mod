@@ -1,6 +1,7 @@
 module github.com/terraform-providers/terraform-provider-linode
 
 require (
+	github.com/Charliekenney23/tf-changelog-validator v0.1.0
 	github.com/aws/aws-sdk-go v1.30.12 // indirect
 	github.com/bflad/tfproviderlint v0.12.0
 	github.com/golangci/golangci-lint v1.24.0
