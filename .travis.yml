@@ -18,6 +18,7 @@ install:
 
 script:
 - go mod download
+- make changelogcheck
 - make docscheck
 - make lint
 - make test

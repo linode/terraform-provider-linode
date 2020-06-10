@@ -18,6 +18,8 @@ lint: fmtcheck
 		-S022=false \
 		./...
 
+changelogcheck:
+	go run github.com/Charliekenney23/tf-changelog-validator/cmd/tf-changelog-validator
 
 docscheck:
 	docker run --rm \
