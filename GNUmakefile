@@ -7,9 +7,29 @@ PKG_NAME=linode
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.19.0
 
-lint: fmtcheck
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint run
-	go run github.com/bflad/tfproviderlint/cmd/tfproviderlint \
+TOOLS_GOFLAGS := GOFLAGS="-mod=readonly"
+
+TF_PROVIDER_LINT_PKG       := github.com/bflad/tfproviderlint/cmd/tfproviderlint
+TF_CHANGELOG_VALIDATOR_PKG := github.com/Charliekenney23/tf-changelog-validator/cmd/tf-changelog-validator
+GOLANGCI_LINT_PKG          := github.com/golangci/golangci-lint/cmd/golangci-lint
+
+tools/tfproviderlint:
+	cd tools && $(TOOLS_GOFLAGS) go build $(TF_PROVIDER_LINT_PKG)
+
+tools/tf-changelog-validator:
+	cd tools && $(TOOLS_GOFLAGS) go build $(TF_CHANGELOG_VALIDATOR_PKG)
+
+tools/golangci-lint:
+	cd tools && $(TOOLS_GOFLAGS) go build $(GOLANGCI_LINT_PKG)
+
+clean:
+	rm tools/tfproviderlint
+	rm tools/tf-changelog-validator
+	rm tools/golangci-lint
+
+lint: fmtcheck tools/golangci-lint tools/tfproviderlint
+	tools/golangci-lint run
+	tools/tfproviderlint \
 		-R003=false \
 		-R005=false \
 		-R007=false \
@@ -18,8 +38,8 @@ lint: fmtcheck
 		-S022=false \
 		./...
 
-changelogcheck:
-	go run github.com/Charliekenney23/tf-changelog-validator/cmd/tf-changelog-validator
+changelogcheck: tools/tf-changelog-validator
+	tools/tf-changelog-validator
 
 docscheck:
 	docker run --rm \

@@ -27,6 +27,10 @@ website/node_modules
 
 website/vendor
 
+tools/tf-changelog-validator
+tools/tfproviderlint
+tools/golangci-lint
+
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/

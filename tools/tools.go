@@ -1,6 +1,6 @@
 // +build tools
 
-package main
+package tools
 
 import (
 	// side effect imports used to version go tools
