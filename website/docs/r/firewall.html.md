@@ -68,7 +68,7 @@ The following arguments are supported in the inbound rule block:
 
 * `protocol` - (Required) The network protocol this rule controls.
 
-* `addresses` - (Required) A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to whitelist all) this rule applies to.
+* `addresses` - (Required) A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to allow all) this rule applies to.
 
 ### outbound
 
@@ -78,7 +78,7 @@ The following arguments are supported in the outbound rule block:
 
 * `protocol` - (Required) The network protocol this rule controls.
 
-* `addresses` - (Required) A list of IP addresses, CIDR blocks, or `0.0.0.0/0` (to whitelist all) this rule applies to.
+* `addresses` - (Required) A list of IP addresses, CIDR blocks, or `0.0.0.0/0` (to allow all) this rule applies to.
 
 ## Attributes Reference
 

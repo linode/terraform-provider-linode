@@ -32,7 +32,7 @@ func resourceLinodeFirewallRule() *schema.Resource {
 			"addresses": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to whitelist all) this rule applies to.",
+				Description: "A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to allow all) this rule applies to.",
 				MinItems:    1,
 				Required:    true,
 				Set:         schema.HashString,
