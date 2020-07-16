@@ -7,8 +7,8 @@ Some resources are made available before the feature reaches general availabilit
 The `api_version` can be set on the provider block like so:
 
 ```terraform
-provider “linode” {
-  api_version = “v4beta”
+provider "linode" {
+  api_version = "v4beta"
 }
 ```
 
