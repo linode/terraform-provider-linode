@@ -13,7 +13,7 @@ For more information, see [Getting Started with Linode](https://linode.com/docs/
 
 The Linode Guide, [Use Terraform to Provision Linode Environments](https://www.linode.com/docs/applications/configuration-management/how-to-build-your-infrastructure-using-terraform-and-linode/), provides step-by-step guidance and additional examples.
 
-Linode Instances can also use [provisioners](/docs/provisioners/index.html).
+Linode Instances can also use [provisioners](https://www.terraform.io/docs/provisioners/index.html).
 
 ## Example Usage
 
