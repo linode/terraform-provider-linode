@@ -10,7 +10,7 @@ description: |-
 
 Provides information about a Linode account.
 
-This data source should not be used in conjuction with the `LINODE_DEBUG` option.  See the [debugging notes](/docs/providers/linode/index.html#debugging) for more details.
+This data source should not be used in conjuction with the `LINODE_DEBUG` option.  See the [debugging notes](/providers/linode/linode/latest/docs#debugging) for more details.
 
 ## Example Usage
 
