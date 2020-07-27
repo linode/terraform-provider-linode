@@ -15,7 +15,7 @@ Provides details about a specific Linode StackScript.
 The following example shows how one might use this data source to access information about a Linode StackScript.
 
 ```hcl
-"linode_stackscript" "my_stackscript" {
+data "linode_stackscript" "my_stackscript" {
     id = 355872
 }
 ```
