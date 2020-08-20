@@ -18,7 +18,7 @@ This provider plugin is maintained by Linode.
 
 ## Using the provider
 
-See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.  The [examples](https://github.com/terraform-providers/terraform-provider-linode/tree/master/examples) included in this repository demonstrate usage of many of the Linode provider resources.
+See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.  The [examples](https://github.com/linode/terraform-provider-linode/tree/master/examples) included in this repository demonstrate usage of many of the Linode provider resources.
 
 Additional documentation and examples are provided in the Linode Guide, [Using Terraform to Provision Linode Environments](https://linode.com/docs/platform/how-to-build-your-infrastructure-using-terraform-and-linode/).
 
@@ -32,18 +32,18 @@ You'll also need to correctly configure a [GOPATH](http://golang.org/doc/code.ht
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
-Clone this repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-linode`
+Clone this repository to: `$GOPATH/src/github.com/linode/terraform-provider-linode`
 
 ```sh
-mkdir -p $GOPATH/src/github.com/terraform-providers
-cd $GOPATH/src/github.com/terraform-providers
-git clone https://github.com/terraform-providers/terraform-provider-linode.git
+mkdir -p $GOPATH/src/github.com/linode
+cd $GOPATH/src/github.com/linode
+git clone https://github.com/linode/terraform-provider-linode.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-cd $GOPATH/src/github.com/terraform-providers/terraform-provider-linode
+cd $GOPATH/src/github.com/linode/terraform-provider-linode
 make build
 ```
 
