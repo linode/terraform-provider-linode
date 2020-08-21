@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
-	"github.com/terraform-providers/terraform-provider-linode/linode"
+	"github.com/linode/terraform-provider-linode/linode"
 )
 
 func main() {

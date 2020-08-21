@@ -45,7 +45,7 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
-	go test $(TEST) -v $(TESTARGS) -timeout 120m -parallel=2 -ldflags="-X=github.com/terraform-providers/terraform-provider-linode/version.ProviderVersion=acc"
+	go test $(TEST) -v $(TESTARGS) -timeout 120m -parallel=2 -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
 
 vet:
 	@echo "go vet ."
