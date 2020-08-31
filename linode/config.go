@@ -39,8 +39,8 @@ func (c *Config) Client() linodego.Client {
 	client := linodego.NewClient(oauth2Client)
 
 	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
-	userAgent := strings.TrimSpace(fmt.Sprintf("%s terraform-provider-linode/%s linodego/%s",
-		tfUserAgent, version.ProviderVersion, linodego.Version))
+	userAgent := strings.TrimSpace(fmt.Sprintf("%s terraform-provider-linode/%s",
+		tfUserAgent, version.ProviderVersion))
 	if c.UAPrefix != "" {
 		userAgent = c.UAPrefix + " " + userAgent
 	}
