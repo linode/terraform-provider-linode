@@ -115,6 +115,36 @@ func TestAccLinodeDomain_update(t *testing.T) {
 	})
 }
 
+func TestAccLinodeDomain_roundedDomainSecs(t *testing.T) {
+	t.Parallel()
+
+	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
+	var resName = "linode_domain.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeDomainDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeDomainConfigWithRoundedSec(domainName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeDomainExists,
+					resource.TestCheckResourceAttr(resName, "domain", domainName),
+					resource.TestCheckResourceAttr(resName, "refresh_sec", "3600"),
+					resource.TestCheckResourceAttr(resName, "retry_sec", "7200"),
+					resource.TestCheckResourceAttr(resName, "ttl_sec", "300"),
+					resource.TestCheckResourceAttr(resName, "expire_sec", "2419200"),
+				),
+			},
+			{
+				Config:            testAccCheckLinodeDomainConfigWithRoundedSec(domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckLinodeDomainExists(s *terraform.State) error {
 	client := testAccProvider.Meta().(linodego.Client)
 
@@ -192,4 +222,20 @@ resource "linode_domain" "foobar" {
 	description = "tf-testing"
 	tags = ["tf_test", "tf_test_2"]
 }`, domain, domain)
+}
+
+func testAccCheckLinodeDomainConfigWithRoundedSec(domain string) string {
+	return fmt.Sprintf(`
+resource "linode_domain" "foobar" {
+	domain = "%s"
+	type = "master"
+	status = "active"
+	soa_email = "example@%[1]s"
+	description = "tf-testing"
+	ttl_sec = 299
+	refresh_sec = 600
+	retry_sec = 3601
+	expire_sec = 2419201
+	tags = ["tf_test"]
+}`, domain)
 }

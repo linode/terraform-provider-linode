@@ -41,6 +41,35 @@ func TestAccLinodeDomainRecord_basic(t *testing.T) {
 	})
 }
 
+func TestAccLinodeDomainRecord_roundedTTLSec(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_domain_record.foobar"
+	domainRecordName := acctest.RandomWithPrefix("tf-test-")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeDomainRecordConfigWithTTL(domainRecordName, 299),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeDomainRecordExists,
+					resource.TestCheckResourceAttr(resName, "name", domainRecordName),
+					resource.TestCheckResourceAttr(resName, "ttl_sec", "300"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccStateIDDomainRecord,
+			},
+		},
+	})
+}
+
 func TestAccLinodeDomainRecord_ANoName(t *testing.T) {
 	t.Parallel()
 
@@ -259,6 +288,17 @@ resource "linode_domain_record" "foobar" {
 	record_type = "CNAME"
 	target = "target.%s.example"
 }`, domainRecord, domainRecord)
+}
+
+func testAccCheckLinodeDomainRecordConfigWithTTL(domainRecord string, ttlSec int) string {
+	return testAccCheckLinodeDomainConfigBasic(domainRecord+".example") + fmt.Sprintf(`
+resource "linode_domain_record" "foobar" {
+	domain_id = "${linode_domain.foobar.id}"
+	name = "%s"
+	record_type = "CNAME"
+	target = "target.%s.example"
+	ttl_sec = %d
+}`, domainRecord, domainRecord, ttlSec)
 }
 
 func testAccCheckLinodeDomainRecordConfigUpdates(domainRecord string) string {

@@ -12,7 +12,7 @@ import (
 )
 
 func resourceLinodeDomain() *schema.Resource {
-	validDomainSeconds := domainSecondsValidator()
+	secondsDiffSuppressor := domainSecondsDiffSuppressor()
 
 	return &schema.Resource{
 		Create: resourceLinodeDomainCreate,
@@ -72,28 +72,28 @@ func resourceLinodeDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"ttl_sec": {
-				Type:         schema.TypeInt,
-				Description:  "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				ValidateFunc: validDomainSeconds,
-				Optional:     true,
+				Type:             schema.TypeInt,
+				Description:      "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Optional:         true,
+				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"retry_sec": {
-				Type:         schema.TypeInt,
-				Description:  "The interval, in seconds, at which a failed refresh should be retried. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				ValidateFunc: validDomainSeconds,
-				Optional:     true,
+				Type:             schema.TypeInt,
+				Description:      "The interval, in seconds, at which a failed refresh should be retried. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Optional:         true,
+				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"expire_sec": {
-				Type:         schema.TypeInt,
-				Description:  "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 0, 00, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				ValidateFunc: validDomainSeconds,
-				Optional:     true,
+				Type:             schema.TypeInt,
+				Description:      "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Optional:         true,
+				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"refresh_sec": {
-				Type:         schema.TypeInt,
-				Description:  "The amount of time in seconds before this Domain should be refreshed. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				ValidateFunc: validDomainSeconds,
-				Optional:     true,
+				Type:             schema.TypeInt,
+				Description:      "The amount of time in seconds before this Domain should be refreshed. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Optional:         true,
+				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"soa_email": {
 				Type:        schema.TypeString,
@@ -108,32 +108,6 @@ func resourceLinodeDomain() *schema.Resource {
 			},
 		},
 	}
-}
-
-// IntInSlice returns a SchemaValidateFunc which tests if the provided value
-// is of type int and matches the value of an element in the valid slice
-func intInSlice(valid []int) schema.SchemaValidateFunc {
-	return func(i interface{}, k string) (s []string, es []error) {
-		v, ok := i.(int)
-		if !ok {
-			es = append(es, fmt.Errorf("expected type of %s to be int", k))
-			return
-		}
-
-		for _, n := range valid {
-			if v == n {
-				return
-			}
-		}
-
-		es = append(es, fmt.Errorf("expected %s to be one of %v, got %d", k, valid, v))
-		return
-	}
-}
-
-func domainSecondsValidator() schema.SchemaValidateFunc {
-	validSeconds := []int{0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200}
-	return intInSlice(validSeconds)
 }
 
 func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
@@ -290,4 +264,29 @@ func resourceLinodeDomainDelete(d *schema.ResourceData, meta interface{}) error 
 	d.SetId("")
 
 	return nil
+}
+
+func domainSecondsDiffSuppressor() schema.SchemaDiffSuppressFunc {
+	accepted := []int{
+		300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200,
+	}
+
+	rounder := func(n int) int {
+		if n == 0 {
+			return 0
+		}
+
+		for _, value := range accepted {
+			if n <= value {
+				return value
+			}
+		}
+		return accepted[len(accepted)-1]
+	}
+
+	return func(k, provisioned, declared string, d *schema.ResourceData) bool {
+		provisionedSec, _ := strconv.Atoi(provisioned)
+		declaredSec, _ := strconv.Atoi(declared)
+		return rounder(declaredSec) == provisionedSec
+	}
 }

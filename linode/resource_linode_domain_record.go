@@ -18,7 +18,7 @@ const (
 )
 
 func resourceLinodeDomainRecord() *schema.Resource {
-	validDomainSeconds := domainSecondsValidator()
+	secondsDiffSuppressor := domainSecondsDiffSuppressor()
 
 	return &schema.Resource{
 		Create: resourceLinodeDomainRecordCreate,
@@ -50,10 +50,10 @@ func resourceLinodeDomainRecord() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"A", "AAAA", "NS", "MX", "CNAME", "TXT", "SRV", "PTR", "CAA"}, false),
 			},
 			"ttl_sec": {
-				Type:         schema.TypeInt,
-				Description:  "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				ValidateFunc: validDomainSeconds,
-				Optional:     true,
+				Type:             schema.TypeInt,
+				Description:      "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Optional:         true,
+				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"target": {
 				Type:        schema.TypeString,
