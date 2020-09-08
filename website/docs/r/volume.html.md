@@ -63,7 +63,7 @@ The following arguments are supported:
 
 * `size` - (Optional) Size of the Volume in GB.
 
-* `linode_id` - (Optional) The ID of a Linode Instance where the the Volume should be attached.
+* `linode_id` - (Optional) The ID of a Linode Instance where the Volume should be attached.
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
