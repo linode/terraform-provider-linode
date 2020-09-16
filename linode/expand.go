@@ -12,6 +12,13 @@ func expandStringList(list []interface{}) []string {
 	return slice
 }
 
+func expandStringPointer(v interface{}) *string {
+	if s, ok := v.(string); ok {
+		return &s
+	}
+	return nil
+}
+
 func expandStringSet(set *schema.Set) []string {
 	return expandStringList(set.List())
 }
