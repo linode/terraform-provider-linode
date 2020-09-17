@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/linodego/pkg/condition"
+	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
 )
 
 const (
@@ -197,7 +197,7 @@ func resourceLinodeLKEClusterCreate(d *schema.ResourceData, meta interface{}) er
 
 	client.WaitForLKEClusterConditions(context.Background(), cluster.ID, linodego.LKEClusterPollOptions{
 		TimeoutSeconds: 10 * 60,
-	}, condition.ClusterHasReadyNode)
+	}, k8scondition.ClusterHasReadyNode)
 	return resourceLinodeLKEClusterRead(d, meta)
 }
 
