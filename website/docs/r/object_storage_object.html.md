@@ -12,7 +12,7 @@ Provides a Linode Object Storage Object resource. This can be used to create, mo
 
 ## Example Usage
 
-### Uploading a file to a bucket.
+### Uploading a file to a bucket
 
 ```hcl
 resource "linode_object_storage_object" "object" {
@@ -28,7 +28,7 @@ resource "linode_object_storage_object" "object" {
 
 ```
 
-### Uploading plaintext to a bucket.
+### Uploading plaintext to a bucket
 
 ```hcl
 resource "linode_object_storage_object" "object" {
