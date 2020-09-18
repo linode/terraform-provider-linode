@@ -1,4 +1,8 @@
-## 1.13.0 (Unreleased)
+## 1.13.0 (September 18, 2020)
+
+FEATURES:
+
+* **New Resource** `linode_object_storage_object`
 
 BUG FIXES:
 
