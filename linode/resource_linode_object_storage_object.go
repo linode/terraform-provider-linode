@@ -165,13 +165,14 @@ func resourceLinodeObjectStorageObjectUpdate(d *schema.ResourceData, meta interf
 
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
+	acl := d.Get("acl").(string)
 
 	if d.HasChange("acl") {
 		client := s3ConnFromResourceData(d)
 		if _, err := client.PutObjectAcl(&s3.PutObjectAclInput{
 			Bucket: &bucket,
 			Key:    &key,
-			ACL:    expandStringPointer(d.Get("acl")),
+			ACL:    &acl,
 		}); err != nil {
 			return fmt.Errorf("failed to put Bucket (%s) Object (%s) ACL: %s", bucket, key, err)
 		}
@@ -214,18 +215,25 @@ func putLinodeObjectStorageObject(d *schema.ResourceData, meta interface{}) erro
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
+	nilOrValue := func(s string) *string {
+		if s == "" {
+			return nil
+		}
+		return &s
+	}
+
 	putInput := &s3.PutObjectInput{
 		Bucket: &bucket,
 		Key:    &key,
 		Body:   body,
 
-		ACL:                     expandStringPointer(d.Get("acl")),
-		CacheControl:            expandStringPointer(d.Get("cache_control")),
-		ContentDisposition:      expandStringPointer(d.Get("content_disposition")),
-		ContentEncoding:         expandStringPointer(d.Get("content_encoding")),
-		ContentLanguage:         expandStringPointer(d.Get("content_language")),
-		ContentType:             expandStringPointer(d.Get("content_type")),
-		WebsiteRedirectLocation: expandStringPointer(d.Get("website_redirect")),
+		ACL:                     nilOrValue(d.Get("acl").(string)),
+		CacheControl:            nilOrValue(d.Get("cache_control").(string)),
+		ContentDisposition:      nilOrValue(d.Get("content_disposition").(string)),
+		ContentEncoding:         nilOrValue(d.Get("content_encoding").(string)),
+		ContentLanguage:         nilOrValue(d.Get("content_language").(string)),
+		ContentType:             nilOrValue(d.Get("content_type").(string)),
+		WebsiteRedirectLocation: nilOrValue(d.Get("website_redirect").(string)),
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
