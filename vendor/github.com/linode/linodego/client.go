@@ -26,8 +26,6 @@ const (
 	APIVersionVar = "LINODE_API_VERSION"
 	// APIProto connect to API with http(s)
 	APIProto = "https"
-	// Version of linodego
-	Version = "0.12.0"
 	// APIEnvVar environment var to check for API token
 	APIEnvVar = "LINODE_TOKEN"
 	// APISecondsPerPoll how frequently to poll for new Events or Status in WaitFor functions
@@ -35,7 +33,7 @@ const (
 	// Maximum wait time for retries
 	APIRetryMaxWaitTime = time.Duration(30) * time.Second
 	// DefaultUserAgent is the default User-Agent sent in HTTP request headers
-	DefaultUserAgent = "linodego " + Version + " https://github.com/linode/linodego"
+	DefaultUserAgent = "linodego https://github.com/linode/linodego"
 )
 
 var (

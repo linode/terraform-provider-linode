@@ -205,13 +205,6 @@ func (c *Client) CreateVolume(ctx context.Context, createOpts VolumeCreateOption
 	return resp.Result().(*Volume), nil
 }
 
-// RenameVolume renames the label of a Linode volume
-// DEPRECATED: use UpdateVolume
-func (c *Client) RenameVolume(ctx context.Context, id int, label string) (*Volume, error) {
-	updateOpts := VolumeUpdateOptions{Label: label}
-	return c.UpdateVolume(ctx, id, updateOpts)
-}
-
 // UpdateVolume updates the Volume with the specified id
 func (c *Client) UpdateVolume(ctx context.Context, id int, volume VolumeUpdateOptions) (*Volume, error) {
 	var body string

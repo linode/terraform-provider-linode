@@ -11,6 +11,7 @@ type NodeBalancerConfig struct {
 	ID             int                     `json:"id"`
 	Port           int                     `json:"port"`
 	Protocol       ConfigProtocol          `json:"protocol"`
+	ProxyProtocol  ConfigProxyProtocol     `json:"proxy_protocol"`
 	Algorithm      ConfigAlgorithm         `json:"algorithm"`
 	Stickiness     ConfigStickiness        `json:"stickiness"`
 	Check          ConfigCheck             `json:"check"`
@@ -70,6 +71,16 @@ const (
 	ProtocolTCP   ConfigProtocol = "tcp"
 )
 
+// ConfigProxyProtocol constants start with ProxyProtocol and include Linode API NodeBalancer Config proxy protocol versions
+type ConfigProxyProtocol string
+
+// ConfigProxyProtocol constatns reflect the proxy protocol version used by a NodeBalancer Config
+const (
+	ProxyProtocolNone ConfigProxyProtocol = "none"
+	ProxyProtocolV1   ConfigProxyProtocol = "v1"
+	ProxyProtocolV2   ConfigProxyProtocol = "v2"
+)
+
 // ConfigCipher constants start with Cipher and include Linode API NodeBalancer Config Cipher values
 type ConfigCipher string
 
@@ -89,6 +100,7 @@ type NodeBalancerNodeStatus struct {
 type NodeBalancerConfigCreateOptions struct {
 	Port          int                             `json:"port"`
 	Protocol      ConfigProtocol                  `json:"protocol,omitempty"`
+	ProxyProtocol ConfigProxyProtocol             `json:"proxy_protocol,omitempty"`
 	Algorithm     ConfigAlgorithm                 `json:"algorithm,omitempty"`
 	Stickiness    ConfigStickiness                `json:"stickiness,omitempty"`
 	Check         ConfigCheck                     `json:"check,omitempty"`
@@ -108,6 +120,7 @@ type NodeBalancerConfigCreateOptions struct {
 type NodeBalancerConfigRebuildOptions struct {
 	Port          int                             `json:"port"`
 	Protocol      ConfigProtocol                  `json:"protocol,omitempty"`
+	ProxyProtocol ConfigProxyProtocol             `json:"proxy_protocol,omitempty"`
 	Algorithm     ConfigAlgorithm                 `json:"algorithm,omitempty"`
 	Stickiness    ConfigStickiness                `json:"stickiness,omitempty"`
 	Check         ConfigCheck                     `json:"check,omitempty"`
@@ -131,6 +144,7 @@ func (i NodeBalancerConfig) GetCreateOptions() NodeBalancerConfigCreateOptions {
 	return NodeBalancerConfigCreateOptions{
 		Port:          i.Port,
 		Protocol:      i.Protocol,
+		ProxyProtocol: i.ProxyProtocol,
 		Algorithm:     i.Algorithm,
 		Stickiness:    i.Stickiness,
 		Check:         i.Check,
@@ -151,6 +165,7 @@ func (i NodeBalancerConfig) GetUpdateOptions() NodeBalancerConfigUpdateOptions {
 	return NodeBalancerConfigUpdateOptions{
 		Port:          i.Port,
 		Protocol:      i.Protocol,
+		ProxyProtocol: i.ProxyProtocol,
 		Algorithm:     i.Algorithm,
 		Stickiness:    i.Stickiness,
 		Check:         i.Check,
@@ -171,6 +186,7 @@ func (i NodeBalancerConfig) GetRebuildOptions() NodeBalancerConfigRebuildOptions
 	return NodeBalancerConfigRebuildOptions{
 		Port:          i.Port,
 		Protocol:      i.Protocol,
+		ProxyProtocol: i.ProxyProtocol,
 		Algorithm:     i.Algorithm,
 		Stickiness:    i.Stickiness,
 		Check:         i.Check,
