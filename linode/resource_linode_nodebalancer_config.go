@@ -35,6 +35,13 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				Optional:     true,
 				Default:      linodego.ProtocolHTTP,
 			},
+			"proxy_protocol": {
+				Type:         schema.TypeString,
+				Description:  "The version of ProxyProtocol to use for the underlying NodeBalancer. This requires protocol to be `tcp`. Valid values are `none`, `v1`, and `v2`.",
+				ValidateFunc: validation.StringInSlice([]string{"none", "v1", "v2"}, false),
+				Optional:     true,
+				Default:      linodego.ProxyProtocolNone,
+			},
 			"port": {
 				Type:         schema.TypeInt,
 				Description:  "The TCP port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example). While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443.",
@@ -213,6 +220,7 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 	d.Set("cipher_suite", config.CipherSuite)
 	d.Set("port", config.Port)
 	d.Set("protocol", config.Protocol)
+	d.Set("proxy_protocol", config.ProxyProtocol)
 	d.Set("ssl_key", config.SSLKey)
 	d.Set("ssl_fingerprint", config.SSLFingerprint)
 	d.Set("ssl_commonname", config.SSLCommonName)
@@ -245,6 +253,7 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 		CheckTimeout:  d.Get("check_timeout").(int),
 		Port:          d.Get("port").(int),
 		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
+		ProxyProtocol: linodego.ConfigProxyProtocol(d.Get("proxy_protocol").(string)),
 		SSLCert:       d.Get("ssl_cert").(string),
 		SSLKey:        d.Get("ssl_key").(string),
 	}
@@ -286,6 +295,7 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 		CheckTimeout:  d.Get("check_timeout").(int),
 		Port:          d.Get("port").(int),
 		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
+		ProxyProtocol: linodego.ConfigProxyProtocol(d.Get("proxy_protocol").(string)),
 		SSLCert:       d.Get("ssl_cert").(string),
 		SSLKey:        d.Get("ssl_key").(string),
 	}
