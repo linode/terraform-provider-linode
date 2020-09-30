@@ -1,6 +1,6 @@
 SWEEP?="tf_test,tf-test"
-TEST?=$$(go list ./... |grep -v 'vendor')
-GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
+TEST?=$$(go list ./...)
+GOFMT_FILES?=$$(find . -name '*.go')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode
 
@@ -46,7 +46,7 @@ testacc: fmtcheck
 
 vet:
 	@echo "go vet ."
-	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
+	@go vet $$(go list ./...) ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \
 		echo "and fix them if necessary before submitting the code for review."; \
