@@ -2,7 +2,6 @@ package linodego
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,9 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/linode/linodego/internal/kubernetes"
-	"github.com/linode/linodego/pkg/condition"
 )
 
 // WaitForInstanceStatus waits for the Linode instance to reach the desired state
@@ -133,7 +129,7 @@ func (client Client) WaitForSnapshotStatus(ctx context.Context, instanceID int, 
 }
 
 // WaitForVolumeLinodeID waits for the Volume to match the desired LinodeID
-// before returning. An active Instance will not immediately attach or detach a volume, so the
+// before returning. An active Instance will not immediately attach or detach a volume, so
 // the LinodeID must be polled to determine volume readiness from the API.
 // WaitForVolumeLinodeID will timeout with an error after timeoutSeconds.
 func (client Client) WaitForVolumeLinodeID(ctx context.Context, volumeID int, linodeID *int, timeoutSeconds int) (*Volume, error) {
@@ -199,39 +195,25 @@ type LKEClusterPollOptions struct {
 	TimeoutSeconds int
 
 	// TansportWrapper allows adding a transport middleware function that will
-	// wrap the LKE Cluster client's undelying http.RoundTripper.
+	// wrap the LKE Cluster client's underlying http.RoundTripper.
 	TransportWrapper func(http.RoundTripper) http.RoundTripper
 }
 
-func getLKEClusterClientset(
-	ctx context.Context,
-	client *Client,
-	clusterID int,
-	transportWrapper func(http.RoundTripper) http.RoundTripper,
-) (kubernetes.Clientset, error) {
-	resp, err := client.GetLKEClusterKubeconfig(ctx, clusterID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get Kubeconfig for LKE cluster %d: %s", clusterID, err)
-	}
-
-	kubeConfigBytes, err := base64.StdEncoding.DecodeString(resp.KubeConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode kubeconfig: %s", err)
-	}
-
-	clientset, err := kubernetes.BuildClientsetFromConfig(kubeConfigBytes, transportWrapper)
-	if err != nil {
-		return nil, fmt.Errorf("failed to build client for LKE cluster %d: %s", clusterID, err)
-	}
-	return clientset, nil
+type ClusterConditionOptions struct {
+	LKEClusterKubeconfig *LKEClusterKubeconfig
+	TransportWrapper     func(http.RoundTripper) http.RoundTripper
 }
+
+// ClusterConditionFunc represents a function that tests a condition against an LKE cluster,
+// returns true if the condition has been reached, false if it has not yet been reached.
+type ClusterConditionFunc func(context.Context, ClusterConditionOptions) (bool, error)
 
 // WaitForLKEClusterConditions waits for the given LKE conditions to be true
 func (client Client) WaitForLKEClusterConditions(
 	ctx context.Context,
 	clusterID int,
 	options LKEClusterPollOptions,
-	conditions ...condition.ClusterConditionFunc,
+	conditions ...ClusterConditionFunc,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)
 	if options.TimeoutSeconds != 0 {
@@ -240,22 +222,22 @@ func (client Client) WaitForLKEClusterConditions(
 	defer cancel()
 
 	var prevLog string
-	var clientset kubernetes.Clientset
-
-	clientset, err := getLKEClusterClientset(ctx, &client, clusterID, options.TransportWrapper)
+	lkeKubeConfig, err := client.GetLKEClusterKubeconfig(ctx, clusterID)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get Kubeconfig for LKE cluster %d: %s", clusterID, err)
 	}
 
 	ticker := time.NewTicker(client.millisecondsPerPoll * time.Millisecond)
 	defer ticker.Stop()
+
+	conditionOptions := ClusterConditionOptions{LKEClusterKubeconfig: lkeKubeConfig, TransportWrapper: options.TransportWrapper}
 
 	for _, condition := range conditions {
 	ConditionSucceeded:
 		for {
 			select {
 			case <-ticker.C:
-				result, err := condition(ctx, clientset)
+				result, err := condition(ctx, conditionOptions)
 				if err != nil {
 					if err.Error() != prevLog {
 						prevLog = err.Error()
@@ -273,13 +255,6 @@ func (client Client) WaitForLKEClusterConditions(
 		}
 	}
 	return nil
-}
-
-// WaitForLKEClusterReady polls with a given timeout for the LKE Cluster's api-server
-// to be healthy and for the cluster to have at least one node with the NodeReady
-// condition true.
-func (client Client) WaitForLKEClusterReady(ctx context.Context, clusterID int, options LKEClusterPollOptions) error {
-	return client.WaitForLKEClusterConditions(ctx, clusterID, options, condition.ClusterHasReadyNode)
 }
 
 // WaitForEventFinished waits for an entity action to reach the 'finished' state

@@ -50,6 +50,8 @@ The following arguments are supported:
 
 * `protocol` - (Optional) The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key. (Defaults to "http")
 
+* `proxy_protocol` - (Optional) The version of ProxyProtocol to use for the underlying NodeBalancer. This requires protocol to be `tcp`. Valid values are `none`, `v1`, and `v2`. (Defaults to `none`)
+
 * `port` - (Optional) The TCP port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example). While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443. (Defaults to 80)
 
 * `algorithm` - (Optional) What algorithm this NodeBalancer should use for routing traffic to backends: roundrobin, leastconn, source

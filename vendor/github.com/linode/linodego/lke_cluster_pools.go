@@ -16,6 +16,12 @@ const (
 	LKELinodeNotReady LKELinodeStatus = "not_ready"
 )
 
+// LKEClusterPoolDisk represents a Node disk in an LKEClusterPool object
+type LKEClusterPoolDisk struct {
+	Size int    `json:"size"`
+	Type string `json:"type"`
+}
+
 // LKEClusterPoolLinode represents a LKEClusterPoolLinode object
 type LKEClusterPoolLinode struct {
 	ID         string          `json:"id"`
@@ -28,13 +34,15 @@ type LKEClusterPool struct {
 	ID      int                    `json:"id"`
 	Count   int                    `json:"count"`
 	Type    string                 `json:"type"`
+	Disks   []LKEClusterPoolDisk   `json:"disks"`
 	Linodes []LKEClusterPoolLinode `json:"nodes"`
 }
 
 // LKEClusterPoolCreateOptions fields are those accepted by CreateLKEClusterPool
 type LKEClusterPoolCreateOptions struct {
-	Count int    `json:"count"`
-	Type  string `json:"type"`
+	Count int                  `json:"count"`
+	Type  string               `json:"type"`
+	Disks []LKEClusterPoolDisk `json:"disks"`
 }
 
 // LKEClusterPoolUpdateOptions fields are those accepted by UpdateLKEClusterPool
@@ -46,6 +54,7 @@ type LKEClusterPoolUpdateOptions struct {
 // use in CreateLKEClusterPool
 func (l LKEClusterPool) GetCreateOptions() (o LKEClusterPoolCreateOptions) {
 	o.Count = l.Count
+	o.Disks = l.Disks
 	return
 }
 

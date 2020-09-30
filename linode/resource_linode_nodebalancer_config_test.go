@@ -103,6 +103,30 @@ func TestAccLinodeNodeBalancerConfig_update(t *testing.T) {
 	})
 }
 
+func TestAccLinodeNodeBalancerConfig_proxyProtocol(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer_config.foofig"
+	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeNodeBalancerConfigProxyProtocol(nodebalancerName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeNodeBalancerConfigExists,
+					resource.TestCheckResourceAttr(resName, "port", "80"),
+					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolTCP)),
+					resource.TestCheckResourceAttr(resName, "proxy_protocol", string(linodego.ProxyProtocolV2)),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
 	client := testAccProvider.Meta().(linodego.Client)
 
@@ -195,6 +219,17 @@ resource "linode_nodebalancer_config" "foofig" {
 	check = "http"
 	check_passive = true
 	check_path = "/"
+}
+`
+}
+
+func testAccCheckLinodeNodeBalancerConfigProxyProtocol(nodebalancer string) string {
+	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + `
+resource "linode_nodebalancer_config" "foofig" {
+	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+	port = 80
+	protocol = "tcp"
+	proxy_protocol = "v2"
 }
 `
 }
