@@ -33,3 +33,13 @@ The following arguments are supported:
 * `cluster` - (Required) The cluster of the Linode Object Storage Bucket.
 
 * `label` - (Required) The label of the Linode Object Storage Bucket.
+
+* [`cert`](#cert) - (Optional) The bucket's TLS/SSL certificate.
+
+### cert
+
+The following arguments are supported in the cert specification block:
+
+* `certificate` - (Required) The Base64 encoded and PEM formatted SSL certificate.
+
+* `private_key` - (Required) The private key associated with the TLS/SSL certificate.

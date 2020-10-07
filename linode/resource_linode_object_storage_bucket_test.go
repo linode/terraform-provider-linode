@@ -1,9 +1,18 @@
 package linode
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"fmt"
+	"math/big"
+	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -16,6 +25,56 @@ func init() {
 		Name: "linode_object_storage_bucket",
 		F:    testSweepLinodeObjectStorageBucket,
 	})
+}
+
+func generateTestCert(domain string) (certificate, privateKey string, err error) {
+	priv, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate key: %s", err)
+	}
+	keyUsage := x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment
+
+	validFrom := time.Now()
+	validUntil := validFrom.Add(time.Hour)
+
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate serial number: %s", err)
+	}
+
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject: pkix.Name{
+			Organization: []string{"Linode"},
+		},
+		NotBefore:             validFrom,
+		NotAfter:              validUntil,
+		KeyUsage:              keyUsage,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+		DNSNames:              []string{domain},
+	}
+
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, priv.Public(), priv)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to create certificate: %s", err)
+	}
+	certBuffer := new(bytes.Buffer)
+	if err := pem.Encode(certBuffer, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
+		return "", "", fmt.Errorf("failed to encode certificate to PEM: %s", err)
+	}
+
+	privBytes, err := x509.MarshalPKCS8PrivateKey(priv)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to marshal private key: %s", err)
+	}
+	keyBuffer := new(bytes.Buffer)
+	if err := pem.Encode(keyBuffer, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes}); err != nil {
+		return "", "", fmt.Errorf("failed to encode private key to PEM: %s", err)
+	}
+
+	return string(certBuffer.Bytes()), string(keyBuffer.Bytes()), nil
 }
 
 func testSweepLinodeObjectStorageBucket(prefix string) error {
@@ -65,6 +124,63 @@ func TestAccLinodeObjectStorageBucket_basic(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccLinodeObjectStorageBucket_cert(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_bucket.foobar"
+	objectStorageBucketName := acctest.RandomWithPrefix("tf-test") + ".io"
+	cert, key, err := generateTestCert(objectStorageBucketName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	invalidCert, invalidKey, err := generateTestCert("bogusdomain.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	otherCert, otherKey, err := generateTestCert(objectStorageBucketName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, cert, key),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeObjectStorageBucketExists,
+					testAccCheckLinodeObjectStorageBucketHasSSL(true),
+					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+				),
+			},
+			{
+				Config:      testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, invalidCert, invalidKey),
+				ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
+			},
+			{
+				Config: testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, otherCert, otherKey),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeObjectStorageBucketExists,
+					testAccCheckLinodeObjectStorageBucketHasSSL(true),
+					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+				),
+			},
+			{
+				Config: testAccCheckLinodeObjectStorageBucketConfigBasic(objectStorageBucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeObjectStorageBucketExists,
+					testAccCheckLinodeObjectStorageBucketHasSSL(false),
+					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+				),
 			},
 		},
 	})
@@ -148,6 +264,32 @@ func testAccCheckLinodeObjectStorageBucketExists(s *terraform.State) error {
 	return nil
 }
 
+func testAccCheckLinodeObjectStorageBucketHasSSL(expected bool) func(*terraform.State) error {
+	return func(s *terraform.State) error {
+		client := testAccProvider.Meta().(linodego.Client)
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "linode_object_storage_bucket" {
+				continue
+			}
+
+			cluster, label, err := decodeLinodeObjectStorageBucketID(rs.Primary.ID)
+			if err != nil {
+				return fmt.Errorf("could not parse bucket ID %s: %s", rs.Primary.ID, err)
+			}
+
+			cert, err := client.GetObjectStorageBucketCert(context.TODO(), cluster, label)
+			if err != nil {
+				return fmt.Errorf("failed to get bucket cert: %s", err)
+			}
+
+			if cert.SSL != expected {
+				return fmt.Errorf("expected cert.SSL to be %v; got %v", expected, cert.SSL)
+			}
+		}
+		return nil
+	}
+}
+
 func testAccCheckLinodeObjectStorageBucketDestroy(s *terraform.State) error {
 	client, ok := testAccProvider.Meta().(linodego.Client)
 	if !ok {
@@ -188,6 +330,23 @@ resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"
 	label = "%s"
 }`, object_storage_bucket)
+}
+
+func testAccCheckLinodeObjectStorageBucketConfigWithCert(object_storage_bucket, cert, key string) string {
+	return fmt.Sprintf(`
+resource "linode_object_storage_bucket" "foobar" {
+	cluster = "us-east-1"
+	label = "%s"
+
+	cert {
+		certificate = <<EOF
+%s
+EOF
+		private_key = <<EOF
+%s
+EOF
+	}
+}`, object_storage_bucket, cert, key)
 }
 
 func testAccCheckLinodeObjectStorageBucketConfigUpdates(object_storage_bucket string) string {

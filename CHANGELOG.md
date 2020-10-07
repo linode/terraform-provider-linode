@@ -1,3 +1,9 @@
+## 1.13.1 (October 7, 2020)
+
+ENHANCEMENTS:
+
+* resource/linode_object_storage_bucket: Add `cert` field
+
 ## 1.13.0 (September 18, 2020)
 
 FEATURES:
