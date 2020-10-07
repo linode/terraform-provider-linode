@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
+	"regexp"
 	"testing"
 	"time"
 
@@ -138,7 +139,12 @@ func TestAccLinodeObjectStorageBucket_cert(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cert2, key2, err := generateTestCert(objectStorageBucketName)
+	invalidCert, invalidKey, err := generateTestCert("bogusdomain.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	otherCert, otherKey, err := generateTestCert(objectStorageBucketName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +163,11 @@ func TestAccLinodeObjectStorageBucket_cert(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, cert2, key2),
+				Config:      testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, invalidCert, invalidKey),
+				ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
+			},
+			{
+				Config: testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, otherCert, otherKey),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeObjectStorageBucketExists,
 					testAccCheckLinodeObjectStorageBucketHasSSL(true),
