@@ -1,4 +1,4 @@
-## 1.13.1 (October 7, 2020)
+## 1.13.2 (October 7, 2020)
 
 ENHANCEMENTS:
 
