@@ -63,6 +63,40 @@ func TestAccLinodeObjectStorageKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", objectStorageKeyLabel),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 					resource.TestCheckResourceAttrSet(resName, "secret_key"),
+					resource.TestCheckResourceAttr(resName, "limited", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeObjectStorageKey_limited(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_key.foobar"
+	var objectStorageKeyLabel = acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeObjectStorageKeyConfigLimited(objectStorageKeyLabel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeObjectStorageKeyExists,
+					testAccCheckLinodeObjectStorageKeySecretKeyAccessible,
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_key", objectStorageKeyLabel)),
+					resource.TestCheckResourceAttrSet(resName, "access_key"),
+					resource.TestCheckResourceAttrSet(resName, "secret_key"),
+					resource.TestCheckResourceAttr(resName, "limited", "true"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.#", "2"),
+					resource.TestCheckResourceAttrSet(resName, "bucket_access.0.bucket_name"),
+					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", "us-east-1"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", "us-east-1"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
 				),
 			},
 		},
@@ -189,4 +223,25 @@ func testAccCheckLinodeObjectStorageKeyConfigUpdates(label string) string {
 resource "linode_object_storage_key" "foobar" {
 	label = "%s_renamed"
 }`, label)
+}
+
+func testAccCheckLinodeObjectStorageKeyConfigLimited(label string) string {
+	return fmt.Sprintf(`
+resource "linode_object_storage_bucket" "foobar" {
+	cluster = "us-east-1"
+	label = "%s-bucket"
+}
+resource "linode_object_storage_key" "foobar" {
+	label = "%s_key"
+    bucket_access {
+        bucket_name = "%s-bucket"
+        cluster = "us-east-1"
+        permissions = "read_only"
+    }
+    bucket_access {
+        bucket_name = linode_object_storage_bucket.foobar.label
+        cluster = linode_object_storage_bucket.foobar.cluster
+        permissions = "read_write"
+    }
+}`, label, label, label)
 }

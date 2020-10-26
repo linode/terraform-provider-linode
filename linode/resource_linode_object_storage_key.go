@@ -33,6 +33,35 @@ func resourceLinodeObjectStorageKey() *schema.Resource {
 				Sensitive:   true,
 				Computed:    true,
 			},
+			"limited": {
+				Type:        schema.TypeBool,
+				Description: "Whether or not this key is a limited access key.",
+				Computed:    true,
+			},
+			"bucket_access": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bucket_name": {
+							Type:        schema.TypeString,
+							Description: "The unique label of the bucket to which the key will grant limited access.",
+							Required:    true,
+						},
+						"cluster": {
+							Type:        schema.TypeString,
+							Description: "The Object Storage cluster where a bucket to which the key is granting access is hosted.",
+							Required:    true,
+						},
+						"permissions": {
+							Type:        schema.TypeString,
+							Description: "This Limited Access Key’s permissions for the selected bucket.",
+							Required:    true,
+						},
+					},
+				},
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -46,6 +75,11 @@ func resourceLinodeObjectStorageKeyCreate(d *schema.ResourceData, meta interface
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
 		Label: d.Get("label").(string),
 	}
+
+	if bucketAccess, bucketAccessOk := d.GetOk("bucket_access"); bucketAccessOk {
+		createOpts.BucketAccess = expandLinodeObjectStorageKeyBucketAccess(bucketAccess.([]interface{}))
+	}
+
 	objectStorageKey, err := client.CreateObjectStorageKey(context.Background(), createOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating a Linode Object Storage Key: %s", err)
@@ -56,6 +90,13 @@ func resourceLinodeObjectStorageKeyCreate(d *schema.ResourceData, meta interface
 
 	// secret_key only available on creation
 	d.Set("secret_key", objectStorageKey.SecretKey)
+
+	d.Set("limited", objectStorageKey.Limited)
+
+	bucketAccess := flattenLinodeObjectStorageKeyBucketAccess(objectStorageKey.BucketAccess)
+	if bucketAccess != nil {
+		d.Set("bucket_access", bucketAccess)
+	}
 
 	return resourceLinodeObjectStorageKeyRead(d, meta)
 }
@@ -75,6 +116,12 @@ func resourceLinodeObjectStorageKeyRead(d *schema.ResourceData, meta interface{}
 
 	d.Set("label", objectStorageKey.Label)
 	d.Set("access_key", objectStorageKey.AccessKey)
+	d.Set("limited", objectStorageKey.Limited)
+
+	bucketAccess := flattenLinodeObjectStorageKeyBucketAccess(objectStorageKey.BucketAccess)
+	if bucketAccess != nil {
+		d.Set("bucket_access", bucketAccess)
+	}
 	return nil
 }
 
@@ -117,4 +164,34 @@ func resourceLinodeObjectStorageKeyDelete(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error deleting Linode Object Storage Key %d: %s", id, err)
 	}
 	return nil
+}
+
+func flattenLinodeObjectStorageKeyBucketAccess(bucketAccesses *[]linodego.ObjectStorageKeyBucketAccess) *[]map[string]interface{} {
+	if bucketAccesses == nil {
+		return nil
+	}
+	specs := make([]map[string]interface{}, len(*bucketAccesses))
+
+	for i, bucketAccess := range *bucketAccesses {
+		specs[i] = map[string]interface{}{
+			"bucket_name": bucketAccess.BucketName,
+			"cluster":     bucketAccess.Cluster,
+			"permissions": bucketAccess.Permissions,
+		}
+	}
+	return &specs
+}
+
+func expandLinodeObjectStorageKeyBucketAccess(bucketAccessSpecs []interface{}) *[]linodego.ObjectStorageKeyBucketAccess {
+	bucketAccesses := make([]linodego.ObjectStorageKeyBucketAccess, len(bucketAccessSpecs))
+	for i, bucketAccessSpec := range bucketAccessSpecs {
+		bucketAccessSpec := bucketAccessSpec.(map[string]interface{})
+		bucketAccess := linodego.ObjectStorageKeyBucketAccess{
+			BucketName:  bucketAccessSpec["bucket_name"].(string),
+			Cluster:     bucketAccessSpec["cluster"].(string),
+			Permissions: bucketAccessSpec["permissions"].(string),
+		}
+		bucketAccesses[i] = bucketAccess
+	}
+	return &bucketAccesses
 }
