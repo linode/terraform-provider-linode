@@ -99,6 +99,6 @@ func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
-	return fmt.Errorf("Linode Volume %s was not found", string(requestedVolumeID))
+	return fmt.Errorf("Linode Volume %s was not found", fmt.Sprint(requestedVolumeID))
 
 }
