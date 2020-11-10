@@ -1673,6 +1673,18 @@ resource "linode_instance" "foobar" {
 }`, instance, pubkey)
 }
 
+func testAccCheckLinodeInstanceWithBootImage(identifier, instance string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "%s" {
+	label     = "%s"
+	region    = "ca-central"
+	image     = "linode/alpine3.12"
+	type      = "g6-nanode-1"
+	root_pass = "terraform-test"
+}
+`, identifier, instance)
+}
+
 func testAccCheckLinodeInstanceWithType(instance string, pubkey string, typ string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
