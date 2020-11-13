@@ -74,6 +74,7 @@ func Provider() terraform.ResourceProvider {
 			"linode_sshkey":                resourceLinodeSSHKey(),
 			"linode_stackscript":           resourceLinodeStackscript(),
 			"linode_token":                 resourceLinodeToken(),
+			"linode_vlan":                  resourceLinodeVLAN(),
 			"linode_volume":                resourceLinodeVolume(),
 		},
 	}

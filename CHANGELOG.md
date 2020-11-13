@@ -1,3 +1,9 @@
+## 1.13.4 (November 13, 2020)
+
+FEATURES:
+
+* **New Resource** `linode_vlan`
+
 ## 1.13.3 (October 27, 2020)
 
 ENHANCEMENTS:
