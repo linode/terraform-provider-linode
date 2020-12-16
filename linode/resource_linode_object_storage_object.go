@@ -13,7 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func resourceLinodeObjectStorageObject() *schema.Resource {
@@ -66,10 +65,6 @@ func resourceLinodeObjectStorageObject() *schema.Resource {
 				Type:     schema.TypeString,
 				Default:  s3.ObjectCannedACLPrivate,
 				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					s3.ObjectCannedACLPrivate,
-					s3.ObjectCannedACLPublicRead,
-				}, false),
 			},
 			"cache_control": {
 				Type:     schema.TypeString,
