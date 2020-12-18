@@ -39,7 +39,7 @@ resource "linode_instance" "foo" {
   authorized_keys    = ["..."]
   root_pass      = "..."
 
-  stackscript_id = "${linode_stackscript.install-nginx.id}"
+  stackscript_id = linode_stackscript.foo.id
   stackscript_data = {
     "package" = "nginx"
   }
