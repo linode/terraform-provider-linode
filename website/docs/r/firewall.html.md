@@ -56,7 +56,7 @@ The following arguments are supported:
 
 * [`outbound`](#outbound) - (Optional) A firewall rule that specifies what outbound network traffic is allowed.
 
-* `linodes` - (Required) A list of IDs of Linodes this Firewall should govern it's network traffic for.
+* `linodes` - (Optional) A list of IDs of Linodes this Firewall should govern it's network traffic for.
 
 * `tags` - (Optional) A list of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
 
