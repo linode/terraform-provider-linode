@@ -35,7 +35,6 @@ resource "linode_nodebalancer_config" "foofig" {
     stickiness = "http_cookie"
     algorithm = "source"
 }
-
 ```
 
 ## Argument Reference
@@ -84,9 +83,15 @@ This resource exports the following attributes:
 
 * `ssl_fingerprint` - The fingerprint for the SSL certification this port is serving if this port is not configured to use SSL.
 
-* `node_status_up` - The number of backends considered to be 'UP' and healthy, and that are serving requests.
+* [`node_status`](#node_status) - The status of the attached nodes.
 
-* `node_status_down` - The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.
+### node_status
+
+The following attributes are available on node_status:
+
+* `up` - The number of backends considered to be 'UP' and healthy, and that are serving requests.
+
+* `down` - The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.
 
 ## Import
 

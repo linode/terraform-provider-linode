@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 )
 
@@ -763,7 +763,7 @@ func TestAccLinodeInstance_tag(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
-					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 				),
 			},
 			// Apply updated tags
@@ -772,8 +772,8 @@ func TestAccLinodeInstance_tag(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
-					resource.TestCheckResourceAttr(resName, "tags.4106436895", "tf_test"),
-					resource.TestCheckResourceAttr(resName, "tags.2667398925", "tf_test_2"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
 				),
 			},
 		},

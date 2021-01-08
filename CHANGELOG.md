@@ -1,3 +1,16 @@
+## 1.14.0 (January 8, 2021)
+
+BACKWARDS INCOMPATIBILITIES / NOTES:
+
+* resource/linode\_nodebalancer: `transfer` is now a single element resource list.
+* resource/linode\_nodebalancer\_config: `node_status` is now a single element resource list.
+
+ENHANCEMENTS:
+
+* terraform-plugin-sdk updated to v2.4.0.
+* linodego updated to v0.24.2.
+* resource/linode\_object\_storage\_object: now supports custom ACLs.
+
 ## 1.13.4 (November 13, 2020)
 
 FEATURES:

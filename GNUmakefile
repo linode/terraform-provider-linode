@@ -16,6 +16,8 @@ lint: fmtcheck
 		-R008=false \
 		-S006=false \
 		-S022=false \
+		-R018=false \
+		-R019=false \
 		./...
 
 docscheck:
