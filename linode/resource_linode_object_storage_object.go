@@ -2,6 +2,7 @@ package linode
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceLinodeObjectStorageObject() *schema.Resource {
@@ -189,7 +190,7 @@ func resourceLinodeObjectStorageObjectDelete(d *schema.ResourceData, meta interf
 	return deleteLinodeObjectStorageObject(conn, bucket, key, "", force)
 }
 
-func resourceLinodeObjectStorageObjectCustomizeDiff(d *schema.ResourceDiff, meta interface{}) error {
+func resourceLinodeObjectStorageObjectCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	if d.HasChange("etag") {
 		d.SetNewComputed("version_id")
 	}

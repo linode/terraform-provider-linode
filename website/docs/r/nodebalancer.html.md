@@ -53,6 +53,18 @@ This resource exports the following attributes:
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
 
+* [`transfer`](#transfer) - The network transfer stats for the current month
+
+### transfer
+
+The following attributes are available on transfer:
+
+* `in` - The total transfer, in MB, used by this NodeBalancer for the current month
+
+* `out` - The total inbound transfer, in MB, used for this NodeBalancer for the current month
+
+* `total` - The total outbound transfer, in MB, used for this NodeBalancer for the current month
+
 ## Import
 
 Linodes NodeBalancers can be imported using the Linode NodeBalancer `id`, e.g.

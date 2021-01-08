@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 )
 
@@ -65,7 +65,7 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 				Computed: true,
 			},
 			"transfer": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -97,15 +97,6 @@ func resourceLinodeNodeBalancer() *schema.Resource {
 	}
 }
 
-// floatString returns nil or the string representation of the supplied *float64
-//   this is needed because ResourceData.Set will not accept *float64 and expects a string
-func floatString(f *float64) string {
-	if f == nil {
-		return ""
-	}
-	return fmt.Sprintf("%g", *f)
-}
-
 func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(linodego.Client)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -134,13 +125,11 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("client_conn_throttle", nodebalancer.ClientConnThrottle)
 	d.Set("created", nodebalancer.Created.Format(time.RFC3339))
 	d.Set("updated", nodebalancer.Updated.Format(time.RFC3339))
-	transfer := map[string]interface{}{
-		"in":    floatString(nodebalancer.Transfer.In),
-		"out":   floatString(nodebalancer.Transfer.Out),
-		"total": floatString(nodebalancer.Transfer.Total),
-	}
-
-	d.Set("transfer", transfer)
+	d.Set("transfer", []map[string]interface{}{{
+		"in":    nodebalancer.Transfer.In,
+		"out":   nodebalancer.Transfer.Out,
+		"total": nodebalancer.Transfer.Total,
+	}})
 
 	return nil
 }

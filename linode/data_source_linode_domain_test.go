@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccDataSourceLinodeDomain_basic(t *testing.T) {
@@ -31,7 +31,7 @@ func TestAccDataSourceLinodeDomain_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "type", "master"),
 					resource.TestCheckResourceAttr(resourceName, "description", "tf-testing"),
 					resource.TestCheckResourceAttr(resourceName, "status", "active"),
-					resource.TestCheckResourceAttr(resourceName, "tags.4106436895", "tf_test"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tf_test"),
 					resource.TestCheckResourceAttr(resourceName, "soa_email", "example@"+domainName),
 					resource.TestCheckResourceAttrSet(resourceName, "retry_sec"),
 					resource.TestCheckResourceAttrSet(resourceName, "expire_sec"),

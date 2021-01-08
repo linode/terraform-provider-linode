@@ -2,15 +2,20 @@ package linode
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/httpclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
+
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/version"
 	"golang.org/x/oauth2"
 )
+
+const uaEnvVar = "TF_APPEND_USER_AGENT"
 
 // DefaultLinodeURL is the Linode APIv4 URL to use
 const DefaultLinodeURL = "https://api.linode.com/v4"
@@ -38,7 +43,7 @@ func (c *Config) Client() linodego.Client {
 	}
 	client := linodego.NewClient(oauth2Client)
 
-	tfUserAgent := httpclient.TerraformUserAgent(c.terraformVersion)
+	tfUserAgent := terraformUserAgent(c.terraformVersion)
 	userAgent := strings.TrimSpace(fmt.Sprintf("%s terraform-provider-linode/%s",
 		tfUserAgent, version.ProviderVersion))
 	if c.UAPrefix != "" {
@@ -55,4 +60,18 @@ func (c *Config) Client() linodego.Client {
 	}
 
 	return client
+}
+
+func terraformUserAgent(version string) string {
+	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", version, meta.SDKVersionString())
+
+	if add := os.Getenv(uaEnvVar); add != "" {
+		add = strings.TrimSpace(add)
+		if len(add) > 0 {
+			ua += " " + add
+			log.Printf("[DEBUG] Using modified User-Agent: %s", ua)
+		}
+	}
+
+	return ua
 }

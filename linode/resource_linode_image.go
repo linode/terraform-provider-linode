@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
@@ -144,8 +144,6 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(image.ID)
-	d.SetPartial("label")
-	d.SetPartial("description")
 	d.Partial(false)
 
 	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
