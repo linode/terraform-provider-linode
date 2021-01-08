@@ -103,7 +103,7 @@ func TestAccLinodeTemplate_update(t *testing.T) {
 }
 
 func testAccCheckLinodeTemplateExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(linodego.Client)
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_template" {
@@ -125,7 +125,7 @@ func testAccCheckLinodeTemplateExists(s *terraform.State) error {
 }
 
 func testAccCheckLinodeTemplateDestroy(s *terraform.State) error {
-	client, ok := testAccProvider.Meta().(linodego.Client)
+	client, ok := testAccProvider.Meta().(*ProviderMeta).Client
 	if !ok {
 		return fmt.Errorf("Error getting Linode client")
 	}

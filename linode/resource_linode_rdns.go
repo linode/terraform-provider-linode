@@ -37,7 +37,7 @@ func resourceLinodeRDNS() *schema.Resource {
 }
 
 func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {
@@ -57,10 +57,7 @@ func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeRDNSCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode RDNS")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	var address = d.Get("address").(string)
 	var rdns *string
@@ -82,7 +79,7 @@ func resourceLinodeRDNSCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeRDNSUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {
@@ -108,7 +105,7 @@ func resourceLinodeRDNSUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeRDNSDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {

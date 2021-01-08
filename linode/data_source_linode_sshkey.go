@@ -34,7 +34,7 @@ func dataSourceLinodeSSHKey() *schema.Resource {
 }
 
 func dataSourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	reqLabel := d.Get("label").(string)
 

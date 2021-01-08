@@ -81,7 +81,7 @@ func validDateTime(i interface{}, k string) (s []string, es []error) {
 }
 
 func resourceLinodeTokenRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Token ID %s as int: %s", d.Id(), err)
@@ -102,10 +102,7 @@ func resourceLinodeTokenRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeTokenCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Token")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.TokenCreateOptions{
 		Label:  d.Get("label").(string),
@@ -133,7 +130,7 @@ func resourceLinodeTokenCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeTokenUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -159,7 +156,7 @@ func resourceLinodeTokenUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeTokenDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Token id %s as int", d.Id())

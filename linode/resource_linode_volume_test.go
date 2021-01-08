@@ -278,7 +278,7 @@ func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 
 func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(linodego.Client)
+		client := testAccProvider.Meta().(*ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -306,10 +306,7 @@ func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resour
 }
 
 func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
-	client, ok := testAccProvider.Meta().(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Error getting Linode client")
-	}
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_volume" {
 			continue

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeRegion() *schema.Resource {
@@ -29,7 +28,7 @@ func dataSourceLinodeRegion() *schema.Resource {
 }
 
 func dataSourceLinodeRegionRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	reqRegion := d.Get("id").(string)
 

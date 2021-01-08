@@ -111,7 +111,7 @@ func TestAccLinodeRDNS_update(t *testing.T) {
 }
 
 func testAccCheckLinodeRDNSExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(linodego.Client)
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_rdns" {
@@ -129,10 +129,7 @@ func testAccCheckLinodeRDNSExists(s *terraform.State) error {
 }
 
 func testAccCheckLinodeRDNSDestroy(s *terraform.State) error {
-	client, ok := testAccProvider.Meta().(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Error getting Linode client")
-	}
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_rdns" {
 			continue

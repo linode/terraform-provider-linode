@@ -38,6 +38,13 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("LINODE_API_VERSION", nil),
 				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
 			},
+
+			"skip_instance_ready_poll": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Skip waiting for a linode_instance resource to be running.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -90,12 +97,19 @@ func Provider() *schema.Provider {
 	return provider
 }
 
+type ProviderMeta struct {
+	Client linodego.Client
+	Config *Config
+}
+
 func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	config := &Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),
 		APIVersion:  d.Get("api_version").(string),
 		UAPrefix:    d.Get("ua_prefix").(string),
+
+		SkipInstanceReadyPoll: d.Get("skip_instance_ready_poll").(bool),
 	}
 	config.terraformVersion = terraformVersion
 	client := config.Client()
@@ -104,5 +118,8 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 	if _, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, "")); err != nil {
 		return nil, fmt.Errorf("Error connecting to the Linode API: %s", err)
 	}
-	return config.Client(), nil
+	return &ProviderMeta{
+		Client: client,
+		Config: config,
+	}, nil
 }

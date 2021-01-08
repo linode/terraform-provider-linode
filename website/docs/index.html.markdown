@@ -42,6 +42,8 @@ The following keys can be used to configure the provider.
 
    The User-Agent Prefix can also be specified using the `LINODE_UA_PREFIX` environment variable.
 
+* `skip_instance_ready_poll` - (Optional) Skip waiting for a linode_instance resource to be running.
+
 ## Linode Guides
 
 Several [Linode Guides & Tutorials](https://www.linode.com/docs/) are available that explore Terraform usage with Linode resources:

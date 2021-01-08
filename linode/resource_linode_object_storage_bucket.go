@@ -57,7 +57,7 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 }
 
 func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 
 	if err != nil {
@@ -78,10 +78,7 @@ func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interfac
 }
 
 func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode ObjectStorageBucket")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
@@ -111,7 +108,7 @@ func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interf
 }
 
 func resourceLinodeObjectStorageBucketUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	if d.HasChange("cert") {
 		if err := updateLinodeObjectStorageBucketCert(d, client); err != nil {
@@ -122,7 +119,7 @@ func resourceLinodeObjectStorageBucketUpdate(d *schema.ResourceData, meta interf
 }
 
 func resourceLinodeObjectStorageBucketDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeInstanceType() *schema.Resource {
@@ -114,7 +113,7 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 }
 
 func dataSourceLinodeInstanceTypeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	types, err := client.ListTypes(context.Background(), nil)
 	if err != nil {

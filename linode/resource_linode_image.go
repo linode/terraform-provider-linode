@@ -93,7 +93,7 @@ func resourceLinodeImage() *schema.Resource {
 }
 
 func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	image, err := client.GetImage(context.Background(), d.Id())
 	if err != nil {
@@ -119,10 +119,7 @@ func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Image")
-	}
+	client := meta.(*ProviderMeta).Client
 	d.Partial(true)
 
 	linodeID := d.Get("linode_id").(int)
@@ -154,7 +151,7 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	image, err := client.GetImage(context.Background(), d.Id())
 	if err != nil {
@@ -184,7 +181,7 @@ func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeImageDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	err := client.DeleteImage(context.Background(), d.Id())
 	if err != nil {

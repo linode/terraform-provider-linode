@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
 )
 
 func dataSourceLinodeNetworkingIP() *schema.Resource {
@@ -63,7 +62,7 @@ func dataSourceLinodeNetworkingIP() *schema.Resource {
 }
 
 func dataSourceLinodeNetworkingIPRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	reqImage := d.Get("address").(string)
 
