@@ -1689,6 +1689,7 @@ resource "linode_instance" "foobar" {
 }
 
 func testAccCheckLinodeInstanceDontPoll(instance string) string {
+	//lintignore:AT004
 	return `
 provider "linode" {
 	skip_instance_ready_poll = true
