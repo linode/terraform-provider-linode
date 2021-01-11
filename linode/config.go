@@ -28,6 +28,8 @@ type Config struct {
 	UAPrefix    string
 
 	terraformVersion string
+
+	SkipInstanceReadyPoll bool
 }
 
 // Client returns a fully initialized Linode client

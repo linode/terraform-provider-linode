@@ -70,7 +70,7 @@ func dataSourceLinodeVolume() *schema.Resource {
 }
 
 func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	requestedVolumeID := d.Get("id").(int)
 
 	if requestedVolumeID == 0 {

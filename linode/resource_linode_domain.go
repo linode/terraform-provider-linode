@@ -111,7 +111,7 @@ func resourceLinodeDomain() *schema.Resource {
 }
 
 func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
@@ -147,10 +147,7 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Domain")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.DomainCreateOptions{
 		Domain:      d.Get("domain").(string),
@@ -198,7 +195,7 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -252,7 +249,7 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeDomainDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Domain id %s as int", d.Id())

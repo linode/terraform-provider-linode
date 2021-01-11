@@ -45,7 +45,7 @@ func testSweepLinodeLKECluster(prefix string) error {
 
 func testAccCheckLinodeLKEClusterExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(linodego.Client)
+		client := testAccProvider.Meta().(*ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[testLKEClusterResName]
 		if !ok {
@@ -72,7 +72,7 @@ func testAccCheckLinodeLKEClusterExists(cluster *linodego.LKECluster) resource.T
 }
 
 func testAccCheckLinodeLKEClusterDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(linodego.Client)
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_lke_cluster" {
@@ -223,7 +223,7 @@ func TestAccLinodeLKECluster_removeUnmanagedPool(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := testAccProvider.Meta().(linodego.Client)
+					client := testAccProvider.Meta().(*ProviderMeta).Client
 					if _, err := client.CreateLKEClusterPool(context.Background(), cluster.ID, linodego.LKEClusterPoolCreateOptions{
 						Count: 1,
 						Type:  "g6-standard-1",

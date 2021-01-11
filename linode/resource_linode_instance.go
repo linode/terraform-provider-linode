@@ -599,7 +599,7 @@ func resourceLinodeInstance() *schema.Resource {
 }
 
 func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
@@ -697,10 +697,7 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Instance")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	bootConfig := 0
 	createOpts := linodego.InstanceCreateOptions{
@@ -856,6 +853,8 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	targetStatus := linodego.InstanceRunning
+
 	if createOpts.Booted == nil || !*createOpts.Booted {
 		if disksOk && configsOk {
 			if err = client.BootInstance(context.Background(), instance.ID, bootConfig); err != nil {
@@ -865,18 +864,14 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 			if _, err = client.WaitForEventFinished(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot, *instance.Created, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
 				return fmt.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 			}
-
-			if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-				return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
-			}
 		} else {
-			if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceOffline, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-				return fmt.Errorf("Timed-out waiting for Linode instance %d to be created: %s", instance.ID, err)
-			}
+			targetStatus = linodego.InstanceOffline
 		}
-	} else {
-		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, linodego.InstanceRunning, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-			return fmt.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+	}
+
+	if !meta.(*ProviderMeta).Config.SkipInstanceReadyPoll {
+		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, targetStatus, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
+			return fmt.Errorf("timed-out waiting for Linode instance %d to reach status %s: %s", instance.ID, targetStatus, err)
 		}
 	}
 
@@ -941,7 +936,7 @@ func adjustSwapSizeIfNeeded(d *schema.ResourceData, client *linodego.Client, ins
 }
 
 func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
@@ -1100,7 +1095,7 @@ func resourceLinodeInstanceUpdate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceLinodeInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Instance ID %s as int", d.Id())

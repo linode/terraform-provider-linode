@@ -41,7 +41,7 @@ func resourceLinodeSSHKey() *schema.Resource {
 }
 
 func resourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode SSH Key ID %s as int: %s", d.Id(), err)
@@ -63,10 +63,7 @@ func resourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeSSHKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode SSH Key")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.SSHKeyCreateOptions{
 		Label:  d.Get("label").(string),
@@ -87,7 +84,7 @@ func resourceLinodeSSHKeyCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -114,7 +111,7 @@ func resourceLinodeSSHKeyUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeSSHKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode SSH Key id %s as int", d.Id())

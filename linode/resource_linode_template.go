@@ -44,7 +44,7 @@ func resourceLinodeTemplate() *schema.Resource {
 }
 
 func resourceLinodeTemplateRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Template ID %s as int: %s", d.Id(), err)
@@ -63,7 +63,7 @@ func resourceLinodeTemplateRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeTemplateCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
+	client, ok := meta.(*ProviderMeta).Client
 	if !ok {
 		return fmt.Errorf("Invalid Client when creating Linode Template")
 	}
@@ -82,7 +82,7 @@ func resourceLinodeTemplateCreate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceLinodeTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -105,7 +105,7 @@ func resourceLinodeTemplateUpdate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceLinodeTemplateDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Template id %s as int", d.Id())

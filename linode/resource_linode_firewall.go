@@ -135,7 +135,7 @@ func resourceLinodeFirewall() *schema.Resource {
 }
 
 func resourceLinodeFirewallRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
@@ -168,7 +168,7 @@ func resourceLinodeFirewallRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceLinodeFirewallCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.FirewallCreateOptions{
 		Label: d.Get("label").(string),
@@ -200,7 +200,7 @@ func resourceLinodeFirewallCreate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
@@ -274,7 +274,7 @@ func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceLinodeFirewallDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)

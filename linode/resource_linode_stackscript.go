@@ -124,7 +124,7 @@ func resourceLinodeStackscript() *schema.Resource {
 }
 
 func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Stackscript ID %s as int: %s", d.Id(), err)
@@ -160,10 +160,7 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceLinodeStackscriptCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode Stackscript")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.StackscriptCreateOptions{
 		Label:       d.Get("label").(string),
@@ -187,7 +184,7 @@ func resourceLinodeStackscriptCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceLinodeStackscriptUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -214,7 +211,7 @@ func resourceLinodeStackscriptUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceLinodeStackscriptDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode Stackscript id %s as int", d.Id())

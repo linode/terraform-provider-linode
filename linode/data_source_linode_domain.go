@@ -96,7 +96,7 @@ func dataSourceLinodeDomain() *schema.Resource {
 }
 
 func dataSourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	reqIDString := d.Get("id").(string)
 	reqDomain := d.Get("domain").(string)

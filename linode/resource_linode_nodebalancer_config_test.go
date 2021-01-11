@@ -128,7 +128,7 @@ func TestAccLinodeNodeBalancerConfig_proxyProtocol(t *testing.T) {
 }
 
 func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(linodego.Client)
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
@@ -154,10 +154,7 @@ func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
 }
 
 func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
-	client, ok := testAccProvider.Meta().(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Error getting Linode client")
-	}
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
 			continue

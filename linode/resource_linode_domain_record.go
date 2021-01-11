@@ -125,7 +125,7 @@ func resourceLinodeDomainRecordImport(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
@@ -213,10 +213,7 @@ func validateSRVDomainRecord(c *linodego.Client, rec *linodego.DomainRecord, dom
 }
 
 func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode DomainRecord")
-	}
+	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 	if err := validateDomainRecord(&client, rec, domainID); err != nil {
@@ -247,7 +244,7 @@ func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 	if err := validateDomainRecord(&client, rec, domainID); err != nil {
@@ -280,7 +277,7 @@ func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) 
 }
 
 func resourceLinodeDomainRecordDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 

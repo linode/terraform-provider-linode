@@ -48,7 +48,7 @@ func testSweepLinodeVLAN(prefix string) error {
 
 func testAccCheckLinodeVLANAttachedLinodes(linodes ...*linodego.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(linodego.Client)
+		client := testAccProvider.Meta().(*ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[testVLANResName]
 		if !ok {
@@ -90,7 +90,7 @@ func testAccCheckLinodeVLANAttachedLinodes(linodes ...*linodego.Instance) resour
 }
 
 func testAccCheckLinodeVLANDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(linodego.Client)
+	client := testAccProvider.Meta().(*ProviderMeta).Client
 
 	rs, ok := s.RootModule().Resources[testVLANResName]
 	if !ok {

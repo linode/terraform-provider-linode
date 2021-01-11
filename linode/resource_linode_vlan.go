@@ -65,7 +65,7 @@ func resourceLinodeVLAN() *schema.Resource {
 }
 
 func resourceLinodeVLANCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	createOpts := linodego.VLANCreateOptions{
 		Description: d.Get("description").(string),
 		Region:      d.Get("region").(string),
@@ -82,7 +82,7 @@ func resourceLinodeVLANCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeVLANRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to parse vlan ID %s as int: %s", d.Id(), err)
@@ -101,7 +101,7 @@ func resourceLinodeVLANRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeVLANUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to parse vlan ID %s as int: %s", d.Id(), err)
@@ -149,7 +149,7 @@ func resourceLinodeVLANUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLinodeVLANDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return fmt.Errorf("failed to parse vlan ID %s as int: %s", d.Id(), err)

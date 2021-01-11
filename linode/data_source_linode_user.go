@@ -38,7 +38,7 @@ func dataSourceLinodeUser() *schema.Resource {
 }
 
 func dataSourceLinodeUserRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 
 	reqUsername := d.Get("username").(string)
 

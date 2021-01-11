@@ -188,7 +188,7 @@ func resourceLinodeNodeBalancerConfigImport(d *schema.ResourceData, meta interfa
 }
 
 func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
@@ -233,10 +233,7 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 }
 
 func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interface{}) error {
-	client, ok := meta.(linodego.Client)
-	if !ok {
-		return fmt.Errorf("Invalid Client when creating Linode NodeBalancerConfig")
-	}
+	client := meta.(*ProviderMeta).Client
 
 	nodebalancerID := d.Get("nodebalancer_id").(int)
 
@@ -272,7 +269,7 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 }
 
 func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
@@ -311,7 +308,7 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 }
 
 func resourceLinodeNodeBalancerConfigDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(linodego.Client)
+	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
