@@ -1,4 +1,4 @@
-## 1.14.0 (January 8, 2021)
+## 1.14.0 (January 11, 2021)
 
 BACKWARDS INCOMPATIBILITIES / NOTES:
 
@@ -10,6 +10,7 @@ ENHANCEMENTS:
 * terraform-plugin-sdk updated to v2.4.0.
 * linodego updated to v0.24.2.
 * resource/linode\_object\_storage\_object: now supports custom ACLs.
+* add `skip_instance_ready_poll` field to provider configuration.
 
 ## 1.13.4 (November 13, 2020)
 
