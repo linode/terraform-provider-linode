@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
@@ -29,7 +30,9 @@ type Config struct {
 
 	terraformVersion string
 
-	SkipInstanceReadyPoll bool
+	SkipInstanceReadyPoll     bool
+	MinRetryDelayMilliseconds int
+	MaxRetryDelayMilliseconds int
 }
 
 // Client returns a fully initialized Linode client
@@ -59,6 +62,13 @@ func (c *Config) Client() linodego.Client {
 		client.SetAPIVersion(c.APIVersion)
 	} else {
 		client.SetBaseURL(DefaultLinodeURL)
+	}
+
+	if c.MinRetryDelayMilliseconds != 0 {
+		client.SetRetryWaitTime(time.Duration(c.MinRetryDelayMilliseconds) * time.Millisecond)
+	}
+	if c.MaxRetryDelayMilliseconds != 0 {
+		client.SetRetryMaxWaitTime(time.Duration(c.MaxRetryDelayMilliseconds) * time.Millisecond)
 	}
 
 	return client

@@ -44,6 +44,10 @@ The following keys can be used to configure the provider.
 
 * `skip_instance_ready_poll` - (Optional) Skip waiting for a linode_instance resource to be running.
 
+* `min_retry_delay_ms` - (Optional) Minimum delay in milliseconds before retrying a request.
+
+* `max_retry_delay_ms` - (Optional) Maximum delay in milliseconds before retrying a request.
+
 ## Linode Guides
 
 Several [Linode Guides & Tutorials](https://www.linode.com/docs/) are available that explore Terraform usage with Linode resources:
