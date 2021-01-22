@@ -1,4 +1,4 @@
-## 1.14.1 (Unreleased)
+## 1.14.1 (January 22, 2021)
 
 ENHANCEMENTS:
 
