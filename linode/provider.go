@@ -45,6 +45,17 @@ func Provider() *schema.Provider {
 				Default:     false,
 				Description: "Skip waiting for a linode_instance resource to be running.",
 			},
+
+			"min_retry_delay_ms": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Minimum delay in milliseconds before retrying a request.",
+			},
+			"max_retry_delay_ms": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Maximum delay in milliseconds before retrying a request.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -110,6 +121,9 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		UAPrefix:    d.Get("ua_prefix").(string),
 
 		SkipInstanceReadyPoll: d.Get("skip_instance_ready_poll").(bool),
+
+		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
+		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
 	}
 	config.terraformVersion = terraformVersion
 	client := config.Client()

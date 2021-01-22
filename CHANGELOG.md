@@ -1,3 +1,9 @@
+## 1.14.1 (January 22, 2021)
+
+ENHANCEMENTS:
+
+* add `min_retry_delay_ms` and `max_retry_delay_ms` fields to provider configuration.
+
 ## 1.14.0 (January 11, 2021)
 
 BACKWARDS INCOMPATIBILITIES / NOTES:
