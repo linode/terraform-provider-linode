@@ -80,6 +80,7 @@ func Provider() *schema.Provider {
 			"linode_firewall":              resourceLinodeFirewall(),
 			"linode_image":                 resourceLinodeImage(),
 			"linode_instance":              resourceLinodeInstance(),
+			"linode_instance_ip":           resourceLinodeInstanceIP(),
 			"linode_lke_cluster":           resourceLinodeLKECluster(),
 			"linode_nodebalancer":          resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config":   resourceLinodeNodeBalancerConfig(),
