@@ -1,3 +1,9 @@
+## 1.14.2 (January 27, 2021)
+
+FEATURES:
+
+* **New Resource** `linode_instance_ip`
+
 ## 1.14.1 (January 22, 2021)
 
 ENHANCEMENTS:
