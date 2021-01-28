@@ -1,3 +1,9 @@
+## 1.14.3 (January 28, 2021)
+
+BUG FIXES:
+
+* Fixed an issue with the `watchdog_enabled` field on `linode_instance` where on creation, Watchdog is assumed disabled by default and causes resources with the field set to `false` to need to update on the next apply.
+
 ## 1.14.2 (January 27, 2021)
 
 FEATURES:
