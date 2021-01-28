@@ -104,6 +104,31 @@ func TestAccLinodeInstance_dontPoll(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_watchdogDisabled(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithWatchdogDisabled(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "watchdog_enabled", "false"),
+				),
+			},
+			{
+				Config:   testAccCheckLinodeInstanceWithWatchdogDisabled(instanceName),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
 	t.Parallel()
 
@@ -1707,6 +1732,20 @@ resource "linode_instance" "%s" {
 	root_pass = "terraform-test"
 }
 `, identifier, instance)
+}
+
+func testAccCheckLinodeInstanceWithWatchdogDisabled(instance string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label     = "%s"
+	region    = "ca-central"
+	image     = "linode/alpine3.12"
+	type      = "g6-nanode-1"
+	root_pass = "terraform-test"
+
+	watchdog_enabled = false
+}
+`, instance)
 }
 
 func testAccCheckLinodeInstanceWithType(instance string, pubkey string, typ string) string {

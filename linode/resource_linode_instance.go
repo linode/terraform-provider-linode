@@ -783,9 +783,9 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	updateOpts := linodego.InstanceUpdateOptions{}
 	doUpdate := false
 
-	if _, watchdogEnabledOk := d.GetOk("watchdog_enabled"); watchdogEnabledOk {
+	watchdogEnabled := d.Get("watchdog_enabled").(bool)
+	if !watchdogEnabled {
 		doUpdate = true
-		watchdogEnabled := d.Get("watchdog_enabled").(bool)
 		updateOpts.WatchdogEnabled = &watchdogEnabled
 	}
 
