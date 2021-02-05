@@ -1,0 +1,20 @@
+name: Pull Request
+on: pull_request
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check docs
+        run: make docscheck
+      - name: Lint
+        run: make lint
+      - name: Unit tests
+        run: make test
+      - name: Vet
+        run: make vet
+      - name: Tidy
+        run: go mod tidy
+      - name: Fail if changes
+        run: git diff-index --exit-code HEAD
