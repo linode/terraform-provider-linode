@@ -19,7 +19,7 @@ func TestAccDataSourceLinodeUser_basic(t *testing.T) {
 			{
 				Config: testDataSourceLinodeProfileBasic() + testDataSourceLinodeUserBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("data.linode_user.user", "username", resourceName, "username"),
+					resource.TestCheckResourceAttrSet(resourceName, "username"),
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
 				),
 			},
