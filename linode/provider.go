@@ -93,6 +93,7 @@ func Provider() *schema.Provider {
 			"linode_sshkey":                resourceLinodeSSHKey(),
 			"linode_stackscript":           resourceLinodeStackscript(),
 			"linode_token":                 resourceLinodeToken(),
+			"linode_user":                  resourceLinodeUser(),
 			"linode_vlan":                  resourceLinodeVLAN(),
 			"linode_volume":                resourceLinodeVolume(),
 		},
