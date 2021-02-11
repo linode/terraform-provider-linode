@@ -1,14 +1,38 @@
 package linode
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/linodego"
 )
 
 const testUserResName = "linode_user.test"
+
+func testAccCheckLinodeUserDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*ProviderMeta).Client
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_user" {
+			continue
+		}
+
+		username := rs.Primary.ID
+		_, err := client.GetUser(context.TODO(), username)
+
+		if err == nil {
+			return fmt.Errorf("should not find user %s existing after delete", username)
+		}
+
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+			return fmt.Errorf("Error getting user %s: %s", username, err)
+		}
+	}
+	return nil
+}
 
 func testAccCheckLinodeUserConfigBasic(username, email string, restricted bool) string {
 	return fmt.Sprintf(`
@@ -25,8 +49,9 @@ func TestAccLinodeUser_basic(t *testing.T) {
 	username := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeUserDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeUserConfigBasic(username, email, true),
@@ -49,8 +74,9 @@ func TestAccLinodeUser_updates(t *testing.T) {
 	updatedUsername := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeUserDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeUserConfigBasic(username, email, false),
