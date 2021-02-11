@@ -43,3 +43,11 @@ The following arguments are supported in the cert specification block:
 * `certificate` - (Required) The Base64 encoded and PEM formatted SSL certificate.
 
 * `private_key` - (Required) The private key associated with the TLS/SSL certificate.
+
+## Import
+
+Linodes Object Storage Buckets can be imported using the resource `id` which is made of `cluster:label`, e.g.
+
+```sh
+terraform import linode_object_storage_bucket.mybucket us-east-1:foobar
+```
