@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"time"
 
@@ -226,68 +227,33 @@ func resourceLinodeLKEClusterUpdate(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	poolSpecs := getLinodeLKEClusterPoolSpecs(d.Get("pool"))
 	pools, err := client.ListLKEClusterPools(context.Background(), id, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get node pools for LKE Cluster %d: %s", id, err)
+		return fmt.Errorf("failed to get Pools for LKE Cluster %d: %s", id, err)
 	}
 
-	// map pool specs to provisioned clusters
-	provisionedPools := map[linodeLKEClusterPoolSpec][]int{}
-	for _, pool := range pools {
-		spec := linodeLKEClusterPoolSpec{pool.Type, pool.Count}
-		provisionedPools[spec] = append(provisionedPools[spec], pool.ID)
-	}
+	poolSpecs := expandLinodeLKEClusterPoolSpecs(d.Get("pool").([]interface{}))
+	updates := reconcileLKEClusterPoolSpecs(poolSpecs, pools)
 
-	// keep track of all specs visited for accounting
-	visitedSpecs := make(map[linodeLKEClusterPoolSpec]struct{})
-
-	toDelete := []int{}
-	for spec, count := range poolSpecs {
-		diff := 0
-		ids, ok := provisionedPools[spec]
-		if !ok {
-			diff = count
-		} else {
-			diff = count - len(ids)
-		}
-
-		if diff > 0 {
-			createOpts := linodego.LKEClusterPoolCreateOptions{
-				Count: spec.Count,
-				Type:  spec.Type,
-			}
-			// stage cluster pools for creation
-			for i := 0; i < diff; i++ {
-				if _, err := client.CreateLKEClusterPool(context.Background(), id, createOpts); err != nil {
-					return fmt.Errorf("failed to create node pool for cluster %d: %s", id, err)
-				}
-			}
-		} else if diff < 0 {
-			// stage cluster pools for deletion
-			deleteCount := int(math.Abs(float64(diff)))
-			toDelete = append(toDelete, ids[:deleteCount]...)
-		}
-
-		visitedSpecs[spec] = struct{}{}
-	}
-
-	// ensure there are no provisioned cluster pools for which there are no
-	// declared specifications
-	for spec, ids := range provisionedPools {
-		if _, ok := visitedSpecs[spec]; !ok {
-			// stage these cluster pools for deletion
-			toDelete = append(toDelete, ids...)
+	for poolID, updateOpts := range updates.ToUpdate {
+		if _, err := client.UpdateLKEClusterPool(context.Background(), id, poolID, updateOpts); err != nil {
+			return fmt.Errorf("failed to update LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 	}
 
-	for _, poolID := range toDelete {
+	for _, createOpts := range updates.ToCreate {
+		if _, err := client.CreateLKEClusterPool(context.Background(), id, createOpts); err != nil {
+			return fmt.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
+		}
+	}
+
+	for _, poolID := range updates.ToDelete {
 		if err := client.DeleteLKEClusterPool(context.Background(), id, poolID); err != nil {
-			return fmt.Errorf("failed to delete node pool for cluster %d: %s", id, err)
+			return fmt.Errorf("failed to delete LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 	}
 
-	return resourceLinodeLKEClusterRead(d, meta)
+	return nil
 }
 
 func resourceLinodeLKEClusterDelete(d *schema.ResourceData, meta interface{}) error {
@@ -310,25 +276,134 @@ type linodeLKEClusterPoolSpec struct {
 	Count int
 }
 
-func getLinodeLKEClusterPoolSpecs(pool interface{}) map[linodeLKEClusterPoolSpec]int {
-	specs := pool.([]interface{})
-	poolSpecs := map[linodeLKEClusterPoolSpec]int{}
-	for _, spec := range specs {
-		specMap := spec.(map[string]interface{})
-		poolSpecs[linodeLKEClusterPoolSpec{
-			Type:  specMap["type"].(string),
-			Count: specMap["count"].(int),
-		}]++
-	}
-	return poolSpecs
+type linodelkeClusterPoolUpdates struct {
+	ToDelete []int
+	ToCreate []linodego.LKEClusterPoolCreateOptions
+	ToUpdate map[int]linodego.LKEClusterPoolUpdateOptions
 }
 
-func flattenLinodeLKEClusterAPIEndpoints(apiEndpoints []linodego.LKEClusterAPIEndpoint) []string {
-	flattened := make([]string, len(apiEndpoints))
-	for i, endpoint := range apiEndpoints {
-		flattened[i] = endpoint.Endpoint
+type clusterPoolAssignRequest struct {
+	Spec, State linodeLKEClusterPoolSpec
+	PoolID      int
+	SpecIndex   int
+}
+
+func (r clusterPoolAssignRequest) Diff() int {
+	return int(math.Abs(float64(r.State.Count - r.Spec.Count)))
+}
+
+func expandLinodeLKEClusterPoolSpecs(pool []interface{}) (poolSpecs []linodeLKEClusterPoolSpec) {
+	for _, spec := range pool {
+		specMap := spec.(map[string]interface{})
+		poolSpecs = append(poolSpecs, linodeLKEClusterPoolSpec{
+			Type:  specMap["type"].(string),
+			Count: specMap["count"].(int),
+		})
 	}
-	return flattened
+	return
+}
+
+func getLKEClusterPoolProvisionedSpecs(pools []linodego.LKEClusterPool) map[linodeLKEClusterPoolSpec]map[int]struct{} {
+	provisioned := make(map[linodeLKEClusterPoolSpec]map[int]struct{})
+	for _, pool := range pools {
+		spec := linodeLKEClusterPoolSpec{
+			Type:  pool.Type,
+			Count: pool.Count,
+		}
+		if _, ok := provisioned[spec]; !ok {
+			provisioned[spec] = make(map[int]struct{})
+		}
+		provisioned[spec][pool.ID] = struct{}{}
+	}
+	return provisioned
+}
+
+func reconcileLKEClusterPoolSpecs(poolSpecs []linodeLKEClusterPoolSpec, pools []linodego.LKEClusterPool) (updates linodelkeClusterPoolUpdates) {
+	provisionedPools := getLKEClusterPoolProvisionedSpecs(pools)
+	poolSpecsToAssign := make(map[int]struct{})
+	assignedPools := make(map[int]struct{})
+	updates.ToUpdate = make(map[int]linodego.LKEClusterPoolUpdateOptions)
+
+	// find exact pool matches and filter out
+	for i, spec := range poolSpecs {
+		poolSpecsToAssign[i] = struct{}{}
+		if ids, ok := provisionedPools[spec]; ok {
+			for id := range ids {
+				assignedPools[i] = struct{}{}
+				delete(ids, id)
+				break
+			}
+
+			if len(provisionedPools[spec]) == 0 {
+				delete(provisionedPools, spec)
+			}
+
+			delete(poolSpecsToAssign, i)
+		}
+	}
+
+	// calculate diffs for assigning remaining provisioned pools to remaining pool specs
+	poolAssignRequests := []clusterPoolAssignRequest{}
+	for i := range poolSpecsToAssign {
+		poolSpec := poolSpecs[i]
+		for pool := range provisionedPools {
+			if pool.Type != poolSpec.Type {
+				continue
+			}
+
+			for id := range provisionedPools[pool] {
+				poolAssignRequests = append(poolAssignRequests, clusterPoolAssignRequest{
+					Spec:      poolSpec,
+					State:     pool,
+					PoolID:    id,
+					SpecIndex: i,
+				})
+			}
+		}
+	}
+
+	// order poolAssignRequests by smallest diffs for smallest updates needed
+	sort.Slice(poolAssignRequests, func(x, y int) bool {
+		return poolAssignRequests[x].Diff() < poolAssignRequests[y].Diff()
+	})
+
+	for _, request := range poolAssignRequests {
+		if _, ok := poolSpecsToAssign[request.SpecIndex]; !ok {
+			// pool spec was already assigned to a provisioned pool
+			continue
+		}
+		if _, ok := assignedPools[request.PoolID]; ok {
+			// pool was already assigned to a pool spec
+			continue
+		}
+
+		updates.ToUpdate[request.PoolID] = linodego.LKEClusterPoolUpdateOptions{
+			Count: request.Spec.Count,
+		}
+
+		assignedPools[request.PoolID] = struct{}{}
+		delete(poolSpecsToAssign, request.SpecIndex)
+		delete(provisionedPools[request.State], request.PoolID)
+		if len(provisionedPools[request.State]) == 0 {
+			delete(provisionedPools, request.State)
+		}
+	}
+
+	for i := range poolSpecsToAssign {
+		poolSpec := poolSpecs[i]
+		updates.ToCreate = append(updates.ToCreate, linodego.LKEClusterPoolCreateOptions{
+			Count: poolSpec.Count,
+			Type:  poolSpec.Type,
+		})
+	}
+
+	for spec := range provisionedPools {
+		for id := range provisionedPools[spec] {
+			updates.ToDelete = append(updates.ToDelete, id)
+		}
+	}
+
+	return
 }
 
 func flattenLinodeLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]interface{} {
@@ -350,6 +425,14 @@ func flattenLinodeLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]
 			"type":  pool.Type,
 			"nodes": nodes,
 		}
+	}
+	return flattened
+}
+
+func flattenLinodeLKEClusterAPIEndpoints(apiEndpoints []linodego.LKEClusterAPIEndpoint) []string {
+	flattened := make([]string, len(apiEndpoints))
+	for i, endpoint := range apiEndpoints {
+		flattened[i] = endpoint.Endpoint
 	}
 	return flattened
 }
