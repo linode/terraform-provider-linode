@@ -90,6 +90,44 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 	})
 }
 
+func TestAccLinodeFirewall_no_device(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeFirewallNoDevice(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+				),
+			},
+			{
+				ResourceName:      testFirewallResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeFirewall_updates(t *testing.T) {
 	t.Parallel()
 
@@ -201,6 +239,28 @@ resource "linode_firewall" "test" {
 	}
 
 	linodes = [linode_instance.one.id]
+}`, name)
+}
+
+func testAccCheckLinodeFirewallNoDevice(name string) string {
+	return fmt.Sprintf(`
+resource "linode_firewall" "test" {
+	label = "%s"
+	tags  = ["test"]
+
+	inbound {
+		protocol  = "TCP"
+		ports     = "80"
+		ipv4 = ["0.0.0.0/0"]
+	}
+
+	outbound {
+		protocol  = "TCP"
+		ports     = "80"
+		ipv4 = ["0.0.0.0/0"]
+	}
+
+	linodes = []
 }`, name)
 }
 

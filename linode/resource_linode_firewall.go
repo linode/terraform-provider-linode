@@ -91,7 +91,6 @@ func resourceLinodeFirewall() *schema.Resource {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 				Description: "The IDs of Linodes to apply this firewall to.",
-				MinItems:    1,
 				Optional:    true,
 				Set:         schema.HashInt,
 			},
