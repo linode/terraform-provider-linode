@@ -148,7 +148,7 @@ resource "linode_instance" "%[1]s" {
 	label = "%.15[2]s-%[1]s"
 	group = "tf_test"
 	type = "g6-nanode-1"
-	region = "us-east"
+	region = "ca-central"
 	disk {
 		label = "disk"
 		image = "linode/alpine3.11"
