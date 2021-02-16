@@ -439,8 +439,8 @@ github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.2.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/linode/linodego v0.20.1/go.mod h1:XOWXRHjqeU2uPS84tKLgfWIfTlv3TYzCS0io4GOQzEI=
-github.com/linode/linodego v0.24.4 h1:ufOYwv1vqfGSs6M2KmJWLgFyj+6Ousi356lPltwtuEk=
-github.com/linode/linodego v0.24.4/go.mod h1:GSBKPpjoQfxEfryoCRcgkuUOCuVtGHWhzI8OMdycNTE=
+github.com/linode/linodego v0.25.1 h1:9lLHnkfTuYU/I5b+EdtrkfEwrzQXFaeB2tzzAkRBg1U=
+github.com/linode/linodego v0.25.1/go.mod h1:GSBKPpjoQfxEfryoCRcgkuUOCuVtGHWhzI8OMdycNTE=
 github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947 h1:e+tpC7AIiEgfYGEDq9Rjtdybq+V10S6OXzWjeGV/CEk=
 github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947/go.mod h1:MWI0tFyaJqRpirMv0VO7CGYT4V3IhHvml2rs/DlRQmY=
 github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e/go.mod h1:7rIyQOR62GCctdiQpZ/zOJlFyk6y+94wXzv6RNZgaR4=
