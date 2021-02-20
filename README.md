@@ -18,7 +18,7 @@ This provider plugin is maintained by Linode.
 
 ## Using the provider
 
-See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.  The [examples](https://github.com/linode/terraform-provider-linode/tree/master/examples) included in this repository demonstrate usage of many of the Linode provider resources.
+See the [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) to get started using the Linode provider.  The [examples](https://github.com/linode/terraform-provider-linode/tree/main/examples) included in this repository demonstrate usage of many of the Linode provider resources.
 
 Additional documentation and examples are provided in the Linode Guide, [Using Terraform to Provision Linode Environments](https://linode.com/docs/platform/how-to-build-your-infrastructure-using-terraform-and-linode/).
 

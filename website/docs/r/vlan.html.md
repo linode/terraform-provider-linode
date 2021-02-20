@@ -8,7 +8,7 @@ description: |-
 
 # linode\_vlan
 
-~> **NOTICE:** The VLAN feature is currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/master/EARLY_ACCESS.md).
+~> **NOTICE:** The VLAN feature is currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/main/EARLY_ACCESS.md).
 
 Manages a Linode VLAN.
 
