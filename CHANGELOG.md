@@ -5,6 +5,10 @@ FEATURES:
 * **New Data Source** `linode_lke_cluster`
 * **New Resource** `linode_user`
 
+ENHANCEMENTS:
+
+* Existing `linode_lke_cluster` node pools are now reused when performing node pool updates.
+
 ## 1.14.3 (January 28, 2021)
 
 BUG FIXES:
