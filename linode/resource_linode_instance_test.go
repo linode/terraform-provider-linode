@@ -1,6 +1,7 @@
 package linode
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"regexp"
@@ -1049,10 +1050,36 @@ func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					// HACK: wait 30s for disk to be full
-					// Unfortunately we cannot guarantee that the stackscript has finished running before this test step
-					// is ran.
-					time.Sleep(30 * time.Second)
+					ctx := context.Background()
+					client := getSSHClient(t, "root", instance.IPv4[0].String())
+
+					defer client.Close()
+					ss, err := client.NewSession()
+					if err != nil {
+						t.Fatalf("failed to establish SSH session: %s", err)
+					}
+
+					ctx, cancel := context.WithTimeout(ctx, time.Minute)
+					defer cancel()
+
+					ticker := time.NewTicker(500 * time.Millisecond)
+					defer ticker.Stop()
+
+					for {
+						select {
+						case <-ticker.C:
+							buf := new(bytes.Buffer)
+							ss.Stdout = buf
+							ss.Run("[[ $(df /dev/sda --block-size=1 | tail -n-1 | awk '{print $5}') == '100%' ]] && echo 1 || echo 0")
+
+							if buf.String() == "1" {
+								return
+							}
+
+						case <-ctx.Done():
+							return
+						}
+					}
 				},
 				Config:      testAccCheckLinodeInstanceWithFullDisk(instanceName, publicKeyMaterial, 512),
 				ExpectError: regexp.MustCompile("Error waiting for resize of Instance \\d+ Disk \\d+"),
