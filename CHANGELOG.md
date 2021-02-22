@@ -3,6 +3,7 @@
 FEATURES:
 
 * **New Data Source** `linode_lke_cluster`
+* **New Resource** `linode_user`
 
 ## 1.14.3 (January 28, 2021)
 
