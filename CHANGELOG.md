@@ -1,3 +1,9 @@
+# 1.15.0 (Unreleased)
+
+FEATURES:
+
+* **New Data Source** `linode_lke_cluster`
+
 ## 1.14.3 (January 28, 2021)
 
 BUG FIXES:
