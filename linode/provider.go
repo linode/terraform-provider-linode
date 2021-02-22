@@ -64,6 +64,7 @@ func Provider() *schema.Provider {
 			"linode_domain_record":          dataSourceLinodeDomainRecord(),
 			"linode_image":                  dataSourceLinodeImage(),
 			"linode_instance_type":          dataSourceLinodeInstanceType(),
+			"linode_lke_cluster":            dataSourceLinodeLKECluster(),
 			"linode_networking_ip":          dataSourceLinodeNetworkingIP(),
 			"linode_object_storage_cluster": dataSourceLinodeObjectStorageCluster(),
 			"linode_profile":                dataSourceLinodeProfile(),
