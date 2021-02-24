@@ -61,11 +61,15 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
 					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
@@ -108,11 +112,15 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
 					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
@@ -130,15 +138,20 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "2"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.1", "ff00::/8"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ports", "443"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.#", "2"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.1", "127.0.0.1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv6.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ports", "22"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ipv6.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "2"),
@@ -177,12 +190,14 @@ resource "linode_firewall" "test" {
 		protocol  = "TCP"
 		ports     = "80"
 		ipv4 = ["0.0.0.0/0"]
+		ipv6 = ["::1"]
 	}
 
 	outbound {
 		protocol  = "TCP"
 		ports     = "80"
 		ipv4 = ["0.0.0.0/0"]
+		ipv6 = ["2001:db8::/32"]
 	}
 
 	linodes = [linode_instance.one.id]
@@ -202,6 +217,7 @@ resource "linode_firewall" "test" {
 		protocol  = "TCP"
 		ports     = "80"
 		ipv4 = ["0.0.0.0/0"]
+		ipv6 = ["::1", "ff00::/8"]
 	}
 
 	inbound {
