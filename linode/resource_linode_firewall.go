@@ -4,24 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"strconv"
 )
 
 func resourceLinodeFirewallRule() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"ports": {
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeString,
 				Description: `A list of ports and/or port ranges (i.e. "443" or "80-90").`,
-				MinItems:    1,
 				Required:    true,
-				Set:         schema.HashString,
 			},
 			"protocol": {
 				Type:         schema.TypeString,
@@ -29,13 +24,22 @@ func resourceLinodeFirewallRule() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "ICMP"}, false),
 				Required:     true,
 			},
-			"addresses": {
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+			"ipv4": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				Description: "A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to allow all) this rule applies to.",
+				Optional:    true,
+			},
+			"ipv6": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "A list of IPv6 addresses or networks this rule applies to.",
 				MinItems:    1,
-				Required:    true,
-				Set:         schema.HashString,
+				Optional:    true,
 			},
 		},
 	}
@@ -293,13 +297,12 @@ func expandLinodeFirewallRules(ruleSpecs []interface{}) []linodego.FirewallRule 
 		rule := linodego.FirewallRule{}
 
 		rule.Protocol = linodego.NetworkProtocol(ruleSpec["protocol"].(string))
-		rule.Ports = strings.Join(expandStringSet(ruleSpec["ports"].(*schema.Set)), ",")
-		for _, addr := range expandStringSet(ruleSpec["addresses"].(*schema.Set)) {
-			if strings.ContainsRune(addr, ':') {
-				rule.Addresses.IPv6 = append(rule.Addresses.IPv6, addr)
-			} else {
-				rule.Addresses.IPv4 = append(rule.Addresses.IPv4, addr)
-			}
+		rule.Ports = ruleSpec["ports"].(string)
+		for _, addr := range ruleSpec["ipv4"].([]interface{}) {
+			rule.Addresses.IPv4 = append(rule.Addresses.IPv4, addr.(string))
+		}
+		for _, addr := range ruleSpec["ipv6"].([]interface{}) {
+			rule.Addresses.IPv6 = append(rule.Addresses.IPv6, addr.(string))
 		}
 		rules[i] = rule
 	}
@@ -310,9 +313,10 @@ func flattenLinodeFirewallRules(rules []linodego.FirewallRule) []map[string]inte
 	specs := make([]map[string]interface{}, len(rules))
 	for i, rule := range rules {
 		specs[i] = map[string]interface{}{
-			"protocol":  rule.Protocol,
-			"ports":     strings.Split(rule.Ports, ","),
-			"addresses": append(rule.Addresses.IPv4, rule.Addresses.IPv6...),
+			"protocol": rule.Protocol,
+			"ports":    rule.Ports,
+			"ipv4":     rule.Addresses.IPv4,
+			"ipv6":     rule.Addresses.IPv6,
 		}
 	}
 	return specs
