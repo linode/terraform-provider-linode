@@ -606,7 +606,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	instance, err := client.GetInstance(context.Background(), int(id))
-
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode Instance ID %q from state because it no longer exists", d.Id())
@@ -618,7 +617,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	instanceNetwork, err := client.GetInstanceIPAddresses(context.Background(), int(id))
-
 	if err != nil {
 		return fmt.Errorf("Error getting the IPs for Linode instance %s: %s", d.Id(), err)
 	}
@@ -676,14 +674,12 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("swap_size", swapSize)
 
 	instanceConfigs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
-
 	if err != nil {
 		return fmt.Errorf("Error getting the config for Linode instance %d (%s): %s", instance.ID, instance.Label, err)
 	}
 	diskLabelIDMap := make(map[int]string, len(instanceDisks))
 	for _, disk := range instanceDisks {
 		diskLabelIDMap[disk.ID] = disk.Label
-
 	}
 
 	configs := flattenInstanceConfigs(instanceConfigs, diskLabelIDMap)
@@ -890,7 +886,7 @@ func findDiskByFS(disks []linodego.InstanceDisk, fs linodego.DiskFilesystem) *li
 // adjustSwapSizeIfNeeded handles changes to the swap_size attribute if needed. If there is a change, this means resizing
 // the underlying main/swap disks on the instance to match the declared swap size allocation.
 //
-// returns bool describing whether the linode needs to be restarted
+// returns bool describing whether the linode needs to be restarted.
 func adjustSwapSizeIfNeeded(d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance) (bool, error) {
 	if !d.HasChange("swap_size") {
 		return false, nil

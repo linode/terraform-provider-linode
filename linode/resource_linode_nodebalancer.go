@@ -105,7 +105,6 @@ func resourceLinodeNodeBalancerRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	nodebalancer, err := client.GetNodeBalancer(context.Background(), int(id))
-
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode NodeBalancer ID %q from state because it no longer exists", d.Id())

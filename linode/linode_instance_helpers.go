@@ -181,7 +181,6 @@ func createInstanceConfigsFromSet(client linodego.Client, instanceID int, cset [
 		configIDMap[instanceConfig.ID] = *instanceConfig
 	}
 	return configIDMap, nil
-
 }
 
 func updateInstanceConfigs(client linodego.Client, d *schema.ResourceData, instance linodego.Instance, tfConfigsOld, tfConfigsNew interface{}, diskIDLabelMap map[string]int) (bool, map[string]int, []*linodego.InstanceConfig, error) {
@@ -321,10 +320,9 @@ func flattenInstanceConfigDevice(dev *linodego.InstanceConfigDevice, diskLabelID
 	return []map[string]interface{}{{
 		"volume_id": dev.VolumeID,
 	}}
-
 }
 
-// expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap for the Linode API
+// expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap for the Linode API.
 func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
 	if len(m) == 0 {
 		return nil, nil
@@ -345,7 +343,7 @@ func expandInstanceConfigDeviceMap(m map[string]interface{}, diskIDLabelMap map[
 	return deviceMap, nil
 }
 
-// changeInstanceConfigDevice returns a copy of a config device map with the specified disk slot changed to the provided device
+// changeInstanceConfigDevice returns a copy of a config device map with the specified disk slot changed to the provided device.
 func changeInstanceConfigDevice(deviceMap linodego.InstanceConfigDeviceMap, namedSlot string, device *linodego.InstanceConfigDevice) linodego.InstanceConfigDeviceMap {
 	tDevice := device
 	if tDevice != nil && emptyInstanceConfigDevice(*tDevice) {
@@ -373,12 +371,12 @@ func changeInstanceConfigDevice(deviceMap linodego.InstanceConfigDeviceMap, name
 	return deviceMap
 }
 
-// emptyInstanceConfigDevice returns true only when neither the disk or volume have been assigned to a config device
+// emptyInstanceConfigDevice returns true only when neither the disk or volume have been assigned to a config device.
 func emptyInstanceConfigDevice(dev linodego.InstanceConfigDevice) bool {
 	return (dev.DiskID == 0 && dev.VolumeID == 0)
 }
 
-// emptyConfigDeviceMap returns true only when none of the disks in a config device map have been assigned
+// emptyConfigDeviceMap returns true only when none of the disks in a config device map have been assigned.
 func emptyConfigDeviceMap(dmap linodego.InstanceConfigDeviceMap) bool {
 	drives := []*linodego.InstanceConfigDevice{
 		dmap.SDA, dmap.SDB, dmap.SDC, dmap.SDD, dmap.SDE, dmap.SDF, dmap.SDG, dmap.SDH,
@@ -645,17 +643,17 @@ func updateInstanceDisks(client linodego.Client, d *schema.ResourceData, instanc
 	return hasChanges, nil
 }
 
-// sshKeyState hashes a string passed in as an interface
+// sshKeyState hashes a string passed in as an interface.
 func sshKeyState(val interface{}) string {
 	return hashString(strings.Join(val.([]string), "\n"))
 }
 
-// rootPasswordState hashes a string passed in as an interface
+// rootPasswordState hashes a string passed in as an interface.
 func rootPasswordState(val interface{}) string {
 	return hashString(val.(string))
 }
 
-// hashString hashes a string
+// hashString hashes a string.
 func hashString(key string) string {
 	hash := sha3.Sum512([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])
@@ -689,7 +687,7 @@ func ensureInstanceOffline(client *linodego.Client, instanceID, timeout int) (in
 	return client.WaitForInstanceStatus(context.Background(), instanceID, linodego.InstanceOffline, timeout)
 }
 
-// changeInstanceType resizes the Linode Instance
+// changeInstanceType resizes the Linode Instance.
 func changeInstanceType(client *linodego.Client, instanceID int, targetType string, d *schema.ResourceData) (*linodego.Instance, error) {
 	instance, err := ensureInstanceOffline(client, instanceID, int(d.Timeout(schema.TimeoutUpdate)))
 	if err != nil {
@@ -717,7 +715,7 @@ func changeInstanceType(client *linodego.Client, instanceID int, targetType stri
 	return instance, nil
 }
 
-// returns the amount of disk space used by the new plan and old plan
+// returns the amount of disk space used by the new plan and old plan.
 func getDiskSizeChange(oldDisk interface{}, newDisk interface{}) (int, int) {
 	tfDisksOldInterface := oldDisk.([]interface{})
 	tfDisksNewInterface := newDisk.([]interface{})
@@ -831,7 +829,7 @@ func getInstanceTypeChange(d *schema.ResourceData, client *linodego.Client) (old
 // applyInstanceDiskSpec checks to see if the staged disk changes can be supported by the instance specification's
 // capacity. If there is sufficient space, it attempts to update the disks.
 //
-// returns bool describing whether change has occurred
+// returns bool describing whether change has occurred.
 func applyInstanceDiskSpec(
 	d *schema.ResourceData,
 	client *linodego.Client,
@@ -871,7 +869,7 @@ func applyInstanceTypeChange(
 	return changeInstanceType(client, instance.ID, typ.ID, d)
 }
 
-// detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct
+// detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct.
 func detachConfigVolumes(dmap linodego.InstanceConfigDeviceMap, detacher volumeDetacher) error {
 	// Preallocate our slice of config devices
 	drives := []*linodego.InstanceConfigDevice{

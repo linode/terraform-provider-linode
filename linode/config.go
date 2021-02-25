@@ -10,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
-
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/version"
 	"golang.org/x/oauth2"
@@ -18,10 +17,10 @@ import (
 
 const uaEnvVar = "TF_APPEND_USER_AGENT"
 
-// DefaultLinodeURL is the Linode APIv4 URL to use
+// DefaultLinodeURL is the Linode APIv4 URL to use.
 const DefaultLinodeURL = "https://api.linode.com/v4"
 
-// Config represents the Linode provider configuration
+// Config represents the Linode provider configuration.
 type Config struct {
 	AccessToken string
 	APIURL      string
@@ -35,7 +34,7 @@ type Config struct {
 	MaxRetryDelayMilliseconds int
 }
 
-// Client returns a fully initialized Linode client
+// Client returns a fully initialized Linode client.
 func (c *Config) Client() linodego.Client {
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.AccessToken})
 	oauthTransport := &oauth2.Transport{
