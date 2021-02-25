@@ -48,7 +48,6 @@ func resourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	sshkey, err := client.GetSSHKey(context.Background(), int(id))
-
 	if err != nil {
 		return fmt.Errorf("Error finding the specified Linode SSH Key: %s", err)
 	}

@@ -88,7 +88,6 @@ func resourceLinodeTokenRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	token, err := client.GetToken(context.Background(), int(id))
-
 	if err != nil {
 		return fmt.Errorf("Error finding the specified Linode Token: %s", err)
 	}

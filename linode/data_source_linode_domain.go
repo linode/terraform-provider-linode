@@ -130,7 +130,6 @@ func dataSourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		if len(domains) != 1 || domains[0].Domain != reqDomain {
 			return fmt.Errorf("Domain %s was not found", reqDomain)
-
 		}
 		domain = &domains[0]
 	}

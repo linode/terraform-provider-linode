@@ -106,7 +106,6 @@ func resourceLinodeObjectStorageKeyRead(d *schema.ResourceData, meta interface{}
 	}
 
 	objectStorageKey, err := client.GetObjectStorageKey(context.Background(), int(id))
-
 	if err != nil {
 		return fmt.Errorf("Error finding the specified Linode Object Storage Key: %s", err)
 	}

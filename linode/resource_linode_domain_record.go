@@ -132,7 +132,6 @@ func resourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) er
 	}
 	domainID := d.Get("domain_id").(int)
 	record, err := client.GetDomainRecord(context.Background(), int(domainID), int(id))
-
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode Domain Record ID %q from state because it no longer exists", d.Id())
@@ -280,7 +279,6 @@ func resourceLinodeDomainRecordDelete(d *schema.ResourceData, meta interface{}) 
 	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
-
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode DomainRecord id %s as int", d.Id())
 	}

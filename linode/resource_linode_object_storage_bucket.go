@@ -59,13 +59,11 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderMeta).Client
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
-
 	if err != nil {
 		return fmt.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
 
 	bucket, err := client.GetObjectStorageBucket(context.Background(), cluster, label)
-
 	if err != nil {
 		return fmt.Errorf("Error finding the specified Linode ObjectStorageBucket: %s", err)
 	}

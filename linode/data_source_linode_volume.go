@@ -80,7 +80,6 @@ func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error 
 	var volume *linodego.Volume
 
 	volume, err := client.GetVolume(context.Background(), requestedVolumeID)
-
 	if err != nil {
 		return fmt.Errorf("Error requesting Volume: %s", err)
 	}
@@ -100,5 +99,4 @@ func dataSourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	return fmt.Errorf("Linode Volume %s was not found", fmt.Sprint(requestedVolumeID))
-
 }

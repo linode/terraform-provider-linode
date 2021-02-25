@@ -45,7 +45,6 @@ func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	ip, err := client.GetIPAddress(context.Background(), ipStr)
-
 	if err != nil {
 		return fmt.Errorf("Error finding the specified Linode RDNS: %s", err)
 	}
@@ -59,7 +58,7 @@ func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {
 func resourceLinodeRDNSCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderMeta).Client
 
-	var address = d.Get("address").(string)
+	address := d.Get("address").(string)
 	var rdns *string
 	if rdnsRaw, ok := d.GetOk("rdns"); ok && len(rdnsRaw.(string)) > 0 {
 		rdnsStr := rdnsRaw.(string)

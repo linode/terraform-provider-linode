@@ -131,7 +131,6 @@ func resourceLinodeStackscriptRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	stackscript, err := client.GetStackscript(context.Background(), int(id))
-
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing StackScript ID %q from state because it no longer exists", d.Id())

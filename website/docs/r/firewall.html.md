@@ -22,13 +22,15 @@ resource "linode_firewall" "my_firewall" {
   inbound {
     protocol  = "TCP"
     ports     = ["80"]
-    addresses = ["0.0.0.0/0"]
+    ipv4 = ["0.0.0.0/0"]
+    ipv6 = ["ff00::/8"]
   }
 
   outbound {
     protocol  = "TCP"
     ports     = ["80"]
-    addresses = ["0.0.0.0/0"]
+    ipv4 = ["0.0.0.0/0"]
+    ipv6 = ["ff00::/8"]
   }
 
   linodes = [linode_instance.my_instance.id]
@@ -68,7 +70,9 @@ The following arguments are supported in the inbound rule block:
 
 * `protocol` - (Required) The network protocol this rule controls.
 
-* `addresses` - (Required) A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to allow all) this rule applies to.
+* `ipv4` - (Optional) A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to allow all) this rule applies to.
+
+* `ipv6` - (Optional) A list of IPv6 addresses or networks this rule applies to.
 
 ### outbound
 
@@ -78,7 +82,9 @@ The following arguments are supported in the outbound rule block:
 
 * `protocol` - (Required) The network protocol this rule controls.
 
-* `addresses` - (Required) A list of IP addresses, CIDR blocks, or `0.0.0.0/0` (to allow all) this rule applies to.
+* `ipv4` - (Optional) A list of IP addresses, CIDR blocks, or `0.0.0.0/0` (to allow all) this rule applies to.
+
+* `ipv6` - (Optional) A list of IPv6 addresses or networks this rule applies to.
 
 ## Attributes Reference
 
