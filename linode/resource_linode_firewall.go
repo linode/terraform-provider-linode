@@ -17,7 +17,7 @@ func resourceLinodeFirewallRule() *schema.Resource {
 			"ports": {
 				Type:        schema.TypeString,
 				Description: `A list of ports and/or port ranges (i.e. "443" or "80-90").`,
-				Required:    true,
+				Optional:    true,
 			},
 			"protocol": {
 				Type:         schema.TypeString,
