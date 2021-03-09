@@ -90,6 +90,43 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 	})
 }
 
+func TestAccLinodeFirewall_minimum(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeFirewallMinimum(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", ""),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+				),
+			},
+			{
+				ResourceName:      testFirewallResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeFirewall_no_device(t *testing.T) {
 	t.Parallel()
 
@@ -239,6 +276,19 @@ resource "linode_firewall" "test" {
 	}
 
 	linodes = [linode_instance.one.id]
+}`, name)
+}
+
+func testAccCheckLinodeFirewallMinimum(name string) string {
+	return fmt.Sprintf(`
+resource "linode_firewall" "test" {
+	label = "%s"
+	tags  = ["test"]
+
+	inbound {
+		protocol = "TCP"
+		ipv4 = ["0.0.0.0/0"]
+	}
 }`, name)
 }
 
