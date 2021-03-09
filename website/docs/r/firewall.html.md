@@ -62,27 +62,15 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
 
-### inbound
+### inbound and outbound
 
-The following arguments are supported in the inbound rule block:
+The following arguments are supported in the inbound and outbound rule blocks:
 
-* `ports` - (Required) A list of ports and/or port ranges (i.e. "443" or "80-90").
+* `ports` - (Optional) A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
 
 * `protocol` - (Required) The network protocol this rule controls.
 
 * `ipv4` - (Optional) A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to allow all) this rule applies to.
-
-* `ipv6` - (Optional) A list of IPv6 addresses or networks this rule applies to.
-
-### outbound
-
-The following arguments are supported in the outbound rule block:
-
-* `ports` - (Required) A list of ports and/or port ranges (i.e. "443" or "80-90").
-
-* `protocol` - (Required) The network protocol this rule controls.
-
-* `ipv4` - (Optional) A list of IP addresses, CIDR blocks, or `0.0.0.0/0` (to allow all) this rule applies to.
 
 * `ipv6` - (Optional) A list of IPv6 addresses or networks this rule applies to.
 
