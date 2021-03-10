@@ -69,8 +69,7 @@ func resourceLinodeFirewall() *schema.Resource {
 			"label": {
 				Type:         schema.TypeString,
 				Description:  "The label for the Firewall. For display purposes only. If no label is provided, a default will be assigned.",
-				Computed:     true,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validation.StringLenBetween(3, 32),
 			},
 			"tags": {

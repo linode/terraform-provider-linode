@@ -56,7 +56,7 @@ resource "linode_instance" "my_instance" {
 
 The following arguments are supported:
 
-* `label` - (Optional) This Firewall's unique label.
+* `label` - (Required) This Firewall's unique label.
 
 * `disabled` - (Optional) If `true`, the Firewall's rules are not enforced (defaults to `false`).
 
