@@ -56,13 +56,16 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.action", "ACCEPT"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "DROP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
@@ -145,11 +148,11 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
-					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "::/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
@@ -182,14 +185,18 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.action", "ACCEPT"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "DROP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.action", "ACCEPT"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.#", "1"),
@@ -208,25 +215,30 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", newName),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "true"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "ACCEPT"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "3"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.action", "DROP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "2"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.1", "ff00::/8"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.action", "DROP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ports", "443"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.#", "2"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.0", "0.0.0.0/0"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.1", "127.0.0.1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.1", "127.0.0.1/32"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv6.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.action", "DROP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ports", "22"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.2.ipv6.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "ACCEPT"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "2"),
@@ -262,18 +274,24 @@ resource "linode_firewall" "test" {
 	tags  = ["test"]
 
 	inbound {
+		label    = "tf-test-in"
+		action = "ACCEPT"
 		protocol  = "TCP"
 		ports     = "80"
 		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["::1"]
+		ipv6 = ["::/0"]
 	}
+	inbound_policy = "DROP"
 
 	outbound {
+		label    = "tf-test-out"
+		action = "ACCEPT"
 		protocol  = "TCP"
 		ports     = "80"
 		ipv4 = ["0.0.0.0/0"]
 		ipv6 = ["2001:db8::/32"]
 	}
+	outbound_policy = "DROP"
 
 	linodes = [linode_instance.one.id]
 }`, name)
@@ -286,9 +304,13 @@ resource "linode_firewall" "test" {
 	tags  = ["test"]
 
 	inbound {
+		label    = "tf-test-in"
+		action = "ACCEPT"
 		protocol = "TCP"
 		ipv4 = ["0.0.0.0/0"]
 	}
+	inbound_policy = "DROP"
+	outbound_policy = "DROP"
 }`, name)
 }
 
@@ -299,16 +321,22 @@ resource "linode_firewall" "test" {
 	tags  = ["test"]
 
 	inbound {
-		protocol  = "TCP"
-		ports     = "80"
-		ipv4 = ["0.0.0.0/0"]
+		label    = "tf-test-in"
+		action   = "ACCEPT"
+		protocol = "TCP"
+		ports    = "80"
+		ipv6     = ["::/0"]
 	}
 
+	inbound_policy = "DROP"
 	outbound {
-		protocol  = "TCP"
-		ports     = "80"
-		ipv4 = ["0.0.0.0/0"]
+		label    = "tf-test-out"
+		action   = "ACCEPT"
+		protocol = "TCP"
+		ports    = "80"
+		ipv6     = ["::/0"]
 	}
+	outbound_policy = "DROP"
 
 	linodes = []
 }`, name)
@@ -324,23 +352,31 @@ resource "linode_firewall" "test" {
     disabled = true
 
 	inbound {
-		protocol  = "TCP"
-		ports     = "80"
-		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["::1", "ff00::/8"]
+		label    = "tf-test-in"
+		action   = "DROP"
+		protocol = "TCP"
+		ports    = "80"
+		ipv4     = ["0.0.0.0/0"]
+		ipv6     = ["::/0", "ff00::/8"]
 	}
 
 	inbound {
-		protocol  = "TCP"
-		ports     = "443"
-		ipv4 = ["0.0.0.0/0", "127.0.0.1"]
+		label    = "tf-test-in2"
+		action   = "DROP"
+		protocol = "TCP"
+		ports    = "443"
+		ipv4     = ["0.0.0.0/0", "127.0.0.1/32"]
 	}
 
 	inbound {
-		protocol  = "TCP"
-		ports     = "22"
-		ipv4 = ["0.0.0.0/0"]
+		label    = "tf-test-in3"
+		action   = "DROP"
+		protocol = "TCP"
+		ports    = "22"
+		ipv4     = ["0.0.0.0/0"]
 	}
+	inbound_policy = "ACCEPT"
+	outbound_policy = "ACCEPT"
 
 	linodes = [
 		linode_instance.two.id,

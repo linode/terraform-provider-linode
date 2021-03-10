@@ -14,6 +14,16 @@ import (
 func resourceLinodeFirewallRule() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"label": {
+				Type:        schema.TypeString,
+				Description: `Used to identify this rule. For display purposes only.`,
+				Required:    true,
+			},
+			"action": {
+				Type:        schema.TypeString,
+				Description: `Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.`,
+				Required:    true,
+			},
 			"ports": {
 				Type:        schema.TypeString,
 				Description: `A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").`,
@@ -82,11 +92,21 @@ func resourceLinodeFirewall() *schema.Resource {
 				Description: "A firewall rule that specifies what inbound network traffic is allowed.",
 				Optional:    true,
 			},
+			"inbound_policy": {
+				Type:        schema.TypeString,
+				Description: "The default behavior for inbound traffic. This setting can be overridden by updating the inbound.action property for an individual Firewall Rule.",
+				Required:    true,
+			},
 			"outbound": {
 				Type:        schema.TypeList,
 				Elem:        resourceLinodeFirewallRule(),
 				Description: "A firewall rule that specifies what outbound network traffic is allowed.",
 				Optional:    true,
+			},
+			"outbound_policy": {
+				Type:        schema.TypeString,
+				Description: "The default behavior for outbound traffic. This setting can be overridden by updating the outbound.action property for an individual Firewall Rule.",
+				Required:    true,
 			},
 			"linodes": {
 				Type:        schema.TypeSet,
@@ -166,6 +186,8 @@ func resourceLinodeFirewallRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("status", firewall.Status)
 	d.Set("inbound", flattenLinodeFirewallRules(rules.Inbound))
 	d.Set("outbound", flattenLinodeFirewallRules(rules.Outbound))
+	d.Set("inbound_policy", firewall.Rules.InboundPolicy)
+	d.Set("outbound_policy", firewall.Rules.OutboundPolicy)
 	d.Set("linodes", flattenLinodeFirewallLinodes(devices))
 	d.Set("devices", flattenLinodeFirewallDevices(devices))
 	return nil
@@ -180,7 +202,9 @@ func resourceLinodeFirewallCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	createOpts.Devices.Linodes = expandIntSet(d.Get("linodes").(*schema.Set))
 	createOpts.Rules.Inbound = expandLinodeFirewallRules(d.Get("inbound").([]interface{}))
+	createOpts.Rules.InboundPolicy = d.Get("inbound_policy").(string)
 	createOpts.Rules.Outbound = expandLinodeFirewallRules(d.Get("outbound").([]interface{}))
+	createOpts.Rules.OutboundPolicy = d.Get("outbound_policy").(string)
 
 	if len(createOpts.Rules.Inbound)+len(createOpts.Rules.Outbound) == 0 {
 		return errors.New("cannot create firewall without at least one inbound or outbound rule")
@@ -230,7 +254,12 @@ func resourceLinodeFirewallUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	inboundRules := expandLinodeFirewallRules(d.Get("inbound").([]interface{}))
 	outboundRules := expandLinodeFirewallRules(d.Get("outbound").([]interface{}))
-	ruleSet := linodego.FirewallRuleSet{Inbound: inboundRules, Outbound: outboundRules}
+	ruleSet := linodego.FirewallRuleSet{
+		Inbound:        inboundRules,
+		InboundPolicy:  d.Get("inbound_policy").(string),
+		Outbound:       outboundRules,
+		OutboundPolicy: d.Get("outbound_policy").(string),
+	}
 	if _, err := client.UpdateFirewallRules(context.Background(), id, ruleSet); err != nil {
 		return fmt.Errorf("failed to update rules for firewall %d: %s", id, err)
 	}
@@ -296,13 +325,18 @@ func expandLinodeFirewallRules(ruleSpecs []interface{}) []linodego.FirewallRule 
 		ruleSpec := ruleSpec.(map[string]interface{})
 		rule := linodego.FirewallRule{}
 
+		rule.Label = ruleSpec["label"].(string)
+		rule.Action = ruleSpec["action"].(string)
 		rule.Protocol = linodego.NetworkProtocol(ruleSpec["protocol"].(string))
 		rule.Ports = ruleSpec["ports"].(string)
-		for _, addr := range ruleSpec["ipv4"].([]interface{}) {
-			rule.Addresses.IPv4 = append(rule.Addresses.IPv4, addr.(string))
+
+		ipv4 := expandStringList(ruleSpec["ipv4"].([]interface{}))
+		if len(ipv4) > 0 {
+			rule.Addresses.IPv4 = &ipv4
 		}
-		for _, addr := range ruleSpec["ipv6"].([]interface{}) {
-			rule.Addresses.IPv6 = append(rule.Addresses.IPv6, addr.(string))
+		ipv6 := expandStringList(ruleSpec["ipv6"].([]interface{}))
+		if len(ipv6) > 0 {
+			rule.Addresses.IPv6 = &ipv6
 		}
 		rules[i] = rule
 	}
@@ -313,6 +347,8 @@ func flattenLinodeFirewallRules(rules []linodego.FirewallRule) []map[string]inte
 	specs := make([]map[string]interface{}, len(rules))
 	for i, rule := range rules {
 		specs[i] = map[string]interface{}{
+			"label":    rule.Label,
+			"action":   rule.Action,
 			"protocol": rule.Protocol,
 			"ports":    rule.Ports,
 			"ipv4":     rule.Addresses.IPv4,

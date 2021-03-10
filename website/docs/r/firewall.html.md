@@ -20,18 +20,24 @@ resource "linode_firewall" "my_firewall" {
   tags  = ["test"]
 
   inbound {
-    protocol  = "TCP"
-    ports     = "80"
-    ipv4      = ["0.0.0.0/0"]
-    ipv6      = ["ff00::/8"]
+    label    = "allow-them"
+    action   = "ACCEPT"
+    protocol = "TCP"
+    ports    = "80"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["ff00::/8"]
   }
+  inbound_policy = "DROP"
 
   outbound {
-    protocol  = "TCP"
-    ports     = "80"
-    ipv4      = ["0.0.0.0/0"]
-    ipv6      = ["ff00::/8"]
+    label    = "reject-them"
+    action   = "DROP"
+    protocol = "TCP"
+    ports    = "80"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["ff00::/8"]
   }
+  outbound_policy = "ACCEPT"
 
   linodes = [linode_instance.my_instance.id]
 }
@@ -55,8 +61,12 @@ The following arguments are supported:
 * `disabled` - (Optional) If `true`, the Firewall's rules are not enforced (defaults to `false`).
 
 * [`inbound`](#inbound) - (Optional) A firewall rule that specifies what inbound network traffic is allowed.
+  
+* `inbound_policy` - (Required) The default behavior for inbound traffic. This setting can be overridden by updating the inbound.action property of the Firewall Rule.
 
 * [`outbound`](#outbound) - (Optional) A firewall rule that specifies what outbound network traffic is allowed.
+  
+* `outbound_policy` - (Required) The default behavior for outbound traffic. This setting can be overridden by updating the action property for an individual Firewall Rule.
 
 * `linodes` - (Optional) A list of IDs of Linodes this Firewall should govern it's network traffic for.
 
@@ -66,13 +76,17 @@ The following arguments are supported:
 
 The following arguments are supported in the inbound and outbound rule blocks:
 
-* `ports` - (Optional) A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
+* `label` - (required) Used to identify this rule. For display purposes only.
+  
+* `action` - (required) Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.
 
 * `protocol` - (Required) The network protocol this rule controls.
 
-* `ipv4` - (Optional) A list of IP addresses, CIDR blocks, or 0.0.0.0/0 (to allow all) this rule applies to.
+* `ports` - (Optional) A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
+  
+* `ipv4` - (Optional) A list of IPv4 addresses or networks. Must be in IP/mask format.
 
-* `ipv6` - (Optional) A list of IPv6 addresses or networks this rule applies to.
+* `ipv6` - (Optional) A list of IPv6 addresses or networks. Must be in IP/mask format.
 
 ## Attributes Reference
 
