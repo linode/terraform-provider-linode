@@ -21,16 +21,16 @@ resource "linode_firewall" "my_firewall" {
 
   inbound {
     protocol  = "TCP"
-    ports     = ["80"]
-    ipv4 = ["0.0.0.0/0"]
-    ipv6 = ["ff00::/8"]
+    ports     = "80"
+    ipv4      = ["0.0.0.0/0"]
+    ipv6      = ["ff00::/8"]
   }
 
   outbound {
     protocol  = "TCP"
-    ports     = ["80"]
-    ipv4 = ["0.0.0.0/0"]
-    ipv6 = ["ff00::/8"]
+    ports     = "80"
+    ipv4      = ["0.0.0.0/0"]
+    ipv6      = ["ff00::/8"]
   }
 
   linodes = [linode_instance.my_instance.id]
