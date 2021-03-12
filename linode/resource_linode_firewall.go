@@ -56,6 +56,38 @@ func resourceLinodeFirewallRule() *schema.Resource {
 	}
 }
 
+func resourceLinodeFirewallDevice() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeInt,
+				Description: "The ID of the firewall device.",
+				Computed:    true,
+			},
+			"entity_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The ID of the underlying entity for the firewall device (e.g. the Linode's ID).",
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Description: "The type of firewall device.",
+				Computed:    true,
+			},
+			"label": {
+				Type:        schema.TypeString,
+				Description: "The label of the underlying entity for the firewall device.",
+				Computed:    true,
+			},
+			"url": {
+				Type:        schema.TypeString,
+				Description: "The URL of the underlying entity for the firewall device.",
+				Computed:    true,
+			},
+		},
+	}
+}
+
 func resourceLinodeFirewall() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeFirewallCreate,
@@ -115,36 +147,8 @@ func resourceLinodeFirewall() *schema.Resource {
 				Set:         schema.HashInt,
 			},
 			"devices": {
-				Type: schema.TypeList,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeInt,
-							Description: "The ID of the firewall device.",
-							Computed:    true,
-						},
-						"entity_id": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The ID of the underlying entity for the firewall device (e.g. the Linode's ID).",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Description: "The type of firewall device.",
-							Computed:    true,
-						},
-						"label": {
-							Type:        schema.TypeString,
-							Description: "The label of the underlying entity for the firewall device.",
-							Computed:    true,
-						},
-						"url": {
-							Type:        schema.TypeString,
-							Description: "The URL of the underlying entity for the firewall device.",
-							Computed:    true,
-						},
-					},
-				},
+				Type:        schema.TypeList,
+				Elem:        resourceLinodeFirewallDevice(),
 				Computed:    true,
 				Description: "The devices associated with this firewall.",
 			},
