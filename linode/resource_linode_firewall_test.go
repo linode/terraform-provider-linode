@@ -306,7 +306,7 @@ resource "linode_firewall" "test" {
 	inbound {
 		label    = "tf-test-in"
 		action = "ACCEPT"
-		protocol = "TCP"
+		protocol = "tcp"
 		ipv4 = ["0.0.0.0/0"]
 	}
 	inbound_policy = "DROP"

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -30,10 +31,12 @@ func resourceLinodeFirewallRule() *schema.Resource {
 				Optional:    true,
 			},
 			"protocol": {
-				Type:         schema.TypeString,
-				Description:  "The network protocol this rule controls.",
-				ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "ICMP"}, false),
-				Required:     true,
+				Type:        schema.TypeString,
+				Description: "The network protocol this rule controls.",
+				StateFunc: func(val interface{}) string {
+					return strings.ToUpper(val.(string))
+				},
+				Required: true,
 			},
 			"ipv4": {
 				Type: schema.TypeList,
@@ -199,6 +202,7 @@ func resourceLinodeFirewallCreate(d *schema.ResourceData, meta interface{}) erro
 		Label: d.Get("label").(string),
 		Tags:  expandStringSet(d.Get("tags").(*schema.Set)),
 	}
+
 	createOpts.Devices.Linodes = expandIntSet(d.Get("linodes").(*schema.Set))
 	createOpts.Rules.Inbound = expandLinodeFirewallRules(d.Get("inbound").([]interface{}))
 	createOpts.Rules.InboundPolicy = d.Get("inbound_policy").(string)
@@ -326,7 +330,7 @@ func expandLinodeFirewallRules(ruleSpecs []interface{}) []linodego.FirewallRule 
 
 		rule.Label = ruleSpec["label"].(string)
 		rule.Action = ruleSpec["action"].(string)
-		rule.Protocol = linodego.NetworkProtocol(ruleSpec["protocol"].(string))
+		rule.Protocol = linodego.NetworkProtocol(strings.ToUpper(ruleSpec["protocol"].(string)))
 		rule.Ports = ruleSpec["ports"].(string)
 
 		ipv4 := expandStringList(ruleSpec["ipv4"].([]interface{}))
