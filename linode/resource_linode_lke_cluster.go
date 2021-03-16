@@ -2,12 +2,16 @@ package linode
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
@@ -16,16 +20,16 @@ import (
 
 const (
 	linodeLKECreateTimeout = 15 * time.Minute
-	linodeLKEUpdateTimeout = 20 * time.Minute
+	linodeLKEUpdateTimeout = 30 * time.Minute
 	linodeLKEDeleteTimeout = 10 * time.Minute
 )
 
 func resourceLinodeLKECluster() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeLKEClusterCreate,
-		Read:   resourceLinodeLKEClusterRead,
-		Update: resourceLinodeLKEClusterUpdate,
-		Delete: resourceLinodeLKEClusterDelete,
+		CreateContext: resourceLinodeLKEClusterCreate,
+		ReadContext:   resourceLinodeLKEClusterRead,
+		UpdateContext: resourceLinodeLKEClusterUpdate,
+		DeleteContext: resourceLinodeLKEClusterDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -43,7 +47,6 @@ func resourceLinodeLKECluster() *schema.Resource {
 			"k8s_version": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. The latest supported patch version will be deployed.",
 			},
 			"tags": {
@@ -129,31 +132,31 @@ func resourceLinodeLKECluster() *schema.Resource {
 	}
 }
 
-func resourceLinodeLKEClusterRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode LKE Cluster ID: %s", err)
+		return diag.Errorf("Error parsing Linode LKE Cluster ID: %s", err)
 	}
 
 	cluster, err := client.GetLKECluster(context.Background(), id)
 	if err != nil {
-		return fmt.Errorf("failed to get LKE cluster %d: %s", id, err)
+		return diag.Errorf("failed to get LKE cluster %d: %s", id, err)
 	}
 
 	pools, err := client.ListLKEClusterPools(context.Background(), id, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
+		return diag.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
 	}
 
 	kubeconfig, err := client.GetLKEClusterKubeconfig(context.Background(), id)
 	if err != nil {
-		return fmt.Errorf("failed to get kubeconfig for LKE cluster %d: %s", id, err)
+		return diag.Errorf("failed to get kubeconfig for LKE cluster %d: %s", id, err)
 	}
 
 	endpoints, err := client.ListLKEClusterAPIEndpoints(context.Background(), id, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
+		return diag.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
 	}
 
 	d.Set("label", cluster.Label)
@@ -167,7 +170,7 @@ func resourceLinodeLKEClusterRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func resourceLinodeLKEClusterCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeLKEClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.LKEClusterCreateOptions{
@@ -190,29 +193,29 @@ func resourceLinodeLKEClusterCreate(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	cluster, err := client.CreateLKECluster(context.Background(), createOpts)
+	cluster, err := client.CreateLKECluster(ctx, createOpts)
 	if err != nil {
-		return fmt.Errorf("failed to create LKE cluster: %s", err)
+		return diag.Errorf("failed to create LKE cluster: %s", err)
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
-	client.WaitForLKEClusterConditions(context.Background(), cluster.ID, linodego.LKEClusterPollOptions{
+	client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
 		TimeoutSeconds: 10 * 60,
 	}, k8scondition.ClusterHasReadyNode)
-	return resourceLinodeLKEClusterRead(d, meta)
+	return resourceLinodeLKEClusterRead(ctx, d, meta)
 }
 
-func resourceLinodeLKEClusterUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderMeta).Client
+func resourceLinodeLKEClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerMeta := meta.(*ProviderMeta)
+	client := providerMeta.Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
+		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
 	}
 
 	updateOpts := linodego.LKEClusterUpdateOptions{}
-	if d.HasChange("label") {
-		updateOpts.Label = d.Get("label").(string)
-	}
+	updateOpts.Label = d.Get("label").(string)
+	updateOpts.K8sVersion = d.Get("k8s_version").(string)
 	if d.HasChange("tags") {
 		tags := []string{}
 		for _, tag := range d.Get("tags").(*schema.Set).List() {
@@ -221,15 +224,21 @@ func resourceLinodeLKEClusterUpdate(d *schema.ResourceData, meta interface{}) er
 
 		updateOpts.Tags = &tags
 	}
-	if d.HasChanges("label", "tags") {
+	if d.HasChanges("label", "tags", "k8s_version") {
 		if _, err := client.UpdateLKECluster(context.Background(), id, updateOpts); err != nil {
-			return fmt.Errorf("failed to update LKE Cluster %d: %s", id, err)
+			return diag.Errorf("failed to update LKE Cluster %d: %s", id, err)
 		}
 	}
 
 	pools, err := client.ListLKEClusterPools(context.Background(), id, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get Pools for LKE Cluster %d: %s", id, err)
+		return diag.Errorf("failed to get Pools for LKE Cluster %d: %s", id, err)
+	}
+
+	if d.HasChange("k8s_version") {
+		if err := recycleLKECluster(ctx, providerMeta, id, pools); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	poolSpecs := expandLinodeLKEClusterPoolSpecs(d.Get("pool").([]interface{}))
@@ -237,35 +246,35 @@ func resourceLinodeLKEClusterUpdate(d *schema.ResourceData, meta interface{}) er
 
 	for poolID, updateOpts := range updates.ToUpdate {
 		if _, err := client.UpdateLKEClusterPool(context.Background(), id, poolID, updateOpts); err != nil {
-			return fmt.Errorf("failed to update LKE Cluster %d Pool %d: %s", id, poolID, err)
+			return diag.Errorf("failed to update LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 	}
 
 	for _, createOpts := range updates.ToCreate {
 		if _, err := client.CreateLKEClusterPool(context.Background(), id, createOpts); err != nil {
-			return fmt.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
+			return diag.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
 		}
 	}
 
 	for _, poolID := range updates.ToDelete {
 		if err := client.DeleteLKEClusterPool(context.Background(), id, poolID); err != nil {
-			return fmt.Errorf("failed to delete LKE Cluster %d Pool %d: %s", id, poolID, err)
+			return diag.Errorf("failed to delete LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 	}
 
 	return nil
 }
 
-func resourceLinodeLKEClusterDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeLKEClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
+		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
 	}
 
 	err = client.DeleteLKECluster(context.Background(), id)
 	if err != nil {
-		return fmt.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
+		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
 	}
 	client.WaitForLKEClusterStatus(context.Background(), id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	return nil
@@ -404,6 +413,151 @@ func reconcileLKEClusterPoolSpecs(poolSpecs []linodeLKEClusterPoolSpec, pools []
 	}
 
 	return
+}
+
+func waitForClusterPoolReady(ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int) {
+	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
+
+main:
+	for {
+		select {
+		case <-ctx.Done():
+			log.Printf("[ERROR] timed out waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
+			return
+
+		case <-eventTicker.C:
+			pool, err := client.GetLKEClusterPool(ctx, clusterID, poolID)
+			if err != nil {
+				errCh <- fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
+			}
+
+			for _, instance := range pool.Linodes {
+				if instance.Status == linodego.LKELinodeNotReady {
+					continue main
+				}
+			}
+
+			log.Printf("[DEBUG] finished waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
+			wg.Done()
+			return
+		}
+	}
+}
+
+func waitForClusterPoolsToStartRecycle(ctx context.Context, client *linodego.Client, pollMs, clusterID int, pools []linodego.LKEClusterPool) (<-chan int, <-chan error) {
+	clusterInstances := make(map[int]int)
+	poolInstances := make(map[int]map[int]struct{}, len(pools))
+	for _, pool := range pools {
+		poolInstances[pool.ID] = make(map[int]struct{}, len(pool.Linodes))
+		for _, instance := range pool.Linodes {
+			poolInstances[pool.ID][instance.InstanceID] = struct{}{}
+			clusterInstances[instance.InstanceID] = pool.ID
+		}
+	}
+
+	poolRecyclesCh := make(chan int)
+	errCh := make(chan error)
+
+	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
+
+	go func() {
+		defer eventTicker.Stop()
+		defer close(poolRecyclesCh)
+		defer close(errCh)
+
+		lastEventID := 0
+
+		for len(clusterInstances) != 0 {
+			select {
+			case <-ctx.Done():
+				log.Printf("[ERROR] timed out waiting for all original nodes of LKE Cluster (%d) to be deleted (%d remaining)\n", clusterID, len(clusterInstances))
+				return
+
+			case <-eventTicker.C:
+				filterBytes, _ := json.Marshal(map[string]interface{}{
+					"+order_by":   "created",
+					"+gte":        lastEventID,
+					"entity.type": string(linodego.EntityLinode),
+				})
+
+				events, err := client.ListEvents(ctx, linodego.NewListOptions(1, string(filterBytes)))
+				if err != nil {
+					errCh <- err
+					return
+				}
+
+				if len(events) != 0 {
+					lastEventID = events[0].ID
+				}
+
+				for _, event := range events {
+					if event.Action != linodego.ActionLinodeDelete {
+						continue
+					}
+					id := int(event.Entity.ID.(float64))
+					poolID, ok := clusterInstances[id]
+					if !ok {
+						continue
+					}
+
+					delete(clusterInstances, id)
+					delete(poolInstances[poolID], id)
+					log.Printf("[DEBUG] finished waiting for LKE Cluster (%d) Pool (%d) Node (%d) to be deleted\n", clusterID, poolID, id)
+
+					if len(poolInstances[poolID]) == 0 {
+						// all original instances for this pool have been deleted
+						delete(poolInstances, poolID)
+						log.Printf("[DEBUG] finished waiting for all nodes in LKE Cluster (%d) Pool (%d) to be recreated\n", clusterID, poolID)
+						poolRecyclesCh <- poolID
+					}
+				}
+			}
+		}
+	}()
+	return poolRecyclesCh, errCh
+}
+
+func recycleLKECluster(ctx context.Context, meta *ProviderMeta, id int, pools []linodego.LKEClusterPool) error {
+	client := meta.Client
+
+	if err := client.RecycleLKEClusterNodes(ctx, id); err != nil {
+		return fmt.Errorf("failed to recycle LKE Cluster (%d): %s", id, err)
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	poolRecyclesCh, errCh := waitForClusterPoolsToStartRecycle(ctx, &client, meta.Config.EventPollMilliseconds, id, pools)
+
+	var wg sync.WaitGroup
+	wg.Add(len(pools))
+	poolsRecycledCh := waitGroupCh(&wg)
+
+	readyErrCh := make(chan error)
+	defer close(readyErrCh)
+
+	go func() {
+		for poolID := range poolRecyclesCh {
+			go waitForClusterPoolReady(ctx, &client, readyErrCh, &wg, meta.Config.LKENodeReadyPollMilliseconds, id, poolID)
+		}
+	}()
+
+	for {
+		select {
+		case <-poolsRecycledCh:
+			return nil
+
+		case err := <-errCh:
+			if err != nil {
+				return fmt.Errorf("failed to wait for all LKE Cluster (%d) nodes to start recycle: %w", id, err)
+			}
+
+		case err := <-readyErrCh:
+			if err != nil {
+				return err
+			}
+		}
+	}
 }
 
 func flattenLinodeLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]interface{} {
