@@ -29,9 +29,11 @@ type Config struct {
 
 	terraformVersion string
 
-	SkipInstanceReadyPoll     bool
-	MinRetryDelayMilliseconds int
-	MaxRetryDelayMilliseconds int
+	SkipInstanceReadyPoll        bool
+	MinRetryDelayMilliseconds    int
+	MaxRetryDelayMilliseconds    int
+	EventPollMilliseconds        int
+	LKENodeReadyPollMilliseconds int
 }
 
 // Client returns a fully initialized Linode client.
@@ -63,6 +65,9 @@ func (c *Config) Client() linodego.Client {
 		client.SetBaseURL(DefaultLinodeURL)
 	}
 
+	if c.EventPollMilliseconds != 0 {
+		client.SetPollDelay(time.Duration(c.EventPollMilliseconds) * time.Millisecond)
+	}
 	if c.MinRetryDelayMilliseconds != 0 {
 		client.SetRetryWaitTime(time.Duration(c.MinRetryDelayMilliseconds) * time.Millisecond)
 	}

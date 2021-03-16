@@ -56,6 +56,20 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "Maximum delay in milliseconds before retrying a request.",
 			},
+
+			"event_poll_ms": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     200,
+				Description: "The rate in milliseconds to poll for events.",
+			},
+
+			"lke_node_ready_poll_ms": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     500,
+				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -127,6 +141,10 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
+
+		EventPollMilliseconds: d.Get("event_poll_ms").(int),
+
+		LKENodeReadyPollMilliseconds: d.Get("lke_node_ready_poll_ms").(int),
 	}
 	config.terraformVersion = terraformVersion
 	client := config.Client()
