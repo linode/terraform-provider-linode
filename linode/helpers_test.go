@@ -2,6 +2,8 @@ package linode
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -9,6 +11,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"golang.org/x/crypto/ssh"
 )
+
+const optInTestsEnvVar = "ACC_OPT_IN_TESTS"
+
+var optInTests map[string]struct{}
+
+func init() {
+	optInTests = make(map[string]struct{})
+	optInTestsValue, ok := os.LookupEnv(optInTestsEnvVar)
+	if !ok {
+		return
+	}
+
+	for _, testName := range strings.Split(optInTestsValue, ",") {
+		optInTests[testName] = struct{}{}
+	}
+}
+
+func optInTest(t *testing.T) {
+	t.Helper()
+
+	if _, ok := optInTests[t.Name()]; !ok {
+		t.Skipf("skipping opt-in test; specify test in environment variable %q to run", optInTestsEnvVar)
+	}
+}
 
 func getSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 	t.Helper()
