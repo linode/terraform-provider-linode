@@ -18,7 +18,7 @@ The following example shows how one might use this resource to configure a SSH K
 ```hcl
 resource "linode_sshkey" "foo" {
   label = "foo"
-  ssh_key = "${chomp(file("~/.ssh/id_rsa.pub"))}"
+  ssh_key = chomp(file("~/.ssh/id_rsa.pub"))
 }
 
 resource "linode_instance" "foo" {
