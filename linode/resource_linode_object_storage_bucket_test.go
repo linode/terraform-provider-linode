@@ -129,6 +129,39 @@ func TestAccLinodeObjectStorageBucket_basic(t *testing.T) {
 	})
 }
 
+func TestAccLinodeObjectStorageBucket_access(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_bucket.foobar"
+	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeObjectStorageBucketConfigWithAccess(objectStorageBucketName, "public-read", true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeObjectStorageBucketExists,
+					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					resource.TestCheckResourceAttr(resName, "acl", "public-read"),
+					resource.TestCheckResourceAttr(resName, "cors_enabled", "true"),
+				),
+			},
+			{
+				Config: testAccCheckLinodeObjectStorageBucketConfigWithAccess(objectStorageBucketName, "private", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeObjectStorageBucketExists,
+					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					resource.TestCheckResourceAttr(resName, "acl", "private"),
+					resource.TestCheckResourceAttr(resName, "cors_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccLinodeObjectStorageBucket_cert(t *testing.T) {
 	t.Parallel()
 
@@ -327,6 +360,17 @@ resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"
 	label = "%s"
 }`, object_storage_bucket)
+}
+
+func testAccCheckLinodeObjectStorageBucketConfigWithAccess(object_storage_bucket, acl string, cors bool) string {
+	return fmt.Sprintf(`
+resource "linode_object_storage_bucket" "foobar" {
+	cluster = "us-east-1"
+	label = "%s"
+
+	acl = "%s"
+	cors_enabled = %t
+}`, object_storage_bucket, acl, cors)
 }
 
 func testAccCheckLinodeObjectStorageBucketConfigWithCert(object_storage_bucket, cert, key string) string {

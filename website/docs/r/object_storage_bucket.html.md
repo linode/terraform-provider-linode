@@ -34,6 +34,10 @@ The following arguments are supported:
 
 * `label` - (Required) The label of the Linode Object Storage Bucket.
 
+* `acl` - (Optional) The Access Control Level of the bucket using a canned ACL string. See all ACL strings [in the Linode API v4 documentation](linode.com/docs/api/object-storage/#object-storage-bucket-access-update__request-body-schema).
+
+* `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
+
 * [`cert`](#cert) - (Optional) The bucket's TLS/SSL certificate.
 
 ### cert
