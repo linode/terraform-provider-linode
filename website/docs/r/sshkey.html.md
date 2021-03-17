@@ -26,7 +26,7 @@ resource "linode_instance" "foo" {
   label  = "foo"
   region = "us-east"
   type   = "g6-nanode-1"
-  authorized_keys    = ["${linode_sshkey.foo.ssh_key}"]
+  authorized_keys    = [linode_sshkey.foo.ssh_key]
   root_pass      = "..."
 }
 ```
