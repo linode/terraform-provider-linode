@@ -65,9 +65,6 @@ func (c *Config) Client() linodego.Client {
 		client.SetBaseURL(DefaultLinodeURL)
 	}
 
-	if c.EventPollMilliseconds != 0 {
-		client.SetPollDelay(time.Duration(c.EventPollMilliseconds) * time.Millisecond)
-	}
 	if c.MinRetryDelayMilliseconds != 0 {
 		client.SetRetryWaitTime(time.Duration(c.MinRetryDelayMilliseconds) * time.Millisecond)
 	}
