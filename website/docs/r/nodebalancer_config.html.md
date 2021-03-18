@@ -79,9 +79,9 @@ The following arguments are supported:
 
 This resource exports the following attributes:
 
-* `ssl_commonname` - The common name for the SSL certification this port is serving if this port is not configured to use SSL.
+* `ssl_commonname` - The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 
-* `ssl_fingerprint` - The fingerprint for the SSL certification this port is serving if this port is not configured to use SSL.
+* `ssl_fingerprint` - The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 
 * [`node_status`](#node_status) - The status of the attached nodes.
 
