@@ -117,18 +117,19 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 			},
 			"ssl_commonname": {
 				Type:        schema.TypeString,
-				Description: "The common name for the SSL certification this port is serving if this port is not configured to use SSL.",
+				Description: "The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.",
 				Computed:    true,
 			},
 			"ssl_fingerprint": {
 				Type:        schema.TypeString,
-				Description: "The fingerprint for the SSL certification this port is serving if this port is not configured to use SSL.",
+				Description: "The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.",
 				Computed:    true,
 			},
 			"ssl_cert": {
 				Type:        schema.TypeString,
 				Description: "The certificate this port is serving. This is not returned. If set, this field will come back as `<REDACTED>`. Please use the ssl_commonname and ssl_fingerprint to identify the certificate.",
 				Optional:    true,
+				Sensitive:   true,
 			},
 			"ssl_key": {
 				Type:        schema.TypeString,
@@ -221,7 +222,6 @@ func resourceLinodeNodeBalancerConfigRead(d *schema.ResourceData, meta interface
 	d.Set("port", config.Port)
 	d.Set("protocol", config.Protocol)
 	d.Set("proxy_protocol", config.ProxyProtocol)
-	d.Set("ssl_key", config.SSLKey)
 	d.Set("ssl_fingerprint", config.SSLFingerprint)
 	d.Set("ssl_commonname", config.SSLCommonName)
 	d.Set("node_status", []map[string]interface{}{{
