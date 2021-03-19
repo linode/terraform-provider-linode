@@ -31,6 +31,18 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"acl": {
+				Type:        schema.TypeString,
+				Description: "The Access Control Level of the bucket using a canned ACL string.",
+				Optional:    true,
+				Default:     "private",
+			},
+			"cors_enabled": {
+				Type:        schema.TypeBool,
+				Description: "If true, the bucket will be created with CORS enabled for all origins.",
+				Optional:    true,
+				Default:     true,
+			},
 			"cert": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
@@ -60,17 +72,24 @@ func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interfac
 	client := meta.(*ProviderMeta).Client
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
+		return fmt.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
 	}
 
 	bucket, err := client.GetObjectStorageBucket(context.Background(), cluster, label)
 	if err != nil {
-		return fmt.Errorf("Error finding the specified Linode ObjectStorageBucket: %s", err)
+		return fmt.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
+	}
+
+	access, err := client.GetObjectStorageBucketAccess(context.Background(), cluster, label)
+	if err != nil {
+		return fmt.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 	d.Set("cluster", bucket.Cluster)
 	d.Set("label", bucket.Label)
+	d.Set("acl", access.ACL)
+	d.Set("cors_enabled", access.CorsEnabled)
 
 	return nil
 }
@@ -80,15 +99,20 @@ func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interf
 
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
+	acl := d.Get("acl").(string)
+	corsEnabled := d.Get("cors_enabled").(bool)
 	cert := d.Get("cert").([]interface{})
 
 	createOpts := linodego.ObjectStorageBucketCreateOptions{
-		Cluster: cluster,
-		Label:   label,
+		Cluster:     cluster,
+		Label:       label,
+		ACL:         linodego.ObjectStorageACL(acl),
+		CorsEnabled: &corsEnabled,
 	}
+
 	bucket, err := client.CreateObjectStorageBucket(context.Background(), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode ObjectStorageBucket: %s", err)
+		return fmt.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
 	if len(cert) != 0 {
@@ -101,6 +125,8 @@ func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interf
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 	d.Set("cluster", bucket.Cluster)
 	d.Set("label", bucket.Label)
+	d.Set("acl", acl)
+	d.Set("cors_enabled", corsEnabled)
 
 	return resourceLinodeObjectStorageBucketRead(d, meta)
 }
@@ -108,11 +134,18 @@ func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interf
 func resourceLinodeObjectStorageBucketUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderMeta).Client
 
+	if d.HasChanges("acl", "cors_enabled") {
+		if err := updateLinodeObjectStorageBucketAccess(d, client); err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange("cert") {
 		if err := updateLinodeObjectStorageBucketCert(d, client); err != nil {
 			return err
 		}
 	}
+
 	return resourceLinodeObjectStorageBucketRead(d, meta)
 }
 
@@ -126,6 +159,27 @@ func resourceLinodeObjectStorageBucketDelete(d *schema.ResourceData, meta interf
 	if err != nil {
 		return fmt.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
 	}
+	return nil
+}
+
+func updateLinodeObjectStorageBucketAccess(d *schema.ResourceData, client linodego.Client) error {
+	cluster := d.Get("cluster").(string)
+	label := d.Get("label").(string)
+
+	updateOpts := linodego.ObjectStorageBucketUpdateAccessOptions{}
+	if d.HasChange("acl") {
+		updateOpts.ACL = linodego.ObjectStorageACL(d.Get("acl").(string))
+	}
+
+	if d.HasChange("cors_enabled") {
+		newCorsBool := d.Get("cors_enabled").(bool)
+		updateOpts.CorsEnabled = &newCorsBool
+	}
+
+	if err := client.UpdateObjectStorageBucketAccess(context.Background(), cluster, label, updateOpts); err != nil {
+		return fmt.Errorf("failed to update bucket access: %s", err)
+	}
+
 	return nil
 }
 
