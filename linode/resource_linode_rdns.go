@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -46,6 +47,11 @@ func resourceLinodeRDNSRead(d *schema.ResourceData, meta interface{}) error {
 
 	ip, err := client.GetIPAddress(context.Background(), ipStr)
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode RDNS %q from state because it no longer exists", ipStr)
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding the specified Linode RDNS: %s", err)
 	}
 
