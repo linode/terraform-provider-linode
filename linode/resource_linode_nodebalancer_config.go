@@ -29,11 +29,13 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				ForceNew:    true,
 			},
 			"protocol": {
-				Type:         schema.TypeString,
-				Description:  "The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key.",
-				ValidateFunc: validation.StringInSlice([]string{"http", "https", "tcp"}, false),
-				Optional:     true,
-				Default:      linodego.ProtocolHTTP,
+				Type:        schema.TypeString,
+				Description: "The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key.",
+				StateFunc: func(val interface{}) string {
+					return strings.ToLower(val.(string))
+				},
+				Optional: true,
+				Default:  linodego.ProtocolHTTP,
 			},
 			"proxy_protocol": {
 				Type:         schema.TypeString,
@@ -247,7 +249,7 @@ func resourceLinodeNodeBalancerConfigCreate(d *schema.ResourceData, meta interfa
 		CheckPath:     d.Get("check_path").(string),
 		CheckTimeout:  d.Get("check_timeout").(int),
 		Port:          d.Get("port").(int),
-		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
+		Protocol:      linodego.ConfigProtocol(strings.ToLower(d.Get("protocol").(string))),
 		ProxyProtocol: linodego.ConfigProxyProtocol(d.Get("proxy_protocol").(string)),
 		SSLCert:       d.Get("ssl_cert").(string),
 		SSLKey:        d.Get("ssl_key").(string),
@@ -289,7 +291,7 @@ func resourceLinodeNodeBalancerConfigUpdate(d *schema.ResourceData, meta interfa
 		CheckPath:     d.Get("check_path").(string),
 		CheckTimeout:  d.Get("check_timeout").(int),
 		Port:          d.Get("port").(int),
-		Protocol:      linodego.ConfigProtocol(d.Get("protocol").(string)),
+		Protocol:      linodego.ConfigProtocol(strings.ToLower(d.Get("protocol").(string))),
 		ProxyProtocol: linodego.ConfigProxyProtocol(d.Get("proxy_protocol").(string)),
 		SSLCert:       d.Get("ssl_cert").(string),
 		SSLKey:        d.Get("ssl_key").(string),

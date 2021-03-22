@@ -336,7 +336,7 @@ func testAccCheckLinodeNodeBalancerConfigBasic(nodebalancer string) string {
 resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	port = 8080
-	protocol = "http"
+	protocol = "HttP"
 	check = "http"
 	check_passive = true
 	check_path = "/"
