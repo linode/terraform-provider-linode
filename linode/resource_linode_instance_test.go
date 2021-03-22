@@ -523,6 +523,38 @@ func TestAccLinodeInstance_privateImage(t *testing.T) {
 	})
 }
 
+func TestAccLinodeInstance_noImage(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeInstanceWithNoImage(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+				),
+			},
+
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeInstance_updateSimple(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
@@ -2339,6 +2371,17 @@ func testAccCheckLinodeInstanceWithPrivateImage(instance string) string {
 		}
 	}
 `, instance, instance, instance)
+}
+
+func testAccCheckLinodeInstanceWithNoImage(instance string) string {
+	return fmt.Sprintf(`
+	resource "linode_instance" "foobar" {
+		label = "%s"
+		group = "tf_test"
+		type = "g6-nanode-1"
+		region = "us-east"
+	}
+`, instance)
 }
 
 func testAccCheckLinodeInstanceWithBootDiskImage(instance, image string) string {
