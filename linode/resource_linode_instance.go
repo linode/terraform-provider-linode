@@ -866,7 +866,7 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// Instance will not successfully boot if image is not specified
-	if len(createOpts.Image) < 1 {
+	if len(instance.Image) < 1 {
 		targetStatus = linodego.InstanceOffline
 	}
 
