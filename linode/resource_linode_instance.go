@@ -865,6 +865,11 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	// Instance will not successfully boot if image is not specified
+	if len(createOpts.Image) < 1 {
+		targetStatus = linodego.InstanceOffline
+	}
+
 	if !meta.(*ProviderMeta).Config.SkipInstanceReadyPoll {
 		if _, err = client.WaitForInstanceStatus(context.Background(), instance.ID, targetStatus, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
 			return fmt.Errorf("timed-out waiting for Linode instance %d to reach status %s: %s", instance.ID, targetStatus, err)
