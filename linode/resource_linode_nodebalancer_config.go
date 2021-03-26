@@ -12,6 +12,23 @@ import (
 	"github.com/linode/linodego"
 )
 
+func resourceLinodeNodeBalancerConfigNodeStatus() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"up": {
+				Type:        schema.TypeInt,
+				Description: "The number of backends considered to be 'UP' and healthy, and that are serving requests.",
+				Computed:    true,
+			},
+			"down": {
+				Type:        schema.TypeInt,
+				Description: "The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.",
+				Computed:    true,
+			},
+		},
+	}
+}
+
 func resourceLinodeNodeBalancerConfig() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLinodeNodeBalancerConfigCreate,
@@ -142,20 +159,7 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 			"node_status": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"up": {
-							Type:        schema.TypeInt,
-							Description: "The number of backends considered to be 'UP' and healthy, and that are serving requests.",
-							Computed:    true,
-						},
-						"down": {
-							Type:        schema.TypeInt,
-							Description: "The number of backends considered to be 'DOWN' and unhealthy. These are not in rotation, and not serving requests.",
-							Computed:    true,
-						},
-					},
-				},
+				Elem:     resourceLinodeNodeBalancerConfigNodeStatus(),
 			},
 		},
 	}
