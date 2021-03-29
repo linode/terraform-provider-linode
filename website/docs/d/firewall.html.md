@@ -8,7 +8,7 @@ Provides details about a Firewall.
 
 # Data Source: linode\_firewall
 
-Provides details about an LKE Cluster.
+Provides details about a Linode Firewall.
 
 ## Example Usage
 
