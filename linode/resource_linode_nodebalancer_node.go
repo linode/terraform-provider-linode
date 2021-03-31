@@ -181,6 +181,18 @@ func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
 
+	// If node doesn't exist, create a new one.
+	// This is necessary because the deletion of an instance
+	// will automatically delete its associated node.
+	_, err = client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
+	if err != nil {
+		if err.(*linodego.Error).Code == 404 {
+			return resourceLinodeNodeBalancerNodeCreate(d, meta)
+		}
+
+		return fmt.Errorf("failed to get nodebalancer node %v: %s", id, err)
+	}
+
 	updateOpts := linodego.NodeBalancerNodeUpdateOptions{
 		Address: d.Get("address").(string),
 		Label:   d.Get("label").(string),

@@ -74,6 +74,17 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
+				Config: testAccCheckLinodeNodeBalancerNodeInstanceUpdates(nodeName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeNodeBalancerNode,
+					resource.TestCheckResourceAttr(resName, "label", nodeName),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "address"),
+					resource.TestCheckResourceAttr(resName, "mode", "accept"),
+					resource.TestCheckResourceAttr(resName, "weight", "50"),
+				),
+			},
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -217,6 +228,18 @@ func testAccStateIDNodeBalancerNode(s *terraform.State) (string, error) {
 
 func testAccCheckLinodeNodeBalancerNodeBasic(label string) string {
 	return testAccCheckLinodeInstanceConfigPrivateNetworking(label, publicKeyMaterial) + testAccCheckLinodeNodeBalancerConfigBasic(label) + fmt.Sprintf(`
+resource "linode_nodebalancer_node" "foonode" {
+	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+	config_id = "${linode_nodebalancer_config.foofig.id}"
+	address = "${linode_instance.foobar.private_ip_address}:80"
+	label = "%s"
+	weight = 50
+}
+`, label)
+}
+
+func testAccCheckLinodeNodeBalancerNodeInstanceUpdates(label string) string {
+	return testAccCheckLinodeInstanceConfigPrivateNetworking(label, publicKeyMaterial+"_new") + testAccCheckLinodeNodeBalancerConfigBasic(label) + fmt.Sprintf(`
 resource "linode_nodebalancer_node" "foonode" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"
