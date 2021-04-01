@@ -74,6 +74,35 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccStateIDNodeBalancerNode,
+			},
+		},
+	})
+}
+
+func TestAccLinodeNodeBalancerNode_instanceRecreated(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_nodebalancer_node.foonode"
+	nodeName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodeName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeNodeBalancerNode,
+					resource.TestCheckResourceAttr(resName, "label", nodeName),
+					resource.TestCheckResourceAttr(resName, "weight", "50"),
+				),
+			},
+			{
 				Config: testAccCheckLinodeNodeBalancerNodeInstanceUpdates(nodeName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNode,

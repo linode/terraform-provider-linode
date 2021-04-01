@@ -57,6 +57,7 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The private IP Address and port (IP:PORT) where this backend can be reached. This must be a private IP address.",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -179,18 +180,6 @@ func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface
 	configID, ok := d.Get("config_id").(int)
 	if !ok {
 		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
-	}
-
-	// If node doesn't exist, create a new one.
-	// This is necessary because the deletion of an instance
-	// will automatically delete its associated node.
-	_, err = client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
-	if err != nil {
-		if err.(*linodego.Error).Code == 404 {
-			return resourceLinodeNodeBalancerNodeCreate(d, meta)
-		}
-
-		return fmt.Errorf("failed to get nodebalancer node %v: %s", id, err)
 	}
 
 	updateOpts := linodego.NodeBalancerNodeUpdateOptions{
