@@ -3,6 +3,7 @@ package linode
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -81,6 +82,26 @@ func testAccCheckResourceAttrNotEqual(resName string, path, notValue string) res
 			return fmt.Errorf("attribute %s does not exist", path)
 		} else if value == notValue {
 			return fmt.Errorf("attribute was equal")
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckResourceNonEmptyList(resourceName, attrName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+
+		instCount, err := strconv.Atoi(rs.Primary.Attributes[fmt.Sprintf("%s.#", attrName)])
+		if err != nil {
+			return fmt.Errorf("failed to parse: %s", err)
+		}
+
+		if instCount < 1 {
+			return fmt.Errorf("expected at least 1 element in %s", attrName)
 		}
 
 		return nil
