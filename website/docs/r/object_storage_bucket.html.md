@@ -38,6 +38,10 @@ The following arguments are supported:
 
 * `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
 
+* `versioning` - (Optional) Whether to enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket.
+
+* [`lifecycle_rule`](#lifecycle_rule) - (Optional) Lifecycle rules to be applied to the bucket.
+
 * [`cert`](#cert) - (Optional) The bucket's TLS/SSL certificate.
 
 ### cert
@@ -47,6 +51,38 @@ The following arguments are supported in the cert specification block:
 * `certificate` - (Required) The Base64 encoded and PEM formatted SSL certificate.
 
 * `private_key` - (Required) The private key associated with the TLS/SSL certificate.
+
+### lifecycle_rule
+
+The following arguments are supported in the lifecycle_rule specification block:
+
+* `id` - (Optional) The unique identifier for the rule.
+
+* `prefix` - (Optional) The object key prefix identifying one or more objects to which the rule applies.
+
+* `enabled` - (Optional) Specifies whether the lifecycle rule is active.
+
+* `abort_incomplete_multipart_upload_days` - (Optional) Specifies the number of days after initiating a multipart upload when the multipart upload must be completed.
+
+* [`expiration`](#expiration) - (Optional) Specifies a period in the object's expire.
+
+* [`noncurrent_version_expiration`](#noncurrent_version_expiration) - (Optional) Specifies when non-current object versions expire.
+
+### expiration
+
+The following arguments are supported in the expiration specification block:
+
+* `date` - (Optional) Specifies the date after which you want the corresponding action to take effect.
+
+* `days` - (Optional) Specifies the number of days after object creation when the specific rule action takes effect.
+
+* `expired_object_delete_marker` - (Optional) On a versioned bucket (versioning-enabled or versioning-suspended bucket), you can add this element in the lifecycle configuration to direct Linode Object Storage to delete expired object delete markers. This cannot be specified with Days or Date in a Lifecycle Expiration Policy.
+
+### noncurrent_version_expiration
+
+The following arguments are supported in the noncurrent_version_expiration specification block:
+
+* `days` - (Required) Specifies the number of days non-current object versions expire.
 
 ## Import
 
