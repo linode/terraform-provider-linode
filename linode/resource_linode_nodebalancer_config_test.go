@@ -105,7 +105,7 @@ HMuBpZsWkNKLh0hjC5i7YBZYtXGYPG2JCEE4mpiV8ClxTvmijsr8sYUOtnmIBXfG
 )
 
 func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
@@ -152,6 +152,8 @@ func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
 }
 
 func TestAccLinodeNodeBalancerConfig_ssl(t *testing.T) {
+	t.Parallel()
+
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 	config := testAccCheckLinodeNodeBalancerConfigSSL(nodebalancerName)

@@ -18,7 +18,9 @@ func TestAccDataSourceLinodeNodeBalancerNode_basic(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeNodeBalancerNodeBasic(nodebalancerName),
+				Config: accTestWithProvider(testDataSourceLinodeNodeBalancerNodeBasic(nodebalancerName), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNode,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
