@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccLinodeNodeBalancerNode_basic(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
@@ -27,7 +27,9 @@ func TestAccLinodeNodeBalancerNode_basic(t *testing.T) {
 		CheckDestroy:              testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: accTestWithProvider(config, map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNode,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
@@ -58,7 +60,9 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeNodeBalancerNodeBasic(nodeName),
+				Config: accTestWithProvider(testAccCheckLinodeNodeBalancerNodeBasic(nodeName), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNode,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
@@ -66,7 +70,9 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeNodeBalancerNodeUpdates(nodeName),
+				Config: accTestWithProvider(testAccCheckLinodeNodeBalancerNodeUpdates(nodeName), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLinodeNodeBalancerNode,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodeName)),

@@ -1,11 +1,15 @@
 SWEEP?="tf_test,tf-test"
-TEST?=$$(go list ./...)
 GOFMT_FILES?=$$(find . -name '*.go')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.19.0
+
+ACCTEST_COUNT?=1
+ACCTEST_PARALLELISM?=20
+ACCTEST_POLL_MS?=1000
+ACCTEST_TIMEOUT?=240m
 
 lint: fmtcheck
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint run
@@ -44,7 +48,8 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
-	go test $(TEST) -v $(TESTARGS) -timeout 120m -parallel=2 -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
+	LINODE_EVENT_POLL_MS=$(ACCTEST_POLL_MS) \
+	go test ./$(PKG_NAME) -v $(TESTARGS) -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
 
 vet:
 	@echo "go vet ."

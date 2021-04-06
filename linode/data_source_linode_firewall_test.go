@@ -19,7 +19,9 @@ func TestAccDataSourceLinodeFirewall_basic(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeFirewallBasic(firewallName, devicePrefix),
+				Config: accTestWithProvider(testDataSourceLinodeFirewallBasic(firewallName, devicePrefix), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallDataName, "label", firewallName),
 					resource.TestCheckResourceAttr(testFirewallDataName, "disabled", "false"),

@@ -20,7 +20,9 @@ func TestAccLinodeInstanceIP_basic(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceIPBasic(name),
+				Config: accTestWithProvider(testAccCheckLinodeInstanceIPBasic(name), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "gateway"),

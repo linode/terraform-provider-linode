@@ -52,7 +52,9 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeFirewallBasic(name, devicePrefix),
+				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -104,7 +106,9 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeFirewallMinimum(name),
+				Config: accTestWithProvider(testAccCheckLinodeFirewallMinimum(name), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -181,7 +185,9 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeFirewallBasic(name, devicePrefix),
+				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -211,7 +217,9 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeFirewallUpdates(newName, devicePrefix),
+				Config: accTestWithProvider(testAccCheckLinodeFirewallUpdates(newName, devicePrefix), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", newName),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "true"),
