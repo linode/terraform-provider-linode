@@ -23,7 +23,7 @@ func TestAccDataSourceLinodeLKECluster_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testLKEClusterDataName, "label", clusterName),
 					resource.TestCheckResourceAttr(testLKEClusterDataName, "region", "us-central"),
-					resource.TestCheckResourceAttr(testLKEClusterDataName, "k8s_version", "1.17"),
+					resource.TestCheckResourceAttr(testLKEClusterDataName, "k8s_version", "1.20"),
 					resource.TestCheckResourceAttr(testLKEClusterDataName, "status", "ready"),
 					resource.TestCheckResourceAttr(testLKEClusterDataName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(testLKEClusterDataName, "pools.#", "1"),
