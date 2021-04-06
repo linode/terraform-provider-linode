@@ -345,7 +345,7 @@ func dataSourceLinodeInstances() *schema.Resource {
 		Read: dataSourceLinodeInstancesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": filterSchema([]string{"group", "id", "image", "label", "region", "tags"}),
-			"instance": {
+			"instances": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     dataSourceLinodeInstancesInstances(),
@@ -380,7 +380,7 @@ func dataSourceLinodeInstancesRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	d.SetId(fmt.Sprintf(filter))
-	d.Set("instance", flattenedInstances)
+	d.Set("instances", flattenedInstances)
 
 	return nil
 }

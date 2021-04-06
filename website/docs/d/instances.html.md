@@ -48,7 +48,7 @@ The following arguments are supported:
 
 ## Attributes
 
-Each Linode instance will be stored in the `instance` attribute and will export the following attributes:
+Each Linode instance will be stored in the `instances` attribute and will export the following attributes:
 
 * `region` - This is the location where the Linode is deployed. Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions).
 
