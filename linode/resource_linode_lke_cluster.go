@@ -527,7 +527,7 @@ func recycleLKECluster(ctx context.Context, meta *ProviderMeta, id int, pools []
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	poolRecyclesCh, errCh := waitForClusterPoolsToStartRecycle(ctx, &client, meta.Config.EventPollMilliseconds, id, pools)
+	poolRecyclesCh, errCh := waitForClusterPoolsToStartRecycle(ctx, &client, meta.Config.LKEEventPollMilliseconds, id, pools)
 
 	var wg sync.WaitGroup
 	wg.Add(len(pools))

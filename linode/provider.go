@@ -60,8 +60,15 @@ func Provider() *schema.Provider {
 			"event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     200,
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 300),
 				Description: "The rate in milliseconds to poll for events.",
+			},
+
+			"lke_event_poll_ms": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     300,
+				Description: "The rate in milliseconds to poll for LKE events.",
 			},
 
 			"lke_node_ready_poll_ms": {
@@ -147,7 +154,8 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
 
-		EventPollMilliseconds: d.Get("event_poll_ms").(int),
+		EventPollMilliseconds:    d.Get("event_poll_ms").(int),
+		LKEEventPollMilliseconds: d.Get("lke_event_poll_ms").(int),
 
 		LKENodeReadyPollMilliseconds: d.Get("lke_node_ready_poll_ms").(int),
 	}
