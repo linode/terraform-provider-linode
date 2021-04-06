@@ -33,25 +33,6 @@ func TestAccDataSourceLinodeImages_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceLinodeImages_noFilters(t *testing.T) {
-	//t.Parallel()
-
-	resourceName := "data.linode_images.foobar"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testDataSourceLinodeImagesNoFilters(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResourceNonEmptyList(resourceName, "images"),
-				),
-			},
-		},
-	})
-}
-
 func testDataSourceLinodeImagesBasic(image string) string {
 	return testAccCheckLinodeImageConfigBasic(image) + `
 data "linode_images" "foobar" {
@@ -65,9 +46,4 @@ data "linode_images" "foobar" {
 		values = ["false"]
 	}
 }`
-}
-
-func testDataSourceLinodeImagesNoFilters() string {
-	return `
-data "linode_images" "foobar" {}`
 }

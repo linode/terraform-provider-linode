@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"strconv"
 	"testing"
 )
 
@@ -40,27 +38,6 @@ func TestAccDataSourceLinodeInstances_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceLinodeInstances_noFilters(t *testing.T) {
-	//t.Parallel()
-
-	resName := "data.linode_instances.foobar"
-	instanceName := acctest.RandomWithPrefix("tf_test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testDataSourceCheckLinodeInstancesNoFilters(instanceName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceCheckLinodeAllInstancesNotEmpty(resName),
-				),
-			},
-		},
-	})
-}
-
 func TestAccDataSourceLinodeInstances_multipleInstances(t *testing.T) {
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -79,26 +56,6 @@ func TestAccDataSourceLinodeInstances_multipleInstances(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccDataSourceCheckLinodeAllInstancesNotEmpty(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("not found: %s", resourceName)
-		}
-
-		linodeCount, err := strconv.Atoi(rs.Primary.Attributes["instance.#"])
-		if err != nil {
-			return fmt.Errorf("failed to parse: %s", err)
-		}
-
-		if linodeCount < 1 {
-			return fmt.Errorf("expected at least 1 linode instance")
-		}
-
-		return nil
-	}
 }
 
 func testDataSourceCheckLinodeInstancesBasic(instance string) string {
@@ -141,22 +98,6 @@ data "linode_instances" "foobar" {
 		values = linode_instance.foobar.tags
 	}
 }
-`
-}
-
-func testDataSourceCheckLinodeInstancesNoFilters(instance string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	tags = ["cool", "cooler"]
-	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
-	region = "us-east"
-	root_pass = "terraform-test"
-}
-`, instance) + `
-data "linode_instances" "foobar" {}
 `
 }
 
