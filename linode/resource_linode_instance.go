@@ -865,8 +865,8 @@ func resourceLinodeInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	// Instance will not successfully boot if image is not specified
-	if len(instance.Image) < 1 {
+	// If the instance has implicit disks and config with no specified image it will not boot.
+	if !(disksOk && configsOk) && len(instance.Image) < 1 {
 		targetStatus = linodego.InstanceOffline
 	}
 
