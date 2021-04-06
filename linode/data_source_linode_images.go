@@ -13,7 +13,7 @@ func dataSourceLinodeImages() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceLinodeImagesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": filterSchema(),
+			"filter": filterSchema([]string{"deprecated", "is_public", "label", "size", "vendor"}),
 			"images": {
 				Type:     schema.TypeList,
 				Computed: true,

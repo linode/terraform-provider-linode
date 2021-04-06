@@ -42,7 +42,7 @@ The following arguments are supported:
 
 ### Filter
 
-* `name` - (Required) The name of the field to filter by. See the [Linode API Documentation](https://www.linode.com/docs/api/linode-instances/#linodes-list__responses) for a list of filterable fields.
+* `name` - (Required) The name of the field to filter by. See the [Filterable Fields section](#filterable-fields) for a list of filterable fields.
 
 * `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
 
@@ -165,3 +165,17 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
     * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
+  
+## Filterable Fields
+
+* `group`
+
+* `id`
+
+* `image`
+
+* `label`
+
+* `region`
+
+* `tags`

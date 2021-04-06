@@ -344,7 +344,7 @@ func dataSourceLinodeInstances() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceLinodeInstancesRead,
 		Schema: map[string]*schema.Schema{
-			"filter": filterSchema(),
+			"filter": filterSchema([]string{"group", "id", "image", "label", "region", "tags"}),
 			"instance": {
 				Type:     schema.TypeList,
 				Computed: true,

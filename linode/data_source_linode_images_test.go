@@ -34,7 +34,7 @@ func TestAccDataSourceLinodeImages_basic(t *testing.T) {
 }
 
 func TestAccDataSourceLinodeImages_noFilters(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 
 	resourceName := "data.linode_images.foobar"
 

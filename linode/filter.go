@@ -2,6 +2,7 @@ package linode
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"encoding/json"
 )
@@ -12,16 +13,17 @@ type filterTypeFunc func(filterName string, value string) (interface{}, error)
 
 // filterSchema should be referenced in a schema configuration in order to
 // enable filter functionality
-func filterSchema() *schema.Schema {
+func filterSchema(validFilters []string) *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
-					Type:        schema.TypeString,
-					Description: "The name of the attribute to filter on.",
-					Required:    true,
+					Type:         schema.TypeString,
+					Description:  "The name of the attribute to filter on.",
+					ValidateFunc: validation.StringInSlice(validFilters, false),
+					Required:     true,
 				},
 				"values": {
 					Type:        schema.TypeList,
