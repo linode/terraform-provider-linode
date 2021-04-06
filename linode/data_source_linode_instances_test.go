@@ -41,7 +41,7 @@ func TestAccDataSourceLinodeInstances_basic(t *testing.T) {
 }
 
 func TestAccDataSourceLinodeInstances_noFilters(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -64,6 +64,7 @@ func TestAccDataSourceLinodeInstances_noFilters(t *testing.T) {
 func TestAccDataSourceLinodeInstances_multipleInstances(t *testing.T) {
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	groupName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -71,7 +72,7 @@ func TestAccDataSourceLinodeInstances_multipleInstances(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceCheckLinodeInstancesMultipleInstances(instanceName),
+				Config: testDataSourceCheckLinodeInstancesMultipleInstances(instanceName, groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instance.#", "3"),
 				),
@@ -159,11 +160,11 @@ data "linode_instances" "foobar" {}
 `
 }
 
-func testDataSourceCheckLinodeInstancesMultipleInstances(instance string) string {
+func testDataSourceCheckLinodeInstancesMultipleInstances(instance, groupName string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar-0" {
 	label = "%s-0"
-	group = "tf_test"
+	group = "%s"
 	tags = ["cool", "cooler"]
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
@@ -173,7 +174,7 @@ resource "linode_instance" "foobar-0" {
 
 resource "linode_instance" "foobar-1" {
 	label = "%s-1"
-	group = "tf_test"
+	group = "%s"
 	tags = ["cool", "cooler"]
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
@@ -183,14 +184,14 @@ resource "linode_instance" "foobar-1" {
 
 resource "linode_instance" "foobar-2" {
 	label = "%s-2"
-	group = "tf_test"
+	group = "%s"
 	tags = ["cool", "cooler"]
 	type = "g6-nanode-1"
 	image = "linode/ubuntu18.04"
 	region = "us-east"
 	root_pass = "terraform-test"
 }
-`, instance, instance, instance) + `
+`, instance, groupName, instance, groupName, instance, groupName) + `
 data "linode_instances" "foobar" {
 	filter {
 		name = "group"
