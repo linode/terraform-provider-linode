@@ -50,7 +50,7 @@ func testDataSourceLinodeNetworkingIPBasic(label string) string {
 resource "linode_instance" "foobar" {
 	label = "%s"
 	group = "tf_test"
-	image = "linode/containerlinux"
+	image = "linode/alpine3.12"
 	type = "g6-standard-1"
 	region = "us-east"
 }

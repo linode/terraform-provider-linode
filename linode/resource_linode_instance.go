@@ -636,9 +636,6 @@ func resourceLinodeInstanceRead(d *schema.ResourceData, meta interface{}) error 
 			"type": "ssh",
 			"host": public[0].Address,
 		})
-		// TODO(displague) to determine 'user', need to check disk.image
-		// "linode/containerlinux" is "core", else "root"
-		// might be better to make this a resource field and avoid lookups
 	}
 
 	if len(private) > 0 {
