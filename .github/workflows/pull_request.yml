@@ -10,6 +10,7 @@ jobs:
           go-version: '1.16'
       - run: go version
 
+      - run: make tooldeps
       - name: Check docs
         run: make docscheck
       - name: Lint

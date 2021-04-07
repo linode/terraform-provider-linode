@@ -11,9 +11,12 @@ ACCTEST_PARALLELISM?=20
 ACCTEST_POLL_MS?=1000
 ACCTEST_TIMEOUT?=240m
 
+tooldeps:
+	go generate -tags tools tools/tools.go
+
 lint: fmtcheck
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint run
-	go run github.com/bflad/tfproviderlint/cmd/tfproviderlint \
+	golangci-lint run
+	tfproviderlint \
 		-R003=false \
 		-R005=false \
 		-R007=false \
