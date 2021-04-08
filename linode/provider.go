@@ -88,6 +88,7 @@ func Provider() *schema.Provider {
 			"linode_images":                 dataSourceLinodeImages(),
 			"linode_instances":              dataSourceLinodeInstances(),
 			"linode_instance_type":          dataSourceLinodeInstanceType(),
+			"linode_kernel":                 dataSourceLinodeKernel(),
 			"linode_lke_cluster":            dataSourceLinodeLKECluster(),
 			"linode_networking_ip":          dataSourceLinodeNetworkingIP(),
 			"linode_nodebalancer":           dataSourceLinodeNodeBalancer(),
