@@ -10,6 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	linodeObjectsEndpoint = "https://us-east-1.linodeobjects.com"
+)
+
 // s3ConnFromResourceData builds an S3 client from the linode_object_storage_object
 // resource's access_key and secret_key fields.
 func s3ConnFromResourceData(d *schema.ResourceData) *s3.S3 {
@@ -20,7 +24,7 @@ func s3ConnFromResourceData(d *schema.ResourceData) *s3.S3 {
 		// This region is hardcoded strictly for preflight validation purposes.
 		Region:      aws.String("us-east-1"),
 		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-		Endpoint:    aws.String("https://us-east-1.linodeobjects.com"),
+		Endpoint:    aws.String(linodeObjectsEndpoint),
 	})
 	return s3.New(sess)
 }
