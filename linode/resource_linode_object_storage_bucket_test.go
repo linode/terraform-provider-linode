@@ -9,15 +9,28 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
+	"log"
 	"math/big"
+	"os"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+)
+
+const (
+	objAccessKeyEnvVar = "LINODE_OBJ_ACCESS_KEY"
+	objSecretKeyEnvVar = "LINODE_OBJ_SECRET_KEY"
 )
 
 func init() {
@@ -88,14 +101,41 @@ func testSweepLinodeObjectStorageBucket(prefix string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting object_storage_buckets: %s", err)
 	}
+
+	accessKey, accessKeyOk := os.LookupEnv(objAccessKeyEnvVar)
+	secretKey, secretKeyOk := os.LookupEnv(objSecretKeyEnvVar)
+	haveBucketAccess := accessKeyOk && secretKeyOk
+
 	for _, objectStorageBucket := range objectStorageBuckets {
 		if !shouldSweepAcceptanceTestResource(prefix, objectStorageBucket.Label) {
 			continue
 		}
-		err := client.DeleteObjectStorageBucket(context.Background(), objectStorageBucket.Cluster, objectStorageBucket.Label)
+		bucket := objectStorageBucket.Label
+
+		if haveBucketAccess {
+			conn := s3.New(session.New(&aws.Config{
+				Region:      aws.String("us-east-1"),
+				Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
+				Endpoint:    aws.String(linodeObjectsEndpoint),
+			}))
+			iter := s3manager.NewDeleteListIterator(conn, &s3.ListObjectsInput{
+				Bucket: aws.String(bucket),
+			})
+			if err := s3manager.NewBatchDeleteWithClient(conn).Delete(aws.BackgroundContext(), iter); err != nil {
+				return fmt.Errorf("unable to delete objects from bucket (%s): %s", bucket, err)
+			}
+		}
+
+		err := client.DeleteObjectStorageBucket(context.Background(), objectStorageBucket.Cluster, bucket)
 
 		if err != nil {
-			return fmt.Errorf("Error destroying %s during sweep: %s", objectStorageBucket.Label, err)
+			if apiErr, ok := err.(*linodego.Error); ok && !haveBucketAccess && strings.HasPrefix(
+				apiErr.Message, fmt.Sprintf("Bucket %s is not empty", bucket)) {
+				log.Printf("[WARN] will not delete Object Storage Bucket (%s) as it needs to be emptied; "+
+					"specify %q and %q env variables for bucket access", bucket, objAccessKeyEnvVar, objSecretKeyEnvVar)
+				continue
+			}
+			return fmt.Errorf("Error destroying %s during sweep: %s", bucket, err)
 		}
 	}
 
