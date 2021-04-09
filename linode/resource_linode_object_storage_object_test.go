@@ -30,11 +30,12 @@ func testAccCheckLinodeObjectStorageObjectExists(obj *s3.GetObjectOutput) resour
 		etag := rs.Primary.Attributes["etag"]
 		accessKey := rs.Primary.Attributes["access_key"]
 		secretKey := rs.Primary.Attributes["secret_key"]
+		cluster := rs.Primary.Attributes["cluster"]
 
 		conn := s3.New(session.New(&aws.Config{
 			Region:      aws.String("us-east-1"),
 			Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-			Endpoint:    aws.String("https://us-east-1.linodeobjects.com"),
+			Endpoint:    aws.String(fmt.Sprintf(linodeObjectsEndpoint, cluster)),
 		}))
 
 		out, err := conn.GetObject(

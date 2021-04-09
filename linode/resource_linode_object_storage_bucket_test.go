@@ -116,7 +116,7 @@ func testSweepLinodeObjectStorageBucket(prefix string) error {
 			conn := s3.New(session.New(&aws.Config{
 				Region:      aws.String("us-east-1"),
 				Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-				Endpoint:    aws.String(linodeObjectsEndpoint),
+				Endpoint:    aws.String(fmt.Sprintf(linodeObjectsEndpoint, objectStorageBucket.Cluster)),
 			}))
 			iter := s3manager.NewDeleteListIterator(conn, &s3.ListObjectsInput{
 				Bucket: aws.String(bucket),
