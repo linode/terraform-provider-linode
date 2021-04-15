@@ -19,7 +19,7 @@ resource "linode_vlan" "my_vlan" {
   description = "my VLAN"
   region      = "ca-central"
   linodes     = [linode_instance.my_instance.id]
-  cidr        = "0.0.0.0/0"
+  cidr_block  = "0.0.0.0/0"
 
 }
 
