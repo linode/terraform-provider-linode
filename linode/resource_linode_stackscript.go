@@ -41,17 +41,19 @@ func resourceLinodeStackscript() *schema.Resource {
 				Optional:    true,
 			},
 			"is_public": {
-				Type:        schema.TypeBool,
-				Description: "This determines whether other users can use your StackScript. Once a StackScript is made public, it cannot be made private.",
-				Default:     false,
-				Optional:    true,
-				ForceNew:    true,
+				Type: schema.TypeBool,
+				Description: "This determines whether other users can use your StackScript. Once a StackScript is " +
+					"made public, it cannot be made private.",
+				Default:  false,
+				Optional: true,
+				ForceNew: true,
 			},
 			"images": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "An array of Image IDs representing the Images that this StackScript is compatible for deploying with.",
-				Required:    true,
+				Type: schema.TypeList,
+				Elem: &schema.Schema{Type: schema.TypeString},
+				Description: "An array of Image IDs representing the Images that this StackScript is compatible for " +
+					"deploying with.",
+				Required: true,
 			},
 
 			"deployments_active": {
@@ -85,11 +87,12 @@ func resourceLinodeStackscript() *schema.Resource {
 				Computed:    true,
 			},
 			"user_defined_fields": {
-				Description: "This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment.",
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				ConfigMode:  schema.SchemaConfigModeAttr,
+				Description: "This is a list of fields defined with a special syntax inside this StackScript that " +
+					"allow for supplying customized parameters during deployment.",
+				Type:       schema.TypeList,
+				Computed:   true,
+				Optional:   true,
+				ConfigMode: schema.SchemaConfigModeAttr,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {

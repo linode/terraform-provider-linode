@@ -10,6 +10,9 @@ import (
 	"github.com/linode/linodego"
 )
 
+const domainSecondsDescription = "Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, " +
+	"604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value."
+
 func dataSourceLinodeDomain() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceLinodeDomainRead,
@@ -20,14 +23,16 @@ func dataSourceLinodeDomain() *schema.Resource {
 				Optional: true,
 			},
 			"domain": {
-				Type:        schema.TypeString,
-				Description: "The domain this Domain represents. These must be unique in Linode's system; there cannot be two Domain records representing the same domain.",
-				Optional:    true,
+				Type: schema.TypeString,
+				Description: "The domain this Domain represents. These must be unique in Linode's system; there " +
+					"cannot be two Domain records representing the same domain.",
+				Optional: true,
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Description: "If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "If this Domain represents the authoritative source of information for the domain it " +
+					"describes, or if it is a read-only copy of a master (also called a slave).",
+				Computed: true,
 			},
 			"group": {
 				Type:        schema.TypeString,
@@ -57,28 +62,33 @@ func dataSourceLinodeDomain() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "The list of IPs that may perform a zone transfer for this Domain. This is potentially dangerous, and should be set to an empty list unless you intend to use it.",
-				Computed:    true,
+				Description: "The list of IPs that may perform a zone transfer for this Domain. This is potentially " +
+					"dangerous, and should be set to an empty list unless you intend to use it.",
+				Computed: true,
 			},
 			"ttl_sec": {
-				Type:        schema.TypeInt,
-				Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Computed:    true,
+				Type: schema.TypeInt,
+				Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
+					"cached by resolvers or other domain servers. " + domainSecondsDescription,
+				Computed: true,
 			},
 			"retry_sec": {
-				Type:        schema.TypeInt,
-				Description: "The interval, in seconds, at which a failed refresh should be retried. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Computed:    true,
+				Type: schema.TypeInt,
+				Description: "The interval, in seconds, at which a failed refresh should be retried. " +
+					domainSecondsDescription,
+				Computed: true,
 			},
 			"expire_sec": {
-				Type:        schema.TypeInt,
-				Description: "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Computed:    true,
+				Type: schema.TypeInt,
+				Description: "The amount of time in seconds that may pass before this Domain is no longer " +
+					"authoritative. " + domainSecondsDescription,
+				Computed: true,
 			},
 			"refresh_sec": {
-				Type:        schema.TypeInt,
-				Description: "The amount of time in seconds before this Domain should be refreshed. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
-				Computed:    true,
+				Type: schema.TypeInt,
+				Description: "The amount of time in seconds before this Domain should be refreshed. " +
+					domainSecondsDescription,
+				Computed: true,
 			},
 			"soa_email": {
 				Type:        schema.TypeString,

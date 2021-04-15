@@ -24,9 +24,10 @@ func dataSourceLinodeLKECluster() *schema.Resource {
 				Description: "The unique label for the cluster.",
 			},
 			"k8s_version": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. The latest supported patch version will be deployed.",
+				Type:     schema.TypeString,
+				Computed: true,
+				Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. " +
+					"The latest supported patch version will be deployed.",
 			},
 			"tags": {
 				Type:        schema.TypeSet,

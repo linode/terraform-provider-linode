@@ -35,14 +35,16 @@ func dataSourceLinodeDomainRecord() *schema.Resource {
 				Computed:    true,
 			},
 			"ttl_sec": {
-				Type:        schema.TypeInt,
-				Description: "The amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers.",
-				Computed:    true,
+				Type: schema.TypeInt,
+				Description: "The amount of time in seconds that this Domain's records may be cached by resolvers or " +
+					"other domain servers.",
+				Computed: true,
 			},
 			"target": {
-				Type:        schema.TypeString,
-				Description: "The target for this Record. This field's actual usage depends on the type of record this represents. For A and AAAA records, this is the address the named Domain should resolve to.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "The target for this Record. This field's actual usage depends on the type of record " +
+					"this represents. For A and AAAA records, this is the address the named Domain should resolve to.",
+				Computed: true,
 			},
 			"priority": {
 				Type:        schema.TypeInt,

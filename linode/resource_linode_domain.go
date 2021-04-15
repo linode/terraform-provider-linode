@@ -24,13 +24,15 @@ func resourceLinodeDomain() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"domain": {
-				Type:        schema.TypeString,
-				Description: "The domain this Domain represents. These must be unique in our system; you cannot have two Domains representing the same domain.",
-				Required:    true,
+				Type: schema.TypeString,
+				Description: "The domain this Domain represents. These must be unique in our system; you cannot have " +
+					"two Domains representing the same domain.",
+				Required: true,
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Description:  "If this Domain represents the authoritative source of information for the domain it describes, or if it is a read-only copy of a master (also called a slave).",
+				Type: schema.TypeString,
+				Description: "If this Domain represents the authoritative source of information for the domain it " +
+					"describes, or if it is a read-only copy of a master (also called a slave).",
 				InputDefault: "master",
 				ValidateFunc: validation.StringInSlice([]string{"master", "slave"}, false),
 				Required:     true,
@@ -68,30 +70,40 @@ func resourceLinodeDomain() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "The list of IPs that may perform a zone transfer for this Domain. This is potentially dangerous, and should be set to an empty list unless you intend to use it.",
-				Optional:    true,
+				Description: "The list of IPs that may perform a zone transfer for this Domain. This is potentially " +
+					"dangerous, and should be set to an empty list unless you intend to use it.",
+				Optional: true,
 			},
 			"ttl_sec": {
-				Type:             schema.TypeInt,
-				Description:      "'Time to Live' - the amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Type: schema.TypeInt,
+				Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
+					"cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, " +
+					"57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to " +
+					"the nearest valid value.",
 				Optional:         true,
 				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"retry_sec": {
-				Type:             schema.TypeInt,
-				Description:      "The interval, in seconds, at which a failed refresh should be retried. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Type: schema.TypeInt,
+				Description: "The interval, in seconds, at which a failed refresh should be retried. Valid values " +
+					"are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - " +
+					"any other value will be rounded to the nearest valid value.",
 				Optional:         true,
 				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"expire_sec": {
-				Type:             schema.TypeInt,
-				Description:      "The amount of time in seconds that may pass before this Domain is no longer authoritative. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Type: schema.TypeInt,
+				Description: "The amount of time in seconds that may pass before this Domain is no longer " +
+					"authoritative. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, " +
+					"604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
 				Optional:         true,
 				DiffSuppressFunc: secondsDiffSuppressor,
 			},
 			"refresh_sec": {
-				Type:             schema.TypeInt,
-				Description:      "The amount of time in seconds before this Domain should be refreshed. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+				Type: schema.TypeInt,
+				Description: "The amount of time in seconds before this Domain should be refreshed. Valid " +
+					"values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, " +
+					"and 2419200 - any other value will be rounded to the nearest valid value.",
 				Optional:         true,
 				DiffSuppressFunc: secondsDiffSuppressor,
 			},

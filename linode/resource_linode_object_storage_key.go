@@ -162,7 +162,8 @@ func resourceLinodeObjectStorageKeyDelete(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func flattenLinodeObjectStorageKeyBucketAccess(bucketAccesses *[]linodego.ObjectStorageKeyBucketAccess) *[]map[string]interface{} {
+func flattenLinodeObjectStorageKeyBucketAccess(
+	bucketAccesses *[]linodego.ObjectStorageKeyBucketAccess) *[]map[string]interface{} {
 	if bucketAccesses == nil {
 		return nil
 	}
@@ -178,7 +179,8 @@ func flattenLinodeObjectStorageKeyBucketAccess(bucketAccesses *[]linodego.Object
 	return &specs
 }
 
-func expandLinodeObjectStorageKeyBucketAccess(bucketAccessSpecs []interface{}) *[]linodego.ObjectStorageKeyBucketAccess {
+func expandLinodeObjectStorageKeyBucketAccess(
+	bucketAccessSpecs []interface{}) *[]linodego.ObjectStorageKeyBucketAccess {
 	bucketAccesses := make([]linodego.ObjectStorageKeyBucketAccess, len(bucketAccessSpecs))
 	for i, bucketAccessSpec := range bucketAccessSpecs {
 		bucketAccessSpec := bucketAccessSpec.(map[string]interface{})
