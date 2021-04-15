@@ -121,7 +121,6 @@ func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderMeta).Client
-	d.Partial(true)
 
 	linodeID := d.Get("linode_id").(int)
 	diskID := d.Get("disk_id").(int)
@@ -145,7 +144,6 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(image.ID)
-	d.Partial(false)
 
 	if _, err := client.WaitForInstanceDiskStatus(
 		context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
