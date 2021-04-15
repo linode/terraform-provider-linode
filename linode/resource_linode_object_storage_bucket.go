@@ -66,9 +66,10 @@ func resourceLinodeObjectStorageBucketLifecycleRule() *schema.Resource {
 				Required:    true,
 			},
 			"abort_incomplete_multipart_upload_days": {
-				Type:        schema.TypeInt,
-				Description: "Specifies the number of days after initiating a multipart upload when the multipart upload must be completed.",
-				Optional:    true,
+				Type: schema.TypeInt,
+				Description: "Specifies the number of days after initiating a multipart upload when the multipart " +
+					"upload must be completed.",
+				Optional: true,
 			},
 			"expiration": {
 				Type:        schema.TypeList,
@@ -518,6 +519,7 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 			rule.Prefix = &prefix
 		}
 
+		//nolint:lll
 		if abortIncompleteDays, ok := ruleSpec["abort_incomplete_multipart_upload_days"].(int); ok && abortIncompleteDays > 0 {
 			rule.AbortIncompleteMultipartUpload = &s3.AbortIncompleteMultipartUpload{}
 			abortIncompleteDays := int64(abortIncompleteDays)

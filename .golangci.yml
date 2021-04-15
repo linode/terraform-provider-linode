@@ -37,7 +37,6 @@ linters:
     - gocyclo
     - unparam
     - nakedret
-    - lll
     - dupl
     - gosec
     - gochecknoinits

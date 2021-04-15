@@ -53,9 +53,10 @@ func dataSourceLinodeImage() *schema.Resource {
 				Computed:    true,
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Description: "How the Image was created. 'Manual' Images can be created at any time. 'Automatic' images are created automatically from a deleted Linode.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "How the Image was created. 'Manual' Images can be created at any time. 'Automatic' " +
+					"images are created automatically from a deleted Linode.",
+				Computed: true,
 			},
 			"expiry": {
 				Type:        schema.TypeString,

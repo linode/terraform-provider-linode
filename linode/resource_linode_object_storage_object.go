@@ -190,7 +190,8 @@ func resourceLinodeObjectStorageObjectDelete(d *schema.ResourceData, meta interf
 	return deleteLinodeObjectStorageObject(conn, bucket, key, "", force)
 }
 
-func resourceLinodeObjectStorageObjectCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func resourceLinodeObjectStorageObjectCustomizeDiff(
+	ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	if d.HasChange("etag") {
 		d.SetNewComputed("version_id")
 	}
@@ -264,19 +265,20 @@ func deleteAllLinodeObjectStorageObjectVersions(d *schema.ResourceData) error {
 	}
 
 	// accumulate all versions of the current object to be deleted
-	if err := conn.ListObjectVersionsPages(listObjectVersionsInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		if page == nil {
-			return !lastPage
-		}
-
-		for _, objectVersion := range page.Versions {
-			if objectKey := aws.StringValue(objectVersion.Key); objectKey == key {
-				versions = append(versions, aws.StringValue(objectVersion.VersionId))
+	if err := conn.ListObjectVersionsPages(
+		listObjectVersionsInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+			if page == nil {
+				return !lastPage
 			}
-		}
 
-		return !lastPage
-	}); err != nil {
+			for _, objectVersion := range page.Versions {
+				if objectKey := aws.StringValue(objectVersion.Key); objectKey == key {
+					versions = append(versions, aws.StringValue(objectVersion.VersionId))
+				}
+			}
+
+			return !lastPage
+		}); err != nil {
 		if err, ok := err.(awserr.Error); !(ok && err.Code() != s3.ErrCodeNoSuchBucket) {
 			return fmt.Errorf("failed to list Bucket (%s) Object (%s) versions: %s", bucket, key, err)
 		}
@@ -307,6 +309,8 @@ func deleteLinodeObjectStorageObject(client *s3.S3, bucket, key, version string,
 	}
 
 	msg := fmt.Sprintf("failed to delete Bucket (%s) Object (%s) Version (%s): %s", bucket, key, version, err)
+
+	//nolint:lll
 	if awsErr, ok := err.(awserr.Error); ok && (awsErr.Code() == s3.ErrCodeNoSuchBucket || awsErr.Code() == s3.ErrCodeNoSuchKey) {
 		return nil
 	} else if ok {

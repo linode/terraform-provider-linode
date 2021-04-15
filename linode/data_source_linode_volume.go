@@ -40,9 +40,10 @@ func dataSourceLinodeVolume() *schema.Resource {
 				Computed:    true,
 			},
 			"filesystem_path": {
-				Type:        schema.TypeString,
-				Description: "The full filesystem path for the Volume based on the Volume's label. Path is /dev/disk/by-id/scsi-0LinodeVolume + Volume label.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "The full filesystem path for the Volume based on the Volume's label. Path is " +
+					"/dev/disk/by-id/scsi-0LinodeVolume + Volume label.",
+				Computed: true,
 			},
 			"tags": {
 				Type:        schema.TypeSet,

@@ -12,9 +12,10 @@ func dataSourceLinodeAccount() *schema.Resource {
 		Read: dataSourceLinodeAccountRead,
 		Schema: map[string]*schema.Schema{
 			"email": {
-				Type:        schema.TypeString,
-				Description: "The email address for this Account, for account management communications, and may be used for other communications as configured.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "The email address for this Account, for account management communications, and may be " +
+					"used for other communications as configured.",
+				Computed: true,
 			},
 			"first_name": {
 				Type:        schema.TypeString,
@@ -52,9 +53,11 @@ func dataSourceLinodeAccount() *schema.Resource {
 				Computed:    true,
 			},
 			"state": {
-				Type:        schema.TypeString,
-				Description: "If billing address is in the United States, this is the State portion of the Account's billing address. If the address is outside the US, this is the Province associated with the Account's billing address.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "If billing address is in the United States, this is the State portion of the Account's " +
+					"billing address. If the address is outside the US, this is the Province associated with the " +
+					"Account's billing address.",
+				Computed: true,
 			},
 			"country": {
 				Type:        schema.TypeString,

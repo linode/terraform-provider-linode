@@ -18,9 +18,10 @@ func dataSourceLinodeFirewallRule() *schema.Resource {
 				Computed:    true,
 			},
 			"action": {
-				Type:        schema.TypeString,
-				Description: `Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.`,
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s " +
+					"inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.",
+				Computed: true,
 			},
 			"ports": {
 				Type:        schema.TypeString,
@@ -61,9 +62,10 @@ func dataSourceLinodeFirewall() *schema.Resource {
 				Required: true,
 			},
 			"label": {
-				Type:        schema.TypeString,
-				Description: "The label for the Firewall. For display purposes only. If no label is provided, a default will be assigned.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
+					"default will be assigned.",
+				Computed: true,
 			},
 			"tags": {
 				Type:        schema.TypeSet,
@@ -84,9 +86,10 @@ func dataSourceLinodeFirewall() *schema.Resource {
 				Computed:    true,
 			},
 			"inbound_policy": {
-				Type:        schema.TypeString,
-				Description: "The default behavior for inbound traffic. This setting can be overridden by updating the inbound.action property for an individual Firewall Rule.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "The default behavior for inbound traffic. This setting can be overridden by updating " +
+					"the inbound.action property for an individual Firewall Rule.",
+				Computed: true,
 			},
 			"outbound": {
 				Type:        schema.TypeList,
@@ -95,9 +98,10 @@ func dataSourceLinodeFirewall() *schema.Resource {
 				Computed:    true,
 			},
 			"outbound_policy": {
-				Type:        schema.TypeString,
-				Description: "The default behavior for outbound traffic. This setting can be overridden by updating the outbound.action property for an individual Firewall Rule.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "The default behavior for outbound traffic. This setting can be overridden by updating " +
+					"the outbound.action property for an individual Firewall Rule.",
+				Computed: true,
 			},
 			"linodes": {
 				Type:        schema.TypeSet,

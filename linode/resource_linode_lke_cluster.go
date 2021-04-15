@@ -45,9 +45,10 @@ func resourceLinodeLKECluster() *schema.Resource {
 				Description: "The unique label for the cluster.",
 			},
 			"k8s_version": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. The latest supported patch version will be deployed.",
+				Type:     schema.TypeString,
+				Required: true,
+				Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. " +
+					"The latest supported patch version will be deployed.",
 			},
 			"tags": {
 				Type:        schema.TypeSet,
@@ -327,7 +328,8 @@ func getLKEClusterPoolProvisionedSpecs(pools []linodego.LKEClusterPool) map[lino
 	return provisioned
 }
 
-func reconcileLKEClusterPoolSpecs(poolSpecs []linodeLKEClusterPoolSpec, pools []linodego.LKEClusterPool) (updates linodelkeClusterPoolUpdates) {
+func reconcileLKEClusterPoolSpecs(
+	poolSpecs []linodeLKEClusterPoolSpec, pools []linodego.LKEClusterPool) (updates linodelkeClusterPoolUpdates) {
 	provisionedPools := getLKEClusterPoolProvisionedSpecs(pools)
 	poolSpecsToAssign := make(map[int]struct{})
 	assignedPools := make(map[int]struct{})
@@ -415,7 +417,8 @@ func reconcileLKEClusterPoolSpecs(poolSpecs []linodeLKEClusterPoolSpec, pools []
 	return
 }
 
-func waitForClusterPoolReady(ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int) {
+func waitForClusterPoolReady(
+	ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int) {
 	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
 
 main:
@@ -444,7 +447,9 @@ main:
 	}
 }
 
-func waitForClusterPoolsToStartRecycle(ctx context.Context, client *linodego.Client, pollMs, clusterID int, pools []linodego.LKEClusterPool) (<-chan int, <-chan error) {
+func waitForClusterPoolsToStartRecycle(
+	ctx context.Context, client *linodego.Client, pollMs, clusterID int, pools []linodego.LKEClusterPool,
+) (<-chan int, <-chan error) {
 	clusterInstances := make(map[int]int)
 	poolInstances := make(map[int]map[int]struct{}, len(pools))
 	for _, pool := range pools {
@@ -470,7 +475,8 @@ func waitForClusterPoolsToStartRecycle(ctx context.Context, client *linodego.Cli
 		for len(clusterInstances) != 0 {
 			select {
 			case <-ctx.Done():
-				log.Printf("[ERROR] timed out waiting for all original nodes of LKE Cluster (%d) to be deleted (%d remaining)\n", clusterID, len(clusterInstances))
+				log.Printf("[ERROR] timed out waiting for all original nodes of LKE Cluster (%d) to be deleted (%d remaining)\n",
+					clusterID, len(clusterInstances))
 				return
 
 			case <-eventTicker.C:
@@ -502,12 +508,14 @@ func waitForClusterPoolsToStartRecycle(ctx context.Context, client *linodego.Cli
 
 					delete(clusterInstances, id)
 					delete(poolInstances[poolID], id)
-					log.Printf("[DEBUG] finished waiting for LKE Cluster (%d) Pool (%d) Node (%d) to be deleted\n", clusterID, poolID, id)
+					log.Printf("[DEBUG] finished waiting for LKE Cluster (%d) Pool (%d) Node (%d) to be deleted\n",
+						clusterID, poolID, id)
 
 					if len(poolInstances[poolID]) == 0 {
 						// all original instances for this pool have been deleted
 						delete(poolInstances, poolID)
-						log.Printf("[DEBUG] finished waiting for all nodes in LKE Cluster (%d) Pool (%d) to be recreated\n", clusterID, poolID)
+						log.Printf("[DEBUG] finished waiting for all nodes in LKE Cluster (%d) Pool (%d) to be recreated\n",
+							clusterID, poolID)
 						poolRecyclesCh <- poolID
 					}
 				}
@@ -527,7 +535,8 @@ func recycleLKECluster(ctx context.Context, meta *ProviderMeta, id int, pools []
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	poolRecyclesCh, errCh := waitForClusterPoolsToStartRecycle(ctx, &client, meta.Config.LKEEventPollMilliseconds, id, pools)
+	poolRecyclesCh, errCh := waitForClusterPoolsToStartRecycle(
+		ctx, &client, meta.Config.LKEEventPollMilliseconds, id, pools)
 
 	var wg sync.WaitGroup
 	wg.Add(len(pools))

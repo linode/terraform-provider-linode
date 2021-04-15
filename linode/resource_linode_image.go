@@ -74,9 +74,10 @@ func resourceLinodeImage() *schema.Resource {
 				Computed:    true,
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Description: "How the Image was created. 'Manual' Images can be created at any time. 'Automatic' images are created automatically from a deleted Linode.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "How the Image was created. 'Manual' Images can be created at any time. 'Automatic' " +
+					"images are created automatically from a deleted Linode.",
+				Computed: true,
 			},
 			"expiry": {
 				Type:        schema.TypeString,
@@ -125,8 +126,11 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	linodeID := d.Get("linode_id").(int)
 	diskID := d.Get("disk_id").(int)
 
-	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
+	if _, err := client.WaitForInstanceDiskStatus(
+		context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
+	); err != nil {
+		return fmt.Errorf(
+			"Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
 	}
 
 	createOpts := linodego.ImageCreateOptions{
@@ -143,8 +147,11 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(image.ID)
 	d.Partial(false)
 
-	if _, err := client.WaitForInstanceDiskStatus(context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
-		return fmt.Errorf("Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
+	if _, err := client.WaitForInstanceDiskStatus(
+		context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
+	); err != nil {
+		return fmt.Errorf(
+			"Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
 	}
 
 	return resourceLinodeImageRead(d, meta)

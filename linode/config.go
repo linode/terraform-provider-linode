@@ -80,7 +80,8 @@ func (c *Config) Client() linodego.Client {
 }
 
 func terraformUserAgent(version string) string {
-	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s", version, meta.SDKVersionString())
+	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
+		version, meta.SDKVersionString())
 
 	if add := os.Getenv(uaEnvVar); add != "" {
 		add = strings.TrimSpace(add)
