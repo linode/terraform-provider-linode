@@ -34,15 +34,6 @@ func testAccCheckLinodeUserDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeUserConfigBasic(username, email string, restricted bool) string {
-	return fmt.Sprintf(`
-resource "linode_user" "test" {
-	username = "%s"
-	email = "%s"
-	restricted = %t
-}`, username, email, restricted)
-}
-
 func TestAccLinodeUser_basic(t *testing.T) {
 	t.Parallel()
 
@@ -100,4 +91,97 @@ func TestAccLinodeUser_updates(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccLinodeUser_grants(t *testing.T) {
+	t.Parallel()
+
+	username := acctest.RandomWithPrefix("tf-test")
+	instance := acctest.RandomWithPrefix("tf-test")
+
+	email := username + "@example.com"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeUserConfigGrants(username, email),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", ""),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "true"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_images", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_linodes", "true"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_longview", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_nodebalancers", "true"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_stackscripts", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_volumes", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.cancel_account", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.longview_subscription", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "linode_grant.#", "0"),
+				),
+			},
+			{
+				Config: testAccCheckLinodeUserConfigGrantsUpdate(username, email, instance),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", "read_only"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_images", "true"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_linodes", "true"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_longview", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_nodebalancers", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_stackscripts", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_volumes", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.cancel_account", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.longview_subscription", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "linode_grant.#", "1"),
+					resource.TestCheckResourceAttr(testUserResName, "linode_grant.0.permissions", "read_write"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckLinodeUserConfigBasic(username, email string, restricted bool) string {
+	return fmt.Sprintf(`
+resource "linode_user" "test" {
+	username = "%s"
+	email = "%s"
+	restricted = %t
+}`, username, email, restricted)
+}
+
+func testAccCheckLinodeUserConfigGrants(username, email string) string {
+	return fmt.Sprintf(`
+resource "linode_user" "test" {
+	username = "%s"
+	email = "%s"
+	restricted = true
+
+	global_grants {
+		add_linodes = true
+		add_nodebalancers = true
+		add_domains = true
+	}
+}`, username, email)
+}
+
+func testAccCheckLinodeUserConfigGrantsUpdate(username, email, instance string) string {
+	return testAccCheckLinodeInstanceWithNoImage(instance) + fmt.Sprintf(`
+resource "linode_user" "test" {
+	username = "%s"
+	email = "%s"
+	restricted = true
+
+	global_grants {
+		account_access = "read_only"
+		add_linodes = true
+		add_images = true
+	}
+
+	linode_grant {
+		id = linode_instance.foobar.id
+		permissions = "read_write"
+	}
+}`, username, email)
 }
