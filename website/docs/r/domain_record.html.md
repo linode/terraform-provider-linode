@@ -23,7 +23,7 @@ resource "linode_domain" "foobar" {
 }
 
 resource "linode_domain_record" "foobar" {
-    domain_id = "${linode_domain.foobar.id}"
+    domain_id = linode_domain.foobar.id
     name = "www"
     record_type = "CNAME"
     target = "foobar.example"

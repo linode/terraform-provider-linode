@@ -15,12 +15,38 @@ Use the navigation to the left to read about the available data sources.
 
 ## Example Usage
 
-```hcl
-# Configure the Linode provider
+Terraform 0.13 and later:
+
+```terraform
+terraform {
+  required_providers {
+    linode = {
+      source  = "linode/linode"
+      # version = "..."
+    }
+  }
+}
+
+# Configure the Linode Provider
 provider "linode" {
   token = "$LINODE_TOKEN"
 }
 
+# Create a Linode
+resource "linode_instance" "foobar" {
+  # ...
+}
+```
+
+Terraform 0.12 and earlier:
+
+```terraform
+# Configure the Linode Provider
+provider "linode" {
+  token = "$LINODE_TOKEN"
+}
+
+# Create a Linode
 resource "linode_instance" "foobar" {
   # ...
 }
