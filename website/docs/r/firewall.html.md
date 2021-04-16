@@ -20,23 +20,43 @@ resource "linode_firewall" "my_firewall" {
   tags  = ["test"]
 
   inbound {
-    label    = "allow-them"
+    label    = "allow-http"
     action   = "ACCEPT"
     protocol = "TCP"
     ports    = "80"
     ipv4     = ["0.0.0.0/0"]
     ipv6     = ["ff00::/8"]
   }
+  
+  inbound {
+    label    = "allow-https"
+    action   = "ACCEPT"
+    protocol = "TCP"
+    ports    = "443"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["ff00::/8"]
+  }
+  
   inbound_policy = "DROP"
 
   outbound {
-    label    = "reject-them"
+    label    = "reject-http"
     action   = "DROP"
     protocol = "TCP"
     ports    = "80"
     ipv4     = ["0.0.0.0/0"]
     ipv6     = ["ff00::/8"]
   }
+  
+  outbound {
+    label    = "reject-https"
+    action   = "DROP"
+    protocol = "TCP"
+    ports    = "443"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["ff00::/8"]
+  }
+  
   outbound_policy = "ACCEPT"
 
   linodes = [linode_instance.my_instance.id]
@@ -45,7 +65,7 @@ resource "linode_firewall" "my_firewall" {
 resource "linode_instance" "my_instance" {
   label      = "my_instance"
   image      = "linode/ubuntu18.04"
-  region     = "us-east"
+  region     = "us-southeast"
   type       = "g6-standard-1"
   root_pass  = "bogusPassword$"
   swap_size  = 256
