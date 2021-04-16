@@ -134,6 +134,80 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 	})
 }
 
+func TestAccLinodeFirewall_multipleRules(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+	devicePrefix := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: accTestWithProvider(testAccCheckLinodeFirewallMultipleRules(name, devicePrefix), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "2"),
+
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.action", "ACCEPT"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
+
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.action", "ACCEPT"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ports", "443"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.1.ipv6.0", "::/0"),
+
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "DROP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "2"),
+
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
+
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ports", "443"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv6.0", "2001:db8::/32"),
+
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.url"),
+					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.id"),
+					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.entity_id"),
+					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.label"),
+				),
+			},
+			{
+				ResourceName:      testFirewallResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccLinodeFirewall_no_device(t *testing.T) {
 	t.Parallel()
 
@@ -319,6 +393,54 @@ resource "linode_firewall" "test" {
 	}
 	inbound_policy = "DROP"
 	outbound_policy = "DROP"
+}`, name)
+}
+
+func testAccCheckLinodeFirewallMultipleRules(name, devicePrefix string) string {
+	return testAccCheckLinodeFirewallInstance(devicePrefix, "one") + fmt.Sprintf(`
+resource "linode_firewall" "test" {
+	label = "%s"
+	tags  = ["test"]
+
+	inbound {
+		label    = "tf-test-in"
+		action = "ACCEPT"
+		protocol  = "TCP"
+		ports     = "80"
+		ipv4 = ["0.0.0.0/0"]
+		ipv6 = ["::/0"]
+	}
+
+	inbound {
+		label    = "tf-test-in-1"
+		action = "ACCEPT"
+		protocol  = "TCP"
+		ports     = "443"
+		ipv4 = ["0.0.0.0/0"]
+		ipv6 = ["::/0"]
+	}
+	inbound_policy = "DROP"
+
+	outbound {
+		label    = "tf-test-out"
+		action = "ACCEPT"
+		protocol  = "TCP"
+		ports     = "80"
+		ipv4 = ["0.0.0.0/0"]
+		ipv6 = ["2001:db8::/32"]
+	}
+
+	outbound {
+		label    = "tf-test-out-1"
+		action = "ACCEPT"
+		protocol  = "TCP"
+		ports     = "443"
+		ipv4 = ["0.0.0.0/0"]
+		ipv6 = ["2001:db8::/32"]
+	}
+	outbound_policy = "DROP"
+
+	linodes = [linode_instance.one.id]
 }`, name)
 }
 
