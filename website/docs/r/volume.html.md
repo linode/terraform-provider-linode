@@ -27,8 +27,8 @@ resource "linode_instance" "foobaz" {
 
 resource "linode_volume" "foobar" {
     label = "foo-volume"
-    region = "${linode_instance.foobaz.region}"
-    linode_id = "${linode_instance.foobaz.id}"
+    region = linode_instance.foobaz.region
+    linode_id = linode_instance.foobaz.id
 }
 ```
 

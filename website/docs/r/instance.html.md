@@ -60,7 +60,7 @@ resource "linode_instance" "web" {
     # Any of authorized_keys, authorized_users, and root_pass
     # can be used for provisioning.
     authorized_keys = [ "ssh-rsa AAAA...Gw== user@example.local" ]
-    authorized_users = [ "${data.linode_profile.me.username}" ]
+    authorized_users = [ data.linode_profile.me.username ]
     root_pass = "terr4form-test"
   }
 
@@ -72,7 +72,7 @@ resource "linode_instance" "web" {
         disk_label = "boot"
       }
       sdb {
-        volume_id = "${linode_volume.web_volume.id}"
+        volume_id = linode_volume.web_volume.id
       }
     }
     root_device = "/dev/sda"

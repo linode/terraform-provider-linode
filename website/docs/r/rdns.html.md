@@ -20,7 +20,7 @@ The following example shows how one might use this resource to configure an RDNS
 
 ```hcl
 resource "linode_rdns" "foo" {
-  address = "${linode_instance.foo.ip_address}"
+  address = linode_instance.foo.ip_address
   rdns = "${linode_instance.foo.ip_address}.nip.io"
 }
 

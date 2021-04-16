@@ -25,14 +25,14 @@ resource "linode_instance" "foo" {
 resource "linode_image" "bar" {
     label = "foo-sda-image"
     description = "Image taken from foo"
-    disk_id = "${linode_instance.foo.disk.0.id}"
-    linode_id = "${linode_instance.foo.id}"
+    disk_id = linode_instance.foo.disk.0.id
+    linode_id = linode_instance.foo.id
 }
 
 resource "linode_instance" "bar_based" {
-    type = "${linode_instance.foo.type}"
+    type = linode_instance.foo.type
     region = "eu-west"
-    image = "${linode_image.bar.id}"
+    image = linode_image.bar.id
 }
 ```
 

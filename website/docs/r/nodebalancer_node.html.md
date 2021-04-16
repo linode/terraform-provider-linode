@@ -37,7 +37,7 @@ resource "linode_nodebalancer" "foobar" {
 }
 
 resource "linode_nodebalancer_config" "foofig" {
-    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+    nodebalancer_id = linode_nodebalancer.foobar.id
     port = 80
     protocol = "http"
     check = "http"
@@ -50,8 +50,8 @@ resource "linode_nodebalancer_config" "foofig" {
 
 resource "linode_nodebalancer_node" "foonode" {
     count = "3"
-    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
-    config_id = "${linode_nodebalancer_config.foofig.id}"
+    nodebalancer_id = linode_nodebalancer.foobar.id
+    config_id = linode_nodebalancer_config.foofig.id
     address = "${element(linode_instance.web.*.private_ip_address, count.index)}:80"
     label = "mynodebalancernode"
     weight = 50
