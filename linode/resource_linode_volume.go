@@ -107,7 +107,6 @@ func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderMeta).Client
-	d.Partial(true)
 
 	var linodeID *int
 
@@ -150,14 +149,11 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	d.Partial(false)
-
 	return resourceLinodeVolumeRead(d, meta)
 }
 
 func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderMeta).Client
-	d.Partial(true)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -256,7 +252,6 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 		d.Set("linode_id", linodeID)
 	}
-	d.Partial(false)
 
 	return resourceLinodeVolumeRead(d, meta)
 }

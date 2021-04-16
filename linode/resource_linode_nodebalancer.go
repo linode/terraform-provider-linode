@@ -176,7 +176,7 @@ func resourceLinodeNodeBalancerUpdate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error fetching data about the current NodeBalancer: %s", err)
 	}
 
-	if d.HasChange("label") || d.HasChange("client_conn_throttle") || d.HasChange("tags") {
+	if d.HasChanges("label", "client_conn_throttle", "tags") {
 		label := d.Get("label").(string)
 		clientConnThrottle := d.Get("client_conn_throttle").(int)
 

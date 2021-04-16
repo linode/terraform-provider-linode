@@ -17,12 +17,7 @@ tooldeps:
 lint: fmtcheck
 	golangci-lint run
 	tfproviderlint \
-		-R003=false \
-		-R005=false \
-		-R007=false \
-		-R008=false \
 		-S006=false \
-		-S022=false \
 		-R018=false \
 		-R019=false \
 		./...
