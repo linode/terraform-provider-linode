@@ -58,8 +58,9 @@ func dataSourceLinodeFirewall() *schema.Resource {
 		ReadContext: datasourceLinodeFirewallRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The unique ID assigned to this Firewall.",
+				Required:    true,
 			},
 			"label": {
 				Type: schema.TypeString,

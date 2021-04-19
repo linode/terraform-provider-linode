@@ -14,8 +14,9 @@ func dataSourceLinodeStackscript() *schema.Resource {
 		Read: dataSourceLinodeStackscriptRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The unique ID of this Stackscript.",
+				Required:    true,
 			},
 			"label": {
 				Type:        schema.TypeString,
@@ -91,28 +92,35 @@ func dataSourceLinodeStackscript() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
-							Type:     schema.TypeString,
+							Type: schema.TypeString,
+							Description: "A human-readable label for the field that will serve as the " +
+								"input prompt for entering the value during deployment.",
 							Computed: true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field.",
+							Computed:    true,
 						},
 						"example": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "An example value for the field.",
+							Computed:    true,
 						},
 						"one_of": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A list of acceptable single values for the field.",
+							Computed:    true,
 						},
 						"many_of": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A list of acceptable values for the field in any quantity, combination or order.",
+							Computed:    true,
 						},
 						"default": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The default value. If not specified, this value will be used.",
+							Computed:    true,
 						},
 					},
 				},

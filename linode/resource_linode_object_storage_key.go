@@ -39,8 +39,9 @@ func resourceLinodeObjectStorageKey() *schema.Resource {
 				Computed:    true,
 			},
 			"bucket_access": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Description: "A list of permissions to grant this limited access key.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bucket_name": {

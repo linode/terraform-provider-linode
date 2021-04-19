@@ -13,8 +13,9 @@ func dataSourceLinodeKernel() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The unique ID of this Kernel.",
+				Required:    true,
 			},
 			"architecture": {
 				Type:        schema.TypeString,

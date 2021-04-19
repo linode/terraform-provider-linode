@@ -30,9 +30,10 @@ func dataSourceLinodeInstancesInstances() *schema.Resource {
 				Computed:    true,
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Computed: true,
+				Type:        schema.TypeSet,
+				Description: "The tags assigned to this Instance.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
 			},
 			"boot_config_label": {
 				Type:        schema.TypeString,
@@ -140,8 +141,9 @@ func dataSourceLinodeInstancesInstances() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 							Description: "The percentage of CPU usage required to trigger an alert. If the average " +
-								"CPU usage over two hours exceeds this value, we'll send you an alert. If this is set " +
-								"to 0, the alert is disabled.",
+								"CPU usage over two hours exceeds this value, we'll Device can be either a Disk or Volume " +
+								"identified by disk_id or volume_id. Only one type per slot allowed.send you an alert. If " +
+								"this is set to 0, the alert is disabled.",
 						},
 						"network_in": {
 							Type:     schema.TypeInt,
@@ -268,44 +270,52 @@ func dataSourceLinodeInstancesInstances() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"sda": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: "",
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdb": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: linodeInstanceDeviceDescription,
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdc": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: linodeInstanceDeviceDescription,
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdd": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: linodeInstanceDeviceDescription,
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 									"sde": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: linodeInstanceDeviceDescription,
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdf": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: linodeInstanceDeviceDescription,
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdg": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: linodeInstanceDeviceDescription,
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 									"sdh": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     resourceLinodeInstanceDeviceDisk(),
+										Type:        schema.TypeList,
+										Description: linodeInstanceDeviceDescription,
+										Computed:    true,
+										Elem:        resourceLinodeInstanceDeviceDisk(),
 									},
 								},
 							},
@@ -346,8 +356,9 @@ func dataSourceLinodeInstancesInstances() *schema.Resource {
 				},
 			},
 			"disk": {
-				Computed: true,
-				Type:     schema.TypeList,
+				Computed:    true,
+				Description: "Disks associated with this Linode.",
+				Type:        schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"label": {
@@ -383,9 +394,10 @@ func dataSourceLinodeInstances() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": filterSchema([]string{"group", "id", "image", "label", "region", "tags"}),
 			"instances": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     dataSourceLinodeInstancesInstances(),
+				Type:        schema.TypeList,
+				Description: "The returned list of Instances.",
+				Computed:    true,
+				Elem:        dataSourceLinodeInstancesInstances(),
 			},
 		},
 	}

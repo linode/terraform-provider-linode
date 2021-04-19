@@ -19,8 +19,9 @@ func dataSourceLinodeDomain() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The unique ID assigned to this domain",
+				Optional:    true,
 			},
 			"domain": {
 				Type: schema.TypeString,

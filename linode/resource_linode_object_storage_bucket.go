@@ -100,12 +100,14 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"secret_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning)",
+				Optional:    true,
 			},
 			"access_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The S3 access key to use for this resource. (Required for lifecycle_rule and versioning)",
+				Optional:    true,
 			},
 			"cluster": {
 				Type:        schema.TypeString,
@@ -144,9 +146,10 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 				Computed:    true,
 			},
 			"cert": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				Description: "The cert used by this Object Storage Bucket.",
+				MaxItems:    1,
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"certificate": {

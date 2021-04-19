@@ -49,17 +49,20 @@ func dataSourceLinodeNodeBalancer() *schema.Resource {
 				Computed:    true,
 			},
 			"created": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "When this NodeBalancer was created.",
+				Computed:    true,
 			},
 			"updated": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "When this NodeBalancer was last updated.",
+				Computed:    true,
 			},
 			"transfer": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     resourceLinodeNodeBalancerTransfer(),
+				Type:        schema.TypeList,
+				Description: "Information about the amount of transfer this NodeBalancer has had so far this month.",
+				Computed:    true,
+				Elem:        resourceLinodeNodeBalancerTransfer(),
 			},
 			"tags": {
 				Type:        schema.TypeSet,

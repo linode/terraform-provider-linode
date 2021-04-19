@@ -14,8 +14,9 @@ func dataSourceLinodeLKECluster() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The unique ID of this LKE Cluster.",
+				Required:    true,
 			},
 
 			"label": {
