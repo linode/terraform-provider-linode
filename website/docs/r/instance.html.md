@@ -120,6 +120,8 @@ The following arguments are supported:
 
 * `watchdog_enabled` - (Optional) The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.
 
+* [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation.
+
 ### Simplified Resource Arguments
 
 Just as the Linode API provides, these fields are for the most common provisioning use case, a single data disk, a single swap disk, and a single config.  These arguments are not compatible with `disk` and `config` fields, described later.
@@ -213,6 +215,20 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
     * `comments` - (Optional) - Arbitrary user comments about this `config`.
 
     * `memory_limit` - (Optional) - Defaults to the total RAM of the Linode
+
+  * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode.
+
+### Interface
+
+Interface defines a network interfaces that is exposed to a Linode. See the official [Linode API documentation](https://www.linode.com/docs/api/linode-instances/#linode-create__request-body-schema) for more details.
+
+Each interface exports the following attributes:
+
+* `purpose` - (Required) The type of interface. (`public`, `vlan`)
+
+* `label` - (Optional) The name of this interface. If the interface is a VLAN, a label is required.
+
+* `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation.
 
 ### Timeouts
 

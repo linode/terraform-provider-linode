@@ -107,6 +107,11 @@ func flattenInstanceConfigs(
 			"sdh": flattenInstanceConfigDevice(config.Devices.SDH, diskLabelIDMap),
 		}}
 
+		interfaces := make([]interface{}, len(config.Interfaces))
+		for i, ni := range config.Interfaces {
+			interfaces[i] = flattenLinodeConfigInterface(ni)
+		}
+
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		c := map[string]interface{}{
 			"root_device":  config.RootDevice,
@@ -123,7 +128,8 @@ func flattenInstanceConfigs(
 				"network":            config.Helpers.Network,
 				"devtmpfs_automount": config.Helpers.DevTmpFsAutomount,
 			}},
-			"devices": devices,
+			"devices":   devices,
+			"interface": interfaces,
 		}
 
 		configs = append(configs, c)
@@ -168,6 +174,15 @@ func createInstanceConfigsFromSet(
 						configOpts.Helpers.DevTmpFsAutomount = devTmpFsAutomount.(bool)
 					}
 				}
+			}
+		}
+
+		if interfaces, ok := config["interface"]; ok {
+			interfaces := interfaces.([]interface{})
+			configOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+
+			for i, ni := range interfaces {
+				configOpts.Interfaces[i] = expandLinodeConfigInterface(ni.(map[string]interface{}))
 			}
 		}
 
@@ -264,6 +279,18 @@ func updateInstanceConfigs(
 					DevTmpFsAutomount: helpersMap["devtmpfs_automount"].(bool),
 				}
 
+			}
+
+			configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, 0)
+
+			if interfaces, ok := tfc["interface"]; ok {
+				interfaces := interfaces.([]interface{})
+
+				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+
+				for i, ni := range interfaces {
+					configUpdateOpts.Interfaces[i] = expandLinodeConfigInterface(ni.(map[string]interface{}))
+				}
 			}
 
 			tfcDevicesRaw, devicesFound := tfc["devices"]
@@ -1011,4 +1038,24 @@ func detachConfigVolumes(
 	}
 
 	return nil
+}
+
+func expandLinodeConfigInterface(i map[string]interface{}) linodego.InstanceConfigInterface {
+	result := linodego.InstanceConfigInterface{}
+
+	result.Label = i["label"].(string)
+	result.Purpose = linodego.ConfigInterfacePurpose(i["purpose"].(string))
+	result.IPAMAddress = i["ipam_address"].(string)
+
+	return result
+}
+
+func flattenLinodeConfigInterface(i linodego.InstanceConfigInterface) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	result["label"] = i.Label
+	result["purpose"] = i.Purpose
+	result["ipam_address"] = i.IPAMAddress
+
+	return result
 }

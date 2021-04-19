@@ -320,6 +320,12 @@ func dataSourceLinodeInstancesInstances() *schema.Resource {
 								},
 							},
 						},
+						"interface": {
+							Type:        schema.TypeList,
+							Description: "An array of Network Interfaces for this Linode’s Configuration Profile.",
+							Computed:    true,
+							Elem:        resourceLinodeInstanceConfigInterface(),
+						},
 						"kernel": {
 							Type:     schema.TypeString,
 							Computed: true,

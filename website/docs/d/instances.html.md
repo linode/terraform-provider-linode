@@ -154,6 +154,20 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
     * `disk_id` - The Disk ID of the associated `disk_label`, if used
 
+  * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode.
+
+### Interface
+
+Interface defines a network interfaces that is exposed to a Linode. See the official [Linode API documentation](https://www.linode.com/docs/api/linode-instances/#linode-create__request-body-schema) for more details.
+
+Each interface exports the following attributes:
+
+* `purpose` - (Required) The type of interface. (`public`, `vlan`)
+
+* `label` - (Optional) The name of this interface. If the interface is a VLAN, a label is required.
+
+* `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation.
+
 ### Backups
 
 * `backups`
