@@ -15,9 +15,10 @@ func dataSourceLinodeImages() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": filterSchema([]string{"deprecated", "is_public", "label", "size", "vendor"}),
 			"images": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     dataSourceLinodeImage(),
+				Type:        schema.TypeList,
+				Description: "The returned list of Images.",
+				Computed:    true,
+				Elem:        dataSourceLinodeImage(),
 			},
 		},
 	}

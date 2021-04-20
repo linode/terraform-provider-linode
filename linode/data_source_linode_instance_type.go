@@ -13,8 +13,9 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The unique ID assigned to this Instance type.",
+				Required:    true,
 			},
 			"label": {
 				Type:        schema.TypeString,

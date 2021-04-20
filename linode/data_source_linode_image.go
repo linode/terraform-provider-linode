@@ -14,8 +14,9 @@ func dataSourceLinodeImage() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The unique ID assigned to this Image.",
+				Required:    true,
 			},
 			"label": {
 				Type:        schema.TypeString,

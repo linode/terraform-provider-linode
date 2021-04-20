@@ -179,7 +179,9 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 				Sensitive: true,
 			},
 			"node_status": {
-				Type:     schema.TypeList,
+				Type: schema.TypeList,
+				Description: "A structure containing information about the health of the backends for this port. This " +
+					"information is updated periodically as checks are performed against backends.",
 				Computed: true,
 				Elem:     resourceLinodeNodeBalancerConfigNodeStatus(),
 			},
