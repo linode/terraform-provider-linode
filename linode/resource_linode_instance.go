@@ -1060,8 +1060,10 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	// apply staged simple updates early
 	if simpleUpdate {
+		instanceID := instance.ID
+
 		if instance, err = client.UpdateInstance(ctx, instance.ID, updateOpts); err != nil {
-			return diag.Errorf("Error updating Instance %d: %s", instance.ID, err)
+			return diag.Errorf("Error updating Instance %d: %s", instanceID, err)
 		}
 	}
 
