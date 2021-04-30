@@ -53,6 +53,28 @@ func resourceLinodeInstanceDeviceDisk() *schema.Resource {
 	}
 }
 
+func resourceLinodeInstanceConfigInterface() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"label": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique label of this interface.",
+			},
+			"purpose": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The purpose of this interface.",
+			},
+			"ipam_address": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The IPAM Address of this interface.",
+			},
+		},
+	}
+}
+
 func resourceLinodeInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceLinodeInstanceCreate,
@@ -367,12 +389,20 @@ func resourceLinodeInstance() *schema.Resource {
 					},
 				},
 			},
+			"interface": {
+				Type:          schema.TypeList,
+				Description:   "An array of Network Interfaces for this Linode to be created with.",
+				Optional:      true,
+				ConflictsWith: []string{"disk", "config"},
+				Elem:          resourceLinodeInstanceConfigInterface(),
+			},
 			"config": {
 				Optional:    true,
 				Description: "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
 				Type:        schema.TypeList,
 				ConflictsWith: []string{
-					"image", "root_pass", "authorized_keys", "authorized_users", "swap_size", "backup_id", "stackscript_id"},
+					"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
+					"backup_id", "stackscript_id", "interface"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, hasImage := d.GetOk("image")
 					return hasImage
@@ -503,6 +533,12 @@ func resourceLinodeInstance() *schema.Resource {
 								},
 							},
 						},
+						"interface": {
+							Type:        schema.TypeList,
+							Description: "An array of Network Interfaces for this Linode’s Configuration Profile.",
+							Optional:    true,
+							Elem:        resourceLinodeInstanceConfigInterface(),
+						},
 						"kernel": {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -546,7 +582,8 @@ func resourceLinodeInstance() *schema.Resource {
 			"disk": {
 				Optional: true,
 				ConflictsWith: []string{
-					"image", "root_pass", "authorized_keys", "authorized_users", "swap_size", "backup_id", "stackscript_id"},
+					"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
+					"backup_id", "stackscript_id", "interface"},
 				Type: schema.TypeList,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					_, hasImage := d.GetOk("image")
@@ -757,7 +794,19 @@ func resourceLinodeInstanceRead(ctx context.Context, d *schema.ResourceData, met
 
 	d.Set("config", configs)
 	if len(instanceConfigs) == 1 {
-		d.Set("boot_config_label", instanceConfigs[0].Label)
+		defaultConfig := instanceConfigs[0]
+
+		if _, ok := d.GetOk("interface"); ok {
+			flattenedInterfaces := make([]map[string]interface{}, len(defaultConfig.Interfaces))
+
+			for i, configInterface := range defaultConfig.Interfaces {
+				flattenedInterfaces[i] = flattenLinodeConfigInterface(configInterface)
+			}
+
+			d.Set("interface", flattenedInterfaces)
+		}
+
+		d.Set("boot_config_label", defaultConfig.Label)
 	}
 
 	return nil
@@ -779,6 +828,16 @@ func resourceLinodeInstanceCreate(ctx context.Context, d *schema.ResourceData, m
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
 		for _, tag := range tagsRaw.(*schema.Set).List() {
 			createOpts.Tags = append(createOpts.Tags, tag.(string))
+		}
+	}
+
+	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
+		interfaces := interfaces.([]interface{})
+
+		createOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+
+		for i, ni := range interfaces {
+			createOpts.Interfaces[i] = expandLinodeConfigInterface(ni.(map[string]interface{}))
 		}
 	}
 
@@ -1155,6 +1214,22 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	} else if len(updatedConfigs) > 0 {
 		bootConfig = updatedConfigs[0].ID
+	}
+
+	if d.HasChange("interface") {
+		interfaces := d.Get("interface").([]interface{})
+
+		expandedInterfaces := make([]linodego.InstanceConfigInterface, len(interfaces))
+
+		for i, ni := range interfaces {
+			expandedInterfaces[i] = expandLinodeConfigInterface(ni.(map[string]interface{}))
+		}
+
+		if _, err := client.UpdateInstanceConfig(ctx, instance.ID, bootConfig, linodego.InstanceConfigUpdateOptions{
+			Interfaces: expandedInterfaces,
+		}); err != nil {
+			return diag.Errorf("failed to set boot config interfaces: %s", err)
+		}
 	}
 
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {

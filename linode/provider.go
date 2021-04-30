@@ -101,6 +101,7 @@ func Provider() *schema.Provider {
 			"linode_sshkey":                 dataSourceLinodeSSHKey(),
 			"linode_stackscript":            dataSourceLinodeStackscript(),
 			"linode_user":                   dataSourceLinodeUser(),
+			"linode_vlans":                  dataSourceLinodeVLANs(),
 			"linode_volume":                 dataSourceLinodeVolume(),
 		},
 
@@ -123,7 +124,6 @@ func Provider() *schema.Provider {
 			"linode_stackscript":           resourceLinodeStackscript(),
 			"linode_token":                 resourceLinodeToken(),
 			"linode_user":                  resourceLinodeUser(),
-			"linode_vlan":                  resourceLinodeVLAN(),
 			"linode_volume":                resourceLinodeVolume(),
 		},
 	}
