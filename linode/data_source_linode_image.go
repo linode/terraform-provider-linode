@@ -53,6 +53,11 @@ func dataSourceLinodeImage() *schema.Resource {
 				Description: "The minimum size this Image needs to deploy. Size is in MB.",
 				Computed:    true,
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Description: "The current status of this Image.",
+				Computed:    true,
+			},
 			"type": {
 				Type: schema.TypeString,
 				Description: "How the Image was created. 'Manual' Images can be created at any time. 'Automatic' " +
@@ -101,6 +106,7 @@ func dataSourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("deprecated", image.Deprecated)
 		d.Set("is_public", image.IsPublic)
 		d.Set("size", image.Size)
+		d.Set("status", image.Status)
 		d.Set("type", image.Type)
 		d.Set("vendor", image.Vendor)
 		return nil
