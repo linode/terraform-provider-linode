@@ -197,6 +197,38 @@ func testAccCheckLinodeDomainDestroy(s *terraform.State) error {
 	return nil
 }
 
+func TestAccLinodeDomain_updateIPs(t *testing.T) {
+	t.Parallel()
+
+	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
+	var resName = "linode_domain.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeDomainDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeDomainConfigIPs(domainName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeDomainExists,
+					resource.TestCheckResourceAttr(resName, "domain", domainName),
+					resource.TestCheckResourceAttr(resName, "master_ips.0", "12.34.56.78"),
+					resource.TestCheckResourceAttr(resName, "axfr_ips.0", "87.65.43.21"),
+				),
+			},
+			{
+				Config: testAccCheckLinodeDomainConfigIPsUpdate(domainName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeDomainExists,
+					resource.TestCheckResourceAttr(resName, "master_ips.#", "0"),
+					resource.TestCheckResourceAttr(resName, "axfr_ips.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckLinodeDomainConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "foobar" {
@@ -235,4 +267,26 @@ resource "linode_domain" "foobar" {
 	expire_sec = 2419201
 	tags = ["tf_test"]
 }`, domain)
+}
+
+func testAccCheckLinodeDomainConfigIPs(domain string) string {
+	return fmt.Sprintf(`
+resource "linode_domain" "foobar" {
+	domain = "%s"
+	type = "master"
+	soa_email = "example@%s"
+	master_ips = ["12.34.56.78"]
+	axfr_ips = ["87.65.43.21"]
+}`, domain, domain)
+}
+
+func testAccCheckLinodeDomainConfigIPsUpdate(domain string) string {
+	return fmt.Sprintf(`
+resource "linode_domain" "foobar" {
+	domain = "%s"
+	type = "master"
+	soa_email = "example@%s"
+	master_ips = []
+	axfr_ips = []
+}`, domain, domain)
 }
