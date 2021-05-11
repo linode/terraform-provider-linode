@@ -146,7 +146,7 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("description", domain.Description)
 	d.Set("master_ips", domain.MasterIPs)
 	if len(domain.AXfrIPs) > 0 {
-		d.Set("afxr_ips", domain.AXfrIPs)
+		d.Set("axfr_ips", domain.AXfrIPs)
 	}
 	d.Set("ttl_sec", domain.TTLSec)
 	d.Set("retry_sec", domain.RetrySec)
@@ -180,21 +180,21 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if v, ok := d.GetOk("master_ips"); ok {
-		var masterIPS []string
-		for _, ip := range v.([]interface{}) {
-			masterIPS = append(masterIPS, ip.(string))
-		}
+		v := v.(*schema.Set).List()
 
-		createOpts.MasterIPs = masterIPS
+		createOpts.MasterIPs = make([]string, len(v))
+		for i, ip := range v {
+			createOpts.MasterIPs[i] = ip.(string)
+		}
 	}
 
 	if v, ok := d.GetOk("axfr_ips"); ok {
-		var AXfrIPs []string
-		for _, ip := range v.([]interface{}) {
-			AXfrIPs = append(AXfrIPs, ip.(string))
-		}
+		v := v.(*schema.Set).List()
 
-		createOpts.AXfrIPs = AXfrIPs
+		createOpts.AXfrIPs = make([]string, len(v))
+		for i, ip := range v {
+			createOpts.AXfrIPs[i] = ip.(string)
+		}
 	}
 
 	domain, err := client.CreateDomain(context.Background(), createOpts)
@@ -226,22 +226,22 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 		TTLSec:      d.Get("ttl_sec").(int),
 	}
 
-	if v, ok := d.GetOk("master_ips"); ok {
-		var masterIPS []string
-		for _, ip := range v.([]interface{}) {
-			masterIPS = append(masterIPS, ip.(string))
-		}
+	if d.HasChange("master_ips") {
+		v := d.Get("master_ips").(*schema.Set).List()
 
-		updateOpts.MasterIPs = masterIPS
+		updateOpts.MasterIPs = make([]string, len(v))
+		for i, ip := range v {
+			updateOpts.MasterIPs[i] = ip.(string)
+		}
 	}
 
-	if v, ok := d.GetOk("axfr_ips"); ok {
-		var AXfrIPs []string
-		for _, ip := range v.([]interface{}) {
-			AXfrIPs = append(AXfrIPs, ip.(string))
-		}
+	if d.HasChange("axfr_ips") {
+		v := d.Get("axfr_ips").(*schema.Set).List()
 
-		updateOpts.AXfrIPs = AXfrIPs
+		updateOpts.AXfrIPs = make([]string, len(v))
+		for i, ip := range v {
+			updateOpts.AXfrIPs[i] = ip.(string)
+		}
 	}
 
 	if d.HasChange("tags") {
