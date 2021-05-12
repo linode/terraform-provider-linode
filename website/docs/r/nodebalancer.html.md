@@ -23,7 +23,6 @@ resource "linode_nodebalancer" "foobar" {
     region = "us-east"
     client_conn_throttle = 20
     tags = ["foobar"]
-
 }
 ```
 
@@ -39,8 +38,6 @@ The following arguments are supported:
 
 * `client_conn_throttle` - (Optional) Throttle connections per second (0-20). Set to 0 (default) to disable throttling.
 
-* `linode_id` - (Optional) The ID of a Linode Instance where the NodeBalancer should be attached.
-
 * `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
 ## Attributes
@@ -52,6 +49,10 @@ This resource exports the following attributes:
 * `ipv4` - The Public IPv4 Address of this NodeBalancer
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
+
+* `created` - When this NodeBalancer was created
+
+* `updated` - When this NodeBalancer was last updated.
 
 * [`transfer`](#transfer) - The network transfer stats for the current month
 
