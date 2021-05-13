@@ -8,8 +8,6 @@ description: |-
 
 # linode\_firewall
 
-~> **NOTICE:** The Firewall feature is currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/main/EARLY_ACCESS.md).
-
 Manages a Linode Firewall.
 
 ## Example Usage
