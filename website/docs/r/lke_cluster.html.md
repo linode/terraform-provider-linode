@@ -15,7 +15,7 @@ Manages an LKE cluster.
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.17"
+    k8s_version = "1.20"
     region      = "us-central"
     tags        = ["prod"]
 
