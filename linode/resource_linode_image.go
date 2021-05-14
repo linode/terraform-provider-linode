@@ -1,10 +1,16 @@
 package linode
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"io"
+	"os"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -15,10 +21,10 @@ const (
 
 func resourceLinodeImage() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeImageCreate,
-		Read:   resourceLinodeImageRead,
-		Update: resourceLinodeImageUpdate,
-		Delete: resourceLinodeImageDelete,
+		CreateContext: resourceLinodeImageCreate,
+		ReadContext:   resourceLinodeImageRead,
+		UpdateContext: resourceLinodeImageUpdate,
+		DeleteContext: resourceLinodeImageDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -32,15 +38,40 @@ func resourceLinodeImage() *schema.Resource {
 				Required:    true,
 			},
 			"disk_id": {
-				Type:        schema.TypeInt,
-				Description: "The ID of the Linode Disk that this Image will be created from.",
-				Required:    true,
-				ForceNew:    true,
+				Type:          schema.TypeInt,
+				Description:   "The ID of the Linode Disk that this Image will be created from.",
+				RequiredWith:  []string{"linode_id"},
+				ConflictsWith: []string{"file_path"},
+				Optional:      true,
+				ForceNew:      true,
 			},
 			"linode_id": {
-				Type:        schema.TypeInt,
-				Description: "The ID of the Linode that this Image will be created from.",
-				Required:    true,
+				Type:          schema.TypeInt,
+				Description:   "The ID of the Linode that this Image will be created from.",
+				RequiredWith:  []string{"disk_id"},
+				ConflictsWith: []string{"file_path"},
+				Optional:      true,
+				ForceNew:      true,
+			},
+			"file_path": {
+				Type:          schema.TypeString,
+				Description:   "The name of the file to upload to this image.",
+				ConflictsWith: []string{"linode_id", "disk_id"},
+				RequiredWith:  []string{"region"},
+				Optional:      true,
+				ForceNew:      true,
+			},
+			"region": {
+				Type:         schema.TypeString,
+				Description:  "The region to upload to.",
+				RequiredWith: []string{"file_path"},
+				Optional:     true,
+			},
+			"file_hash": {
+				Type:        schema.TypeString,
+				Description: "The MD5 hash of the image file.",
+				Computed:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"description": {
@@ -89,16 +120,21 @@ func resourceLinodeImage() *schema.Resource {
 				Description: "The upstream distribution vendor. Nil for private Images.",
 				Computed:    true,
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Description: "The current status of this Image.",
+				Computed:    true,
+			},
 		},
 	}
 }
 
-func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
-	image, err := client.GetImage(context.Background(), d.Id())
+	image, err := client.GetImage(ctx, d.Id())
 	if err != nil {
-		return fmt.Errorf("Error getting Linode image %s: %s", d.Id(), err)
+		return diag.Errorf("Error getting Linode image %s: %s", d.Id(), err)
 	}
 
 	d.Set("label", image.Label)
@@ -109,6 +145,8 @@ func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("created_by", image.CreatedBy)
 	d.Set("deprecated", image.Deprecated)
 	d.Set("is_public", image.IsPublic)
+	d.Set("status", image.Status)
+
 	if image.Created != nil {
 		d.Set("created", image.Created.Format(time.RFC3339))
 	}
@@ -119,16 +157,29 @@ func resourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	if _, ok := d.GetOk("linode_id"); ok {
+		return resourceLinodeImageCreateFromLinode(ctx, d, meta)
+	}
+
+	if _, ok := d.GetOk("file_path"); ok {
+		return resourceLinodeImageCreateFromUpload(ctx, d, meta)
+	}
+
+	return diag.Errorf("failed to create image: source or linode_id must be specified")
+}
+
+func resourceLinodeImageCreateFromLinode(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
 	diskID := d.Get("disk_id").(int)
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
+		ctx, linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
 	); err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
 	}
 
@@ -138,29 +189,69 @@ func resourceLinodeImageCreate(d *schema.ResourceData, meta interface{}) error {
 		Description: d.Get("description").(string),
 	}
 
-	image, err := client.CreateImage(context.Background(), createOpts)
+	image, err := client.CreateImage(ctx, createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Image: %s", err)
+		return diag.Errorf("Error creating a Linode Image: %s", err)
 	}
 
 	d.SetId(image.ID)
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		context.Background(), linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
+		ctx, linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
 	); err != nil {
-		return fmt.Errorf(
-			"Error waiting for Linode Instance %d Disk %d to become ready while taking an Image", linodeID, diskID)
+		return diag.Errorf(
+			"failed to wait for linode instance %d disk %d to become ready while taking an image", linodeID, diskID)
 	}
 
-	return resourceLinodeImageRead(d, meta)
+	return resourceLinodeImageRead(ctx, d, meta)
 }
 
-func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageCreateFromUpload(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
-	image, err := client.GetImage(context.Background(), d.Id())
+	region := d.Get("region").(string)
+	label := d.Get("label").(string)
+	description := d.Get("description").(string)
+
+	imageReader, err := imageFromResourceData(d)
 	if err != nil {
-		return fmt.Errorf("Error fetching data about the current Image: %s", err)
+		diag.Errorf("failed to get image source: %v", err)
+	}
+	defer imageReader.Close()
+
+	createOpts := linodego.ImageCreateUploadOptions{
+		Region:      region,
+		Label:       label,
+		Description: description,
+	}
+
+	image, uploadURL, err := client.CreateImageUpload(ctx, createOpts)
+	if err != nil {
+		return diag.Errorf("failed to create image upload %s: %v", label, err)
+	}
+
+	if err := uploadImageAndStoreHash(ctx, d, meta, uploadURL, imageReader); err != nil {
+		return diag.Errorf("failed to upload image: %v", err)
+	}
+
+	image, err = client.WaitForImageStatus(ctx, image.ID, linodego.ImageStatusAvailable,
+		int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	if err != nil {
+		return diag.Errorf("failed to wait for image to be available: %v", err)
+	}
+
+	d.SetId(image.ID)
+
+	return resourceLinodeImageRead(ctx, d, meta)
+}
+
+func resourceLinodeImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*ProviderMeta).Client
+
+	image, err := client.GetImage(ctx, d.Id())
+	if err != nil {
+		return diag.Errorf("Error fetching data about the current Image: %s", err)
 	}
 
 	updateOpts := linodego.ImageUpdateOptions{}
@@ -174,25 +265,63 @@ func resourceLinodeImageUpdate(d *schema.ResourceData, meta interface{}) error {
 		updateOpts.Description = &descString
 	}
 
-	image, err = client.UpdateImage(context.Background(), d.Id(), updateOpts)
-	if err != nil {
-		return err
+	if d.HasChanges("label", "description") {
+		image, err = client.UpdateImage(ctx, d.Id(), updateOpts)
+		if err != nil {
+			return diag.Errorf("failed to update image: %v", err)
+		}
 	}
 
 	d.Set("label", image.Label)
 	d.Set("description", image.Description)
 
-	return resourceLinodeImageRead(d, meta)
+	return resourceLinodeImageRead(ctx, d, meta)
 }
 
-func resourceLinodeImageDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeImageDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
-	err := client.DeleteImage(context.Background(), d.Id())
+	err := client.DeleteImage(ctx, d.Id())
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode Image %s: %s", d.Id(), err)
+		return diag.Errorf("Error deleting Linode Image %s: %s", d.Id(), err)
 	}
 	d.SetId("")
+	return nil
+}
+
+func imageFromResourceData(d *schema.ResourceData) (image io.ReadCloser, err error) {
+	if imageFile, ok := d.GetOk("file_path"); ok {
+		file, err := os.Open(imageFile.(string))
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file %s: %v", imageFile, err)
+		}
+
+		return file, nil
+	}
+
+	return nil, fmt.Errorf("no image source specified")
+}
+
+func uploadImageAndStoreHash(
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+	uploadURL string, image io.Reader) error {
+	client := meta.(*ProviderMeta).Client
+
+	var buf bytes.Buffer
+	tee := io.TeeReader(image, &buf)
+
+	if err := client.UploadImageToURL(ctx, uploadURL, tee); err != nil {
+		return err
+	}
+
+	hash := md5.New()
+
+	if _, err := io.Copy(hash, &buf); err != nil {
+		return err
+	}
+
+	d.Set("file_hash", hex.EncodeToString(hash.Sum(nil)))
+
 	return nil
 }
 
@@ -208,6 +337,7 @@ func flattenLinodeImage(image *linodego.Image) map[string]interface{} {
 	result["size"] = image.Size
 	result["type"] = image.Type
 	result["vendor"] = image.Vendor
+	result["status"] = image.Status
 
 	if image.Created != nil {
 		result["created"] = image.Created.Format(time.RFC3339)

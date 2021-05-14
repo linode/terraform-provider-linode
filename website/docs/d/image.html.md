@@ -44,6 +44,8 @@ The Linode Image resource exports the following attributes:
 
 * `size` - The minimum size this Image needs to deploy. Size is in MB. example: 2500
 
+* `status` - The current status of this image.
+
 * `type` - How the Image was created. Manual Images can be created at any time. image"Automatic" Images are created automatically from a deleted Linode.
 
 * `vendor` - The upstream distribution vendor. `None` for private Images.

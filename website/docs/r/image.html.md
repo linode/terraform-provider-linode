@@ -14,7 +14,7 @@ For more information, see [Linode's documentation on Images](https://www.linode.
 
 ## Example Usage
 
-The following example shows how one might use this resource to create an Image from a Linode Instance Disk and then deploy a new Linode Instance in another region using that Image.
+Creating an image from an existing Linode Instance and deploying another instance with that image:
 
 ```hcl
 resource "linode_instance" "foo" {
@@ -36,11 +36,30 @@ resource "linode_instance" "bar_based" {
 }
 ```
 
+Creating and uploading an image from a local file:
+
+```hcl
+resource "linode_image" "foobar" {
+    label = "foobar-image"
+    description = "An image uploaded from Terraform!"
+    region = "us-southeast"
+  
+    file_path = "path/to/image.img.gz"
+    file_hash = filemd5("path/to/image.img.gz")
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `label` - (Required) A short description of the Image. Labels cannot contain special characters.
+
+* `description` - (Optional) A detailed description of this Image.
+
+- - -
+
+The following arguments apply to creating an image from an existing Linode Instance:
 
 * `disk_id` - (Required) The ID of the Linode Disk that this Image will be created from.
 
@@ -48,7 +67,15 @@ The following arguments are supported:
 
 - - -
 
-* `description` - (Optional) A detailed description of this Image.
+~> **NOTICE:** Uploading images is currently in beta. Ensure `LINODE_API_VERSION` is set to `v4beta` in order to use this functionality.
+
+The following arguments apply to uploading an image:
+
+* `file_path` - (Required) The path of the image file to be uploaded.
+
+* `file_hash` - (Optional) The MD5 hash of the file to be uploaded. This is used to trigger file updates.
+
+* `region` - (Required) The region of the image.
 
 ### Timeouts
 
