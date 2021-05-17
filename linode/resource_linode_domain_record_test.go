@@ -3,7 +3,6 @@ package linode
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strconv"
 	"testing"
 
@@ -143,6 +142,7 @@ func TestAccLinodeDomainRecord_SRV(t *testing.T) {
 	domainName := acctest.RandomWithPrefix("tftest") + ".example"
 	expectedName := "_myservice._tcp"
 	expectedTarget := "mysubdomain." + domainName
+	expectedTargetExternal := "subdomain.example.com"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -150,18 +150,54 @@ func TestAccLinodeDomainRecord_SRV(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckLinodeDomainRecordConfigSRVNameSet(domainName),
-				ExpectError: regexp.MustCompile(errLinodeDomainRecordSRVNameComputed),
-			},
-			{
-				Config:      testAccCheckLinodeDomainRecordConfigSRVInvalidTarget(domainName),
-				ExpectError: regexp.MustCompile("Target for SRV records must be the associated domain or a related FQDN."),
-			},
-			{
-				Config: testAccCheckLinodeDomainRecordConfigSRVCorrected(domainName),
+				Config: testAccCheckLinodeDomainRecordConfigSRV(domainName, expectedTarget),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
 					resource.TestCheckResourceAttr(resName, "target", expectedTarget),
+					resource.TestCheckResourceAttr(resName, "record_type", "SRV"),
+					resource.TestCheckResourceAttr(resName, "protocol", "tcp"),
+				),
+			},
+			{
+				Config: testAccCheckLinodeDomainRecordConfigSRV(domainName, expectedTargetExternal),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", expectedName),
+					resource.TestCheckResourceAttr(resName, "target", expectedTargetExternal),
+					resource.TestCheckResourceAttr(resName, "record_type", "SRV"),
+					resource.TestCheckResourceAttr(resName, "protocol", "tcp"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLinodeDomainRecord_SRVNoFQDN(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_domain_record.foobar"
+	domainName := acctest.RandomWithPrefix("tftest") + ".example"
+	expectedName := "_myservice._tcp"
+	expectedTarget := "mysubdomain." + domainName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeDomainRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckLinodeDomainRecordConfigSRV(domainName, "mysubdomain"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", expectedName),
+					resource.TestCheckResourceAttr(resName, "target", expectedTarget),
+					resource.TestCheckResourceAttr(resName, "record_type", "SRV"),
+					resource.TestCheckResourceAttr(resName, "protocol", "tcp"),
+				),
+			},
+			{
+				Config: testAccCheckLinodeDomainRecordConfigSRV(domainName, "mysubdomainbutnew"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", expectedName),
+					resource.TestCheckResourceAttr(resName, "target", "mysubdomainbutnew."+domainName),
 					resource.TestCheckResourceAttr(resName, "record_type", "SRV"),
 					resource.TestCheckResourceAttr(resName, "protocol", "tcp"),
 				),
@@ -345,45 +381,16 @@ resource "linode_domain_record" "foobar" {
 }`, domainName)
 }
 
-func testAccCheckLinodeDomainRecordConfigSRVNameSet(domainName string) string {
-	return testAccCheckLinodeDomainConfigBasic(domainName) + fmt.Sprintf(`
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	name = "named-%[1]s"
-	record_type = "SRV"
-	target      = "mysubdomain"
-	service     = "myservice"
-	protocol    = "tcp"
-	port        = 1001
-	priority    = 10
-	weight      = 0
-}`, domainName)
-}
-
-func testAccCheckLinodeDomainRecordConfigSRVInvalidTarget(domainName string) string {
-	return testAccCheckLinodeDomainConfigBasic(domainName) + `
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	record_type = "SRV"
-	target      = "mysubdomain"
-	service     = "myservice"
-	protocol    = "tcp"
-	port        = 1001
-	priority    = 10
-	weight      = 0
-}`
-}
-
-func testAccCheckLinodeDomainRecordConfigSRVCorrected(domainName string) string {
+func testAccCheckLinodeDomainRecordConfigSRV(domainName string, target string) string {
 	return testAccCheckLinodeDomainConfigBasic(domainName) + fmt.Sprintf(`
 resource "linode_domain_record" "foobar" {
 	domain_id = "${linode_domain.foobar.id}"
 	record_type = "SRV"
-	target      = "mysubdomain.%s"
+	target      = "%s"
 	service     = "myservice"
 	protocol    = "tcp"
 	port        = 1001
 	priority    = 10
 	weight      = 0
-}`, domainName)
+}`, target)
 }
