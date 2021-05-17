@@ -18,7 +18,7 @@ You will need to export your Linode Personal Access Token as an environment vari
 
 ## Run this example
 
-From the `examples/` directory,
+From the `examples/nginx` directory,
 
     export TF_VAR_ssh_key="~/.ssh/id_rsa.pub"
     terraform init
