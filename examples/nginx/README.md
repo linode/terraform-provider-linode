@@ -38,7 +38,7 @@ You can also increase the `nginx_count`.
 
 ## Destroy the Resources
 
-Clean up by removing all of the resources that were created in one command:
+Clean up by removing all the resources that were created in one command:
 
 ```sh
 terraform destroy

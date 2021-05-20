@@ -1,12 +1,12 @@
-# Linode MySQL + Adminer Example
+# Linode Object Storage Static Site Example
 
-This example launches two Alpine 3.13 instances connected to a VLAN and installs a Docker daemon onto both. One instance runs a publicly accessible Adminer instance, and the other runs a MySQL server only accessible from within the VLAN.
-
-These instances are both placed behind a Firewall, which only allows inbound traffic on port 80 (HTTP).
+This example creates a static website hosted on Linode Object Storage.
 
 To run this example, first configure your Linode provider as described in <https://www.terraform.io/docs/providers/linode/index.html>
 
 ## Prerequisites
+
+In order to run this example, `s3cmd` must be installed locally.
 
 Personal Access Tokens can be generated at <https://cloud.linode.com/profile/tokens> by clicking "Add a Personal Access Token".
 
@@ -16,14 +16,13 @@ You will need to export your Linode Personal Access Token as an environment vari
 
 ## Run this example
 
-From the `examples/mysql_adminer` directory,
+From the `examples/obj_static_site` directory,
 
-    export TF_VAR_public_ssh_key="~/.ssh/id_rsa.pub"
-    export TF_VAR_private_ssh_key="~/.ssh/id_rsa"
+    export TF_VAR_bucket_name=my-terraform-site
     terraform init
     terraform apply
 
-The full set of provisioning, including 2 Linodes, 1 VLAN, and 1 Firewall, should be completed in under 5 minutes.
+The full set of provisioning, including 1 Object Storage Bucket and 1 Object Storage Access Key, should be completed in under one minute.
 
 ## Destroy the Resources
 
