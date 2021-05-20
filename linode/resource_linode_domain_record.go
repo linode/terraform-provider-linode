@@ -2,7 +2,6 @@ package linode
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -11,10 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-)
-
-const (
-	errLinodeDomainRecordSRVNameComputed = "name is computed for SRV records"
 )
 
 func resourceLinodeDomainRecord() *schema.Resource {
@@ -66,7 +61,8 @@ func resourceLinodeDomainRecord() *schema.Resource {
 				Type: schema.TypeString,
 				Description: "The target for this Record. This field's actual usage depends on the type of record " +
 					"this represents. For A and AAAA records, this is the address the named Domain should resolve to.",
-				Required: true,
+				Required:         true,
+				DiffSuppressFunc: domainRecordTargetSuppressor,
 			},
 			"priority": {
 				Type:         schema.TypeInt,
@@ -197,36 +193,10 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 	}
 }
 
-func validateDomainRecord(c *linodego.Client, rec *linodego.DomainRecord, domainID int) error {
-	if rec.Type == linodego.RecordTypeSRV {
-		return validateSRVDomainRecord(c, rec, domainID)
-	}
-	return nil
-}
-
-func validateSRVDomainRecord(c *linodego.Client, rec *linodego.DomainRecord, domainID int) error {
-	domain, err := c.GetDomain(context.Background(), domainID)
-	if err != nil {
-		return err
-	}
-
-	if rec.Name != "" {
-		return errors.New(errLinodeDomainRecordSRVNameComputed)
-	}
-	if rec.Target != domain.Domain && !strings.HasSuffix(rec.Target, "."+domain.Domain) {
-		return fmt.Errorf(`Target for SRV records must be the associated domain or a related FQDN. Did you mean "%s.%s"?`,
-			rec.Target, domain.Domain)
-	}
-	return nil
-}
-
 func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
-	if err := validateDomainRecord(&client, rec, domainID); err != nil {
-		return err
-	}
 
 	createOpts := linodego.DomainRecordCreateOptions{
 		Type:     rec.Type,
@@ -255,9 +225,6 @@ func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) 
 	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
-	if err := validateDomainRecord(&client, rec, domainID); err != nil {
-		return err
-	}
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -298,4 +265,9 @@ func resourceLinodeDomainRecordDelete(d *schema.ResourceData, meta interface{}) 
 	d.SetId("")
 
 	return nil
+}
+
+func domainRecordTargetSuppressor(k, provisioned, declared string, d *schema.ResourceData) bool {
+	return len(strings.Split(declared, ".")) == 1 &&
+		strings.Contains(provisioned, declared)
 }
