@@ -120,7 +120,7 @@ The following arguments are supported:
 
 * `watchdog_enabled` - (Optional) The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.
 
-* [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation.
+* [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
 
 ### Simplified Resource Arguments
 

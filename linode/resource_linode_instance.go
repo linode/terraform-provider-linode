@@ -390,8 +390,9 @@ func resourceLinodeInstance() *schema.Resource {
 				},
 			},
 			"interface": {
-				Type:          schema.TypeList,
-				Description:   "An array of Network Interfaces for this Linode to be created with.",
+				Type: schema.TypeList,
+				Description: "An array of Network Interfaces for this Linode to be created with. " +
+					"If an explicit config or disk is defined, interfaces must be declared in the config block.",
 				Optional:      true,
 				ConflictsWith: []string{"disk", "config"},
 				Elem:          resourceLinodeInstanceConfigInterface(),
