@@ -4,8 +4,8 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@f1d3225b5376a0791fdee5a0e8eac5289355e43a # pin@v2
+      - uses: actions/setup-go@1386c88e55e47c8512a040a0d584900fb5740f44 # pin@v2
         with:
           go-version: '1.16'
       - run: go version
