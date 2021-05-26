@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    linode = {
+      source = "linode/linode"
+    }
+  }
+}
+
 provider "linode" {
   token = var.linode_token
 }
@@ -258,6 +266,6 @@ data "linode_networking_ip" "simple_v4" {
 }
 
 data "linode_networking_ip" "simple_v6" {
-  address = replace(linode_instance.simple.ipv6, "/64", "")
+  address = replace(linode_instance.simple.ipv6, "/128", "")
 }
 

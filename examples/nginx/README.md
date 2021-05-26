@@ -18,7 +18,7 @@ You will need to export your Linode Personal Access Token as an environment vari
 
 ## Run this example
 
-From the `examples/` directory,
+From the `examples/nginx` directory,
 
     export TF_VAR_ssh_key="~/.ssh/id_rsa.pub"
     terraform init
@@ -38,7 +38,7 @@ You can also increase the `nginx_count`.
 
 ## Destroy the Resources
 
-Clean up by removing all of the resources that were created in one command:
+Clean up by removing all the resources that were created in one command:
 
 ```sh
 terraform destroy
