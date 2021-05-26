@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@f1d3225b5376a0791fdee5a0e8eac5289355e43a # pin@v2
       - run: make testacc
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
