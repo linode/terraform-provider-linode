@@ -36,15 +36,15 @@ In addition to all arguments above, the following attributes are exported:
 
 * [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
 
-* `inbound_policy` - The default behavior for inbound traffic.
+* `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`)
 
 * [`outbound`](#inbound-and-outbound) - A firewall rule that specifies what outbound network traffic is allowed.
 
-* `outbound_policy` - The default behavior for outbound traffic. This setting can be overridden by updating the outbound.action property for an individual Firewall Rule.
+* `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
 
 * `linodes` - The IDs of Linodes to apply this firewall to.
 
-* `status` - The status of the firewall.
+* `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`)
 
 * [`devices`](#devices) - The devices governed by the Firewall.
 
@@ -56,7 +56,7 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 * `action` - Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.
 
-* `protocol` - The network protocol this rule controls.
+* `protocol` - The network protocol this rule controls. (`TCP`, `UDP`, `ICMP`)
 
 * `ports` - A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
 

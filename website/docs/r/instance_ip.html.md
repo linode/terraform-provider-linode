@@ -52,4 +52,4 @@ In addition to all arguments above, the following attributes are exported:
 
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
-* `type` - The type of IP address.
+* `type` - The type of IP address. (`ipv4`, `ipv6`, `ipv6/pool`, `ipv6/range`)

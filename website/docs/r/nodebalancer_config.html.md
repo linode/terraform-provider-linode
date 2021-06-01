@@ -43,21 +43,21 @@ The following arguments are supported:
 
 * `nodebalancer_id` - (Required) The ID of the NodeBalancer to access.
 
-* `region` - (Required) The region where this nodebalancer_config will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc.  *Changing `region` forces the creation of a new Linode NodeBalancer Config.*.
+* `region` - (Required) The region where this nodebalancer_config will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). *Changing `region` forces the creation of a new Linode NodeBalancer Config.*.
 
 - - -
 
-* `protocol` - (Optional) The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key. (Defaults to "http")
+* `protocol` - (Optional) The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key. (`http`, `https`, `tcp`) (Defaults to `http`)
 
-* `proxy_protocol` - (Optional) The version of ProxyProtocol to use for the underlying NodeBalancer. This requires protocol to be `tcp`. Valid values are `none`, `v1`, and `v2`. (Defaults to `none`)
+* `proxy_protocol` - (Optional) The version of ProxyProtocol to use for the underlying NodeBalancer. This requires protocol to be `tcp`. (`none`, `v1`, `v2`) (Defaults to `none`)
 
 * `port` - (Optional) The TCP port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example). While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443. (Defaults to 80)
 
-* `algorithm` - (Optional) What algorithm this NodeBalancer should use for routing traffic to backends: roundrobin, leastconn, source
+* `algorithm` - (Optional) What algorithm this NodeBalancer should use for routing traffic to backends. (`roundrobin`, `leastconn`, `source`)
 
-* `stickiness` - (Optional) Controls how session stickiness is handled on this port: 'none', 'table', 'http_cookie'
+* `stickiness` - (Optional) Controls how session stickiness is handled on this port. (`none`, `table`, `http_cookie`)
 
-* `check` - (Optional) The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. If none no check is performed. connection requires only a connection to the backend to succeed. http and http_body rely on the backend serving HTTP, and that the response returned matches what is expected.
+* `check` - (Optional) The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. If none no check is performed. connection requires only a connection to the backend to succeed. http and http_body rely on the backend serving HTTP, and that the response returned matches what is expected. (`none`, `connection`, `http`, `http_body`)
 
 * `check_interval` - (Optional) How often, in seconds, to check that backends are up and serving requests.
 

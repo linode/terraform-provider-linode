@@ -44,7 +44,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the Node Pool.
 
-  * `type` - The linode type for all of the nodes in the Node Pool.
+  * `type` - The linode type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
   * `count` - The number of nodes in the Node Pool.
 
@@ -54,4 +54,4 @@ In addition to all arguments above, the following attributes are exported:
 
     * `instance_id` - The ID of the underlying Linode instance.
 
-    * `status` - The status of the node.
+    * `status` - The status of the node. (`ready`, `not_ready`)
