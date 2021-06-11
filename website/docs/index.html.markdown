@@ -29,7 +29,7 @@ terraform {
 
 # Configure the Linode Provider
 provider "linode" {
-  token = "$LINODE_TOKEN"
+  # token = "..."
 }
 
 # Create a Linode
