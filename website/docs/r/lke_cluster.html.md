@@ -44,7 +44,7 @@ The following arguments are supported:
 
 The following arguments are supported in the pool specification block:
 
-* `type` - (Required) A Linode Type for all of the nodes in the Node Pool.
+* `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
 * `count` - (Required) The number of nodes in the Node Pool.
 
@@ -74,7 +74,7 @@ The following attributes are available on nodes:
 
 * `instance_id` - The ID of the underlying Linode instance.
 
-* `status` - The status of the node.
+* `status` - The status of the node. (`ready`, `not_ready`)
 
 ## Import
 

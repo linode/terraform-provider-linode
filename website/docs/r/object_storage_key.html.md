@@ -39,7 +39,7 @@ The following arguments are supported in the bucket_access block:
 
 * `cluster` - The Object Storage cluster where a bucket to which the key is granting access is hosted.
 
-* `permissions` - This Limited Access Key’s permissions for the selected bucket. Can be one of `"read_write"` or `"read_only"`. *Changing `permissions` forces the creation of a new Object Storage Key.*.
+* `permissions` - This Limited Access Key’s permissions for the selected bucket. *Changing `permissions` forces the creation of a new Object Storage Key.* (`read_write`, `read_only`)
 
 ## Attributes
 

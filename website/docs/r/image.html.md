@@ -75,7 +75,7 @@ The following arguments apply to uploading an image:
 
 * `file_hash` - (Optional) The MD5 hash of the file to be uploaded. This is used to trigger file updates.
 
-* `region` - (Required) The region of the image.
+* `region` - (Required) The region of the image. See all regions [here](https://api.linode.com/v4/regions).
 
 ### Timeouts
 

@@ -31,19 +31,19 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `region` - The region where this nodebalancer_config will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc
+* `region` - The region where this nodebalancer_config will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions).
   
-* `protocol` - The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key. (Defaults to "http")
+* `protocol` - The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key. (`http`, `https`, `tcp`) (Defaults to `http`)
 
-* `proxy_protocol` - The version of ProxyProtocol to use for the underlying NodeBalancer. This requires protocol to be `tcp`. Valid values are `none`, `v1`, and `v2`. (Defaults to `none`)
+* `proxy_protocol` - The version of ProxyProtocol to use for the underlying NodeBalancer. This requires protocol to be `tcp`. (`none`, `v1`, and `v2`) (Defaults to `none`)
 
 * `port` - The TCP port this Config is for.
   
-* `algorithm` - What algorithm this NodeBalancer should use for routing traffic to backends: roundrobin, leastconn, source
+* `algorithm` - What algorithm this NodeBalancer should use for routing traffic to backends (`roundrobin`, `leastconn`, `source`)
 
-* `stickiness` - Controls how session stickiness is handled on this port: 'none', 'table', 'http_cookie'
+* `stickiness` - Controls how session stickiness is handled on this port. (`none`, `table`, `http_cookie`)
 
-* `check` - The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. If none no check is performed. connection requires only a connection to the backend to succeed. http and http_body rely on the backend serving HTTP, and that the response returned matches what is expected.
+* `check` - The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. If none no check is performed. connection requires only a connection to the backend to succeed. http and http_body rely on the backend serving HTTP, and that the response returned matches what is expected. (`none`, `connection`, `http`, `http_body`)
 
 * `check_interval` - How often, in seconds, to check that backends are up and serving requests.
 
@@ -55,7 +55,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `check_passive` - If true, any response from this backend with a 5xx status code will be enough for it to be considered unhealthy and taken out of rotation.
 
-* `cipher_suite` - What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary.
+* `cipher_suite` - What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary. (`recommended`, `legacy`)
 
 * `ssl_commonname` - The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 

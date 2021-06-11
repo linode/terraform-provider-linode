@@ -42,9 +42,9 @@ The following attributes are available for each Backup:
 
 * `label` - A label for Backups that are of type snapshot.
 
-* `status` - The current state of a specific Backup.
+* `status` - The current state of a specific Backup. (`paused`, `pending`, `running`, `needsPostProcessing`, `successful`, `failed`, `userAborted`)
 
-* `type` - This indicates whether the Backup is an automatic Backup or manual snapshot taken by the User at a specific point in time.
+* `type` - This indicates whether the Backup is an automatic Backup or manual snapshot taken by the User at a specific point in time. (`auto`, `snapshot`)
 
 * `created` - The date the Backup was taken.
 

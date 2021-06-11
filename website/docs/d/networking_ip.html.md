@@ -46,4 +46,4 @@ The Linode Network IP Address resource exports the following attributes:
 
 * `linode_id` - The ID of the Linode this address currently belongs to.
 
-* `region` - The Region this IP address resides in.
+* `region` - The Region this IP address resides in. See all regions [here](https://api.linode.com/v4/regions).
