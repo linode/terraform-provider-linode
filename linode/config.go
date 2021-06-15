@@ -30,6 +30,7 @@ type Config struct {
 	terraformVersion string
 
 	SkipInstanceReadyPoll        bool
+	SkipInstanceDeletePoll       bool
 	MinRetryDelayMilliseconds    int
 	MaxRetryDelayMilliseconds    int
 	EventPollMilliseconds        int
