@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@f1d3225b5376a0791fdee5a0e8eac5289355e43a # pin@v2
+      - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f # pin@v2
       - uses: micnncim/action-label-syncer@3abd5ab72fda571e69fffd97bd4e0033dd5f495c # pin@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

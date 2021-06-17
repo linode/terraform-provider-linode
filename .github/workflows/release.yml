@@ -13,17 +13,17 @@
 name: release
 on:
   release:
-    types: [published]
+    types: [ published ]
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@f1d3225b5376a0791fdee5a0e8eac5289355e43a # pin@v2
+        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f # pin@v2
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
-        uses: actions/setup-go@1386c88e55e47c8512a040a0d584900fb5740f44 # pin@v2
+        uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8 # pin@v2
         with:
           go-version: 1.16
       - name: Import GPG key
@@ -33,7 +33,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@5e15885530fb01d81d1f24e8a6f54ebbd0fed7eb # pin@v2
+        uses: goreleaser/goreleaser-action@ac067437f516133269923265894e77920c3dce18 # pin@v2
         with:
           version: latest
           args: release --rm-dist

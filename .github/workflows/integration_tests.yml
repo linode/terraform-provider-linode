@@ -1,6 +1,6 @@
 name: Integration tests
 on:
-  workflow_dispatch:
+  workflow_dispatch: null
   push:
     branches:
       - main
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
-        uses: actions/checkout@f1d3225b5376a0791fdee5a0e8eac5289355e43a # pin@v2
+        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f # pin@v2
       - run: make testacc
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
