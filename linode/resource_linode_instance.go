@@ -1265,9 +1265,14 @@ func resourceLinodeInstanceDelete(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.Errorf("Error deleting Linode instance %d: %s", id, err)
 	}
-	// Wait for full deletion to assure volumes are detached
-	client.WaitForEventFinished(ctx, int(id), linodego.EntityLinode, linodego.ActionLinodeDelete,
-		minDelete, getDeadlineSeconds(ctx, d))
+
+	if !meta.(*ProviderMeta).Config.SkipInstanceDeletePoll {
+		// Wait for full deletion to assure volumes are detached
+		if _, err = client.WaitForEventFinished(ctx, int(id), linodego.EntityLinode, linodego.ActionLinodeDelete,
+			minDelete, getDeadlineSeconds(ctx, d)); err != nil {
+			return diag.Errorf("failed to wait for instance %d to be deleted: %s", id, err)
+		}
+	}
 
 	d.SetId("")
 	return nil

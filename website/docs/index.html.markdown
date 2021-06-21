@@ -70,6 +70,8 @@ The following keys can be used to configure the provider.
 
 * `skip_instance_ready_poll` - (Optional) Skip waiting for a linode_instance resource to be running.
 
+* `skip_instance_delete_poll` - (Optional) Skip waiting for a linode_instance resource to finish deleting.
+
 * `min_retry_delay_ms` - (Optional) Minimum delay in milliseconds before retrying a request.
 
 * `max_retry_delay_ms` - (Optional) Maximum delay in milliseconds before retrying a request.

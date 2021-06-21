@@ -46,6 +46,13 @@ func Provider() *schema.Provider {
 				Description: "Skip waiting for a linode_instance resource to be running.",
 			},
 
+			"skip_instance_delete_poll": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Skip waiting for a linode_instance resource to finish deleting.",
+			},
+
 			"min_retry_delay_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -152,7 +159,8 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		APIVersion:  d.Get("api_version").(string),
 		UAPrefix:    d.Get("ua_prefix").(string),
 
-		SkipInstanceReadyPoll: d.Get("skip_instance_ready_poll").(bool),
+		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
+		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
 
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
