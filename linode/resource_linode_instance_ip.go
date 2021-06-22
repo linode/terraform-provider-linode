@@ -77,7 +77,7 @@ func resourceLinodeInstanceIPRead(ctx context.Context, d *schema.ResourceData, m
 	linodeID := d.Get("linode_id").(int)
 	ip, err := client.GetInstanceIPAddress(ctx, linodeID, address)
 	if err != nil {
-		diag.Errorf("failed to get instance (%d) ip: %s", linodeID, err)
+		return diag.Errorf("failed to get instance (%d) ip: %s", linodeID, err)
 	}
 
 	d.Set("address", ip.Address)
@@ -97,7 +97,7 @@ func resourceLinodeInstanceIPCreate(ctx context.Context, d *schema.ResourceData,
 	private := d.Get("public").(bool)
 	ip, err := client.AddInstanceIPAddress(ctx, linodeID, private)
 	if err != nil {
-		diag.Errorf("failed to create instance (%d) ip: %s", linodeID, err)
+		return diag.Errorf("failed to create instance (%d) ip: %s", linodeID, err)
 	}
 
 	rdns := d.Get("rdns").(string)
