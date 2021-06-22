@@ -132,17 +132,17 @@ func datasourceLinodeFirewallRead(ctx context.Context, d *schema.ResourceData, m
 
 	firewall, err := client.GetFirewall(context.Background(), id)
 	if err != nil {
-		diag.Errorf("failed to get firewall %d: %s", id, err)
+		return diag.Errorf("failed to get firewall %d: %s", id, err)
 	}
 
 	rules, err := client.GetFirewallRules(context.Background(), id)
 	if err != nil {
-		diag.Errorf("failed to get firewall rules %d: %s", id, err)
+		return diag.Errorf("failed to get firewall rules %d: %s", id, err)
 	}
 
 	devices, err := client.ListFirewallDevices(context.Background(), id, nil)
 	if err != nil {
-		diag.Errorf("failed to get firewall devices %d: %s", id, err)
+		return diag.Errorf("failed to get firewall devices %d: %s", id, err)
 	}
 
 	d.SetId(strconv.Itoa(id))
