@@ -3,6 +3,9 @@ package linode
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/linodego"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -330,6 +333,125 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccLinodeFirewall_externalDelete(t *testing.T) {
+	t.Parallel()
+
+	var firewall linodego.Firewall
+	name := acctest.RandomWithPrefix("tf_test")
+	devicePrefix := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeFirewallExists(testFirewallResName, &firewall),
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.action", "ACCEPT"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "DROP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.action", "ACCEPT"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+				),
+			},
+			{
+				PreConfig: func() {
+					// Delete the Firewall external from Terraform
+					client := testAccProvider.Meta().(*ProviderMeta).Client
+
+					if err := client.DeleteFirewall(context.Background(), firewall.ID); err != nil {
+						t.Fatalf("failed to delete firewall: %s", err)
+					}
+				},
+				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
+					providerKeySkipInstanceReadyPoll: true,
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckLinodeFirewallExists(testFirewallResName, &firewall),
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.action", "ACCEPT"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.0", "::/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "DROP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.action", "ACCEPT"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckLinodeFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testAccProvider.Meta().(*ProviderMeta).Client
+
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+
+		found, err := client.GetFirewall(context.Background(), id)
+		if err != nil {
+			return fmt.Errorf("Error retrieving state of Firewall %s: %s", rs.Primary.Attributes["label"], err)
+		}
+
+		*firewall = *found
+
+		return nil
+	}
 }
 
 func testAccCheckLinodeFirewallInstance(prefix, identifier string) string {

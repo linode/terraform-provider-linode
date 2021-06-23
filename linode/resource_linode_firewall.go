@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -177,6 +178,11 @@ func resourceLinodeFirewallRead(d *schema.ResourceData, meta interface{}) error 
 
 	firewall, err := client.GetFirewall(context.Background(), id)
 	if err != nil {
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code == 404 {
+			log.Printf("[WARN] removing Linode Firewall ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("failed to get firewall %d: %s", id, err)
 	}
 

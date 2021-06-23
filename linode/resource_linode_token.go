@@ -93,6 +93,11 @@ func resourceLinodeTokenRead(d *schema.ResourceData, meta interface{}) error {
 
 	token, err := client.GetToken(context.Background(), int(id))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode Token ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding the specified Linode Token: %s", err)
 	}
 

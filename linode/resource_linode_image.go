@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"time"
 
@@ -134,6 +135,11 @@ func resourceLinodeImageRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	image, err := client.GetImage(ctx, d.Id())
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode Image ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return diag.Errorf("Error getting Linode image %s: %s", d.Id(), err)
 	}
 

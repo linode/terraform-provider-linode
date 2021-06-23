@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -108,6 +109,11 @@ func resourceLinodeObjectStorageKeyRead(d *schema.ResourceData, meta interface{}
 
 	objectStorageKey, err := client.GetObjectStorageKey(context.Background(), int(id))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Object Storage Key %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding the specified Linode Object Storage Key: %s", err)
 	}
 

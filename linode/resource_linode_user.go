@@ -7,6 +7,7 @@ import (
 
 	"context"
 	"fmt"
+	"log"
 )
 
 var resourceLinodeUserGrantFields = []string{"global_grants", "domain_grant", "image_grant", "linode_grant",
@@ -191,6 +192,11 @@ func resourceLinodeUserRead(ctx context.Context, d *schema.ResourceData, meta in
 	username := d.Get("username").(string)
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode User %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return diag.Errorf("failed to get user (%s): %s", username, err)
 	}
 

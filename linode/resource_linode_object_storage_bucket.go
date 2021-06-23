@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -181,6 +182,11 @@ func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interfac
 
 	bucket, err := client.GetObjectStorageBucket(context.Background(), cluster, label)
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Object Storage Bucket %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
 	}
 
