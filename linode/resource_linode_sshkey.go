@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -49,6 +50,11 @@ func resourceLinodeSSHKeyRead(d *schema.ResourceData, meta interface{}) error {
 
 	sshkey, err := client.GetSSHKey(context.Background(), int(id))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing Linode SSH Key ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("Error finding the specified Linode SSH Key: %s", err)
 	}
 

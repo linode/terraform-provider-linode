@@ -142,6 +142,11 @@ func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, m
 
 	cluster, err := client.GetLKECluster(context.Background(), id)
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
 		return diag.Errorf("failed to get LKE cluster %d: %s", id, err)
 	}
 
