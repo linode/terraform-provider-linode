@@ -83,28 +83,6 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_dontPoll(t *testing.T) {
-	t.Parallel()
-
-	resName := "linode_instance.foobar"
-	instanceName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckLinodeInstanceDontPoll(instanceName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "status", "provisioning"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccLinodeInstance_watchdogDisabled(t *testing.T) {
 	t.Parallel()
 
@@ -1875,15 +1853,6 @@ resource "linode_instance" "foobar" {
 	swap_size = 256
 	authorized_keys = ["%s"]
 }`, instance, pubkey)
-}
-
-func testAccCheckLinodeInstanceDontPoll(instance string) string {
-	//lintignore:AT004
-	return `
-provider "linode" {
-	skip_instance_ready_poll = true
-}
-` + testAccCheckLinodeInstanceBasic(instance, publicKeyMaterial)
 }
 
 func testAccCheckLinodeInstanceWithBootImage(identifier, instance string) string {
