@@ -263,8 +263,8 @@ github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LE
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
 github.com/linode/linodego v0.20.1/go.mod h1:XOWXRHjqeU2uPS84tKLgfWIfTlv3TYzCS0io4GOQzEI=
-github.com/linode/linodego v0.28.5 h1:JaCziTxHJ7a01MYyjHqskRc8zXQxXOddwrDeoQ2rBnw=
-github.com/linode/linodego v0.28.5/go.mod h1:BR0gVkCJffEdIGJSl6bHR80Ty+Uvg/2jkjmrWaFectM=
+github.com/linode/linodego v0.29.0 h1:/vOJpLleGUUmjbGQOGt9ayx9u7FMTp5yB+mR0lTTIl8=
+github.com/linode/linodego v0.29.0/go.mod h1:BR0gVkCJffEdIGJSl6bHR80Ty+Uvg/2jkjmrWaFectM=
 github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947 h1:e+tpC7AIiEgfYGEDq9Rjtdybq+V10S6OXzWjeGV/CEk=
 github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947/go.mod h1:MWI0tFyaJqRpirMv0VO7CGYT4V3IhHvml2rs/DlRQmY=
 github.com/mailru/easyjson v0.0.0-20160728113105-d5b7844b561a/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
