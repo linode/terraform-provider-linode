@@ -64,8 +64,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/bflad/gopaniccheck v0.1.0 h1:tJftp+bv42ouERmUMWLoUn/5bi/iQZjHPznM00cP/bU=
 github.com/bflad/gopaniccheck v0.1.0/go.mod h1:ZCj2vSr7EqVeDaqVsWN4n2MwdROx1YL+LFo47TSWtsA=
-github.com/bflad/tfproviderlint v0.26.0 h1:Xd+hbVlSQhKlXifpqmHPvlcnOK1lRS4IZf+cXBAUpCs=
-github.com/bflad/tfproviderlint v0.26.0/go.mod h1:7Z9Pyl1Z1UWJcPBuyjN89D2NaJGpjReQb5NoaaQCthQ=
+github.com/bflad/tfproviderlint v0.27.0 h1:KXF+dYaWJ/OSVyWIrk2NIYgQBMDDSOC4VQB/P+P5nhI=
+github.com/bflad/tfproviderlint v0.27.0/go.mod h1:7Z9Pyl1Z1UWJcPBuyjN89D2NaJGpjReQb5NoaaQCthQ=
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d/go.mod h1:6QX/PXZ00z/TKoufEY6K/a0k6AhaJrQKdFe6OfVXsa4=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bombsimon/wsl/v2 v2.0.0 h1:+Vjcn+/T5lSrO8Bjzhk4v14Un/2UyCA1E3V5j9nwTkQ=
