@@ -135,6 +135,12 @@ resource "linode_instance" "foobar-2" {
 }
 `, instance, groupName, instance, groupName, instance, groupName) + `
 data "linode_instances" "foobar" {
+	depends_on = [
+		linode_instance.foobar-0,
+		linode_instance.foobar-1,
+		linode_instance.foobar-2
+	]
+
 	filter {
 		name = "group"
 		values = [linode_instance.foobar-0.group]
