@@ -313,7 +313,7 @@ func TestAccLinodeLKECluster_poolUpdates(t *testing.T) {
 				Config: testAccCheckLinodeLKEClusterComplexPools(newClusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testLKEClusterResName, "label", newClusterName),
-					resource.TestCheckResourceAttr(testLKEClusterResName, "pool.0.count", "2"),
+					resource.TestCheckResourceAttr(testLKEClusterResName, "pool.#", "5"),
 					resource.TestCheckResourceAttr(testLKEClusterResName, "pool.1.count", "1"),
 					resource.TestCheckResourceAttr(testLKEClusterResName, "pool.2.count", "2"),
 					resource.TestCheckResourceAttr(testLKEClusterResName, "pool.3.count", "2"),
@@ -452,6 +452,11 @@ resource "linode_lke_cluster" "test" {
 
 	pool {
 		type = "g6-standard-1"
+		count = 2
+	}
+
+	pool {
+		type = "g6-standard-4"
 		count = 2
 	}
 
