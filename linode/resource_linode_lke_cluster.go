@@ -140,6 +140,11 @@ func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error parsing Linode LKE Cluster ID: %s", err)
 	}
 
+	schemaPools, ok := d.Get("pool").([]interface{})
+	if !ok {
+		return diag.Errorf("failed to parse linode lke cluster pools: %d", id)
+	}
+
 	cluster, err := client.GetLKECluster(context.Background(), id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -171,8 +176,9 @@ func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("tags", cluster.Tags)
 	d.Set("status", cluster.Status)
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
-	d.Set("pool", flattenLinodeLKEClusterPools(pools))
 	d.Set("api_endpoints", flattenLinodeLKEClusterAPIEndpoints(endpoints))
+	d.Set("pool", flattenLinodeLKEClusterPools(matchPoolsWithSchema(pools, schemaPools)))
+
 	return nil
 }
 
@@ -603,4 +609,35 @@ func flattenLinodeLKEClusterAPIEndpoints(apiEndpoints []linodego.LKEClusterAPIEn
 		flattened[i] = endpoint.Endpoint
 	}
 	return flattened
+}
+
+// This cannot currently be handled efficiently by a DiffSuppressFunc
+// See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
+func matchPoolsWithSchema(pools []linodego.LKEClusterPool, schemaPools []interface{}) []linodego.LKEClusterPool {
+	result := make([]linodego.LKEClusterPool, len(schemaPools))
+
+	poolMap := make(map[int]linodego.LKEClusterPool)
+	for _, pool := range pools {
+		poolMap[pool.ID] = pool
+	}
+
+	for i, schemaPool := range schemaPools {
+		schemaPool := schemaPool.(map[string]interface{})
+
+		for key, pool := range poolMap {
+			if pool.Count != schemaPool["count"] || pool.Type != schemaPool["type"] {
+				continue
+			}
+
+			result[i] = pool
+			delete(poolMap, key)
+			break
+		}
+	}
+
+	for _, pool := range poolMap {
+		result = append(result, pool)
+	}
+
+	return result
 }
