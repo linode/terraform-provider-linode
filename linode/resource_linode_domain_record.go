@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
@@ -16,12 +17,12 @@ func resourceLinodeDomainRecord() *schema.Resource {
 	secondsDiffSuppressor := domainSecondsDiffSuppressor()
 
 	return &schema.Resource{
-		Create: resourceLinodeDomainRecordCreate,
-		Read:   resourceLinodeDomainRecordRead,
-		Update: resourceLinodeDomainRecordUpdate,
-		Delete: resourceLinodeDomainRecordDelete,
+		CreateContext: resourceLinodeDomainRecordCreate,
+		ReadContext:   resourceLinodeDomainRecordRead,
+		UpdateContext: resourceLinodeDomainRecordUpdate,
+		DeleteContext: resourceLinodeDomainRecordDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceLinodeDomainRecordImport,
+			StateContext: resourceLinodeDomainRecordImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"domain_id": {
@@ -99,7 +100,8 @@ func resourceLinodeDomainRecord() *schema.Resource {
 	}
 }
 
-func resourceLinodeDomainRecordImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceLinodeDomainRecordImport(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
 		// Validate that this is an ID by making sure it can be converted into an int
@@ -117,7 +119,7 @@ func resourceLinodeDomainRecordImport(d *schema.ResourceData, meta interface{}) 
 		d.Set("domain_id", domainID)
 	}
 
-	err := resourceLinodeDomainRecordRead(d, meta)
+	err := resourceLinodeDomainRecordRead(ctx, d, meta)
 	if err != nil {
 		return nil, fmt.Errorf("unable to import %v as domain_record: %v", d.Id(), err)
 	}
@@ -128,21 +130,21 @@ func resourceLinodeDomainRecordImport(d *schema.ResourceData, meta interface{}) 
 	return results, nil
 }
 
-func resourceLinodeDomainRecordRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
 	}
 	domainID := d.Get("domain_id").(int)
-	record, err := client.GetDomainRecord(context.Background(), int(domainID), int(id))
+	record, err := client.GetDomainRecord(ctx, int(domainID), int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode Domain Record ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding the specified Linode DomainRecord: %s", err)
+		return diag.Errorf("Error finding the specified Linode DomainRecord: %s", err)
 	}
 
 	d.Set("name", record.Name)
@@ -193,7 +195,7 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 	}
 }
 
-func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainRecordCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
@@ -211,24 +213,24 @@ func resourceLinodeDomainRecordCreate(d *schema.ResourceData, meta interface{}) 
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
-	domainRecord, err := client.CreateDomainRecord(context.Background(), domainID, createOpts)
+	domainRecord, err := client.CreateDomainRecord(ctx, domainID, createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode DomainRecord: %s", err)
+		return diag.Errorf("Error creating a Linode DomainRecord: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%d", domainRecord.ID))
 
-	return resourceLinodeDomainRecordRead(d, meta)
+	return resourceLinodeDomainRecordRead(ctx, d, meta)
 }
 
-func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode DomainRecord id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode DomainRecord id %s as int: %s", d.Id(), err)
 	}
 	updateOpts := linodego.DomainRecordUpdateOptions{
 		Type:     rec.Type,
@@ -243,24 +245,24 @@ func resourceLinodeDomainRecordUpdate(d *schema.ResourceData, meta interface{}) 
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
-	_, err = client.UpdateDomainRecord(context.Background(), domainID, int(id), updateOpts)
+	_, err = client.UpdateDomainRecord(ctx, domainID, int(id), updateOpts)
 	if err != nil {
-		return fmt.Errorf("Error updating Domain Record: %s", err)
+		return diag.Errorf("Error updating Domain Record: %s", err)
 	}
 
-	return resourceLinodeDomainRecordRead(d, meta)
+	return resourceLinodeDomainRecordRead(ctx, d, meta)
 }
 
-func resourceLinodeDomainRecordDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainRecordDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode DomainRecord id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode DomainRecord id %s as int", d.Id())
 	}
-	err = client.DeleteDomainRecord(context.Background(), domainID, int(id))
+	err = client.DeleteDomainRecord(ctx, domainID, int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode DomainRecord %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode DomainRecord %d: %s", id, err)
 	}
 	d.SetId("")
 

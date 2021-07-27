@@ -31,7 +31,7 @@ func resourceLinodeLKECluster() *schema.Resource {
 		UpdateContext: resourceLinodeLKEClusterUpdate,
 		DeleteContext: resourceLinodeLKEClusterDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(linodeLKECreateTimeout),
@@ -145,7 +145,7 @@ func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("failed to parse linode lke cluster pools: %d", id)
 	}
 
-	cluster, err := client.GetLKECluster(context.Background(), id)
+	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
@@ -155,17 +155,17 @@ func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("failed to get LKE cluster %d: %s", id, err)
 	}
 
-	pools, err := client.ListLKEClusterPools(context.Background(), id, nil)
+	pools, err := client.ListLKEClusterPools(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
 	}
 
-	kubeconfig, err := client.GetLKEClusterKubeconfig(context.Background(), id)
+	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get kubeconfig for LKE cluster %d: %s", id, err)
 	}
 
-	endpoints, err := client.ListLKEClusterAPIEndpoints(context.Background(), id, nil)
+	endpoints, err := client.ListLKEClusterAPIEndpoints(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
 	}
@@ -237,12 +237,12 @@ func resourceLinodeLKEClusterUpdate(ctx context.Context, d *schema.ResourceData,
 		updateOpts.Tags = &tags
 	}
 	if d.HasChanges("label", "tags", "k8s_version") {
-		if _, err := client.UpdateLKECluster(context.Background(), id, updateOpts); err != nil {
+		if _, err := client.UpdateLKECluster(ctx, id, updateOpts); err != nil {
 			return diag.Errorf("failed to update LKE Cluster %d: %s", id, err)
 		}
 	}
 
-	pools, err := client.ListLKEClusterPools(context.Background(), id, nil)
+	pools, err := client.ListLKEClusterPools(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get Pools for LKE Cluster %d: %s", id, err)
 	}
@@ -257,19 +257,19 @@ func resourceLinodeLKEClusterUpdate(ctx context.Context, d *schema.ResourceData,
 	updates := reconcileLKEClusterPoolSpecs(poolSpecs, pools)
 
 	for poolID, updateOpts := range updates.ToUpdate {
-		if _, err := client.UpdateLKEClusterPool(context.Background(), id, poolID, updateOpts); err != nil {
+		if _, err := client.UpdateLKEClusterPool(ctx, id, poolID, updateOpts); err != nil {
 			return diag.Errorf("failed to update LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 	}
 
 	for _, createOpts := range updates.ToCreate {
-		if _, err := client.CreateLKEClusterPool(context.Background(), id, createOpts); err != nil {
+		if _, err := client.CreateLKEClusterPool(ctx, id, createOpts); err != nil {
 			return diag.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
 		}
 	}
 
 	for _, poolID := range updates.ToDelete {
-		if err := client.DeleteLKEClusterPool(context.Background(), id, poolID); err != nil {
+		if err := client.DeleteLKEClusterPool(ctx, id, poolID); err != nil {
 			return diag.Errorf("failed to delete LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 	}
@@ -284,11 +284,11 @@ func resourceLinodeLKEClusterDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
 	}
 
-	err = client.DeleteLKECluster(context.Background(), id)
+	err = client.DeleteLKECluster(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
 	}
-	client.WaitForLKEClusterStatus(context.Background(), id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	client.WaitForLKEClusterStatus(ctx, id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	return nil
 }
 

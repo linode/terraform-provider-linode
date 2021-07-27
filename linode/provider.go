@@ -2,8 +2,8 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
@@ -135,14 +135,14 @@ func Provider() *schema.Provider {
 		},
 	}
 
-	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		terraformVersion := provider.TerraformVersion
 		if terraformVersion == "" {
 			// Terraform 0.12 introduced this field to the protocol
 			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
 		}
-		return providerConfigure(d, terraformVersion)
+		return providerConfigure(ctx, d, terraformVersion)
 	}
 	return provider
 }
@@ -152,7 +152,8 @@ type ProviderMeta struct {
 	Config *Config
 }
 
-func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
+func providerConfigure(
+	ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
 	config := &Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),
@@ -174,8 +175,8 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 	client := config.Client()
 
 	// Ping the API for an empty response to verify the configuration works
-	if _, err := client.ListTypes(context.Background(), linodego.NewListOptions(100, "")); err != nil {
-		return nil, fmt.Errorf("Error connecting to the Linode API: %s", err)
+	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
+		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
 	return &ProviderMeta{
 		Client: client,

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
@@ -14,12 +15,12 @@ import (
 
 func resourceLinodeNodeBalancerNode() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeNodeBalancerNodeCreate,
-		Read:   resourceLinodeNodeBalancerNodeRead,
-		Update: resourceLinodeNodeBalancerNodeUpdate,
-		Delete: resourceLinodeNodeBalancerNodeDelete,
+		CreateContext: resourceLinodeNodeBalancerNodeCreate,
+		ReadContext:   resourceLinodeNodeBalancerNodeRead,
+		UpdateContext: resourceLinodeNodeBalancerNodeUpdate,
+		DeleteContext: resourceLinodeNodeBalancerNodeDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceLinodeNodeBalancerNodeImport,
+			StateContext: resourceLinodeNodeBalancerNodeImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"nodebalancer_id": {
@@ -74,22 +75,23 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 	}
 }
 
-func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerNodeRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode NodeBalancerNode ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode NodeBalancerNode ID %s as int: %s", d.Id(), err)
 	}
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 	configID, ok := d.Get("config_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
 
-	node, err := client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
+	node, err := client.GetNodeBalancerNode(ctx, nodebalancerID, configID, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing NodeBalancer Node ID %q from state because it no longer exists", d.Id())
@@ -97,7 +99,7 @@ func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}
 			return nil
 		}
 
-		return fmt.Errorf("Error finding the specified Linode NodeBalancerNode: %s", err)
+		return diag.Errorf("Error finding the specified Linode NodeBalancerNode: %s", err)
 	}
 
 	d.Set("label", node.Label)
@@ -108,7 +110,8 @@ func resourceLinodeNodeBalancerNodeRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func resourceLinodeNodeBalancerNodeImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceLinodeNodeBalancerNodeImport(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
 		// Validate that this is an ID by making sure it can be converted into an int
@@ -132,7 +135,7 @@ func resourceLinodeNodeBalancerNodeImport(d *schema.ResourceData, meta interface
 		d.Set("config_id", configID)
 	}
 
-	err := resourceLinodeNodeBalancerNodeRead(d, meta)
+	err := resourceLinodeNodeBalancerNodeRead(ctx, d, meta)
 	if err != nil {
 		return nil, fmt.Errorf("unable to import %v as nodebalancer_node: %v", d.Id(), err)
 	}
@@ -143,16 +146,17 @@ func resourceLinodeNodeBalancerNodeImport(d *schema.ResourceData, meta interface
 	return results, nil
 }
 
-func resourceLinodeNodeBalancerNodeCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerNodeCreate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 	configID, ok := d.Get("config_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
 
 	createOpts := linodego.NodeBalancerNodeCreateOptions{
@@ -161,31 +165,32 @@ func resourceLinodeNodeBalancerNodeCreate(d *schema.ResourceData, meta interface
 		Mode:    linodego.NodeMode(d.Get("mode").(string)),
 		Weight:  d.Get("weight").(int),
 	}
-	node, err := client.CreateNodeBalancerNode(context.Background(), int(nodebalancerID), int(configID), createOpts)
+	node, err := client.CreateNodeBalancerNode(ctx, int(nodebalancerID), int(configID), createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode NodeBalancerNode: %s", err)
+		return diag.Errorf("Error creating a Linode NodeBalancerNode: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", node.ID))
 	d.Set("config_id", configID)
 	d.Set("nodebalancer_id", nodebalancerID)
 
-	return resourceLinodeNodeBalancerNodeRead(d, meta)
+	return resourceLinodeNodeBalancerNodeRead(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerNodeUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode NodeBalancerConfig ID %v as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %v as int: %s", d.Id(), err)
 	}
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 	configID, ok := d.Get("config_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
 
 	updateOpts := linodego.NodeBalancerNodeUpdateOptions{
@@ -195,33 +200,32 @@ func resourceLinodeNodeBalancerNodeUpdate(d *schema.ResourceData, meta interface
 		Weight:  d.Get("weight").(int),
 	}
 
-	if _, err = client.UpdateNodeBalancerNode(
-		context.Background(), nodebalancerID, configID, int(id), updateOpts,
-	); err != nil {
-		return fmt.Errorf("Error updating Linode Nodebalancer %d Config %d Node %d: %s",
+	if _, err = client.UpdateNodeBalancerNode(ctx, nodebalancerID, configID, int(id), updateOpts); err != nil {
+		return diag.Errorf("Error updating Linode Nodebalancer %d Config %d Node %d: %s",
 			nodebalancerID, configID, int(id), err)
 	}
 
-	return resourceLinodeNodeBalancerNodeRead(d, meta)
+	return resourceLinodeNodeBalancerNodeRead(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerNodeDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeNodeBalancerNodeDelete(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
 	}
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 	configID, ok := d.Get("config_id").(int)
 	if !ok {
-		return fmt.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
+		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
-	err = client.DeleteNodeBalancerNode(context.Background(), nodebalancerID, configID, int(id))
+	err = client.DeleteNodeBalancerNode(ctx, nodebalancerID, configID, int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode NodeBalancerNode %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode NodeBalancerNode %d: %s", id, err)
 	}
 	return nil
 }

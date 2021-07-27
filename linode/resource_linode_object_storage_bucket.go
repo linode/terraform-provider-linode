@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -92,12 +93,12 @@ func resourceLinodeObjectStorageBucketLifecycleRule() *schema.Resource {
 
 func resourceLinodeObjectStorageBucket() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeObjectStorageBucketCreate,
-		Read:   resourceLinodeObjectStorageBucketRead,
-		Update: resourceLinodeObjectStorageBucketUpdate,
-		Delete: resourceLinodeObjectStorageBucketDelete,
+		CreateContext: resourceLinodeObjectStorageBucketCreate,
+		ReadContext:   resourceLinodeObjectStorageBucketRead,
+		UpdateContext: resourceLinodeObjectStorageBucketUpdate,
+		DeleteContext: resourceLinodeObjectStorageBucketDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"secret_key": {
@@ -172,27 +173,28 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 	}
 }
 
-func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageBucketRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
-		return fmt.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
+		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
 	}
 
-	bucket, err := client.GetObjectStorageBucket(context.Background(), cluster, label)
+	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Object Storage Bucket %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
+		return diag.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
 	}
 
-	access, err := client.GetObjectStorageBucketAccess(context.Background(), cluster, label)
+	access, err := client.GetObjectStorageBucketAccess(ctx, cluster, label)
 	if err != nil {
-		return fmt.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
+		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
 
 	// Functionality requiring direct S3 API access
@@ -204,17 +206,17 @@ func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interfac
 
 	if versioningPresent || lifecyclePresent {
 		if accessKey == "" || secretKey == "" {
-			return fmt.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
+			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
 		}
 
 		conn := s3ConnFromResourceData(d)
 
 		if err := readLinodeObjectStorageBucketLifecycle(d, conn); err != nil {
-			return fmt.Errorf("failed to find get object storage bucket lifecycle: %s", err)
+			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
 		}
 
 		if err := readLinodeObjectStorageBucketVersioning(d, conn); err != nil {
-			return fmt.Errorf("failed to find get object storage bucket versioning: %s", err)
+			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
 
@@ -227,7 +229,8 @@ func resourceLinodeObjectStorageBucketRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageBucketCreate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
@@ -242,17 +245,18 @@ func resourceLinodeObjectStorageBucketCreate(d *schema.ResourceData, meta interf
 		CorsEnabled: &corsEnabled,
 	}
 
-	bucket, err := client.CreateObjectStorageBucket(context.Background(), createOpts)
+	bucket, err := client.CreateObjectStorageBucket(ctx, createOpts)
 	if err != nil {
-		return fmt.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
+		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 
-	return resourceLinodeObjectStorageBucketUpdate(d, meta)
+	return resourceLinodeObjectStorageBucketUpdate(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageBucketUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageBucketUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	accessKey := d.Get("access_key")
@@ -261,14 +265,14 @@ func resourceLinodeObjectStorageBucketUpdate(d *schema.ResourceData, meta interf
 	conn := s3ConnFromResourceData(d)
 
 	if d.HasChanges("acl", "cors_enabled") {
-		if err := updateLinodeObjectStorageBucketAccess(d, client); err != nil {
-			return err
+		if err := updateLinodeObjectStorageBucketAccess(ctx, d, client); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("cert") {
-		if err := updateLinodeObjectStorageBucketCert(d, client); err != nil {
-			return err
+		if err := updateLinodeObjectStorageBucketCert(ctx, d, client); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -277,35 +281,36 @@ func resourceLinodeObjectStorageBucketUpdate(d *schema.ResourceData, meta interf
 
 	if versioningChanged || lifecycleChanged {
 		if accessKey == "" || secretKey == "" {
-			return fmt.Errorf("access_key and secret_key are required to set versioning and lifecycle info")
+			return diag.Errorf("access_key and secret_key are required to set versioning and lifecycle info")
 		}
 
 		// Ensure we only update what is changed
 		if versioningChanged {
 			if err := updateLinodeObjectStorageBucketVersioning(d, conn); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 
 		if lifecycleChanged {
 			if err := updateLinodeObjectStorageBucketLifecycle(d, conn); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
 
-	return resourceLinodeObjectStorageBucketRead(d, meta)
+	return resourceLinodeObjectStorageBucketRead(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageBucketDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageBucketDelete(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
+		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
-	err = client.DeleteObjectStorageBucket(context.Background(), cluster, label)
+	err = client.DeleteObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
+		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
 	}
 	return nil
 }
@@ -386,7 +391,8 @@ func updateLinodeObjectStorageBucketLifecycle(d *schema.ResourceData, conn *s3.S
 	return err
 }
 
-func updateLinodeObjectStorageBucketAccess(d *schema.ResourceData, client linodego.Client) error {
+func updateLinodeObjectStorageBucketAccess(
+	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 
@@ -400,21 +406,22 @@ func updateLinodeObjectStorageBucketAccess(d *schema.ResourceData, client linode
 		updateOpts.CorsEnabled = &newCorsBool
 	}
 
-	if err := client.UpdateObjectStorageBucketAccess(context.Background(), cluster, label, updateOpts); err != nil {
+	if err := client.UpdateObjectStorageBucketAccess(ctx, cluster, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
 
 	return nil
 }
 
-func updateLinodeObjectStorageBucketCert(d *schema.ResourceData, client linodego.Client) error {
+func updateLinodeObjectStorageBucketCert(
+	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
 	hasOldCert := len(oldCert.([]interface{})) != 0
 
 	if hasOldCert {
-		if err := client.DeleteObjectStorageBucketCert(context.Background(), cluster, label); err != nil {
+		if err := client.DeleteObjectStorageBucketCert(ctx, cluster, label); err != nil {
 			return fmt.Errorf("failed to delete old bucket cert: %s", err)
 		}
 	}
@@ -425,7 +432,7 @@ func updateLinodeObjectStorageBucketCert(d *schema.ResourceData, client linodego
 	}
 
 	uploadOptions := expandLinodeObjectStorageBucketCert(certSpec[0])
-	if _, err := client.UploadObjectStorageBucketCert(context.Background(), cluster, label, uploadOptions); err != nil {
+	if _, err := client.UploadObjectStorageBucketCert(ctx, cluster, label, uploadOptions); err != nil {
 		return fmt.Errorf("failed to upload new bucket cert: %s", err)
 	}
 	return nil

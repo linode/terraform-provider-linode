@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -19,12 +20,12 @@ const (
 
 func resourceLinodeVolume() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeVolumeCreate,
-		Read:   resourceLinodeVolumeRead,
-		Update: resourceLinodeVolumeUpdate,
-		Delete: resourceLinodeVolumeDelete,
+		CreateContext: resourceLinodeVolumeCreate,
+		ReadContext:   resourceLinodeVolumeRead,
+		UpdateContext: resourceLinodeVolumeUpdate,
+		DeleteContext: resourceLinodeVolumeDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(LinodeVolumeCreateTimeout),
@@ -77,21 +78,21 @@ func resourceLinodeVolume() *schema.Resource {
 	}
 }
 
-func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Volume ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Volume ID %s as int: %s", d.Id(), err)
 	}
 
-	volume, err := client.GetVolume(context.Background(), int(id))
+	volume, err := client.GetVolume(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Volume ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding the specified Linode Volume: %s", err)
+		return diag.Errorf("Error finding the specified Linode Volume: %s", err)
 	}
 
 	d.Set("label", volume.Label)
@@ -105,7 +106,7 @@ func resourceLinodeVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeVolumeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	var linodeID *int
@@ -128,53 +129,53 @@ func resourceLinodeVolumeCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	volume, err := client.CreateVolume(context.Background(), createOpts)
+	volume, err := client.CreateVolume(ctx, createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Volume: %s", err)
+		return diag.Errorf("Error creating a Linode Volume: %s", err)
 	}
 
 	d.SetId(fmt.Sprintf("%d", volume.ID))
 
 	if createOpts.LinodeID > 0 {
 		if _, err := client.WaitForVolumeLinodeID(
-			context.Background(), volume.ID, linodeID, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+			ctx, volume.ID, linodeID, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
 		); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	if _, err = client.WaitForVolumeStatus(
-		context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutCreate).Seconds()),
+		ctx, volume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutCreate).Seconds()),
 	); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceLinodeVolumeRead(d, meta)
+	return resourceLinodeVolumeRead(ctx, d, meta)
 }
 
-func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Volume id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Volume id %s as int: %s", d.Id(), err)
 	}
 
-	volume, errVolume := client.GetVolume(context.Background(), int(id))
+	volume, errVolume := client.GetVolume(ctx, int(id))
 	if errVolume != nil {
-		return fmt.Errorf("Error fetching data about the volume %d: %s", int(id), errVolume)
+		return diag.Errorf("Error fetching data about the volume %d: %s", int(id), errVolume)
 	}
 
 	if d.HasChange("size") {
 		size := d.Get("size").(int)
-		if err = client.ResizeVolume(context.Background(), volume.ID, size); err != nil {
-			return err
+		if err = client.ResizeVolume(ctx, volume.ID, size); err != nil {
+			return diag.FromErr(err)
 		}
 
 		if _, err = client.WaitForVolumeStatus(
-			context.Background(), volume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+			ctx, volume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
 		); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		d.Set("size", size)
@@ -198,8 +199,8 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if doUpdate {
-		if volume, err = client.UpdateVolume(context.Background(), volume.ID, updateOpts); err != nil {
-			return err
+		if volume, err = client.UpdateVolume(ctx, volume.ID, updateOpts); err != nil {
+			return diag.FromErr(err)
 		}
 		d.Set("tags", volume.Tags)
 		d.Set("label", volume.Label)
@@ -218,15 +219,15 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 	if detectVolumeIDChange(linodeID, volume.LinodeID) {
 		if linodeID == nil || volume.LinodeID != nil {
 			log.Printf("[INFO] Detaching Linode Volume %d", volume.ID)
-			if err = client.DetachVolume(context.Background(), volume.ID); err != nil {
-				return err
+			if err = client.DetachVolume(ctx, volume.ID); err != nil {
+				return diag.FromErr(err)
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volume.ID)
 			if _, err = client.WaitForVolumeLinodeID(
-				context.Background(), volume.ID, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+				ctx, volume.ID, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
 			); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 
@@ -238,47 +239,47 @@ func resourceLinodeVolumeUpdate(d *schema.ResourceData, meta interface{}) error 
 
 			log.Printf("[INFO] Attaching Linode Volume %d to Linode Instance %d", volume.ID, *linodeID)
 
-			if _, err = client.AttachVolume(context.Background(), volume.ID, &attachOptions); err != nil {
-				return fmt.Errorf("Error attaching Linode Volume %d to Linode Instance %d: %s", volume.ID, *linodeID, err)
+			if _, err = client.AttachVolume(ctx, volume.ID, &attachOptions); err != nil {
+				return diag.Errorf("Error attaching Linode Volume %d to Linode Instance %d: %s", volume.ID, *linodeID, err)
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to attach ...", volume.ID)
 			if _, err = client.WaitForVolumeLinodeID(
-				context.Background(), volume.ID, linodeID, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+				ctx, volume.ID, linodeID, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
 			); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 
 		d.Set("linode_id", linodeID)
 	}
 
-	return resourceLinodeVolumeRead(d, meta)
+	return resourceLinodeVolumeRead(ctx, d, meta)
 }
 
-func resourceLinodeVolumeDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeVolumeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id64, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Volume id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode Volume id %s as int", d.Id())
 	}
 	id := int(id64)
 
 	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
-	if err := client.DetachVolume(context.Background(), id); err != nil {
-		return fmt.Errorf("Error detaching Linode Volume %d: %s", id, err)
+	if err := client.DetachVolume(ctx, id); err != nil {
+		return diag.Errorf("Error detaching Linode Volume %d: %s", id, err)
 	}
 
 	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
 	if _, err := client.WaitForVolumeLinodeID(
-		context.Background(), id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+		ctx, id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
 	); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = client.DeleteVolume(context.Background(), int(id))
+	err = client.DeleteVolume(ctx, int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode Volume %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode Volume %d: %s", id, err)
 	}
 	d.SetId("")
 	return nil

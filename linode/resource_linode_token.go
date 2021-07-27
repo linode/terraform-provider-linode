@@ -7,18 +7,19 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
 
 func resourceLinodeToken() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeTokenCreate,
-		Read:   resourceLinodeTokenRead,
-		Update: resourceLinodeTokenUpdate,
-		Delete: resourceLinodeTokenDelete,
+		CreateContext: resourceLinodeTokenCreate,
+		ReadContext:   resourceLinodeTokenRead,
+		UpdateContext: resourceLinodeTokenUpdate,
+		DeleteContext: resourceLinodeTokenDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -84,21 +85,21 @@ func validDateTime(i interface{}, k string) (s []string, es []error) {
 	return
 }
 
-func resourceLinodeTokenRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Token ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Token ID %s as int: %s", d.Id(), err)
 	}
 
-	token, err := client.GetToken(context.Background(), int(id))
+	token, err := client.GetToken(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode Token ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding the specified Linode Token: %s", err)
+		return diag.Errorf("Error finding the specified Linode Token: %s", err)
 	}
 
 	d.Set("label", token.Label)
@@ -109,7 +110,7 @@ func resourceLinodeTokenRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeTokenCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.TokenCreateOptions{
@@ -119,59 +120,59 @@ func resourceLinodeTokenCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if expiryRaw, ok := d.GetOk("expiry"); ok {
 		if expiry, ok := expiryRaw.(string); !ok {
-			return fmt.Errorf("expected expiry to be a string, got %s", expiryRaw)
+			return diag.Errorf("expected expiry to be a string, got %s", expiryRaw)
 		} else if dt, err := time.Parse("2006-01-02T15:04:05Z", expiry); err != nil {
-			return fmt.Errorf("expected expiry to be a datetime, got %s", expiry)
+			return diag.Errorf("expected expiry to be a datetime, got %s", expiry)
 		} else {
 			createOpts.Expiry = &dt
 		}
 	}
 
-	token, err := client.CreateToken(context.Background(), createOpts)
+	token, err := client.CreateToken(ctx, createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Token: %s", err)
+		return diag.Errorf("Error creating a Linode Token: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", token.ID))
 	d.Set("token", token.Token)
 
-	return resourceLinodeTokenRead(d, meta)
+	return resourceLinodeTokenRead(ctx, d, meta)
 }
 
-func resourceLinodeTokenUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeTokenUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Token id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Token id %s as int: %s", d.Id(), err)
 	}
 
-	token, err := client.GetToken(context.Background(), int(id))
+	token, err := client.GetToken(ctx, int(id))
 	if err != nil {
-		return fmt.Errorf("Error fetching data about the current linode: %s", err)
+		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
 	updateOpts := token.GetUpdateOptions()
 	if d.HasChange("label") {
 		updateOpts.Label = d.Get("label").(string)
 
-		if token, err = client.UpdateToken(context.Background(), token.ID, updateOpts); err != nil {
-			return err
+		if token, err = client.UpdateToken(ctx, token.ID, updateOpts); err != nil {
+			return diag.FromErr(err)
 		}
 		d.Set("label", token.Label)
 	}
 
-	return resourceLinodeTokenRead(d, meta)
+	return resourceLinodeTokenRead(ctx, d, meta)
 }
 
-func resourceLinodeTokenDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Token id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode Token id %s as int", d.Id())
 	}
-	err = client.DeleteToken(context.Background(), int(id))
+	err = client.DeleteToken(ctx, int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode Token %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode Token %d: %s", id, err)
 	}
 	// a settling cooldown to avoid expired tokens from being returned in listings
 	time.Sleep(3 * time.Second)

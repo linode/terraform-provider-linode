@@ -13,15 +13,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceLinodeObjectStorageObject() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLinodeObjectStorageObjectCreate,
-		Read:   resourceLinodeObjectStorageObjectRead,
-		Update: resourceLinodeObjectStorageObjectUpdate,
-		Delete: resourceLinodeObjectStorageObjectDelete,
+		CreateContext: resourceLinodeObjectStorageObjectCreate,
+		ReadContext:   resourceLinodeObjectStorageObjectRead,
+		UpdateContext: resourceLinodeObjectStorageObjectUpdate,
+		DeleteContext: resourceLinodeObjectStorageObjectDelete,
 
 		CustomizeDiff: resourceLinodeObjectStorageObjectCustomizeDiff,
 
@@ -131,11 +132,13 @@ func resourceLinodeObjectStorageObject() *schema.Resource {
 	}
 }
 
-func resourceLinodeObjectStorageObjectCreate(d *schema.ResourceData, meta interface{}) error {
-	return putLinodeObjectStorageObject(d, meta)
+func resourceLinodeObjectStorageObjectCreate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return putLinodeObjectStorageObject(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageObjectRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageObjectRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := s3ConnFromResourceData(d)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
@@ -151,7 +154,7 @@ func resourceLinodeObjectStorageObjectRead(d *schema.ResourceData, meta interfac
 			fmt.Printf(`[WARN] could not find Bucket (%s) Object (%s)`, bucket, key)
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("cache_control", headOutput.CacheControl)
@@ -168,11 +171,12 @@ func resourceLinodeObjectStorageObjectRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceLinodeObjectStorageObjectUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeObjectStorageObjectUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if d.HasChanges("cache_control", "content_base64", "content_disposition",
 		"content_encoding", "content_language", "content_type", "content",
 		"etag", "metadata", "source", "website_redirect") {
-		return putLinodeObjectStorageObject(d, meta)
+		return putLinodeObjectStorageObject(ctx, d, meta)
 	}
 
 	bucket := d.Get("bucket").(string)
@@ -186,24 +190,25 @@ func resourceLinodeObjectStorageObjectUpdate(d *schema.ResourceData, meta interf
 			Key:    &key,
 			ACL:    &acl,
 		}); err != nil {
-			return fmt.Errorf("failed to put Bucket (%s) Object (%s) ACL: %s", bucket, key, err)
+			return diag.Errorf("failed to put Bucket (%s) Object (%s) ACL: %s", bucket, key, err)
 		}
 	}
 
-	return resourceLinodeObjectStorageBucketRead(d, meta)
+	return resourceLinodeObjectStorageObjectRead(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageObjectDelete(d *schema.ResourceData, meta interface{}) (err error) {
+func resourceLinodeObjectStorageObjectDelete(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conn := s3ConnFromResourceData(d)
 
 	if _, ok := d.GetOk("version_id"); ok {
-		return deleteAllLinodeObjectStorageObjectVersions(d)
+		return deleteAllLinodeObjectStorageObjectVersions(ctx, d)
 	}
 
 	bucket := d.Get("bucket").(string)
 	key := strings.TrimPrefix(d.Get("key").(string), "/")
 	force := d.Get("force_destroy").(bool)
-	return deleteLinodeObjectStorageObject(conn, bucket, key, "", force)
+	return diag.FromErr(deleteLinodeObjectStorageObject(conn, bucket, key, "", force))
 }
 
 func resourceLinodeObjectStorageObjectCustomizeDiff(
@@ -217,11 +222,12 @@ func resourceLinodeObjectStorageObjectCustomizeDiff(
 // putLinodeObjectStorageObject builds the object from spec and puts it in the
 // specified bucket via the *schema.ResourceData, then it calls
 // resourceLinodeObjectStorageObjectRead.
-func putLinodeObjectStorageObject(d *schema.ResourceData, meta interface{}) error {
+func putLinodeObjectStorageObject(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := s3ConnFromResourceData(d)
 	body, err := objectBodyFromResourceData(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	defer body.Close()
 
@@ -254,17 +260,18 @@ func putLinodeObjectStorageObject(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if _, err := client.PutObject(putInput); err != nil {
-		return fmt.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
+		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
 	}
 
 	d.SetId(buildObjectStorageObjectID(d))
 
-	return resourceLinodeObjectStorageObjectRead(d, meta)
+	return resourceLinodeObjectStorageObjectRead(ctx, d, meta)
 }
 
 // deleteAllLinodeObjectStorageObjectVersions deletes all versions of a given
 // object.
-func deleteAllLinodeObjectStorageObjectVersions(d *schema.ResourceData) error {
+func deleteAllLinodeObjectStorageObjectVersions(
+	ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
@@ -296,14 +303,14 @@ func deleteAllLinodeObjectStorageObjectVersions(d *schema.ResourceData) error {
 			return !lastPage
 		}); err != nil {
 		if err, ok := err.(awserr.Error); !(ok && err.Code() != s3.ErrCodeNoSuchBucket) {
-			return fmt.Errorf("failed to list Bucket (%s) Object (%s) versions: %s", bucket, key, err)
+			return diag.Errorf("failed to list Bucket (%s) Object (%s) versions: %s", bucket, key, err)
 		}
 	}
 
 	// delete all version of the current object
 	for _, version := range versions {
 		if err := deleteLinodeObjectStorageObject(conn, bucket, key, version, force); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	return nil

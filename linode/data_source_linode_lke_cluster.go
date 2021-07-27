@@ -114,22 +114,22 @@ func datasourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData,
 	client := meta.(*ProviderMeta).Client
 	id := d.Get("id").(int)
 
-	cluster, err := client.GetLKECluster(context.Background(), id)
+	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get LKE cluster %d: %s", id, err)
 	}
 
-	pools, err := client.ListLKEClusterPools(context.Background(), id, nil)
+	pools, err := client.ListLKEClusterPools(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
 	}
 
-	kubeconfig, err := client.GetLKEClusterKubeconfig(context.Background(), id)
+	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get kubeconfig for LKE cluster %d: %s", id, err)
 	}
 
-	endpoints, err := client.ListLKEClusterAPIEndpoints(context.Background(), id, nil)
+	endpoints, err := client.ListLKEClusterAPIEndpoints(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
 	}

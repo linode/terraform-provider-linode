@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
@@ -15,12 +16,12 @@ func resourceLinodeDomain() *schema.Resource {
 	secondsDiffSuppressor := domainSecondsDiffSuppressor()
 
 	return &schema.Resource{
-		Create: resourceLinodeDomainCreate,
-		Read:   resourceLinodeDomainRead,
-		Update: resourceLinodeDomainUpdate,
-		Delete: resourceLinodeDomainDelete,
+		CreateContext: resourceLinodeDomainCreate,
+		ReadContext:   resourceLinodeDomainRead,
+		UpdateContext: resourceLinodeDomainUpdate,
+		DeleteContext: resourceLinodeDomainDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"domain": {
@@ -122,21 +123,21 @@ func resourceLinodeDomain() *schema.Resource {
 	}
 }
 
-func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
 
-	domain, err := client.GetDomain(context.Background(), int(id))
+	domain, err := client.GetDomain(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode Domain ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error finding the specified Linode Domain: %s", err)
+		return diag.Errorf("Error finding the specified Linode Domain: %s", err)
 	}
 
 	d.Set("domain", domain.Domain)
@@ -158,7 +159,7 @@ func resourceLinodeDomainRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.DomainCreateOptions{
@@ -197,21 +198,21 @@ func resourceLinodeDomainCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	domain, err := client.CreateDomain(context.Background(), createOpts)
+	domain, err := client.CreateDomain(ctx, createOpts)
 	if err != nil {
-		return fmt.Errorf("Error creating a Linode Domain: %s", err)
+		return diag.Errorf("Error creating a Linode Domain: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", domain.ID))
 
-	return resourceLinodeDomainRead(d, meta)
+	return resourceLinodeDomainRead(ctx, d, meta)
 }
 
-func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Domain id %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode Domain id %s as int: %s", d.Id(), err)
 	}
 
 	updateOpts := linodego.DomainUpdateOptions{
@@ -253,22 +254,22 @@ func resourceLinodeDomainUpdate(d *schema.ResourceData, meta interface{}) error 
 		updateOpts.Tags = tags
 	}
 
-	_, err = client.UpdateDomain(context.Background(), int(id), updateOpts)
+	_, err = client.UpdateDomain(ctx, int(id), updateOpts)
 	if err != nil {
-		return fmt.Errorf("Error updating Linode Domain %d: %s", id, err)
+		return diag.Errorf("Error updating Linode Domain %d: %s", id, err)
 	}
-	return resourceLinodeDomainRead(d, meta)
+	return resourceLinodeDomainRead(ctx, d, meta)
 }
 
-func resourceLinodeDomainDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceLinodeDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return fmt.Errorf("Error parsing Linode Domain id %s as int", d.Id())
+		return diag.Errorf("Error parsing Linode Domain id %s as int", d.Id())
 	}
-	err = client.DeleteDomain(context.Background(), int(id))
+	err = client.DeleteDomain(ctx, int(id))
 	if err != nil {
-		return fmt.Errorf("Error deleting Linode Domain %d: %s", id, err)
+		return diag.Errorf("Error deleting Linode Domain %d: %s", id, err)
 	}
 	d.SetId("")
 
