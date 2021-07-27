@@ -1199,6 +1199,15 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	bootConfig := 0
 	bootConfigLabel := d.Get("boot_config_label").(string)
+
+	tfConfigsOld, tfConfigsNew := d.GetChange("config")
+	didChangeConfig, updatedConfigMap, updatedConfigs, err := updateInstanceConfigs(
+		ctx, client, d, *instance, tfConfigsOld, tfConfigsNew, diskIDLabelMap, bootConfigLabel)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	rebootInstance = rebootInstance || didChangeConfig
+
 	if bootConfigLabel != "" {
 		if foundConfig, found := updatedConfigMap[bootConfigLabel]; found {
 			bootConfig = foundConfig
@@ -1208,14 +1217,6 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 	} else if len(updatedConfigs) > 0 {
 		bootConfig = updatedConfigs[0].ID
 	}
-
-	tfConfigsOld, tfConfigsNew := d.GetChange("config")
-	didChangeConfig, updatedConfigMap, updatedConfigs, err := updateInstanceConfigs(
-		ctx, client, d, *instance, tfConfigsOld, tfConfigsNew, diskIDLabelMap, bootConfigLabel)
-	if err != nil {
-            return diag.FromErr(err)
-	}
-	rebootInstance = rebootInstance || didChangeConfig
 
 	if d.HasChange("interface") {
 		interfaces := d.Get("interface").([]interface{})
@@ -1231,13 +1232,13 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 		}); err != nil {
 			return diag.Errorf("failed to set boot config interfaces: %s", err)
 		}
-                rebootInstance = true
+		rebootInstance = true
 	}
 
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
 		err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
-                log.Printf("[INFO] Instance must be reboot for change in terraform")
+		log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
 
 		if err != nil {
 			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)

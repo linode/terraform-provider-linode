@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -218,9 +219,9 @@ func createInstanceConfigsFromSet(
 	return configIDMap, nil
 }
 
-func updateInstanceConfigs( ctx context.Context, client linodego.Client, d *schema.ResourceData,
+func updateInstanceConfigs(ctx context.Context, client linodego.Client, d *schema.ResourceData,
 	instance linodego.Instance, tfConfigsOld,
-        tfConfigsNew interface{}, diskIDLabelMap map[string]int, bootConfigLabel string,
+	tfConfigsNew interface{}, diskIDLabelMap map[string]int, bootConfigLabel string,
 ) (bool, map[string]int, []*linodego.InstanceConfig, error) {
 	var updatedConfigMap map[string]int
 	var rebootInstance bool
@@ -231,7 +232,6 @@ func updateInstanceConfigs( ctx context.Context, client linodego.Client, d *sche
 		return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
 			"Error fetching the config for Instance %d: %s", instance.ID, err)
 	}
-
 
 	configMap := make(map[string]linodego.InstanceConfig, len(configs))
 	for _, config := range configs {
@@ -244,20 +244,23 @@ func updateInstanceConfigs( ctx context.Context, client linodego.Client, d *sche
 
 	oldConfigLabels := make([]string, len(tfConfigsOld.([]interface{})))
 
+	var oldBootInterfaces, newBootInterfaces []string
 	for _, tfConfigOld := range tfConfigsOld.([]interface{}) {
 		if oldConfig, ok := tfConfigOld.(map[string]interface{}); ok {
-			oldConfigLabels = append(oldConfigLabels, oldConfig["label"].(string))
+			oldLabel := oldConfig["label"].(string)
+			oldConfigLabels = append(oldConfigLabels, oldLabel)
+			if oldLabel == bootConfigLabel {
+				if iface, ok := oldConfig["interface"].(map[string]interface{}); ok {
+					oldBootInterfaces = append(oldBootInterfaces, iface["ipam_address"].(string))
+				}
+			}
 		}
 	}
 	tfConfigs := tfConfigsNew.([]interface{})
 	updatedConfigs = make([]*linodego.InstanceConfig, len(tfConfigs))
 	updatedConfigMap = make(map[string]int, len(tfConfigs))
-        oldBootConfig = make(map[string]int, len())
 	for _, tfConfig := range tfConfigs {
 		tfc, _ := tfConfig.(map[string]interface{})
-                if tfc["label"] == bootConfigLabel {
-                    rebootInstance = true
-                }
 		label, _ := tfc["label"].(string)
 		rootDevice, _ := tfc["root_device"].(string)
 		if existingConfig, existing := configMap[label]; existing {
@@ -290,7 +293,11 @@ func updateInstanceConfigs( ctx context.Context, client linodego.Client, d *sche
 				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
 
 				for i, ni := range interfaces {
-					configUpdateOpts.Interfaces[i] = expandLinodeConfigInterface(ni.(map[string]interface{}))
+					mappedInterface := ni.(map[string]interface{})
+					configUpdateOpts.Interfaces[i] = expandLinodeConfigInterface(mappedInterface)
+					if label == bootConfigLabel {
+						newBootInterfaces = append(newBootInterfaces, mappedInterface["ipam_address"].(string))
+					}
 				}
 
 			}
@@ -339,6 +346,10 @@ func updateInstanceConfigs( ctx context.Context, client linodego.Client, d *sche
 				updatedConfigs = append(updatedConfigs, &config)
 			}
 		}
+	}
+
+	if !reflect.DeepEqual(oldBootInterfaces, newBootInterfaces) {
+		rebootInstance = true
 	}
 
 	updatedConfigMap, err = deleteInstanceConfigs(ctx, client, instance.ID, oldConfigLabels, updatedConfigMap, configMap)
