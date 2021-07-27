@@ -27,7 +27,7 @@ func resourceLinodeImage() *schema.Resource {
 		UpdateContext: resourceLinodeImageUpdate,
 		DeleteContext: resourceLinodeImageDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(LinodeImageCreateTimeout),

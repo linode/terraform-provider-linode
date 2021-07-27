@@ -83,7 +83,7 @@ func resourceLinodeInstance() *schema.Resource {
 		DeleteContext: resourceLinodeInstanceDelete,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(LinodeInstanceCreateTimeout),

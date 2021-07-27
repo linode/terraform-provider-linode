@@ -2,14 +2,14 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceLinodeInstanceType() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeInstanceTypeRead,
+		ReadContext: dataSourceLinodeInstanceTypeRead,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -114,12 +114,12 @@ func dataSourceLinodeInstanceType() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeInstanceTypeRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeInstanceTypeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
-	types, err := client.ListTypes(context.Background(), nil)
+	types, err := client.ListTypes(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("Error listing ranges: %s", err)
+		return diag.Errorf("Error listing ranges: %s", err)
 	}
 
 	reqType := d.Get("id").(string)
@@ -154,5 +154,5 @@ func dataSourceLinodeInstanceTypeRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId("")
 
-	return fmt.Errorf("Instance Type %s was not found", reqType)
+	return diag.Errorf("Instance Type %s was not found", reqType)
 }

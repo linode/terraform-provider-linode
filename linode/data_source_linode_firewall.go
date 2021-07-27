@@ -130,17 +130,17 @@ func datasourceLinodeFirewallRead(ctx context.Context, d *schema.ResourceData, m
 	client := meta.(*ProviderMeta).Client
 	id := d.Get("id").(int)
 
-	firewall, err := client.GetFirewall(context.Background(), id)
+	firewall, err := client.GetFirewall(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get firewall %d: %s", id, err)
 	}
 
-	rules, err := client.GetFirewallRules(context.Background(), id)
+	rules, err := client.GetFirewallRules(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get firewall rules %d: %s", id, err)
 	}
 
-	devices, err := client.ListFirewallDevices(context.Background(), id, nil)
+	devices, err := client.ListFirewallDevices(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get firewall devices %d: %s", id, err)
 	}

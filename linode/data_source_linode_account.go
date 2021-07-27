@@ -2,14 +2,14 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceLinodeAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeAccountRead,
+		ReadContext: dataSourceLinodeAccountRead,
 		Schema: map[string]*schema.Schema{
 			"email": {
 				Type: schema.TypeString,
@@ -78,12 +78,12 @@ func dataSourceLinodeAccount() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeAccountRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
-	account, err := client.GetAccount(context.Background())
+	account, err := client.GetAccount(ctx)
 	if err != nil {
-		return fmt.Errorf("Error getting account: %s", err)
+		return diag.Errorf("Error getting account: %s", err)
 	}
 
 	d.SetId(account.Email)

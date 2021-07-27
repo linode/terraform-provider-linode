@@ -133,7 +133,7 @@ func datasourceLinodeNodeBalancerConfigRead(
 	id := d.Get("id").(int)
 	nodebalancerID := d.Get("nodebalancer_id").(int)
 
-	config, err := client.GetNodeBalancerConfig(context.Background(), nodebalancerID, id)
+	config, err := client.GetNodeBalancerConfig(ctx, nodebalancerID, id)
 	if err != nil {
 		return diag.Errorf("failed to get nodebalancer config %d: %s", id, err)
 	}

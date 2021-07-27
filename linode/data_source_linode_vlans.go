@@ -1,11 +1,11 @@
 package linode
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -39,7 +39,7 @@ func dataSourceLinodeVLAN() *schema.Resource {
 
 func dataSourceLinodeVLANs() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeVLANsRead,
+		ReadContext: dataSourceLinodeVLANsRead,
 		Schema: map[string]*schema.Schema{
 			"filter": filterSchema([]string{"label", "region"}),
 			"vlans": {
@@ -52,20 +52,20 @@ func dataSourceLinodeVLANs() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeVLANsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeVLANsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	filter, err := constructFilterString(d, vlanValueToFilterType)
 	if err != nil {
-		return fmt.Errorf("failed to construct filter: %s", err)
+		return diag.Errorf("failed to construct filter: %s", err)
 	}
 
-	vlans, err := client.ListVLANs(context.Background(), &linodego.ListOptions{
+	vlans, err := client.ListVLANs(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to list linode vlans: %s", err)
+		return diag.Errorf("failed to list linode vlans: %s", err)
 	}
 
 	vlansFlattened := make([]interface{}, len(vlans))

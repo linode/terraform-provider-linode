@@ -2,14 +2,14 @@ package linode
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceLinodeObjectStorageCluster() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeObjectStorageClusterRead,
+		ReadContext: dataSourceLinodeObjectStorageClusterRead,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -45,18 +45,18 @@ func dataSourceLinodeObjectStorageCluster() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeObjectStorageClusterRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeObjectStorageClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	reqObjectStorageCluster := d.Get("id").(string)
 
 	if reqObjectStorageCluster == "" {
-		return fmt.Errorf("Error object storage cluster id is required")
+		return diag.Errorf("Error object storage cluster id is required")
 	}
 
-	objectStorageCluster, err := client.GetObjectStorageCluster(context.Background(), reqObjectStorageCluster)
+	objectStorageCluster, err := client.GetObjectStorageCluster(ctx, reqObjectStorageCluster)
 	if err != nil {
-		return fmt.Errorf("Error listing object storage clusters: %s", err)
+		return diag.Errorf("Error listing object storage clusters: %s", err)
 	}
 
 	if objectStorageCluster != nil {
@@ -69,5 +69,5 @@ func dataSourceLinodeObjectStorageClusterRead(d *schema.ResourceData, meta inter
 		return nil
 	}
 
-	return fmt.Errorf("Linode object storage cluster %s was not found", reqObjectStorageCluster)
+	return diag.Errorf("Linode object storage cluster %s was not found", reqObjectStorageCluster)
 }

@@ -78,7 +78,7 @@ func datasourceLinodeNodeBalancerRead(ctx context.Context, d *schema.ResourceDat
 	client := meta.(*ProviderMeta).Client
 	id := d.Get("id").(int)
 
-	nodebalancer, err := client.GetNodeBalancer(context.Background(), id)
+	nodebalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get nodebalancer %d: %s", id, err)
 	}

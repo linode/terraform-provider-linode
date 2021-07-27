@@ -2,15 +2,15 @@ package linode
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceLinodeImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeImageRead,
+		ReadContext: dataSourceLinodeImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -78,18 +78,18 @@ func dataSourceLinodeImage() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	reqImage := d.Get("id").(string)
 
 	if reqImage == "" {
-		return fmt.Errorf("Image id is required")
+		return diag.Errorf("Image id is required")
 	}
 
-	image, err := client.GetImage(context.Background(), reqImage)
+	image, err := client.GetImage(ctx, reqImage)
 	if err != nil {
-		return fmt.Errorf("Error listing images: %s", err)
+		return diag.Errorf("Error listing images: %s", err)
 	}
 
 	if image != nil {
@@ -114,5 +114,5 @@ func dataSourceLinodeImageRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
 
-	return fmt.Errorf("Image %s was not found", reqImage)
+	return diag.Errorf("Image %s was not found", reqImage)
 }

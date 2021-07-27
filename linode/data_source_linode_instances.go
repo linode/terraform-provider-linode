@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -396,7 +397,7 @@ func dataSourceLinodeInstancesInstances() *schema.Resource {
 
 func dataSourceLinodeInstances() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceLinodeInstancesRead,
+		ReadContext: dataSourceLinodeInstancesRead,
 		Schema: map[string]*schema.Schema{
 			"filter": filterSchema([]string{"group", "id", "image", "label", "region", "tags"}),
 			"instances": {
@@ -409,26 +410,26 @@ func dataSourceLinodeInstances() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeInstancesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceLinodeInstancesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	filter, err := constructFilterString(d, instanceValueToFilterType)
 	if err != nil {
-		return fmt.Errorf("failed to construct filter: %s", err)
+		return diag.Errorf("failed to construct filter: %s", err)
 	}
 
-	instances, err := client.ListInstances(context.Background(), &linodego.ListOptions{
+	instances, err := client.ListInstances(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to get instances: %s", err)
+		return diag.Errorf("failed to get instances: %s", err)
 	}
 
 	flattenedInstances := make([]map[string]interface{}, len(instances))
 	for i, instance := range instances {
-		instanceMap, err := flattenLinodeInstance(&client, &instance)
+		instanceMap, err := flattenLinodeInstance(ctx, &client, &instance)
 		if err != nil {
-			return fmt.Errorf("failed to translate instance to map: %s", err)
+			return diag.Errorf("failed to translate instance to map: %s", err)
 		}
 
 		flattenedInstances[i] = instanceMap
@@ -440,12 +441,12 @@ func dataSourceLinodeInstancesRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func flattenLinodeInstance(client *linodego.Client, instance *linodego.Instance) (map[string]interface{}, error) {
+func flattenLinodeInstance(ctx context.Context, client *linodego.Client, instance *linodego.Instance) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 
 	id := instance.ID
 
-	instanceNetwork, err := client.GetInstanceIPAddresses(context.Background(), int(id))
+	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, int(id))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ips for linode instance %d: %s", id, err)
 	}
@@ -481,7 +482,7 @@ func flattenLinodeInstance(client *linodego.Client, instance *linodego.Instance)
 	result["specs"] = flattenInstanceSpecs(*instance)
 	result["alerts"] = flattenInstanceAlerts(*instance)
 
-	instanceDisks, err := client.ListInstanceDisks(context.Background(), int(id), nil)
+	instanceDisks, err := client.ListInstanceDisks(ctx, int(id), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the disks for the Linode instance %d: %s", id, err)
 	}
@@ -490,7 +491,7 @@ func flattenLinodeInstance(client *linodego.Client, instance *linodego.Instance)
 	result["disk"] = disks
 	result["swap_size"] = swapSize
 
-	instanceConfigs, err := client.ListInstanceConfigs(context.Background(), int(id), nil)
+	instanceConfigs, err := client.ListInstanceConfigs(ctx, int(id), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the config for Linode instance %d (%s): %s", id, instance.Label, err)
 	}
