@@ -190,7 +190,8 @@ func resourceLinodeNodeBalancerConfig() *schema.Resource {
 	}
 }
 
-func resourceLinodeNodeBalancerConfigImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceLinodeNodeBalancerConfigImport(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
 		// Validate that this is an ID by making sure it can be converted into an int
@@ -219,7 +220,8 @@ func resourceLinodeNodeBalancerConfigImport(ctx context.Context, d *schema.Resou
 	return results, nil
 }
 
-func resourceLinodeNodeBalancerConfigRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeNodeBalancerConfigRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -263,7 +265,8 @@ func resourceLinodeNodeBalancerConfigRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceLinodeNodeBalancerConfigCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeNodeBalancerConfigCreate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	nodebalancerID := d.Get("nodebalancer_id").(int)
@@ -299,7 +302,8 @@ func resourceLinodeNodeBalancerConfigCreate(ctx context.Context, d *schema.Resou
 	return resourceLinodeNodeBalancerConfigRead(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerConfigUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeNodeBalancerConfigUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -338,7 +342,8 @@ func resourceLinodeNodeBalancerConfigUpdate(ctx context.Context, d *schema.Resou
 	return resourceLinodeNodeBalancerConfigRead(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerConfigDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeNodeBalancerConfigDelete(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

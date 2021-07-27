@@ -100,7 +100,8 @@ func resourceLinodeDomainRecord() *schema.Resource {
 	}
 }
 
-func resourceLinodeDomainRecordImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceLinodeDomainRecordImport(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
 		// Validate that this is an ID by making sure it can be converted into an int

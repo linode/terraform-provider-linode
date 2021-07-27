@@ -45,7 +45,8 @@ func dataSourceLinodeObjectStorageCluster() *schema.Resource {
 	}
 }
 
-func dataSourceLinodeObjectStorageClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceLinodeObjectStorageClusterRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	reqObjectStorageCluster := d.Get("id").(string)

@@ -69,7 +69,8 @@ func resourceLinodeObjectStorageKey() *schema.Resource {
 	}
 }
 
-func resourceLinodeObjectStorageKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageKeyCreate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
@@ -101,7 +102,8 @@ func resourceLinodeObjectStorageKeyCreate(ctx context.Context, d *schema.Resourc
 	return resourceLinodeObjectStorageKeyRead(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageKeyRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -129,7 +131,8 @@ func resourceLinodeObjectStorageKeyRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceLinodeObjectStorageKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageKeyUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -157,7 +160,8 @@ func resourceLinodeObjectStorageKeyUpdate(ctx context.Context, d *schema.Resourc
 	return resourceLinodeObjectStorageKeyRead(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageKeyDelete(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

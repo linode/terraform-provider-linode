@@ -152,7 +152,8 @@ type ProviderMeta struct {
 	Config *Config
 }
 
-func providerConfigure(ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
+func providerConfigure(
+	ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
 	config := &Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),

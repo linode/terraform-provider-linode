@@ -132,11 +132,13 @@ func resourceLinodeObjectStorageObject() *schema.Resource {
 	}
 }
 
-func resourceLinodeObjectStorageObjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageObjectCreate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return putLinodeObjectStorageObject(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageObjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageObjectRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := s3ConnFromResourceData(d)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
@@ -169,7 +171,8 @@ func resourceLinodeObjectStorageObjectRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceLinodeObjectStorageObjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageObjectUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if d.HasChanges("cache_control", "content_base64", "content_disposition",
 		"content_encoding", "content_language", "content_type", "content",
 		"etag", "metadata", "source", "website_redirect") {
@@ -194,7 +197,8 @@ func resourceLinodeObjectStorageObjectUpdate(ctx context.Context, d *schema.Reso
 	return resourceLinodeObjectStorageObjectRead(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageObjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageObjectDelete(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conn := s3ConnFromResourceData(d)
 
 	if _, ok := d.GetOk("version_id"); ok {
@@ -218,7 +222,8 @@ func resourceLinodeObjectStorageObjectCustomizeDiff(
 // putLinodeObjectStorageObject builds the object from spec and puts it in the
 // specified bucket via the *schema.ResourceData, then it calls
 // resourceLinodeObjectStorageObjectRead.
-func putLinodeObjectStorageObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func putLinodeObjectStorageObject(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := s3ConnFromResourceData(d)
 	body, err := objectBodyFromResourceData(d)
 	if err != nil {
@@ -265,7 +270,8 @@ func putLinodeObjectStorageObject(ctx context.Context, d *schema.ResourceData, m
 
 // deleteAllLinodeObjectStorageObjectVersions deletes all versions of a given
 // object.
-func deleteAllLinodeObjectStorageObjectVersions(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
+func deleteAllLinodeObjectStorageObjectVersions(
+	ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)

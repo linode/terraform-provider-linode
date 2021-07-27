@@ -441,7 +441,8 @@ func dataSourceLinodeInstancesRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func flattenLinodeInstance(ctx context.Context, client *linodego.Client, instance *linodego.Instance) (map[string]interface{}, error) {
+func flattenLinodeInstance(
+	ctx context.Context, client *linodego.Client, instance *linodego.Instance) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 
 	id := instance.ID

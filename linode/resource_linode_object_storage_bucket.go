@@ -173,7 +173,8 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 	}
 }
 
-func resourceLinodeObjectStorageBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageBucketRead(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
@@ -228,7 +229,8 @@ func resourceLinodeObjectStorageBucketRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceLinodeObjectStorageBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageBucketCreate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
@@ -253,7 +255,8 @@ func resourceLinodeObjectStorageBucketCreate(ctx context.Context, d *schema.Reso
 	return resourceLinodeObjectStorageBucketUpdate(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageBucketUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageBucketUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 
 	accessKey := d.Get("access_key")
@@ -298,7 +301,8 @@ func resourceLinodeObjectStorageBucketUpdate(ctx context.Context, d *schema.Reso
 	return resourceLinodeObjectStorageBucketRead(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageBucketDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLinodeObjectStorageBucketDelete(
+	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
@@ -387,7 +391,8 @@ func updateLinodeObjectStorageBucketLifecycle(d *schema.ResourceData, conn *s3.S
 	return err
 }
 
-func updateLinodeObjectStorageBucketAccess(ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
+func updateLinodeObjectStorageBucketAccess(
+	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 
@@ -408,7 +413,8 @@ func updateLinodeObjectStorageBucketAccess(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func updateLinodeObjectStorageBucketCert(ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
+func updateLinodeObjectStorageBucketCert(
+	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
