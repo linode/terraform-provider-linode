@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -333,17 +334,21 @@ func TestAccLinodeInstance_configInterfaces(t *testing.T) {
 func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ProviderMeta).Client
-		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "reboot", "created": { "+gte": "%s" }}`,
+		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
 		if err != nil {
 			t.Fail()
 		}
-		if len(events) > 0 {
+
+		fmt.Fprintf(os.Stderr, "instance: %d, shouldRestart: %v, reboot events: %#v\n", instance.ID, shouldRestart, events)
+
+		if len(events) == 0 {
 			if shouldRestart {
-				return
+				t.Fatal("expected instance to have been rebooted")
 			}
-			t.Fail()
+		} else if !shouldRestart {
+			t.Fatal("expected instance to not have been rebooted")
 		}
 	}
 }
@@ -2087,6 +2092,7 @@ resource "linode_instance" "foobar" {
 	alerts {
 		cpu = 60
 	}
+
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
@@ -2099,19 +2105,20 @@ resource "linode_instance" "foobar" {
 			purpose = "vlan"
 			label = "tf-really-cool-vlan"
 		}
-                devices {
-                    sda {
-                        disk_label = "boot"
-                    }
-                }
+
+        devices {
+	        sda {
+                disk_label = "boot"
+            }
+        }
 	}
 
-        disk {
-            label = "boot"
-            size = 3000
-            image  = "linode/ubuntu18.04"
-            root_pass = "terr4form-test"
-        }
+	disk {
+		label = "boot"
+		size = 3000
+		image  = "linode/ubuntu18.04"
+		root_pass = "terr4form-test"
+	}
 
 	boot_config_label = "config"
 }`, instance)
@@ -2136,18 +2143,15 @@ resource "linode_instance" "foobar" {
 		}
 
 		interface {
-			purpose = "public"
-		}
-
-		interface {
 			purpose = "vlan"
 			label = "tf-really-cool-vlan"
 		}
-                devices {
-                    sda {
-                        disk_label = "boot"
-                    }
-                }
+
+        devices {
+	        sda {
+                disk_label = "boot"
+            }
+        }
 	}
 
 	config {

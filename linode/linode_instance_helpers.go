@@ -250,8 +250,8 @@ func updateInstanceConfigs(ctx context.Context, client linodego.Client, d *schem
 			oldLabel := oldConfig["label"].(string)
 			oldConfigLabels = append(oldConfigLabels, oldLabel)
 			if oldLabel == bootConfigLabel {
-				if iface, ok := oldConfig["interface"].(map[string]interface{}); ok {
-					oldBootInterfaces = append(oldBootInterfaces, iface["ipam_address"].(string))
+				for _, iface := range oldConfig["interface"].([]interface{}) {
+					oldBootInterfaces = append(oldBootInterfaces, iface.(map[string]interface{})["ipam_address"].(string))
 				}
 			}
 		}
