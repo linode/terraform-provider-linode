@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -295,24 +294,34 @@ func TestAccLinodeInstance_configInterfaces(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 
+					resource.TestCheckResourceAttr(resName, "config.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.label", "tf-really-cool-vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 				),
 			},
 			{
 				Config: testAccCheckLinodeInstanceWithConfigInterfacesMultiple(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.label", "tf-really-cool-vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "config.1.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 				),
 			},
 			{
 				PreConfig: testAccAssertReboot(t, false, &instance),
 				Config:    testAccCheckLinodeInstanceWithConfigInterfacesUpdate(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "public"),
-
-					resource.TestCheckResourceAttr(resName, "config.0.interface.1.purpose", "vlan"),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.1.label", "tf-really-cool-vlan"),
+					resource.TestCheckResourceAttr(resName, "config.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 				),
 			},
 			{
@@ -340,8 +349,6 @@ func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.In
 		if err != nil {
 			t.Fail()
 		}
-
-		fmt.Fprintf(os.Stderr, "instance: %d, shouldRestart: %v, reboot events: %#v\n", instance.ID, shouldRestart, events)
 
 		if len(events) == 0 {
 			if shouldRestart {
