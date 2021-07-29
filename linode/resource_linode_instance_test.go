@@ -294,21 +294,39 @@ func TestAccLinodeInstance_configInterfaces(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 
+					resource.TestCheckResourceAttr(resName, "config.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.label", "tf-really-cool-vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithConfigInterfacesUpdate(instanceName),
+				Config: testAccCheckLinodeInstanceWithConfigInterfacesMultiple(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "public"),
-
-					resource.TestCheckResourceAttr(resName, "config.0.interface.1.purpose", "vlan"),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.1.label", "tf-really-cool-vlan"),
+					resource.TestCheckResourceAttr(resName, "config.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.label", "tf-really-cool-vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "config.1.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithConfigInterfacesUpdateEmpty(instanceName),
+				PreConfig: testAccAssertReboot(t, false, &instance),
+				Config:    testAccCheckLinodeInstanceWithConfigInterfacesUpdate(instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "config.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
+				),
+			},
+			{
+				PreConfig: testAccAssertReboot(t, true, &instance),
+				Config:    testAccCheckLinodeInstanceWithConfigInterfacesUpdateEmpty(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "0"),
 				),
@@ -320,6 +338,26 @@ func TestAccLinodeInstance_configInterfaces(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ProviderMeta).Client
+		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
+			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
+		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
+		if err != nil {
+			t.Fail()
+		}
+
+		if len(events) == 0 {
+			if shouldRestart {
+				t.Fatal("expected instance to have been rebooted")
+			}
+		} else if !shouldRestart {
+			t.Fatal("expected instance to not have been rebooted")
+		}
+	}
 }
 
 func TestAccLinodeInstance_disk(t *testing.T) {
@@ -2061,6 +2099,7 @@ resource "linode_instance" "foobar" {
 	alerts {
 		cpu = 60
 	}
+
 	config {
 		label = "config"
 		kernel = "linode/latest-64bit"
@@ -2073,7 +2112,84 @@ resource "linode_instance" "foobar" {
 			purpose = "vlan"
 			label = "tf-really-cool-vlan"
 		}
+
+        devices {
+	        sda {
+                disk_label = "boot"
+            }
+        }
 	}
+
+	disk {
+		label = "boot"
+		size = 3000
+		image  = "linode/ubuntu18.04"
+		root_pass = "terr4form-test"
+	}
+
+	boot_config_label = "config"
+}`, instance)
+}
+
+func testAccCheckLinodeInstanceWithConfigInterfacesMultiple(instance string) string {
+	return fmt.Sprintf(`
+resource "linode_instance" "foobar" {
+	label = "%s"
+	group = "tf_test"
+	type = "g6-nanode-1"
+	region = "us-southeast"
+	alerts {
+		cpu = 60
+	}
+	config {
+		label = "config"
+		kernel = "linode/latest-64bit"
+		root_device = "/dev/sda"
+		helpers {
+			network = true
+		}
+
+		interface {
+			purpose = "vlan"
+			label = "tf-really-cool-vlan"
+		}
+
+        devices {
+	        sda {
+                disk_label = "boot"
+            }
+        }
+	}
+
+	config {
+		label = "config2"
+		kernel = "linode/latest-64bit"
+		root_device = "/dev/sda"
+		helpers {
+			network = true
+		}
+
+		interface {
+			purpose = "public"
+		}
+
+		interface {
+			purpose = "vlan"
+			label = "tf-really-cool-vlan"
+		}
+                devices {
+                    sda {
+                        disk_label = "boot"
+                    }
+                }
+	}
+
+        disk {
+            label = "boot"
+            size = 3000
+            image  = "linode/ubuntu18.04"
+            root_pass = "terr4form-test"
+        }
 
 	boot_config_label = "config"
 }`, instance)
@@ -2105,7 +2221,42 @@ resource "linode_instance" "foobar" {
 			purpose = "vlan"
 			label = "tf-really-cool-vlan"
 		}
+                devices {
+                    sda {
+                        disk_label = "boot"
+                    }
+                }
 	}
+
+	config {
+		label = "config2"
+		kernel = "linode/latest-64bit"
+		root_device = "/dev/sda"
+		helpers {
+			network = true
+		}
+
+		interface {
+			purpose = "public"
+		}
+
+		interface {
+			purpose = "vlan"
+			label = "tf-really-cool-vlan"
+		}
+                devices {
+                    sda {
+                        disk_label = "boot"
+                    }
+                }
+	}
+
+        disk {
+            label = "boot"
+            size = 3000
+            image  = "linode/ubuntu18.04"
+            root_pass = "terr4form-test"
+        }
 
 	boot_config_label = "config"
 }`, instance)
@@ -2128,7 +2279,19 @@ resource "linode_instance" "foobar" {
 		helpers {
 			network = true
 		}
+                devices {
+                    sda {
+                        disk_label = "boot"
+                    }
+                }
 	}
+
+        disk {
+            label = "boot"
+            size = 3000
+            image  = "linode/ubuntu18.04"
+            root_pass = "terr4form-test"
+        }
 
 	boot_config_label = "config"
 }`, instance)

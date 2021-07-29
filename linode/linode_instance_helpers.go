@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -218,13 +219,9 @@ func createInstanceConfigsFromSet(
 	return configIDMap, nil
 }
 
-func updateInstanceConfigs(
-	ctx context.Context,
-	client linodego.Client,
-	d *schema.ResourceData,
-	instance linodego.Instance,
-	tfConfigsOld, tfConfigsNew interface{},
-	diskIDLabelMap map[string]int,
+func updateInstanceConfigs(ctx context.Context, client linodego.Client, d *schema.ResourceData,
+	instance linodego.Instance, tfConfigsOld,
+	tfConfigsNew interface{}, diskIDLabelMap map[string]int, bootConfigLabel string,
 ) (bool, map[string]int, []*linodego.InstanceConfig, error) {
 	var updatedConfigMap map[string]int
 	var rebootInstance bool
@@ -247,9 +244,16 @@ func updateInstanceConfigs(
 
 	oldConfigLabels := make([]string, len(tfConfigsOld.([]interface{})))
 
+	var oldBootInterfaces, newBootInterfaces []string
 	for _, tfConfigOld := range tfConfigsOld.([]interface{}) {
 		if oldConfig, ok := tfConfigOld.(map[string]interface{}); ok {
-			oldConfigLabels = append(oldConfigLabels, oldConfig["label"].(string))
+			oldLabel := oldConfig["label"].(string)
+			oldConfigLabels = append(oldConfigLabels, oldLabel)
+			if oldLabel == bootConfigLabel {
+				for _, iface := range oldConfig["interface"].([]interface{}) {
+					oldBootInterfaces = append(oldBootInterfaces, iface.(map[string]interface{})["ipam_address"].(string))
+				}
+			}
 		}
 	}
 	tfConfigs := tfConfigsNew.([]interface{})
@@ -289,8 +293,13 @@ func updateInstanceConfigs(
 				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
 
 				for i, ni := range interfaces {
-					configUpdateOpts.Interfaces[i] = expandLinodeConfigInterface(ni.(map[string]interface{}))
+					mappedInterface := ni.(map[string]interface{})
+					configUpdateOpts.Interfaces[i] = expandLinodeConfigInterface(mappedInterface)
+					if label == bootConfigLabel {
+						newBootInterfaces = append(newBootInterfaces, mappedInterface["ipam_address"].(string))
+					}
 				}
+
 			}
 
 			tfcDevicesRaw, devicesFound := tfc["devices"]
@@ -337,6 +346,10 @@ func updateInstanceConfigs(
 				updatedConfigs = append(updatedConfigs, &config)
 			}
 		}
+	}
+
+	if !reflect.DeepEqual(oldBootInterfaces, newBootInterfaces) {
+		rebootInstance = true
 	}
 
 	updatedConfigMap, err = deleteInstanceConfigs(ctx, client, instance.ID, oldConfigLabels, updatedConfigMap, configMap)
