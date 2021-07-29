@@ -1236,8 +1236,22 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
-		if diagErr := resourceLinodeInstanceReboot(ctx, d, int(id), meta, bootConfig); diagErr != nil {
-			return diagErr
+		err = client.RebootInstance(ctx, instance.ID, bootConfig)
+
+		log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
+
+		if err != nil {
+			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
+		}
+		_, err = client.WaitForEventFinished(ctx, id, linodego.EntityLinode, linodego.ActionLinodeReboot,
+			*instance.Created, getDeadlineSeconds(ctx, d))
+		if err != nil {
+			return diag.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
+		}
+		if _, err = client.WaitForInstanceStatus(
+			ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
+		); err != nil {
+			return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 		}
 	}
 
