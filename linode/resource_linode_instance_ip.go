@@ -110,6 +110,13 @@ func resourceLinodeInstanceIPCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(ip.Address)
+
+	// TODO(jxriddle): check instance status and react to state
+
+	// setting bootConfig to 0 to use current bootConfig
+	if diagErr := resourceLinodeInstanceReboot(ctx, d, linodeID, meta, 0); diagErr != nil {
+		return diagErr
+	}
 	return resourceLinodeInstanceIPRead(ctx, d, meta)
 }
 

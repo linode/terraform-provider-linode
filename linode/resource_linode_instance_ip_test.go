@@ -20,9 +20,7 @@ func TestAccLinodeInstanceIP_basic(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testAccCheckLinodeInstanceIPBasic(name), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: testAccCheckLinodeInstanceIPBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "gateway"),
@@ -44,13 +42,7 @@ resource "linode_instance" "%[1]s" {
 	group = "tf_test"
 	type = "g6-nanode-1"
 	region = "us-east"
-	disk {
-		label = "disk"
-		image = "linode/alpine3.11"
-		root_pass = "b4d_p4s5"
-		authorized_keys = ["%[2]s"]
-		size = 3000
-	}
+        image = "linode/alpine3.14"
 }`, label, publicKeyMaterial)
 }
 

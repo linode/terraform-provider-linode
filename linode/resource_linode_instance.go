@@ -1236,22 +1236,8 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
-		err = client.RebootInstance(ctx, instance.ID, bootConfig)
-
-		log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
-
-		if err != nil {
-			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
-		}
-		_, err = client.WaitForEventFinished(ctx, id, linodego.EntityLinode, linodego.ActionLinodeReboot,
-			*instance.Created, getDeadlineSeconds(ctx, d))
-		if err != nil {
-			return diag.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
-		}
-		if _, err = client.WaitForInstanceStatus(
-			ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
-		); err != nil {
-			return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+		if diagErr := resourceLinodeInstanceReboot(ctx, d, int(id), meta, bootConfig); diagErr != nil {
+			return diagErr
 		}
 	}
 
@@ -1279,5 +1265,34 @@ func resourceLinodeInstanceDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId("")
+	return nil
+}
+
+// set bootConfig = 0 if using existing boot config
+func resourceLinodeInstanceReboot(ctx context.Context, d *schema.ResourceData, entityID int,
+	meta interface{}, bootConfig int) diag.Diagnostics {
+	client := meta.(*ProviderMeta).Client
+	instance, err := client.GetInstance(ctx, int(entityID))
+	if err != nil {
+		return diag.Errorf("Error fetching data about the current linode: %s", err)
+	}
+
+	log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
+
+	err = client.RebootInstance(ctx, instance.ID, bootConfig)
+
+	if err != nil {
+		return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
+	}
+	_, err = client.WaitForEventFinished(ctx, entityID, linodego.EntityLinode,
+		linodego.ActionLinodeReboot, *instance.Created, getDeadlineSeconds(ctx, d))
+	if err != nil {
+		return diag.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
+	}
+	if _, err = client.WaitForInstanceStatus(
+		ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
+	); err != nil {
+		return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+	}
 	return nil
 }
