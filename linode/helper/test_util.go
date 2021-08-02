@@ -1,4 +1,4 @@
-package linode
+package helper
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ func optInTest(t *testing.T) {
 	}
 }
 
-func getSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
+func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 	t.Helper()
 
 	signer, err := ssh.ParsePrivateKey([]byte(privateKeyMaterial))
@@ -71,7 +71,7 @@ func getSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 	return
 }
 
-func testAccCheckResourceAttrNotEqual(resName string, path, notValue string) resource.TestCheckFunc {
+func TestAccCheckResourceAttrNotEqual(resName string, path, notValue string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resName]
 		if !ok {
@@ -88,7 +88,7 @@ func testAccCheckResourceAttrNotEqual(resName string, path, notValue string) res
 	}
 }
 
-func testAccCheckResourceNonEmptyList(resourceName, attrName string) resource.TestCheckFunc {
+func TestAccCheckResourceNonEmptyList(resourceName, attrName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

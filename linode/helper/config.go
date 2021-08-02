@@ -1,4 +1,4 @@
-package linode
+package helper
 
 import (
 	"fmt"
@@ -19,6 +19,11 @@ const uaEnvVar = "TF_APPEND_USER_AGENT"
 
 // DefaultLinodeURL is the Linode APIv4 URL to use.
 const DefaultLinodeURL = "https://api.linode.com/v4"
+
+type ProviderMeta struct {
+	Client linodego.Client
+	Config *Config
+}
 
 // Config represents the Linode provider configuration.
 type Config struct {

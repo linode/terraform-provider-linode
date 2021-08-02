@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -87,7 +89,7 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_account":                dataSourceLinodeAccount(),
+			"linode_account":                account.DataSource(),
 			"linode_domain":                 dataSourceLinodeDomain(),
 			"linode_domain_record":          dataSourceLinodeDomainRecord(),
 			"linode_firewall":               dataSourceLinodeFirewall(),
@@ -147,11 +149,6 @@ func Provider() *schema.Provider {
 	return provider
 }
 
-type ProviderMeta struct {
-	Client linodego.Client
-	Config *Config
-}
-
 func providerConfigure(
 	ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
 	config := &Config{
@@ -178,7 +175,7 @@ func providerConfigure(
 	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
 		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
-	return &ProviderMeta{
+	return &helper.ProviderMeta{
 		Client: client,
 		Config: config,
 	}, nil

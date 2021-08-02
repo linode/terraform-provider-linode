@@ -1,4 +1,4 @@
-package linode
+package account
 
 import (
 	"testing"
