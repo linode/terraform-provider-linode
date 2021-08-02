@@ -2154,11 +2154,11 @@ resource "linode_instance" "foobar" {
 			label = "tf-really-cool-vlan"
 		}
 
-        devices {
-	        sda {
-                disk_label = "boot"
-            }
-        }
+                devices {
+                        sda {
+                        disk_label = "boot"
+                    }
+                }
 	}
 
 	config {
