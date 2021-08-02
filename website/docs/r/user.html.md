@@ -57,6 +57,8 @@ The following arguments are sets of [entity grants](#entity-grants):
 
 * `domain_grant` - (optional) The domains the user has permissions access to.
 
+* `firewall_grant` - (optional) The firewalls the user has permissions access to.
+
 * `image_grant` - (optional) The images the user has permissions access to.
 
 * `linode_grant` - (optional) The Linodes the user has permissions access to.
@@ -82,6 +84,8 @@ In addition to all the arguments above, the following attributes are exported.
 * `account-access` - (optional) The level of access this User has to Account-level actions, like billing information. (`read_only`, `read_write`)
 
 * `add_domains` - (optional) If true, this User may add Domains.
+
+* `add_firewalls` - (optional) If true, this User may add Firewalls.
 
 * `add_images` - (optional) If true, this User may add Images.
 
