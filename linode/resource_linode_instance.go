@@ -1291,22 +1291,27 @@ func resourceLinodeInstanceReboot(ctx context.Context, d *schema.ResourceData, e
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
+	if instance.Status != linodego.InstanceRunning {
+		log.Printf("[INFO] Instance [%d] is not running\n", instance.ID)
+		return nil
+	}
+
 	log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
 
 	err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
 	if err != nil {
-		return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
+		return diag.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
 	}
 	_, err = client.WaitForEventFinished(ctx, entityID, linodego.EntityLinode,
 		linodego.ActionLinodeReboot, *instance.Created, getDeadlineSeconds(ctx, d))
 	if err != nil {
-		return diag.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
+		return diag.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
 	}
 	if _, err = client.WaitForInstanceStatus(
 		ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
 	); err != nil {
-		return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+		return diag.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
 	}
 	return nil
 }
