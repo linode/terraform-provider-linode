@@ -1,9 +1,10 @@
-package account
+package account_test
 
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acctest"
 )
 
 func TestAccDataSourceLinodeAccount_basic(t *testing.T) {
@@ -12,8 +13,8 @@ func TestAccDataSourceLinodeAccount_basic(t *testing.T) {
 	resourceName := "data.linode_account.foo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acctest.TestAccPreCheck(t) },
+		Providers: acctest.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceLinodeAccountBasic(),

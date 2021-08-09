@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -175,7 +174,7 @@ func providerConfigure(
 	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
 		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
-	return &helper.ProviderMeta{
+	return &ProviderMeta{
 		Client: client,
 		Config: config,
 	}, nil

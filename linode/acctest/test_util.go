@@ -1,23 +1,39 @@
-package helper
+package acctest
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/terraform-provider-linode/linode"
 	"golang.org/x/crypto/ssh"
 )
 
 const optInTestsEnvVar = "ACC_OPT_IN_TESTS"
+const providerKeySkipInstanceReadyPoll = "skip_instance_ready_poll"
 
-var optInTests map[string]struct{}
+var (
+	optInTests         map[string]struct{}
+	privateKeyMaterial string
+	publicKeyMaterial  string
+	TestAccProviders   map[string]*schema.Provider
+	TestAccProvider    *schema.Provider
+)
 
 func init() {
+	var err error
+	publicKeyMaterial, privateKeyMaterial, err = acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	if err != nil {
+		log.Fatalf("Failed to generate random SSH key pair for testing: %s", err)
+	}
 	optInTests = make(map[string]struct{})
 	optInTestsValue, ok := os.LookupEnv(optInTestsEnvVar)
 	if !ok {
@@ -27,9 +43,35 @@ func init() {
 	for _, testName := range strings.Split(optInTestsValue, ",") {
 		optInTests[testName] = struct{}{}
 	}
+	TestAccProvider = linode.Provider()
+	TestAccProviders = map[string]*schema.Provider{
+		"linode": TestAccProvider,
+	}
 }
 
-func optInTest(t *testing.T) {
+func TestProvider(t *testing.T) {
+	if err := linode.Provider().InternalValidate(); err != nil {
+		t.Fatalf("err: %s", err)
+	}
+}
+
+func TestAccPreCheck(t *testing.T) {
+	if v := os.Getenv("LINODE_TOKEN"); v == "" {
+		t.Fatal("LINODE_TOKEN must be set for acceptance tests")
+	}
+}
+
+func AccTestWithProvider(config string, options map[string]interface{}) string {
+	sb := strings.Builder{}
+	sb.WriteString("provider \"linode\" {\n")
+	for key, value := range options {
+		sb.WriteString(fmt.Sprintf("\t%s = %#v\n", key, value))
+	}
+	sb.WriteString("}\n")
+	return sb.String() + config
+}
+
+func OptInTest(t *testing.T) {
 	t.Helper()
 
 	if _, ok := optInTests[t.Name()]; !ok {
