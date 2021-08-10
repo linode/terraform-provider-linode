@@ -39,6 +39,8 @@ The following arguments are supported:
 
 * `rdns` - (Optional) The reverse DNS assigned to this address.
 
+* `apply_immediately` - (Optional) If true, the instance will be rebooted to update network interfaces.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
