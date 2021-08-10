@@ -3,10 +3,12 @@ package linode
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/linode/linodego"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -383,7 +385,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 			{
 				PreConfig: func() {
 					// Delete the Firewall external from Terraform
-					client := testAccProvider.Meta().(*ProviderMeta).Client
+					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.DeleteFirewall(context.Background(), firewall.ID); err != nil {
 						t.Fatalf("failed to delete firewall: %s", err)
@@ -427,7 +429,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 
 func testAccCheckLinodeFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {

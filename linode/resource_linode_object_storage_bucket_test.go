@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const (
@@ -392,7 +393,7 @@ func TestAccLinodeObjectStorageBucket_update(t *testing.T) {
 }
 
 func testAccCheckLinodeObjectStorageBucketExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_bucket" {
@@ -415,7 +416,7 @@ func testAccCheckLinodeObjectStorageBucketExists(s *terraform.State) error {
 
 func testAccCheckLinodeObjectStorageBucketHasSSL(expected bool) func(*terraform.State) error {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "linode_object_storage_bucket" {
 				continue
@@ -440,7 +441,7 @@ func testAccCheckLinodeObjectStorageBucketHasSSL(expected bool) func(*terraform.
 }
 
 func testAccCheckLinodeObjectStorageBucketDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_bucket" {
 			continue

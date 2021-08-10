@@ -3,10 +3,12 @@ package linode
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
-	"testing"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
@@ -32,7 +34,7 @@ func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := testAccProvider.Meta().(*ProviderMeta).Client
+					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 					newSnapshot, err := client.CreateInstanceSnapshot(context.Background(), instance.ID, snapshotName)
 					if err != nil {
 						t.Fatal(err)
@@ -51,7 +53,7 @@ func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := testAccProvider.Meta().(*ProviderMeta).Client
+					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 600); err != nil {
 						t.Fatal(err)
 					}

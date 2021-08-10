@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func dataSourceLinodeSSHKey() *schema.Resource {
@@ -35,7 +36,7 @@ func dataSourceLinodeSSHKey() *schema.Resource {
 }
 
 func dataSourceLinodeSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	reqLabel := d.Get("label").(string)
 

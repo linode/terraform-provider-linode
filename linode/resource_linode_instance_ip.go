@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeInstanceIP() *schema.Resource {
@@ -71,7 +72,7 @@ func resourceLinodeInstanceIP() *schema.Resource {
 }
 
 func resourceLinodeInstanceIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	address := d.Id()
 	linodeID := d.Get("linode_id").(int)
@@ -91,7 +92,7 @@ func resourceLinodeInstanceIPRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLinodeInstanceIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
 	private := d.Get("public").(bool)
@@ -121,7 +122,7 @@ func resourceLinodeInstanceIPCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceLinodeInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	address := d.Id()
 	linodeID := d.Get("linode_id").(int)
@@ -142,7 +143,7 @@ func resourceLinodeInstanceIPUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceLinodeInstanceIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	address := d.Id()
 	linodeID := d.Get("linode_id").(int)

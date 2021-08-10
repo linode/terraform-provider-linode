@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const (
@@ -79,7 +80,7 @@ func resourceLinodeVolume() *schema.Resource {
 }
 
 func resourceLinodeVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Volume ID %s as int: %s", d.Id(), err)
@@ -107,7 +108,7 @@ func resourceLinodeVolumeRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceLinodeVolumeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	var linodeID *int
 
@@ -154,7 +155,7 @@ func resourceLinodeVolumeCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceLinodeVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -258,7 +259,7 @@ func resourceLinodeVolumeUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceLinodeVolumeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id64, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Volume id %s as int", d.Id())

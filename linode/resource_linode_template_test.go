@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
@@ -103,7 +104,7 @@ func TestAccLinodeTemplate_update(t *testing.T) {
 }
 
 func testAccCheckLinodeTemplateExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_template" {
@@ -125,7 +126,7 @@ func testAccCheckLinodeTemplateExists(s *terraform.State) error {
 }
 
 func testAccCheckLinodeTemplateDestroy(s *terraform.State) error {
-	client, ok := testAccProvider.Meta().(*ProviderMeta).Client
+	client, ok := testAccProvider.Meta().(*helper.ProviderMeta).Client
 	if !ok {
 		return fmt.Errorf("Error getting Linode client")
 	}

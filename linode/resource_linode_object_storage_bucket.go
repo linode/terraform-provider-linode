@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeObjectStorageBucketLifecycleExpiration() *schema.Resource {
@@ -175,7 +176,7 @@ func resourceLinodeObjectStorageBucket() *schema.Resource {
 
 func resourceLinodeObjectStorageBucketRead(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
@@ -231,7 +232,7 @@ func resourceLinodeObjectStorageBucketRead(
 
 func resourceLinodeObjectStorageBucketCreate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
@@ -257,7 +258,7 @@ func resourceLinodeObjectStorageBucketCreate(
 
 func resourceLinodeObjectStorageBucketUpdate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	accessKey := d.Get("access_key")
 	secretKey := d.Get("secret_key")
@@ -303,7 +304,7 @@ func resourceLinodeObjectStorageBucketUpdate(
 
 func resourceLinodeObjectStorageBucketDelete(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())

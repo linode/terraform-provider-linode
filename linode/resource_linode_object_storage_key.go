@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeObjectStorageKey() *schema.Resource {
@@ -71,7 +72,7 @@ func resourceLinodeObjectStorageKey() *schema.Resource {
 
 func resourceLinodeObjectStorageKeyCreate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
 		Label: d.Get("label").(string),
@@ -104,7 +105,7 @@ func resourceLinodeObjectStorageKeyCreate(
 
 func resourceLinodeObjectStorageKeyRead(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Object Storage Key ID %s as int: %s", d.Id(), err)
@@ -133,7 +134,7 @@ func resourceLinodeObjectStorageKeyRead(
 
 func resourceLinodeObjectStorageKeyUpdate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -162,7 +163,7 @@ func resourceLinodeObjectStorageKeyUpdate(
 
 func resourceLinodeObjectStorageKeyDelete(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Object Storage Key id %s as int", d.Id())

@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
@@ -342,7 +343,7 @@ func TestAccLinodeInstance_configInterfaces(t *testing.T) {
 
 func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
 	return func() {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
@@ -1540,7 +1541,7 @@ func TestAccLinodeInstance_stackScriptDisk(t *testing.T) {
 
 func testAccCheckLinodeInstanceExists(name string, instance *linodego.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -1568,7 +1569,7 @@ func testAccCheckLinodeInstanceExists(name string, instance *linodego.Instance) 
 }
 
 func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_instance" {
 			continue
@@ -1613,7 +1614,7 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 			return fmt.Errorf("should have an integer Linode ID: %s", err)
 		}
 
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 		if err != nil {
 			return err
 		}
@@ -1682,7 +1683,7 @@ func testDiskSize(size int) testDiskFunc {
 
 func testAccCheckComputeInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -1796,7 +1797,7 @@ func instanceDiskID(disk *linodego.InstanceDisk) string {
 // testAccCheckComputeInstanceConfigs verifies any configs exist and runs config specific tests against a target instance
 func testAccCheckComputeInstanceConfigs(instance *linodego.Instance, configsTests ...testConfigsFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching configs: invalid Instance argument")
@@ -1824,7 +1825,7 @@ func testAccCheckComputeInstanceConfigs(instance *linodego.Instance, configsTest
 
 func testAccCheckLinodeInstanceDiskExists(instance *linodego.Instance, label string, instanceDisk *linodego.InstanceDisk) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -1853,7 +1854,7 @@ func testAccCheckLinodeInstanceDiskExists(instance *linodego.Instance, label str
 
 func testAccCheckComputeInstanceDisk(instance *linodego.Instance, label string, size int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")

@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"context"
 	"strconv"
@@ -25,7 +26,7 @@ func dataSourceLinodeImages() *schema.Resource {
 }
 
 func dataSourceLinodeImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	filter, err := constructFilterString(d, imageValueToFilterType)
 	if err != nil {

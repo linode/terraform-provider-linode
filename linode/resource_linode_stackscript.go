@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeStackscript() *schema.Resource {
@@ -135,7 +136,7 @@ func resourceLinodeStackscript() *schema.Resource {
 }
 
 func resourceLinodeStackscriptRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Stackscript ID %s as int: %s", d.Id(), err)
@@ -170,7 +171,7 @@ func resourceLinodeStackscriptRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceLinodeStackscriptCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.StackscriptCreateOptions{
 		Label:       d.Get("label").(string),
@@ -194,7 +195,7 @@ func resourceLinodeStackscriptCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceLinodeStackscriptUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -221,7 +222,7 @@ func resourceLinodeStackscriptUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceLinodeStackscriptDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Stackscript id %s as int", d.Id())

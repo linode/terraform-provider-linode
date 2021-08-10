@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeNodeBalancerNode() *schema.Resource {
@@ -77,7 +78,7 @@ func resourceLinodeNodeBalancerNode() *schema.Resource {
 
 func resourceLinodeNodeBalancerNodeRead(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerNode ID %s as int: %s", d.Id(), err)
@@ -148,7 +149,7 @@ func resourceLinodeNodeBalancerNodeImport(
 
 func resourceLinodeNodeBalancerNodeCreate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
@@ -178,7 +179,7 @@ func resourceLinodeNodeBalancerNodeCreate(
 
 func resourceLinodeNodeBalancerNodeUpdate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -210,7 +211,7 @@ func resourceLinodeNodeBalancerNodeUpdate(
 
 func resourceLinodeNodeBalancerNodeDelete(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func dataSourceLinodeDomainRecord() *schema.Resource {
@@ -82,7 +83,7 @@ func dataSourceLinodeDomainRecord() *schema.Resource {
 }
 
 func dataSourceLinodeDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	domainID := d.Get("domain_id").(int)
 	recordName := d.Get("name").(string)

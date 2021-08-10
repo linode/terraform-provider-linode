@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const domainSecondsDescription = "Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, " +
@@ -107,7 +108,7 @@ func dataSourceLinodeDomain() *schema.Resource {
 }
 
 func dataSourceLinodeDomainRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	reqIDString := d.Get("id").(string)
 	reqDomain := d.Get("domain").(string)

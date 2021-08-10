@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const (
@@ -134,7 +135,7 @@ func resourceLinodeLKECluster() *schema.Resource {
 }
 
 func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode LKE Cluster ID: %s", err)
@@ -183,7 +184,7 @@ func resourceLinodeLKEClusterRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLinodeLKEClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.LKEClusterCreateOptions{
 		Label:      d.Get("label").(string),
@@ -218,7 +219,7 @@ func resourceLinodeLKEClusterCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceLinodeLKEClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerMeta := meta.(*ProviderMeta)
+	providerMeta := meta.(*helper.ProviderMeta)
 	client := providerMeta.Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -278,7 +279,7 @@ func resourceLinodeLKEClusterUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceLinodeLKEClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
@@ -536,7 +537,7 @@ func waitForClusterPoolsToStartRecycle(
 	return poolRecyclesCh, errCh
 }
 
-func recycleLKECluster(ctx context.Context, meta *ProviderMeta, id int, pools []linodego.LKEClusterPool) error {
+func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, pools []linodego.LKEClusterPool) error {
 	client := meta.Client
 
 	if err := client.RecycleLKEClusterNodes(ctx, id); err != nil {

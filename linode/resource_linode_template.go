@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeTemplate() *schema.Resource {
@@ -45,7 +46,7 @@ func resourceLinodeTemplate() *schema.Resource {
 }
 
 func resourceLinodeTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Template ID %s as int: %s", d.Id(), err)
@@ -64,7 +65,7 @@ func resourceLinodeTemplateRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceLinodeTemplateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client, ok := meta.(*ProviderMeta).Client
+	client, ok := meta.(*helper.ProviderMeta).Client
 	if !ok {
 		return diag.Errorf("Invalid Client when creating Linode Template")
 	}
@@ -83,7 +84,7 @@ func resourceLinodeTemplateCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLinodeTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -106,7 +107,7 @@ func resourceLinodeTemplateUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLinodeTemplateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Template id %s as int", d.Id())

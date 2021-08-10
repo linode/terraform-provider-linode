@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeRDNS() *schema.Resource {
@@ -39,7 +40,7 @@ func resourceLinodeRDNS() *schema.Resource {
 }
 
 func resourceLinodeRDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {
@@ -63,7 +64,7 @@ func resourceLinodeRDNSRead(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceLinodeRDNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	address := d.Get("address").(string)
 	var rdns *string
@@ -85,7 +86,7 @@ func resourceLinodeRDNSCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceLinodeRDNSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {
@@ -111,7 +112,7 @@ func resourceLinodeRDNSUpdate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceLinodeRDNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	ipStr := d.Id()
 
 	if len(ipStr) == 0 {

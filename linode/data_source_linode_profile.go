@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func dataSourceLinodeProfile() *schema.Resource {
@@ -109,7 +110,7 @@ func dataSourceLinodeProfile() *schema.Resource {
 }
 
 func dataSourceLinodeProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	profile, err := client.GetProfile(ctx)
 	if err != nil {

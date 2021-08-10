@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func dataSourceLinodeNodeBalancer() *schema.Resource {
@@ -75,7 +76,7 @@ func dataSourceLinodeNodeBalancer() *schema.Resource {
 }
 
 func datasourceLinodeNodeBalancerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id := d.Get("id").(int)
 
 	nodebalancer, err := client.GetNodeBalancer(ctx, id)

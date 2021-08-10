@@ -2,10 +2,12 @@ package linode
 
 import (
 	"context"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
-	"time"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"fmt"
 	"testing"
@@ -27,7 +29,7 @@ func TestAccDataSourceLinodeVLANs_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := testAccProvider.Meta().(*ProviderMeta).Client
+					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 					if _, err := waitForVLANWithLabel(client, vlanName, 30); err != nil {
 						t.Fatal(err)
 					}

@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const (
@@ -131,7 +132,7 @@ func resourceLinodeImage() *schema.Resource {
 }
 
 func resourceLinodeImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	image, err := client.GetImage(ctx, d.Id())
 	if err != nil {
@@ -177,7 +178,7 @@ func resourceLinodeImageCreate(ctx context.Context, d *schema.ResourceData, meta
 
 func resourceLinodeImageCreateFromLinode(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
 	diskID := d.Get("disk_id").(int)
@@ -214,7 +215,7 @@ func resourceLinodeImageCreateFromLinode(
 
 func resourceLinodeImageCreateFromUpload(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	region := d.Get("region").(string)
 	label := d.Get("label").(string)
@@ -253,7 +254,7 @@ func resourceLinodeImageCreateFromUpload(
 }
 
 func resourceLinodeImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	image, err := client.GetImage(ctx, d.Id())
 	if err != nil {
@@ -285,7 +286,7 @@ func resourceLinodeImageUpdate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceLinodeImageDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	err := client.DeleteImage(ctx, d.Id())
 	if err != nil {
@@ -311,7 +312,7 @@ func imageFromResourceData(d *schema.ResourceData) (image io.ReadCloser, err err
 func uploadImageAndStoreHash(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 	uploadURL string, image io.Reader) error {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	var buf bytes.Buffer
 	tee := io.TeeReader(image, &buf)

@@ -32,7 +32,7 @@ type Config struct {
 	APIVersion  string
 	UAPrefix    string
 
-	terraformVersion string
+	TerraformVersion string
 
 	SkipInstanceReadyPoll        bool
 	SkipInstanceDeletePoll       bool
@@ -56,7 +56,7 @@ func (c *Config) Client() linodego.Client {
 	}
 	client := linodego.NewClient(oauth2Client)
 
-	tfUserAgent := terraformUserAgent(c.terraformVersion)
+	tfUserAgent := terraformUserAgent(c.TerraformVersion)
 	userAgent := strings.TrimSpace(fmt.Sprintf("%s terraform-provider-linode/%s",
 		tfUserAgent, version.ProviderVersion))
 	if c.UAPrefix != "" {

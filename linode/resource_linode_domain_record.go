@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeDomainRecord() *schema.Resource {
@@ -131,7 +132,7 @@ func resourceLinodeDomainRecordImport(
 }
 
 func resourceLinodeDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
@@ -196,7 +197,7 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 }
 
 func resourceLinodeDomainRecordCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 
@@ -224,7 +225,7 @@ func resourceLinodeDomainRecordCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceLinodeDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 
@@ -254,7 +255,7 @@ func resourceLinodeDomainRecordUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceLinodeDomainRecordDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func TestAccLinodeNodeBalancerNode_basic(t *testing.T) {
@@ -90,7 +91,7 @@ func TestAccLinodeNodeBalancerNode_update(t *testing.T) {
 }
 
 func testAccCheckLinodeNodeBalancerNode(s *terraform.State) (err error) {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	var linodeID, nodebalancerID, nodeID, configID int
 	var expectedNodePort string
@@ -157,7 +158,7 @@ func testAccCheckLinodeNodeBalancerNode(s *terraform.State) (err error) {
 }
 
 func testAccCheckLinodeNodeBalancerNodeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_node" {
 			continue

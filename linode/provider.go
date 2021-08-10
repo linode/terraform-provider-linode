@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -150,7 +151,7 @@ func Provider() *schema.Provider {
 
 func providerConfigure(
 	ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
-	config := &Config{
+	config := &helper.Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),
 		APIVersion:  d.Get("api_version").(string),
@@ -167,14 +168,14 @@ func providerConfigure(
 
 		LKENodeReadyPollMilliseconds: d.Get("lke_node_ready_poll_ms").(int),
 	}
-	config.terraformVersion = terraformVersion
+	config.TerraformVersion = terraformVersion
 	client := config.Client()
 
 	// Ping the API for an empty response to verify the configuration works
 	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
 		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
-	return &ProviderMeta{
+	return &helper.ProviderMeta{
 		Client: client,
 		Config: config,
 	}, nil

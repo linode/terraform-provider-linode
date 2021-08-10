@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
@@ -278,7 +279,7 @@ func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 
 func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -306,7 +307,7 @@ func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resour
 }
 
 func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_volume" {
 			continue

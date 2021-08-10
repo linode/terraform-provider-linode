@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeSSHKey() *schema.Resource {
@@ -43,7 +44,7 @@ func resourceLinodeSSHKey() *schema.Resource {
 }
 
 func resourceLinodeSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode SSH Key ID %s as int: %s", d.Id(), err)
@@ -69,7 +70,7 @@ func resourceLinodeSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceLinodeSSHKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.SSHKeyCreateOptions{
 		Label:  d.Get("label").(string),
@@ -90,7 +91,7 @@ func resourceLinodeSSHKeyCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceLinodeSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -117,7 +118,7 @@ func resourceLinodeSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceLinodeSSHKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode SSH Key id %s as int", d.Id())

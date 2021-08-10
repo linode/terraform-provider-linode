@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const (
@@ -711,7 +712,7 @@ func resourceLinodeInstance() *schema.Resource {
 }
 
 func resourceLinodeInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
@@ -814,7 +815,7 @@ func resourceLinodeInstanceRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceLinodeInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	bootConfig := 0
 	createOpts := linodego.InstanceCreateOptions{
@@ -1005,7 +1006,7 @@ func resourceLinodeInstanceCreate(ctx context.Context, d *schema.ResourceData, m
 		targetStatus = linodego.InstanceOffline
 	}
 
-	if !meta.(*ProviderMeta).Config.SkipInstanceReadyPoll {
+	if !meta.(*helper.ProviderMeta).Config.SkipInstanceReadyPoll {
 		if _, err = client.WaitForInstanceStatus(ctx, instance.ID, targetStatus, getDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("timed-out waiting for Linode instance %d to reach status %s: %s", instance.ID, targetStatus, err)
 		}
@@ -1073,7 +1074,7 @@ func adjustSwapSizeIfNeeded(
 }
 
 func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
@@ -1259,7 +1260,7 @@ func resourceLinodeInstanceUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLinodeInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int", d.Id())
@@ -1270,7 +1271,7 @@ func resourceLinodeInstanceDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Error deleting Linode instance %d: %s", id, err)
 	}
 
-	if !meta.(*ProviderMeta).Config.SkipInstanceDeletePoll {
+	if !meta.(*helper.ProviderMeta).Config.SkipInstanceDeletePoll {
 		// Wait for full deletion to assure volumes are detached
 		if _, err = client.WaitForEventFinished(ctx, int(id), linodego.EntityLinode, linodego.ActionLinodeDelete,
 			minDelete, getDeadlineSeconds(ctx, d)); err != nil {
@@ -1285,7 +1286,7 @@ func resourceLinodeInstanceDelete(ctx context.Context, d *schema.ResourceData, m
 // set bootConfig = 0 if using existing boot config
 func resourceLinodeInstanceReboot(ctx context.Context, d *schema.ResourceData, entityID int,
 	meta interface{}, bootConfig int) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	instance, err := client.GetInstance(ctx, int(entityID))
 	if err != nil {
 		return diag.Errorf("Error fetching data about the current linode: %s", err)

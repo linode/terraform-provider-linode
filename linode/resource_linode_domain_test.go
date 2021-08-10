@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
@@ -146,7 +147,7 @@ func TestAccLinodeDomain_roundedDomainSecs(t *testing.T) {
 }
 
 func testAccCheckLinodeDomainExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain" {
@@ -168,7 +169,7 @@ func testAccCheckLinodeDomainExists(s *terraform.State) error {
 }
 
 func testAccCheckLinodeDomainDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain" {
 			continue

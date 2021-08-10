@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func dataSourceLinodeImage() *schema.Resource {
@@ -79,7 +80,7 @@ func dataSourceLinodeImage() *schema.Resource {
 }
 
 func dataSourceLinodeImageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	reqImage := d.Get("id").(string)
 

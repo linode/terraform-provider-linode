@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func resourceLinodeFirewallRule() *schema.Resource {
@@ -169,7 +170,7 @@ func resourceLinodeFirewall() *schema.Resource {
 }
 
 func resourceLinodeFirewallRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
@@ -209,7 +210,7 @@ func resourceLinodeFirewallRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceLinodeFirewallCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.FirewallCreateOptions{
 		Label: d.Get("label").(string),
@@ -244,7 +245,7 @@ func resourceLinodeFirewallCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLinodeFirewallUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
@@ -323,7 +324,7 @@ func resourceLinodeFirewallUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLinodeFirewallDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)

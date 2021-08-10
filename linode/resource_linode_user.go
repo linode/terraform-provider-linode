@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"context"
 	"fmt"
@@ -162,7 +163,7 @@ func resourceLinodeUser() *schema.Resource {
 }
 
 func resourceLinodeUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.UserCreateOptions{
 		Email:      d.Get("email").(string),
@@ -187,7 +188,7 @@ func resourceLinodeUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceLinodeUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	username := d.Get("username").(string)
 	user, err := client.GetUser(ctx, username)
@@ -226,7 +227,7 @@ func resourceLinodeUserRead(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceLinodeUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	id := d.Id()
 	username := d.Get("username").(string)
@@ -250,7 +251,7 @@ func resourceLinodeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceLinodeUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	username := d.Get("username").(string)
 	if err := client.DeleteUser(ctx, username); err != nil {
@@ -260,7 +261,7 @@ func resourceLinodeUserDelete(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	username := d.Get("username").(string)
 	restricted := d.Get("restricted").(bool)

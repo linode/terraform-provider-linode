@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // testImageBytes is a minimal Gzipped image.
@@ -185,7 +186,7 @@ func TestAccLinodeImage_uploadFile(t *testing.T) {
 
 func testAccCheckLinodeImageExists(name string, image *linodego.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ProviderMeta).Client
+		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -210,7 +211,7 @@ func testAccCheckLinodeImageExists(name string, image *linodego.Image) resource.
 }
 
 func testAccCheckLinodeImageDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_Image" {
 			continue

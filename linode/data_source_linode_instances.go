@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func dataSourceLinodeInstancesInstances() *schema.Resource {
@@ -411,7 +412,7 @@ func dataSourceLinodeInstances() *schema.Resource {
 }
 
 func dataSourceLinodeInstancesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	filter, err := constructFilterString(d, instanceValueToFilterType)
 	if err != nil {

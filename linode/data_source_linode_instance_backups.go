@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"context"
 	"fmt"
@@ -121,7 +122,7 @@ func dataSourceLinodeInstanceBackups() *schema.Resource {
 
 func dataSourceLinodeInstanceBackupsRead(ctx context.Context, d *schema.ResourceData,
 	meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
 
