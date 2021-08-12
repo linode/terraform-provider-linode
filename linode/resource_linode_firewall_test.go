@@ -27,7 +27,7 @@ func testSweepLinodeFirewall(prefix string) error {
 		return fmt.Errorf("failed to get client: %s", err)
 	}
 
-	firewalls, err := client.ListLKEClusters(context.Background(), nil)
+	firewalls, err := client.ListFirewalls(context.Background(), nil)
 	if err != nil {
 		return fmt.Errorf("failed to get firewalls: %s", err)
 	}
