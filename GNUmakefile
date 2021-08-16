@@ -75,4 +75,7 @@ test-compile:
 	fi
 	go test -c $(TEST) $(TESTARGS) -timeout 120m -parallel=2
 
+imports:
+	goimports -w $(GOFMT_FILES)
+
 .PHONY: build sweep test testacc vet fmt fmtcheck errcheck test-compile
