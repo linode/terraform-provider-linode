@@ -1,4 +1,4 @@
-package linode
+package acceptance
 
 import (
 	"fmt"
@@ -9,24 +9,25 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func getClientForSweepers() (*linodego.Client, error) {
+func GetClientForSweepers() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")
 	if token == "" {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
 	}
 
-	config := &Config{AccessToken: token, APIVersion: "v4beta"}
+	config := &helper.Config{AccessToken: token, APIVersion: "v4beta"}
 	client := config.Client()
 	return &client, nil
 }
 
-func sweeperListOptions(prefix, field string) *linodego.ListOptions {
+func SweeperListOptions(prefix, field string) *linodego.ListOptions {
 	filterFmt := "{ %q : {\"+contains\": %q }}"
 
 	filter := fmt.Sprintf(filterFmt, field, prefix)
@@ -34,7 +35,7 @@ func sweeperListOptions(prefix, field string) *linodego.ListOptions {
 	return listOpts
 }
 
-func shouldSweepAcceptanceTestResource(prefix, name string) bool {
+func ShouldSweep(prefix, name string) bool {
 	loweredName := strings.ToLower(name)
 	if len(prefix) < 3 {
 		log.Printf("Ignoring Resource %q because sweeper prefix is too short %q", name, prefix)

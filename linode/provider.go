@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -90,7 +91,7 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"linode_account":                account.DataSource(),
-			"linode_domain":                 dataSourceLinodeDomain(),
+			"linode_domain":                 domain.DataSource(),
 			"linode_domain_record":          dataSourceLinodeDomainRecord(),
 			"linode_firewall":               dataSourceLinodeFirewall(),
 			"linode_image":                  dataSourceLinodeImage(),
@@ -115,7 +116,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_domain":                resourceLinodeDomain(),
+			"linode_domain":                domain.Resource(),
 			"linode_domain_record":         resourceLinodeDomainRecord(),
 			"linode_firewall":              resourceLinodeFirewall(),
 			"linode_image":                 resourceLinodeImage(),

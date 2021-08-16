@@ -1,4 +1,4 @@
-package linode
+package domain_test
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeDomain_basic(t *testing.T) {
+func TestAccDataSourceDomain_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_domain.foobar"
@@ -18,14 +19,14 @@ func TestAccDataSourceLinodeDomain_basic(t *testing.T) {
 	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeDomainConfigBasic(domainName),
+				Config: configBasic(domainName),
 			},
 			{
-				Config: testAccCheckLinodeDomainConfigBasic(domainName) + testDataSourceLinodeDomainBasic(domainName),
+				Config: configBasic(domainName) + basic(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 					resource.TestCheckResourceAttr(resourceName, "type", "master"),
@@ -38,28 +39,28 @@ func TestAccDataSourceLinodeDomain_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeDomainConfigBasic(domainName) + testDataSourceLinodeDomainByID(),
+				Config: configBasic(domainName) + byID(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 				),
 				Destroy: true,
 			},
 			{
-				Config:      testDataSourceLinodeDomainBasic(domainName),
+				Config:      basic(domainName),
 				ExpectError: regexp.MustCompile(domainName + " was not found"),
 			},
 		},
 	})
 }
 
-func testDataSourceLinodeDomainBasic(domainName string) string {
+func basic(domainName string) string {
 	return fmt.Sprintf(`
 data "linode_domain" "foobar" {
 	domain = "%s"
 }`, domainName)
 }
 
-func testDataSourceLinodeDomainByID() string {
+func byID() string {
 	return `
 data "linode_domain" "foobar" {
 	id = "${linode_domain.foobar.id}"
