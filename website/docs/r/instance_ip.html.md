@@ -9,6 +9,7 @@ description: |-
 # linode\_instance\_ip
 
 ~> **NOTICE:** You may need to contact support to increase your instance IP limit before you can allocate additional IPs.
+~> **NOTICE:** This resource will reboot the specified instance following IP allocation.
 
 Manages a Linode instance IP.
 
@@ -37,6 +38,8 @@ The following arguments are supported:
 * `public` - (Optional) Whether the IPv4 address is public or private. Defaults to true.
 
 * `rdns` - (Optional) The reverse DNS assigned to this address.
+
+* `apply_immediately` - (Optional) If true, the instance will be rebooted to update network interfaces.
 
 ## Attributes Reference
 

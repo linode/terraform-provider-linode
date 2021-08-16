@@ -36,11 +36,15 @@ The following arguments are supported:
 
 * `acl` - (Optional) The Access Control Level of the bucket using a canned ACL string. See all ACL strings [in the Linode API v4 documentation](linode.com/docs/api/object-storage/#object-storage-bucket-access-update__request-body-schema).
 
+* `access_key` - (Optional) The access key to authenticate with.
+
+* `secret_key` - (Optional) The secret key to authenticate with.
+
 * `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
 
-* `versioning` - (Optional) Whether to enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket.
+* `versioning` - (Optional) Whether to enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket. (Requires `access_key` and `secret_key`)
 
-* [`lifecycle_rule`](#lifecycle_rule) - (Optional) Lifecycle rules to be applied to the bucket.
+* [`lifecycle_rule`](#lifecycle_rule) - (Optional) Lifecycle rules to be applied to the bucket. (Requires `access_key` and `secret_key`)
 
 * [`cert`](#cert) - (Optional) The bucket's TLS/SSL certificate.
 

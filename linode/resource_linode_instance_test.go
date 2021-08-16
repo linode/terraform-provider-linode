@@ -346,16 +346,18 @@ func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.In
 		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
+
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
+
 		if err != nil {
 			t.Fail()
 		}
 
-		if len(events) == 0 {
-			if shouldRestart {
-				t.Fatal("expected instance to have been rebooted")
-			}
-		} else if !shouldRestart {
+		if len(events) == 0 && shouldRestart {
+			t.Fatal("expected instance to have been rebooted")
+		}
+
+		if len(events) > 0 && !shouldRestart {
 			t.Fatal("expected instance to not have been rebooted")
 		}
 	}

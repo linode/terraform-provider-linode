@@ -67,6 +67,11 @@ func resourceLinodeInstanceIP() *schema.Resource {
 				Description: "The type of IP address.",
 				Computed:    true,
 			},
+			"apply_immediately": {
+				Type:        schema.TypeBool,
+				Description: "If true, the instance will be rebooted to update network interfaces.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -96,6 +101,8 @@ func resourceLinodeInstanceIPCreate(ctx context.Context, d *schema.ResourceData,
 
 	linodeID := d.Get("linode_id").(int)
 	private := d.Get("public").(bool)
+	applyImmediately := d.Get("apply_immediately").(bool)
+
 	ip, err := client.AddInstanceIPAddress(ctx, linodeID, private)
 	if err != nil {
 		return diag.Errorf("failed to create instance (%d) ip: %s", linodeID, err)
@@ -112,12 +119,16 @@ func resourceLinodeInstanceIPCreate(ctx context.Context, d *schema.ResourceData,
 
 	d.SetId(ip.Address)
 
-	// TODO(jxriddle): check instance status and react to state
+	// Only reboot the associated instance with apply_immediately == true
+	if applyImmediately {
+		// TODO(jxriddle): check instance status and react to state
 
-	// setting bootConfig to 0 to use current bootConfig
-	if diagErr := resourceLinodeInstanceReboot(ctx, d, linodeID, meta, 0); diagErr != nil {
-		return diagErr
+		// setting bootConfig to 0 to use current bootConfig
+		if diagErr := resourceLinodeInstanceReboot(ctx, d, linodeID, meta, 0); diagErr != nil {
+			return diagErr
+		}
 	}
+
 	return resourceLinodeInstanceIPRead(ctx, d, meta)
 }
 
