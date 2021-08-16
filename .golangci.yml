@@ -4,7 +4,7 @@
 run:
   tests: false
   timeout: 2m
-  
+
 linters-settings:
   errcheck:
     check-type-assertions: true
