@@ -4,20 +4,20 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/linode/terraform-provider-linode/linode/acctest"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeAccount_basic(t *testing.T) {
+func TestAccDataSourceAccount_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_account.foo"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acctest.TestAccPreCheck(t) },
-		Providers: acctest.TestAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeAccountBasic(),
+				Config: basic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
 					resource.TestCheckResourceAttrSet(resourceName, "first_name"),
@@ -38,6 +38,6 @@ func TestAccDataSourceLinodeAccount_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeAccountBasic() string {
+func basic() string {
 	return `data "linode_account" "foo" {}`
 }
