@@ -1,4 +1,4 @@
-package linode
+package domainrecord_test
 
 import (
 	"fmt"
@@ -6,18 +6,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeDomainRecord_basic(t *testing.T) {
+func TestAccDataSourceDomainRecord_basic(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
 	domain := acctest.RandomWithPrefix("recordtest") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceLinodeDomainRecordConfigBasic(domain),
+				Config: dataSourceConfigBasic(domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", "www"),
 					resource.TestCheckResourceAttr(datasourceName, "type", "CNAME"),
@@ -31,16 +32,16 @@ func TestAccDataSourceLinodeDomainRecord_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceLinodeDomainRecord_idLookup(t *testing.T) {
+func TestAccDataSourceDomainRecord_idLookup(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
 	domain := acctest.RandomWithPrefix("idloikup") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceLinodeDomainRecordConfigIDLookup(domain),
+				Config: dataSourceConfigIDLookup(domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", "www"),
 					resource.TestCheckResourceAttrSet(datasourceName, "id"),
@@ -52,16 +53,16 @@ func TestAccDataSourceLinodeDomainRecord_idLookup(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceLinodeDomainRecord_srv(t *testing.T) {
+func TestAccDataSourceDomainRecord_srv(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
 	domain := acctest.RandomWithPrefix("srv") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceLinodeDomainRecordConfigSRV(domain),
+				Config: dataSourceConfigSRV(domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "type", "SRV"),
 					resource.TestCheckResourceAttr(datasourceName, "port", "80"),
@@ -77,16 +78,16 @@ func TestAccDataSourceLinodeDomainRecord_srv(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceLinodeDomainRecord_caa(t *testing.T) {
+func TestAccDataSourceDomainRecord_caa(t *testing.T) {
 	datasourceName := "data.linode_domain_record.record"
 	domain := acctest.RandomWithPrefix("caa") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceLinodeDomainRecordConfigCAA(domain),
+				Config: dataSourceConfigCAA(domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", "caa_test"),
 					resource.TestCheckResourceAttr(datasourceName, "type", "CAA"),
@@ -101,7 +102,7 @@ func TestAccDataSourceLinodeDomainRecord_caa(t *testing.T) {
 	})
 }
 
-func testAccDataSourceLinodeDomainRecordConfigBasic(domain string) string {
+func dataSourceConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "domain" {
 	type = "master"
@@ -124,7 +125,7 @@ data "linode_domain_record" "record" {
 `, domain)
 }
 
-func testAccDataSourceLinodeDomainRecordConfigIDLookup(domain string) string {
+func dataSourceConfigIDLookup(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "domain" {
 	type = "master"
@@ -146,7 +147,7 @@ data "linode_domain_record" "record" {
 `, domain)
 }
 
-func testAccDataSourceLinodeDomainRecordConfigSRV(domain string) string {
+func dataSourceConfigSRV(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "domain" {
 	type = "master"
@@ -172,7 +173,7 @@ data "linode_domain_record" "record" {
 `, domain)
 }
 
-func testAccDataSourceLinodeDomainRecordConfigCAA(domain string) string {
+func dataSourceConfigCAA(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "domain" {
 	type = "master"
