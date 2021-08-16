@@ -770,6 +770,8 @@ func resourceLinodeInstanceRead(ctx context.Context, d *schema.ResourceData, met
 	flatBackups := flattenInstanceBackups(*instance)
 
 	d.Set("backups", flatBackups)
+	d.Set("backups_enabled", instance.Backups.Enabled)
+
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
