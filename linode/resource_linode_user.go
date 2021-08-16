@@ -10,8 +10,8 @@ import (
 	"log"
 )
 
-var resourceLinodeUserGrantFields = []string{"global_grants", "domain_grant", "image_grant", "linode_grant",
-	"longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant"}
+var resourceLinodeUserGrantFields = []string{"global_grants", "domain_grant", "firewall_grant", "image_grant",
+	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant"}
 
 func resourceLinodeUserGrantsGlobal() *schema.Resource {
 	return &schema.Resource{
@@ -25,6 +25,12 @@ func resourceLinodeUserGrantsGlobal() *schema.Resource {
 			"add_domains": {
 				Type:        schema.TypeBool,
 				Description: "If true, this User may add Domains.",
+				Optional:    true,
+				Default:     false,
+			},
+			"add_firewalls": {
+				Type:        schema.TypeBool,
+				Description: "If true, this User may add Firewalls.",
 				Optional:    true,
 				Default:     false,
 			},
@@ -151,6 +157,7 @@ func resourceLinodeUser() *schema.Resource {
 				Elem:        resourceLinodeUserGrantsGlobal(),
 			},
 			"domain_grant":       resourceLinodeUserGrantsEntitySet(),
+			"firewall_grant":     resourceLinodeUserGrantsEntitySet(),
 			"image_grant":        resourceLinodeUserGrantsEntitySet(),
 			"linode_grant":       resourceLinodeUserGrantsEntitySet(),
 			"longview_grant":     resourceLinodeUserGrantsEntitySet(),
@@ -209,6 +216,7 @@ func resourceLinodeUserRead(ctx context.Context, d *schema.ResourceData, meta in
 		d.Set("global_grants", []interface{}{flattenGrantsGlobal(&grants.Global)})
 
 		d.Set("domain_grant", flattenGrantsEntities(grants.Domain))
+		d.Set("firewall_grant", flattenGrantsEntities(grants.Firewall))
 		d.Set("image_grant", flattenGrantsEntities(grants.Image))
 		d.Set("linode_grant", flattenGrantsEntities(grants.Linode))
 		d.Set("longview_grant", flattenGrantsEntities(grants.Longview))
@@ -277,6 +285,7 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	updateOpts.Domain = expandGrantsEntities(d.Get("domain_grant").(*schema.Set).List())
+	updateOpts.Firewall = expandGrantsEntities(d.Get("firewall_grant").(*schema.Set).List())
 	updateOpts.Image = expandGrantsEntities(d.Get("image_grant").(*schema.Set).List())
 	updateOpts.Linode = expandGrantsEntities(d.Get("linode_grant").(*schema.Set).List())
 	updateOpts.Longview = expandGrantsEntities(d.Get("longview_grant").(*schema.Set).List())
@@ -325,6 +334,7 @@ func expandGrantsGlobal(global map[string]interface{}) linodego.GlobalUserGrants
 	}
 
 	result.AddDomains = global["add_domains"].(bool)
+	result.AddFirewalls = global["add_firewalls"].(bool)
 	result.AddImages = global["add_images"].(bool)
 	result.AddLinodes = global["add_linodes"].(bool)
 	result.AddLongview = global["add_longview"].(bool)
@@ -368,6 +378,7 @@ func flattenGrantsGlobal(global *linodego.GlobalUserGrants) map[string]interface
 
 	result["account_access"] = global.AccountAccess
 	result["add_domains"] = global.AddDomains
+	result["add_firewalls"] = global.AddFirewalls
 	result["add_images"] = global.AddImages
 	result["add_linodes"] = global.AddLinodes
 	result["add_longview"] = global.AddLongview

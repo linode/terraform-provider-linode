@@ -110,6 +110,7 @@ func TestAccLinodeUser_grants(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", ""),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "true"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_firewalls", "true"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_images", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_linodes", "true"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_longview", "false"),
@@ -126,6 +127,7 @@ func TestAccLinodeUser_grants(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", "read_only"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "false"),
+					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_firewalls", "false"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_images", "true"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_linodes", "true"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_longview", "false"),
@@ -162,6 +164,7 @@ resource "linode_user" "test" {
 		add_linodes = true
 		add_nodebalancers = true
 		add_domains = true
+		add_firewalls = true
 	}
 }`, username, email)
 }
