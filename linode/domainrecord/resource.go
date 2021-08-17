@@ -1,4 +1,4 @@
-package linode
+package domainrecord
 
 import (
 	"context"
@@ -9,100 +9,24 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func resourceLinodeDomainRecord() *schema.Resource {
-	secondsDiffSuppressor := domainSecondsDiffSuppressor()
-
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeDomainRecordCreate,
-		ReadContext:   resourceLinodeDomainRecordRead,
-		UpdateContext: resourceLinodeDomainRecordUpdate,
-		DeleteContext: resourceLinodeDomainRecordDelete,
+		Schema:        resourceSchema,
+		CreateContext: createResource,
+		ReadContext:   readResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceLinodeDomainRecordImport,
-		},
-		Schema: map[string]*schema.Schema{
-			"domain_id": {
-				Type:        schema.TypeInt,
-				Description: "The ID of the Domain to access.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"name": {
-				Type: schema.TypeString,
-				Description: "The name of this Record. This field's actual usage depends on the type of record this " +
-					"represents. For A and AAAA records, this is the subdomain being associated with an IP address. " +
-					"Generated for SRV records.",
-				Optional:     true,
-				Computed:     true, // This is true for SRV records
-				ValidateFunc: validation.StringLenBetween(0, 100),
-			},
-			"record_type": {
-				Type: schema.TypeString,
-				Description: "The type of Record this is in the DNS system. For example, A records associate a " +
-					"domain name with an IPv4 address, and AAAA records associate a domain name with an IPv6 address.",
-				Required: true,
-				ForceNew: true,
-				ValidateFunc: validation.StringInSlice(
-					[]string{"A", "AAAA", "NS", "MX", "CNAME", "TXT", "SRV", "PTR", "CAA"}, false),
-			},
-			"ttl_sec": {
-				Type: schema.TypeInt,
-				Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
-					"cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, " +
-					"86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest " +
-					"valid value.",
-				Optional:         true,
-				DiffSuppressFunc: secondsDiffSuppressor,
-			},
-			"target": {
-				Type: schema.TypeString,
-				Description: "The target for this Record. This field's actual usage depends on the type of record " +
-					"this represents. For A and AAAA records, this is the address the named Domain should resolve to.",
-				Required:         true,
-				DiffSuppressFunc: domainRecordTargetSuppressor,
-			},
-			"priority": {
-				Type:         schema.TypeInt,
-				Description:  "The priority of the target host. Lower values are preferred.",
-				Optional:     true,
-				ValidateFunc: validation.IntBetween(0, 255),
-			},
-			"protocol": {
-				Type:        schema.TypeString,
-				Description: "The protocol this Record's service communicates with. Only valid for SRV records.",
-				Optional:    true,
-			},
-			"service": {
-				Type:        schema.TypeString,
-				Description: "The service this Record identified. Only valid for SRV records.",
-				Optional:    true,
-			},
-			"tag": {
-				Type:        schema.TypeString,
-				Description: "The tag portion of a CAA record. It is invalid to set this on other record types.",
-				Optional:    true,
-			},
-			"port": {
-				Type:        schema.TypeInt,
-				Description: "The port this Record points to.",
-				Optional:    true,
-			},
-			"weight": {
-				Type:        schema.TypeInt,
-				Description: "The relative weight of this Record. Higher values are preferred.",
-				Optional:    true,
-			},
+			StateContext: importResource,
 		},
 	}
 }
 
-func resourceLinodeDomainRecordImport(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
 		// Validate that this is an ID by making sure it can be converted into an int
@@ -120,7 +44,7 @@ func resourceLinodeDomainRecordImport(
 		d.Set("domain_id", domainID)
 	}
 
-	err := resourceLinodeDomainRecordRead(ctx, d, meta)
+	err := readResource(ctx, d, meta)
 	if err != nil {
 		return nil, fmt.Errorf("unable to import %v as domain_record: %v", d.Id(), err)
 	}
@@ -131,7 +55,7 @@ func resourceLinodeDomainRecordImport(
 	return results, nil
 }
 
-func resourceLinodeDomainRecordRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -196,7 +120,7 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 	}
 }
 
-func resourceLinodeDomainRecordCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
@@ -221,10 +145,10 @@ func resourceLinodeDomainRecordCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(fmt.Sprintf("%d", domainRecord.ID))
 
-	return resourceLinodeDomainRecordRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
@@ -251,10 +175,10 @@ func resourceLinodeDomainRecordUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("Error updating Domain Record: %s", err)
 	}
 
-	return resourceLinodeDomainRecordRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeDomainRecordDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -273,29 +197,4 @@ func resourceLinodeDomainRecordDelete(ctx context.Context, d *schema.ResourceDat
 func domainRecordTargetSuppressor(k, provisioned, declared string, d *schema.ResourceData) bool {
 	return len(strings.Split(declared, ".")) == 1 &&
 		strings.Contains(provisioned, declared)
-}
-
-func domainSecondsDiffSuppressor() schema.SchemaDiffSuppressFunc {
-	accepted := []int{
-		300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200,
-	}
-
-	rounder := func(n int) int {
-		if n == 0 {
-			return 0
-		}
-
-		for _, value := range accepted {
-			if n <= value {
-				return value
-			}
-		}
-		return accepted[len(accepted)-1]
-	}
-
-	return func(k, provisioned, declared string, d *schema.ResourceData) bool {
-		provisionedSec, _ := strconv.Atoi(provisioned)
-		declaredSec, _ := strconv.Atoi(declared)
-		return rounder(declaredSec) == provisionedSec
-	}
 }

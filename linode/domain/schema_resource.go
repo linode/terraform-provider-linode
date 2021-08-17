@@ -3,9 +3,10 @@ package domain
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var secondsDiffSuppressor = domainSecondsDiffSuppressor()
+var secondsDiffSuppressor = helper.DomainSecondsDiffSuppressor()
 var resourceSchema = map[string]*schema.Schema{
 	"domain": {
 		Type: schema.TypeString,
