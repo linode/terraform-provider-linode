@@ -1,4 +1,4 @@
-package linode
+package firewall_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -19,12 +20,12 @@ const testFirewallResName = "linode_firewall.test"
 func init() {
 	resource.AddTestSweepers("linode_firewall", &resource.Sweeper{
 		Name: "linode_firewall",
-		F:    testSweepLinodeFirewall,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeFirewall(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("failed to get client: %s", err)
 	}
@@ -34,7 +35,7 @@ func testSweepLinodeFirewall(prefix string) error {
 		return fmt.Errorf("failed to get firewalls: %s", err)
 	}
 	for _, firewall := range firewalls {
-		if !shouldSweepAcceptanceTestResource(prefix, firewall.Label) {
+		if !acceptance.ShouldSweep(prefix, firewall.Label) {
 			continue
 		}
 		if err := client.DeleteFirewall(context.Background(), firewall.ID); err != nil {
@@ -52,14 +53,15 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -106,14 +108,15 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testAccCheckLinodeFirewallMinimum(name), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(resourceConfigMinimum(name),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -146,14 +149,15 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testAccCheckLinodeFirewallMultipleRules(name, devicePrefix), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(resourceConfigMultipleRules(name, devicePrefix),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -219,12 +223,12 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeFirewallNoDevice(name),
+				Config: resourceConfigNoDevice(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -259,14 +263,15 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -296,9 +301,10 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: accTestWithProvider(testAccCheckLinodeFirewallUpdates(newName, devicePrefix), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(resourceConfigUpdates(newName, devicePrefix),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", newName),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "true"),
@@ -345,16 +351,17 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeFirewallExists(testFirewallResName, &firewall),
+					checkFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
@@ -385,17 +392,18 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 			{
 				PreConfig: func() {
 					// Delete the Firewall external from Terraform
-					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.DeleteFirewall(context.Background(), firewall.ID); err != nil {
 						t.Fatalf("failed to delete firewall: %s", err)
 					}
 				},
-				Config: accTestWithProvider(testAccCheckLinodeFirewallBasic(name, devicePrefix), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeFirewallExists(testFirewallResName, &firewall),
+					checkFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
@@ -427,9 +435,9 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
+func checkFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -456,7 +464,7 @@ func testAccCheckLinodeFirewallExists(name string, firewall *linodego.Firewall) 
 	}
 }
 
-func testAccCheckLinodeFirewallInstance(prefix, identifier string) string {
+func resourceConfigInstance(prefix, identifier string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "%[1]s" {
 	label = "%.15[2]s-%[1]s"
@@ -470,11 +478,11 @@ resource "linode_instance" "%[1]s" {
 		authorized_keys = ["%[3]s"]
 		size = 3000
 	}
-}`, identifier, prefix, publicKeyMaterial)
+}`, identifier, prefix, acceptance.PublicKeyMaterial)
 }
 
-func testAccCheckLinodeFirewallBasic(name, devicePrefix string) string {
-	return testAccCheckLinodeFirewallInstance(devicePrefix, "one") + fmt.Sprintf(`
+func configBasic(name, devicePrefix string) string {
+	return resourceConfigInstance(devicePrefix, "one") + fmt.Sprintf(`
 resource "linode_firewall" "test" {
 	label = "%s"
 	tags  = ["test"]
@@ -503,7 +511,7 @@ resource "linode_firewall" "test" {
 }`, name)
 }
 
-func testAccCheckLinodeFirewallMinimum(name string) string {
+func resourceConfigMinimum(name string) string {
 	return fmt.Sprintf(`
 resource "linode_firewall" "test" {
 	label = "%s"
@@ -520,8 +528,8 @@ resource "linode_firewall" "test" {
 }`, name)
 }
 
-func testAccCheckLinodeFirewallMultipleRules(name, devicePrefix string) string {
-	return testAccCheckLinodeFirewallInstance(devicePrefix, "one") + fmt.Sprintf(`
+func resourceConfigMultipleRules(name, devicePrefix string) string {
+	return resourceConfigInstance(devicePrefix, "one") + fmt.Sprintf(`
 resource "linode_firewall" "test" {
 	label = "%s"
 	tags  = ["test"]
@@ -568,7 +576,7 @@ resource "linode_firewall" "test" {
 }`, name)
 }
 
-func testAccCheckLinodeFirewallNoDevice(name string) string {
+func resourceConfigNoDevice(name string) string {
 	return fmt.Sprintf(`
 resource "linode_firewall" "test" {
 	label = "%s"
@@ -596,9 +604,9 @@ resource "linode_firewall" "test" {
 }`, name)
 }
 
-func testAccCheckLinodeFirewallUpdates(name, devicePrefix string) string {
-	return testAccCheckLinodeFirewallInstance(devicePrefix, "one") +
-		testAccCheckLinodeFirewallInstance(devicePrefix, "two") +
+func resourceConfigUpdates(name, devicePrefix string) string {
+	return resourceConfigInstance(devicePrefix, "one") +
+		resourceConfigInstance(devicePrefix, "two") +
 		fmt.Sprintf(`
 resource "linode_firewall" "test" {
 	label    = "%s"

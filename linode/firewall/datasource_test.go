@@ -1,28 +1,30 @@
-package linode
+package firewall_test
 
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
 const testFirewallDataName = "data.linode_firewall.test"
 
-func TestAccDataSourceLinodeFirewall_basic(t *testing.T) {
+func TestAccDataSourceFirewall_basic(t *testing.T) {
 	t.Parallel()
 
 	firewallName := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testDataSourceLinodeFirewallBasic(firewallName, devicePrefix), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
-				}),
+				Config: acceptance.AccTestWithProvider(dataSourceConfigBasic(firewallName, devicePrefix),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallDataName, "label", firewallName),
 					resource.TestCheckResourceAttr(testFirewallDataName, "disabled", "false"),
@@ -58,8 +60,8 @@ func TestAccDataSourceLinodeFirewall_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeFirewallBasic(firewallName, devicePrefix string) string {
-	return testAccCheckLinodeFirewallBasic(firewallName, devicePrefix) + `
+func dataSourceConfigBasic(firewallName, devicePrefix string) string {
+	return configBasic(firewallName, devicePrefix) + `
 data "linode_firewall" "test" {
 	id = linode_firewall.test.id
 }

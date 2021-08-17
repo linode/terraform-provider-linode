@@ -10,6 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -94,7 +95,7 @@ func Provider() *schema.Provider {
 			"linode_account":                account.DataSource(),
 			"linode_domain":                 domain.DataSource(),
 			"linode_domain_record":          domainrecord.DataSource(),
-			"linode_firewall":               dataSourceLinodeFirewall(),
+			"linode_firewall":               firewall.DataSource(),
 			"linode_image":                  dataSourceLinodeImage(),
 			"linode_images":                 dataSourceLinodeImages(),
 			"linode_instances":              dataSourceLinodeInstances(),
@@ -119,7 +120,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"linode_domain":                domain.Resource(),
 			"linode_domain_record":         domainrecord.Resource(),
-			"linode_firewall":              resourceLinodeFirewall(),
+			"linode_firewall":              firewall.Resource(),
 			"linode_image":                 resourceLinodeImage(),
 			"linode_instance":              resourceLinodeInstance(),
 			"linode_instance_ip":           resourceLinodeInstanceIP(),
