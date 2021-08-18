@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -13,25 +14,26 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"golang.org/x/crypto/ssh"
 )
 
 const optInTestsEnvVar = "ACC_OPT_IN_TESTS"
-
-//const providerKeySkipInstanceReadyPoll = "skip_instance_ready_poll"
+const SkipInstanceReadyPollKey = "skip_instance_ready_poll"
 
 var (
 	optInTests         map[string]struct{}
 	privateKeyMaterial string
-	publicKeyMaterial  string
+	PublicKeyMaterial  string
 	TestAccProviders   map[string]*schema.Provider
 	TestAccProvider    *schema.Provider
 )
 
 func init() {
 	var err error
-	publicKeyMaterial, privateKeyMaterial, err = acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	PublicKeyMaterial, privateKeyMaterial, err = acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		log.Fatalf("Failed to generate random SSH key pair for testing: %s", err)
 	}
@@ -149,4 +151,33 @@ func TestAccCheckResourceNonEmptyList(resourceName, attrName string) resource.Te
 
 		return nil
 	}
+}
+
+func CheckLKEClusterDestroy(s *terraform.State) error {
+	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_lke_cluster" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("failed to parse LKE Cluster ID: %s", err)
+		}
+
+		if id == 0 {
+			return fmt.Errorf("should not have LKE Cluster ID of 0")
+		}
+
+		if _, err = client.GetLKECluster(context.Background(), id); err == nil {
+			return fmt.Errorf("should not find Linode ID %d existing after delete", id)
+		} else if apiErr, ok := err.(*linodego.Error); !ok {
+			return fmt.Errorf("expected API Error but got %#v", err)
+		} else if apiErr.Code != 404 {
+			return fmt.Errorf("expected an error 404 but got %#v", apiErr)
+		}
+	}
+
+	return nil
 }

@@ -1,4 +1,4 @@
-package linode
+package image_test
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -27,24 +28,24 @@ var testImageBytesNew = []byte{0x1f, 0x8b, 0x08, 0x08, 0x53, 0x13, 0x94, 0x60,
 func init() {
 	resource.AddTestSweepers("linode_image", &resource.Sweeper{
 		Name: "linode_image",
-		F:    testSweepLinodeImage,
+		F:    sweep,
 	})
 
 }
 
-func testSweepLinodeImage(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	images, err := client.ListImages(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting images: %s", err)
 	}
 	for _, image := range images {
-		if !shouldSweepAcceptanceTestResource(prefix, image.Label) {
+		if !acceptance.ShouldSweep(prefix, image.Label) {
 			continue
 		}
 		err := client.DeleteImage(context.Background(), image.ID)
@@ -57,21 +58,21 @@ func testSweepLinodeImage(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeImage_basic(t *testing.T) {
+func TestAccImage_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_image.foobar"
 	var ImageName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeImageDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeImageConfigBasic(ImageName),
+				Config: resourceConfigBasic(ImageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeImageExists(resName, nil),
+					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", ImageName),
 					resource.TestCheckResourceAttr(resName, "description", "descriptive text"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
@@ -92,29 +93,29 @@ func TestAccLinodeImage_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeImage_update(t *testing.T) {
+func TestAccImage_update(t *testing.T) {
 	t.Parallel()
 
 	var imageName = acctest.RandomWithPrefix("tf_test")
 	var resName = "linode_image.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeImageDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeImageConfigBasic(imageName),
+				Config: resourceConfigBasic(imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeImageExists(resName, nil),
+					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
 					resource.TestCheckResourceAttr(resName, "description", "descriptive text"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeImageConfigUpdates(imageName),
+				Config: resourceConfigUpdates(imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeImageExists(resName, nil),
+					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", imageName)),
 					resource.TestCheckResourceAttr(resName, "description", "more descriptive text"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
@@ -135,13 +136,13 @@ func TestAccLinodeImage_update(t *testing.T) {
 	})
 }
 
-func TestAccLinodeImage_uploadFile(t *testing.T) {
+func TestAccImage_uploadFile(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_image.foobar"
 	imageName := acctest.RandomWithPrefix("tf_test")
 
-	file, err := testAccCreateTempFile("tf-test-image-upload-file", testImageBytes)
+	file, err := createTempFile("tf-test-image-upload-file", testImageBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,14 +151,14 @@ func TestAccLinodeImage_uploadFile(t *testing.T) {
 	var image linodego.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeImageDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeImageConfigUpload(imageName, file.Name()),
+				Config: resourceConfigUpload(imageName, file.Name()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeImageExists(resName, &image),
+					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
 					resource.TestCheckResourceAttr(resName, "description", "really descriptive text"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
@@ -174,9 +175,9 @@ func TestAccLinodeImage_uploadFile(t *testing.T) {
 				PreConfig: func() {
 					file.Write(testImageBytesNew)
 				},
-				Config: testAccCheckLinodeImageConfigUpload(imageName, file.Name()),
+				Config: resourceConfigUpload(imageName, file.Name()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeImageExists(resName, &image),
+					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),
 				),
 			},
@@ -184,9 +185,9 @@ func TestAccLinodeImage_uploadFile(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeImageExists(name string, image *linodego.Image) resource.TestCheckFunc {
+func checkImageExists(name string, image *linodego.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -210,8 +211,8 @@ func testAccCheckLinodeImageExists(name string, image *linodego.Image) resource.
 	}
 }
 
-func testAccCheckLinodeImageDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkImageDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_Image" {
 			continue
@@ -231,7 +232,7 @@ func testAccCheckLinodeImageDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCreateTempFile(name string, content []byte) (*os.File, error) {
+func createTempFile(name string, content []byte) (*os.File, error) {
 	file, err := ioutil.TempFile(os.TempDir(), name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %s", err)
@@ -244,7 +245,7 @@ func testAccCreateTempFile(name string, content []byte) (*os.File, error) {
 	return file, nil
 }
 
-func testAccCheckLinodeImageConfigBasic(image string) string {
+func resourceConfigBasic(image string) string {
 	return fmt.Sprintf(`
 	resource "linode_instance" "foobar" {
 		label = "%s"
@@ -266,7 +267,7 @@ func testAccCheckLinodeImageConfigBasic(image string) string {
 	}`, image, image)
 }
 
-func testAccCheckLinodeImageConfigUpdates(image string) string {
+func resourceConfigUpdates(image string) string {
 	return fmt.Sprintf(`
 	resource "linode_instance" "foobar" {
 		label = "%s"
@@ -279,7 +280,7 @@ func testAccCheckLinodeImageConfigUpdates(image string) string {
 			filesystem = "ext4"
 		}
 	}
-	
+
 	resource "linode_image" "foobar" {
 		linode_id = "${linode_instance.foobar.id}"
 		disk_id = "${linode_instance.foobar.disk.0.id}"
@@ -288,7 +289,7 @@ func testAccCheckLinodeImageConfigUpdates(image string) string {
 	}`, image, image)
 }
 
-func testAccCheckLinodeImageConfigUpload(image string, file string) string {
+func resourceConfigUpload(image string, file string) string {
 	return fmt.Sprintf(`
 resource "linode_image" "foobar" {
 	label = "%s"

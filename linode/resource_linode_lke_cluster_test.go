@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -173,35 +174,6 @@ func testAccCheckLinodeLKEClusterExists(cluster *linodego.LKECluster) resource.T
 	}
 }
 
-func testAccCheckLinodeLKEClusterDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_lke_cluster" {
-			continue
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("failed to parse LKE Cluster ID: %s", err)
-		}
-
-		if id == 0 {
-			return fmt.Errorf("should not have LKE Cluster ID of 0")
-		}
-
-		if _, err = client.GetLKECluster(context.Background(), id); err == nil {
-			return fmt.Errorf("should not find Linode ID %d existing after delete", id)
-		} else if apiErr, ok := err.(*linodego.Error); !ok {
-			return fmt.Errorf("expected API Error but got %#v", err)
-		} else if apiErr.Code != 404 {
-			return fmt.Errorf("expected an error 404 but got %#v", apiErr)
-		}
-	}
-
-	return nil
-}
-
 func TestAccLinodeLKECluster_basic(t *testing.T) {
 	t.Parallel()
 
@@ -209,7 +181,7 @@ func TestAccLinodeLKECluster_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeLKEClusterBasic(clusterName),
@@ -239,7 +211,7 @@ func TestAccLinodeLKECluster_k8sUpgrade(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeLKEClusterManyPools(clusterName, "1.19"),
@@ -269,7 +241,7 @@ func TestAccLinodeLKECluster_basicUpdates(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeLKEClusterBasic(clusterName),
@@ -300,7 +272,7 @@ func TestAccLinodeLKECluster_poolUpdates(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeLKEClusterBasic(clusterName),
@@ -341,7 +313,7 @@ func TestAccLinodeLKECluster_removeUnmanagedPool(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeLKEClusterBasic(clusterName),
