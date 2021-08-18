@@ -12,6 +12,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/image"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -96,7 +97,7 @@ func Provider() *schema.Provider {
 			"linode_domain":                 domain.DataSource(),
 			"linode_domain_record":          domainrecord.DataSource(),
 			"linode_firewall":               firewall.DataSource(),
-			"linode_image":                  dataSourceLinodeImage(),
+			"linode_image":                  image.DataSource(),
 			"linode_images":                 dataSourceLinodeImages(),
 			"linode_instances":              dataSourceLinodeInstances(),
 			"linode_instance_backups":       dataSourceLinodeInstanceBackups(),
@@ -121,7 +122,7 @@ func Provider() *schema.Provider {
 			"linode_domain":                domain.Resource(),
 			"linode_domain_record":         domainrecord.Resource(),
 			"linode_firewall":              firewall.Resource(),
-			"linode_image":                 resourceLinodeImage(),
+			"linode_image":                 image.Resource(),
 			"linode_instance":              resourceLinodeInstance(),
 			"linode_instance_ip":           resourceLinodeInstanceIP(),
 			"linode_lke_cluster":           resourceLinodeLKECluster(),
