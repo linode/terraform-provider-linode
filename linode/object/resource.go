@@ -1,4 +1,4 @@
-package linode
+package object
 
 import (
 	"bytes"
@@ -17,128 +17,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceLinodeObjectStorageObject() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeObjectStorageObjectCreate,
-		ReadContext:   resourceLinodeObjectStorageObjectRead,
-		UpdateContext: resourceLinodeObjectStorageObjectUpdate,
-		DeleteContext: resourceLinodeObjectStorageObjectDelete,
+		Schema: resourceSchema,
 
-		CustomizeDiff: resourceLinodeObjectStorageObjectCustomizeDiff,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:        schema.TypeString,
-				Description: "The target bucket to put this object in.",
-				Required:    true,
-			},
-			"cluster": {
-				Type:        schema.TypeString,
-				Description: "The target cluster that the bucket is in.",
-				Required:    true,
-			},
-			"key": {
-				Type:        schema.TypeString,
-				Description: "The name of the uploaded object.",
-				Required:    true,
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Description: "The S3 secret key with access to the target bucket.",
-				Required:    true,
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Description: "The S3 access key with access to the target bucket.",
-				Required:    true,
-			},
-			"content": {
-				Type:         schema.TypeString,
-				Description:  "The contents of the Object to upload.",
-				Optional:     true,
-				ExactlyOneOf: []string{"content", "content_base64", "source"},
-			},
-			"content_base64": {
-				Type:        schema.TypeString,
-				Description: "The base64 contents of the Object to upload.",
-				Optional:    true,
-			},
-			"source": {
-				Type:        schema.TypeString,
-				Description: "The source file to upload.",
-				Optional:    true,
-			},
-			"acl": {
-				Type:        schema.TypeString,
-				Description: "The ACL config given to this object.",
-				Default:     s3.ObjectCannedACLPrivate,
-				Optional:    true,
-			},
-			"cache_control": {
-				Type:        schema.TypeString,
-				Description: "This cache_control configuration of this object.",
-				Optional:    true,
-			},
-			"content_disposition": {
-				Type:        schema.TypeString,
-				Description: "The content disposition configuration of this object.",
-				Optional:    true,
-			},
-			"content_encoding": {
-				Type:        schema.TypeString,
-				Description: "The encoding of the content of this object.",
-				Optional:    true,
-			},
-			"content_language": {
-				Type:        schema.TypeString,
-				Description: "The language metadata of this object.",
-				Optional:    true,
-			},
-			"content_type": {
-				Type:        schema.TypeString,
-				Description: "The MIME type of the content.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"etag": {
-				Type:        schema.TypeString,
-				Description: "The specific version of this object.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"force_destroy": {
-				Type:        schema.TypeBool,
-				Description: "Whether the object should bypass deletion restrictions.",
-				Optional:    true,
-				Default:     false,
-			},
-			"metadata": {
-				Type:        schema.TypeMap,
-				Description: "The metadata of this object",
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"version_id": {
-				Type:        schema.TypeString,
-				Description: "The version ID of this object.",
-				Computed:    true,
-			},
-			"website_redirect": {
-				Type:        schema.TypeString,
-				Description: "The website redirect location of this object.",
-				Optional:    true,
-			},
-		},
+		CustomizeDiff: diffResource,
 	}
 }
 
-func resourceLinodeObjectStorageObjectCreate(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return putLinodeObjectStorageObject(ctx, d, meta)
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return putObject(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageObjectRead(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := s3ConnFromResourceData(d)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
@@ -166,17 +62,16 @@ func resourceLinodeObjectStorageObjectRead(
 	d.Set("website_redirect", headOutput.WebsiteRedirectLocation)
 	d.Set("version_id", headOutput.VersionId)
 
-	d.Set("metadata", flattenLinodeObjectStorageObjectMetadata(headOutput.Metadata))
+	d.Set("metadata", flattenObjectMetadata(headOutput.Metadata))
 
 	return nil
 }
 
-func resourceLinodeObjectStorageObjectUpdate(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if d.HasChanges("cache_control", "content_base64", "content_disposition",
 		"content_encoding", "content_language", "content_type", "content",
 		"etag", "metadata", "source", "website_redirect") {
-		return putLinodeObjectStorageObject(ctx, d, meta)
+		return putObject(ctx, d, meta)
 	}
 
 	bucket := d.Get("bucket").(string)
@@ -194,24 +89,23 @@ func resourceLinodeObjectStorageObjectUpdate(
 		}
 	}
 
-	return resourceLinodeObjectStorageObjectRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageObjectDelete(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conn := s3ConnFromResourceData(d)
 
 	if _, ok := d.GetOk("version_id"); ok {
-		return deleteAllLinodeObjectStorageObjectVersions(ctx, d)
+		return deleteAllObjectVersions(ctx, d)
 	}
 
 	bucket := d.Get("bucket").(string)
 	key := strings.TrimPrefix(d.Get("key").(string), "/")
 	force := d.Get("force_destroy").(bool)
-	return diag.FromErr(deleteLinodeObjectStorageObject(conn, bucket, key, "", force))
+	return diag.FromErr(deleteObject(conn, bucket, key, "", force))
 }
 
-func resourceLinodeObjectStorageObjectCustomizeDiff(
+func diffResource(
 	ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	if d.HasChange("etag") {
 		d.SetNewComputed("version_id")
@@ -219,11 +113,10 @@ func resourceLinodeObjectStorageObjectCustomizeDiff(
 	return nil
 }
 
-// putLinodeObjectStorageObject builds the object from spec and puts it in the
+// putObject builds the object from spec and puts it in the
 // specified bucket via the *schema.ResourceData, then it calls
-// resourceLinodeObjectStorageObjectRead.
-func putLinodeObjectStorageObject(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// readResource.
+func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := s3ConnFromResourceData(d)
 	body, err := objectBodyFromResourceData(d)
 	if err != nil {
@@ -256,7 +149,7 @@ func putLinodeObjectStorageObject(
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
-		putInput.Metadata = expandLinodeObjectStorageObjectMetadata(metadata.(map[string]interface{}))
+		putInput.Metadata = expandObjectMetadata(metadata.(map[string]interface{}))
 	}
 
 	if _, err := client.PutObject(putInput); err != nil {
@@ -265,13 +158,12 @@ func putLinodeObjectStorageObject(
 
 	d.SetId(buildObjectStorageObjectID(d))
 
-	return resourceLinodeObjectStorageObjectRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-// deleteAllLinodeObjectStorageObjectVersions deletes all versions of a given
+// deleteAllObjectVersions deletes all versions of a given
 // object.
-func deleteAllLinodeObjectStorageObjectVersions(
-	ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
+func deleteAllObjectVersions(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
@@ -309,14 +201,14 @@ func deleteAllLinodeObjectStorageObjectVersions(
 
 	// delete all version of the current object
 	for _, version := range versions {
-		if err := deleteLinodeObjectStorageObject(conn, bucket, key, version, force); err != nil {
+		if err := deleteObject(conn, bucket, key, version, force); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	return nil
 }
 
-func deleteLinodeObjectStorageObject(client *s3.S3, bucket, key, version string, force bool) error {
+func deleteObject(client *s3.S3, bucket, key, version string, force bool) error {
 	deleteObjectInput := &s3.DeleteObjectInput{
 		Bucket:                    &bucket,
 		Key:                       &key,
@@ -366,7 +258,7 @@ func objectBodyFromResourceData(d *schema.ResourceData) (body aws.ReaderSeekerCl
 	return
 }
 
-func expandLinodeObjectStorageObjectMetadata(metadata map[string]interface{}) map[string]*string {
+func expandObjectMetadata(metadata map[string]interface{}) map[string]*string {
 	metadataMap := make(map[string]*string, len(metadata))
 	for key, value := range metadata {
 		metadataMap[key] = aws.String(value.(string))
@@ -374,7 +266,7 @@ func expandLinodeObjectStorageObjectMetadata(metadata map[string]interface{}) ma
 	return metadataMap
 }
 
-func flattenLinodeObjectStorageObjectMetadata(metadata map[string]*string) map[string]string {
+func flattenObjectMetadata(metadata map[string]*string) map[string]string {
 	metadataObject := make(map[string]string, len(metadata))
 	for key, value := range metadata {
 		if value == nil {

@@ -1,4 +1,4 @@
-package linode
+package object_test
 
 import (
 	"encoding/base64"
@@ -14,15 +14,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-const testObjectStorageObjectResName = "linode_object_storage_object.object"
+const objectResourceName = "linode_object_storage_object.object"
 
-func testAccCheckLinodeObjectStorageObjectExists(obj *s3.GetObjectOutput) resource.TestCheckFunc {
+func checkObjectExists(obj *s3.GetObjectOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[testObjectStorageObjectResName]
+		rs, ok := s.RootModule().Resources[objectResourceName]
 		if !ok {
-			return fmt.Errorf("could not find resource %s in root module", testObjectStorageObjectResName)
+			return fmt.Errorf("could not find resource %s in root module", objectResourceName)
 		}
 
 		bucket := rs.Primary.Attributes["bucket"]
@@ -53,7 +54,7 @@ func testAccCheckLinodeObjectStorageObjectExists(obj *s3.GetObjectOutput) resour
 	}
 }
 
-func testAccCheckLinodeObjectStorageObjectBody(obj *s3.GetObjectOutput, expected string) resource.TestCheckFunc {
+func checkObjectBodyContains(obj *s3.GetObjectOutput, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		body, err := ioutil.ReadAll(obj.Body)
 		if err != nil {
@@ -68,7 +69,7 @@ func testAccCheckLinodeObjectStorageObjectBody(obj *s3.GetObjectOutput, expected
 	}
 }
 
-func TestAccLinodeObjectStorageObject_basic(t *testing.T) {
+func TestAccResourceObject_basic(t *testing.T) {
 	t.Parallel()
 
 	content := "testing123"
@@ -78,23 +79,23 @@ func TestAccLinodeObjectStorageObject_basic(t *testing.T) {
 	var object s3.GetObjectOutput
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageObjectConfigBasic(bucketName, keyName, content),
+				Config: resourceConfigBasic(bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageObjectExists(&object),
-					testAccCheckLinodeObjectStorageObjectBody(&object, content),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "key", "test"),
+					checkObjectExists(&object),
+					checkObjectBodyContains(&object, content),
+					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeObjectStorageObject_base64(t *testing.T) {
+func TestAccResourceObject_base64(t *testing.T) {
 	t.Parallel()
 
 	content := "testing123"
@@ -105,23 +106,23 @@ func TestAccLinodeObjectStorageObject_base64(t *testing.T) {
 	var object s3.GetObjectOutput
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageObjectConfigBase64Encoded(bucketName, keyName, base64EncodedContent),
+				Config: resourceConfigBase64(bucketName, keyName, base64EncodedContent),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageObjectExists(&object),
-					testAccCheckLinodeObjectStorageObjectBody(&object, content),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "key", "test"),
+					checkObjectExists(&object),
+					checkObjectBodyContains(&object, content),
+					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeObjectStorageObject_source(t *testing.T) {
+func TestAccResourceObject_source(t *testing.T) {
 	t.Parallel()
 
 	content := "testing123"
@@ -141,23 +142,23 @@ func TestAccLinodeObjectStorageObject_source(t *testing.T) {
 	var object s3.GetObjectOutput
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageObjectConfigSource(bucketName, keyName, file.Name()),
+				Config: resourceConfigSource(bucketName, keyName, file.Name()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageObjectExists(&object),
-					testAccCheckLinodeObjectStorageObjectBody(&object, content),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "key", "test"),
+					checkObjectExists(&object),
+					checkObjectBodyContains(&object, content),
+					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeObjectStorageObject_contentUpdate(t *testing.T) {
+func TestAccResourceObject_contentUpdate(t *testing.T) {
 	t.Parallel()
 
 	content := "testing123"
@@ -167,32 +168,32 @@ func TestAccLinodeObjectStorageObject_contentUpdate(t *testing.T) {
 	var object s3.GetObjectOutput
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageObjectConfigBasic(bucketName, keyName, content),
+				Config: resourceConfigBasic(bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageObjectExists(&object),
-					testAccCheckLinodeObjectStorageObjectBody(&object, content),
+					checkObjectExists(&object),
+					checkObjectBodyContains(&object, content),
 				),
 			},
 			{
 				PreConfig: func() {
 					content = "updated456"
 				},
-				Config: testAccCheckLinodeObjectStorageObjectConfigBasic(bucketName, keyName, content),
+				Config: resourceConfigBasic(bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageObjectExists(&object),
-					testAccCheckLinodeObjectStorageObjectBody(&object, content),
+					checkObjectExists(&object),
+					checkObjectBodyContains(&object, content),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeObjectStorageObject_updates(t *testing.T) {
+func TestAccResourceObject_updates(t *testing.T) {
 	t.Parallel()
 
 	content := "testing123"
@@ -202,45 +203,45 @@ func TestAccLinodeObjectStorageObject_updates(t *testing.T) {
 	var object s3.GetObjectOutput
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageObjectConfigBasic(bucketName, keyName, content),
+				Config: resourceConfigBasic(bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageObjectExists(&object),
-					testAccCheckLinodeObjectStorageObjectBody(&object, content),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "key", "test"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "acl", "private"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "force_destroy", "false"),
-					resource.TestCheckNoResourceAttr(testObjectStorageObjectResName, "metadata"),
+					checkObjectExists(&object),
+					checkObjectBodyContains(&object, content),
+					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
+					resource.TestCheckResourceAttr(objectResourceName, "acl", "private"),
+					resource.TestCheckResourceAttr(objectResourceName, "force_destroy", "false"),
+					resource.TestCheckNoResourceAttr(objectResourceName, "metadata"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageObjectConfigUpdates(bucketName, keyName, content),
+				Config: resourceConfigUpdates(bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageObjectExists(&object),
-					testAccCheckLinodeObjectStorageObjectBody(&object, content),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "key", "test"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "acl", "public-read"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "force_destroy", "true"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "cache_control", "max-age=2592000"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "content_disposition", "attachment"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "content_type", "text/plain"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "content_encoding", "utf8"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "content_language", "en"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "website_redirect", "test.com"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "metadata.%", "2"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "metadata.foo", "bar"),
-					resource.TestCheckResourceAttr(testObjectStorageObjectResName, "metadata.bar", "foo"),
+					checkObjectExists(&object),
+					checkObjectBodyContains(&object, content),
+					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
+					resource.TestCheckResourceAttr(objectResourceName, "acl", "public-read"),
+					resource.TestCheckResourceAttr(objectResourceName, "force_destroy", "true"),
+					resource.TestCheckResourceAttr(objectResourceName, "cache_control", "max-age=2592000"),
+					resource.TestCheckResourceAttr(objectResourceName, "content_disposition", "attachment"),
+					resource.TestCheckResourceAttr(objectResourceName, "content_type", "text/plain"),
+					resource.TestCheckResourceAttr(objectResourceName, "content_encoding", "utf8"),
+					resource.TestCheckResourceAttr(objectResourceName, "content_language", "en"),
+					resource.TestCheckResourceAttr(objectResourceName, "website_redirect", "test.com"),
+					resource.TestCheckResourceAttr(objectResourceName, "metadata.%", "2"),
+					resource.TestCheckResourceAttr(objectResourceName, "metadata.foo", "bar"),
+					resource.TestCheckResourceAttr(objectResourceName, "metadata.bar", "foo"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckLinodeObjectStorageObjectConfigBasic(name, keyName, content string) string {
+func resourceConfigBasic(name, keyName, content string) string {
 	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_object" "object" {
 	bucket     = linode_object_storage_bucket.foobar.label
@@ -252,7 +253,7 @@ resource "linode_object_storage_object" "object" {
 }`, content)
 }
 
-func testAccCheckLinodeObjectStorageObjectConfigBase64Encoded(name, keyName, content string) string {
+func resourceConfigBase64(name, keyName, content string) string {
 	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_object" "object" {
 	bucket         = linode_object_storage_bucket.foobar.label
@@ -264,7 +265,7 @@ resource "linode_object_storage_object" "object" {
 }`, content)
 }
 
-func testAccCheckLinodeObjectStorageObjectConfigSource(name, keyName, filePath string) string {
+func resourceConfigSource(name, keyName, filePath string) string {
 	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_object" "object" {
 	bucket     = linode_object_storage_bucket.foobar.label
@@ -276,7 +277,7 @@ resource "linode_object_storage_object" "object" {
 }`, filePath)
 }
 
-func testAccCheckLinodeObjectStorageObjectConfigUpdates(name, keyName, content string) string {
+func resourceConfigUpdates(name, keyName, content string) string {
 	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
 	resource "linode_object_storage_object" "object" {
 		bucket     = linode_object_storage_bucket.foobar.label
