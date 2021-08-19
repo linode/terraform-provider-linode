@@ -1,4 +1,4 @@
-package linode
+package token_test
 
 import (
 	"context"
@@ -10,29 +10,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_token", &resource.Sweeper{
 		Name: "linode_token",
-		F:    testSweepLinodeToken,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeToken(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	tokens, err := client.ListTokens(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting tokens: %s", err)
 	}
 	for _, token := range tokens {
-		if !shouldSweepAcceptanceTestResource(prefix, token.Label) {
+		if !acceptance.ShouldSweep(prefix, token.Label) {
 			continue
 		}
 		err := client.DeleteToken(context.Background(), token.ID)
@@ -45,21 +46,21 @@ func testSweepLinodeToken(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeToken_basic(t *testing.T) {
+func TestAccResourceToken_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_token.foobar"
 	var tokenName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeTokenDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeTokenConfigBasic(tokenName),
+				Config: resourceConfigBasic(tokenName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeTokenExists,
+					checkTokenExists,
 					resource.TestCheckResourceAttr(resName, "label", tokenName),
 					resource.TestCheckResourceAttr(resName, "expiry", "2100-01-02T03:04:05Z"),
 					resource.TestCheckResourceAttrSet(resName, "scopes"),
@@ -73,9 +74,9 @@ func TestAccLinodeToken_basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"token"},
 			},
 			{
-				Config: testAccCheckLinodeTokenConfigUpdates(tokenName),
+				Config: resourceConfigUpdates(tokenName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeTokenExists,
+					checkTokenExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", tokenName)),
 				),
 			},
@@ -83,8 +84,8 @@ func TestAccLinodeToken_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeTokenExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkTokenExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_token" {
@@ -105,8 +106,8 @@ func testAccCheckLinodeTokenExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeTokenDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkTokenDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_token" {
 			continue
@@ -135,7 +136,7 @@ func testAccCheckLinodeTokenDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeTokenConfigBasic(token string) string {
+func resourceConfigBasic(token string) string {
 	return fmt.Sprintf(`
 	resource "linode_token" "foobar" {
 		label = "%s"
@@ -144,7 +145,7 @@ func testAccCheckLinodeTokenConfigBasic(token string) string {
 	}`, token)
 }
 
-func testAccCheckLinodeTokenConfigUpdates(token string) string {
+func resourceConfigUpdates(token string) string {
 	return fmt.Sprintf(`
 	resource "linode_token" "foobar" {
 		label = "%s_renamed"

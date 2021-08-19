@@ -15,6 +15,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
+	"github.com/linode/terraform-provider-linode/linode/token"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -137,7 +138,7 @@ func Provider() *schema.Provider {
 			"linode_rdns":                  rdns.Resource(),
 			"linode_sshkey":                resourceLinodeSSHKey(),
 			"linode_stackscript":           resourceLinodeStackscript(),
-			"linode_token":                 resourceLinodeToken(),
+			"linode_token":                 token.Resource(),
 			"linode_user":                  resourceLinodeUser(),
 			"linode_volume":                resourceLinodeVolume(),
 		},
