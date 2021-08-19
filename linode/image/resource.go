@@ -237,28 +237,3 @@ func uploadImageAndStoreHash(
 
 	return nil
 }
-
-func flattenLinodeImage(image *linodego.Image) map[string]interface{} {
-	result := make(map[string]interface{})
-
-	result["id"] = image.ID
-	result["label"] = image.Label
-	result["description"] = image.Description
-	result["created_by"] = image.CreatedBy
-	result["deprecated"] = image.Deprecated
-	result["is_public"] = image.IsPublic
-	result["size"] = image.Size
-	result["type"] = image.Type
-	result["vendor"] = image.Vendor
-	result["status"] = image.Status
-
-	if image.Created != nil {
-		result["created"] = image.Created.Format(time.RFC3339)
-	}
-
-	if image.Expiry != nil {
-		result["expiry"] = image.Expiry.Format(time.RFC3339)
-	}
-
-	return result
-}

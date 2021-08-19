@@ -1,4 +1,4 @@
-package linode
+package images
 
 import (
 	"time"
@@ -7,31 +7,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/image"
 
 	"context"
 	"strconv"
 )
 
-func dataSourceLinodeImages() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceLinodeImagesRead,
-		Schema: map[string]*schema.Schema{
-			"filter": filterSchema([]string{"deprecated", "is_public", "label", "size", "vendor"}),
-			"images": {
-				Type:        schema.TypeList,
-				Description: "The returned list of Images.",
-				Computed:    true,
-				Elem:        image.DataSource(),
-			},
-		},
+		Schema:      dataSourceSchema,
+		ReadContext: readDataSource,
 	}
 }
 
-func dataSourceLinodeImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	filter, err := constructFilterString(d, imageValueToFilterType)
+	filter, err := helper.ConstructFilterString(d, imageValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
 	}
@@ -46,7 +37,7 @@ func dataSourceLinodeImagesRead(ctx context.Context, d *schema.ResourceData, met
 
 	imagesFlattened := make([]interface{}, len(images))
 	for i, image := range images {
-		imagesFlattened[i] = flattenLinodeImage(&image)
+		imagesFlattened[i] = flattenImage(&image)
 	}
 
 	d.SetId(filter)
@@ -55,7 +46,7 @@ func dataSourceLinodeImagesRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func flattenLinodeImage(image *linodego.Image) map[string]interface{} {
+func flattenImage(image *linodego.Image) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	result["id"] = image.ID
