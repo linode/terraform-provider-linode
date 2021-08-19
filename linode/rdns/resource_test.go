@@ -1,4 +1,4 @@
-package linode
+package rdns_test
 
 import (
 	"context"
@@ -10,18 +10,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_rdns", &resource.Sweeper{
 		Name: "linode_rdns",
-		F:    testSweepLinodeRDNS,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeRDNS(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
@@ -32,7 +33,7 @@ func testSweepLinodeRDNS(prefix string) error {
 	}
 	updateOpts := linodego.IPAddressUpdateOptions{RDNS: nil}
 	for _, ip := range ips {
-		if !shouldSweepAcceptanceTestResource(prefix, ip.RDNS) {
+		if !acceptance.ShouldSweep(prefix, ip.RDNS) {
 			continue
 		}
 		_, err := client.UpdateIPAddress(context.Background(), ip.Address, updateOpts)
@@ -45,21 +46,21 @@ func testSweepLinodeRDNS(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeRDNS_basic(t *testing.T) {
+func TestAccResourceRDNS_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_rdns.foobar"
 	var linodeLabel = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeRDNSDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeRDNSBasic(linodeLabel),
+				Config: resouceConfigBasic(linodeLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeRDNSExists,
+					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
 				),
 			},
@@ -72,37 +73,37 @@ func TestAccLinodeRDNS_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeRDNS_update(t *testing.T) {
+func TestAccResourceRDNS_update(t *testing.T) {
 	t.Parallel()
 
 	var label = acctest.RandomWithPrefix("tf_test")
 	resName := "linode_rdns.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeRDNSDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeRDNSBasic(label),
+				Config: resouceConfigBasic(label),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeRDNSExists,
+					checkRDNSExists,
 					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`)),
 				),
 			},
 			{
-				Config: testAccCheckLinodeRDNSChanged(label),
+				Config: configResourceChanged(label),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeRDNSExists,
+					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
 				),
 			},
 			{
-				Config: testAccCheckLinodeRDNSDeleted(label),
+				Config: configResourceDeleted(label),
 			},
 			{
-				Config: testAccCheckLinodeRDNSDeleted(label),
+				Config: configResourceDeleted(label),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.members.linode.com$`)),
 				),
@@ -111,8 +112,8 @@ func TestAccLinodeRDNS_update(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeRDNSExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkRDNSExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_rdns" {
@@ -129,8 +130,8 @@ func testAccCheckLinodeRDNSExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeRDNSDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkRDNSDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_rdns" {
 			continue
@@ -155,7 +156,7 @@ func testAccCheckLinodeRDNSDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeRDNSBasic(label string) string {
+func resouceConfigBasic(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -171,7 +172,7 @@ resource "linode_rdns" "foobar" {
 }`, label)
 }
 
-func testAccCheckLinodeRDNSChanged(label string) string {
+func configResourceChanged(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -188,7 +189,7 @@ resource "linode_rdns" "foobar" {
 `, label)
 }
 
-func testAccCheckLinodeRDNSDeleted(label string) string {
+func configResourceDeleted(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"

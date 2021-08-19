@@ -1,4 +1,4 @@
-package linode
+package rdns
 
 import (
 	"context"
@@ -6,40 +6,24 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func resourceLinodeRDNS() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeRDNSCreate,
-		ReadContext:   resourceLinodeRDNSRead,
-		DeleteContext: resourceLinodeRDNSDelete,
-		UpdateContext: resourceLinodeRDNSUpdate,
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		DeleteContext: deleteResource,
+		UpdateContext: updateResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Schema: map[string]*schema.Schema{
-			"address": {
-				Type:         schema.TypeString,
-				Description:  "The public Linode IPv4 or IPv6 address to operate on.",
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.IsIPAddress,
-			},
-			"rdns": {
-				Type: schema.TypeString,
-				Description: "The reverse DNS assigned to this address. For public IPv4 addresses, this will be set " +
-					"to a default value provided by Linode if not explicitly set.",
-				Required:     true,
-				ValidateFunc: validation.StringLenBetween(3, 254),
-			},
 		},
 	}
 }
 
-func resourceLinodeRDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	ipStr := d.Id()
 
@@ -63,7 +47,7 @@ func resourceLinodeRDNSRead(ctx context.Context, d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourceLinodeRDNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	address := d.Get("address").(string)
@@ -82,10 +66,10 @@ func resourceLinodeRDNSCreate(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(address)
 	d.Set("rdns", ip.RDNS)
 
-	return resourceLinodeRDNSRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeRDNSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	ipStr := d.Id()
 
@@ -108,10 +92,10 @@ func resourceLinodeRDNSUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Error updating Linode RDNS: %s", err)
 	}
 
-	return resourceLinodeRDNSRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeRDNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	ipStr := d.Id()
 
