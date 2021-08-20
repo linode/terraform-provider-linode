@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func Resource() *schema.Resource {
@@ -35,7 +36,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := s3ConnFromResourceData(d)
+	client := helper.S3ConnFromResourceData(d)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
@@ -79,7 +80,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	acl := d.Get("acl").(string)
 
 	if d.HasChange("acl") {
-		client := s3ConnFromResourceData(d)
+		client := helper.S3ConnFromResourceData(d)
 		if _, err := client.PutObjectAcl(&s3.PutObjectAclInput{
 			Bucket: &bucket,
 			Key:    &key,
@@ -93,7 +94,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := s3ConnFromResourceData(d)
+	conn := helper.S3ConnFromResourceData(d)
 
 	if _, ok := d.GetOk("version_id"); ok {
 		return deleteAllObjectVersions(ctx, d)
@@ -117,7 +118,7 @@ func diffResource(
 // specified bucket via the *schema.ResourceData, then it calls
 // readResource.
 func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := s3ConnFromResourceData(d)
+	client := helper.S3ConnFromResourceData(d)
 	body, err := objectBodyFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -156,7 +157,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
 	}
 
-	d.SetId(buildObjectStorageObjectID(d))
+	d.SetId(helper.BuildObjectStorageObjectID(d))
 
 	return readResource(ctx, d, meta)
 }
@@ -168,7 +169,7 @@ func deleteAllObjectVersions(ctx context.Context, d *schema.ResourceData) diag.D
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
 
-	conn := s3ConnFromResourceData(d)
+	conn := helper.S3ConnFromResourceData(d)
 
 	var versions []string
 	listObjectVersionsInput := &s3.ListObjectVersionsInput{
