@@ -8,12 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/bucket"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
+	"github.com/linode/terraform-provider-linode/linode/object"
+	"github.com/linode/terraform-provider-linode/linode/objectcluster"
+	"github.com/linode/terraform-provider-linode/linode/objectkey"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/token"
 )
@@ -111,7 +115,7 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer":           dataSourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config":    dataSourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":      dataSourceLinodeNodeBalancerNode(),
-			"linode_object_storage_cluster": dataSourceLinodeObjectStorageCluster(),
+			"linode_object_storage_cluster": objectcluster.DataSource(),
 			"linode_profile":                dataSourceLinodeProfile(),
 			"linode_region":                 dataSourceLinodeRegion(),
 			"linode_sshkey":                 dataSourceLinodeSSHKey(),
@@ -132,9 +136,9 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer":          resourceLinodeNodeBalancer(),
 			"linode_nodebalancer_config":   resourceLinodeNodeBalancerConfig(),
 			"linode_nodebalancer_node":     resourceLinodeNodeBalancerNode(),
-			"linode_object_storage_bucket": resourceLinodeObjectStorageBucket(),
-			"linode_object_storage_key":    resourceLinodeObjectStorageKey(),
-			"linode_object_storage_object": resourceLinodeObjectStorageObject(),
+			"linode_object_storage_bucket": bucket.Resource(),
+			"linode_object_storage_key":    objectkey.Resource(),
+			"linode_object_storage_object": object.Resource(),
 			"linode_rdns":                  rdns.Resource(),
 			"linode_sshkey":                resourceLinodeSSHKey(),
 			"linode_stackscript":           resourceLinodeStackscript(),
