@@ -15,59 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const objectResourceName = "linode_object_storage_object.object"
-
-func checkObjectExists(obj *s3.GetObjectOutput) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[objectResourceName]
-		if !ok {
-			return fmt.Errorf("could not find resource %s in root module", objectResourceName)
-		}
-
-		bucket := rs.Primary.Attributes["bucket"]
-		key := rs.Primary.Attributes["key"]
-		etag := rs.Primary.Attributes["etag"]
-		accessKey := rs.Primary.Attributes["access_key"]
-		secretKey := rs.Primary.Attributes["secret_key"]
-		cluster := rs.Primary.Attributes["cluster"]
-
-		conn := s3.New(session.New(&aws.Config{
-			Region:      aws.String("us-east-1"),
-			Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-			Endpoint:    aws.String(fmt.Sprintf(linodeObjectsEndpoint, cluster)),
-		}))
-
-		out, err := conn.GetObject(
-			&s3.GetObjectInput{
-				Bucket:  &bucket,
-				Key:     &key,
-				IfMatch: &etag,
-			})
-		if err != nil {
-			return fmt.Errorf("failed to get Bucket (%s) Object (%s): %s", bucket, key, err)
-		}
-
-		*obj = *out
-		return nil
-	}
-}
-
-func checkObjectBodyContains(obj *s3.GetObjectOutput, expected string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		body, err := ioutil.ReadAll(obj.Body)
-		if err != nil {
-			return fmt.Errorf("failed to read body: %s", err)
-		}
-		obj.Body.Close()
-
-		if got := string(body); got != expected {
-			return fmt.Errorf("expected body to be %q; got %q", expected, got)
-		}
-		return nil
-	}
-}
 
 func TestAccResourceObject_basic(t *testing.T) {
 	t.Parallel()
@@ -81,7 +32,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: resourceConfigBasic(bucketName, keyName, content),
@@ -108,7 +59,7 @@ func TestAccResourceObject_base64(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: resourceConfigBase64(bucketName, keyName, base64EncodedContent),
@@ -144,7 +95,7 @@ func TestAccResourceObject_source(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: resourceConfigSource(bucketName, keyName, file.Name()),
@@ -170,7 +121,7 @@ func TestAccResourceObject_contentUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: resourceConfigBasic(bucketName, keyName, content),
@@ -205,7 +156,7 @@ func TestAccResourceObject_updates(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: resourceConfigBasic(bucketName, keyName, content),
@@ -239,6 +190,78 @@ func TestAccResourceObject_updates(t *testing.T) {
 			},
 		},
 	})
+}
+
+func getObject(rs *terraform.ResourceState) (*s3.GetObjectOutput, error) {
+	bucket := rs.Primary.Attributes["bucket"]
+	key := rs.Primary.Attributes["key"]
+	etag := rs.Primary.Attributes["etag"]
+	accessKey := rs.Primary.Attributes["access_key"]
+	secretKey := rs.Primary.Attributes["secret_key"]
+	cluster := rs.Primary.Attributes["cluster"]
+
+	conn := s3.New(session.New(&aws.Config{
+		Region:      aws.String("us-east-1"),
+		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
+		Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, cluster)),
+	}))
+
+	return conn.GetObject(
+		&s3.GetObjectInput{
+			Bucket:  &bucket,
+			Key:     &key,
+			IfMatch: &etag,
+		})
+}
+
+func checkObjectExists(obj *s3.GetObjectOutput) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[objectResourceName]
+		if !ok {
+			return fmt.Errorf("could not find resource %s in root module", objectResourceName)
+		}
+		key := rs.Primary.Attributes["key"]
+		bucket := rs.Primary.Attributes["bucket"]
+
+		out, err := getObject(rs)
+		if err != nil {
+			return fmt.Errorf("failed to get Bucket (%s) Object (%s): %s", bucket, key, err)
+		}
+
+		*obj = *out
+		return nil
+	}
+}
+
+func checkObjectDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_object_storage_object" {
+			continue
+		}
+
+		key := rs.Primary.Attributes["key"]
+
+		if _, err := getObject(rs); err == nil {
+			return fmt.Errorf("object with %s Key still exists", key)
+		}
+	}
+
+	return nil
+}
+
+func checkObjectBodyContains(obj *s3.GetObjectOutput, expected string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		body, err := ioutil.ReadAll(obj.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read body: %s", err)
+		}
+		obj.Body.Close()
+
+		if got := string(body); got != expected {
+			return fmt.Errorf("expected body to be %q; got %q", expected, got)
+		}
+		return nil
+	}
 }
 
 func resourceConfigBucketBasic(bucket string) string {
