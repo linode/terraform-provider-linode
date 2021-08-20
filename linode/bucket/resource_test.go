@@ -1,4 +1,4 @@
-package linode
+package bucket_test
 
 import (
 	"bytes"
@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -37,7 +38,7 @@ const (
 func init() {
 	resource.AddTestSweepers("linode_object_storage_bucket", &resource.Sweeper{
 		Name: "linode_object_storage_bucket",
-		F:    testSweepLinodeObjectStorageBucket,
+		F:    sweep,
 	})
 }
 
@@ -91,13 +92,13 @@ func generateTestCert(domain string) (certificate, privateKey string, err error)
 	return string(certBuffer.Bytes()), string(keyBuffer.Bytes()), nil
 }
 
-func testSweepLinodeObjectStorageBucket(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	objectStorageBuckets, err := client.ListObjectStorageBuckets(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting object_storage_buckets: %s", err)
@@ -108,7 +109,7 @@ func testSweepLinodeObjectStorageBucket(prefix string) error {
 	haveBucketAccess := accessKeyOk && secretKeyOk
 
 	for _, objectStorageBucket := range objectStorageBuckets {
-		if !shouldSweepAcceptanceTestResource(prefix, objectStorageBucket.Label) {
+		if !acceptance.ShouldSweep(prefix, objectStorageBucket.Label) {
 			continue
 		}
 		bucket := objectStorageBucket.Label
@@ -143,21 +144,21 @@ func testSweepLinodeObjectStorageBucket(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeObjectStorageBucket_basic(t *testing.T) {
+func TestAccResourceBucket_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_bucket.foobar"
 	var objectStorageBucketName = acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigBasic(objectStorageBucketName),
+				Config: resourceConfigBasic(objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
@@ -170,30 +171,30 @@ func TestAccLinodeObjectStorageBucket_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageBucket_access(t *testing.T) {
+func TestAccResourceBucket_access(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithAccess(objectStorageBucketName, "public-read", true),
+				Config: resourceConfigWithAccess(objectStorageBucketName, "public-read", true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "acl", "public-read"),
 					resource.TestCheckResourceAttr(resName, "cors_enabled", "true"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithAccess(objectStorageBucketName, "private", false),
+				Config: resourceConfigWithAccess(objectStorageBucketName, "private", false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "acl", "private"),
 					resource.TestCheckResourceAttr(resName, "cors_enabled", "false"),
@@ -203,7 +204,7 @@ func TestAccLinodeObjectStorageBucket_access(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageBucket_versioning(t *testing.T) {
+func TestAccResourceBucket_versioning(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_bucket.foobar"
@@ -211,22 +212,22 @@ func TestAccLinodeObjectStorageBucket_versioning(t *testing.T) {
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithVersioning(objectStorageBucketName, objectStorageKeyName, true),
+				Config: resourceConfigWithVersioning(objectStorageBucketName, objectStorageKeyName, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "versioning", "true"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithVersioning(objectStorageBucketName, objectStorageKeyName, false),
+				Config: resourceConfigWithVersioning(objectStorageBucketName, objectStorageKeyName, false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "versioning", "false"),
 				),
@@ -235,7 +236,7 @@ func TestAccLinodeObjectStorageBucket_versioning(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageBucket_lifecycle(t *testing.T) {
+func TestAccResourceBucket_lifecycle(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_bucket.foobar"
@@ -243,12 +244,12 @@ func TestAccLinodeObjectStorageBucket_lifecycle(t *testing.T) {
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithLifecycle(objectStorageBucketName, objectStorageKeyName),
+				Config: reosurceConfigWithLifecycle(objectStorageBucketName, objectStorageKeyName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
@@ -262,7 +263,7 @@ func TestAccLinodeObjectStorageBucket_lifecycle(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithLifecycleUpdates(objectStorageBucketName, objectStorageKeyName),
+				Config: resourceConfigLifecycleUpdates(objectStorageBucketName, objectStorageKeyName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
@@ -279,7 +280,7 @@ func TestAccLinodeObjectStorageBucket_lifecycle(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageBucket_cert(t *testing.T) {
+func TestAccResourceBucket_cert(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_bucket.foobar"
@@ -300,35 +301,35 @@ func TestAccLinodeObjectStorageBucket_cert(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, cert, key),
+				Config: resourceConfigWithCert(objectStorageBucketName, cert, key),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
-					testAccCheckLinodeObjectStorageBucketHasSSL(true),
+					checkBucketExists,
+					checkBucketHasSSL(true),
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
 			{
-				Config:      testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, invalidCert, invalidKey),
+				Config:      resourceConfigWithCert(objectStorageBucketName, invalidCert, invalidKey),
 				ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigWithCert(objectStorageBucketName, otherCert, otherKey),
+				Config: resourceConfigWithCert(objectStorageBucketName, otherCert, otherKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
-					testAccCheckLinodeObjectStorageBucketHasSSL(true),
+					checkBucketExists,
+					checkBucketHasSSL(true),
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigBasic(objectStorageBucketName),
+				Config: resourceConfigBasic(objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
-					testAccCheckLinodeObjectStorageBucketHasSSL(false),
+					checkBucketExists,
+					checkBucketHasSSL(false),
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
@@ -336,21 +337,21 @@ func TestAccLinodeObjectStorageBucket_cert(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageBucket_dataSource(t *testing.T) {
+func TestAccResourceBucket_dataSource(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_bucket.foobar"
 	var objectStorageBucketName = acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigDataSource(objectStorageBucketName),
+				Config: resourceConfigDataSource(objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
@@ -363,28 +364,28 @@ func TestAccLinodeObjectStorageBucket_dataSource(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageBucket_update(t *testing.T) {
+func TestAccResourceBucket_update(t *testing.T) {
 	t.Parallel()
 
 	var objectStorageBucketName = acctest.RandomWithPrefix("tf-test")
 	resName := "linode_object_storage_bucket.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageBucketDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigBasic(objectStorageBucketName),
+				Config: resourceConfigBasic(objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageBucketConfigUpdates(objectStorageBucketName),
+				Config: resourceConfigUpdates(objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageBucketExists,
+					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", objectStorageBucketName)),
 				),
 			},
@@ -392,15 +393,15 @@ func TestAccLinodeObjectStorageBucket_update(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeObjectStorageBucketExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkBucketExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_bucket" {
 			continue
 		}
 
-		cluster, label, err := decodeLinodeObjectStorageBucketID(rs.Primary.ID)
+		cluster, label, err := decodeResourceBucketID(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s, %s", rs.Primary.ID, err)
 		}
@@ -414,15 +415,15 @@ func testAccCheckLinodeObjectStorageBucketExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeObjectStorageBucketHasSSL(expected bool) func(*terraform.State) error {
+func checkBucketHasSSL(expected bool) func(*terraform.State) error {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "linode_object_storage_bucket" {
 				continue
 			}
 
-			cluster, label, err := decodeLinodeObjectStorageBucketID(rs.Primary.ID)
+			cluster, label, err := decodeResourceBucketID(rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("could not parse bucket ID %s: %s", rs.Primary.ID, err)
 			}
@@ -440,15 +441,15 @@ func testAccCheckLinodeObjectStorageBucketHasSSL(expected bool) func(*terraform.
 	}
 }
 
-func testAccCheckLinodeObjectStorageBucketDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkBucketDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_bucket" {
 			continue
 		}
 
 		id := rs.Primary.ID
-		cluster, label, err := decodeLinodeObjectStorageBucketID(id)
+		cluster, label, err := decodeResourceBucketID(id)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s", id)
 		}
@@ -471,15 +472,15 @@ func testAccCheckLinodeObjectStorageBucketDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigBasic(object_storage_bucket string) string {
+func resourceConfigBasic(bucket string) string {
 	return fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"
 	label = "%s"
-}`, object_storage_bucket)
+}`, bucket)
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigWithAccess(object_storage_bucket, acl string, cors bool) string {
+func resourceConfigWithAccess(bucket, acl string, cors bool) string {
 	return fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"
@@ -487,10 +488,10 @@ resource "linode_object_storage_bucket" "foobar" {
 
 	acl = "%s"
 	cors_enabled = %t
-}`, object_storage_bucket, acl, cors)
+}`, bucket, acl, cors)
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigWithCert(object_storage_bucket, cert, key string) string {
+func resourceConfigWithCert(bucket, cert, key string) string {
 	return fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"
@@ -504,10 +505,10 @@ EOF
 %s
 EOF
 	}
-}`, object_storage_bucket, cert, key)
+}`, bucket, cert, key)
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigWithVersioning(bucketName, keyName string, versioning bool) string {
+func resourceConfigWithVersioning(bucketName, keyName string, versioning bool) string {
 	return testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	access_key = linode_object_storage_key.foobar.access_key
@@ -520,7 +521,7 @@ resource "linode_object_storage_bucket" "foobar" {
 }`, bucketName, versioning)
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigWithLifecycle(bucketName, keyName string) string {
+func reosurceConfigWithLifecycle(bucketName, keyName string) string {
 	return testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	access_key = linode_object_storage_key.foobar.access_key
@@ -543,7 +544,7 @@ resource "linode_object_storage_bucket" "foobar" {
 }`, bucketName)
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigWithLifecycleUpdates(bucketName, keyName string) string {
+func resourceConfigLifecycleUpdates(bucketName, keyName string) string {
 	return testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	access_key = linode_object_storage_key.foobar.access_key
@@ -551,7 +552,7 @@ resource "linode_object_storage_bucket" "foobar" {
 
 	cluster = "us-east-1"
 	label = "%s"
-	
+
 	lifecycle_rule {
 		id = "test-rule-update"
 		prefix = "tf-update"
@@ -566,15 +567,15 @@ resource "linode_object_storage_bucket" "foobar" {
 }`, bucketName)
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigUpdates(object_storage_bucket string) string {
+func resourceConfigUpdates(bucket string) string {
 	return fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"
 	label = "%s-renamed"
-}`, object_storage_bucket)
+}`, bucket)
 }
 
-func testAccCheckLinodeObjectStorageBucketConfigDataSource(object_storage_bucket string) string {
+func resourceConfigDataSource(bucket string) string {
 	return fmt.Sprintf(`
 data "linode_object_storage_cluster" "baz" {
 	id = "us-east-1"
@@ -583,5 +584,5 @@ data "linode_object_storage_cluster" "baz" {
 resource "linode_object_storage_bucket" "foobar" {
 	cluster = data.linode_object_storage_cluster.baz.id
 	label = "%s"
-}`, object_storage_bucket)
+}`, bucket)
 }

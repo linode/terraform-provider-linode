@@ -1,4 +1,4 @@
-package linode
+package bucket
 
 import (
 	"context"
@@ -15,172 +15,42 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func resourceLinodeObjectStorageBucketLifecycleExpiration() *schema.Resource {
+func resourceLifecycleExpiration() *schema.Resource {
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"date": {
-				Type:        schema.TypeString,
-				Description: "Specifies the date after which you want the corresponding action to take effect.",
-				Optional:    true,
-			},
-			"days": {
-				Type:        schema.TypeInt,
-				Description: "Specifies the number of days after object creation when the specific rule action takes effect.",
-				Optional:    true,
-			},
-			"expired_object_delete_marker": {
-				Type:        schema.TypeBool,
-				Description: "Directs Linode Object Storage to remove expired deleted markers.",
-				Optional:    true,
-			},
-		},
+		Schema: resourceSchemaExpiration,
 	}
 }
 
-func resourceLinodeObjectStorageBucketLifecycleNoncurrentExp() *schema.Resource {
+func resourceLifecycleNoncurrentExp() *schema.Resource {
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"days": {
-				Type:        schema.TypeInt,
-				Description: "Specifies the number of days non-current object versions expire.",
-				Required:    true,
-			},
-		},
+		Schema: resourceSchemaNonCurrentExp,
 	}
 }
 
-func resourceLinodeObjectStorageBucketLifecycleRule() *schema.Resource {
+func resourceLifeCycle() *schema.Resource {
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Description: "The unique identifier for the rule.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"prefix": {
-				Type:        schema.TypeString,
-				Description: "The object key prefix identifying one or more objects to which the rule applies.",
-				Optional:    true,
-			},
-			"enabled": {
-				Type:        schema.TypeBool,
-				Description: "Specifies whether the lifecycle rule is active.",
-				Required:    true,
-			},
-			"abort_incomplete_multipart_upload_days": {
-				Type: schema.TypeInt,
-				Description: "Specifies the number of days after initiating a multipart upload when the multipart " +
-					"upload must be completed.",
-				Optional: true,
-			},
-			"expiration": {
-				Type:        schema.TypeList,
-				Description: "Specifies a period in the object's expire.",
-				Optional:    true,
-				MaxItems:    1,
-				Elem:        resourceLinodeObjectStorageBucketLifecycleExpiration(),
-			},
-			"noncurrent_version_expiration": {
-				Type:        schema.TypeList,
-				Description: "Specifies when non-current object versions expire.",
-				Optional:    true,
-				MaxItems:    1,
-				Elem:        resourceLinodeObjectStorageBucketLifecycleNoncurrentExp(),
-			},
-		},
+		Schema: resourceSchemaLifeCycle,
 	}
 }
 
-func resourceLinodeObjectStorageBucket() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeObjectStorageBucketCreate,
-		ReadContext:   resourceLinodeObjectStorageBucketRead,
-		UpdateContext: resourceLinodeObjectStorageBucketUpdate,
-		DeleteContext: resourceLinodeObjectStorageBucketDelete,
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"secret_key": {
-				Type:        schema.TypeString,
-				Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning)",
-				Optional:    true,
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Description: "The S3 access key to use for this resource. (Required for lifecycle_rule and versioning)",
-				Optional:    true,
-			},
-			"cluster": {
-				Type:        schema.TypeString,
-				Description: "The cluster of the Linode Object Storage Bucket.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The label of the Linode Object Storage Bucket.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"acl": {
-				Type:        schema.TypeString,
-				Description: "The Access Control Level of the bucket using a canned ACL string.",
-				Optional:    true,
-				Default:     "private",
-			},
-			"cors_enabled": {
-				Type:        schema.TypeBool,
-				Description: "If true, the bucket will be created with CORS enabled for all origins.",
-				Optional:    true,
-				Default:     true,
-			},
-			"lifecycle_rule": {
-				Type:         schema.TypeList,
-				Description:  "Lifecycle rules to be applied to the bucket.",
-				Optional:     true,
-				RequiredWith: []string{"access_key", "secret_key"},
-				Elem:         resourceLinodeObjectStorageBucketLifecycleRule(),
-			},
-			"versioning": {
-				Type:         schema.TypeBool,
-				Description:  "Whether to enable versioning.",
-				Optional:     true,
-				RequiredWith: []string{"access_key", "secret_key"},
-				Computed:     true,
-			},
-			"cert": {
-				Type:        schema.TypeList,
-				Description: "The cert used by this Object Storage Bucket.",
-				MaxItems:    1,
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"certificate": {
-							Type:        schema.TypeString,
-							Description: "The Base64 encoded and PEM formatted SSL certificate.",
-							Sensitive:   true,
-							Required:    true,
-						},
-						"private_key": {
-							Type:        schema.TypeString,
-							Description: "The private key associated with the TLS/SSL certificate.",
-							Sensitive:   true,
-							Required:    true,
-						},
-					},
-				},
-			},
-		},
 	}
 }
 
-func resourceLinodeObjectStorageBucketRead(
+func readResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
+	cluster, label, err := decodeBucketID(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
 	}
@@ -212,13 +82,13 @@ func resourceLinodeObjectStorageBucketRead(
 			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
 		}
 
-		conn := s3ConnFromResourceData(d)
+		conn := helper.S3ConnFromResourceData(d)
 
-		if err := readLinodeObjectStorageBucketLifecycle(d, conn); err != nil {
+		if err := readBucketLifecycle(d, conn); err != nil {
 			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
 		}
 
-		if err := readLinodeObjectStorageBucketVersioning(d, conn); err != nil {
+		if err := readBucketVersioning(d, conn); err != nil {
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
@@ -232,7 +102,7 @@ func resourceLinodeObjectStorageBucketRead(
 	return nil
 }
 
-func resourceLinodeObjectStorageBucketCreate(
+func createResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -255,26 +125,26 @@ func resourceLinodeObjectStorageBucketCreate(
 
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 
-	return resourceLinodeObjectStorageBucketUpdate(ctx, d, meta)
+	return updateResource(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageBucketUpdate(
+func updateResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	accessKey := d.Get("access_key")
 	secretKey := d.Get("secret_key")
 
-	conn := s3ConnFromResourceData(d)
+	conn := helper.S3ConnFromResourceData(d)
 
 	if d.HasChanges("acl", "cors_enabled") {
-		if err := updateLinodeObjectStorageBucketAccess(ctx, d, client); err != nil {
+		if err := updateBucketAccess(ctx, d, client); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("cert") {
-		if err := updateLinodeObjectStorageBucketCert(ctx, d, client); err != nil {
+		if err := updateBucketCert(ctx, d, client); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -289,25 +159,25 @@ func resourceLinodeObjectStorageBucketUpdate(
 
 		// Ensure we only update what is changed
 		if versioningChanged {
-			if err := updateLinodeObjectStorageBucketVersioning(d, conn); err != nil {
+			if err := updateBucketVersioning(d, conn); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if lifecycleChanged {
-			if err := updateLinodeObjectStorageBucketLifecycle(d, conn); err != nil {
+			if err := updateBucketLifecycle(d, conn); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
-	return resourceLinodeObjectStorageBucketRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageBucketDelete(
+func deleteResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	cluster, label, err := decodeLinodeObjectStorageBucketID(d.Id())
+	cluster, label, err := decodeBucketID(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
@@ -318,7 +188,7 @@ func resourceLinodeObjectStorageBucketDelete(
 	return nil
 }
 
-func readLinodeObjectStorageBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
+func readBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
 	label := d.Get("label").(string)
 
 	versioningOutput, err := conn.GetBucketVersioning(&s3.GetBucketVersioningInput{
@@ -334,7 +204,7 @@ func readLinodeObjectStorageBucketVersioning(d *schema.ResourceData, conn *s3.S3
 	return nil
 }
 
-func readLinodeObjectStorageBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
+func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 	label := d.Get("label").(string)
 
 	lifecycleConfigOutput, err := conn.GetBucketLifecycleConfiguration(
@@ -352,7 +222,7 @@ func readLinodeObjectStorageBucketLifecycle(d *schema.ResourceData, conn *s3.S3)
 	return nil
 }
 
-func updateLinodeObjectStorageBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
+func updateBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
 	bucket := d.Get("label").(string)
 	n := d.Get("versioning").(bool)
 
@@ -375,7 +245,7 @@ func updateLinodeObjectStorageBucketVersioning(d *schema.ResourceData, conn *s3.
 	return nil
 }
 
-func updateLinodeObjectStorageBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
+func updateBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 	bucket := d.Get("label").(string)
 
 	rules, err := expandLifecycleRules(d.Get("lifecycle_rule").([]interface{}))
@@ -394,7 +264,7 @@ func updateLinodeObjectStorageBucketLifecycle(d *schema.ResourceData, conn *s3.S
 	return err
 }
 
-func updateLinodeObjectStorageBucketAccess(
+func updateBucketAccess(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
@@ -416,7 +286,7 @@ func updateLinodeObjectStorageBucketAccess(
 	return nil
 }
 
-func updateLinodeObjectStorageBucketCert(
+func updateBucketCert(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
@@ -434,14 +304,14 @@ func updateLinodeObjectStorageBucketCert(
 		return nil
 	}
 
-	uploadOptions := expandLinodeObjectStorageBucketCert(certSpec[0])
+	uploadOptions := expandBucketCert(certSpec[0])
 	if _, err := client.UploadObjectStorageBucketCert(ctx, cluster, label, uploadOptions); err != nil {
 		return fmt.Errorf("failed to upload new bucket cert: %s", err)
 	}
 	return nil
 }
 
-func expandLinodeObjectStorageBucketCert(v interface{}) linodego.ObjectStorageBucketCertUploadOptions {
+func expandBucketCert(v interface{}) linodego.ObjectStorageBucketCertUploadOptions {
 	certSpec := v.(map[string]interface{})
 	return linodego.ObjectStorageBucketCertUploadOptions{
 		Certificate: certSpec["certificate"].(string),
@@ -449,7 +319,7 @@ func expandLinodeObjectStorageBucketCert(v interface{}) linodego.ObjectStorageBu
 	}
 }
 
-func decodeLinodeObjectStorageBucketID(id string) (cluster, label string, err error) {
+func decodeBucketID(id string) (cluster, label string, err error) {
 	parts := strings.Split(id, ":")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		err = fmt.Errorf("Linode Object Storage Bucket ID must be of the form <Cluster>:<Label>, was provided: %s", id)

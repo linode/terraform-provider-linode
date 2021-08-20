@@ -1,4 +1,4 @@
-package linode
+package objectkey_test
 
 import (
 	"context"
@@ -11,18 +11,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_object_storage_key", &resource.Sweeper{
 		Name: "linode_object_storage_key",
-		F:    testSweepLinodeObjectStorageKey,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeObjectStorageKey(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
@@ -32,7 +33,7 @@ func testSweepLinodeObjectStorageKey(prefix string) error {
 		return fmt.Errorf("Error getting object storage keys: %s", err)
 	}
 	for _, objectStorageKey := range objectStorageKeys {
-		if !shouldSweepAcceptanceTestResource(prefix, objectStorageKey.Label) || !strings.HasPrefix(objectStorageKey.Label, prefix) {
+		if !acceptance.ShouldSweep(prefix, objectStorageKey.Label) || !strings.HasPrefix(objectStorageKey.Label, prefix) {
 			continue
 		}
 		err := client.DeleteObjectStorageKey(context.Background(), objectStorageKey.ID)
@@ -45,22 +46,22 @@ func testSweepLinodeObjectStorageKey(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeObjectStorageKey_basic(t *testing.T) {
+func TestAccResourceObjectKey_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_key.foobar"
 	var objectStorageKeyLabel = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageKeyConfigBasic(objectStorageKeyLabel),
+				Config: resourceConfigBasic(objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageKeyExists,
-					testAccCheckLinodeObjectStorageKeySecretKeyAccessible,
+					checkObjectKeyExists,
+					checkObjectKeySecretAccessible,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageKeyLabel),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 					resource.TestCheckResourceAttrSet(resName, "secret_key"),
@@ -71,22 +72,22 @@ func TestAccLinodeObjectStorageKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageKey_limited(t *testing.T) {
+func TestAccResourceObjectKey_limited(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_key.foobar"
 	var objectStorageKeyLabel = acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageKeyConfigLimited(objectStorageKeyLabel),
+				Config: resourceConfigLimited(objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageKeyExists,
-					testAccCheckLinodeObjectStorageKeySecretKeyAccessible,
+					checkObjectKeyExists,
+					checkObjectKeySecretAccessible,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_key", objectStorageKeyLabel)),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 					resource.TestCheckResourceAttrSet(resName, "secret_key"),
@@ -104,30 +105,30 @@ func TestAccLinodeObjectStorageKey_limited(t *testing.T) {
 	})
 }
 
-func TestAccLinodeObjectStorageKey_update(t *testing.T) {
+func TestAccResourceObjectKey_update(t *testing.T) {
 	t.Parallel()
 	resName := "linode_object_storage_key.foobar"
 	var objectStorageKeyLabel = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeObjectStorageKeyDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeObjectStorageKeyConfigBasic(objectStorageKeyLabel),
+				Config: resourceConfigBasic(objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageKeyExists,
-					testAccCheckLinodeObjectStorageKeySecretKeyAccessible,
+					checkObjectKeyExists,
+					checkObjectKeySecretAccessible,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageKeyLabel),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeObjectStorageKeyConfigUpdates(objectStorageKeyLabel),
+				Config: resourceConfigUpdates(objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeObjectStorageKeyExists,
-					testAccCheckLinodeObjectStorageKeySecretKeyAccessible, // should be preserved in state
+					checkObjectKeyExists,
+					checkObjectKeySecretAccessible, // should be preserved in state
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", objectStorageKeyLabel)),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 				),
@@ -136,7 +137,7 @@ func TestAccLinodeObjectStorageKey_update(t *testing.T) {
 	})
 }
 
-func findObjectStorageKeyResources(s *terraform.State) []*terraform.ResourceState {
+func findObjectKeyResource(s *terraform.State) []*terraform.ResourceState {
 	keys := []*terraform.ResourceState{}
 	for _, res := range s.RootModule().Resources {
 		if res.Type != "linode_object_storage_key" {
@@ -147,8 +148,8 @@ func findObjectStorageKeyResources(s *terraform.State) []*terraform.ResourceStat
 	return keys
 }
 
-func testAccCheckLinodeObjectStorageKeySecretKeyAccessible(s *terraform.State) error {
-	keys := findObjectStorageKeyResources(s)
+func checkObjectKeySecretAccessible(s *terraform.State) error {
+	keys := findObjectKeyResource(s)
 	secret := keys[0].Primary.Attributes["secret_key"]
 
 	if secret == "[REDACTED]" {
@@ -157,8 +158,8 @@ func testAccCheckLinodeObjectStorageKeySecretKeyAccessible(s *terraform.State) e
 	return nil
 }
 
-func testAccCheckLinodeObjectStorageKeyExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkObjectKeyExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_key" {
@@ -179,8 +180,8 @@ func testAccCheckLinodeObjectStorageKeyExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeObjectStorageKeyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*ProviderMeta).Client
+func checkObjectKeyDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_key" {
 			continue
@@ -209,21 +210,21 @@ func testAccCheckLinodeObjectStorageKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeObjectStorageKeyConfigBasic(label string) string {
+func resourceConfigBasic(label string) string {
 	return fmt.Sprintf(`
 resource "linode_object_storage_key" "foobar" {
 	label = "%s"
 }`, label)
 }
 
-func testAccCheckLinodeObjectStorageKeyConfigUpdates(label string) string {
+func resourceConfigUpdates(label string) string {
 	return fmt.Sprintf(`
 resource "linode_object_storage_key" "foobar" {
 	label = "%s_renamed"
 }`, label)
 }
 
-func testAccCheckLinodeObjectStorageKeyConfigLimited(label string) string {
+func resourceConfigLimited(label string) string {
 	return fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"

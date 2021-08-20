@@ -1,4 +1,4 @@
-package linode
+package objectkey
 
 import (
 	"context"
@@ -12,65 +12,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func resourceLinodeObjectStorageKey() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeObjectStorageKeyCreate,
-		ReadContext:   resourceLinodeObjectStorageKeyRead,
-		UpdateContext: resourceLinodeObjectStorageKeyUpdate,
-		DeleteContext: resourceLinodeObjectStorageKeyDelete,
-
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The label given to this key. For display purposes only.",
-				Required:    true,
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Description: "This keypair's access key. This is not secret.",
-				Computed:    true,
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Description: "This keypair's secret key.",
-				Sensitive:   true,
-				Computed:    true,
-			},
-			"limited": {
-				Type:        schema.TypeBool,
-				Description: "Whether or not this key is a limited access key.",
-				Computed:    true,
-			},
-			"bucket_access": {
-				Type:        schema.TypeList,
-				Description: "A list of permissions to grant this limited access key.",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket_name": {
-							Type:        schema.TypeString,
-							Description: "The unique label of the bucket to which the key will grant limited access.",
-							Required:    true,
-						},
-						"cluster": {
-							Type:        schema.TypeString,
-							Description: "The Object Storage cluster where a bucket to which the key is granting access is hosted.",
-							Required:    true,
-						},
-						"permissions": {
-							Type:        schema.TypeString,
-							Description: "This Limited Access Key’s permissions for the selected bucket.",
-							Required:    true,
-						},
-					},
-				},
-				ForceNew: true,
-			},
-		},
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 	}
 }
 
-func resourceLinodeObjectStorageKeyCreate(
+func createResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -79,7 +31,7 @@ func resourceLinodeObjectStorageKeyCreate(
 	}
 
 	if bucketAccess, bucketAccessOk := d.GetOk("bucket_access"); bucketAccessOk {
-		createOpts.BucketAccess = expandLinodeObjectStorageKeyBucketAccess(bucketAccess.([]interface{}))
+		createOpts.BucketAccess = expandKeyBucketAccess(bucketAccess.([]interface{}))
 	}
 
 	objectStorageKey, err := client.CreateObjectStorageKey(ctx, createOpts)
@@ -95,15 +47,15 @@ func resourceLinodeObjectStorageKeyCreate(
 
 	d.Set("limited", objectStorageKey.Limited)
 
-	bucketAccess := flattenLinodeObjectStorageKeyBucketAccess(objectStorageKey.BucketAccess)
+	bucketAccess := flattenKeyBucketAccess(objectStorageKey.BucketAccess)
 	if bucketAccess != nil {
 		d.Set("bucket_access", bucketAccess)
 	}
 
-	return resourceLinodeObjectStorageKeyRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageKeyRead(
+func readResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -125,14 +77,14 @@ func resourceLinodeObjectStorageKeyRead(
 	d.Set("access_key", objectStorageKey.AccessKey)
 	d.Set("limited", objectStorageKey.Limited)
 
-	bucketAccess := flattenLinodeObjectStorageKeyBucketAccess(objectStorageKey.BucketAccess)
+	bucketAccess := flattenKeyBucketAccess(objectStorageKey.BucketAccess)
 	if bucketAccess != nil {
 		d.Set("bucket_access", bucketAccess)
 	}
 	return nil
 }
 
-func resourceLinodeObjectStorageKeyUpdate(
+func updateResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -158,10 +110,10 @@ func resourceLinodeObjectStorageKeyUpdate(
 		d.Set("label", objectStorageKey.Label)
 	}
 
-	return resourceLinodeObjectStorageKeyRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeObjectStorageKeyDelete(
+func deleteResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -175,7 +127,7 @@ func resourceLinodeObjectStorageKeyDelete(
 	return nil
 }
 
-func flattenLinodeObjectStorageKeyBucketAccess(
+func flattenKeyBucketAccess(
 	bucketAccesses *[]linodego.ObjectStorageKeyBucketAccess) *[]map[string]interface{} {
 	if bucketAccesses == nil {
 		return nil
@@ -192,7 +144,7 @@ func flattenLinodeObjectStorageKeyBucketAccess(
 	return &specs
 }
 
-func expandLinodeObjectStorageKeyBucketAccess(
+func expandKeyBucketAccess(
 	bucketAccessSpecs []interface{}) *[]linodego.ObjectStorageKeyBucketAccess {
 	bucketAccesses := make([]linodego.ObjectStorageKeyBucketAccess, len(bucketAccessSpecs))
 	for i, bucketAccessSpec := range bucketAccessSpecs {
