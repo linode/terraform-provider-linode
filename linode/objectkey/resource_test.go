@@ -181,7 +181,7 @@ func checkObjectKeyExists(s *terraform.State) error {
 }
 
 func checkObjectKeyDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*ProviderMeta).Client
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_key" {
 			continue

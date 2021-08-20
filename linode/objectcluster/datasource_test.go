@@ -8,7 +8,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeObjectStorageCluster_basic(t *testing.T) {
+func TestAccDataSourceObjectCluster_basic(t *testing.T) {
 	t.Parallel()
 
 	objectStorageClusterID := "us-east-1"
