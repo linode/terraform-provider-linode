@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/bucket"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -118,7 +119,7 @@ func sweep(prefix string) error {
 			conn := s3.New(session.New(&aws.Config{
 				Region:      aws.String("us-east-1"),
 				Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-				Endpoint:    aws.String(fmt.Sprintf(linodeObjectsEndpoint, objectStorageBucket.Cluster)),
+				Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, objectStorageBucket.Cluster)),
 			}))
 			iter := s3manager.NewDeleteListIterator(conn, &s3.ListObjectsInput{
 				Bucket: aws.String(bucket),
@@ -401,7 +402,7 @@ func checkBucketExists(s *terraform.State) error {
 			continue
 		}
 
-		cluster, label, err := decodeResourceBucketID(rs.Primary.ID)
+		cluster, label, err := bucket.DecodeBucketID(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s, %s", rs.Primary.ID, err)
 		}
@@ -423,7 +424,7 @@ func checkBucketHasSSL(expected bool) func(*terraform.State) error {
 				continue
 			}
 
-			cluster, label, err := decodeResourceBucketID(rs.Primary.ID)
+			cluster, label, err := bucket.DecodeBucketID(rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("could not parse bucket ID %s: %s", rs.Primary.ID, err)
 			}
@@ -449,7 +450,7 @@ func checkBucketDestroy(s *terraform.State) error {
 		}
 
 		id := rs.Primary.ID
-		cluster, label, err := decodeResourceBucketID(id)
+		cluster, label, err := bucket.DecodeBucketID(id)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s", id)
 		}
@@ -478,6 +479,13 @@ resource "linode_object_storage_bucket" "foobar" {
 	cluster = "us-east-1"
 	label = "%s"
 }`, bucket)
+}
+
+func resourceConfigObjectKey(label string) string {
+	return fmt.Sprintf(`
+resource "linode_object_storage_key" "foobar" {
+	label = "%s"
+}`, label)
 }
 
 func resourceConfigWithAccess(bucket, acl string, cors bool) string {
@@ -509,7 +517,7 @@ EOF
 }
 
 func resourceConfigWithVersioning(bucketName, keyName string, versioning bool) string {
-	return testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
+	return resourceConfigObjectKey(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	access_key = linode_object_storage_key.foobar.access_key
 	secret_key = linode_object_storage_key.foobar.secret_key
@@ -522,7 +530,7 @@ resource "linode_object_storage_bucket" "foobar" {
 }
 
 func reosurceConfigWithLifecycle(bucketName, keyName string) string {
-	return testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
+	return resourceConfigObjectKey(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	access_key = linode_object_storage_key.foobar.access_key
 	secret_key = linode_object_storage_key.foobar.secret_key
@@ -545,7 +553,7 @@ resource "linode_object_storage_bucket" "foobar" {
 }
 
 func resourceConfigLifecycleUpdates(bucketName, keyName string) string {
-	return testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
+	return resourceConfigObjectKey(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_bucket" "foobar" {
 	access_key = linode_object_storage_key.foobar.access_key
 	secret_key = linode_object_storage_key.foobar.secret_key

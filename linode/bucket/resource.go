@@ -50,7 +50,7 @@ func readResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	cluster, label, err := decodeBucketID(d.Id())
+	cluster, label, err := DecodeBucketID(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
 	}
@@ -177,7 +177,7 @@ func updateResource(
 func deleteResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	cluster, label, err := decodeBucketID(d.Id())
+	cluster, label, err := DecodeBucketID(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
@@ -319,7 +319,7 @@ func expandBucketCert(v interface{}) linodego.ObjectStorageBucketCertUploadOptio
 	}
 }
 
-func decodeBucketID(id string) (cluster, label string, err error) {
+func DecodeBucketID(id string) (cluster, label string, err error) {
 	parts := strings.Split(id, ":")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		err = fmt.Errorf("Linode Object Storage Bucket ID must be of the form <Cluster>:<Label>, was provided: %s", id)

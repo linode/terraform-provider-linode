@@ -241,8 +241,23 @@ func TestAccResourceObject_updates(t *testing.T) {
 	})
 }
 
+func resourceConfigBucketBasic(bucket string) string {
+	return fmt.Sprintf(`
+resource "linode_object_storage_bucket" "foobar" {
+	cluster = "us-east-1"
+	label = "%s"
+}`, bucket)
+}
+
+func resourceConfigObjectKeyBasic(label string) string {
+	return fmt.Sprintf(`
+resource "linode_object_storage_key" "foobar" {
+	label = "%s"
+}`, label)
+}
+
 func resourceConfigBasic(name, keyName, content string) string {
-	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
+	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_object" "object" {
 	bucket     = linode_object_storage_bucket.foobar.label
 	cluster    = "us-east-1"
@@ -254,7 +269,7 @@ resource "linode_object_storage_object" "object" {
 }
 
 func resourceConfigBase64(name, keyName, content string) string {
-	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
+	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_object" "object" {
 	bucket         = linode_object_storage_bucket.foobar.label
 	cluster        = "us-east-1"
@@ -266,7 +281,7 @@ resource "linode_object_storage_object" "object" {
 }
 
 func resourceConfigSource(name, keyName, filePath string) string {
-	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
+	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
 resource "linode_object_storage_object" "object" {
 	bucket     = linode_object_storage_bucket.foobar.label
 	cluster    = "us-east-1"
@@ -278,7 +293,7 @@ resource "linode_object_storage_object" "object" {
 }
 
 func resourceConfigUpdates(name, keyName, content string) string {
-	return testAccCheckLinodeObjectStorageBucketConfigBasic(name) + testAccCheckLinodeObjectStorageKeyConfigBasic(keyName) + fmt.Sprintf(`
+	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
 	resource "linode_object_storage_object" "object" {
 		bucket     = linode_object_storage_bucket.foobar.label
 		cluster    = "us-east-1"
