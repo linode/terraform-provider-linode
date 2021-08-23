@@ -1,4 +1,4 @@
-package linode
+package balancerconfig_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -105,23 +106,23 @@ HMuBpZsWkNKLh0hjC5i7YBZYtXGYPG2JCEE4mpiV8ClxTvmijsr8sYUOtnmIBXfG
 `
 )
 
-func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
+func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
-	config := testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName)
+	config := resourceConfigBasic(nodebalancerName)
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
-		PreCheck:                  func() { testAccPreCheck(t) },
-		Providers:                 testAccProviders,
-		CheckDestroy:              testAccCheckLinodeNodeBalancerConfigDestroy,
+		PreCheck:                  func() { acceptance.TestAccPreCheck(t) },
+		Providers:                 acceptance.TestAccProviders,
+		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:       config,
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckLinodeNodeBalancerConfigExists,
+					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
@@ -146,29 +147,29 @@ func TestAccLinodeNodeBalancerConfig_basic(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateIDNodeBalancerConfig,
+				ImportStateIdFunc: resourceImportStateID,
 			},
 		},
 	})
 }
 
-func TestAccLinodeNodeBalancerConfig_ssl(t *testing.T) {
+func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
-	config := testAccCheckLinodeNodeBalancerConfigSSL(nodebalancerName)
+	config := resourceConfigSSL(nodebalancerName)
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
-		PreCheck:                  func() { testAccPreCheck(t) },
-		Providers:                 testAccProviders,
-		CheckDestroy:              testAccCheckLinodeNodeBalancerConfigDestroy,
+		PreCheck:                  func() { acceptance.TestAccPreCheck(t) },
+		Providers:                 acceptance.TestAccProviders,
+		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:       config,
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckLinodeNodeBalancerConfigExists,
+					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTPS)),
 					resource.TestCheckResourceAttrSet(resName, "ssl_cert"),
 					resource.TestCheckResourceAttrSet(resName, "ssl_key"),
@@ -179,27 +180,27 @@ func TestAccLinodeNodeBalancerConfig_ssl(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"ssl_cert", "ssl_key"},
-				ImportStateIdFunc:       testAccStateIDNodeBalancerConfig,
+				ImportStateIdFunc:       resourceImportStateID,
 			},
 		},
 	})
 }
 
-func TestAccLinodeNodeBalancerConfig_update(t *testing.T) {
+func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeNodeBalancerConfigBasic(nodebalancerName),
+				Config: resourceConfigBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerConfigExists,
+					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
@@ -212,9 +213,9 @@ func TestAccLinodeNodeBalancerConfig_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeNodeBalancerConfigUpdates(nodebalancerName),
+				Config: resourceConfigUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerConfigExists,
+					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8088"),
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
@@ -230,21 +231,21 @@ func TestAccLinodeNodeBalancerConfig_update(t *testing.T) {
 	})
 }
 
-func TestAccLinodeNodeBalancerConfig_proxyProtocol(t *testing.T) {
+func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeNodeBalancerConfigProxyProtocol(nodebalancerName),
+				Config: resourceConfigProxyProtocol(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerConfigExists,
+					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "80"),
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolTCP)),
 					resource.TestCheckResourceAttr(resName, "proxy_protocol", string(linodego.ProxyProtocolV2)),
@@ -254,8 +255,8 @@ func TestAccLinodeNodeBalancerConfig_proxyProtocol(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkNodeBalancerConfigExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
@@ -280,8 +281,8 @@ func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkNodeBalancerConfigDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
 			continue
@@ -314,7 +315,7 @@ func testAccCheckLinodeNodeBalancerConfigDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccStateIDNodeBalancerConfig(s *terraform.State) (string, error) {
+func resourceImportStateID(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
 			continue
@@ -334,8 +335,19 @@ func testAccStateIDNodeBalancerConfig(s *terraform.State) (string, error) {
 	return "", fmt.Errorf("Error finding linode_nodebalancer_config")
 }
 
-func testAccCheckLinodeNodeBalancerConfigBasic(nodebalancer string) string {
-	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + `
+func resourceBalancerConfig(nodebalancer string) string {
+	return fmt.Sprintf(`
+resource "linode_nodebalancer" "foobar" {
+	label = "%s"
+	region = "us-east"
+	client_conn_throttle = 20
+	tags = ["tf_test"]
+}
+`, nodebalancer)
+}
+
+func resourceConfigBasic(nodebalancer string) string {
+	return resourceBalancerConfig(nodebalancer) + `
 resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	port = 8080
@@ -347,8 +359,8 @@ resource "linode_nodebalancer_config" "foofig" {
 `
 }
 
-func testAccCheckLinodeNodeBalancerConfigSSL(nodebalancer string) string {
-	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + fmt.Sprintf(`
+func resourceConfigSSL(nodebalancer string) string {
+	return resourceBalancerConfig(nodebalancer) + fmt.Sprintf(`
 resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	port = 8080
@@ -366,8 +378,8 @@ EOT
 `, testCertifcate, testPrivateKey)
 }
 
-func testAccCheckLinodeNodeBalancerConfigProxyProtocol(nodebalancer string) string {
-	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + `
+func resourceConfigProxyProtocol(nodebalancer string) string {
+	return resourceBalancerConfig(nodebalancer) + `
 resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	port = 80
@@ -377,8 +389,8 @@ resource "linode_nodebalancer_config" "foofig" {
 `
 }
 
-func testAccCheckLinodeNodeBalancerConfigUpdates(nodebalancer string) string {
-	return testAccCheckLinodeNodeBalancerBasic(nodebalancer) + `
+func resourceConfigUpdates(nodebalancer string) string {
+	return resourceBalancerConfig(nodebalancer) + `
 resource "linode_nodebalancer_config" "foofig" {
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
 	port = 8088

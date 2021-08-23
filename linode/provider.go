@@ -8,6 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/balancer"
+	"github.com/linode/terraform-provider-linode/linode/balancerconfig"
+	"github.com/linode/terraform-provider-linode/linode/balancernode"
 	"github.com/linode/terraform-provider-linode/linode/bucket"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
@@ -112,9 +115,9 @@ func Provider() *schema.Provider {
 			"linode_kernel":                 dataSourceLinodeKernel(),
 			"linode_lke_cluster":            dataSourceLinodeLKECluster(),
 			"linode_networking_ip":          dataSourceLinodeNetworkingIP(),
-			"linode_nodebalancer":           dataSourceLinodeNodeBalancer(),
-			"linode_nodebalancer_config":    dataSourceLinodeNodeBalancerConfig(),
-			"linode_nodebalancer_node":      dataSourceLinodeNodeBalancerNode(),
+			"linode_nodebalancer":           balancer.DataSource(),
+			"linode_nodebalancer_node":      balancernode.DataSource(),
+			"linode_nodebalancer_config":    balancerconfig.DataSource(),
 			"linode_object_storage_cluster": objectcluster.DataSource(),
 			"linode_profile":                dataSourceLinodeProfile(),
 			"linode_region":                 dataSourceLinodeRegion(),
@@ -133,11 +136,11 @@ func Provider() *schema.Provider {
 			"linode_instance":              resourceLinodeInstance(),
 			"linode_instance_ip":           resourceLinodeInstanceIP(),
 			"linode_lke_cluster":           resourceLinodeLKECluster(),
-			"linode_nodebalancer":          resourceLinodeNodeBalancer(),
-			"linode_nodebalancer_config":   resourceLinodeNodeBalancerConfig(),
-			"linode_nodebalancer_node":     resourceLinodeNodeBalancerNode(),
-			"linode_object_storage_bucket": bucket.Resource(),
+			"linode_nodebalancer":          balancer.Resource(),
+			"linode_nodebalancer_node":     balancernode.Resource(),
+			"linode_nodebalancer_config":   balancerconfig.Resource(),
 			"linode_object_storage_key":    objectkey.Resource(),
+			"linode_object_storage_bucket": bucket.Resource(),
 			"linode_object_storage_object": object.Resource(),
 			"linode_rdns":                  rdns.Resource(),
 			"linode_sshkey":                resourceLinodeSSHKey(),

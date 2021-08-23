@@ -1,4 +1,4 @@
-package linode
+package balancernode
 
 import (
 	"context"
@@ -9,75 +9,24 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func resourceLinodeNodeBalancerNode() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeNodeBalancerNodeCreate,
-		ReadContext:   resourceLinodeNodeBalancerNodeRead,
-		UpdateContext: resourceLinodeNodeBalancerNodeUpdate,
-		DeleteContext: resourceLinodeNodeBalancerNodeDelete,
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceLinodeNodeBalancerNodeImport,
-		},
-		Schema: map[string]*schema.Schema{
-			"nodebalancer_id": {
-				Type:        schema.TypeInt,
-				Description: "The ID of the NodeBalancer to access.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"config_id": {
-				Type:        schema.TypeInt,
-				Description: "The ID of the NodeBalancerConfig to access.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The label for this node. This is for display purposes only.",
-				Required:    true,
-			},
-			"weight": {
-				Type: schema.TypeInt,
-				Description: "Used when picking a backend to serve a request and is not pinned to a single backend " +
-					"yet. Nodes with a higher weight will receive more traffic. (1-255)",
-				ValidateFunc: validation.IntBetween(1, 255),
-				Optional:     true,
-				Computed:     true,
-			},
-			"mode": {
-				Type: schema.TypeString,
-				Description: "The mode this NodeBalancer should use when sending traffic to this backend. If set to " +
-					"`accept` this backend is accepting traffic. If set to `reject` this backend will not receive traffic. " +
-					"If set to `drain` this backend will not receive new traffic, but connections already pinned to it will " +
-					"continue to be routed to it. If set to `backup` this backend will only accept traffic if all other " +
-					"nodes are down.",
-				ValidateFunc: validation.StringInSlice([]string{"accept", "reject", "drain", "backup"}, false),
-				Optional:     true,
-				Computed:     true,
-			},
-			"address": {
-				Type: schema.TypeString,
-				Description: "The private IP Address and port (IP:PORT) where this backend can be reached. " +
-					"This must be a private IP address.",
-				Required: true,
-			},
-			"status": {
-				Type: schema.TypeString,
-				Description: "The current status of this node, based on the configured checks of its NodeBalancer " +
-					"Config. (unknown, UP, DOWN)",
-				Computed: true,
-			},
+			StateContext: importResource,
 		},
 	}
 }
 
-func resourceLinodeNodeBalancerNodeRead(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -111,8 +60,7 @@ func resourceLinodeNodeBalancerNodeRead(
 	return nil
 }
 
-func resourceLinodeNodeBalancerNodeImport(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
 		// Validate that this is an ID by making sure it can be converted into an int
@@ -136,7 +84,7 @@ func resourceLinodeNodeBalancerNodeImport(
 		d.Set("config_id", configID)
 	}
 
-	err := resourceLinodeNodeBalancerNodeRead(ctx, d, meta)
+	err := readResource(ctx, d, meta)
 	if err != nil {
 		return nil, fmt.Errorf("unable to import %v as nodebalancer_node: %v", d.Id(), err)
 	}
@@ -147,8 +95,7 @@ func resourceLinodeNodeBalancerNodeImport(
 	return results, nil
 }
 
-func resourceLinodeNodeBalancerNodeCreate(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
@@ -174,11 +121,10 @@ func resourceLinodeNodeBalancerNodeCreate(
 	d.Set("config_id", configID)
 	d.Set("nodebalancer_id", nodebalancerID)
 
-	return resourceLinodeNodeBalancerNodeRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerNodeUpdate(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -206,11 +152,10 @@ func resourceLinodeNodeBalancerNodeUpdate(
 			nodebalancerID, configID, int(id), err)
 	}
 
-	return resourceLinodeNodeBalancerNodeRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeNodeBalancerNodeDelete(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
