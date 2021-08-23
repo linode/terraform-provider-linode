@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strconv"
 	"testing"
 
@@ -251,6 +252,64 @@ func TestAccLinodeNodeBalancerConfig_proxyProtocol(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestLinodeNodeBalancerConfig_UpgradeV0(t *testing.T) {
+	t.Parallel()
+
+	oldState := map[string]interface{}{
+		"node_status": map[string]interface{}{
+			"down": "13",
+			"up":   "37",
+		},
+	}
+
+	desiredState := map[string]interface{}{
+		"node_status": []map[string]interface{}{
+			{
+				"down": 13,
+				"up":   37,
+			},
+		},
+	}
+
+	newState, err := resourceLinodeNodeBalancerConfigV0Upgrade(context.Background(), oldState, nil)
+	if err != nil {
+		t.Fatalf("error migrating state: %v", err)
+	}
+
+	if !reflect.DeepEqual(desiredState, newState) {
+		t.Fatalf("expected %v, got %v", desiredState, newState)
+	}
+}
+
+func TestLinodeNodeBalancerConfig_UpgradeV0Empty(t *testing.T) {
+	t.Parallel()
+
+	oldState := map[string]interface{}{
+		"node_status": map[string]interface{}{
+			"down": "",
+			"up":   "",
+		},
+	}
+
+	desiredState := map[string]interface{}{
+		"node_status": []map[string]interface{}{
+			{
+				"down": 0,
+				"up":   0,
+			},
+		},
+	}
+
+	newState, err := resourceLinodeNodeBalancerConfigV0Upgrade(context.Background(), oldState, nil)
+	if err != nil {
+		t.Fatalf("error migrating state: %v", err)
+	}
+
+	if !reflect.DeepEqual(desiredState, newState) {
+		t.Fatalf("expected %v, got %v", desiredState, newState)
+	}
 }
 
 func testAccCheckLinodeNodeBalancerConfigExists(s *terraform.State) error {
