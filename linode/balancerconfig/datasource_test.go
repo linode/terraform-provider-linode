@@ -1,4 +1,4 @@
-package linode
+package balancerconfig_test
 
 import (
 	"testing"
@@ -6,23 +6,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeNodeBalancerConfig_basic(t *testing.T) {
+func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "data.linode_nodebalancer_config.foofig"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeNodeBalancerConfigBasic(nodebalancerName),
+				Config: dataSourceConfigBasic(nodebalancerName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckLinodeNodeBalancerConfigExists,
+					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
 					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
@@ -47,8 +48,8 @@ func TestAccDataSourceLinodeNodeBalancerConfig_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeNodeBalancerConfigBasic(nodeBalancerName string) string {
-	return testAccCheckLinodeNodeBalancerConfigBasic(nodeBalancerName) + `
+func dataSourceConfigBasic(nodeBalancerName string) string {
+	return resourceConfigBasic(nodeBalancerName) + `
 data "linode_nodebalancer_config" "foofig" {
 	id = "${linode_nodebalancer_config.foofig.id}"
 	nodebalancer_id = "${linode_nodebalancer.foobar.id}"

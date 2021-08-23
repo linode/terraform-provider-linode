@@ -1,29 +1,30 @@
-package linode
+package balancernode_test
 
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeNodeBalancerNode_basic(t *testing.T) {
+func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "data.linode_nodebalancer_node.foonode"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testDataSourceLinodeNodeBalancerNodeBasic(nodebalancerName), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
+				Config: acceptance.AccTestWithProvider(dataSourceConfigBasic(nodebalancerName), map[string]interface{}{
+					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerNode,
+					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttr(resName, "mode", "accept"),
@@ -34,8 +35,8 @@ func TestAccDataSourceLinodeNodeBalancerNode_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeNodeBalancerNodeBasic(nodeBalancerName string) string {
-	return testAccCheckLinodeNodeBalancerNodeBasic(nodeBalancerName) + `
+func dataSourceConfigBasic(nodeBalancerName string) string {
+	return resourceConfigBasic(nodeBalancerName) + `
 data "linode_nodebalancer_node" "foonode" {
 	id = "${linode_nodebalancer_node.foonode.id}"
 	config_id = "${linode_nodebalancer_config.foofig.id}"

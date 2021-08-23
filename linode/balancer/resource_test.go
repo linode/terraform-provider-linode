@@ -1,4 +1,4 @@
-package linode
+package balancer_test
 
 import (
 	"context"
@@ -10,29 +10,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_nodebalancer", &resource.Sweeper{
 		Name: "linode_nodebalancer",
-		F:    testSweepLinodeNodeBalancer,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeNodeBalancer(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	nodebalancers, err := client.ListNodeBalancers(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting instances: %s", err)
 	}
 	for _, nodebalancer := range nodebalancers {
-		if nodebalancer.Label == nil || !shouldSweepAcceptanceTestResource(prefix, *nodebalancer.Label) {
+		if nodebalancer.Label == nil || !acceptance.ShouldSweep(prefix, *nodebalancer.Label) {
 			continue
 		}
 		err := client.DeleteNodeBalancer(context.Background(), nodebalancer.ID)
@@ -45,21 +46,21 @@ func testSweepLinodeNodeBalancer(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeNodeBalancer_basic(t *testing.T) {
+func TestAccResourceNodeBalancer_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeNodeBalancerBasic(nodebalancerName),
+				Config: resourceConfigBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
+					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -83,29 +84,29 @@ func TestAccLinodeNodeBalancer_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeNodeBalancer_update(t *testing.T) {
+func TestAccResourceNodeBalancer_update(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeNodeBalancerDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeNodeBalancerBasic(nodebalancerName),
+				Config: resourceConfigBasic(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
+					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeNodeBalancerUpdates(nodebalancerName),
+				Config: resourceConfigUpdates(nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeNodeBalancerExists,
+					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodebalancerName)),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
@@ -117,8 +118,8 @@ func TestAccLinodeNodeBalancer_update(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeNodeBalancerExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkNodeBalancerExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer" {
@@ -139,8 +140,8 @@ func testAccCheckLinodeNodeBalancerExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeNodeBalancerDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkNodeBalancerDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer" {
 			continue
@@ -168,7 +169,7 @@ func testAccCheckLinodeNodeBalancerDestroy(s *terraform.State) error {
 
 	return nil
 }
-func testAccCheckLinodeNodeBalancerBasic(nodebalancer string) string {
+func resourceConfigBasic(nodebalancer string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
 	label = "%s"
@@ -179,7 +180,7 @@ resource "linode_nodebalancer" "foobar" {
 `, nodebalancer)
 }
 
-func testAccCheckLinodeNodeBalancerUpdates(nodebalancer string) string {
+func resourceConfigUpdates(nodebalancer string) string {
 	return fmt.Sprintf(`
 resource "linode_nodebalancer" "foobar" {
 	label = "%s_r"
