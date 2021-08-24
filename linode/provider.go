@@ -18,6 +18,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
+	"github.com/linode/terraform-provider-linode/linode/lke"
 	"github.com/linode/terraform-provider-linode/linode/object"
 	"github.com/linode/terraform-provider-linode/linode/objectcluster"
 	"github.com/linode/terraform-provider-linode/linode/objectkey"
@@ -113,7 +114,7 @@ func Provider() *schema.Provider {
 			"linode_instance_backups":       dataSourceLinodeInstanceBackups(),
 			"linode_instance_type":          dataSourceLinodeInstanceType(),
 			"linode_kernel":                 dataSourceLinodeKernel(),
-			"linode_lke_cluster":            dataSourceLinodeLKECluster(),
+			"linode_lke_cluster":            lke.DataSource(),
 			"linode_networking_ip":          dataSourceLinodeNetworkingIP(),
 			"linode_nodebalancer":           balancer.DataSource(),
 			"linode_nodebalancer_node":      balancernode.DataSource(),
@@ -135,7 +136,7 @@ func Provider() *schema.Provider {
 			"linode_image":                 image.Resource(),
 			"linode_instance":              resourceLinodeInstance(),
 			"linode_instance_ip":           resourceLinodeInstanceIP(),
-			"linode_lke_cluster":           resourceLinodeLKECluster(),
+			"linode_lke_cluster":           lke.Resource(),
 			"linode_nodebalancer":          balancer.Resource(),
 			"linode_nodebalancer_node":     balancernode.Resource(),
 			"linode_nodebalancer_config":   balancerconfig.Resource(),
