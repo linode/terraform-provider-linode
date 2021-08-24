@@ -241,19 +241,19 @@ func TestAccLinodeLKECluster_k8sUpgrade(t *testing.T) {
 		CheckDestroy: testAccCheckLinodeLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeLKEClusterManyPools(clusterName, "1.19"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(testLKEClusterResName, "label", clusterName),
-					resource.TestCheckResourceAttr(testLKEClusterResName, "region", "us-central"),
-					resource.TestCheckResourceAttr(testLKEClusterResName, "k8s_version", "1.19"),
-				),
-			},
-			{
 				Config: testAccCheckLinodeLKEClusterManyPools(clusterName, "1.20"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testLKEClusterResName, "label", clusterName),
 					resource.TestCheckResourceAttr(testLKEClusterResName, "region", "us-central"),
 					resource.TestCheckResourceAttr(testLKEClusterResName, "k8s_version", "1.20"),
+				),
+			},
+			{
+				Config: testAccCheckLinodeLKEClusterManyPools(clusterName, "1.21"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testLKEClusterResName, "label", clusterName),
+					resource.TestCheckResourceAttr(testLKEClusterResName, "region", "us-central"),
+					resource.TestCheckResourceAttr(testLKEClusterResName, "k8s_version", "1.21"),
 				),
 			},
 		},
