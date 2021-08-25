@@ -1,4 +1,4 @@
-package linode
+package volume_test
 
 import (
 	"context"
@@ -10,29 +10,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_volume", &resource.Sweeper{
 		Name: "linode_volume",
-		F:    testSweepLinodeVolume,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeVolume(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	volumes, err := client.ListVolumes(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting volumes: %s", err)
 	}
 	for _, volume := range volumes {
-		if !shouldSweepAcceptanceTestResource(prefix, volume.Label) {
+		if !acceptance.ShouldSweep(prefix, volume.Label) {
 			continue
 		}
 		err := client.DeleteVolume(context.Background(), volume.ID)
@@ -45,42 +47,42 @@ func testSweepLinodeVolume(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeVolume_detectVolumeIDChange(t *testing.T) {
+func TestDetectVolumeIDChange(t *testing.T) {
 	t.Parallel()
 	var have, want *int
 	var one, two *int
 	oneValue, twoValue := 1, 2
 	one, two = &oneValue, &twoValue
 
-	if have, want = nil, nil; detectVolumeIDChange(have, want) {
+	if have, want = nil, nil; volume.DetectVolumeIDChange(have, want) {
 		t.Errorf("should not detect change when both are nil")
 	}
-	if have, want = nil, one; !detectVolumeIDChange(have, want) {
+	if have, want = nil, one; !volume.DetectVolumeIDChange(have, want) {
 		t.Errorf("should detect change when have is nil and want is not nil")
 	}
-	if have, want = one, nil; !detectVolumeIDChange(have, want) {
+	if have, want = one, nil; !volume.DetectVolumeIDChange(have, want) {
 		t.Errorf("should detect change when want is nil and have is not nil")
 	}
-	if have, want = one, two; !detectVolumeIDChange(have, want) {
+	if have, want = one, two; !volume.DetectVolumeIDChange(have, want) {
 		t.Errorf("should detect change when values differ")
 	}
 }
 
-func TestAccLinodeVolume_basic(t *testing.T) {
+func TestAccResourceVolume_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_volume.foobar"
 	var volumeName = acctest.RandomWithPrefix("tf_test")
 	var volume = linodego.Volume{}
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeVolumeDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
+				Config: resourceConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
@@ -100,7 +102,7 @@ func TestAccLinodeVolume_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeVolume_update(t *testing.T) {
+func TestAccResourceVolume_update(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
@@ -108,21 +110,21 @@ func TestAccLinodeVolume_update(t *testing.T) {
 	var resName = "linode_volume.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeVolumeDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
+				Config: resourceConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists(resName, &volume),
+					checkVolumeExists(resName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 				),
 			},
 			{
-				Config: testAccCheckLinodeVolumeConfigUpdates(volumeName),
+				Config: resourceConfigUpdates(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists(resName, &volume),
+					checkVolumeExists(resName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", volumeName)),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
@@ -133,28 +135,28 @@ func TestAccLinodeVolume_update(t *testing.T) {
 	})
 }
 
-func TestAccLinodeVolume_resized(t *testing.T) {
+func TestAccResourceVolume_resized(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeVolumeDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
+				Config: resourceConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			{
-				Config: testAccCheckLinodeVolumeConfigResized(volumeName),
+				Config: resourceConfigVolumeResized(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "size", "30"),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "tags.#", "0"),
 				),
@@ -163,29 +165,29 @@ func TestAccLinodeVolume_resized(t *testing.T) {
 	})
 }
 
-func TestAccLinodeVolume_attached(t *testing.T) {
+func TestAccResourceVolume_attached(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeVolumeDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeVolumeConfigBasic(volumeName),
+				Config: resourceConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
+				Config: resourceConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet("linode_instance.foobar", "id"),
 					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
 				),
@@ -200,33 +202,33 @@ func TestAccLinodeVolume_attached(t *testing.T) {
 	})
 }
 
-func TestAccLinodeVolume_detached(t *testing.T) {
+func TestAccResourceVolume_detached(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeVolumeDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
+				Config: resourceConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			{
-				Config:            testAccCheckLinodeVolumeConfigAttached(volumeName),
+				Config:            resourceConfigAttached(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 			{
-				Config:            testAccCheckLinodeVolumeConfigBasic(volumeName),
+				Config:            resourceConfigBasic(volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -236,29 +238,29 @@ func TestAccLinodeVolume_detached(t *testing.T) {
 	})
 }
 
-func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
+func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 	t.Parallel()
 
 	var volumeName = acctest.RandomWithPrefix("tf_test")
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeVolumeDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeVolumeConfigAttached(volumeName),
+				Config: resourceConfigAttached(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeVolumeConfigReattachedBetweenInstances(volumeName),
+				Config: resourceConfigReattachedBetweenInstances(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeVolumeExists("linode_volume.foobar", &volume),
+					checkVolumeExists("linode_volume.foobar", &volume),
 				),
 			},
 			{
@@ -277,9 +279,9 @@ func TestAccLinodeVolume_reattachedBetweenInstances(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
+func checkVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -306,8 +308,8 @@ func testAccCheckLinodeVolumeExists(name string, volume *linodego.Volume) resour
 	}
 }
 
-func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkVolumeDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_volume" {
 			continue
@@ -336,7 +338,7 @@ func testAccCheckLinodeVolumeDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeVolumeConfigBasic(volume string) string {
+func resourceConfigBasic(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_volume" "foobar" {
 	label = "%s"
@@ -345,7 +347,7 @@ resource "linode_volume" "foobar" {
 }`, volume)
 }
 
-func testAccCheckLinodeVolumeConfigUpdates(volume string) string {
+func resourceConfigUpdates(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_volume" "foobar" {
 	label = "%s_r"
@@ -354,7 +356,7 @@ resource "linode_volume" "foobar" {
 }`, volume)
 }
 
-func testAccCheckLinodeVolumeConfigResized(volume string) string {
+func resourceConfigVolumeResized(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_volume" "foobar" {
 	label = "%s"
@@ -363,7 +365,7 @@ resource "linode_volume" "foobar" {
 }`, volume)
 }
 
-func testAccCheckLinodeVolumeConfigAttached(volume string) string {
+func resourceConfigAttached(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
@@ -386,7 +388,7 @@ resource "linode_volume" "foobar" {
 }`, volume)
 }
 
-func testAccCheckLinodeVolumeConfigReattachedBetweenInstances(volume string) string {
+func resourceConfigReattachedBetweenInstances(volume string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"

@@ -1,4 +1,4 @@
-package linode
+package user_test
 
 import (
 	"context"
@@ -9,44 +9,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const testUserResName = "linode_user.test"
 
-func testAccCheckLinodeUserDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_user" {
-			continue
-		}
-
-		username := rs.Primary.ID
-		_, err := client.GetUser(context.TODO(), username)
-
-		if err == nil {
-			return fmt.Errorf("should not find user %s existing after delete", username)
-		}
-
-		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Error getting user %s: %s", username, err)
-		}
-	}
-	return nil
-}
-
-func TestAccLinodeUser_basic(t *testing.T) {
+func TestAccResourceUser_basic(t *testing.T) {
 	t.Parallel()
 
 	username := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeUserDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeUserConfigBasic(username, email, true),
+				Config: resourceConfigBasic(username, email, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "email", email),
 					resource.TestCheckResourceAttr(testUserResName, "username", username),
@@ -59,19 +39,19 @@ func TestAccLinodeUser_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeUser_updates(t *testing.T) {
+func TestAccResourceUser_updates(t *testing.T) {
 	t.Parallel()
 
 	username := acctest.RandomWithPrefix("tf-test")
 	updatedUsername := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeUserDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeUserConfigBasic(username, email, false),
+				Config: resourceConfigBasic(username, email, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "email", email),
 					resource.TestCheckResourceAttr(testUserResName, "username", username),
@@ -81,7 +61,7 @@ func TestAccLinodeUser_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeUserConfigBasic(updatedUsername, email, true),
+				Config: resourceConfigBasic(updatedUsername, email, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "email", email),
 					resource.TestCheckResourceAttr(testUserResName, "username", updatedUsername),
@@ -94,7 +74,7 @@ func TestAccLinodeUser_updates(t *testing.T) {
 	})
 }
 
-func TestAccLinodeUser_grants(t *testing.T) {
+func TestAccResourceUser_grants(t *testing.T) {
 	t.Parallel()
 
 	username := acctest.RandomWithPrefix("tf-test")
@@ -102,12 +82,12 @@ func TestAccLinodeUser_grants(t *testing.T) {
 
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeUserDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeUserConfigGrants(username, email),
+				Config: resourceConfigGrants(username, email),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", ""),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "true"),
@@ -124,7 +104,7 @@ func TestAccLinodeUser_grants(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeUserConfigGrantsUpdate(username, email, instance),
+				Config: resourceConfigGrantsUpdate(username, email, instance),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", "read_only"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "false"),
@@ -145,7 +125,28 @@ func TestAccLinodeUser_grants(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeUserConfigBasic(username, email string, restricted bool) string {
+func checkUserDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_user" {
+			continue
+		}
+
+		username := rs.Primary.ID
+		_, err := client.GetUser(context.TODO(), username)
+
+		if err == nil {
+			return fmt.Errorf("should not find user %s existing after delete", username)
+		}
+
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+			return fmt.Errorf("Error getting user %s: %s", username, err)
+		}
+	}
+	return nil
+}
+
+func resourceConfigBasic(username, email string, restricted bool) string {
 	return fmt.Sprintf(`
 resource "linode_user" "test" {
 	username = "%s"
@@ -154,7 +155,7 @@ resource "linode_user" "test" {
 }`, username, email, restricted)
 }
 
-func testAccCheckLinodeUserConfigGrants(username, email string) string {
+func resourceConfigGrants(username, email string) string {
 	return fmt.Sprintf(`
 resource "linode_user" "test" {
 	username = "%s"
@@ -170,8 +171,8 @@ resource "linode_user" "test" {
 }`, username, email)
 }
 
-func testAccCheckLinodeUserConfigGrantsUpdate(username, email, instance string) string {
-	return testAccCheckLinodeInstanceWithNoImage(instance) + fmt.Sprintf(`
+func resourceConfigGrantsUpdate(username, email, instance string) string {
+	return instanceConfigNoImage(instance) + fmt.Sprintf(`
 resource "linode_user" "test" {
 	username = "%s"
 	email = "%s"
@@ -188,4 +189,15 @@ resource "linode_user" "test" {
 		permissions = "read_write"
 	}
 }`, username, email)
+}
+
+func instanceConfigNoImage(instance string) string {
+	return fmt.Sprintf(`
+	resource "linode_instance" "foobar" {
+		label = "%s"
+		group = "tf_test"
+		type = "g6-nanode-1"
+		region = "us-east"
+	}
+`, instance)
 }

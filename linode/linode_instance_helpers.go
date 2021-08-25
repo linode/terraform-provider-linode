@@ -22,8 +22,6 @@ var (
 	boolTrue  = true
 )
 
-type flattenedProfileReferrals map[string]interface{}
-
 type diskSpec map[string]interface{}
 
 // getDeadlineSeconds gets the seconds remaining until deadline is met.
@@ -33,17 +31,6 @@ func getDeadlineSeconds(ctx context.Context, d *schema.ResourceData) int {
 		duration = time.Until(deadline)
 	}
 	return int(duration.Seconds())
-}
-
-func flattenProfileReferrals(referrals linodego.ProfileReferrals) []flattenedProfileReferrals {
-	return []flattenedProfileReferrals{{
-		"code":      referrals.Code,
-		"url":       referrals.URL,
-		"total":     referrals.Total,
-		"completed": referrals.Completed,
-		"pending":   referrals.Pending,
-		"credit":    referrals.Credit,
-	}}
 }
 
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {

@@ -1,4 +1,4 @@
-package linode
+package user
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,162 +14,17 @@ import (
 var resourceLinodeUserGrantFields = []string{"global_grants", "domain_grant", "firewall_grant", "image_grant",
 	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant"}
 
-func resourceLinodeUserGrantsGlobal() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"account_access": {
-				Type: schema.TypeString,
-				Description: "The level of access this User has to Account-level actions, like billing information. " +
-					"A restricted User will never be able to manage users.",
-				Optional: true,
-			},
-			"add_domains": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may add Domains.",
-				Optional:    true,
-				Default:     false,
-			},
-			"add_firewalls": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may add Firewalls.",
-				Optional:    true,
-				Default:     false,
-			},
-			"add_images": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may add Images.",
-				Optional:    true,
-				Default:     false,
-			},
-			"add_linodes": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may create Linodes.",
-				Optional:    true,
-				Default:     false,
-			},
-			"add_longview": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may create Longview clients and view the current plan.",
-				Optional:    true,
-				Default:     false,
-			},
-			"add_nodebalancers": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may add NodeBalancers.",
-				Optional:    true,
-				Default:     false,
-			},
-			"add_stackscripts": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may add StackScripts.",
-				Optional:    true,
-				Default:     false,
-			},
-			"add_volumes": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may add Volumes.",
-				Optional:    true,
-				Default:     false,
-			},
-			"cancel_account": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may cancel the entire Account.",
-				Optional:    true,
-				Default:     false,
-			},
-			"longview_subscription": {
-				Type:        schema.TypeBool,
-				Description: "If true, this User may manage the Account’s Longview subscription.",
-				Optional:    true,
-				Default:     false,
-			},
-		},
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 	}
 }
 
-func resourceLinodeUserGrantsEntity() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The ID of the entity this grant applies to.",
-			},
-			"permissions": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The level of access this User has to this entity. If null, this User has no access.",
-			},
-		},
-	}
-}
-
-func resourceLinodeUserGrantsEntitySet() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeSet,
-		Description: "A set containing all of the user's active grants.",
-		Optional:    true,
-		Computed:    true,
-		Elem:        resourceLinodeUserGrantsEntity(),
-	}
-}
-
-func resourceLinodeUser() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceLinodeUserCreate,
-		ReadContext:   resourceLinodeUserRead,
-		UpdateContext: resourceLinodeUserUpdate,
-		DeleteContext: resourceLinodeUserDelete,
-		Schema: map[string]*schema.Schema{
-			"email": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The email of the user.",
-			},
-			"username": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The username of the user.",
-			},
-			"restricted": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the user must be explicitly granted access to platform actions and entities.",
-			},
-			"ssh_keys": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Computed:    true,
-				Description: "SSH keys to add to the user profile.",
-			},
-			"tfa_enabled": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "If the User has Two Factor Authentication (TFA) enabled.",
-			},
-			"global_grants": {
-				Type:        schema.TypeList,
-				Description: "A structure containing the Account-level grants a User has.",
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Elem:        resourceLinodeUserGrantsGlobal(),
-			},
-			"domain_grant":       resourceLinodeUserGrantsEntitySet(),
-			"firewall_grant":     resourceLinodeUserGrantsEntitySet(),
-			"image_grant":        resourceLinodeUserGrantsEntitySet(),
-			"linode_grant":       resourceLinodeUserGrantsEntitySet(),
-			"longview_grant":     resourceLinodeUserGrantsEntitySet(),
-			"nodebalancer_grant": resourceLinodeUserGrantsEntitySet(),
-			"stackscript_grant":  resourceLinodeUserGrantsEntitySet(),
-			"volume_grant":       resourceLinodeUserGrantsEntitySet(),
-		},
-	}
-}
-
-func resourceLinodeUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.UserCreateOptions{
@@ -191,10 +46,10 @@ func resourceLinodeUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	d.SetId(user.Username)
 
-	return resourceLinodeUserRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	username := d.Get("username").(string)
@@ -234,7 +89,7 @@ func resourceLinodeUserRead(ctx context.Context, d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourceLinodeUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id := d.Id()
@@ -255,10 +110,10 @@ func resourceLinodeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	d.SetId(username)
-	return resourceLinodeUserRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	username := d.Get("username").(string)

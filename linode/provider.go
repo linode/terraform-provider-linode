@@ -22,8 +22,13 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/object"
 	"github.com/linode/terraform-provider-linode/linode/objectcluster"
 	"github.com/linode/terraform-provider-linode/linode/objectkey"
+	"github.com/linode/terraform-provider-linode/linode/profile"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
+	"github.com/linode/terraform-provider-linode/linode/region"
+	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
+	"github.com/linode/terraform-provider-linode/linode/user"
+	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -120,13 +125,13 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer_node":      balancernode.DataSource(),
 			"linode_nodebalancer_config":    balancerconfig.DataSource(),
 			"linode_object_storage_cluster": objectcluster.DataSource(),
-			"linode_profile":                dataSourceLinodeProfile(),
-			"linode_region":                 dataSourceLinodeRegion(),
+			"linode_profile":                profile.DataSource(),
+			"linode_region":                 region.DataSource(),
 			"linode_sshkey":                 dataSourceLinodeSSHKey(),
-			"linode_stackscript":            dataSourceLinodeStackscript(),
-			"linode_user":                   dataSourceLinodeUser(),
+			"linode_stackscript":            stackscript.DataSource(),
+			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  dataSourceLinodeVLANs(),
-			"linode_volume":                 dataSourceLinodeVolume(),
+			"linode_volume":                 volume.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -145,10 +150,10 @@ func Provider() *schema.Provider {
 			"linode_object_storage_object": object.Resource(),
 			"linode_rdns":                  rdns.Resource(),
 			"linode_sshkey":                resourceLinodeSSHKey(),
-			"linode_stackscript":           resourceLinodeStackscript(),
+			"linode_stackscript":           stackscript.Resource(),
 			"linode_token":                 token.Resource(),
-			"linode_user":                  resourceLinodeUser(),
-			"linode_volume":                resourceLinodeVolume(),
+			"linode_user":                  user.Resource(),
+			"linode_volume":                volume.Resource(),
 		},
 	}
 

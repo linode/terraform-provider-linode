@@ -1,44 +1,49 @@
-package linode
+package user_test
 
 import (
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeUser_basic(t *testing.T) {
+func TestAccDataSourceUser_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_user.user"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeProfileBasic() + testDataSourceLinodeUserBasic(),
+				Config: profileConfigBasic() + dataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "username"),
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
 				),
 			},
 			{
-				Config:      testDataSourceLinodeUserDoesNotExist(),
+				Config:      dataSourceConfigNoUser(),
 				ExpectError: regexp.MustCompile(" was not found"),
 			},
 		},
 	})
 }
 
-func testDataSourceLinodeUserBasic() string {
+func profileConfigBasic() string {
+	return `data "linode_profile" "user" {}`
+}
+
+func dataSourceConfigBasic() string {
 	return `
 		data "linode_user" "user" {
 			username = "${data.linode_profile.user.username}"
 		}`
 }
 
-func testDataSourceLinodeUserDoesNotExist() string {
+func dataSourceConfigNoUser() string {
 	return `
 		data "linode_user" "user" {
 			username = "does-not-exist"
