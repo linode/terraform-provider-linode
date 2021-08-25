@@ -1,22 +1,23 @@
-package linode
+package profile_test
 
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeProfile_basic(t *testing.T) {
+func TestAccDataSourceProfile_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_profile.user"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeProfileBasic(),
+				Config: dataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
@@ -41,6 +42,6 @@ func TestAccDataSourceLinodeProfile_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeProfileBasic() string {
+func dataSourceConfigBasic() string {
 	return `data "linode_profile" "user" {}`
 }

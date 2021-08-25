@@ -1,23 +1,24 @@
-package linode
+package stackscript_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeStackscript_basic(t *testing.T) {
+func TestAccDataSourceStackscript_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_stackscript.stackscript"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeStackScriptBasic(),
+				Config: dataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "deployments_active"),
@@ -29,7 +30,7 @@ func TestAccDataSourceLinodeStackscript_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "test"),
 					resource.TestCheckResourceAttr(resourceName, "is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "rev_note", "initial"),
-					resource.TestCheckResourceAttr(resourceName, "script", testDataSourceLinodeStackScriptBasicScript),
+					resource.TestCheckResourceAttr(resourceName, "script", basicStackScript),
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "images.0", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resourceName, "images.1", "linode/ubuntu16.04lts"),
@@ -44,13 +45,13 @@ func TestAccDataSourceLinodeStackscript_basic(t *testing.T) {
 	})
 }
 
-var testDataSourceLinodeStackScriptBasicScript = `#!/bin/bash
+var basicStackScript = `#!/bin/bash
 #<UDF name="name" label="Your name" example="Linus Torvalds" default="user">
 # NAME=
 echo "Hello, $NAME!"
 `
 
-func testDataSourceLinodeStackScriptBasic() string {
+func dataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 resource "linode_stackscript" "stackscript" {
 	label = "my_stackscript"
@@ -63,5 +64,5 @@ resource "linode_stackscript" "stackscript" {
 
 data "linode_stackscript" "stackscript" {
 	id = linode_stackscript.stackscript.id
-}`, testDataSourceLinodeStackScriptBasicScript)
+}`, basicStackScript)
 }

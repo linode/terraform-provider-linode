@@ -1,4 +1,4 @@
-package linode
+package stackscript_test
 
 import (
 	"context"
@@ -10,29 +10,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_stackscript", &resource.Sweeper{
 		Name: "linode_stackscript",
-		F:    testSweepLinodeStackScript,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeStackScript(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	stackscripts, err := client.ListStackscripts(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting stackscripts: %s", err)
 	}
 	for _, stackscript := range stackscripts {
-		if !shouldSweepAcceptanceTestResource(prefix, stackscript.Label) {
+		if !acceptance.ShouldSweep(prefix, stackscript.Label) {
 			continue
 		}
 		err := client.DeleteStackscript(context.Background(), stackscript.ID)
@@ -45,21 +46,21 @@ func testSweepLinodeStackScript(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeStackscript_basic(t *testing.T) {
+func TestAccResourceStackscript_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_stackscript.foobar"
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeStackscriptDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeStackscriptBasic(stackscriptName),
+				Config: resourceConfigBasic(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeStackscriptExists,
+					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
 					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
@@ -76,20 +77,20 @@ func TestAccLinodeStackscript_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeStackscript_update(t *testing.T) {
+func TestAccResourceStackscript_update(t *testing.T) {
 	t.Parallel()
 
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
 	var resName = "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeStackscriptDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeStackscriptBasic(stackscriptName),
+				Config: resourceConfigBasic(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeStackscriptExists,
+					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
 					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
@@ -97,9 +98,9 @@ func TestAccLinodeStackscript_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeStackscriptBasicRenamed(stackscriptName),
+				Config: resourceConfigBasicRenamed(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeStackscriptExists,
+					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
 					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
@@ -115,20 +116,20 @@ func TestAccLinodeStackscript_update(t *testing.T) {
 	})
 }
 
-func TestAccLinodeStackscript_codeChange(t *testing.T) {
+func TestAccResourceStackscript_codeChange(t *testing.T) {
 	t.Parallel()
 
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
 	var resName = "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeStackscriptDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeStackscriptBasic(stackscriptName),
+				Config: resourceConfigBasic(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeStackscriptExists,
+					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
 					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
@@ -138,9 +139,9 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeStackscriptCodeChange(stackscriptName),
+				Config: resourceConfigStackscriptCodeChange(stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeStackscriptExists,
+					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "second"),
 					resource.TestCheckResourceAttr(resName, "script", "#!/bin/bash\n# <UDF name=\"hasudf\" label=\"a label\" example=\"an example\" default=\"a default\">\necho bye\n"),
@@ -163,8 +164,8 @@ func TestAccLinodeStackscript_codeChange(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeStackscriptExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkStackscriptExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_stackscript" {
@@ -185,8 +186,8 @@ func testAccCheckLinodeStackscriptExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeStackscriptDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkStackscriptDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_stackscript" {
 			continue
@@ -215,7 +216,7 @@ func testAccCheckLinodeStackscriptDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeStackscriptBasic(stackscript string) string {
+func resourceConfigBasic(stackscript string) string {
 	return fmt.Sprintf(`
 resource "linode_stackscript" "foobar" {
 	label = "%s"
@@ -229,7 +230,7 @@ EOF
 }`, stackscript)
 }
 
-func testAccCheckLinodeStackscriptBasicRenamed(stackscript string) string {
+func resourceConfigBasicRenamed(stackscript string) string {
 	return fmt.Sprintf(`
 resource "linode_stackscript" "foobar" {
 	label = "%s_renamed"
@@ -243,7 +244,7 @@ EOF
 }`, stackscript)
 }
 
-func testAccCheckLinodeStackscriptCodeChange(stackscript string) string {
+func resourceConfigStackscriptCodeChange(stackscript string) string {
 	return fmt.Sprintf(`
 resource "linode_stackscript" "foobar" {
 	label = "%s"

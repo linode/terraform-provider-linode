@@ -1,4 +1,4 @@
-package linode
+package region
 
 import (
 	"context"
@@ -8,27 +8,14 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func dataSourceLinodeRegion() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceLinodeRegionRead,
-
-		Schema: map[string]*schema.Schema{
-			"country": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The country where this Region resides.",
-				Computed:    true,
-			},
-			"id": {
-				Type:        schema.TypeString,
-				Description: "The unique ID of this Region.",
-				Required:    true,
-			},
-		},
+		Schema:      dataSourceSchema,
+		ReadContext: readDataSource,
 	}
 }
 
-func dataSourceLinodeRegionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	reqRegion := d.Get("id").(string)

@@ -1,4 +1,4 @@
-package linode
+package volume
 
 import (
 	"context"
@@ -19,12 +19,13 @@ const (
 	LinodeVolumeDeleteTimeout = 10 * time.Minute
 )
 
-func resourceLinodeVolume() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeVolumeCreate,
-		ReadContext:   resourceLinodeVolumeRead,
-		UpdateContext: resourceLinodeVolumeUpdate,
-		DeleteContext: resourceLinodeVolumeDelete,
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -33,53 +34,10 @@ func resourceLinodeVolume() *schema.Resource {
 			Update: schema.DefaultTimeout(LinodeVolumeUpdateTimeout),
 			Delete: schema.DefaultTimeout(LinodeVolumeDeleteTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The label of the Linode Volume.",
-				Required:    true,
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Description: "The status of the volume, indicating the current readiness state.",
-				Computed:    true,
-			},
-			"region": {
-				Type:         schema.TypeString,
-				Description:  "The region where this volume will be deployed.",
-				Required:     true,
-				ForceNew:     true,
-				InputDefault: "us-east",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Description: "Size of the Volume in GB",
-				Optional:    true,
-				Computed:    true,
-			},
-			"linode_id": {
-				Type:        schema.TypeInt,
-				Description: "The Linode ID where the Volume should be attached.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"filesystem_path": {
-				Type: schema.TypeString,
-				Description: "The full filesystem path for the Volume based on the Volume's label. Path is " +
-					"/dev/disk/by-id/scsi-0Linode_Volume_ + Volume label.",
-				Computed: true,
-			},
-			"tags": {
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
-				Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
-			},
-		},
 	}
 }
 
-func resourceLinodeVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -107,7 +65,7 @@ func resourceLinodeVolumeRead(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceLinodeVolumeCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	var linodeID *int
@@ -151,10 +109,10 @@ func resourceLinodeVolumeCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	return resourceLinodeVolumeRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -217,7 +175,7 @@ func resourceLinodeVolumeUpdate(ctx context.Context, d *schema.ResourceData, met
 	// We can't use d.HasChange("linode_id") - see https://github.com/hashicorp/terraform/pull/1445
 	// compare nils to ints cautiously
 
-	if detectVolumeIDChange(linodeID, volume.LinodeID) {
+	if DetectVolumeIDChange(linodeID, volume.LinodeID) {
 		if linodeID == nil || volume.LinodeID != nil {
 			log.Printf("[INFO] Detaching Linode Volume %d", volume.ID)
 			if err = client.DetachVolume(ctx, volume.ID); err != nil {
@@ -255,10 +213,10 @@ func resourceLinodeVolumeUpdate(ctx context.Context, d *schema.ResourceData, met
 		d.Set("linode_id", linodeID)
 	}
 
-	return resourceLinodeVolumeRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeVolumeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id64, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -286,7 +244,7 @@ func resourceLinodeVolumeDelete(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func detectVolumeIDChange(have *int, want *int) (changed bool) {
+func DetectVolumeIDChange(have *int, want *int) (changed bool) {
 	if have == nil && want == nil {
 		changed = false
 	} else {
