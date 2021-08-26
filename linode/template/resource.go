@@ -2,13 +2,13 @@
 
 /**
  * Using this template:
- * - Copy resource_linode_template.go and resource_linode_template_test.go
+ * - Copy resource.go and resource_test.go
  *   - Remove "// +build ignore"
  *   - Replace "Template" with Linode Resource Name
  *   - Replace "template" with Linode resource name
  * - Add Resource to provider.go
  */
-package linode
+package template
 
 import (
 	"context"
@@ -21,31 +21,20 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func resourceLinodeTemplate() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeTemplateCreate,
-		ReadContext:   resourceLinodeTemplateRead,
-		UpdateContext: resourceLinodeTemplateUpdate,
-		DeleteContext: resourceLinodeTemplateDelete,
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthrough,
-		},
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The label of the Linode Template.",
-				Optional:    true,
-			},
-			"status": {
-				Type:        schema.TypeInt,
-				Description: "The status of the template, indicating the current readiness state.",
-				Computed:    true,
-			},
 		},
 	}
 }
 
-func resourceLinodeTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -64,7 +53,7 @@ func resourceLinodeTemplateRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceLinodeTemplateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, ok := meta.(*helper.ProviderMeta).Client
 	if !ok {
 		return diag.Errorf("Invalid Client when creating Linode Template")
@@ -80,10 +69,10 @@ func resourceLinodeTemplateCreate(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(fmt.Sprintf("%d", template.ID))
 	d.Set("label", template.Label)
 
-	return resourceLinodeTemplateRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -103,10 +92,10 @@ func resourceLinodeTemplateUpdate(ctx context.Context, d *schema.ResourceData, m
 		d.Set("label", template.Label)
 	}
 
-	return resourceLinodeTemplateRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeTemplateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
