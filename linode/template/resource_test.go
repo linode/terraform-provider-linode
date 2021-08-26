@@ -1,6 +1,6 @@
 // +build ignore
 
-package linode
+package template
 
 import (
 	"context"
@@ -12,29 +12,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_template", &resource.Sweeper{
 		Name: "linode_template",
-		F:    testSweepLinodeTemplate,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeTemplate(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	templates, err := client.ListTemplates(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting templates: %s", err)
 	}
 	for _, template := range templates {
-		if !shouldSweepAcceptanceTestResource(prefix, template.Label) {
+		if !acceptance.ShouldSweep(prefix, template.Label) {
 			continue
 		}
 		err := client.DeleteTemplate(context.Background(), template.ID)
@@ -47,21 +48,21 @@ func testSweepLinodeTemplate(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeTemplate_basic(t *testing.T) {
+func TestAccResourceTemplate_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_template.foobar"
 	var templateName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeTemplateDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeTemplateConfigBasic(templateName),
+				Config: resourceConfigBasic(templateName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeTemplateExists,
+					checkTemplateExists,
 					resource.TestCheckResourceAttr(resName, "label", templateName),
 				),
 			},
@@ -74,28 +75,28 @@ func TestAccLinodeTemplate_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeTemplate_update(t *testing.T) {
+func TestAccResourceTemplate_update(t *testing.T) {
 	t.Parallel()
 
 	var templateName = acctest.RandomWithPrefix("tf_test")
 	resName := "linode_template.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeTemplateDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeTemplateConfigBasic(templateName),
+				Config: resourceConfigBasic(templateName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeTemplateExists,
+					checkTemplateExists,
 					resource.TestCheckResourceAttr(resName, "label", templateName),
 				),
 			},
 			{
-				Config: testAccCheckLinodeTemplateConfigUpdates(templateName),
+				Config: resourceConfigUpdates(templateName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeTemplateExists,
+					checkTemplateExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", templateName)),
 				),
 			},
@@ -103,8 +104,8 @@ func TestAccLinodeTemplate_update(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeTemplateExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkTemplateExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_template" {
@@ -125,8 +126,8 @@ func testAccCheckLinodeTemplateExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeTemplateDestroy(s *terraform.State) error {
-	client, ok := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkTemplateDestroy(s *terraform.State) error {
+	client, ok := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	if !ok {
 		return fmt.Errorf("Error getting Linode client")
 	}
@@ -158,14 +159,14 @@ func testAccCheckLinodeTemplateDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeTemplateConfigBasic(template string) string {
+func resourceConfigBasic(template string) string {
 	return fmt.Sprintf(`
 resource "linode_template" "foobar" {
 	label = "%s"
 }`, template)
 }
 
-func testAccCheckLinodeTemplateConfigUpdates(template string) string {
+func resourceConfigUpdates(template string) string {
 	return fmt.Sprintf(`
 resource "linode_template" "foobar" {
 	label = "%s_renamed"
