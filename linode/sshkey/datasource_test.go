@@ -1,4 +1,4 @@
-package linode
+package sshkey_test
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeSSHKey_basic(t *testing.T) {
+func TestAccDataSourceSSHKey_basic(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf_test")
@@ -17,30 +18,30 @@ func TestAccDataSourceLinodeSSHKey_basic(t *testing.T) {
 
 	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeSSHKeyDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:  testAccCheckLinodeSSHKeyConfigBasic(label, publicKeyMaterial),
+				Config:  resourceConfigBasic(label, acceptance.PublicKeyMaterial),
 				Destroy: true,
 			},
 			// {
-			// 	Config: testAccCheckLinodeSSHKeyConfigBasic(label, publicKeyMaterial) + testDataSourceLinodeSSHKey(label, publicKeyMaterial),
+			// 	Config: resourceConfigBasic(label, acceptance.PublicKeyMaterial) + testDataSourceLinodeSSHKey(label, acceptance.PublicKeyMaterial),
 			// 	Check: resource.ComposeTestCheckFunc(
-			// 		resource.TestCheckResourceAttr(resourceName, "ssh_key", publicKeyMaterial),
+			// 		resource.TestCheckResourceAttr(resourceName, "ssh_key", acceptance.PublicKeyMaterial),
 			// 		resource.TestCheckResourceAttr(resourceName, "label", label),
 			// 	),
 			// },
 			{
-				Config:      testDataSourceLinodeSSHKeyBasic(label, publicKeyMaterial),
+				Config:      dataSourceConfigBasic(label, acceptance.PublicKeyMaterial),
 				ExpectError: regexp.MustCompile(label + " was not found"),
 			},
 		},
 	})
 }
 
-func testDataSourceLinodeSSHKeyBasic(label, sshKey string) string {
+func dataSourceConfigBasic(label, sshKey string) string {
 	return fmt.Sprintf(`
 data "linode_sshkey" "foobar" {
 	label = "%s"

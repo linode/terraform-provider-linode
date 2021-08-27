@@ -18,16 +18,20 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
+	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lke"
+	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/object"
 	"github.com/linode/terraform-provider-linode/linode/objectcluster"
 	"github.com/linode/terraform-provider-linode/linode/objectkey"
 	"github.com/linode/terraform-provider-linode/linode/profile"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
+	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
+	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
@@ -118,19 +122,19 @@ func Provider() *schema.Provider {
 			"linode_instances":              dataSourceLinodeInstances(),
 			"linode_instance_backups":       dataSourceLinodeInstanceBackups(),
 			"linode_instance_type":          dataSourceLinodeInstanceType(),
-			"linode_kernel":                 dataSourceLinodeKernel(),
+			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
-			"linode_networking_ip":          dataSourceLinodeNetworkingIP(),
+			"linode_networking_ip":          networkingip.DataSource(),
 			"linode_nodebalancer":           balancer.DataSource(),
 			"linode_nodebalancer_node":      balancernode.DataSource(),
 			"linode_nodebalancer_config":    balancerconfig.DataSource(),
 			"linode_object_storage_cluster": objectcluster.DataSource(),
 			"linode_profile":                profile.DataSource(),
 			"linode_region":                 region.DataSource(),
-			"linode_sshkey":                 dataSourceLinodeSSHKey(),
+			"linode_sshkey":                 sshkey.DataSource(),
 			"linode_stackscript":            stackscript.DataSource(),
 			"linode_user":                   user.DataSource(),
-			"linode_vlans":                  dataSourceLinodeVLANs(),
+			"linode_vlans":                  vlan.DataSource(),
 			"linode_volume":                 volume.DataSource(),
 		},
 
@@ -149,7 +153,7 @@ func Provider() *schema.Provider {
 			"linode_object_storage_bucket": bucket.Resource(),
 			"linode_object_storage_object": object.Resource(),
 			"linode_rdns":                  rdns.Resource(),
-			"linode_sshkey":                resourceLinodeSSHKey(),
+			"linode_sshkey":                sshkey.Resource(),
 			"linode_stackscript":           stackscript.Resource(),
 			"linode_token":                 token.Resource(),
 			"linode_user":                  user.Resource(),

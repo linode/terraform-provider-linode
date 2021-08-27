@@ -1,4 +1,4 @@
-package linode
+package sshkey
 
 import (
 	"context"
@@ -11,31 +11,14 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func dataSourceLinodeSSHKey() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceLinodeSSHKeyRead,
-
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The label of the Linode SSH Key.",
-				Required:    true,
-			},
-			"ssh_key": {
-				Type:        schema.TypeString,
-				Description: "The public SSH Key, which is used to authenticate to the root user of the Linodes you deploy.",
-				Computed:    true,
-			},
-			"created": {
-				Type:        schema.TypeString,
-				Description: "The date this key was added.",
-				Computed:    true,
-			},
-		},
+		Schema:      dataSourceSchema,
+		ReadContext: readDataSource,
 	}
 }
 
-func dataSourceLinodeSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	reqLabel := d.Get("label").(string)

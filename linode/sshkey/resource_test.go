@@ -1,4 +1,4 @@
-package linode
+package sshkey_test
 
 import (
 	"context"
@@ -10,29 +10,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_sshkey", &resource.Sweeper{
 		Name: "linode_sshkey",
-		F:    testSweepLinodeSSHKey,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeSSHKey(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	sshkeys, err := client.ListSSHKeys(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting sshkeys: %s", err)
 	}
 	for _, sshkey := range sshkeys {
-		if !shouldSweepAcceptanceTestResource(prefix, sshkey.Label) {
+		if !acceptance.ShouldSweep(prefix, sshkey.Label) {
 			continue
 		}
 		err := client.DeleteSSHKey(context.Background(), sshkey.ID)
@@ -45,23 +46,23 @@ func testSweepLinodeSSHKey(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeSSHKey_basic(t *testing.T) {
+func TestAccResourceSSHKey_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_sshkey.foobar"
 	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeSSHKeyDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeSSHKeyConfigBasic(sshkeyName, publicKeyMaterial),
+				Config: resourceConfigBasic(sshkeyName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeSSHKeyExists,
+					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
-					resource.TestCheckResourceAttr(resName, "ssh_key", publicKeyMaterial),
+					resource.TestCheckResourceAttr(resName, "ssh_key", acceptance.PublicKeyMaterial),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 				),
 			},
@@ -75,31 +76,31 @@ func TestAccLinodeSSHKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeSSHKey_update(t *testing.T) {
+func TestAccResourceSSHKey_update(t *testing.T) {
 	t.Parallel()
 	resName := "linode_sshkey.foobar"
 	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeSSHKeyDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeSSHKeyConfigBasic(sshkeyName, publicKeyMaterial),
+				Config: resourceConfigBasic(sshkeyName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeSSHKeyExists,
+					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
-					resource.TestCheckResourceAttr(resName, "ssh_key", publicKeyMaterial),
+					resource.TestCheckResourceAttr(resName, "ssh_key", acceptance.PublicKeyMaterial),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 				),
 			},
 			{
-				Config: testAccCheckLinodeSSHKeyConfigUpdates(sshkeyName, publicKeyMaterial),
+				Config: resourceConfigUpdates(sshkeyName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeSSHKeyExists,
+					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", sshkeyName)),
-					resource.TestCheckResourceAttr(resName, "ssh_key", publicKeyMaterial),
+					resource.TestCheckResourceAttr(resName, "ssh_key", acceptance.PublicKeyMaterial),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 				),
 			},
@@ -112,8 +113,8 @@ func TestAccLinodeSSHKey_update(t *testing.T) {
 	})
 }
 
-func testAccCheckLinodeSSHKeyExists(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkSSHKeyExists(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_sshkey" {
@@ -134,8 +135,8 @@ func testAccCheckLinodeSSHKeyExists(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeSSHKeyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+func checkSSHKeyDestroy(s *terraform.State) error {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_sshkey" {
 			continue
@@ -164,7 +165,7 @@ func testAccCheckLinodeSSHKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLinodeSSHKeyConfigBasic(label, sshkey string) string {
+func resourceConfigBasic(label, sshkey string) string {
 	return fmt.Sprintf(`
 resource "linode_sshkey" "foobar" {
 	label = "%s"
@@ -172,7 +173,7 @@ resource "linode_sshkey" "foobar" {
 }`, label, sshkey)
 }
 
-func testAccCheckLinodeSSHKeyConfigUpdates(label, sshkey string) string {
+func resourceConfigUpdates(label, sshkey string) string {
 	return fmt.Sprintf(`
 resource "linode_sshkey" "foobar" {
 	label = "%s_renamed"

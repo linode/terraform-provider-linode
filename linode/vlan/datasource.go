@@ -1,4 +1,4 @@
-package linode
+package vlan
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,53 +10,31 @@ import (
 	"time"
 )
 
-func dataSourceLinodeVLAN() *schema.Resource {
+func dataSourceVLAN() *schema.Resource {
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The unique label of this VLAN.",
-				Computed:    true,
-			},
-			"linodes": {
-				Type:        schema.TypeList,
-				Description: "The Linodes currently attached to this VLAN.",
-				Elem:        &schema.Schema{Type: schema.TypeInt},
-				Computed:    true,
-			},
-			"region": {
-				Type:        schema.TypeString,
-				Description: "The region this VLAN is located in.",
-				Computed:    true,
-			},
-			"created": {
-				Type:        schema.TypeString,
-				Description: "When this VLAN was created.",
-				Computed:    true,
-			},
-		},
+		Schema: resourceSchema,
 	}
 }
 
-func dataSourceLinodeVLANs() *schema.Resource {
+func DataSource() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceLinodeVLANsRead,
+		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"filter": filterSchema([]string{"label", "region"}),
+			"filter": helper.FilterSchema([]string{"label", "region"}),
 			"vlans": {
 				Type:        schema.TypeList,
 				Description: "The returned list of VLANs.",
 				Computed:    true,
-				Elem:        dataSourceLinodeVLAN(),
+				Elem:        dataSourceVLAN(),
 			},
 		},
 	}
 }
 
-func dataSourceLinodeVLANsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	filter, err := constructFilterString(d, vlanValueToFilterType)
+	filter, err := helper.ConstructFilterString(d, vlanValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
 	}
@@ -71,7 +49,7 @@ func dataSourceLinodeVLANsRead(ctx context.Context, d *schema.ResourceData, meta
 
 	vlansFlattened := make([]interface{}, len(vlans))
 	for i, vlan := range vlans {
-		vlansFlattened[i] = flattenLinodeVLAN(&vlan)
+		vlansFlattened[i] = flattenVLAN(&vlan)
 	}
 
 	d.SetId(filter)
@@ -84,7 +62,7 @@ func vlanValueToFilterType(_, value string) (interface{}, error) {
 	return value, nil
 }
 
-func flattenLinodeVLAN(vlan *linodego.VLAN) map[string]interface{} {
+func flattenVLAN(vlan *linodego.VLAN) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	result["label"] = vlan.Label

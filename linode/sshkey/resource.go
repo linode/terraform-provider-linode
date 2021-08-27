@@ -1,4 +1,4 @@
-package linode
+package sshkey
 
 import (
 	"context"
@@ -13,37 +13,20 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func resourceLinodeSSHKey() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceLinodeSSHKeyCreate,
-		ReadContext:   resourceLinodeSSHKeyRead,
-		UpdateContext: resourceLinodeSSHKeyUpdate,
-		DeleteContext: resourceLinodeSSHKeyDelete,
+		Schema:        resourceSchema,
+		ReadContext:   readResource,
+		CreateContext: createResource,
+		UpdateContext: updateResource,
+		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Description: "The label of the Linode SSH Key.",
-				Required:    true,
-			},
-			"ssh_key": {
-				Type:        schema.TypeString,
-				Description: "The public SSH Key, which is used to authenticate to the root user of the Linodes you deploy.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"created": {
-				Type:        schema.TypeString,
-				Description: "The date this key was added.",
-				Computed:    true,
-			},
 		},
 	}
 }
 
-func resourceLinodeSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -69,7 +52,7 @@ func resourceLinodeSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceLinodeSSHKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.SSHKeyCreateOptions{
@@ -87,10 +70,10 @@ func resourceLinodeSSHKeyCreate(ctx context.Context, d *schema.ResourceData, met
 		d.Set("created", sshkey.Created.Format(time.RFC3339))
 	}
 
-	return resourceLinodeSSHKeyRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -114,10 +97,10 @@ func resourceLinodeSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, met
 		d.Set("label", sshkey.Label)
 	}
 
-	return resourceLinodeSSHKeyRead(ctx, d, meta)
+	return readResource(ctx, d, meta)
 }
 
-func resourceLinodeSSHKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

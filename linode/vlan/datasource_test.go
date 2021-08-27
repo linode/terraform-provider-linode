@@ -1,4 +1,4 @@
-package linode
+package vlan_test
 
 import (
 	"context"
@@ -7,13 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"fmt"
 	"testing"
 )
 
-func TestAccDataSourceLinodeVLANs_basic(t *testing.T) {
+func TestAccDataSourceVLANs_basic(t *testing.T) {
 	t.Parallel()
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -21,20 +22,20 @@ func TestAccDataSourceLinodeVLANs_basic(t *testing.T) {
 	resourceName := "data.linode_vlans.foolan"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeVLANsBasic(instanceName, vlanName),
+				Config: dataSourceConfigBasic(instanceName, vlanName),
 			},
 			{
 				PreConfig: func() {
-					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 					if _, err := waitForVLANWithLabel(client, vlanName, 30); err != nil {
 						t.Fatal(err)
 					}
 				},
-				Config: testDataSourceLinodeVLANsBasic(instanceName, vlanName),
+				Config: dataSourceConfigBasic(instanceName, vlanName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", "us-southeast"),
@@ -75,7 +76,7 @@ func waitForVLANWithLabel(client linodego.Client, label string, timeoutSeconds i
 	}
 }
 
-func testDataSourceLinodeVLANsBasic(instanceName, vlanName string) string {
+func dataSourceConfigBasic(instanceName, vlanName string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "fooinst" {
 	label = "%s"

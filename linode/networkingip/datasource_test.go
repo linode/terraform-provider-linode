@@ -1,4 +1,4 @@
-package linode
+package networkingip_test
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeNetworkingIP_basic(t *testing.T) {
+func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "linode_instance.foobar"
@@ -18,17 +19,17 @@ func TestAccDataSourceLinodeNetworkingIP_basic(t *testing.T) {
 	label := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: accTestWithProvider(testDataSourceLinodeNetworkingIPBasic(label), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
+				Config: acceptance.AccTestWithProvider(dataSourceConfigBasic(label), map[string]interface{}{
+					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 			},
 			{
-				Config: accTestWithProvider(testDataSourceLinodeNetworkingIPBasic(label), map[string]interface{}{
-					providerKeySkipInstanceReadyPoll: true,
+				Config: acceptance.AccTestWithProvider(dataSourceConfigBasic(label), map[string]interface{}{
+					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(dataResourceName, "address", resourceName, "ip_address"),
@@ -45,7 +46,7 @@ func TestAccDataSourceLinodeNetworkingIP_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeNetworkingIPBasic(label string) string {
+func dataSourceConfigBasic(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
