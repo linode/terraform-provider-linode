@@ -1,0 +1,15 @@
+{{ define "nodebalancer_node_updates" }}
+
+{{ template "nodebalancer_node_networking" .Instance }}
+
+{{ template "nodebalancer_config_basic" .Config }}
+
+resource "linode_nodebalancer_node" "foonode" {
+    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+    config_id = "${linode_nodebalancer_config.foofig.id}"
+    address = "${linode_instance.foobar.private_ip_address}:8080"
+    label = "{{.Label}}_r"
+    weight = 200
+}
+
+{{ end }}

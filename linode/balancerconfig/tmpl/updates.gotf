@@ -1,0 +1,18 @@
+{{ define "nodebalancer_config_updates" }}
+
+{{ template "nodebalancer_basic" .NodeBalancer }}
+
+resource "linode_nodebalancer_config" "foofig" {
+    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+    port = 8088
+    protocol = "http"
+    check = "http"
+    check_path = "/foo"
+    check_attempts = 3
+    check_timeout = 30
+    check_passive = false
+    stickiness = "http_cookie"
+    algorithm = "source"
+}
+
+{{ end }}
