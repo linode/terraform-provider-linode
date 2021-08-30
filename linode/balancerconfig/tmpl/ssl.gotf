@@ -1,0 +1,20 @@
+{{ define "nodebalancer_config_ssl" }}
+
+{{ template "nodebalancer_basic" .NodeBalancer }}
+
+resource "linode_nodebalancer_config" "foofig" {
+    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+    port = 8080
+    protocol = "https"
+    check = "http"
+    check_passive = true
+    check_path = "/"
+    ssl_cert = <<EOT
+{{.SSLCert}}
+EOT
+    ssl_key = <<EOT
+{{.SSLKey}}
+EOT
+}
+
+{{ end }}

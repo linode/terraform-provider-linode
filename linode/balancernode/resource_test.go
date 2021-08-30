@@ -3,6 +3,7 @@ package balancernode_test
 import (
 	"context"
 	"fmt"
+	"github.com/linode/terraform-provider-linode/linode/balancernode/tmpl"
 	"strconv"
 	"strings"
 	"testing"
@@ -20,7 +21,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
-	config := resourceConfigBasic(nodeName)
+	config := tmpl.Basic(t, nodeName)
 
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -62,7 +63,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 		CheckDestroy: checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(resourceConfigBasic(nodeName), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, nodeName), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -72,7 +73,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(resourceConfigUpdates(nodeName), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, nodeName), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -221,68 +222,4 @@ func importResourceStateID(s *terraform.State) (string, error) {
 	}
 
 	return "", fmt.Errorf("Error finding linode_nodebalancer_config")
-}
-
-func resourceBalancerConfigNetworking(instance string, pubkey string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
-	region = "us-east"
-	root_pass = "terraform-test"
-	swap_size = 256
-	private_ip = true
-	authorized_keys = ["%s"]
-	group = "tf_test"
-}`, instance, pubkey)
-}
-
-func resourceBalancerConfig(nodebalancer string) string {
-	return fmt.Sprintf(`
-resource "linode_nodebalancer" "foobar" {
-	label = "%s"
-	region = "us-east"
-	client_conn_throttle = 20
-	tags = ["tf_test"]
-}
-`, nodebalancer)
-}
-
-func resourceBalancerConfigBasic(nodebalancer string) string {
-	return resourceBalancerConfig(nodebalancer) + `
-resource "linode_nodebalancer_config" "foofig" {
-	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
-	port = 8080
-	protocol = "HttP"
-	check = "http"
-	check_passive = true
-	check_path = "/"
-}
-`
-}
-
-func resourceConfigBasic(label string) string {
-	return resourceBalancerConfigNetworking(label, acceptance.PublicKeyMaterial) + resourceBalancerConfigBasic(label) + fmt.Sprintf(`
-resource "linode_nodebalancer_node" "foonode" {
-	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
-	config_id = "${linode_nodebalancer_config.foofig.id}"
-	address = "${linode_instance.foobar.private_ip_address}:80"
-	label = "%s"
-	weight = 50
-}
-`, label)
-}
-
-func resourceConfigUpdates(label string) string {
-	return resourceBalancerConfigNetworking(label, acceptance.PublicKeyMaterial) + resourceBalancerConfigBasic(label) + fmt.Sprintf(`
-resource "linode_nodebalancer_node" "foonode" {
-	nodebalancer_id = "${linode_nodebalancer.foobar.id}"
-	config_id = "${linode_nodebalancer_config.foofig.id}"
-	address = "${linode_instance.foobar.private_ip_address}:8080"
-	label = "%s_r"
-	weight = 200
-}
-
-`, label)
 }

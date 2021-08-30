@@ -1,0 +1,10 @@
+{{ define "nodebalancer_updates" }}
+
+resource "linode_nodebalancer" "foobar" {
+    label = "{{.Label}}_r"
+    region = "us-east"
+    client_conn_throttle = 0
+    tags = ["tf_test", "tf_test_2"]
+}
+
+{{ end }}

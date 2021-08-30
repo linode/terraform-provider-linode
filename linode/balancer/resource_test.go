@@ -3,6 +3,7 @@ package balancer_test
 import (
 	"context"
 	"fmt"
+	"github.com/linode/terraform-provider-linode/linode/balancer/tmpl"
 	"strconv"
 	"testing"
 
@@ -58,7 +59,7 @@ func TestAccResourceNodeBalancer_basic(t *testing.T) {
 		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(nodebalancerName),
+				Config: tmpl.Basic(t, nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
@@ -96,7 +97,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(nodebalancerName),
+				Config: tmpl.Basic(t, nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
@@ -104,7 +105,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigUpdates(nodebalancerName),
+				Config: tmpl.Updates(t, nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodebalancerName)),
@@ -168,25 +169,4 @@ func checkNodeBalancerDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-func resourceConfigBasic(nodebalancer string) string {
-	return fmt.Sprintf(`
-resource "linode_nodebalancer" "foobar" {
-	label = "%s"
-	region = "us-east"
-	client_conn_throttle = 20
-	tags = ["tf_test"]
-}
-`, nodebalancer)
-}
-
-func resourceConfigUpdates(nodebalancer string) string {
-	return fmt.Sprintf(`
-resource "linode_nodebalancer" "foobar" {
-	label = "%s_r"
-	region = "us-east"
-	client_conn_throttle = 0
-	tags = ["tf_test", "tf_test_2"]
-}
-`, nodebalancer)
 }

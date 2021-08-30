@@ -1,13 +1,17 @@
 package acceptance
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
+	"text/template"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -29,6 +33,7 @@ var (
 	PublicKeyMaterial  string
 	TestAccProviders   map[string]*schema.Provider
 	TestAccProvider    *schema.Provider
+	ConfigTemplates    *template.Template
 )
 
 func init() {
@@ -49,6 +54,29 @@ func init() {
 	TestAccProvider = linode.Provider()
 	TestAccProviders = map[string]*schema.Provider{
 		"linode": TestAccProvider,
+	}
+
+	var templateFiles []string
+
+	err = filepath.Walk("../", func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+
+		if filepath.Ext(path) == ".gotf" {
+			templateFiles = append(templateFiles, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Fatalf("failed to load template files: %v", err)
+	}
+
+	ConfigTemplates = template.New("tf-test")
+	if _, err := ConfigTemplates.ParseFiles(templateFiles...); err != nil {
+		log.Fatalf("failed to parse templates: %v", err)
 	}
 }
 
@@ -209,4 +237,15 @@ func CheckInstanceExists(name string, instance *linodego.Instance) resource.Test
 
 		return nil
 	}
+}
+
+func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
+	var b bytes.Buffer
+
+	err := ConfigTemplates.ExecuteTemplate(&b, templateName, data)
+	if err != nil {
+		t.Fatalf("failed to execute template %s: %v", templateName, err)
+	}
+
+	return b.String()
 }
