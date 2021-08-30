@@ -1,24 +1,25 @@
-package linode
+package kernel_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeKernel_basic(t *testing.T) {
+func TestAccDataSourceKernel_basic(t *testing.T) {
 	t.Parallel()
 
 	kernelID := "linode/latest-64bit"
 	resourceName := "data.linode_kernel.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeKernelBasic(kernelID),
+				Config: dataSourceConfigBasic(kernelID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", kernelID),
 					resource.TestCheckResourceAttrSet(resourceName, "label"),
@@ -35,7 +36,7 @@ func TestAccDataSourceLinodeKernel_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeKernelBasic(kernelID string) string {
+func dataSourceConfigBasic(kernelID string) string {
 	return fmt.Sprintf(`
 data "linode_kernel" "foobar" {
 	id = "%s"
