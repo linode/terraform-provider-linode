@@ -1,0 +1,9 @@
+{{ define "nodebalancer_data_basic" }}
+
+{{ template "nodebalancer_basic" . }}
+
+data "linode_nodebalancer" "foobar" {
+    id = "${linode_nodebalancer.foobar.id}"
+}
+
+{{ end }}

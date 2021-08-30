@@ -1,6 +1,7 @@
 package balancer_test
 
 import (
+	"github.com/linode/terraform-provider-linode/linode/balancer/tmpl"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -20,7 +21,7 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(nodebalancerName),
+				Config: tmpl.DataBasic(t, nodebalancerName),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
@@ -41,12 +42,4 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(nodeBalancerName string) string {
-	return resourceConfigBasic(nodeBalancerName) + `
-data "linode_nodebalancer" "foobar" {
-	id = "${linode_nodebalancer.foobar.id}"
-}
-`
 }

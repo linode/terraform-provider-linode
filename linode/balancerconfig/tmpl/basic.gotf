@@ -1,0 +1,14 @@
+{{ define "nodebalancer_config_basic" }}
+
+{{ template "nodebalancer_basic" .NodeBalancer }}
+
+resource "linode_nodebalancer_config" "foofig" {
+    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+    port = 8080
+    protocol = "HttP"
+    check = "http"
+    check_passive = true
+    check_path = "/"
+}
+
+{{ end }}
