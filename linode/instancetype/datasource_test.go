@@ -1,10 +1,11 @@
-package linode
+package instancetype_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
 func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
@@ -14,11 +15,11 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 	resourceName := "data.linode_instance_type.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeInstanceTypeBasic(instanceTypeID),
+				Config: dataSourceConfigBasic(instanceTypeID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", instanceTypeID),
 					resource.TestCheckResourceAttr(resourceName, "label", "Linode 4GB"),
@@ -37,9 +38,9 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeInstanceTypeBasic(instanceTypeID string) string {
+func dataSourceConfigBasic(id string) string {
 	return fmt.Sprintf(`
 data "linode_instance_type" "foobar" {
 	id = "%s"
-}`, instanceTypeID)
+}`, id)
 }

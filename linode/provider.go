@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/balancer"
 	"github.com/linode/terraform-provider-linode/linode/balancerconfig"
 	"github.com/linode/terraform-provider-linode/linode/balancernode"
@@ -18,6 +19,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
+	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lke"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
@@ -120,8 +122,8 @@ func Provider() *schema.Provider {
 			"linode_image":                  image.DataSource(),
 			"linode_images":                 images.DataSource(),
 			"linode_instances":              dataSourceLinodeInstances(),
-			"linode_instance_backups":       dataSourceLinodeInstanceBackups(),
-			"linode_instance_type":          dataSourceLinodeInstanceType(),
+			"linode_instance_backups":       backup.DataSource(),
+			"linode_instance_type":          instancetype.DataSource(),
 			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_networking_ip":          networkingip.DataSource(),

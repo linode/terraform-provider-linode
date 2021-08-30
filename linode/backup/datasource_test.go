@@ -1,4 +1,4 @@
-package linode
+package backup_test
 
 import (
 	"context"
@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
+func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 	t.Parallel()
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -23,18 +24,18 @@ func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
 	var snapshot *linodego.InstanceSnapshot
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceLinodeInstanceBackupsInstance(instanceName),
+				Config: resourceInstanceBasic(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 				),
 			},
 			{
 				PreConfig: func() {
-					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 					newSnapshot, err := client.CreateInstanceSnapshot(context.Background(), instance.ID, snapshotName)
 					if err != nil {
 						t.Fatal(err)
@@ -42,7 +43,7 @@ func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
 
 					snapshot = newSnapshot
 				},
-				Config: testDataSourceLinodeInstanceBackupsBasic(instanceName),
+				Config: dataSourceConfigBasic(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "in_progress.0.label", snapshotName),
@@ -53,12 +54,12 @@ func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 600); err != nil {
 						t.Fatal(err)
 					}
 				},
-				Config: testDataSourceLinodeInstanceBackupsBasic(instanceName),
+				Config: dataSourceConfigBasic(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "current.0.label", snapshotName),
@@ -73,7 +74,7 @@ func TestAccDataSourceLinodeInstanceBackups_basic(t *testing.T) {
 	})
 }
 
-func testDataSourceLinodeInstanceBackupsInstance(label string) string {
+func resourceInstanceBasic(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -86,8 +87,8 @@ resource "linode_instance" "foobar" {
 }`, label)
 }
 
-func testDataSourceLinodeInstanceBackupsBasic(instanceLabel string) string {
-	return testDataSourceLinodeInstanceBackupsInstance(instanceLabel) + `
+func dataSourceConfigBasic(instanceLabel string) string {
+	return resourceInstanceBasic(instanceLabel) + `
 data "linode_instance_backups" "foobar" {
 	linode_id = linode_instance.foobar.id
 }`
