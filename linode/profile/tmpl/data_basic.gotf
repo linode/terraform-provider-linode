@@ -1,0 +1,5 @@
+{{ define "profile_data_basic" }}
+
+data "linode_profile" "user" {}
+
+{{ end }}

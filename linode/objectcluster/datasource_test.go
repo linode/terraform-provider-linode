@@ -1,11 +1,11 @@
 package objectcluster_test
 
 import (
-	"fmt"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/objectcluster/tmpl"
+
+	"testing"
 )
 
 func TestAccDataSourceObjectCluster_basic(t *testing.T) {
@@ -21,7 +21,7 @@ func TestAccDataSourceObjectCluster_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(objectStorageClusterID),
+				Config: tmpl.DataBasic(t, objectStorageClusterID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "region", region),
 					resource.TestCheckResourceAttr(resourceName, "id", objectStorageClusterID),
@@ -30,11 +30,4 @@ func TestAccDataSourceObjectCluster_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(objectStorageClusterID string) string {
-	return fmt.Sprintf(`
-data "linode_object_storage_cluster" "foobar" {
-    id = "%s"
-}`, objectStorageClusterID)
 }

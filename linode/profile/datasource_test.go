@@ -1,10 +1,11 @@
 package profile_test
 
 import (
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/profile/tmpl"
+
+	"testing"
 )
 
 func TestAccDataSourceProfile_basic(t *testing.T) {
@@ -17,7 +18,7 @@ func TestAccDataSourceProfile_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(),
+				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
@@ -40,8 +41,4 @@ func TestAccDataSourceProfile_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic() string {
-	return `data "linode_profile" "user" {}`
 }

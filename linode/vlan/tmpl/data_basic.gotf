@@ -1,0 +1,22 @@
+{{ define "vlan_data_basic" }}
+
+resource "linode_instance" "fooinst" {
+    label = "{{.InstLabel}}"
+    type = "g6-standard-1"
+    image = "linode/alpine3.13"
+    region = "us-southeast"
+
+    interface {
+        label = "{{.VLANLabel}}"
+        purpose = "vlan"
+    }
+}
+
+data "linode_vlans" "foolan" {
+    filter {
+        name = "label"
+        values = ["{{.VLANLabel}}"]
+    }
+}
+
+{{ end }}

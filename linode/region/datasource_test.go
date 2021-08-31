@@ -1,11 +1,11 @@
 package region_test
 
 import (
-	"fmt"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/region/tmpl"
+
+	"testing"
 )
 
 func TestAccDataSourceRegion_basic(t *testing.T) {
@@ -20,7 +20,7 @@ func TestAccDataSourceRegion_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(regionID),
+				Config: tmpl.DataBasic(t, regionID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "country", country),
 					resource.TestCheckResourceAttr(resourceName, "id", regionID),
@@ -28,11 +28,4 @@ func TestAccDataSourceRegion_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(regionID string) string {
-	return fmt.Sprintf(`
-data "linode_region" "foobar" {
-	id = "%s"
-}`, regionID)
 }

@@ -1,0 +1,7 @@
+{{ define "region_data_basic" }}
+
+data "linode_region" "foobar" {
+    id = "{{.Region}}"
+}
+
+{{ end }}

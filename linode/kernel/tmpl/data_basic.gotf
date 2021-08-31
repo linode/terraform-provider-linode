@@ -1,0 +1,7 @@
+{{ define "kernel_data_basic" }}
+
+data "linode_kernel" "foobar" {
+    id = "{{.ID}}"
+}
+
+{{ end }}
