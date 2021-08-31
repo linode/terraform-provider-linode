@@ -1,11 +1,11 @@
 package account_test
 
 import (
-	"github.com/linode/terraform-provider-linode/linode/account/tmpl"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/account/tmpl"
 )
 
 func TestAccDataSourceAccount_basic(t *testing.T) {
