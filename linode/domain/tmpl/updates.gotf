@@ -1,0 +1,12 @@
+{{ define "domain_updates" }}
+
+resource "linode_domain" "foobar" {
+    domain = "renamed-{{.Domain}}"
+    type = "master"
+    status = "active"
+    soa_email = "example@{{.Domain}}"
+    description = "tf-testing"
+    tags = ["tf_test", "tf_test_2"]
+}
+
+{{ end }}

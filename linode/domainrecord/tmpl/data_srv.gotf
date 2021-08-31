@@ -1,0 +1,25 @@
+{{ define "domain_record_data_srv" }}
+
+resource "linode_domain" "domain" {
+    type = "master"
+    domain = "{{.Domain.Domain}}"
+    soa_email = "example@{{.Domain.Domain}}"
+}
+
+resource "linode_domain_record" "record" {
+    domain_id = linode_domain.domain.id
+    record_type = "SRV"
+    target = "{{.Domain.Domain}}"
+    port = 80
+    protocol = "tcp"
+    service = "sip"
+    weight = 5
+    priority = 10
+}
+
+data "linode_domain_record" "record" {
+    domain_id = linode_domain.domain.id
+    name = linode_domain_record.record.name
+}
+
+{{ end }}

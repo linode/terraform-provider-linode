@@ -1,0 +1,22 @@
+{{ define "domain_record_data_basic" }}
+
+resource "linode_domain" "domain" {
+    type = "master"
+    domain = "{{.Domain.Domain}}"
+    soa_email = "example@{{.Domain.Domain}}"
+}
+
+resource "linode_domain_record" "record" {
+    domain_id = linode_domain.domain.id
+    name = "www"
+    record_type = "CNAME"
+    target = "{{.Domain.Domain}}"
+    ttl_sec = 7200
+}
+
+data "linode_domain_record" "record" {
+    domain_id = linode_domain.domain.id
+    id = linode_domain_record.record.id
+}
+
+{{ end }}

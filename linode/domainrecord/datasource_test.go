@@ -1,12 +1,12 @@
 package domainrecord_test
 
 import (
-	"fmt"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/domainrecord/tmpl"
+
+	"testing"
 )
 
 func TestAccDataSourceDomainRecord_basic(t *testing.T) {
@@ -18,7 +18,7 @@ func TestAccDataSourceDomainRecord_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(domain),
+				Config: tmpl.DataBasic(t, domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", "www"),
 					resource.TestCheckResourceAttr(datasourceName, "type", "CNAME"),
@@ -41,7 +41,7 @@ func TestAccDataSourceDomainRecord_idLookup(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigIDLookup(domain),
+				Config: tmpl.DataID(t, domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", "www"),
 					resource.TestCheckResourceAttrSet(datasourceName, "id"),
@@ -62,7 +62,7 @@ func TestAccDataSourceDomainRecord_srv(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigSRV(domain),
+				Config: tmpl.DataSRV(t, domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "type", "SRV"),
 					resource.TestCheckResourceAttr(datasourceName, "port", "80"),
@@ -87,7 +87,7 @@ func TestAccDataSourceDomainRecord_caa(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigCAA(domain),
+				Config: tmpl.DataCAA(t, domain),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", "caa_test"),
 					resource.TestCheckResourceAttr(datasourceName, "type", "CAA"),
@@ -100,98 +100,4 @@ func TestAccDataSourceDomainRecord_caa(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "domain" {
-	type = "master"
-	domain = "%[1]s"
-	soa_email = "example@%[1]s"
-}
-
-resource "linode_domain_record" "record" {
-	domain_id = linode_domain.domain.id
-	name = "www"
-	record_type = "CNAME"
-	target = "%[1]s"
-	ttl_sec = 7200
-}
-
-data "linode_domain_record" "record" {
-	domain_id = linode_domain.domain.id
-	id = linode_domain_record.record.id
-}
-`, domain)
-}
-
-func dataSourceConfigIDLookup(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "domain" {
-	type = "master"
-	domain = "%[1]s"
-	soa_email = "example@%[1]s"
-}
-
-resource "linode_domain_record" "record" {
-	domain_id = linode_domain.domain.id
-	name = "www"
-	record_type = "CNAME"
-	target = "%[1]s"
-}
-
-data "linode_domain_record" "record" {
-	domain_id = linode_domain.domain.id
-	name = linode_domain_record.record.name
-}
-`, domain)
-}
-
-func dataSourceConfigSRV(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "domain" {
-	type = "master"
-	domain = "%[1]s"
-	soa_email = "example@%[1]s"
-}
-
-resource "linode_domain_record" "record" {
-	domain_id = linode_domain.domain.id
-	record_type = "SRV"
-	target = "%[1]s"
-	port = 80
-	protocol = "tcp"
-	service = "sip"
-	weight = 5
-	priority = 10
-}
-
-data "linode_domain_record" "record" {
-	domain_id = linode_domain.domain.id
-	name = linode_domain_record.record.name
-}
-`, domain)
-}
-
-func dataSourceConfigCAA(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "domain" {
-	type = "master"
-	domain = "%[1]s"
-	soa_email = "example@%[1]s"
-}
-
-resource "linode_domain_record" "record" {
-	name = "caa_test"
-	domain_id = linode_domain.domain.id
-	record_type = "CAA"
-	tag = "issue"
-	target = "test"
-}
-
-data "linode_domain_record" "record" {
-	domain_id = linode_domain.domain.id
-	id = linode_domain_record.record.id
-}
-`, domain)
 }
