@@ -1,10 +1,11 @@
-package linode
+package instanceip_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -12,21 +13,21 @@ import (
 
 const testInstanceIPResName = "linode_instance_ip.test"
 
-func TestAccLinodeInstanceIP_basic(t *testing.T) {
+func TestAccInstanceIP_basic(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceIPBasic(name, true),
+				Config: resourceConfigBasic(name, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "gateway"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "prefix"),
@@ -38,29 +39,29 @@ func TestAccLinodeInstanceIP_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testAccAssertReboot(t, true, &instance)
+					acceptance.AssertInstanceReboot(t, true, &instance)
 				},
-				Config: testAccCheckLinodeInstanceIPBasic(name, true),
+				Config: resourceConfigBasic(name, true),
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstanceIP_noboot(t *testing.T) {
+func TestAccInstanceIP_noboot(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceIPInstanceNoBoot(name, true),
+				Config: resourceConfigNoBoot(name, true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "gateway"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "prefix"),
@@ -71,30 +72,30 @@ func TestAccLinodeInstanceIP_noboot(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceIPInstanceNoBoot(name, true),
+				Config: resourceConfigNoBoot(name, true),
 				PreConfig: func() {
-					testAccAssertReboot(t, false, &instance)
+					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstanceIP_noApply(t *testing.T) {
+func TestAccInstanceIP_noApply(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
 
 	name := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceIPBasic(name, false),
+				Config: resourceConfigBasic(name, false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "gateway"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "prefix"),
@@ -106,15 +107,15 @@ func TestAccLinodeInstanceIP_noApply(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testAccAssertReboot(t, false, &instance)
+					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
-				Config: testAccCheckLinodeInstanceIPBasic(name, false),
+				Config: resourceConfigBasic(name, false),
 			},
 		},
 	})
 }
 
-func testAccCheckLinodeInstanceIPInstance(label string) string {
+func instanceConfigBasic(label string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -125,8 +126,8 @@ resource "linode_instance" "foobar" {
 }`, label)
 }
 
-func testAccCheckLinodeInstanceIPBasic(label string, applyImmediately bool) string {
-	return testAccCheckLinodeInstanceIPInstance(label) + fmt.Sprintf(`
+func resourceConfigBasic(label string, applyImmediately bool) string {
+	return instanceConfigBasic(label) + fmt.Sprintf(`
 resource "linode_instance_ip" "test" {
 	linode_id = linode_instance.foobar.id
 	public = true
@@ -134,7 +135,7 @@ resource "linode_instance_ip" "test" {
 }`, applyImmediately)
 }
 
-func testAccCheckLinodeInstanceIPInstanceNoBoot(label string, applyImmediately bool) string {
+func resourceConfigNoBoot(label string, applyImmediately bool) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -149,19 +150,4 @@ resource "linode_instance_ip" "test" {
 	apply_immediately = %t
 }
 `, label, applyImmediately)
-}
-
-func testAccCheckLinodeInstanceIPInstanceNoBoot(label string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "%[1]s" {
-	label = "%[1]s"
-	group = "tf_test"
-	type = "g6-nanode-1"
-	region = "us-east"
-}
-
-resource "linode_instance_ip" "test" {
-	linode_id = linode_instance.%[1]s.id
-	public = true
-}`, label, publicKeyMaterial)
 }
