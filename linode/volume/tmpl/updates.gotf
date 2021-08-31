@@ -1,0 +1,9 @@
+{{ define "volume_updates" }}
+
+resource "linode_volume" "foobar" {
+    label = "{{.Label}}_r"
+    region = "us-west"
+    tags = ["tf_test", "tf_test_2"]
+}
+
+{{ end }}
