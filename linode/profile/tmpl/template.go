@@ -10,5 +10,5 @@ type TemplateData struct{}
 
 func DataBasic(t *testing.T) string {
 	return acceptance.ExecuteTemplate(t,
-		"account_data_basic", nil)
+		"profile_data_basic", nil)
 }

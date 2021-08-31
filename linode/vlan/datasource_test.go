@@ -1,17 +1,17 @@
 package vlan_test
 
 import (
-	"context"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/vlan/tmpl"
 
+	"context"
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestAccDataSourceVLANs_basic(t *testing.T) {
@@ -26,7 +26,7 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(instanceName, vlanName),
+				Config: tmpl.DataBasic(t, instanceName, vlanName),
 			},
 			{
 				PreConfig: func() {
@@ -35,7 +35,7 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 						t.Fatal(err)
 					}
 				},
-				Config: dataSourceConfigBasic(instanceName, vlanName),
+				Config: tmpl.DataBasic(t, instanceName, vlanName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", "us-southeast"),
@@ -74,26 +74,4 @@ func waitForVLANWithLabel(client linodego.Client, label string, timeoutSeconds i
 			return nil, fmt.Errorf("Error waiting for VLAN %s: %s", label, ctx.Err())
 		}
 	}
-}
-
-func dataSourceConfigBasic(instanceName, vlanName string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "fooinst" {
-	label = "%s"
-	type = "g6-standard-1"
-	image = "linode/alpine3.13"
-	region = "us-southeast"
-
-	interface {
-		label = "%s"
-		purpose = "vlan"
-	}
-}
-
-data "linode_vlans" "foolan" {
-	filter {
-		name = "label"
-		values = ["%s"]
-	}
-}`, instanceName, vlanName, vlanName)
 }
