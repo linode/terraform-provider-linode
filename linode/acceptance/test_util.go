@@ -210,35 +210,6 @@ func CheckLKEClusterDestroy(s *terraform.State) error {
 	return nil
 }
 
-func CheckInstanceExists(name string, instance *linodego.Instance) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
-
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("Not found: %s", name)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		found, err := client.GetInstance(context.Background(), id)
-		if err != nil {
-			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
-		}
-
-		*instance = *found
-
-		return nil
-	}
-}
-
 func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
 	var b bytes.Buffer
 
