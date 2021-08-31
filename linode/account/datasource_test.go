@@ -1,6 +1,7 @@
 package account_test
 
 import (
+	"github.com/linode/terraform-provider-linode/linode/account/tmpl"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,7 +18,7 @@ func TestAccDataSourceAccount_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: basic(),
+				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
 					resource.TestCheckResourceAttrSet(resourceName, "first_name"),
@@ -36,8 +37,4 @@ func TestAccDataSourceAccount_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func basic() string {
-	return `data "linode_account" "foo" {}`
 }
