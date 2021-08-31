@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/domain/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -59,7 +60,7 @@ func TestAccResourceDomain_basic(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: configBasic(domainName),
+				Config: tmpl.Basic(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainExists,
 					resource.TestCheckResourceAttr(resName, "domain", domainName),
@@ -97,14 +98,14 @@ func TestAccResourceDomain_update(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: configBasic(domainName),
+				Config: tmpl.Basic(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainExists,
 					resource.TestCheckResourceAttr(resName, "domain", domainName),
 				),
 			},
 			{
-				Config: configUpdates(domainName),
+				Config: tmpl.Updates(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainExists,
 					resource.TestCheckResourceAttr(resName, "domain", fmt.Sprintf("renamed-%s", domainName)),
@@ -129,7 +130,7 @@ func TestAccResourceDomain_roundedDomainSecs(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: configRoundedSec(domainName),
+				Config: tmpl.RoundedSec(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainExists,
 					resource.TestCheckResourceAttr(resName, "domain", domainName),
@@ -140,7 +141,7 @@ func TestAccResourceDomain_roundedDomainSecs(t *testing.T) {
 				),
 			},
 			{
-				Config:            configRoundedSec(domainName),
+				Config:            tmpl.RoundedSec(t, domainName),
 				ImportStateVerify: true,
 			},
 		},
@@ -159,7 +160,7 @@ func TestAccResourceDomain_updateIPs(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: configIPs(domainName),
+				Config: tmpl.IPS(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainExists,
 					resource.TestCheckResourceAttr(resName, "domain", domainName),
@@ -168,7 +169,7 @@ func TestAccResourceDomain_updateIPs(t *testing.T) {
 				),
 			},
 			{
-				Config: configIPUpdate(domainName),
+				Config: tmpl.IPSUpdates(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainExists,
 					resource.TestCheckResourceAttr(resName, "master_ips.#", "0"),
@@ -243,18 +244,6 @@ resource "linode_domain" "foobar" {
 }`, domain, domain)
 }
 
-func configUpdates(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "foobar" {
-	domain = "renamed-%s"
-	type = "master"
-	status = "active"
-	soa_email = "example@%s"
-	description = "tf-testing"
-	tags = ["tf_test", "tf_test_2"]
-}`, domain, domain)
-}
-
 func configRoundedSec(domain string) string {
 	return fmt.Sprintf(`
 resource "linode_domain" "foobar" {
@@ -269,26 +258,4 @@ resource "linode_domain" "foobar" {
 	expire_sec = 2419201
 	tags = ["tf_test"]
 }`, domain)
-}
-
-func configIPs(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "foobar" {
-	domain = "%s"
-	type = "master"
-	soa_email = "example@%s"
-	master_ips = ["12.34.56.78"]
-	axfr_ips = ["87.65.43.21"]
-}`, domain, domain)
-}
-
-func configIPUpdate(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "foobar" {
-	domain = "%s"
-	type = "master"
-	soa_email = "example@%s"
-	master_ips = []
-	axfr_ips = []
-}`, domain, domain)
 }

@@ -1,0 +1,13 @@
+{{ define "domain_record_ttl" }}
+
+{{ template "domain_basic" .Domain }}
+
+resource "linode_domain_record" "foobar" {
+    domain_id = "${linode_domain.foobar.id}"
+    name = "{{.Record}}"
+    record_type = "CNAME"
+    target = "target.{{.Record}}.example"
+    ttl_sec = {{.TTL}}
+}
+
+{{ end }}

@@ -1,0 +1,16 @@
+{{ define "domain_record_srv" }}
+
+{{ template "domain_basic" .Domain }}
+
+resource "linode_domain_record" "foobar" {
+    domain_id = "${linode_domain.foobar.id}"
+    record_type = "SRV"
+    target      = "{{.Target}}"
+    service     = "myservice"
+    protocol    = "tcp"
+    port        = 1001
+    priority    = 10
+    weight      = 0
+}
+
+{{ end }}
