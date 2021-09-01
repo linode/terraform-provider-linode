@@ -1,0 +1,9 @@
+{{ define "user_basic" }}
+
+resource "linode_user" "test" {
+    username = "{{.Username}}"
+    email = "{{.Email}}"
+    restricted = {{.Restricted}}
+}
+
+{{ end }}

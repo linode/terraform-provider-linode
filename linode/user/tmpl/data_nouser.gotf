@@ -1,0 +1,7 @@
+{{ define "user_data_nouser" }}
+
+data "linode_user" "user" {
+    username = "does-not-exist"
+}
+
+{{ end }}

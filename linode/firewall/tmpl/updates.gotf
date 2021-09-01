@@ -1,0 +1,44 @@
+{{ define "firewall_updates" }}
+
+{{ template "firewall_inst" (index .Instances 0) }}
+
+{{ template "firewall_inst" (index .Instances 1) }}
+
+resource "linode_firewall" "test" {
+    label    = "{{.Label}}"
+    tags     = ["test", "test2"]
+    disabled = true
+
+    inbound {
+        label    = "tf-test-in"
+        action   = "DROP"
+        protocol = "TCP"
+        ports    = "80"
+        ipv4     = ["0.0.0.0/0"]
+        ipv6     = ["::/0", "ff00::/8"]
+    }
+
+    inbound {
+        label    = "tf-test-in2"
+        action   = "DROP"
+        protocol = "TCP"
+        ports    = "443"
+        ipv4     = ["0.0.0.0/0", "127.0.0.1/32"]
+    }
+
+    inbound {
+        label    = "tf-test-in3"
+        action   = "DROP"
+        protocol = "TCP"
+        ports    = "22"
+        ipv4     = ["0.0.0.0/0"]
+    }
+    inbound_policy = "ACCEPT"
+    outbound_policy = "ACCEPT"
+
+    linodes = [
+        linode_instance.two.id,
+    ]
+}
+
+{{ end }}

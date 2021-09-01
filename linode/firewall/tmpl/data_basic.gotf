@@ -1,0 +1,9 @@
+{{ define "firewall_data_basic" }}
+
+{{ template "firewall_basic" . }}
+
+data "linode_firewall" "test" {
+    id = linode_firewall.test.id
+}
+
+{{ end }}

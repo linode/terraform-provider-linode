@@ -1,0 +1,17 @@
+{{ define "rdns_changed" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    image = "linode/alpine3.12"
+    type = "g6-standard-1"
+    region = "us-east"
+}
+
+resource "linode_rdns" "foobar" {
+    rdns    = "${replace(linode_instance.foobar.ip_address, ".", "-")}.nip.io"
+    address = "${linode_instance.foobar.ip_address}"
+}
+
+{{ end }}
+

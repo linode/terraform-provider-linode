@@ -1,0 +1,11 @@
+{{ define "image_upload" }}
+
+resource "linode_image" "foobar" {
+    label = "{{.Image}}"
+    file_path = "{{.FilePath}}"
+    file_hash = filemd5("{{.FilePath}}")
+    region = "us-southeast"
+    description = "really descriptive text"
+}
+
+{{ end }}

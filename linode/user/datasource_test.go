@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/user/tmpl"
 )
 
 func TestAccDataSourceUser_basic(t *testing.T) {
@@ -18,34 +19,16 @@ func TestAccDataSourceUser_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: profileConfigBasic() + dataSourceConfigBasic(),
+				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "username"),
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
 				),
 			},
 			{
-				Config:      dataSourceConfigNoUser(),
+				Config:      tmpl.DataNoUser(t),
 				ExpectError: regexp.MustCompile(" was not found"),
 			},
 		},
 	})
-}
-
-func profileConfigBasic() string {
-	return `data "linode_profile" "user" {}`
-}
-
-func dataSourceConfigBasic() string {
-	return `
-		data "linode_user" "user" {
-			username = "${data.linode_profile.user.username}"
-		}`
-}
-
-func dataSourceConfigNoUser() string {
-	return `
-		data "linode_user" "user" {
-			username = "does-not-exist"
-		}`
 }

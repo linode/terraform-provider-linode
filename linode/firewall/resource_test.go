@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/firewall/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 const testFirewallResName = "linode_firewall.test"
@@ -58,7 +58,7 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -113,7 +113,7 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(resourceConfigMinimum(name),
+				Config: acceptance.AccTestWithProvider(tmpl.Minimum(t, name),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -154,7 +154,7 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(resourceConfigMultipleRules(name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.MultipleRules(t, name, devicePrefix),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -228,7 +228,7 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigNoDevice(name),
+				Config: tmpl.NoDevice(t, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -268,7 +268,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -301,7 +301,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(resourceConfigUpdates(newName, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, newName, devicePrefix),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -356,7 +356,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -398,7 +398,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 						t.Fatalf("failed to delete firewall: %s", err)
 					}
 				},
-				Config: acceptance.AccTestWithProvider(configBasic(name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -462,186 +462,4 @@ func checkFirewallExists(name string, firewall *linodego.Firewall) resource.Test
 
 		return nil
 	}
-}
-
-func resourceConfigInstance(prefix, identifier string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "%[1]s" {
-	label = "%.15[2]s-%[1]s"
-	group = "tf_test"
-	type = "g6-nanode-1"
-	region = "ca-central"
-	disk {
-		label = "disk"
-		image = "linode/alpine3.11"
-		root_pass = "b4d_p4s5"
-		authorized_keys = ["%[3]s"]
-		size = 3000
-	}
-}`, identifier, prefix, acceptance.PublicKeyMaterial)
-}
-
-func configBasic(name, devicePrefix string) string {
-	return resourceConfigInstance(devicePrefix, "one") + fmt.Sprintf(`
-resource "linode_firewall" "test" {
-	label = "%s"
-	tags  = ["test"]
-
-	inbound {
-		label    = "tf-test-in"
-		action = "ACCEPT"
-		protocol  = "TCP"
-		ports     = "80"
-		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["::/0"]
-	}
-	inbound_policy = "DROP"
-
-	outbound {
-		label    = "tf-test-out"
-		action = "ACCEPT"
-		protocol  = "TCP"
-		ports     = "80"
-		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["2001:db8::/32"]
-	}
-	outbound_policy = "DROP"
-
-	linodes = [linode_instance.one.id]
-}`, name)
-}
-
-func resourceConfigMinimum(name string) string {
-	return fmt.Sprintf(`
-resource "linode_firewall" "test" {
-	label = "%s"
-	tags  = ["test"]
-
-	inbound {
-		label    = "tf-test-in"
-		action = "ACCEPT"
-		protocol = "tcp"
-		ipv4 = ["0.0.0.0/0"]
-	}
-	inbound_policy = "DROP"
-	outbound_policy = "DROP"
-}`, name)
-}
-
-func resourceConfigMultipleRules(name, devicePrefix string) string {
-	return resourceConfigInstance(devicePrefix, "one") + fmt.Sprintf(`
-resource "linode_firewall" "test" {
-	label = "%s"
-	tags  = ["test"]
-
-	inbound {
-		label    = "tf-test-in"
-		action = "ACCEPT"
-		protocol  = "TCP"
-		ports     = "80"
-		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["::/0"]
-	}
-
-	inbound {
-		label    = "tf-test-in-1"
-		action = "ACCEPT"
-		protocol  = "TCP"
-		ports     = "443"
-		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["::/0"]
-	}
-	inbound_policy = "DROP"
-
-	outbound {
-		label    = "tf-test-out"
-		action = "ACCEPT"
-		protocol  = "TCP"
-		ports     = "80"
-		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["2001:db8::/32"]
-	}
-
-	outbound {
-		label    = "tf-test-out-1"
-		action = "ACCEPT"
-		protocol  = "TCP"
-		ports     = "443"
-		ipv4 = ["0.0.0.0/0"]
-		ipv6 = ["2001:db8::/32"]
-	}
-	outbound_policy = "DROP"
-
-	linodes = [linode_instance.one.id]
-}`, name)
-}
-
-func resourceConfigNoDevice(name string) string {
-	return fmt.Sprintf(`
-resource "linode_firewall" "test" {
-	label = "%s"
-	tags  = ["test"]
-
-	inbound {
-		label    = "tf-test-in"
-		action   = "ACCEPT"
-		protocol = "TCP"
-		ports    = "80"
-		ipv6     = ["::/0"]
-	}
-
-	inbound_policy = "DROP"
-	outbound {
-		label    = "tf-test-out"
-		action   = "ACCEPT"
-		protocol = "TCP"
-		ports    = "80"
-		ipv6     = ["::/0"]
-	}
-	outbound_policy = "DROP"
-
-	linodes = []
-}`, name)
-}
-
-func resourceConfigUpdates(name, devicePrefix string) string {
-	return resourceConfigInstance(devicePrefix, "one") +
-		resourceConfigInstance(devicePrefix, "two") +
-		fmt.Sprintf(`
-resource "linode_firewall" "test" {
-	label    = "%s"
-	tags     = ["test", "test2"]
-    disabled = true
-
-	inbound {
-		label    = "tf-test-in"
-		action   = "DROP"
-		protocol = "TCP"
-		ports    = "80"
-		ipv4     = ["0.0.0.0/0"]
-		ipv6     = ["::/0", "ff00::/8"]
-	}
-
-	inbound {
-		label    = "tf-test-in2"
-		action   = "DROP"
-		protocol = "TCP"
-		ports    = "443"
-		ipv4     = ["0.0.0.0/0", "127.0.0.1/32"]
-	}
-
-	inbound {
-		label    = "tf-test-in3"
-		action   = "DROP"
-		protocol = "TCP"
-		ports    = "22"
-		ipv4     = ["0.0.0.0/0"]
-	}
-	inbound_policy = "ACCEPT"
-	outbound_policy = "ACCEPT"
-
-	linodes = [
-		linode_instance.two.id,
-	]
-}`, name)
 }

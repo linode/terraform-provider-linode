@@ -1,0 +1,32 @@
+{{ define "firewall_basic" }}
+
+{{ template "firewall_inst" (index .Instances 0) }}
+
+resource "linode_firewall" "test" {
+    label = "{{.Label}}"
+    tags  = ["test"]
+
+    inbound {
+        label    = "tf-test-in"
+        action = "ACCEPT"
+        protocol  = "TCP"
+        ports     = "80"
+        ipv4 = ["0.0.0.0/0"]
+        ipv6 = ["::/0"]
+    }
+    inbound_policy = "DROP"
+
+    outbound {
+        label    = "tf-test-out"
+        action = "ACCEPT"
+        protocol  = "TCP"
+        ports     = "80"
+        ipv4 = ["0.0.0.0/0"]
+        ipv6 = ["2001:db8::/32"]
+    }
+    outbound_policy = "DROP"
+
+    linodes = [linode_instance.one.id]
+}
+
+{{ end }}

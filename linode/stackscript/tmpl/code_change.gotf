@@ -1,0 +1,15 @@
+{{ define "stackscript_code_change" }}
+
+resource "linode_stackscript" "foobar" {
+    label = "{{.Label}}"
+    script = <<EOF
+#!/bin/bash
+# <UDF name="hasudf" label="a label" example="an example" default="a default">
+echo bye
+EOF
+    images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+    description = "tf_test stackscript"
+    rev_note = "second"
+}
+
+{{ end }}

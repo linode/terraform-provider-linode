@@ -14,6 +14,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/template/tmpl"
 )
 
 func init() {
@@ -60,7 +61,7 @@ func TestAccResourceTemplate_basic(t *testing.T) {
 		CheckDestroy: checkTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(templateName),
+				Config: tmpl.Basic(t, templateName),
 				Check: resource.ComposeTestCheckFunc(
 					checkTemplateExists,
 					resource.TestCheckResourceAttr(resName, "label", templateName),
@@ -87,14 +88,14 @@ func TestAccResourceTemplate_update(t *testing.T) {
 		CheckDestroy: checkTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(templateName),
+				Config: tmpl.Basic(t, templateName),
 				Check: resource.ComposeTestCheckFunc(
 					checkTemplateExists,
 					resource.TestCheckResourceAttr(resName, "label", templateName),
 				),
 			},
 			{
-				Config: resourceConfigUpdates(templateName),
+				Config: tmpl.Updates(t, templateName),
 				Check: resource.ComposeTestCheckFunc(
 					checkTemplateExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", templateName)),
@@ -157,18 +158,4 @@ func checkTemplateDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resourceConfigBasic(template string) string {
-	return fmt.Sprintf(`
-resource "linode_template" "foobar" {
-	label = "%s"
-}`, template)
-}
-
-func resourceConfigUpdates(template string) string {
-	return fmt.Sprintf(`
-resource "linode_template" "foobar" {
-	label = "%s_renamed"
-}`, template)
 }
