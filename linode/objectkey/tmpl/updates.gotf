@@ -1,0 +1,7 @@
+{{ define "object_key_updates" }}
+
+resource "linode_object_storage_key" "foobar" {
+    label = "{{.Label}}_renamed"
+}
+
+{{ end }}

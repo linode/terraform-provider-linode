@@ -13,6 +13,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/objectkey/tmpl"
 )
 
 func init() {
@@ -58,7 +59,7 @@ func TestAccResourceObjectKey_basic(t *testing.T) {
 		CheckDestroy: checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(objectStorageKeyLabel),
+				Config: tmpl.Basic(t, objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible,
@@ -84,7 +85,7 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 		CheckDestroy: checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigLimited(objectStorageKeyLabel),
+				Config: tmpl.Limited(t, objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible,
@@ -116,7 +117,7 @@ func TestAccResourceObjectKey_update(t *testing.T) {
 		CheckDestroy: checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(objectStorageKeyLabel),
+				Config: tmpl.Basic(t, objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible,
@@ -125,7 +126,7 @@ func TestAccResourceObjectKey_update(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigUpdates(objectStorageKeyLabel),
+				Config: tmpl.Updates(t, objectStorageKeyLabel),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible, // should be preserved in state
@@ -208,39 +209,4 @@ func checkObjectKeyDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resourceConfigBasic(label string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_key" "foobar" {
-	label = "%s"
-}`, label)
-}
-
-func resourceConfigUpdates(label string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_key" "foobar" {
-	label = "%s_renamed"
-}`, label)
-}
-
-func resourceConfigLimited(label string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	cluster = "us-east-1"
-	label = "%s-bucket"
-}
-resource "linode_object_storage_key" "foobar" {
-	label = "%s_key"
-    bucket_access {
-        bucket_name = "%s-bucket"
-        cluster = "us-east-1"
-        permissions = "read_only"
-    }
-    bucket_access {
-        bucket_name = linode_object_storage_bucket.foobar.label
-        cluster = linode_object_storage_bucket.foobar.cluster
-        permissions = "read_write"
-    }
-}`, label, label, label)
 }
