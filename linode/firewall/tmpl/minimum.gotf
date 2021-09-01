@@ -1,0 +1,17 @@
+{{ define "firewall_minimum" }}
+
+resource "linode_firewall" "test" {
+    label = "{{.Label}}"
+    tags  = ["test"]
+
+    inbound {
+        label    = "tf-test-in"
+        action = "ACCEPT"
+        protocol = "tcp"
+        ipv4 = ["0.0.0.0/0"]
+    }
+    inbound_policy = "DROP"
+    outbound_policy = "DROP"
+}
+
+{{ end }}

@@ -12,6 +12,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/sshkey/tmpl"
 )
 
 func init() {
@@ -58,7 +59,7 @@ func TestAccResourceSSHKey_basic(t *testing.T) {
 		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(sshkeyName, acceptance.PublicKeyMaterial),
+				Config: tmpl.Basic(t, sshkeyName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
@@ -87,7 +88,7 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(sshkeyName, acceptance.PublicKeyMaterial),
+				Config: tmpl.Basic(t, sshkeyName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
@@ -96,7 +97,7 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigUpdates(sshkeyName, acceptance.PublicKeyMaterial),
+				Config: tmpl.Updates(t, sshkeyName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
 					checkSSHKeyExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", sshkeyName)),
@@ -163,20 +164,4 @@ func checkSSHKeyDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resourceConfigBasic(label, sshkey string) string {
-	return fmt.Sprintf(`
-resource "linode_sshkey" "foobar" {
-	label = "%s"
-	ssh_key = "%s"
-}`, label, sshkey)
-}
-
-func resourceConfigUpdates(label, sshkey string) string {
-	return fmt.Sprintf(`
-resource "linode_sshkey" "foobar" {
-	label = "%s_renamed"
-	ssh_key = "%s"
-}`, label, sshkey)
 }

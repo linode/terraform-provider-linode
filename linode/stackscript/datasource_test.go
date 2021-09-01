@@ -1,12 +1,18 @@
 package stackscript_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/stackscript/tmpl"
 )
+
+var basicStackScript = `#!/bin/bash
+#<UDF name="name" label="Your name" example="Linus Torvalds" default="user">
+# NAME=
+echo "Hello, $NAME!"
+`
 
 func TestAccDataSourceStackscript_basic(t *testing.T) {
 	t.Parallel()
@@ -18,7 +24,7 @@ func TestAccDataSourceStackscript_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(),
+				Config: tmpl.DataBasic(t, basicStackScript),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "deployments_active"),
@@ -43,26 +49,4 @@ func TestAccDataSourceStackscript_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-var basicStackScript = `#!/bin/bash
-#<UDF name="name" label="Your name" example="Linus Torvalds" default="user">
-# NAME=
-echo "Hello, $NAME!"
-`
-
-func dataSourceConfigBasic() string {
-	return fmt.Sprintf(`
-resource "linode_stackscript" "stackscript" {
-	label = "my_stackscript"
-	script = <<EOF
-%sEOF
-	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
-	description = "test"
-	rev_note = "initial"
-}
-
-data "linode_stackscript" "stackscript" {
-	id = linode_stackscript.stackscript.id
-}`, basicStackScript)
 }

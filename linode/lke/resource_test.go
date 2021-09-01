@@ -12,6 +12,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/lke/tmpl"
 )
 
 const resourceClusterName = "linode_lke_cluster.test"
@@ -83,7 +84,7 @@ func TestAccResourceLKECluster_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(clusterName),
+				Config: tmpl.Basic(t, clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "region", "us-central"),
@@ -113,7 +114,7 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigManyPools(clusterName, "1.20"),
+				Config: tmpl.ManyPools(t, clusterName, "1.20"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "region", "us-central"),
@@ -121,7 +122,7 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigManyPools(clusterName, "1.21"),
+				Config: tmpl.ManyPools(t, clusterName, "1.21"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "region", "us-central"),
@@ -143,7 +144,7 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(clusterName),
+				Config: tmpl.Basic(t, clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
@@ -152,7 +153,7 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigBasicUpdates(newClusterName),
+				Config: tmpl.Updates(t, newClusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "2"),
@@ -174,7 +175,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(clusterName),
+				Config: tmpl.Basic(t, clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -182,7 +183,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigComplexPools(newClusterName),
+				Config: tmpl.ComplexPools(t, newClusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
@@ -192,7 +193,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigBasic(clusterName),
+				Config: tmpl.Basic(t, clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -215,7 +216,7 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(clusterName),
+				Config: tmpl.Basic(t, clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					checkLKEExists(&cluster),
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
@@ -242,94 +243,9 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 						t.Errorf("expected cluster to have 2 pools but got %d", len(pools))
 					}
 				},
-				Config: resourceConfigBasic(clusterName),
+				Config: tmpl.Basic(t, clusterName),
 				Check:  resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 			},
 		},
 	})
-}
-
-func resourceConfigBasic(name string) string {
-	return fmt.Sprintf(`
-resource "linode_lke_cluster" "test" {
-	label       = "%s"
-	region      = "us-central"
-	k8s_version = "1.20"
-	tags        = ["test"]
-
-	pool {
-		type  = "g6-standard-2"
-		count = 3
-	}
-}`, name)
-}
-
-func resourceConfigManyPools(name, k8sVersion string) string {
-	return fmt.Sprintf(`
-resource "linode_lke_cluster" "test" {
-	label       = "%s"
-	region      = "us-central"
-	k8s_version = "%s"
-	tags        = ["test"]
-
-	pool {
-		type  = "g6-standard-2"
-		count = 3
-	}
-
-	pool {
-		type = "g6-standard-2"
-		count = 1
-	}
-
-	pool {
-		type = "g6-standard-2"
-		count = 1
-	}
-}`, name, k8sVersion)
-}
-
-func resourceConfigBasicUpdates(name string) string {
-	return fmt.Sprintf(`
-resource "linode_lke_cluster" "test" {
-	label       = "%s"
-	region      = "us-central"
-	k8s_version = "1.20"
-	tags        = ["test", "new_tag"]
-
-	pool {
-		type  = "g6-standard-2"
-		count = 4
-	}
-}`, name)
-}
-
-func resourceConfigComplexPools(name string) string {
-	return fmt.Sprintf(`
-resource "linode_lke_cluster" "test" {
-	label       = "%s"
-	region      = "us-central"
-	k8s_version = "1.20"
-	tags        = ["test"]
-
-	pool {
-		type  = "g6-standard-2"
-		count = 2
-	}
-
-	pool {
-		type = "g6-standard-1"
-		count = 1
-	}
-
-	pool {
-		type = "g6-standard-1"
-		count = 2
-	}
-
-	pool {
-		type = "g6-standard-4"
-		count = 2
-	}
-}`, name)
 }

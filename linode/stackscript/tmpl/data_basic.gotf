@@ -1,0 +1,16 @@
+{{ define "stackscript_data_basic" }}
+
+resource "linode_stackscript" "stackscript" {
+    label = "my_stackscript"
+    script = <<EOF
+{{.Script}}EOF
+	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+	description = "test"
+	rev_note = "initial"
+}
+
+data "linode_stackscript" "stackscript" {
+	id = linode_stackscript.stackscript.id
+}
+
+{{ end }}

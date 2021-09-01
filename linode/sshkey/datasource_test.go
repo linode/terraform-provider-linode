@@ -1,13 +1,13 @@
 package sshkey_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/sshkey/tmpl"
 )
 
 func TestAccDataSourceSSHKey_basic(t *testing.T) {
@@ -23,7 +23,7 @@ func TestAccDataSourceSSHKey_basic(t *testing.T) {
 		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:  resourceConfigBasic(label, acceptance.PublicKeyMaterial),
+				Config:  tmpl.Basic(t, label, acceptance.PublicKeyMaterial),
 				Destroy: true,
 			},
 			// {
@@ -34,18 +34,9 @@ func TestAccDataSourceSSHKey_basic(t *testing.T) {
 			// 	),
 			// },
 			{
-				Config:      dataSourceConfigBasic(label, acceptance.PublicKeyMaterial),
+				Config:      tmpl.DataBasic(t, label),
 				ExpectError: regexp.MustCompile(label + " was not found"),
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(label, sshKey string) string {
-	return fmt.Sprintf(`
-data "linode_sshkey" "foobar" {
-	label = "%s"
-}
-
-`, label)
 }

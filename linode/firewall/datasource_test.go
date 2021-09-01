@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/firewall/tmpl"
 )
 
 const testFirewallDataName = "data.linode_firewall.test"
@@ -21,7 +22,7 @@ func TestAccDataSourceFirewall_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(dataSourceConfigBasic(firewallName, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, firewallName, devicePrefix),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -58,12 +59,4 @@ func TestAccDataSourceFirewall_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(firewallName, devicePrefix string) string {
-	return configBasic(firewallName, devicePrefix) + `
-data "linode_firewall" "test" {
-	id = linode_firewall.test.id
-}
-`
 }

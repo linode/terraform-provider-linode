@@ -13,6 +13,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/image/tmpl"
 )
 
 // testImageBytes is a minimal Gzipped image.
@@ -70,7 +71,7 @@ func TestAccImage_basic(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(ImageName),
+				Config: tmpl.Basic(t, ImageName),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", ImageName),
@@ -105,7 +106,7 @@ func TestAccImage_update(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(imageName),
+				Config: tmpl.Basic(t, imageName),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -113,7 +114,7 @@ func TestAccImage_update(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigUpdates(imageName),
+				Config: tmpl.Updates(t, imageName),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", imageName)),
@@ -156,7 +157,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigUpload(imageName, file.Name()),
+				Config: tmpl.Upload(t, imageName, file.Name()),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -175,7 +176,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 				PreConfig: func() {
 					file.Write(testImageBytesNew)
 				},
-				Config: resourceConfigUpload(imageName, file.Name()),
+				Config: tmpl.Upload(t, imageName, file.Name()),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),
@@ -243,59 +244,4 @@ func createTempFile(name string, content []byte) (*os.File, error) {
 	}
 
 	return file, nil
-}
-
-func resourceConfigBasic(image string) string {
-	return fmt.Sprintf(`
-	resource "linode_instance" "foobar" {
-		label = "%s"
-		group = "tf_test"
-		type = "g6-standard-1"
-		region = "us-east"
-		disk {
-			label = "disk"
-			size = 1000
-			filesystem = "ext4"
-		}
-	}
-
-	resource "linode_image" "foobar" {
-		linode_id = "${linode_instance.foobar.id}"
-		disk_id = "${linode_instance.foobar.disk.0.id}"
-		label = "%s"
-		description = "descriptive text"
-	}`, image, image)
-}
-
-func resourceConfigUpdates(image string) string {
-	return fmt.Sprintf(`
-	resource "linode_instance" "foobar" {
-		label = "%s"
-		group = "tf_test"
-		type = "g6-standard-1"
-		region = "us-east"
-		disk {
-			label = "disk"
-			size = 1000
-			filesystem = "ext4"
-		}
-	}
-
-	resource "linode_image" "foobar" {
-		linode_id = "${linode_instance.foobar.id}"
-		disk_id = "${linode_instance.foobar.disk.0.id}"
-		label = "%s_renamed"
-		description = "more descriptive text"
-	}`, image, image)
-}
-
-func resourceConfigUpload(image string, file string) string {
-	return fmt.Sprintf(`
-resource "linode_image" "foobar" {
-	label = "%s"
-	file_path = "%s"
-	file_hash = filemd5("%s")
-	region = "us-southeast"
-	description = "really descriptive text"
-}`, image, file, file)
 }

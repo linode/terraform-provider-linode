@@ -11,6 +11,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/user/tmpl"
 )
 
 const testUserResName = "linode_user.test"
@@ -26,7 +27,7 @@ func TestAccResourceUser_basic(t *testing.T) {
 		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(username, email, true),
+				Config: tmpl.Basic(t, username, email, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "email", email),
 					resource.TestCheckResourceAttr(testUserResName, "username", username),
@@ -51,7 +52,7 @@ func TestAccResourceUser_updates(t *testing.T) {
 		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(username, email, false),
+				Config: tmpl.Basic(t, username, email, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "email", email),
 					resource.TestCheckResourceAttr(testUserResName, "username", username),
@@ -61,7 +62,7 @@ func TestAccResourceUser_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigBasic(updatedUsername, email, true),
+				Config: tmpl.Basic(t, updatedUsername, email, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "email", email),
 					resource.TestCheckResourceAttr(testUserResName, "username", updatedUsername),
@@ -87,7 +88,7 @@ func TestAccResourceUser_grants(t *testing.T) {
 		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigGrants(username, email),
+				Config: tmpl.Grants(t, username, email),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", ""),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "true"),
@@ -104,7 +105,7 @@ func TestAccResourceUser_grants(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigGrantsUpdate(username, email, instance),
+				Config: tmpl.GrantsUpdate(t, username, email, instance),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.account_access", "read_only"),
 					resource.TestCheckResourceAttr(testUserResName, "global_grants.0.add_domains", "false"),
@@ -144,60 +145,4 @@ func checkUserDestroy(s *terraform.State) error {
 		}
 	}
 	return nil
-}
-
-func resourceConfigBasic(username, email string, restricted bool) string {
-	return fmt.Sprintf(`
-resource "linode_user" "test" {
-	username = "%s"
-	email = "%s"
-	restricted = %t
-}`, username, email, restricted)
-}
-
-func resourceConfigGrants(username, email string) string {
-	return fmt.Sprintf(`
-resource "linode_user" "test" {
-	username = "%s"
-	email = "%s"
-	restricted = true
-
-	global_grants {
-		add_linodes = true
-		add_nodebalancers = true
-		add_domains = true
-		add_firewalls = true
-	}
-}`, username, email)
-}
-
-func resourceConfigGrantsUpdate(username, email, instance string) string {
-	return instanceConfigNoImage(instance) + fmt.Sprintf(`
-resource "linode_user" "test" {
-	username = "%s"
-	email = "%s"
-	restricted = true
-
-	global_grants {
-		account_access = "read_only"
-		add_linodes = true
-		add_images = true
-	}
-
-	linode_grant {
-		id = linode_instance.foobar.id
-		permissions = "read_write"
-	}
-}`, username, email)
-}
-
-func instanceConfigNoImage(instance string) string {
-	return fmt.Sprintf(`
-	resource "linode_instance" "foobar" {
-		label = "%s"
-		group = "tf_test"
-		type = "g6-nanode-1"
-		region = "us-east"
-	}
-`, instance)
 }
