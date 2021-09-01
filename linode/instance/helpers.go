@@ -33,98 +33,6 @@ func getDeadlineSeconds(ctx context.Context, d *schema.ResourceData) int {
 	return int(duration.Seconds())
 }
 
-func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
-	return []map[string]int{{
-		"vcpus":    instance.Specs.VCPUs,
-		"disk":     instance.Specs.Disk,
-		"memory":   instance.Specs.Memory,
-		"transfer": instance.Specs.Transfer,
-	}}
-}
-
-func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
-	return []map[string]int{{
-		"cpu":            instance.Alerts.CPU,
-		"io":             instance.Alerts.IO,
-		"network_in":     instance.Alerts.NetworkIn,
-		"network_out":    instance.Alerts.NetworkOut,
-		"transfer_quota": instance.Alerts.TransferQuota,
-	}}
-}
-
-func flattenInstanceBackups(instance linodego.Instance) []map[string]interface{} {
-	return []map[string]interface{}{{
-		"enabled": instance.Backups.Enabled,
-		"schedule": []map[string]interface{}{{
-			"day":    instance.Backups.Schedule.Day,
-			"window": instance.Backups.Schedule.Window,
-		}},
-	}}
-}
-
-func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[string]interface{}, swapSize int) {
-	for _, disk := range instanceDisks {
-		// Determine if swap exists and the size.  If it does not exist, swap_size=0
-		if disk.Filesystem == "swap" {
-			swapSize += disk.Size
-		}
-		disks = append(disks, map[string]interface{}{
-			"id":         disk.ID,
-			"size":       disk.Size,
-			"label":      disk.Label,
-			"filesystem": string(disk.Filesystem),
-		})
-	}
-	return
-}
-
-func flattenInstanceConfigs(
-	instanceConfigs []linodego.InstanceConfig,
-	diskLabelIDMap map[int]string,
-) (configs []map[string]interface{}) {
-	for _, config := range instanceConfigs {
-
-		devices := []map[string]interface{}{{
-			"sda": flattenInstanceConfigDevice(config.Devices.SDA, diskLabelIDMap),
-			"sdb": flattenInstanceConfigDevice(config.Devices.SDB, diskLabelIDMap),
-			"sdc": flattenInstanceConfigDevice(config.Devices.SDC, diskLabelIDMap),
-			"sdd": flattenInstanceConfigDevice(config.Devices.SDD, diskLabelIDMap),
-			"sde": flattenInstanceConfigDevice(config.Devices.SDE, diskLabelIDMap),
-			"sdf": flattenInstanceConfigDevice(config.Devices.SDF, diskLabelIDMap),
-			"sdg": flattenInstanceConfigDevice(config.Devices.SDG, diskLabelIDMap),
-			"sdh": flattenInstanceConfigDevice(config.Devices.SDH, diskLabelIDMap),
-		}}
-
-		interfaces := make([]interface{}, len(config.Interfaces))
-		for i, ni := range config.Interfaces {
-			interfaces[i] = flattenLinodeConfigInterface(ni)
-		}
-
-		// Determine if swap exists and the size.  If it does not exist, swap_size=0
-		c := map[string]interface{}{
-			"root_device":  config.RootDevice,
-			"kernel":       config.Kernel,
-			"run_level":    string(config.RunLevel),
-			"virt_mode":    string(config.VirtMode),
-			"comments":     config.Comments,
-			"memory_limit": config.MemoryLimit,
-			"label":        config.Label,
-			"helpers": []map[string]bool{{
-				"updatedb_disabled":  config.Helpers.UpdateDBDisabled,
-				"distro":             config.Helpers.Distro,
-				"modules_dep":        config.Helpers.ModulesDep,
-				"network":            config.Helpers.Network,
-				"devtmpfs_automount": config.Helpers.DevTmpFsAutomount,
-			}},
-			"devices":   devices,
-			"interface": interfaces,
-		}
-
-		configs = append(configs, c)
-	}
-	return
-}
-
 func createInstanceConfigsFromSet(
 	ctx context.Context,
 	client linodego.Client,
@@ -479,21 +387,6 @@ func makeVolumeDetacher(client linodego.Client, d *schema.ResourceData) volumeDe
 		}
 		return nil
 	}
-}
-
-func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConfigDevice {
-	var dev *linodego.InstanceConfigDevice
-	// be careful of `disk_label string` in m
-	if diskID, ok := m["disk_id"]; ok && diskID.(int) > 0 {
-		dev = &linodego.InstanceConfigDevice{
-			DiskID: diskID.(int),
-		}
-	} else if volumeID, ok := m["volume_id"]; ok && volumeID.(int) > 0 {
-		dev = &linodego.InstanceConfigDevice{
-			VolumeID: m["volume_id"].(int),
-		}
-	}
-	return dev
 }
 
 func createInstanceDisk(
@@ -1038,24 +931,4 @@ func detachConfigVolumes(
 	}
 
 	return nil
-}
-
-func expandLinodeConfigInterface(i map[string]interface{}) linodego.InstanceConfigInterface {
-	result := linodego.InstanceConfigInterface{}
-
-	result.Label = i["label"].(string)
-	result.Purpose = linodego.ConfigInterfacePurpose(i["purpose"].(string))
-	result.IPAMAddress = i["ipam_address"].(string)
-
-	return result
-}
-
-func flattenLinodeConfigInterface(i linodego.InstanceConfigInterface) map[string]interface{} {
-	result := make(map[string]interface{})
-
-	result["label"] = i.Label
-	result["purpose"] = i.Purpose
-	result["ipam_address"] = i.IPAMAddress
-
-	return result
 }

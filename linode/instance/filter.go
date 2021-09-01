@@ -1,6 +1,8 @@
 package instance
 
 import (
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -80,4 +82,14 @@ func constructFilterString(d *schema.ResourceData, typeFunc filterTypeFunc) (str
 	}
 
 	return string(result), nil
+}
+
+// instanceValueToFilterType converts the given value to the correct type depending on the filter name.
+func instanceValueToFilterType(filterName, value string) (interface{}, error) {
+	switch filterName {
+	case "id":
+		return strconv.Atoi(value)
+	}
+
+	return value, nil
 }
