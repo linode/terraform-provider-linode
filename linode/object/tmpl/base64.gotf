@@ -1,0 +1,15 @@
+{{ define "object_object_base64" }}
+
+{{ template "object_bucket_basic" .Bucket }}
+{{ template "object_key_basic" .Key }}
+
+resource "linode_object_storage_object" "object" {
+    bucket         = linode_object_storage_bucket.foobar.label
+    cluster        = "us-east-1"
+    access_key     = linode_object_storage_key.foobar.access_key
+    secret_key     = linode_object_storage_key.foobar.secret_key
+    key            = "test"
+    content_base64 = "{{.Content}}"
+}
+
+{{ end }}

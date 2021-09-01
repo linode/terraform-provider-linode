@@ -28,6 +28,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/bucket"
+	"github.com/linode/terraform-provider-linode/linode/bucket/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -157,7 +158,7 @@ func TestAccResourceBucket_basic(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(objectStorageBucketName),
+				Config: tmpl.Basic(t, objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -184,7 +185,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigWithAccess(objectStorageBucketName, "public-read", true),
+				Config: tmpl.Access(t, objectStorageBucketName, "public-read", true),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -193,7 +194,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigWithAccess(objectStorageBucketName, "private", false),
+				Config: tmpl.Access(t, objectStorageBucketName, "private", false),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -218,7 +219,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigWithVersioning(objectStorageBucketName, objectStorageKeyName, true),
+				Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -226,7 +227,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigWithVersioning(objectStorageBucketName, objectStorageKeyName, false),
+				Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -250,7 +251,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: reosurceConfigWithLifecycle(objectStorageBucketName, objectStorageKeyName),
+				Config: tmpl.LifeCycle(t, objectStorageBucketName, objectStorageKeyName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
@@ -264,7 +265,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigLifecycleUpdates(objectStorageBucketName, objectStorageKeyName),
+				Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, objectStorageKeyName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
@@ -307,7 +308,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigWithCert(objectStorageBucketName, cert, key),
+				Config: tmpl.Cert(t, objectStorageBucketName, cert, key),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					checkBucketHasSSL(true),
@@ -315,11 +316,11 @@ func TestAccResourceBucket_cert(t *testing.T) {
 				),
 			},
 			{
-				Config:      resourceConfigWithCert(objectStorageBucketName, invalidCert, invalidKey),
+				Config:      tmpl.Cert(t, objectStorageBucketName, invalidCert, invalidKey),
 				ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
 			},
 			{
-				Config: resourceConfigWithCert(objectStorageBucketName, otherCert, otherKey),
+				Config: tmpl.Cert(t, objectStorageBucketName, otherCert, otherKey),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					checkBucketHasSSL(true),
@@ -327,7 +328,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigBasic(objectStorageBucketName),
+				Config: tmpl.Basic(t, objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					checkBucketHasSSL(false),
@@ -350,7 +351,7 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigDataSource(objectStorageBucketName),
+				Config: tmpl.DataBasic(t, objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -377,14 +378,14 @@ func TestAccResourceBucket_update(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(objectStorageBucketName),
+				Config: tmpl.Basic(t, objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
 			{
-				Config: resourceConfigUpdates(objectStorageBucketName),
+				Config: tmpl.Updates(t, objectStorageBucketName),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", objectStorageBucketName)),
@@ -471,126 +472,4 @@ func checkBucketDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resourceConfigBasic(bucket string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	cluster = "us-east-1"
-	label = "%s"
-}`, bucket)
-}
-
-func resourceConfigObjectKey(label string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_key" "foobar" {
-	label = "%s"
-}`, label)
-}
-
-func resourceConfigWithAccess(bucket, acl string, cors bool) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	cluster = "us-east-1"
-	label = "%s"
-
-	acl = "%s"
-	cors_enabled = %t
-}`, bucket, acl, cors)
-}
-
-func resourceConfigWithCert(bucket, cert, key string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	cluster = "us-east-1"
-	label = "%s"
-
-	cert {
-		certificate = <<EOF
-%s
-EOF
-		private_key = <<EOF
-%s
-EOF
-	}
-}`, bucket, cert, key)
-}
-
-func resourceConfigWithVersioning(bucketName, keyName string, versioning bool) string {
-	return resourceConfigObjectKey(keyName) + fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	access_key = linode_object_storage_key.foobar.access_key
-	secret_key = linode_object_storage_key.foobar.secret_key
-
-	cluster = "us-east-1"
-	label = "%s"
-
-	versioning = %t
-}`, bucketName, versioning)
-}
-
-func reosurceConfigWithLifecycle(bucketName, keyName string) string {
-	return resourceConfigObjectKey(keyName) + fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	access_key = linode_object_storage_key.foobar.access_key
-	secret_key = linode_object_storage_key.foobar.secret_key
-
-	cluster = "us-east-1"
-	label = "%s"
-
-	lifecycle_rule {
-		id = "test-rule"
-		prefix = "tf"
-		enabled = true
-
-		abort_incomplete_multipart_upload_days = 5
-
-		expiration {
-			date = "2021-06-21"
-		}
-	}
-}`, bucketName)
-}
-
-func resourceConfigLifecycleUpdates(bucketName, keyName string) string {
-	return resourceConfigObjectKey(keyName) + fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	access_key = linode_object_storage_key.foobar.access_key
-	secret_key = linode_object_storage_key.foobar.secret_key
-
-	cluster = "us-east-1"
-	label = "%s"
-
-	lifecycle_rule {
-		id = "test-rule-update"
-		prefix = "tf-update"
-		enabled = false
-
-		abort_incomplete_multipart_upload_days = 42
-
-		expiration {
-			days = 37
-		}
-	}
-}`, bucketName)
-}
-
-func resourceConfigUpdates(bucket string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	cluster = "us-east-1"
-	label = "%s-renamed"
-}`, bucket)
-}
-
-func resourceConfigDataSource(bucket string) string {
-	return fmt.Sprintf(`
-data "linode_object_storage_cluster" "baz" {
-	id = "us-east-1"
-}
-
-resource "linode_object_storage_bucket" "foobar" {
-	cluster = data.linode_object_storage_cluster.baz.id
-	label = "%s"
-}`, bucket)
 }

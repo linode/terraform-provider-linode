@@ -1,0 +1,15 @@
+{{ define "object_bucket_versioning" }}
+
+{{ template "object_key_basic" .Key }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    access_key = linode_object_storage_key.foobar.access_key
+    secret_key = linode_object_storage_key.foobar.secret_key
+
+    cluster = "us-east-1"
+    label = "{{.Label}}"
+
+    versioning = {{.Versioning}}
+}
+
+{{ end }}

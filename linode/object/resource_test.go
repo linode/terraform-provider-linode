@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/object/tmpl"
 )
 
 const objectResourceName = "linode_object_storage_object.object"
@@ -35,7 +36,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(bucketName, keyName, content),
+				Config: tmpl.Basic(t, bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectExists(&object),
 					checkObjectBodyContains(&object, content),
@@ -62,7 +63,7 @@ func TestAccResourceObject_base64(t *testing.T) {
 		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBase64(bucketName, keyName, base64EncodedContent),
+				Config: tmpl.Base64(t, bucketName, keyName, base64EncodedContent),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectExists(&object),
 					checkObjectBodyContains(&object, content),
@@ -98,7 +99,7 @@ func TestAccResourceObject_source(t *testing.T) {
 		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigSource(bucketName, keyName, file.Name()),
+				Config: tmpl.Source(t, bucketName, keyName, file.Name()),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectExists(&object),
 					checkObjectBodyContains(&object, content),
@@ -124,7 +125,7 @@ func TestAccResourceObject_contentUpdate(t *testing.T) {
 		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(bucketName, keyName, content),
+				Config: tmpl.Basic(t, bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectExists(&object),
 					checkObjectBodyContains(&object, content),
@@ -134,7 +135,7 @@ func TestAccResourceObject_contentUpdate(t *testing.T) {
 				PreConfig: func() {
 					content = "updated456"
 				},
-				Config: resourceConfigBasic(bucketName, keyName, content),
+				Config: tmpl.Basic(t, bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectExists(&object),
 					checkObjectBodyContains(&object, content),
@@ -159,7 +160,7 @@ func TestAccResourceObject_updates(t *testing.T) {
 		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(bucketName, keyName, content),
+				Config: tmpl.Basic(t, bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectExists(&object),
 					checkObjectBodyContains(&object, content),
@@ -170,7 +171,7 @@ func TestAccResourceObject_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigUpdates(bucketName, keyName, content),
+				Config: tmpl.Updates(t, bucketName, keyName, content),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectExists(&object),
 					checkObjectBodyContains(&object, content),
@@ -262,82 +263,4 @@ func checkObjectBodyContains(obj *s3.GetObjectOutput, expected string) resource.
 		}
 		return nil
 	}
-}
-
-func resourceConfigBucketBasic(bucket string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_bucket" "foobar" {
-	cluster = "us-east-1"
-	label = "%s"
-}`, bucket)
-}
-
-func resourceConfigObjectKeyBasic(label string) string {
-	return fmt.Sprintf(`
-resource "linode_object_storage_key" "foobar" {
-	label = "%s"
-}`, label)
-}
-
-func resourceConfigBasic(name, keyName, content string) string {
-	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
-resource "linode_object_storage_object" "object" {
-	bucket     = linode_object_storage_bucket.foobar.label
-	cluster    = "us-east-1"
-	access_key = linode_object_storage_key.foobar.access_key
-	secret_key = linode_object_storage_key.foobar.secret_key
-	key        = "test"
-	content    = "%s"
-}`, content)
-}
-
-func resourceConfigBase64(name, keyName, content string) string {
-	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
-resource "linode_object_storage_object" "object" {
-	bucket         = linode_object_storage_bucket.foobar.label
-	cluster        = "us-east-1"
-	access_key     = linode_object_storage_key.foobar.access_key
-	secret_key     = linode_object_storage_key.foobar.secret_key
-	key            = "test"
-	content_base64 = "%s"
-}`, content)
-}
-
-func resourceConfigSource(name, keyName, filePath string) string {
-	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
-resource "linode_object_storage_object" "object" {
-	bucket     = linode_object_storage_bucket.foobar.label
-	cluster    = "us-east-1"
-	access_key = linode_object_storage_key.foobar.access_key
-	secret_key = linode_object_storage_key.foobar.secret_key
-	key        = "test"
-	source     = "%s"
-}`, filePath)
-}
-
-func resourceConfigUpdates(name, keyName, content string) string {
-	return resourceConfigBucketBasic(name) + resourceConfigObjectKeyBasic(keyName) + fmt.Sprintf(`
-	resource "linode_object_storage_object" "object" {
-		bucket     = linode_object_storage_bucket.foobar.label
-		cluster    = "us-east-1"
-		access_key = linode_object_storage_key.foobar.access_key
-		secret_key = linode_object_storage_key.foobar.secret_key
-		key        = "test"
-		content    = "%s"
-		acl        = "public-read"
-
-		content_type     = "text/plain"
-		content_encoding = "utf8"
-		content_language = "en"
-		website_redirect = "test.com"
-		force_destroy    = true
-
-		content_disposition = "attachment"
-		cache_control       = "max-age=2592000"
-
-		metadata = {
-			foo = "bar"
-			bar = "foo"
-		}
-	}`, content)
 }
