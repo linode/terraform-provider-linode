@@ -1,4 +1,4 @@
-package linode
+package instance_test
 
 import (
 	"bytes"

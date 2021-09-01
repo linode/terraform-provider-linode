@@ -19,6 +19,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
+	"github.com/linode/terraform-provider-linode/linode/instance"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
@@ -122,7 +123,7 @@ func Provider() *schema.Provider {
 			"linode_firewall":               firewall.DataSource(),
 			"linode_image":                  image.DataSource(),
 			"linode_images":                 images.DataSource(),
-			"linode_instances":              dataSourceLinodeInstances(),
+			"linode_instances":              instance.DataSource(),
 			"linode_instance_backups":       backup.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_kernel":                 kernel.DataSource(),
@@ -146,7 +147,7 @@ func Provider() *schema.Provider {
 			"linode_domain_record":         domainrecord.Resource(),
 			"linode_firewall":              firewall.Resource(),
 			"linode_image":                 image.Resource(),
-			"linode_instance":              resourceLinodeInstance(),
+			"linode_instance":              instance.Resource(),
 			"linode_instance_ip":           instanceip.Resource(),
 			"linode_lke_cluster":           lke.Resource(),
 			"linode_nodebalancer":          balancer.Resource(),

@@ -1,4 +1,4 @@
-package linode
+package instance
 
 import (
 	"context"
@@ -76,7 +76,7 @@ func resourceLinodeInstanceConfigInterface() *schema.Resource {
 	}
 }
 
-func resourceLinodeInstance() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceLinodeInstanceCreate,
 		ReadContext:   resourceLinodeInstanceRead,
