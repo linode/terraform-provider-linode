@@ -6,21 +6,22 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-func TestAccDataSourceLinodeInstances_basic(t *testing.T) {
+func TestAccDataSourceInstances_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceCheckLinodeInstancesBasic(instanceName),
+				Config: dataSourceConfigBasic(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.type", "g6-nanode-1"),
@@ -39,18 +40,18 @@ func TestAccDataSourceLinodeInstances_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceLinodeInstances_multipleInstances(t *testing.T) {
+func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	groupName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceCheckLinodeInstancesMultipleInstances(instanceName, groupName),
+				Config: dataSourceConfigMultipleInstances(instanceName, groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
 				),
@@ -59,7 +60,7 @@ func TestAccDataSourceLinodeInstances_multipleInstances(t *testing.T) {
 	})
 }
 
-func testDataSourceCheckLinodeInstancesBasic(instance string) string {
+func dataSourceConfigBasic(instance string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
@@ -103,7 +104,7 @@ data "linode_instances" "foobar" {
 `
 }
 
-func testDataSourceCheckLinodeInstancesMultipleInstances(instance, groupName string) string {
+func dataSourceConfigMultipleInstances(instance, groupName string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar-0" {
 	label = "%s-0"

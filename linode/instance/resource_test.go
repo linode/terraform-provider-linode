@@ -14,29 +14,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
 	resource.AddTestSweepers("linode_instance", &resource.Sweeper{
 		Name: "linode_instance",
-		F:    testSweepLinodeInstance,
+		F:    sweep,
 	})
 }
 
-func testSweepLinodeInstance(prefix string) error {
-	client, err := getClientForSweepers()
+func sweep(prefix string) error {
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	listOpts := sweeperListOptions(prefix, "label")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 	instances, err := client.ListInstances(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting instances: %s", err)
 	}
 	for _, instance := range instances {
-		if !shouldSweepAcceptanceTestResource(prefix, instance.Label) {
+		if !acceptance.ShouldSweep(prefix, instance.Label) {
 			continue
 		}
 		err := client.DeleteInstance(context.Background(), instance.ID)
@@ -49,7 +50,7 @@ func testSweepLinodeInstance(prefix string) error {
 	return nil
 }
 
-func TestAccLinodeInstance_basic(t *testing.T) {
+func TestAccResourceInstance_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -57,14 +58,14 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceBasic(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceBasic(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
@@ -84,15 +85,15 @@ func TestAccLinodeInstance_basic(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_watchdogDisabled(t *testing.T) {
+func TestAccResourceInstance_watchdogDisabled(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceWithWatchdogDisabled(instanceName),
@@ -109,7 +110,7 @@ func TestAccLinodeInstance_watchdogDisabled(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
+func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -117,14 +118,14 @@ func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceAuthorizedUsers(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceAuthorizedUsers(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
@@ -144,7 +145,7 @@ func TestAccLinodeInstance_authorizedUsers(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_interfaces(t *testing.T) {
+func TestAccResourceInstance_interfaces(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -152,14 +153,14 @@ func TestAccLinodeInstance_interfaces(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceWithInterfaces(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -199,7 +200,7 @@ func TestAccLinodeInstance_interfaces(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_config(t *testing.T) {
+func TestAccResourceInstance_config(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -207,14 +208,14 @@ func TestAccLinodeInstance_config(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -224,7 +225,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
 					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
 
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 				),
 			},
 
@@ -237,7 +238,7 @@ func TestAccLinodeInstance_config(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_configPair(t *testing.T) {
+func TestAccResourceInstance_configPair(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -245,22 +246,22 @@ func TestAccLinodeInstance_configPair(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/latest-32bit"))),
+					checkComputeInstanceConfigs(&instance, testConfig("configa", testConfigKernel("linode/latest-64bit"))),
+					checkComputeInstanceConfigs(&instance, testConfig("configb", testConfigKernel("linode/latest-32bit"))),
 				),
 			},
 
@@ -274,7 +275,7 @@ func TestAccLinodeInstance_configPair(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_configInterfaces(t *testing.T) {
+func TestAccResourceInstance_configInterfaces(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -282,14 +283,14 @@ func TestAccLinodeInstance_configInterfaces(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceWithConfigInterfaces(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -343,7 +344,7 @@ func TestAccLinodeInstance_configInterfaces(t *testing.T) {
 
 func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
 	return func() {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
@@ -363,7 +364,7 @@ func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.In
 	}
 }
 
-func TestAccLinodeInstance_disk(t *testing.T) {
+func TestAccResourceInstance_disk(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -371,15 +372,15 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceWithDiskRaw(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -390,7 +391,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "disk.#", "1"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
 					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
-					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+					checkComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
 
@@ -403,7 +404,7 @@ func TestAccLinodeInstance_disk(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskImage(t *testing.T) {
+func TestAccResourceInstance_diskImage(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -411,15 +412,15 @@ func TestAccLinodeInstance_diskImage(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithDisk(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDisk(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -427,7 +428,7 @@ func TestAccLinodeInstance_diskImage(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
-					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+					checkComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
 
@@ -440,7 +441,7 @@ func TestAccLinodeInstance_diskImage(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskPair(t *testing.T) {
+func TestAccResourceInstance_diskPair(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -449,21 +450,21 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceMultipleDisks(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceMultipleDisks(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
-					testAccCheckComputeInstanceDisks(&instance,
+					checkInstanceDisks(&instance,
 						testDisk("diska", testDiskSize(3000), testDiskExists(&instanceDisk)),
 						testDisk("diskb", testDiskSize(512)),
 					),
@@ -479,7 +480,7 @@ func TestAccLinodeInstance_diskPair(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
+func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -487,24 +488,24 @@ func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfigs(&instance,
+					checkComputeInstanceConfigs(&instance,
 						testConfig("config", testConfigKernel("linode/latest-64bit")),
 					),
-					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+					checkComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
 
@@ -517,7 +518,7 @@ func TestAccLinodeInstance_diskAndConfig(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
+func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -527,28 +528,28 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		Providers: acceptance.TestAccProviders,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckLinodeInstanceDestroy,
-			testAccCheckLinodeVolumeDestroy,
+			acceptance.CheckInstanceDestroy,
+			acceptance.CheckVolumeDestroy,
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithMultipleDiskAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
-					testAccCheckLinodeInstanceDiskExists(&instance, "diska", &instanceDisk),
-					// TODO(displague) create testAccCheckComputeInstanceDisks helper (like Configs)
-					testAccCheckComputeInstanceDisk(&instance, "diska", 3000),
-					testAccCheckComputeInstanceDisk(&instance, "diskb", 512),
-					testAccCheckComputeInstanceConfigs(&instance,
+					checkInstanceDiskExists(&instance, "diska", &instanceDisk),
+					// TODO(displague) create checkInstanceDisks helper (like Configs)
+					checkComputeInstanceDisk(&instance, "diska", 3000),
+					checkComputeInstanceDisk(&instance, "diskb", 512),
+					checkComputeInstanceConfigs(&instance,
 						testConfig("configa", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(&instanceDisk)),
 						testConfig("configb", testConfigKernel("linode/grub2"), testConfigComments("won't boot"), testConfigSDBDisk(&instanceDisk)),
 					),
@@ -565,7 +566,7 @@ func TestAccLinodeInstance_disksAndConfigs(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
+func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -577,25 +578,25 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithVolumeAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithVolumeAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckLinodeVolumeExists(volName, &volume),
+					acceptance.CheckInstanceExists(resName, &instance),
+					acceptance.CheckVolumeExists(volName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
-					testAccCheckLinodeInstanceDiskExists(&instance, "disk", &instanceDisk),
-					// TODO(displague) create testAccCheckComputeInstanceDisks helper (like Configs)
-					testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
-					testAccCheckComputeInstanceConfigs(&instance,
+					checkInstanceDiskExists(&instance, "disk", &instanceDisk),
+					// TODO(displague) create checkInstanceDisks helper (like Configs)
+					checkComputeInstanceDisk(&instance, "disk", 3000),
+					checkComputeInstanceConfigs(&instance,
 						testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(&instanceDisk), testConfigSDBVolume(&volume)),
 					),
 				),
@@ -610,7 +611,7 @@ func TestAccLinodeInstance_volumeAndConfig(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_privateImage(t *testing.T) {
+func TestAccResourceInstance_privateImage(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -618,19 +619,19 @@ func TestAccLinodeInstance_privateImage(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceWithPrivateImage(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-					testAccCheckComputeInstanceDisks(&instance,
+					checkInstanceDisks(&instance,
 						testDisk("boot", testDiskSize(1000)),
 						testDisk("swap", testDiskSize(800)),
 						testDisk("logs", testDiskSize(600)),
@@ -647,7 +648,7 @@ func TestAccLinodeInstance_privateImage(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_noImage(t *testing.T) {
+func TestAccResourceInstance_noImage(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -655,14 +656,14 @@ func TestAccLinodeInstance_noImage(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceWithNoImage(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -679,21 +680,21 @@ func TestAccLinodeInstance_noImage(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_updateSimple(t *testing.T) {
+func TestAccResourceInstance_updateSimple(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceBasic(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceBasic(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 				),
@@ -701,7 +702,7 @@ func TestAccLinodeInstance_updateSimple(t *testing.T) {
 			{
 				Config: testAccCheckLinodeInstanceSimpleUpdates(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
 				),
@@ -710,21 +711,21 @@ func TestAccLinodeInstance_updateSimple(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_configUpdate(t *testing.T) {
+func TestAccResourceInstance_configUpdate(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
@@ -736,7 +737,7 @@ func TestAccLinodeInstance_configUpdate(t *testing.T) {
 			{
 				Config: testAccCheckLinodeInstanceConfigSimpleUpdates(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
 					// changed kerel, not label
@@ -770,7 +771,7 @@ func testGetTypeSetIndexyByLabel(name, key, label string, index *string) resourc
 	}
 }
 
-func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
+func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 	t.Parallel()
 
 	config := linodego.InstanceConfig{}
@@ -782,28 +783,28 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
-					testAccCheckComputeInstanceConfigs(&instance,
+					checkComputeInstanceConfigs(&instance,
 						testConfig("config", testConfigExists(&config), testConfigKernel("linode/latest-64bit")),
 					),
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithMultipleConfigs(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
@@ -815,7 +816,7 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "config.1.kernel", "linode/latest-32bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfigs(&instance,
+					checkComputeInstanceConfigs(&instance,
 						testConfig("configa", testConfigExists(&configA), testConfigKernel("linode/latest-64bit")),
 						testConfig("configb", testConfigExists(&configB), testConfigKernel("linode/latest-32bit")),
 					),
@@ -828,15 +829,15 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "config.#", "1"),
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
-					testAccCheckComputeInstanceConfigs(&instance,
+					checkComputeInstanceConfigs(&instance,
 						testConfig("config", testConfigExists(&config), testConfigKernel("linode/latest-64bit")),
 					),
 				),
@@ -848,16 +849,16 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithMultipleConfigsAllUpdated(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithMultipleConfigsAllUpdated(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-64bit"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfigs(&instance,
+					checkComputeInstanceConfigs(&instance,
 						testConfig("configb", testConfigKernel("linode/latest-64bit")),
 						testConfig("configa", testConfigKernel("linode/latest-32bit")),
 						testConfig("configc", testConfigKernel("linode/latest-64bit")),
@@ -868,34 +869,34 @@ func TestAccLinodeInstance_configPairUpdate(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_upsizeWithoutDisk(t *testing.T) {
+func TestAccResourceInstance_upsizeWithoutDisk(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
+				Config: testAccCheckLinodeInstanceWithType(instanceName, acceptance.PublicKeyMaterial, "g6-nanode-1"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
-					testAccCheckComputeInstanceDisks(&instance,
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
 					),
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-standard-1"),
+				Config: testAccCheckLinodeInstanceWithType(instanceName, acceptance.PublicKeyMaterial, "g6-standard-1"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
-					testAccCheckComputeInstanceDisks(&instance,
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
 					),
@@ -905,22 +906,22 @@ func TestAccLinodeInstance_upsizeWithoutDisk(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskRawResize(t *testing.T) {
+func TestAccResourceInstance_diskRawResize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
 				Config: testAccCheckLinodeInstanceWithDiskRaw(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "config.#", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.#", "1"),
@@ -928,14 +929,14 @@ func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
 			},
 			// Bump it to a 2048, and expand the disk
 			{
 				Config: testAccCheckLinodeInstanceWithDiskRawResizedAndExpanded(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "config.#", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.#", "1"),
@@ -943,29 +944,29 @@ func TestAccLinodeInstance_diskRawResize(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstance_tag(t *testing.T) {
+func TestAccResourceInstance_tag(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a single tag
 			{
 				Config: testAccCheckLinodeInstanceWithTag(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 				),
@@ -974,7 +975,7 @@ func TestAccLinodeInstance_tag(t *testing.T) {
 			{
 				Config: testAccCheckLinodeInstanceWithUpdatedTag(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
@@ -984,22 +985,22 @@ func TestAccLinodeInstance_tag(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
+func TestAccResourceInstance_diskRawDeleted(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
 				Config: testAccCheckLinodeInstanceWithDiskRaw(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "config.#", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.#", "1"),
@@ -1007,14 +1008,14 @@ func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
 			},
 			// Bump it to a 2048, and expand the disk
 			{
 				Config: testAccCheckLinodeInstanceWithDiskRawDeleted(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "config.#", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.#", "0"),
@@ -1026,130 +1027,130 @@ func TestAccLinodeInstance_diskRawDeleted(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskResize(t *testing.T) {
+func TestAccResourceInstance_diskResize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
 			},
 			// Increase disk size
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfigResized(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigResized(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "6000"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstance_withDiskLinodeUpsize(t *testing.T) {
+func TestAccResourceInstance_withDiskLinodeUpsize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start with g6-nanode-1
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
 			},
 			// Upsize to g6-standard-1 with fully allocated disk
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfigLarger(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigLarger(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "51200"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(51200))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(51200))),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstance_withDiskLinodeDownsize(t *testing.T) {
+func TestAccResourceInstance_withDiskLinodeDownsize(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start with g6-standard-1 with fully allocated disk
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfigLarger(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigLarger(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "51200"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(51200))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(51200))),
 				),
 			},
 			// Downsize to g6-nanode-1
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
+func TestAccResourceInstance_downsizeWithoutDisk(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
@@ -1157,23 +1158,23 @@ func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-standard-1"),
+				Config: testAccCheckLinodeInstanceWithType(instanceName, acceptance.PublicKeyMaterial, "g6-standard-1"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckComputeInstanceDisks(&instance,
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(50944)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
 					),
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithType(instanceName, publicKeyMaterial, "g6-nanode-1"),
+				Config: testAccCheckLinodeInstanceWithType(instanceName, acceptance.PublicKeyMaterial, "g6-nanode-1"),
 				ExpectError: regexp.MustCompile(
 					"Did you try to resize a linode with implicit, default disks to a smaller type?"),
 			},
@@ -1181,7 +1182,7 @@ func TestAccLinodeInstance_downsizeWithoutDisk(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
+func TestAccResourceInstance_fullDiskSwapUpsize(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
@@ -1189,16 +1190,16 @@ func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithFullDisk(instanceName, publicKeyMaterial, 256),
+				Config: testAccCheckLinodeInstanceWithFullDisk(instanceName, acceptance.PublicKeyMaterial, 256),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckComputeInstanceDisks(&instance,
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
 					),
@@ -1207,7 +1208,7 @@ func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
 			{
 				PreConfig: func() {
 					ctx := context.Background()
-					client := getSSHClient(t, "root", instance.IPv4[0].String())
+					client := acceptance.GetSSHClient(t, "root", instance.IPv4[0].String())
 
 					defer client.Close()
 					ss, err := client.NewSession()
@@ -1237,14 +1238,14 @@ func TestAccLinodeInstance_fullDiskSwapUpsize(t *testing.T) {
 						}
 					}
 				},
-				Config:      testAccCheckLinodeInstanceWithFullDisk(instanceName, publicKeyMaterial, 512),
+				Config:      testAccCheckLinodeInstanceWithFullDisk(instanceName, acceptance.PublicKeyMaterial, 512),
 				ExpectError: regexp.MustCompile("Error waiting for resize of Instance \\d+ Disk \\d+"),
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstance_swapUpsize(t *testing.T) {
+func TestAccResourceInstance_swapUpsize(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
@@ -1252,25 +1253,25 @@ func TestAccLinodeInstance_swapUpsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 256),
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, acceptance.PublicKeyMaterial, 256),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckComputeInstanceDisks(&instance,
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
 					),
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 512),
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, acceptance.PublicKeyMaterial, 512),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckComputeInstanceDisks(&instance,
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25088)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(512)),
 					),
@@ -1280,7 +1281,7 @@ func TestAccLinodeInstance_swapUpsize(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_swapDownsize(t *testing.T) {
+func TestAccResourceInstance_swapDownsize(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance
@@ -1288,25 +1289,25 @@ func TestAccLinodeInstance_swapDownsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 512),
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, acceptance.PublicKeyMaterial, 512),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckComputeInstanceDisks(&instance,
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25088)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(512)),
 					),
 				),
 			},
 			{
-				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, publicKeyMaterial, 256),
+				Config: testAccCheckLinodeInstanceWithSwapSize(instanceName, acceptance.PublicKeyMaterial, 256),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckComputeInstanceDisks(&instance,
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance,
 						testDiskByFS(linodego.FilesystemExt4, testDiskSize(25344)),
 						testDiskByFS(linodego.FilesystemSwap, testDiskSize(256)),
 					),
@@ -1316,51 +1317,51 @@ func TestAccLinodeInstance_swapDownsize(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskResizeAndExpanded(t *testing.T) {
+func TestAccResourceInstance_diskResizeAndExpanded(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
 				),
 			},
 
 			// Bump to 2048 and expand disk
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfigResizedAndExpanded(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigResizedAndExpanded(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "6000"),
 
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(6000))),
 				),
 			},
 		},
 	})
 }
 
-func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
+func TestAccResourceInstance_diskSlotReorder(t *testing.T) {
 	t.Parallel()
 	var (
 		instance     linodego.Instance
@@ -1370,30 +1371,30 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfig(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					testAccCheckComputeInstanceDisks(&instance, testDisk("disk", testDiskExists(&instanceDisk), testDiskSize(3000))),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(&instanceDisk))),
+					checkInstanceDisks(&instance, testDisk("disk", testDiskExists(&instanceDisk), testDiskSize(3000))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"), testConfigSDADisk(&instanceDisk))),
 					resource.TestCheckResourceAttrSet(resName, "config.0.devices.0.sda.0.disk_id"),
 					resource.TestCheckResourceAttr(resName, "config.0.devices.0.sdb.#", "0"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					testAccCheckComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
+					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 				),
 			},
 			// Add a disk, reorder the disks
 			{
-				Config: testAccCheckLinodeInstanceWithDiskAndConfigAddedAndReordered(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceWithDiskAndConfigAddedAndReordered(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "51200"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
@@ -1418,22 +1419,22 @@ func TestAccLinodeInstance_diskSlotReorder(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_privateNetworking(t *testing.T) {
+func TestAccResourceInstance_privateNetworking(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceConfigPrivateNetworking(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceConfigPrivateNetworking(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
-					testAccCheckLinodeInstanceAttributesPrivateNetworking("linode_instance.foobar"),
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstancePrivateNetworkAttributes("linode_instance.foobar"),
 					resource.TestCheckResourceAttr(resName, "private_ip", "true"),
 				),
 			},
@@ -1441,7 +1442,7 @@ func TestAccLinodeInstance_privateNetworking(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_stackScriptInstance(t *testing.T) {
+func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -1449,14 +1450,14 @@ func TestAccLinodeInstance_stackScriptInstance(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceStackScript(instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", "linode/debian9"),
@@ -1475,7 +1476,7 @@ func TestAccLinodeInstance_stackScriptInstance(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_diskImageUpdate(t *testing.T) {
+func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -1483,24 +1484,24 @@ func TestAccLinodeInstance_diskImageUpdate(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckLinodeInstanceWithBootDiskImage(instanceName, "linode/alpine3.10"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName)),
 			},
 			{
 				Config: testAccCheckLinodeInstanceWithBootDiskImage(instanceName, "linode/alpine3.11"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					// resource was tainted for recreation due to change of disk.0.image, marked
 					// with ForceNew.
-					testAccCheckResourceAttrNotEqual(resName, "id", strconv.Itoa(instance.ID)),
+					acceptance.TestAccCheckResourceAttrNotEqual(resName, "id", strconv.Itoa(instance.ID)),
 				),
 			},
 
@@ -1514,7 +1515,7 @@ func TestAccLinodeInstance_diskImageUpdate(t *testing.T) {
 	})
 }
 
-func TestAccLinodeInstance_stackScriptDisk(t *testing.T) {
+func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -1522,85 +1523,26 @@ func TestAccLinodeInstance_stackScriptDisk(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLinodeInstanceDestroy,
+		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckLinodeInstanceDiskStackScript(instanceName, publicKeyMaterial),
+				Config: testAccCheckLinodeInstanceDiskStackScript(instanceName, acceptance.PublicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLinodeInstanceExists(resName, &instance),
+					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					// resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					// resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					// resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-					// testAccCheckComputeInstanceDisk(&instance, "disk", 3000),
+					// checkComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckLinodeInstanceExists(name string, instance *linodego.Instance) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
-
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("Not found: %s", name)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		found, err := client.GetInstance(context.Background(), id)
-		if err != nil {
-			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
-		}
-
-		*instance = *found
-
-		return nil
-	}
-}
-
-func testAccCheckLinodeInstanceDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*helper.ProviderMeta).Client
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_instance" {
-			continue
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v as int", rs.Primary.ID)
-		}
-
-		if id == 0 {
-			return fmt.Errorf("should not have Linode ID 0")
-		}
-
-		_, err = client.GetInstance(context.Background(), id)
-
-		if err == nil {
-			return fmt.Errorf("should not find Linode ID %d existing after delete", id)
-		}
-
-		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Error getting Linode ID %d: %s", id, err)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.TestCheckFunc {
+func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -1616,7 +1558,7 @@ func testAccCheckLinodeInstanceAttributesPrivateNetworking(n string) resource.Te
 			return fmt.Errorf("should have an integer Linode ID: %s", err)
 		}
 
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 		if err != nil {
 			return err
 		}
@@ -1683,9 +1625,9 @@ func testDiskSize(size int) testDiskFunc {
 	}
 }
 
-func testAccCheckComputeInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc) resource.TestCheckFunc {
+func checkInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -1796,10 +1738,10 @@ func instanceDiskID(disk *linodego.InstanceDisk) string {
 	return strconv.Itoa(disk.ID)
 }
 
-// testAccCheckComputeInstanceConfigs verifies any configs exist and runs config specific tests against a target instance
-func testAccCheckComputeInstanceConfigs(instance *linodego.Instance, configsTests ...testConfigsFunc) resource.TestCheckFunc {
+// checkComputeInstanceConfigs verifies any configs exist and runs config specific tests against a target instance
+func checkComputeInstanceConfigs(instance *linodego.Instance, configsTests ...testConfigsFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching configs: invalid Instance argument")
@@ -1825,9 +1767,9 @@ func testAccCheckComputeInstanceConfigs(instance *linodego.Instance, configsTest
 	}
 }
 
-func testAccCheckLinodeInstanceDiskExists(instance *linodego.Instance, label string, instanceDisk *linodego.InstanceDisk) resource.TestCheckFunc {
+func checkInstanceDiskExists(instance *linodego.Instance, label string, instanceDisk *linodego.InstanceDisk) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -1854,9 +1796,9 @@ func testAccCheckLinodeInstanceDiskExists(instance *linodego.Instance, label str
 	}
 }
 
-func testAccCheckComputeInstanceDisk(instance *linodego.Instance, label string, size int) resource.TestCheckFunc {
+func checkComputeInstanceDisk(instance *linodego.Instance, label string, size int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")

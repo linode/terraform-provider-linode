@@ -48,7 +48,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	flattenedInstances := make([]map[string]interface{}, len(instances))
 	for i, instance := range instances {
-		instanceMap, err := flattenLinodeInstance(ctx, &client, &instance)
+		instanceMap, err := flattenInstance(ctx, &client, &instance)
 		if err != nil {
 			return diag.Errorf("failed to translate instance to map: %s", err)
 		}

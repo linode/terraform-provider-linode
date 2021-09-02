@@ -78,7 +78,7 @@ func createInstanceConfigsFromSet(
 			configOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
 
 			for i, ni := range interfaces {
-				configOpts.Interfaces[i] = expandLinodeConfigInterface(ni.(map[string]interface{}))
+				configOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
 			}
 		}
 
@@ -114,9 +114,14 @@ func createInstanceConfigsFromSet(
 	return configIDMap, nil
 }
 
-func updateInstanceConfigs(ctx context.Context, client linodego.Client, d *schema.ResourceData,
-	instance linodego.Instance, tfConfigsOld,
-	tfConfigsNew interface{}, diskIDLabelMap map[string]int, bootConfigLabel string,
+func updateInstanceConfigs(
+	ctx context.Context,
+	client linodego.Client,
+	d *schema.ResourceData,
+	instance linodego.Instance,
+	tfConfigsOld, tfConfigsNew interface{},
+	diskIDLabelMap map[string]int,
+	bootConfigLabel string,
 ) (bool, map[string]int, []*linodego.InstanceConfig, error) {
 	var updatedConfigMap map[string]int
 	var rebootInstance bool
@@ -189,7 +194,7 @@ func updateInstanceConfigs(ctx context.Context, client linodego.Client, d *schem
 
 				for i, ni := range interfaces {
 					mappedInterface := ni.(map[string]interface{})
-					configUpdateOpts.Interfaces[i] = expandLinodeConfigInterface(mappedInterface)
+					configUpdateOpts.Interfaces[i] = expandConfigInterface(mappedInterface)
 					if label == bootConfigLabel {
 						newBootInterfaces = append(newBootInterfaces, mappedInterface["ipam_address"].(string))
 					}
@@ -274,49 +279,6 @@ func deleteInstanceConfigs(
 		}
 	}
 	return newConfigLabels, nil
-}
-
-func flattenInstanceConfigDevice(
-	dev *linodego.InstanceConfigDevice, diskLabelIDMap map[int]string) []map[string]interface{} {
-	if dev == nil || emptyInstanceConfigDevice(*dev) {
-		return nil
-	}
-
-	if dev.DiskID > 0 {
-		ret := map[string]interface{}{
-			"disk_id": dev.DiskID,
-		}
-		if label, found := diskLabelIDMap[dev.DiskID]; found {
-			ret["disk_label"] = label
-		}
-		return []map[string]interface{}{ret}
-	}
-	return []map[string]interface{}{{
-		"volume_id": dev.VolumeID,
-	}}
-}
-
-// expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap
-// for the Linode API.
-func expandInstanceConfigDeviceMap(
-	m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
-	if len(m) == 0 {
-		return nil, nil
-	}
-	deviceMap = &linodego.InstanceConfigDeviceMap{}
-	for k, rdev := range m {
-		devSlots := rdev.([]interface{})
-		for _, rrdev := range devSlots {
-			dev := rrdev.(map[string]interface{})
-			tDevice := new(linodego.InstanceConfigDevice)
-			if err := assignConfigDevice(tDevice, dev, diskIDLabelMap); err != nil {
-				return nil, err
-			}
-
-			*deviceMap = changeInstanceConfigDevice(*deviceMap, k, tDevice)
-		}
-	}
-	return deviceMap, nil
 }
 
 // changeInstanceConfigDevice returns a copy of a config device map with the specified disk slot changed to the

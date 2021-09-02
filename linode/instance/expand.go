@@ -5,6 +5,29 @@ import (
 	"github.com/linode/linodego"
 )
 
+// expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap
+// for the Linode API.
+func expandInstanceConfigDeviceMap(
+	m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
+	if len(m) == 0 {
+		return nil, nil
+	}
+	deviceMap = &linodego.InstanceConfigDeviceMap{}
+	for k, rdev := range m {
+		devSlots := rdev.([]interface{})
+		for _, rrdev := range devSlots {
+			dev := rrdev.(map[string]interface{})
+			tDevice := new(linodego.InstanceConfigDevice)
+			if err := assignConfigDevice(tDevice, dev, diskIDLabelMap); err != nil {
+				return nil, err
+			}
+
+			*deviceMap = changeInstanceConfigDevice(*deviceMap, k, tDevice)
+		}
+	}
+	return deviceMap, nil
+}
+
 func expandStringList(list []interface{}) []string {
 	slice := make([]string, 0, len(list))
 	for _, s := range list {
@@ -48,7 +71,7 @@ func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConf
 	return dev
 }
 
-func expandLinodeConfigInterface(i map[string]interface{}) linodego.InstanceConfigInterface {
+func expandConfigInterface(i map[string]interface{}) linodego.InstanceConfigInterface {
 	result := linodego.InstanceConfigInterface{}
 
 	result.Label = i["label"].(string)

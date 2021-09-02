@@ -210,6 +210,65 @@ func CheckLKEClusterDestroy(s *terraform.State) error {
 	return nil
 }
 
+func CheckVolumeDestroy(s *terraform.State) error {
+	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_volume" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+		if id == 0 {
+			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
+
+		}
+
+		_, err = client.GetVolume(context.Background(), id)
+
+		if err == nil {
+			return fmt.Errorf("Linode Volume with id %d still exists", id)
+		}
+
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+			return fmt.Errorf("Error requesting Linode Volume with id %d", id)
+		}
+	}
+
+	return nil
+}
+
+func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+
+		found, err := client.GetVolume(context.Background(), id)
+		if err != nil {
+			return fmt.Errorf("Error retrieving state of Volume %s: %s", rs.Primary.Attributes["label"], err)
+		}
+
+		*volume = *found
+
+		return nil
+	}
+}
+
 func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
 	var b bytes.Buffer
 
