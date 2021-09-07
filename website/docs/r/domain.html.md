@@ -74,7 +74,7 @@ This resource exports no additional attributes, however `status` may reflect deg
 Linodes Domains can be imported using the Linode Domain `id`, e.g.
 
 ```sh
-terraform import linode_domain_record.foobar 1234567
+terraform import linode_domain.foobar 1234567
 ```
 
 The Linode Guide, [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/), offers resource importing examples for Domains and other Linode resource types.
