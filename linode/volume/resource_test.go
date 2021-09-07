@@ -10,6 +10,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/volume"
+	"github.com/linode/terraform-provider-linode/linode/volume/tmpl"
 )
 
 func init() {
@@ -77,7 +78,7 @@ func TestAccResourceVolume_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(volumeName),
+				Config: tmpl.Basic(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet(resName, "status"),
@@ -112,14 +113,14 @@ func TestAccResourceVolume_update(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(volumeName),
+				Config: tmpl.Basic(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists(resName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 				),
 			},
 			{
-				Config: resourceConfigUpdates(volumeName),
+				Config: tmpl.Updates(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists(resName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", volumeName)),
@@ -144,14 +145,14 @@ func TestAccResourceVolume_resized(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(volumeName),
+				Config: tmpl.Basic(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			{
-				Config: resourceConfigVolumeResized(volumeName),
+				Config: tmpl.Resized(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "size", "30"),
@@ -174,7 +175,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(volumeName),
+				Config: tmpl.Basic(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
@@ -182,7 +183,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigAttached(volumeName),
+				Config: tmpl.Attached(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet("linode_instance.foobar", "id"),
@@ -211,21 +212,21 @@ func TestAccResourceVolume_detached(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigAttached(volumeName),
+				Config: tmpl.Attached(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			{
-				Config:            resourceConfigAttached(volumeName),
+				Config:            tmpl.Attached(t, volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 			{
-				Config:            resourceConfigBasic(volumeName),
+				Config:            tmpl.Attached(t, volumeName),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -247,7 +248,7 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigAttached(volumeName),
+				Config: tmpl.Attached(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
@@ -255,7 +256,7 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigReattachedBetweenInstances(volumeName),
+				Config: tmpl.ReAttached(t, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 				),
@@ -274,98 +275,4 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 			},
 		},
 	})
-}
-
-func resourceConfigBasic(volume string) string {
-	return fmt.Sprintf(`
-resource "linode_volume" "foobar" {
-	label = "%s"
-	region = "us-west"
-	tags = ["tf_test"]
-}`, volume)
-}
-
-func resourceConfigUpdates(volume string) string {
-	return fmt.Sprintf(`
-resource "linode_volume" "foobar" {
-	label = "%s_r"
-	region = "us-west"
-	tags = ["tf_test", "tf_test_2"]
-}`, volume)
-}
-
-func resourceConfigVolumeResized(volume string) string {
-	return fmt.Sprintf(`
-resource "linode_volume" "foobar" {
-	label = "%s"
-	region = "us-west"
-	size = 30
-}`, volume)
-}
-
-func resourceConfigAttached(volume string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	type = "g6-nanode-1"
-	region = "us-west"
-
-	config {
-		label = "config"
-		kernel = "linode/latest-64bit"
-		devices {
-			sda {
-				volume_id = "${linode_volume.foobar.id}"
-			}
-		}
-	}
-}
-
-resource "linode_volume" "foobar" {
-	label = "%s"
-	region = "us-west"
-}`, volume)
-}
-
-func resourceConfigReattachedBetweenInstances(volume string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	type = "g6-nanode-1"
-	region = "us-west"
-
-	config {
-		label = "config"
-		kernel = "linode/latest-64bit"
-		devices {
-			sda {
-				volume_id = "${linode_volume.foobaz.id}"
-			}
-		}
-	}
-}
-
-resource "linode_instance" "foobaz" {
-	type = "g6-nanode-1"
-	region = "us-west"
-
-	config {
-		label = "config"
-		kernel = "linode/latest-64bit"
-		devices {
-			sda {
-				volume_id = "${linode_volume.foobar.id}"
-			}
-		}
-	}
-}
-
-resource "linode_volume" "foobar" {
-	label = "%s"
-	region = "us-west"
-}
-
-resource "linode_volume" "foobaz" {
-	label = "%s_baz"
-	region = "us-west"
-}
-`, volume, volume)
 }

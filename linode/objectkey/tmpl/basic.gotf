@@ -1,0 +1,7 @@
+{{ define "object_key_basic" }}
+
+resource "linode_object_storage_key" "foobar" {
+    label = "{{.Label}}"
+}
+
+{{ end }}

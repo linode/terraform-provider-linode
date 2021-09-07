@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/lke/tmpl"
 )
 
 const dataSourceClusterName = "data.linode_lke_cluster.test"
@@ -20,7 +21,7 @@ func TestAccDataSourceLinodeLKECluster_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(clusterName),
+				Config: tmpl.DataBasic(t, clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "region", "us-central"),
@@ -37,11 +38,4 @@ func TestAccDataSourceLinodeLKECluster_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(clusterName string) string {
-	return resourceConfigBasic(clusterName) + `
-data "linode_lke_cluster" "test" {
-	id = linode_lke_cluster.test.id
-}`
 }

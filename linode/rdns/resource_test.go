@@ -12,6 +12,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/rdns/tmpl"
 )
 
 func init() {
@@ -58,7 +59,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resouceConfigBasic(linodeLabel),
+				Config: tmpl.Basic(t, linodeLabel),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
@@ -85,7 +86,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resouceConfigBasic(label),
+				Config: tmpl.Basic(t, label),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
@@ -93,17 +94,17 @@ func TestAccResourceRDNS_update(t *testing.T) {
 				),
 			},
 			{
-				Config: configResourceChanged(label),
+				Config: tmpl.Changed(t, label),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
 				),
 			},
 			{
-				Config: configResourceDeleted(label),
+				Config: tmpl.Deleted(t, label),
 			},
 			{
-				Config: configResourceDeleted(label),
+				Config: tmpl.Deleted(t, label),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.members.linode.com$`)),
 				),
@@ -154,53 +155,4 @@ func checkRDNSDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resouceConfigBasic(label string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	image = "linode/alpine3.12"
-	type = "g6-standard-1"
-	region = "us-east"
-}
-
-resource "linode_rdns" "foobar" {
-	address = "${linode_instance.foobar.ip_address}"
-	rdns = "${linode_instance.foobar.ip_address}.nip.io"
-}`, label)
-}
-
-func configResourceChanged(label string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	image = "linode/alpine3.12"
-	type = "g6-standard-1"
-	region = "us-east"
-}
-
-resource "linode_rdns" "foobar" {
-	rdns    = "${replace(linode_instance.foobar.ip_address, ".", "-")}.nip.io"
-	address = "${linode_instance.foobar.ip_address}"
-}
-`, label)
-}
-
-func configResourceDeleted(label string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	image = "linode/alpine3.12"
-	type = "g6-standard-1"
-	region = "us-east"
-}
-
-data "linode_networking_ip" "foobar" {
-	address = "${linode_instance.foobar.ip_address}"
-}
-`, label)
 }

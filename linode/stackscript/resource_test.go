@@ -12,6 +12,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/stackscript/tmpl"
 )
 
 func init() {
@@ -58,7 +59,7 @@ func TestAccResourceStackscript_basic(t *testing.T) {
 		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(stackscriptName),
+				Config: tmpl.Basic(t, stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
@@ -88,7 +89,7 @@ func TestAccResourceStackscript_update(t *testing.T) {
 		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(stackscriptName),
+				Config: tmpl.Basic(t, stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
@@ -98,7 +99,7 @@ func TestAccResourceStackscript_update(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigBasicRenamed(stackscriptName),
+				Config: tmpl.Basic(t, stackscriptName+"_renamed"),
 				Check: resource.ComposeTestCheckFunc(
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
@@ -127,7 +128,7 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(stackscriptName),
+				Config: tmpl.Basic(t, stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
@@ -139,7 +140,7 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigStackscriptCodeChange(stackscriptName),
+				Config: tmpl.CodeChange(t, stackscriptName),
 				Check: resource.ComposeTestCheckFunc(
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
@@ -214,47 +215,4 @@ func checkStackscriptDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resourceConfigBasic(stackscript string) string {
-	return fmt.Sprintf(`
-resource "linode_stackscript" "foobar" {
-	label = "%s"
-	script = <<EOF
-#!/bin/bash
-echo hello
-EOF
-	images = ["linode/ubuntu18.04"]
-	description = "tf_test stackscript"
-	rev_note = "initial"
-}`, stackscript)
-}
-
-func resourceConfigBasicRenamed(stackscript string) string {
-	return fmt.Sprintf(`
-resource "linode_stackscript" "foobar" {
-	label = "%s_renamed"
-	script = <<EOF
-#!/bin/bash
-echo hello
-EOF
-	images = ["linode/ubuntu18.04"]
-	description = "tf_test stackscript"
-	rev_note = "initial"
-}`, stackscript)
-}
-
-func resourceConfigStackscriptCodeChange(stackscript string) string {
-	return fmt.Sprintf(`
-resource "linode_stackscript" "foobar" {
-	label = "%s"
-	script = <<EOF
-#!/bin/bash
-# <UDF name="hasudf" label="a label" example="an example" default="a default">
-echo bye
-EOF
-	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
-	description = "tf_test stackscript"
-	rev_note = "second"
-}`, stackscript)
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/token/tmpl"
 )
 
 func init() {
@@ -58,7 +59,7 @@ func TestAccResourceToken_basic(t *testing.T) {
 		CheckDestroy: checkTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(tokenName),
+				Config: tmpl.Basic(t, tokenName),
 				Check: resource.ComposeTestCheckFunc(
 					checkTokenExists,
 					resource.TestCheckResourceAttr(resName, "label", tokenName),
@@ -74,7 +75,7 @@ func TestAccResourceToken_basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"token"},
 			},
 			{
-				Config: resourceConfigUpdates(tokenName),
+				Config: tmpl.Updates(t, tokenName),
 				Check: resource.ComposeTestCheckFunc(
 					checkTokenExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", tokenName)),
@@ -134,22 +135,4 @@ func checkTokenDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resourceConfigBasic(token string) string {
-	return fmt.Sprintf(`
-	resource "linode_token" "foobar" {
-		label = "%s"
-		scopes = "linodes:read_only"
-		expiry = "2100-01-02T03:04:05Z"
-	}`, token)
-}
-
-func resourceConfigUpdates(token string) string {
-	return fmt.Sprintf(`
-	resource "linode_token" "foobar" {
-		label = "%s_renamed"
-		scopes = "linodes:read_only"
-		expiry = "2100-01-02T03:04:05Z"
-	}`, token)
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/domainrecord/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -26,7 +27,7 @@ func TestAccResourceDomainRecord_basic(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(domainRecordName),
+				Config: tmpl.Basic(t, domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
 					resource.TestCheckResourceAttr(resName, "name", domainRecordName),
@@ -54,7 +55,7 @@ func TestAccResourceDomainRecord_roundedTTLSec(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigWithTTL(domainRecordName, 299),
+				Config: tmpl.TTL(t, domainRecordName, 299),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
 					resource.TestCheckResourceAttr(resName, "name", domainRecordName),
@@ -83,7 +84,7 @@ func TestAccResourceDomainRecord_ANoName(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigANoName(domainName),
+				Config: tmpl.ANoName(t, domainName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "record_type", "A"),
 					resource.TestCheckResourceAttr(resName, "name", ""),
@@ -105,7 +106,7 @@ func TestAccResourceDomainRecord_AAAANoName(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigAAAANoName(domainName),
+				Config: tmpl.AAAANoName(t, domainName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "record_type", "AAAA"),
 					resource.TestCheckResourceAttr(resName, "name", ""),
@@ -127,7 +128,7 @@ func TestAccResourceDomainRecord_CAANoName(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigAANoName(domainName),
+				Config: tmpl.CAANoName(t, domainName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "record_type", "CAA"),
 					resource.TestCheckResourceAttr(resName, "name", ""),
@@ -152,7 +153,7 @@ func TestAccResourceDomainRecord_SRV(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigSRV(domainName, expectedTarget),
+				Config: tmpl.SRV(t, domainName, expectedTarget),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
 					resource.TestCheckResourceAttr(resName, "target", expectedTarget),
@@ -161,7 +162,7 @@ func TestAccResourceDomainRecord_SRV(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigSRV(domainName, expectedTargetExternal),
+				Config: tmpl.SRV(t, domainName, expectedTargetExternal),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
 					resource.TestCheckResourceAttr(resName, "target", expectedTargetExternal),
@@ -187,7 +188,7 @@ func TestAccResourceDomainRecord_SRVNoFQDN(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigSRV(domainName, "mysubdomain"),
+				Config: tmpl.SRV(t, domainName, "mysubdomain"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
 					resource.TestCheckResourceAttr(resName, "target", expectedTarget),
@@ -196,7 +197,7 @@ func TestAccResourceDomainRecord_SRVNoFQDN(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigSRV(domainName, "mysubdomainbutnew"),
+				Config: tmpl.SRV(t, domainName, "mysubdomainbutnew"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
 					resource.TestCheckResourceAttr(resName, "target", "mysubdomainbutnew."+domainName),
@@ -219,14 +220,14 @@ func TestAccResourceDomainRecord_update(t *testing.T) {
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(domainRecordName),
+				Config: tmpl.Basic(t, domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
 					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainRecordName),
 				),
 			},
 			{
-				Config: resourceConfigUpdates(domainRecordName),
+				Config: tmpl.Updates(t, domainRecordName),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
 					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", fmt.Sprintf("renamed-%s", domainRecordName)),
@@ -313,98 +314,4 @@ func checkDomainRecordDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func resourceConfigBasic(domainRecord string) string {
-	return configBasic(domainRecord+".example") + fmt.Sprintf(`
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	name = "%s"
-	record_type = "CNAME"
-	target = "target.%s.example"
-}`, domainRecord, domainRecord)
-}
-
-func resourceConfigWithTTL(domainRecord string, ttlSec int) string {
-	return configBasic(domainRecord+".example") + fmt.Sprintf(`
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	name = "%s"
-	record_type = "CNAME"
-	target = "target.%s.example"
-	ttl_sec = %d
-}`, domainRecord, domainRecord, ttlSec)
-}
-
-func resourceConfigUpdates(domainRecord string) string {
-	return configBasic(domainRecord+".example") + fmt.Sprintf(`
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	name = "renamed-%s"
-	record_type = "CNAME"
-	target = "target.%s.example"
-}`, domainRecord, domainRecord)
-}
-
-func resourceConfigSRVNoName(domainName string) string {
-	return configBasic(domainName) + fmt.Sprintf(`
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	record_type = "SRV"
-	target = "target.%s"
-}`, domainName)
-}
-
-func resourceConfigANoName(domainName string) string {
-	return configBasic(domainName) + `
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	record_type = "A"
-	target = "192.168.1.1"
-}`
-}
-
-func resourceConfigAAAANoName(domainName string) string {
-	return configBasic(domainName) + `
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	record_type = "AAAA"
-	target = "2400:3f00::22"
-}`
-}
-
-func resourceConfigAANoName(domainName string) string {
-	return configBasic(domainName) + fmt.Sprintf(`
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	record_type = "CAA"
-	target = "target.%s"
-	tag = "issue"
-}`, domainName)
-}
-
-func resourceConfigSRV(domainName string, target string) string {
-	return configBasic(domainName) + fmt.Sprintf(`
-resource "linode_domain_record" "foobar" {
-	domain_id = "${linode_domain.foobar.id}"
-	record_type = "SRV"
-	target      = "%s"
-	service     = "myservice"
-	protocol    = "tcp"
-	port        = 1001
-	priority    = 10
-	weight      = 0
-}`, target)
-}
-
-func configBasic(domain string) string {
-	return fmt.Sprintf(`
-resource "linode_domain" "foobar" {
-	domain = "%s"
-	type = "master"
-	status = "active"
-	soa_email = "example@%s"
-	description = "tf-testing"
-	tags = ["tf_test"]
-}`, domain, domain)
 }

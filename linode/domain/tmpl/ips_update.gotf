@@ -1,0 +1,11 @@
+{{ define "domain_ips_updates" }}
+
+resource "linode_domain" "foobar" {
+    domain = "{{.Domain}}"
+    type = "master"
+    soa_email = "example@{{.Domain}}"
+    master_ips = []
+    axfr_ips = []
+}
+
+{{ end }}

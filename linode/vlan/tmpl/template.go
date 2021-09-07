@@ -1,0 +1,20 @@
+package tmpl
+
+import (
+	"testing"
+
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
+)
+
+type TemplateData struct {
+	InstLabel string
+	VLANLabel string
+}
+
+func DataBasic(t *testing.T, instLabel, vlanLabel string) string {
+	return acceptance.ExecuteTemplate(t,
+		"vlan_data_basic", TemplateData{
+			InstLabel: instLabel,
+			VLANLabel: vlanLabel,
+		})
+}

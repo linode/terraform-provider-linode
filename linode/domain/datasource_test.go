@@ -1,13 +1,13 @@
 package domain_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/domain/tmpl"
 )
 
 func TestAccDataSourceDomain_basic(t *testing.T) {
@@ -23,10 +23,10 @@ func TestAccDataSourceDomain_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: configBasic(domainName),
+				Config: tmpl.Basic(t, domainName),
 			},
 			{
-				Config: configBasic(domainName) + basic(domainName),
+				Config: tmpl.DataBasic(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 					resource.TestCheckResourceAttr(resourceName, "type", "master"),
@@ -39,30 +39,16 @@ func TestAccDataSourceDomain_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: configBasic(domainName) + byID(),
+				Config: tmpl.DataByID(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 				),
 				Destroy: true,
 			},
 			{
-				Config:      basic(domainName),
+				Config:      tmpl.DataBasic(t, domainName),
 				ExpectError: regexp.MustCompile(domainName + " was not found"),
 			},
 		},
 	})
-}
-
-func basic(domainName string) string {
-	return fmt.Sprintf(`
-data "linode_domain" "foobar" {
-	domain = "%s"
-}`, domainName)
-}
-
-func byID() string {
-	return `
-data "linode_domain" "foobar" {
-	id = "${linode_domain.foobar.id}"
-}`
 }

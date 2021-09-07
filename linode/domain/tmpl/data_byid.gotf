@@ -1,0 +1,9 @@
+{{ define "domain_data_byid" }}
+
+{{ template "domain_basic" . }}
+
+data "linode_domain" "foobar" {
+    id = "${linode_domain.foobar.id}"
+}
+
+{{ end }}

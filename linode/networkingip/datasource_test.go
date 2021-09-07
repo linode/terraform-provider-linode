@@ -1,13 +1,13 @@
 package networkingip_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/networkingip/tmpl"
 )
 
 func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
@@ -23,12 +23,12 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(dataSourceConfigBasic(label), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, label), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(dataSourceConfigBasic(label), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, label), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -44,19 +44,4 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(label string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	image = "linode/alpine3.12"
-	type = "g6-standard-1"
-	region = "us-east"
-}
-
-data "linode_networking_ip" "foobar" {
-	address = "${linode_instance.foobar.ip_address}"
-}`, label)
 }

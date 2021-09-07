@@ -1,0 +1,12 @@
+{{ define "domain_record_updates" }}
+
+{{ template "domain_basic" .Domain }}
+
+resource "linode_domain_record" "foobar" {
+    domain_id = "${linode_domain.foobar.id}"
+    name = "renamed-{{.Record}}"
+    record_type = "CNAME"
+    target = "target.{{.Record}}.example"
+}
+
+{{ end }}

@@ -1,0 +1,43 @@
+{{ define "volume_reattached" }}
+
+resource "linode_instance" "foobar" {
+    type = "g6-nanode-1"
+    region = "us-west"
+
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        devices {
+            sda {
+                volume_id = "${linode_volume.foobaz.id}"
+            }
+        }
+    }
+}
+
+resource "linode_instance" "foobaz" {
+    type = "g6-nanode-1"
+    region = "us-west"
+
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        devices {
+            sda {
+                volume_id = "${linode_volume.foobar.id}"
+            }
+        }
+    }
+}
+
+resource "linode_volume" "foobar" {
+    label = "{{.Label}}"
+    region = "us-west"
+}
+
+resource "linode_volume" "foobaz" {
+    label = "{{.Label}}_baz"
+    region = "us-west"
+}
+
+{{ end }}

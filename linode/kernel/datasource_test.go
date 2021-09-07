@@ -1,11 +1,11 @@
 package kernel_test
 
 import (
-	"fmt"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/kernel/tmpl"
+
+	"testing"
 )
 
 func TestAccDataSourceKernel_basic(t *testing.T) {
@@ -19,7 +19,7 @@ func TestAccDataSourceKernel_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(kernelID),
+				Config: tmpl.DataBasic(t, kernelID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", kernelID),
 					resource.TestCheckResourceAttrSet(resourceName, "label"),
@@ -34,11 +34,4 @@ func TestAccDataSourceKernel_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(kernelID string) string {
-	return fmt.Sprintf(`
-data "linode_kernel" "foobar" {
-	id = "%s"
-}`, kernelID)
 }

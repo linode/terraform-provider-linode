@@ -1,0 +1,17 @@
+{{ define "user_grants" }}
+
+resource "linode_user" "test" {
+    username = "{{.Username}}"
+    email = "{{.Email}}"
+    restricted = true
+
+    global_grants {
+        add_linodes = true
+        add_nodebalancers = true
+        add_domains = true
+        add_firewalls = true
+    }
+}
+
+{{ end }}
+

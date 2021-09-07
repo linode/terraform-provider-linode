@@ -1,11 +1,11 @@
 package image_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/image/tmpl"
 )
 
 func TestAccDataSourceImage_basic(t *testing.T) {
@@ -19,7 +19,7 @@ func TestAccDataSourceImage_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(imageID),
+				Config: tmpl.DataBasic(t, imageID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", imageID),
 					resource.TestCheckResourceAttr(resourceName, "label", "Debian 8"),
@@ -32,11 +32,4 @@ func TestAccDataSourceImage_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(imageID string) string {
-	return fmt.Sprintf(`
-data "linode_image" "foobar" {
-	id = "%s"
-}`, imageID)
 }

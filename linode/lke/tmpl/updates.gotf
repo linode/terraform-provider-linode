@@ -1,0 +1,15 @@
+{{ define "lke_cluster_updates" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "us-central"
+    k8s_version = "1.20"
+    tags        = ["test", "new_tag"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 4
+    }
+}
+
+{{ end }}

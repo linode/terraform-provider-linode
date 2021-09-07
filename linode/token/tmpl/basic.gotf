@@ -1,0 +1,9 @@
+{{ define "token_basic" }}
+
+resource "linode_token" "foobar" {
+    label = "{{.Label}}"
+    scopes = "linodes:read_only"
+    expiry = "2100-01-02T03:04:05Z"
+}
+
+{{ end }}
