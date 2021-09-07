@@ -78,15 +78,6 @@ func flattenInstance(
 	return result, nil
 }
 
-func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
-	return []map[string]int{{
-		"vcpus":    instance.Specs.VCPUs,
-		"disk":     instance.Specs.Disk,
-		"memory":   instance.Specs.Memory,
-		"transfer": instance.Specs.Transfer,
-	}}
-}
-
 func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
 	return []map[string]int{{
 		"cpu":            instance.Alerts.CPU,
@@ -196,4 +187,13 @@ func flattenConfigInterface(i linodego.InstanceConfigInterface) map[string]inter
 	result["ipam_address"] = i.IPAMAddress
 
 	return result
+}
+
+func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
+	return []map[string]int{{
+		"vcpus":    instance.Specs.VCPUs,
+		"disk":     instance.Specs.Disk,
+		"memory":   instance.Specs.Memory,
+		"transfer": instance.Specs.Transfer,
+	}}
 }
