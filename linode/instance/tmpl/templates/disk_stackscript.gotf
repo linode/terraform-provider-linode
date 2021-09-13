@@ -1,0 +1,46 @@
+{{ define "instance_disk_stackscript" }}
+
+resource "linode_stackscript" "foo-script" {
+    label = "foo-label"
+    description = "Installs a Package"
+
+    script = <<EOF
+#!/bin/bash
+# <UDF name="hello" label="Hiya" example="example" default="">
+echo "hello this is a stack script"
+	EOF
+    images = ["linode/debian9"]
+    rev_note = "hello version"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "us-east"
+    group = "tf_test"
+
+    disk {
+        label = "disk"
+        image = "linode/debian9"
+        root_pass = "b4d_p4s5"
+        authorized_keys = ["{{.PubKey}}"]
+        size = 3000
+        stackscript_id = "${linode_stackscript.foo-script.id}"
+        stackscript_data = {
+            "hello" = "world"
+        }
+    }
+
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        devices {
+            sda {
+                disk_label = "disk"
+            }
+        }
+    }
+
+}
+
+{{ end }}

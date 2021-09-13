@@ -1,0 +1,14 @@
+{{ define "instance_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+    swap_size = 256
+    authorized_keys = ["{{.PubKey}}"]
+}
+
+{{ end }}

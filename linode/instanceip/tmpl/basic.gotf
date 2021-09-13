@@ -1,0 +1,17 @@
+{{ define "instance_ip_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    image = "linode/alpine3.14"
+}
+
+resource "linode_instance_ip" "test" {
+    linode_id = linode_instance.foobar.id
+    public = true
+    apply_immediately = {{.ApplyImmediately}}
+}
+
+{{ end }}

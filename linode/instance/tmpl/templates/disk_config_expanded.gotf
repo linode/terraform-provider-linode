@@ -1,0 +1,28 @@
+{{ define "instance_disk_config_expanded" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-standard-1"
+    region = "us-east"
+    group = "tf_test"
+
+    disk {
+        label = "disk"
+        image = "linode/ubuntu18.04"
+        root_pass = "terraform-test"
+        authorized_keys = ["{{.PubKey}}"]
+        size = 51200
+    }
+
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        devices {
+            sda {
+                disk_label = "disk"
+            }
+        }
+    }
+}
+
+{{ end }}

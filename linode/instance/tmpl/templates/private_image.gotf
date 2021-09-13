@@ -1,0 +1,45 @@
+{{ define "instance_private_image" }}
+
+resource "linode_instance" "foobar-orig" {
+    label = "{{.Label}}-orig"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    disk {
+        label = "disk"
+        size = 1000
+        filesystem = "ext4"
+    }
+}
+
+resource "linode_image" "foobar" {
+    linode_id = "${linode_instance.foobar-orig.id}"
+    disk_id = "${linode_instance.foobar-orig.disk.0.id}"
+    label = "{{.Label}}"
+    description = "descriptive text"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    disk {
+        label = "boot"
+        size = 1000
+        filesystem = "ext4"
+        image = "${linode_image.foobar.id}"
+    }
+    disk {
+        label = "swap"
+        size = 800
+        filesystem = "ext4"
+    }
+    disk {
+        label = "logs"
+        size = 600
+        filesystem = "ext4"
+    }
+}
+
+{{ end }}

@@ -1,14 +1,13 @@
 package instanceip_test
 
 import (
-	"fmt"
 	"testing"
-
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/instanceip/tmpl"
 )
 
 const testInstanceIPResName = "linode_instance_ip.test"
@@ -25,7 +24,7 @@ func TestAccInstanceIP_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(name, true),
+				Config: tmpl.Basic(t, name, true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -41,7 +40,7 @@ func TestAccInstanceIP_basic(t *testing.T) {
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, true, &instance)
 				},
-				Config: resourceConfigBasic(name, true),
+				Config: tmpl.Basic(t, name, true),
 			},
 		},
 	})
@@ -59,7 +58,7 @@ func TestAccInstanceIP_noboot(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigNoBoot(name, true),
+				Config: tmpl.NoBoot(t, name, true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -72,7 +71,7 @@ func TestAccInstanceIP_noboot(t *testing.T) {
 				),
 			},
 			{
-				Config: resourceConfigNoBoot(name, true),
+				Config: tmpl.NoBoot(t, name, true),
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
@@ -93,7 +92,7 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceConfigBasic(name, false),
+				Config: tmpl.Basic(t, name, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -109,45 +108,8 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
-				Config: resourceConfigBasic(name, false),
+				Config: tmpl.Basic(t, name, false),
 			},
 		},
 	})
-}
-
-func instanceConfigBasic(label string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	type = "g6-nanode-1"
-	region = "us-east"
-	image = "linode/alpine3.14"
-}`, label)
-}
-
-func resourceConfigBasic(label string, applyImmediately bool) string {
-	return instanceConfigBasic(label) + fmt.Sprintf(`
-resource "linode_instance_ip" "test" {
-	linode_id = linode_instance.foobar.id
-	public = true
-	apply_immediately = %t
-}`, applyImmediately)
-}
-
-func resourceConfigNoBoot(label string, applyImmediately bool) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	type = "g6-nanode-1"
-	region = "us-east"
-}
-
-resource "linode_instance_ip" "test" {
-	linode_id = linode_instance.foobar.id
-	public = true
-	apply_immediately = %t
-}
-`, label, applyImmediately)
 }

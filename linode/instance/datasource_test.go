@@ -1,12 +1,12 @@
 package instance_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
 )
 
 func TestAccDataSourceInstances_basic(t *testing.T) {
@@ -21,7 +21,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigBasic(instanceName),
+				Config: tmpl.DataBasic(t, instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.type", "g6-nanode-1"),
@@ -51,102 +51,11 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: dataSourceConfigMultipleInstances(instanceName, groupName),
+				Config: tmpl.DataMultiple(t, instanceName, groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
 				),
 			},
 		},
 	})
-}
-
-func dataSourceConfigBasic(instance string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar" {
-	label = "%s"
-	group = "tf_test"
-	tags = ["cool", "cooler"]
-	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
-	region = "us-southeast"
-	root_pass = "terraform-test"
-	swap_size = 256
-	private_ip = true
-
-}
-`, instance) + `
-data "linode_instances" "foobar" {
-	filter {
-		name = "id"
-		values = [linode_instance.foobar.id]
-	}
-
-	filter {
-		name = "label"
-		values = [linode_instance.foobar.label, "other-label"]
-	}
-
-	filter {
-		name = "group"
-		values = [linode_instance.foobar.group]
-	}
-
-	filter {
-		name = "region"
-		values = [linode_instance.foobar.region]
-	}
-
-	filter {
-		name = "tags"
-		values = linode_instance.foobar.tags
-	}
-}
-`
-}
-
-func dataSourceConfigMultipleInstances(instance, groupName string) string {
-	return fmt.Sprintf(`
-resource "linode_instance" "foobar-0" {
-	label = "%s-0"
-	group = "%s"
-	tags = ["cool", "cooler"]
-	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
-	region = "us-east"
-	root_pass = "terraform-test"
-}
-
-resource "linode_instance" "foobar-1" {
-	label = "%s-1"
-	group = "%s"
-	tags = ["cool", "cooler"]
-	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
-	region = "us-east"
-	root_pass = "terraform-test"
-}
-
-resource "linode_instance" "foobar-2" {
-	label = "%s-2"
-	group = "%s"
-	tags = ["cool", "cooler"]
-	type = "g6-nanode-1"
-	image = "linode/ubuntu18.04"
-	region = "us-east"
-	root_pass = "terraform-test"
-}
-`, instance, groupName, instance, groupName, instance, groupName) + `
-data "linode_instances" "foobar" {
-	depends_on = [
-		linode_instance.foobar-0,
-		linode_instance.foobar-1,
-		linode_instance.foobar-2
-	]
-
-	filter {
-		name = "group"
-		values = [linode_instance.foobar-0.group]
-	}
-}
-`
 }

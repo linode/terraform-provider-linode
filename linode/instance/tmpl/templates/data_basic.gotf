@@ -1,0 +1,43 @@
+{{ define "instance_data_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    tags = ["cool", "cooler"]
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-southeast"
+    root_pass = "terraform-test"
+    swap_size = 256
+    private_ip = true
+
+}
+
+data "linode_instances" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_instance.foobar.id]
+    }
+
+    filter {
+        name = "label"
+        values = [linode_instance.foobar.label, "other-label"]
+    }
+
+    filter {
+        name = "group"
+        values = [linode_instance.foobar.group]
+    }
+
+    filter {
+        name = "region"
+        values = [linode_instance.foobar.region]
+    }
+
+    filter {
+        name = "tags"
+        values = linode_instance.foobar.tags
+    }
+}
+
+{{ end }}

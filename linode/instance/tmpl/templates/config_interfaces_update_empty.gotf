@@ -1,0 +1,35 @@
+{{ define "instance_config_interfaces_update_empty" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+    alerts {
+        cpu = 60
+    }
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+        helpers {
+            network = true
+        }
+        devices {
+            sda {
+                disk_label = "boot"
+            }
+        }
+    }
+
+    disk {
+        label = "boot"
+        size = 3000
+        image  = "linode/ubuntu18.04"
+        root_pass = "terr4form-test"
+    }
+
+    boot_config_label = "config"
+}
+
+{{ end }}

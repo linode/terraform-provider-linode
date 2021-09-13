@@ -1,0 +1,23 @@
+{{ define "instance_with_config" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    alerts {
+        cpu = 60
+    }
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+        helpers {
+            network = true
+        }
+    }
+
+    boot_config_label = "config"
+}
+
+{{ end }}
