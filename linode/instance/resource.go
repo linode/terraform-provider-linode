@@ -98,6 +98,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	flatBackups := flattenInstanceBackups(*instance)
 
 	d.Set("backups", flatBackups)
+	d.Set("backups_enabled", instance.Backups.Enabled)
+
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 

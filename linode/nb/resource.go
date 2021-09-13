@@ -144,3 +144,50 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	return nil
 }
+
+func resourceNodeBalancerV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"transfer": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+		},
+	}
+}
+
+func resourceNodeBalancerV0Upgrade(ctx context.Context,
+	rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	oldTransfer, ok := rawState["transfer"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("failed to upgrade state: transfer key does not exist")
+	}
+
+	newTransfer := []map[string]interface{}{
+		{
+			"in":    0.0,
+			"out":   0.0,
+			"total": 0.0,
+		},
+	}
+
+	for key, val := range oldTransfer {
+		val := val.(string)
+
+		// This is necessary because it is possible old versions of the state have empty transfer fields
+		// that must default to zero.
+		if val == "" {
+			continue
+		}
+
+		result, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to upgrade state: %v", err)
+		}
+
+		newTransfer[0][key] = result
+	}
+
+	rawState["transfer"] = newTransfer
+	return rawState, nil
+}
