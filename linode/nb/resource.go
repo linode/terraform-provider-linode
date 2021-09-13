@@ -29,6 +29,7 @@ func Resource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Type:    ResourceNodeBalancerV0().CoreConfigSchema().ImpliedType(),
