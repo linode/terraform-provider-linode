@@ -17,6 +17,7 @@ tooldeps:
 lint: fmtcheck
 	golangci-lint run
 	tfproviderlint \
+		-AT001=false \
 		-S006=false \
 		-R018=false \
 		-R019=false \
