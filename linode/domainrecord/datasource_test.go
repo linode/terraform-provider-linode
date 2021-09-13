@@ -14,7 +14,7 @@ func TestAccDataSourceDomainRecord_basic(t *testing.T) {
 	domain := acctest.RandomWithPrefix("recordtest") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -37,7 +37,7 @@ func TestAccDataSourceDomainRecord_idLookup(t *testing.T) {
 	domain := acctest.RandomWithPrefix("idloikup") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -58,7 +58,7 @@ func TestAccDataSourceDomainRecord_srv(t *testing.T) {
 	domain := acctest.RandomWithPrefix("srv") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -83,7 +83,7 @@ func TestAccDataSourceDomainRecord_caa(t *testing.T) {
 	domain := acctest.RandomWithPrefix("caa") + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{

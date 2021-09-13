@@ -17,7 +17,7 @@ func TestAccDataSourceFirewall_basic(t *testing.T) {
 	firewallName := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{

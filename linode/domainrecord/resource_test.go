@@ -22,7 +22,7 @@ func TestAccResourceDomainRecord_basic(t *testing.T) {
 	domainRecordName := acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
@@ -50,7 +50,7 @@ func TestAccResourceDomainRecord_roundedTTLSec(t *testing.T) {
 	domainRecordName := acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
@@ -79,7 +79,7 @@ func TestAccResourceDomainRecord_ANoName(t *testing.T) {
 	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
@@ -101,7 +101,7 @@ func TestAccResourceDomainRecord_AAAANoName(t *testing.T) {
 	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
@@ -123,7 +123,7 @@ func TestAccResourceDomainRecord_CAANoName(t *testing.T) {
 	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
@@ -148,7 +148,7 @@ func TestAccResourceDomainRecord_SRV(t *testing.T) {
 	expectedTargetExternal := "subdomain.example.com"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
@@ -183,7 +183,7 @@ func TestAccResourceDomainRecord_SRVNoFQDN(t *testing.T) {
 	expectedTarget := "mysubdomain." + domainName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
@@ -215,7 +215,7 @@ func TestAccResourceDomainRecord_update(t *testing.T) {
 	domainRecordName := acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDomainRecordDestroy,
 		Steps: []resource.TestStep{

@@ -55,7 +55,7 @@ func TestAccResourceDomain_basic(t *testing.T) {
 	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
@@ -93,7 +93,7 @@ func TestAccResourceDomain_update(t *testing.T) {
 	var resName = "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
@@ -125,7 +125,7 @@ func TestAccResourceDomain_roundedDomainSecs(t *testing.T) {
 	var resName = "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
@@ -155,7 +155,7 @@ func TestAccResourceDomain_updateIPs(t *testing.T) {
 	var resName = "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{

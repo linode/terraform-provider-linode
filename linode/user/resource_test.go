@@ -22,7 +22,7 @@ func TestAccResourceUser_basic(t *testing.T) {
 	username := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
@@ -47,7 +47,7 @@ func TestAccResourceUser_updates(t *testing.T) {
 	updatedUsername := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{
@@ -83,7 +83,7 @@ func TestAccResourceUser_grants(t *testing.T) {
 
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkUserDestroy,
 		Steps: []resource.TestStep{

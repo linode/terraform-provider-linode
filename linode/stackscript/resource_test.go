@@ -54,7 +54,7 @@ func TestAccResourceStackscript_basic(t *testing.T) {
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
@@ -84,7 +84,7 @@ func TestAccResourceStackscript_update(t *testing.T) {
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
 	var resName = "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{
@@ -123,7 +123,7 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 	var stackscriptName = acctest.RandomWithPrefix("tf_test")
 	var resName = "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkStackscriptDestroy,
 		Steps: []resource.TestStep{

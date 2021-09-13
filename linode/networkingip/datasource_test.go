@@ -19,7 +19,7 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 	label := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{

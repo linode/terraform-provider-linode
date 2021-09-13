@@ -23,7 +23,7 @@ resource "linode_firewall" "my_firewall" {
     protocol = "TCP"
     ports    = "80"
     ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["ff00::/8"]
+    ipv6     = ["::/0"]
   }
   
   inbound {
@@ -32,7 +32,7 @@ resource "linode_firewall" "my_firewall" {
     protocol = "TCP"
     ports    = "443"
     ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["ff00::/8"]
+    ipv6     = ["::/0"]
   }
   
   inbound_policy = "DROP"
@@ -43,7 +43,7 @@ resource "linode_firewall" "my_firewall" {
     protocol = "TCP"
     ports    = "80"
     ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["ff00::/8"]
+    ipv6     = ["::/0"]
   }
   
   outbound {
@@ -52,7 +52,7 @@ resource "linode_firewall" "my_firewall" {
     protocol = "TCP"
     ports    = "443"
     ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["ff00::/8"]
+    ipv6     = ["::/0"]
   }
   
   outbound_policy = "ACCEPT"

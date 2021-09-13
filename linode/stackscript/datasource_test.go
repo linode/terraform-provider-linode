@@ -20,7 +20,7 @@ func TestAccDataSourceStackscript_basic(t *testing.T) {
 	resourceName := "data.linode_stackscript.stackscript"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{

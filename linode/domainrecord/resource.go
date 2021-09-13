@@ -27,25 +27,30 @@ func Resource() *schema.Resource {
 }
 
 func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	if strings.Contains(d.Id(), ",") {
-		s := strings.Split(d.Id(), ",")
-		// Validate that this is an ID by making sure it can be converted into an int
-		_, err := strconv.Atoi(s[1])
-		if err != nil {
-			return nil, fmt.Errorf("invalid domain_record ID: %v", err)
-		}
-
-		domainID, err := strconv.Atoi(s[0])
-		if err != nil {
-			return nil, fmt.Errorf("invalid domain ID: %v", err)
-		}
-
-		d.SetId(s[1])
-		d.Set("domain_id", domainID)
+	if !strings.Contains(d.Id(), ",") {
+		return nil, fmt.Errorf("failed to parse argument: %v", d.Id())
 	}
 
-	err := readResource(ctx, d, meta)
+	s := strings.Split(d.Id(), ",")
+
+	if len(s) != 2 {
+		return nil, fmt.Errorf("invalid number of arguments: %v", len(s))
+	}
+	// Validate that this is an ID by making sure it can be converted into an int
+	_, err := strconv.Atoi(s[1])
 	if err != nil {
+		return nil, fmt.Errorf("invalid domain_record ID: %v", err)
+	}
+
+	domainID, err := strconv.Atoi(s[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid domain ID: %v", err)
+	}
+
+	d.SetId(s[1])
+	d.Set("domain_id", domainID)
+
+	if err := readResource(ctx, d, meta); err != nil {
 		return nil, fmt.Errorf("unable to import %v as domain_record: %v", d.Id(), err)
 	}
 

@@ -1,7 +1,0 @@
-{{ define "template_basic" }}
-
-resource "linode_template" "foobar" {
-    label = "{{.Label}}"
-}
-
-{{ end }}

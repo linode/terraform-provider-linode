@@ -54,7 +54,7 @@ func TestAccResourceToken_basic(t *testing.T) {
 	var tokenName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkTokenDestroy,
 		Steps: []resource.TestStep{
