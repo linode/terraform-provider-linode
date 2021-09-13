@@ -24,7 +24,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 	var snapshot *linodego.InstanceSnapshot
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{

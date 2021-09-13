@@ -66,7 +66,7 @@ func TestAccImage_basic(t *testing.T) {
 	var ImageName = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
@@ -101,7 +101,7 @@ func TestAccImage_update(t *testing.T) {
 	var resName = "linode_image.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
@@ -152,7 +152,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 	var image linodego.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{

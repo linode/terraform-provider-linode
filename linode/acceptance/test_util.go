@@ -86,7 +86,7 @@ func TestProvider(t *testing.T) {
 	}
 }
 
-func TestAccPreCheck(t *testing.T) {
+func PreCheck(t *testing.T) {
 	if v := os.Getenv("LINODE_TOKEN"); v == "" {
 		t.Fatal("LINODE_TOKEN must be set for acceptance tests")
 	}
@@ -144,7 +144,7 @@ func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 	return
 }
 
-func TestAccCheckResourceAttrNotEqual(resName string, path, notValue string) resource.TestCheckFunc {
+func CheckResourceAttrNotEqual(resName string, path, notValue string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resName]
 		if !ok {
@@ -155,26 +155,6 @@ func TestAccCheckResourceAttrNotEqual(resName string, path, notValue string) res
 			return fmt.Errorf("attribute %s does not exist", path)
 		} else if value == notValue {
 			return fmt.Errorf("attribute was equal")
-		}
-
-		return nil
-	}
-}
-
-func TestAccCheckResourceNonEmptyList(resourceName, attrName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("not found: %s", resourceName)
-		}
-
-		instCount, err := strconv.Atoi(rs.Primary.Attributes[fmt.Sprintf("%s.#", attrName)])
-		if err != nil {
-			return fmt.Errorf("failed to parse: %s", err)
-		}
-
-		if instCount < 1 {
-			return fmt.Errorf("expected at least 1 element in %s", attrName)
 		}
 
 		return nil

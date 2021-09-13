@@ -74,7 +74,8 @@ func CheckInstanceDestroy(s *terraform.State) error {
 func AssertInstanceReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
 	return func() {
 		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
-		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
+		eventFilter := fmt.Sprintf(
+			`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})

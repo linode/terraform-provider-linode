@@ -20,7 +20,7 @@ func TestAccInstanceIP_basic(t *testing.T) {
 
 	name := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -54,7 +54,7 @@ func TestAccInstanceIP_noboot(t *testing.T) {
 
 	name := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -88,7 +88,7 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 
 	name := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{

@@ -19,7 +19,7 @@ func TestAccDataSourceDomain_basic(t *testing.T) {
 	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{

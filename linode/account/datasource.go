@@ -10,8 +10,8 @@ import (
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: readDataSource,
 		Schema:      dataSourceSchema,
+		ReadContext: readDataSource,
 	}
 }
 

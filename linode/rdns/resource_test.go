@@ -54,7 +54,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 	var linodeLabel = acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
@@ -81,7 +81,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 	resName := "linode_rdns.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{

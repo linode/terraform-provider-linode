@@ -51,23 +51,3 @@ func expandConfigInterface(i map[string]interface{}) linodego.InstanceConfigInte
 
 	return result
 }
-
-func expandStringList(list []interface{}) []string {
-	slice := make([]string, 0, len(list))
-	for _, s := range list {
-		if val, ok := s.(string); ok && val != "" {
-			slice = append(slice, val)
-		}
-	}
-	return slice
-}
-
-func expandIntList(list []interface{}) []int {
-	slice := make([]int, 0, len(list))
-	for _, n := range list {
-		if val, ok := n.(int); ok {
-			slice = append(slice, val)
-		}
-	}
-	return slice
-}

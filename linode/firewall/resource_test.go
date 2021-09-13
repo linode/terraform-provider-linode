@@ -53,7 +53,7 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
@@ -108,7 +108,7 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
@@ -149,7 +149,7 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
@@ -223,7 +223,7 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
@@ -263,7 +263,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
@@ -351,7 +351,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{

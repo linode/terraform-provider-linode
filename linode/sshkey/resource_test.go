@@ -54,7 +54,7 @@ func TestAccResourceSSHKey_basic(t *testing.T) {
 	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
@@ -83,7 +83,7 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkSSHKeyDestroy,
 		Steps: []resource.TestStep{

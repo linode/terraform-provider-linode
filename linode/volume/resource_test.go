@@ -73,7 +73,7 @@ func TestAccResourceVolume_basic(t *testing.T) {
 	var volumeName = acctest.RandomWithPrefix("tf_test")
 	var volume = linodego.Volume{}
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -108,7 +108,7 @@ func TestAccResourceVolume_update(t *testing.T) {
 	var resName = "linode_volume.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -140,7 +140,7 @@ func TestAccResourceVolume_resized(t *testing.T) {
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -170,7 +170,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -207,7 +207,7 @@ func TestAccResourceVolume_detached(t *testing.T) {
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
@@ -243,7 +243,7 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 	var volume = linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{

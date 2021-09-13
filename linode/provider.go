@@ -9,10 +9,6 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
-	"github.com/linode/terraform-provider-linode/linode/balancer"
-	"github.com/linode/terraform-provider-linode/linode/balancerconfig"
-	"github.com/linode/terraform-provider-linode/linode/balancernode"
-	"github.com/linode/terraform-provider-linode/linode/bucket"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
@@ -24,10 +20,14 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lke"
+	"github.com/linode/terraform-provider-linode/linode/nb"
+	"github.com/linode/terraform-provider-linode/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
-	"github.com/linode/terraform-provider-linode/linode/object"
-	"github.com/linode/terraform-provider-linode/linode/objectcluster"
-	"github.com/linode/terraform-provider-linode/linode/objectkey"
+	"github.com/linode/terraform-provider-linode/linode/obj"
+	"github.com/linode/terraform-provider-linode/linode/objbucket"
+	"github.com/linode/terraform-provider-linode/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/profile"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
@@ -129,10 +129,10 @@ func Provider() *schema.Provider {
 			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_networking_ip":          networkingip.DataSource(),
-			"linode_nodebalancer":           balancer.DataSource(),
-			"linode_nodebalancer_node":      balancernode.DataSource(),
-			"linode_nodebalancer_config":    balancerconfig.DataSource(),
-			"linode_object_storage_cluster": objectcluster.DataSource(),
+			"linode_nodebalancer":           nb.DataSource(),
+			"linode_nodebalancer_node":      nbnode.DataSource(),
+			"linode_nodebalancer_config":    nbconfig.DataSource(),
+			"linode_object_storage_cluster": objcluster.DataSource(),
 			"linode_profile":                profile.DataSource(),
 			"linode_region":                 region.DataSource(),
 			"linode_sshkey":                 sshkey.DataSource(),
@@ -150,12 +150,12 @@ func Provider() *schema.Provider {
 			"linode_instance":              instance.Resource(),
 			"linode_instance_ip":           instanceip.Resource(),
 			"linode_lke_cluster":           lke.Resource(),
-			"linode_nodebalancer":          balancer.Resource(),
-			"linode_nodebalancer_node":     balancernode.Resource(),
-			"linode_nodebalancer_config":   balancerconfig.Resource(),
-			"linode_object_storage_key":    objectkey.Resource(),
-			"linode_object_storage_bucket": bucket.Resource(),
-			"linode_object_storage_object": object.Resource(),
+			"linode_nodebalancer":          nb.Resource(),
+			"linode_nodebalancer_node":     nbnode.Resource(),
+			"linode_nodebalancer_config":   nbconfig.Resource(),
+			"linode_object_storage_key":    objkey.Resource(),
+			"linode_object_storage_bucket": objbucket.Resource(),
+			"linode_object_storage_object": obj.Resource(),
 			"linode_rdns":                  rdns.Resource(),
 			"linode_sshkey":                sshkey.Resource(),
 			"linode_stackscript":           stackscript.Resource(),

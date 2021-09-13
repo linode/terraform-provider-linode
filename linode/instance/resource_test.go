@@ -58,7 +58,7 @@ func TestAccResourceInstance_basic(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -91,7 +91,7 @@ func TestAccResourceInstance_watchdogDisabled(t *testing.T) {
 	resName := "linode_instance.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -118,7 +118,7 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -153,7 +153,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -208,7 +208,7 @@ func TestAccResourceInstance_config(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -246,7 +246,7 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -283,7 +283,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -372,7 +372,7 @@ func TestAccResourceInstance_disk(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 
@@ -412,7 +412,7 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 
@@ -450,7 +450,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -488,7 +488,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -528,7 +528,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:  func() { acceptance.PreCheck(t) },
 		Providers: acceptance.TestAccProviders,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			acceptance.CheckInstanceDestroy,
@@ -578,7 +578,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -619,7 +619,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -656,7 +656,7 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -687,7 +687,7 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -718,7 +718,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -783,7 +783,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -876,7 +876,7 @@ func TestAccResourceInstance_upsizeWithoutDisk(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -913,7 +913,7 @@ func TestAccResourceInstance_diskRawResize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -958,7 +958,7 @@ func TestAccResourceInstance_tag(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -992,7 +992,7 @@ func TestAccResourceInstance_diskRawDeleted(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1034,7 +1034,7 @@ func TestAccResourceInstance_diskResize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1075,7 +1075,7 @@ func TestAccResourceInstance_withDiskLinodeUpsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1116,7 +1116,7 @@ func TestAccResourceInstance_withDiskLinodeDownsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1158,7 +1158,7 @@ func TestAccResourceInstance_downsizeWithoutDisk(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 
@@ -1190,7 +1190,7 @@ func TestAccResourceInstance_fullDiskSwapUpsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 
@@ -1253,7 +1253,7 @@ func TestAccResourceInstance_swapUpsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1289,7 +1289,7 @@ func TestAccResourceInstance_swapDownsize(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1324,7 +1324,7 @@ func TestAccResourceInstance_diskResizeAndExpanded(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1371,7 +1371,7 @@ func TestAccResourceInstance_diskSlotReorder(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1426,7 +1426,7 @@ func TestAccResourceInstance_privateNetworking(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1450,7 +1450,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1484,7 +1484,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -1501,7 +1501,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					// resource was tainted for recreation due to change of disk.0.image, marked
 					// with ForceNew.
-					acceptance.TestAccCheckResourceAttrNotEqual(resName, "id", strconv.Itoa(instance.ID)),
+					acceptance.CheckResourceAttrNotEqual(resName, "id", strconv.Itoa(instance.ID)),
 				),
 			},
 
@@ -1523,7 +1523,7 @@ func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{

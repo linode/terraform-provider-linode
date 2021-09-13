@@ -19,7 +19,7 @@ type ClusterPoolSpec struct {
 	Count int
 }
 
-type linodelkeClusterPoolUpdates struct {
+type ClusterPoolUpdates struct {
 	ToDelete []int
 	ToCreate []linodego.LKEClusterPoolCreateOptions
 	ToUpdate map[int]linodego.LKEClusterPoolUpdateOptions
@@ -62,7 +62,7 @@ func getLKEClusterPoolProvisionedSpecs(pools []linodego.LKEClusterPool) map[Clus
 }
 
 func ReconcileLKEClusterPoolSpecs(
-	poolSpecs []ClusterPoolSpec, pools []linodego.LKEClusterPool) (updates linodelkeClusterPoolUpdates) {
+	poolSpecs []ClusterPoolSpec, pools []linodego.LKEClusterPool) (updates ClusterPoolUpdates) {
 	provisionedPools := getLKEClusterPoolProvisionedSpecs(pools)
 	poolSpecsToAssign := make(map[int]struct{})
 	assignedPools := make(map[int]struct{})

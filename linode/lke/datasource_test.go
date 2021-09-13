@@ -11,12 +11,12 @@ import (
 
 const dataSourceClusterName = "data.linode_lke_cluster.test"
 
-func TestAccDataSourceLinodeLKECluster_basic(t *testing.T) {
+func TestAccDataSourceLKECluster_basic(t *testing.T) {
 	t.Parallel()
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.TestAccPreCheck(t) },
+		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
