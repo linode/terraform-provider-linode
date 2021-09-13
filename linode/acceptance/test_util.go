@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -58,7 +57,7 @@ func init() {
 
 	var templateFiles []string
 
-	err = filepath.Walk("../", func(path string, info fs.FileInfo, err error) error {
+	err = filepath.Walk("../", func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
