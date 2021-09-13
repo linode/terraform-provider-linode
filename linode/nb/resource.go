@@ -29,6 +29,13 @@ func Resource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    ResourceNodeBalancerV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: ResourceNodeBalancerV0Upgrade,
+				Version: 0,
+			},
+		},
 	}
 }
 
@@ -145,7 +152,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func resourceNodeBalancerV0() *schema.Resource {
+func ResourceNodeBalancerV0() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"transfer": {
@@ -156,7 +163,7 @@ func resourceNodeBalancerV0() *schema.Resource {
 	}
 }
 
-func resourceNodeBalancerV0Upgrade(ctx context.Context,
+func ResourceNodeBalancerV0Upgrade(ctx context.Context,
 	rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	oldTransfer, ok := rawState["transfer"].(map[string]interface{})
 	if !ok {

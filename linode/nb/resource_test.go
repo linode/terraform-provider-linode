@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nb/tmpl"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -142,7 +143,7 @@ func TestLinodeNodeBalancer_UpgradeV0(t *testing.T) {
 		},
 	}
 
-	newState, err := resourceLinodeNodeBalancerV0Upgrade(context.Background(), oldState, nil)
+	newState, err := nb.ResourceNodeBalancerV0Upgrade(context.Background(), oldState, nil)
 	if err != nil {
 		t.Fatalf("error migrating state: %v", err)
 	}
@@ -173,7 +174,7 @@ func TestLinodeNodeBalancer_UpgradeV0Empty(t *testing.T) {
 		},
 	}
 
-	newState, err := resourceLinodeNodeBalancerV0Upgrade(context.Background(), oldState, nil)
+	newState, err := nb.ResourceNodeBalancerV0Upgrade(context.Background(), oldState, nil)
 	if err != nil {
 		t.Fatalf("error migrating state: %v", err)
 	}
