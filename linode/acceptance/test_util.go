@@ -35,21 +35,28 @@ var (
 	ConfigTemplates    *template.Template
 )
 
+func initOptInTests() {
+	optInTests = make(map[string]struct{})
+
+	optInTestsValue, ok := os.LookupEnv(optInTestsEnvVar)
+	if !ok {
+		return
+	}
+
+	for _, testName := range strings.Split(optInTestsValue, ",") {
+		optInTests[testName] = struct{}{}
+	}
+}
+
 func init() {
 	var err error
 	PublicKeyMaterial, privateKeyMaterial, err = acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
 	if err != nil {
 		log.Fatalf("Failed to generate random SSH key pair for testing: %s", err)
 	}
-	// optInTests = make(map[string]struct{})
-	// optInTestsValue, ok := os.LookupEnv(optInTestsEnvVar)
-	// if !ok {
-	// 	return
-	// }
 
-	// for _, testName := range strings.Split(optInTestsValue, ",") {
-	// 	optInTests[testName] = struct{}{}
-	// }
+	initOptInTests()
+
 	TestAccProvider = linode.Provider()
 	TestAccProviders = map[string]*schema.Provider{
 		"linode": TestAccProvider,
