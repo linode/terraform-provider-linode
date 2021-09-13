@@ -1,0 +1,13 @@
+{{ define "instance_watchdog_disabled" }}
+
+resource "linode_instance" "foobar" {
+    label     = "{{.Label}}"
+    region    = "ca-central"
+    image     = "linode/alpine3.12"
+    type      = "g6-nanode-1"
+    root_pass = "terraform-test"
+
+    watchdog_enabled = false
+}
+
+{{ end }}

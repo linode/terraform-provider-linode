@@ -1,0 +1,22 @@
+{{ define "instance_multiple_configs" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    config {
+        label = "configa"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+    }
+    config {
+        label = "configb"
+        kernel = "linode/latest-32bit"
+        root_device = "/dev/sda"
+    }
+
+    boot_config_label = "configa"
+}
+
+{{ end }}

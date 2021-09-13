@@ -1,0 +1,49 @@
+{{ define "instance_full_disk" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+    swap_size = {{.SwapSize}}
+    authorized_keys = ["{{.PubKey}}"]
+    stackscript_id = linode_stackscript.flooddisk.id
+}
+
+resource "linode_stackscript" "flooddisk" {
+    label = "{{.StackScriptName}}"
+    script = <<EOF
+#!/usr/bin/env bash
+
+set -e
+
+get_disk_info() {
+	echo $(df /dev/sda --block-size=1 | tail -n-1)
+}
+
+# fills free space according to df after this df will report 100%% usage
+preallocate_free_space() {
+	local free_space=$(get_disk_info | awk '{print $4}')
+	fallocate -l "$free_space" blob
+}
+
+# get minimum size disk can be and fill the difference of what is available
+fill_disk() {
+	local min_blocks=$(resize2fs -P /dev/sda | tail -1 | awk '{print $7}')
+	local block_size=$(blockdev --getbsz /dev/sda)
+	local min_bytes=$(($min_blocks * $block_size))
+	local total_bytes=$(get_disk_info | awk '{print $2}')
+	local blob_size=$(($total_bytes-$min_bytes))
+	dd if=/dev/zero of=blob1 bs=1024 count=$blob_size
+}
+
+preallocate_free_space
+fill_disk
+EOF
+description = "script to max out disk"
+images = ["linode/ubuntu18.04"]
+}
+
+{{ end }}

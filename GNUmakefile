@@ -1,7 +1,7 @@
 SWEEP?="tf_test,tf-test"
 GOFMT_FILES?=$$(find . -name '*.go')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
-PKG_NAME=linode...
+PKG_NAME=linode/...
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.19.0
@@ -75,6 +75,7 @@ test-compile:
 		exit 1; \
 	fi
 	go test -c $(TEST) $(TESTARGS) -timeout 120m -parallel=2
+
 
 imports:
 	goimports -w $(GOFMT_FILES)

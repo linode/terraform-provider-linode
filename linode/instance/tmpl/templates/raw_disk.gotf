@@ -1,0 +1,14 @@
+{{ define "instance_raw_disk" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    disk {
+        label = "disk"
+        size = 3000
+    }
+}
+
+{{ end }}

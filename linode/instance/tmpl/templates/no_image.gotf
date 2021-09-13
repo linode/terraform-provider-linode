@@ -1,0 +1,10 @@
+{{ define "instance_no_image" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+}
+
+{{ end }}

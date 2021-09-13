@@ -1,0 +1,7 @@
+{{ define "instance_type_data_basic" }}
+
+data "linode_instance_type" "foobar" {
+    id = "{{.ID}}"
+}
+
+{{ end }}
