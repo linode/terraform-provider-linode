@@ -1,0 +1,8 @@
+{{ define "object_bucket_basic" }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    cluster = "us-east-1"
+    label = "{{.Label}}"
+}
+
+{{ end }}

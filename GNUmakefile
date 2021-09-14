@@ -1,7 +1,7 @@
 SWEEP?="tf_test,tf-test"
 GOFMT_FILES?=$$(find . -name '*.go')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
-PKG_NAME=linode
+PKG_NAME=linode/...
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.19.0
@@ -17,6 +17,7 @@ tooldeps:
 lint: fmtcheck
 	golangci-lint run
 	tfproviderlint \
+		-AT001=false \
 		-S006=false \
 		-R018=false \
 		-R019=false \
@@ -31,7 +32,7 @@ docscheck:
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
-	go test ./$(PKG_NAME) -v -sweep=$(SWEEP) $(SWEEPARGS)
+	go test -v ./$(PKG_NAME) -sweep=$(SWEEP) $(SWEEPARGS)
 
 default: build
 
@@ -47,7 +48,7 @@ testacc: fmtcheck
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	LINODE_EVENT_POLL_MS=$(ACCTEST_POLL_MS) \
-	go test ./$(PKG_NAME) -v $(TESTARGS) -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
+	go test -v ./$(PKG_NAME) $(TESTARGS) -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
 
 vet:
 	@echo "go vet ."
@@ -74,5 +75,9 @@ test-compile:
 		exit 1; \
 	fi
 	go test -c $(TEST) $(TESTARGS) -timeout 120m -parallel=2
+
+
+imports:
+	goimports -w $(GOFMT_FILES)
 
 .PHONY: build sweep test testacc vet fmt fmtcheck errcheck test-compile

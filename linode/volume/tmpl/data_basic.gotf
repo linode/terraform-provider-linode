@@ -1,0 +1,9 @@
+{{ define "volume_data_basic" }}
+
+{{ template "volume_basic" . }}
+
+data "linode_volume" "foobar" {
+    id = "${linode_volume.foobar.id}"
+}
+
+{{ end }}

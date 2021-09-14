@@ -1,0 +1,23 @@
+{{ define "volume_attached" }}
+
+resource "linode_instance" "foobar" {
+    type = "g6-nanode-1"
+    region = "us-west"
+
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        devices {
+            sda {
+                volume_id = "${linode_volume.foobar.id}"
+            }
+        }
+    }
+}
+
+resource "linode_volume" "foobar" {
+    label = "{{.Label}}"
+    region = "us-west"
+}
+
+{{ end }}

@@ -1,0 +1,12 @@
+{{ define "domain_record_caa_noname" }}
+
+{{ template "domain_basic" .Domain }}
+
+resource "linode_domain_record" "foobar" {
+    domain_id = "${linode_domain.foobar.id}"
+    record_type = "CAA"
+    target = "target.{{.Record}}"
+    tag = "issue"
+}
+
+{{ end }}

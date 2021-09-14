@@ -1,0 +1,11 @@
+{{ define "domain_ips" }}
+
+resource "linode_domain" "foobar" {
+    domain = "{{.Domain}}"
+    type = "master"
+    soa_email = "example@{{.Domain}}"
+    master_ips = ["12.34.56.78"]
+    axfr_ips = ["87.65.43.21"]
+}
+
+{{ end }}

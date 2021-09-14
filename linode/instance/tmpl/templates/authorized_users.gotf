@@ -1,0 +1,21 @@
+{{ define "instance_authorized_users" }}
+
+data "linode_profile" "profile" {}
+
+resource "linode_sshkey" "key" {
+    label = "tf_test_authorized_keys"
+    ssh_key = "{{.PubKey}}"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+    swap_size = 256
+    authorized_users = [ "${data.linode_profile.profile.username}" ]
+}
+
+{{ end }}

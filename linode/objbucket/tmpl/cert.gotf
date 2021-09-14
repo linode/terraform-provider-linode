@@ -1,0 +1,17 @@
+{{ define "object_bucket_cert" }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    cluster = "us-east-1"
+    label = "{{.Label}}"
+
+    cert {
+        certificate = <<EOF
+{{.Cert}}
+EOF
+        private_key = <<EOF
+{{.PrivKey}}
+EOF
+    }
+}
+
+{{ end }}

@@ -1,0 +1,33 @@
+{{ define "images_data_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Image}}"
+    group = "tf_test"
+    type = "g6-standard-1"
+    region = "us-east"
+    disk {
+        label = "disk"
+        size = 1000
+        filesystem = "ext4"
+    }
+}
+resource "linode_image" "foobar" {
+    linode_id = "${linode_instance.foobar.id}"
+    disk_id = "${linode_instance.foobar.disk.0.id}"
+    label = "{{.Image}}"
+    description = "descriptive text"
+}
+
+data "linode_images" "foobar" {
+    filter {
+        name = "label"
+        values = [linode_image.foobar.label]
+    }
+
+    filter {
+        name = "is_public"
+        values = ["false"]
+    }
+}
+
+{{ end }}

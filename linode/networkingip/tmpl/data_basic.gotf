@@ -1,0 +1,15 @@
+{{ define "networking_ip_data_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    image = "linode/alpine3.12"
+    type = "g6-standard-1"
+    region = "us-east"
+}
+
+data "linode_networking_ip" "foobar" {
+    address = "${linode_instance.foobar.ip_address}"
+}
+
+{{ end }}

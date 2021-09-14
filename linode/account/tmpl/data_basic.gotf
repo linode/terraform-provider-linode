@@ -1,0 +1,5 @@
+{{ define "account_data_basic" }}
+
+data "linode_account" "foo" {}
+
+{{ end }}

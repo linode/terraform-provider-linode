@@ -1,0 +1,15 @@
+{{ define "instance_stackscript" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    stackscript_id = "514388"
+    stackscript_data = {
+        "hostname" = "pulumitesting"
+    }
+    image = "linode/debian9"
+}
+
+{{ end }}

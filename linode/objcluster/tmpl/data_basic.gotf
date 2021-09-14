@@ -1,0 +1,7 @@
+{{ define "obj_cluster_data_basic" }}
+
+data "linode_object_storage_cluster" "foobar" {
+    id = "{{.ID}}"
+}
+
+{{ end }}

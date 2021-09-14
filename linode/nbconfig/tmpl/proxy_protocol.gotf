@@ -1,0 +1,12 @@
+{{ define "nodebalancer_config_proxy_protocol" }}
+
+{{ template "nodebalancer_basic" .NodeBalancer }}
+
+resource "linode_nodebalancer_config" "foofig" {
+    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+    port = 80
+    protocol = "tcp"
+    proxy_protocol = "v2"
+}
+
+{{ end }}

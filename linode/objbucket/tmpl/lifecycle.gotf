@@ -1,0 +1,51 @@
+{{ define "object_bucket_lifecycle" }}
+
+{{ template "object_key_basic" .Key }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    access_key = linode_object_storage_key.foobar.access_key
+    secret_key = linode_object_storage_key.foobar.secret_key
+
+    cluster = "us-east-1"
+    label = "{{.Label}}"
+
+    lifecycle_rule {
+        id = "test-rule"
+        prefix = "tf"
+        enabled = true
+
+        abort_incomplete_multipart_upload_days = 5
+
+        expiration {
+            date = "2021-06-21"
+        }
+    }
+}
+
+{{ end }}
+
+{{ define "object_bucket_lifecycle_updates" }}
+
+{{ template "object_key_basic" .Key }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    access_key = linode_object_storage_key.foobar.access_key
+    secret_key = linode_object_storage_key.foobar.secret_key
+
+    cluster = "us-east-1"
+    label = "{{.Label}}"
+
+    lifecycle_rule {
+        id = "test-rule-update"
+        prefix = "tf-update"
+        enabled = false
+
+        abort_incomplete_multipart_upload_days = 42
+
+        expiration {
+            days = 37
+        }
+    }
+}
+
+{{ end }}

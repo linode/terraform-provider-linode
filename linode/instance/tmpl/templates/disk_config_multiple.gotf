@@ -1,0 +1,53 @@
+{{ define "instance_disk_config_multiple" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "us-east"
+    group = "tf_test"
+
+    disk {
+        label = "diska"
+        image = "linode/ubuntu18.04"
+        root_pass = "b4d_p4s5"
+        authorized_keys = ["{{.PubKey}}"]
+        size = 3000
+    }
+
+    disk {
+        label = "diskb"
+        filesystem = "swap"
+        size = 512
+    }
+
+    config {
+        label = "configa"
+        kernel = "linode/latest-64bit"
+        devices {
+            sda {
+                disk_label = "diska"
+            }
+            sdb {
+                disk_label = "diskb"
+            }
+        }
+    }
+
+    config {
+        label = "configb"
+        comments = "won't boot"
+        kernel = "linode/grub2"
+        devices {
+            sda {
+                disk_label = "diskb"
+            }
+            sdb {
+                disk_label = "diska"
+            }
+        }
+    }
+
+    boot_config_label = "configa"
+}
+
+{{ end }}

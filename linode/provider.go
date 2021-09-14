@@ -7,6 +7,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/domain"
+	"github.com/linode/terraform-provider-linode/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/linode/firewall"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/image"
+	"github.com/linode/terraform-provider-linode/linode/images"
+	"github.com/linode/terraform-provider-linode/linode/instance"
+	"github.com/linode/terraform-provider-linode/linode/instanceip"
+	"github.com/linode/terraform-provider-linode/linode/instancetype"
+	"github.com/linode/terraform-provider-linode/linode/kernel"
+	"github.com/linode/terraform-provider-linode/linode/lke"
+	"github.com/linode/terraform-provider-linode/linode/nb"
+	"github.com/linode/terraform-provider-linode/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/linode/nbnode"
+	"github.com/linode/terraform-provider-linode/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/linode/obj"
+	"github.com/linode/terraform-provider-linode/linode/objbucket"
+	"github.com/linode/terraform-provider-linode/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/linode/objkey"
+	"github.com/linode/terraform-provider-linode/linode/profile"
+	"github.com/linode/terraform-provider-linode/linode/rdns"
+	"github.com/linode/terraform-provider-linode/linode/region"
+	"github.com/linode/terraform-provider-linode/linode/sshkey"
+	"github.com/linode/terraform-provider-linode/linode/stackscript"
+	"github.com/linode/terraform-provider-linode/linode/token"
+	"github.com/linode/terraform-provider-linode/linode/user"
+	"github.com/linode/terraform-provider-linode/linode/vlan"
+	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -87,51 +117,51 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_account":                dataSourceLinodeAccount(),
-			"linode_domain":                 dataSourceLinodeDomain(),
-			"linode_domain_record":          dataSourceLinodeDomainRecord(),
-			"linode_firewall":               dataSourceLinodeFirewall(),
-			"linode_image":                  dataSourceLinodeImage(),
-			"linode_images":                 dataSourceLinodeImages(),
-			"linode_instances":              dataSourceLinodeInstances(),
-			"linode_instance_backups":       dataSourceLinodeInstanceBackups(),
-			"linode_instance_type":          dataSourceLinodeInstanceType(),
-			"linode_kernel":                 dataSourceLinodeKernel(),
-			"linode_lke_cluster":            dataSourceLinodeLKECluster(),
-			"linode_networking_ip":          dataSourceLinodeNetworkingIP(),
-			"linode_nodebalancer":           dataSourceLinodeNodeBalancer(),
-			"linode_nodebalancer_config":    dataSourceLinodeNodeBalancerConfig(),
-			"linode_nodebalancer_node":      dataSourceLinodeNodeBalancerNode(),
-			"linode_object_storage_cluster": dataSourceLinodeObjectStorageCluster(),
-			"linode_profile":                dataSourceLinodeProfile(),
-			"linode_region":                 dataSourceLinodeRegion(),
-			"linode_sshkey":                 dataSourceLinodeSSHKey(),
-			"linode_stackscript":            dataSourceLinodeStackscript(),
-			"linode_user":                   dataSourceLinodeUser(),
-			"linode_vlans":                  dataSourceLinodeVLANs(),
-			"linode_volume":                 dataSourceLinodeVolume(),
+			"linode_account":                account.DataSource(),
+			"linode_domain":                 domain.DataSource(),
+			"linode_domain_record":          domainrecord.DataSource(),
+			"linode_firewall":               firewall.DataSource(),
+			"linode_image":                  image.DataSource(),
+			"linode_images":                 images.DataSource(),
+			"linode_instances":              instance.DataSource(),
+			"linode_instance_backups":       backup.DataSource(),
+			"linode_instance_type":          instancetype.DataSource(),
+			"linode_kernel":                 kernel.DataSource(),
+			"linode_lke_cluster":            lke.DataSource(),
+			"linode_networking_ip":          networkingip.DataSource(),
+			"linode_nodebalancer":           nb.DataSource(),
+			"linode_nodebalancer_node":      nbnode.DataSource(),
+			"linode_nodebalancer_config":    nbconfig.DataSource(),
+			"linode_object_storage_cluster": objcluster.DataSource(),
+			"linode_profile":                profile.DataSource(),
+			"linode_region":                 region.DataSource(),
+			"linode_sshkey":                 sshkey.DataSource(),
+			"linode_stackscript":            stackscript.DataSource(),
+			"linode_user":                   user.DataSource(),
+			"linode_vlans":                  vlan.DataSource(),
+			"linode_volume":                 volume.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_domain":                resourceLinodeDomain(),
-			"linode_domain_record":         resourceLinodeDomainRecord(),
-			"linode_firewall":              resourceLinodeFirewall(),
-			"linode_image":                 resourceLinodeImage(),
-			"linode_instance":              resourceLinodeInstance(),
-			"linode_instance_ip":           resourceLinodeInstanceIP(),
-			"linode_lke_cluster":           resourceLinodeLKECluster(),
-			"linode_nodebalancer":          resourceLinodeNodeBalancer(),
-			"linode_nodebalancer_config":   resourceLinodeNodeBalancerConfig(),
-			"linode_nodebalancer_node":     resourceLinodeNodeBalancerNode(),
-			"linode_object_storage_bucket": resourceLinodeObjectStorageBucket(),
-			"linode_object_storage_key":    resourceLinodeObjectStorageKey(),
-			"linode_object_storage_object": resourceLinodeObjectStorageObject(),
-			"linode_rdns":                  resourceLinodeRDNS(),
-			"linode_sshkey":                resourceLinodeSSHKey(),
-			"linode_stackscript":           resourceLinodeStackscript(),
-			"linode_token":                 resourceLinodeToken(),
-			"linode_user":                  resourceLinodeUser(),
-			"linode_volume":                resourceLinodeVolume(),
+			"linode_domain":                domain.Resource(),
+			"linode_domain_record":         domainrecord.Resource(),
+			"linode_firewall":              firewall.Resource(),
+			"linode_image":                 image.Resource(),
+			"linode_instance":              instance.Resource(),
+			"linode_instance_ip":           instanceip.Resource(),
+			"linode_lke_cluster":           lke.Resource(),
+			"linode_nodebalancer":          nb.Resource(),
+			"linode_nodebalancer_node":     nbnode.Resource(),
+			"linode_nodebalancer_config":   nbconfig.Resource(),
+			"linode_object_storage_key":    objkey.Resource(),
+			"linode_object_storage_bucket": objbucket.Resource(),
+			"linode_object_storage_object": obj.Resource(),
+			"linode_rdns":                  rdns.Resource(),
+			"linode_sshkey":                sshkey.Resource(),
+			"linode_stackscript":           stackscript.Resource(),
+			"linode_token":                 token.Resource(),
+			"linode_user":                  user.Resource(),
+			"linode_volume":                volume.Resource(),
 		},
 	}
 
@@ -147,14 +177,9 @@ func Provider() *schema.Provider {
 	return provider
 }
 
-type ProviderMeta struct {
-	Client linodego.Client
-	Config *Config
-}
-
 func providerConfigure(
 	ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
-	config := &Config{
+	config := &helper.Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),
 		APIVersion:  d.Get("api_version").(string),
@@ -171,14 +196,14 @@ func providerConfigure(
 
 		LKENodeReadyPollMilliseconds: d.Get("lke_node_ready_poll_ms").(int),
 	}
-	config.terraformVersion = terraformVersion
+	config.TerraformVersion = terraformVersion
 	client := config.Client()
 
 	// Ping the API for an empty response to verify the configuration works
 	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
 		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
-	return &ProviderMeta{
+	return &helper.ProviderMeta{
 		Client: client,
 		Config: config,
 	}, nil

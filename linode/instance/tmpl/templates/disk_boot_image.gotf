@@ -1,0 +1,21 @@
+{{ define "instance_disk_boot_image" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-east"
+    disk {
+        label = "boot"
+        size = 5000
+        filesystem = "ext4"
+        image = "{{.Image}}"
+    }
+    disk {
+        label = "swap"
+        size = 512
+        filesystem = "ext4"
+    }
+}
+
+{{ end }}

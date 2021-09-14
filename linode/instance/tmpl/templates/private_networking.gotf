@@ -1,0 +1,15 @@
+{{ define "instance_private_networking" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+    swap_size = 256
+    private_ip = true
+    authorized_keys = ["{{.PubKey}}"]
+    group = "tf_test"
+}
+
+{{ end }}

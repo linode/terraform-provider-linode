@@ -1,0 +1,18 @@
+{{ define "instance_updates" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}_r"
+    type = "g6-nanode-1"
+    region = "us-east"
+    group = "tf_test_r"
+
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+    }
+
+    boot_config_label = "config"
+}
+
+{{ end }}
