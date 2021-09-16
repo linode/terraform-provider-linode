@@ -8,7 +8,7 @@ import (
 
 func DomainSecondsDiffSuppressor() schema.SchemaDiffSuppressFunc {
 	accepted := []int{
-		300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200,
+		30, 120, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, 2419200,
 	}
 
 	rounder := func(n int) int {

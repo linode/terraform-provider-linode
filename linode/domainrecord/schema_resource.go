@@ -6,7 +6,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var secondsDiffSuppressor = helper.DomainSecondsDiffSuppressor()
 var resourceSchema = map[string]*schema.Schema{
 	"domain_id": {
 		Type:        schema.TypeInt,
@@ -35,11 +34,11 @@ var resourceSchema = map[string]*schema.Schema{
 	"ttl_sec": {
 		Type: schema.TypeInt,
 		Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
-			"cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, " +
+			"cached by resolvers or other domain servers. Valid values are 30, 120, 300, 3600, 7200, 14400, 28800, 57600, " +
 			"86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest " +
 			"valid value.",
 		Optional:         true,
-		DiffSuppressFunc: secondsDiffSuppressor,
+		DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
 	},
 	"target": {
 		Type: schema.TypeString,

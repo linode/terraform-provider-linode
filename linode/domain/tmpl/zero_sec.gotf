@@ -1,0 +1,16 @@
+{{ define "domain_zero_sec" }}
+
+resource "linode_domain" "foobar" {
+    domain = "{{.Domain}}"
+    type = "master"
+    status = "active"
+    soa_email = "example@{{.Domain}}"
+    description = "tf-testing"
+    ttl_sec = 0
+    refresh_sec = 0
+    retry_sec = 0
+    expire_sec = 0
+    tags = ["tf_test"]
+}
+
+{{ end }}

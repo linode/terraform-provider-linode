@@ -72,6 +72,35 @@ func TestAccResourceDomainRecord_roundedTTLSec(t *testing.T) {
 	})
 }
 
+func TestAccResourceDomainRecord_TTLZero(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_domain_record.foobar"
+	domainRecordName := acctest.RandomWithPrefix("tf-test-")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkDomainRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.TTL(t, domainRecordName, 0),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr(resName, "name", domainRecordName),
+					resource.TestCheckResourceAttr(resName, "ttl_sec", "0"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: importStateID,
+			},
+		},
+	})
+}
+
 func TestAccResourceDomainRecord_ANoName(t *testing.T) {
 	t.Parallel()
 
