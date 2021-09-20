@@ -90,6 +90,27 @@ var resourceSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "The nodes in the node pool.",
 				},
+				"autoscaler": {
+					Type:     schema.TypeList,
+					MaxItems: 1,
+					Optional: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"min": {
+								Type:        schema.TypeInt,
+								Description: "The minimum number of nodes to autoscale to.",
+								Required:    true,
+							},
+							"max": {
+								Type:        schema.TypeInt,
+								Description: "The maximum number of nodes to autoscale to.",
+								Required:    true,
+							},
+						},
+					},
+					Description: "When specified, the number of nodes autoscales within " +
+						"the defined minimum and maximum values.",
+				},
 			},
 		},
 		MinItems:    1,

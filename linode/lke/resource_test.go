@@ -249,3 +249,72 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 		},
 	})
 }
+
+func TestAccLinodeLKECluster_autoScaler(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+	//newClusterName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.Autoscaler(t, clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "5"),
+				),
+			},
+			{
+				Config: tmpl.AutoscalerUpdates(t, clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
+				),
+			},
+			{
+				Config: tmpl.AutoscalerManyPools(t, clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "2"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "5"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.min", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.max", "8"),
+				),
+			},
+			{
+				Config: tmpl.Basic(t, clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+				),
+			},
+		},
+	})
+}
