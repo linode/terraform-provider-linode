@@ -1,0 +1,65 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: terraform-version
+    attributes:
+      label: Terraform Version
+      description: What version of terraform are you running? `terraform -v`
+      placeholder: Terraform v1.0.7 on darwin_amd64
+    validations:
+      required: true
+  - type: input
+    id: provider-version
+    attributes:
+      label: Linode Provider Version
+      description: What version of our provider are you running?
+      placeholder: version = "1.21.0"
+    validations:
+      required: true
+  - type: textarea
+    id: resources
+    attributes:
+      label: Effected Terraform Resources
+      description: Linode resouces causing/effected by the bug
+      placeholder: |
+        linode_domain
+        linode_firewall
+  - type: textarea
+    id: config
+    attributes:
+      label: Terraform Config Files
+      description: If your config files are too long for a short code snippet please use GitHub Gists
+  - type: textarea
+    id: debug
+    attributes:
+      label: Debug Output
+      description: To generate debug output run `terraform apply` with `TF_LINODE=DEBUG` and `LINODE_DEBUG=1`. Please use GitHub Gists if the output is long
+  - type: textarea
+    id: panic
+    attributes:
+      label: Panic Output
+      description: If terraform generated a panic output post a Gist with the output of crash.log
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: List any custom configurations and the steps to reproduce this error
+    validations:
+      required: true

@@ -1,0 +1,25 @@
+name: Enhancement
+description: Request a feature
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What would you like this feature to do in detail?
+    validations:
+      required: true
+  - type: textarea
+    id: resources
+    attributes:
+      label: New or Affected Terraform Resources
+      description: What resources will this create or change?
+      placeholder: |
+        linode_domain
+        linode_superman
+  - type: textarea
+    id: config
+    attributes:
+      label: Potential Terraform Configuration
+      description: A small codeblock example of what the feature will look like
