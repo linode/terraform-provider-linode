@@ -435,6 +435,41 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 	})
 }
 
+func TestAccLinodeFirewall_emptyIPv6(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.NoIPv6(t, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+				),
+			},
+			{
+				ResourceName:      testFirewallResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func checkFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
