@@ -6,7 +6,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var secondsDiffSuppressor = helper.DomainSecondsDiffSuppressor()
+const domainSecondsDescription = "Valid values are 0, 30, 120, 300, 3600, 7200, 14400, 28800, " +
+	"57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to " +
+	"the nearest valid value."
+
 var resourceSchema = map[string]*schema.Schema{
 	"domain": {
 		Type: schema.TypeString,
@@ -62,35 +65,30 @@ var resourceSchema = map[string]*schema.Schema{
 	"ttl_sec": {
 		Type: schema.TypeInt,
 		Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
-			"cached by resolvers or other domain servers. Valid values are 0, 300, 3600, 7200, 14400, 28800, " +
-			"57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to " +
-			"the nearest valid value.",
+			"cached by resolvers or other domain servers. " + domainSecondsDescription,
 		Optional:         true,
-		DiffSuppressFunc: secondsDiffSuppressor,
+		DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
 	},
 	"retry_sec": {
 		Type: schema.TypeInt,
-		Description: "The interval, in seconds, at which a failed refresh should be retried. Valid values " +
-			"are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - " +
-			"any other value will be rounded to the nearest valid value.",
+		Description: "The interval, in seconds, at which a failed refresh should be retried. " +
+			domainSecondsDescription,
 		Optional:         true,
-		DiffSuppressFunc: secondsDiffSuppressor,
+		DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
 	},
 	"expire_sec": {
 		Type: schema.TypeInt,
 		Description: "The amount of time in seconds that may pass before this Domain is no longer " +
-			"authoritative. Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, " +
-			"604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.",
+			domainSecondsDescription,
 		Optional:         true,
-		DiffSuppressFunc: secondsDiffSuppressor,
+		DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
 	},
 	"refresh_sec": {
 		Type: schema.TypeInt,
-		Description: "The amount of time in seconds before this Domain should be refreshed. Valid " +
-			"values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, " +
-			"and 2419200 - any other value will be rounded to the nearest valid value.",
+		Description: "The amount of time in seconds before this Domain should be refreshed. " +
+			domainSecondsDescription,
 		Optional:         true,
-		DiffSuppressFunc: secondsDiffSuppressor,
+		DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
 	},
 	"soa_email": {
 		Type:        schema.TypeString,

@@ -25,6 +25,11 @@ func RoundedSec(t *testing.T, domain string) string {
 		"domain_rounded_sec", TemplateData{Domain: domain})
 }
 
+func ZeroSec(t *testing.T, domain string) string {
+	return acceptance.ExecuteTemplate(t,
+		"domain_zero_sec", TemplateData{Domain: domain})
+}
+
 func IPS(t *testing.T, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_ips", TemplateData{Domain: domain})
