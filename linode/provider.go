@@ -18,6 +18,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instance"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
+	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lke"
 	"github.com/linode/terraform-provider-linode/linode/nb"
@@ -126,6 +127,7 @@ func Provider() *schema.Provider {
 			"linode_instances":              instance.DataSource(),
 			"linode_instance_backups":       backup.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
+			"linode_instance_types":         instancetypes.DataSource(),
 			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_networking_ip":          networkingip.DataSource(),
