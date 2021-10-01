@@ -1,0 +1,10 @@
+{{ define "instance_types_data_basic" }}
+
+data "linode_instance_types" "foobar" {
+    filter {
+        name = "label"
+        values = ["Linode 4GB"]
+    }
+}
+
+{{ end }}
