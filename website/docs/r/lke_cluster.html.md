@@ -12,16 +12,39 @@ Manages an LKE cluster.
 
 ## Example Usage
 
+Creating a basic LKE cluster:
+
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.20"
+    k8s_version = "1.21"
     region      = "us-central"
     tags        = ["prod"]
 
     pool {
         type  = "g6-standard-2"
         count = 3
+    }
+}
+```
+
+Creating an LKE cluster with autoscaler:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.21"
+    region      = "us-central"
+    tags        = ["prod"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 3
+
+        autoscaler {
+          min = 3
+          max = 10
+        }
     }
 }
 ```
