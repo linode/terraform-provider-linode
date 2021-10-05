@@ -55,3 +55,9 @@ In addition to all arguments above, the following attributes are exported:
     * `instance_id` - The ID of the underlying Linode instance.
 
     * `status` - The status of the node. (`ready`, `not_ready`)
+
+  * `autoscaler` - The configuration options for the autoscaler. This field only contains an autoscaler configuration if autoscaling is enabled on this cluster.
+
+    * `min` - The minimum number of nodes to autoscale to.
+
+    * `max` - The maximum number of nodes to autoscale to.

@@ -97,9 +97,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	for _, nodePool := range d.Get("pool").([]interface{}) {
 		poolSpec := nodePool.(map[string]interface{})
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKEClusterPoolCreateOptions{
-			Type:  poolSpec["type"].(string),
-			Count: poolSpec["count"].(int),
+			Type:       poolSpec["type"].(string),
+			Count:      poolSpec["count"].(int),
+			Autoscaler: expandLinodeLKEClusterAutoscalerFromPool(poolSpec),
 		})
 	}
 
@@ -194,29 +196,6 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	client.WaitForLKEClusterStatus(ctx, id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	return nil
-}
-
-func flattenLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]interface{} {
-	flattened := make([]map[string]interface{}, len(pools))
-	for i, pool := range pools {
-
-		nodes := make([]map[string]interface{}, len(pool.Linodes))
-		for i, node := range pool.Linodes {
-			nodes[i] = map[string]interface{}{
-				"id":          node.ID,
-				"instance_id": node.InstanceID,
-				"status":      node.Status,
-			}
-		}
-
-		flattened[i] = map[string]interface{}{
-			"id":    pool.ID,
-			"count": pool.Count,
-			"type":  pool.Type,
-			"nodes": nodes,
-		}
-	}
-	return flattened
 }
 
 func flattenLKEClusterAPIEndpoints(apiEndpoints []linodego.LKEClusterAPIEndpoint) []string {

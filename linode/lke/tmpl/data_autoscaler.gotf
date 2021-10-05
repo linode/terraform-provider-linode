@@ -1,0 +1,9 @@
+{{ define "lke_cluster_data_autoscaler" }}
+
+{{ template "lke_cluster_autoscaler" . }}
+
+data "linode_lke_cluster" "test" {
+    id = linode_lke_cluster.test.id
+}
+
+{{ end }}

@@ -92,6 +92,30 @@ func TestReconcileLKEClusterPoolSpecs(t *testing.T) {
 				126: {Count: 9}, // +5
 			},
 		},
+		{
+			name: "scaler",
+			provisionedPools: []linodego.LKEClusterPool{
+				{ID: 123, Type: "g6-standard-3", Count: 3},
+			},
+			specs: []lke.ClusterPoolSpec{
+				{Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 3, AutoScalerMax: 7},
+			},
+			expectedToUpdate: map[int]linodego.LKEClusterPoolUpdateOptions{
+				123: {Count: 3, Autoscaler: &linodego.LKEClusterPoolAutoscaler{Enabled: true, Min: 3, Max: 7}}, // -1
+			},
+		},
+		{
+			name: "scaler drop",
+			provisionedPools: []linodego.LKEClusterPool{
+				{ID: 123, Type: "g6-standard-3", Count: 3, Autoscaler: linodego.LKEClusterPoolAutoscaler{Enabled: true, Min: 3, Max: 7}},
+			},
+			specs: []lke.ClusterPoolSpec{
+				{Type: "g6-standard-3", Count: 3, AutoScalerEnabled: false},
+			},
+			expectedToUpdate: map[int]linodego.LKEClusterPoolUpdateOptions{
+				123: {Count: 3, Autoscaler: &linodego.LKEClusterPoolAutoscaler{Enabled: false, Min: 3, Max: 3}}, // -1
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			updates := lke.ReconcileLKEClusterPoolSpecs(tc.specs, tc.provisionedPools)
