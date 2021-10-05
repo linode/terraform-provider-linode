@@ -250,7 +250,7 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 	})
 }
 
-func TestAccLinodeLKECluster_autoScaler(t *testing.T) {
+func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 	t.Parallel()
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
