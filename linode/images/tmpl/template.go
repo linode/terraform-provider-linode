@@ -14,3 +14,13 @@ func DataBasic(t *testing.T, image string) string {
 	return acceptance.ExecuteTemplate(t,
 		"images_data_basic", TemplateData{Image: image})
 }
+
+func DataLatest(t *testing.T, image string) string {
+	return acceptance.ExecuteTemplate(t,
+		"images_data_latest", TemplateData{Image: image})
+}
+
+func DataLatestEmpty(t *testing.T, image string) string {
+	return acceptance.ExecuteTemplate(t,
+		"images_data_latest_empty", TemplateData{Image: image})
+}

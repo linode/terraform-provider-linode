@@ -22,6 +22,8 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	latestFlag := d.Get("latest").(bool)
+
 	filter, err := helper.ConstructFilterString(d, imageValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
@@ -33,6 +35,14 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if err != nil {
 		return diag.Errorf("failed to list linode images: %s", err)
+	}
+
+	if latestFlag {
+		latestImage := getLatestImage(images)
+
+		if latestImage != nil {
+			images = []linodego.Image{*latestImage}
+		}
 	}
 
 	imagesFlattened := make([]interface{}, len(images))
@@ -81,4 +91,22 @@ func imageValueToFilterType(filterName, value string) (interface{}, error) {
 	}
 
 	return value, nil
+}
+
+func getLatestImage(images []linodego.Image) *linodego.Image {
+	var result *linodego.Image
+
+	for _, image := range images {
+		if image.Created == nil {
+			continue
+		}
+
+		if result != nil && !image.Created.After(*result.Created) {
+			continue
+		}
+
+		result = &image
+	}
+
+	return result
 }
