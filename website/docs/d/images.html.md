@@ -38,6 +38,8 @@ data "linode_images" "all-images" {}
 
 The following arguments are supported:
 
+* `latest` - (Optional) If true, only the latest image will be returned. Images without a valid `created` field are not included in the result.
+
 * [`filter`](#filter) - (Optional) A set of filters used to select Linode images that meet certain requirements.
 
 ### Filter

@@ -1,0 +1,14 @@
+{{ define "images_data_latest_empty" }}
+
+{{ template "images_data_base" . }}
+
+data "linode_images" "foobar" {
+    latest = true
+
+    filter {
+        name = "label"
+        values = ["not-a-real-image"]
+    }
+}
+
+{{ end }}
