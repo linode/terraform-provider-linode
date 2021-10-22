@@ -24,6 +24,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t, instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
 					resource.TestCheckResourceAttr(resName, "instances.0.type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.image", "linode/ubuntu18.04"),

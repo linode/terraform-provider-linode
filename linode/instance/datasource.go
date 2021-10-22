@@ -53,6 +53,9 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to translate instance to map: %s", err)
 		}
 
+		// Merge additional fields
+		instanceMap["id"] = instance.ID
+
 		flattenedInstances[i] = instanceMap
 	}
 

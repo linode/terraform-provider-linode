@@ -50,6 +50,8 @@ The following arguments are supported:
 
 Each Linode instance will be stored in the `instances` attribute and will export the following attributes:
 
+* `id` - The ID of the Linode instance.
+
 * `region` - This is the location where the Linode is deployed. Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions).
 
 * `type` - The Linode type defines the pricing, CPU, disk, and RAM specs of the instance. Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, `"g6-dedicated-16"`, etc. See all types [here](https://api.linode.com/v4/linode/types).
