@@ -3,6 +3,11 @@ package instance
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 var instanceDataSourceSchema = map[string]*schema.Schema{
+	"id": {
+		Type:        schema.TypeInt,
+		Description: "The ID of the Linode instance.",
+		Computed:    true,
+	},
 	"image": {
 		Type: schema.TypeString,
 		Description: "An Image ID to deploy the Disk from. Official Linode Images start with linode/, while " +
