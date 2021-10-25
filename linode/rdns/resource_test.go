@@ -106,7 +106,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 			{
 				Config: tmpl.Deleted(t, label),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.members.linode.com$`)),
+					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
 				),
 			},
 		},
@@ -146,7 +146,7 @@ func checkRDNSDestroy(s *terraform.State) error {
 				return nil
 			}
 
-			if ip.RDNS[len(ip.RDNS)-len("members.linode.com"):] == "members.linode.com" {
+			if ip.RDNS[len(ip.RDNS)-len("ip.linodeusercontent.com"):] == "ip.linodeusercontent.com" {
 				return nil
 			}
 

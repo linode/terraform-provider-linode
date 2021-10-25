@@ -22,6 +22,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, imageName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.label", imageName),
 					resource.TestCheckResourceAttr(resourceName, "images.0.description", "descriptive text"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.is_public", "false"),
@@ -30,6 +31,37 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.deprecated"),
+					resource.TestCheckResourceAttr(resourceName, "images.1.label", imageName),
+					resource.TestCheckResourceAttr(resourceName, "images.1.description", "descriptive text"),
+					resource.TestCheckResourceAttr(resourceName, "images.1.is_public", "false"),
+					resource.TestCheckResourceAttr(resourceName, "images.1.type", "manual"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.1.created"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.1.created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.1.size"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.1.deprecated"),
+				),
+			},
+
+			// These cases are all used in the same test to avoid recreating images unnecessarily
+			{
+				Config: tmpl.DataLatest(t, imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "images.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "images.0.label", imageName),
+					resource.TestCheckResourceAttr(resourceName, "images.0.description", "descriptive text"),
+					resource.TestCheckResourceAttr(resourceName, "images.0.is_public", "false"),
+					resource.TestCheckResourceAttr(resourceName, "images.0.type", "manual"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.created"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.size"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.deprecated"),
+				),
+			},
+
+			{
+				Config: tmpl.DataLatestEmpty(t, imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "images.#", "0"),
 				),
 			},
 		},

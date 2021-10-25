@@ -2,8 +2,8 @@ package domain
 
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-const domainSecondsDescription = "Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, " +
-	"604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value."
+const domainSecondsDataDescription = "Valid values are 30, 120, 300, 3600, 7200, 14400, 28800, 57600, 86400, " +
+	"172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value."
 
 var dataSourceSchema = map[string]*schema.Schema{
 	"id": {
@@ -58,25 +58,25 @@ var dataSourceSchema = map[string]*schema.Schema{
 	"ttl_sec": {
 		Type: schema.TypeInt,
 		Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
-			"cached by resolvers or other domain servers. " + domainSecondsDescription,
+			"cached by resolvers or other domain servers. " + domainSecondsDataDescription,
 		Computed: true,
 	},
 	"retry_sec": {
 		Type: schema.TypeInt,
 		Description: "The interval, in seconds, at which a failed refresh should be retried. " +
-			domainSecondsDescription,
+			domainSecondsDataDescription,
 		Computed: true,
 	},
 	"expire_sec": {
 		Type: schema.TypeInt,
 		Description: "The amount of time in seconds that may pass before this Domain is no longer " +
-			"authoritative. " + domainSecondsDescription,
+			"authoritative. " + domainSecondsDataDescription,
 		Computed: true,
 	},
 	"refresh_sec": {
 		Type: schema.TypeInt,
 		Description: "The amount of time in seconds before this Domain should be refreshed. " +
-			domainSecondsDescription,
+			domainSecondsDataDescription,
 		Computed: true,
 	},
 	"soa_email": {

@@ -34,7 +34,27 @@ func ComplexPools(t *testing.T, name string) string {
 		"lke_cluster_complex_pools", TemplateData{Label: name})
 }
 
+func Autoscaler(t *testing.T, name string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_autoscaler", TemplateData{Label: name})
+}
+
+func AutoscalerUpdates(t *testing.T, name string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_autoscaler_updates", TemplateData{Label: name})
+}
+
+func AutoscalerManyPools(t *testing.T, name string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_autoscaler_many_pools", TemplateData{Label: name})
+}
+
 func DataBasic(t *testing.T, name string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name})
+}
+
+func DataAutoscaler(t *testing.T, name string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_autoscaler", TemplateData{Label: name})
 }

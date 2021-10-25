@@ -7,6 +7,12 @@ import (
 )
 
 var dataSourceSchema = map[string]*schema.Schema{
+	"latest": {
+		Type:        schema.TypeBool,
+		Description: "If true, only the latest image will be returned.",
+		Optional:    true,
+		Default:     false,
+	},
 	"filter": helper.FilterSchema([]string{"deprecated", "is_public", "label", "size", "vendor"}),
 	"images": {
 		Type:        schema.TypeList,

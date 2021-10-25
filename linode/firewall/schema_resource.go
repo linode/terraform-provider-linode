@@ -46,7 +46,6 @@ var resourceRuleSchema = map[string]*schema.Schema{
 			Type: schema.TypeString,
 		},
 		Description: "A list of IPv6 addresses or networks this rule applies to.",
-		MinItems:    1,
 		Optional:    true,
 	},
 }

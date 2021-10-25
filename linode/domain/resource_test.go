@@ -148,6 +148,36 @@ func TestAccResourceDomain_roundedDomainSecs(t *testing.T) {
 	})
 }
 
+func TestAccResourceDomain_zeroSecs(t *testing.T) {
+	t.Parallel()
+
+	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
+	var resName = "linode_domain.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ZeroSec(t, domainName),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainExists,
+					resource.TestCheckResourceAttr(resName, "domain", domainName),
+					resource.TestCheckResourceAttr(resName, "refresh_sec", "0"),
+					resource.TestCheckResourceAttr(resName, "retry_sec", "0"),
+					resource.TestCheckResourceAttr(resName, "ttl_sec", "0"),
+					resource.TestCheckResourceAttr(resName, "expire_sec", "0"),
+				),
+			},
+			{
+				Config:            tmpl.ZeroSec(t, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccResourceDomain_updateIPs(t *testing.T) {
 	t.Parallel()
 

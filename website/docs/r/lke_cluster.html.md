@@ -12,16 +12,39 @@ Manages an LKE cluster.
 
 ## Example Usage
 
+Creating a basic LKE cluster:
+
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.20"
+    k8s_version = "1.21"
     region      = "us-central"
     tags        = ["prod"]
 
     pool {
         type  = "g6-standard-2"
         count = 3
+    }
+}
+```
+
+Creating an LKE cluster with autoscaler:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.21"
+    region      = "us-central"
+    tags        = ["prod"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 3
+
+        autoscaler {
+          min = 3
+          max = 10
+        }
     }
 }
 ```
@@ -47,6 +70,16 @@ The following arguments are supported in the pool specification block:
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
 * `count` - (Required) The number of nodes in the Node Pool.
+
+* [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
+
+### autoscaler
+
+The following arguments are supported in the autoscaler specification block:
+
+* `min` - (Required) The minimum number of nodes to autoscale to.
+
+* `max` - (Required) The maximum number of nodes to autoscale to.
 
 ## Attributes Reference
 
