@@ -13,6 +13,9 @@ resource "linode_instance" "fooinst" {
 }
 
 data "linode_vlans" "foolan" {
+    order_by = "region"
+    order = "desc"
+
     filter {
         name = "label"
         values = ["{{.VLANLabel}}"]

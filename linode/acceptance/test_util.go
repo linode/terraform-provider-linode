@@ -150,6 +150,26 @@ func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 	return
 }
 
+func CheckResourceAttrContains(resName string, path, desiredValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		value, ok := rs.Primary.Attributes[path]
+		if !ok {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		if !strings.Contains(value, desiredValue) {
+			return fmt.Errorf("value was not found")
+		}
+
+		return nil
+	}
+}
+
 func CheckResourceAttrNotEqual(resName string, path, notValue string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resName]

@@ -24,3 +24,8 @@ func DataLatestEmpty(t *testing.T, image string) string {
 	return acceptance.ExecuteTemplate(t,
 		"images_data_latest_empty", TemplateData{Image: image})
 }
+
+func DataOrder(t *testing.T, image string) string {
+	return acceptance.ExecuteTemplate(t,
+		"images_data_order", TemplateData{Image: image})
+}

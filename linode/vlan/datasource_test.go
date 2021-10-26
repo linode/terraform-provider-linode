@@ -41,6 +41,9 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", "us-southeast"),
 					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.linodes.#"),
+
+					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order_by\":\"region\""),
+					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order\":\"desc\""),
 				),
 			},
 		},
