@@ -584,16 +584,6 @@ func updateInstanceDisks(
 	return hasChanges, nil
 }
 
-func interfaceToStringSlice(val []interface{}) []string {
-	result := make([]string, len(val))
-
-	for i, v := range val {
-		result[i] = v.(string)
-	}
-
-	return result
-}
-
 // sshKeyState hashes a string passed in as an interface.
 func sshKeyState(val interface{}) string {
 	return hashString(strings.Join(val.([]string), "\n"))
@@ -917,6 +907,14 @@ var diskImmutableFields = []string{
 	"root_pass",
 }
 
+func convertDiskFieldState(key string, value interface{}) interface{} {
+	if key == "root_pass" {
+		return rootPasswordState(value)
+	}
+
+	return value
+}
+
 func customDiffDiskForceNew(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 	oldDisks, newDisks := diff.GetChange("disk")
 
@@ -931,15 +929,10 @@ func customDiffDiskForceNew(ctx context.Context, diff *schema.ResourceDiff, i in
 		oldDisk := oldDisks[i].(map[string]interface{})
 
 		for _, field := range diskImmutableFields {
-			newValue := newDisk[field]
-			oldValue := oldDisk[field]
+			oldValue := convertDiskFieldState(field, oldDisk[field])
+			newValue := convertDiskFieldState(field, newDisk[field])
 
-			if field == "root_pass" {
-				oldValue = rootPasswordState(oldValue)
-				newValue = rootPasswordState(newValue)
-			}
-
-			if !reflect.DeepEqual(newDisk[field], oldDisk[field]) {
+			if !reflect.DeepEqual(oldValue, newValue) {
 				if err := diff.ForceNew(fmt.Sprintf("disk.%d.%s", i, field)); err != nil {
 					return err
 				}
