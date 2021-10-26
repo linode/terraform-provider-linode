@@ -27,6 +27,8 @@ func Resource() *schema.Resource {
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
 
+		CustomizeDiff: customDiffDiskForceNew,
+
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -108,17 +110,45 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error getting the disks for the Linode instance %d: %s", id, err)
 	}
 
+	diskLabelIDMap := make(map[int]string, len(instanceDisks))
+	for _, disk := range instanceDisks {
+		diskLabelIDMap[disk.ID] = disk.Label
+	}
+
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
-	d.Set("disk", disks)
+
+	stateDisks, ok := d.GetOk("disk")
+
+	finalDisks := make([]map[string]interface{}, len(disks))
+
+	for i := 0; i < len(disks); i++ {
+		finalDisks[i] = make(map[string]interface{})
+
+		stateDisks := stateDisks.([]interface{})
+
+		// Merge existing state
+		if ok && i < len(stateDisks) {
+			for k, v := range stateDisks[i].(map[string]interface{}) {
+				if k == "root_pass" {
+					finalDisks[i][k] = rootPasswordState(v)
+					continue
+				}
+
+				finalDisks[i][k] = v
+			}
+		}
+
+		for k, v := range disks[i] {
+			finalDisks[i][k] = v
+		}
+	}
+
+	d.Set("disk", finalDisks)
 	d.Set("swap_size", swapSize)
 
 	instanceConfigs, err := client.ListInstanceConfigs(ctx, int(id), nil)
 	if err != nil {
 		return diag.Errorf("Error getting the config for Linode instance %d (%s): %s", instance.ID, instance.Label, err)
-	}
-	diskLabelIDMap := make(map[int]string, len(instanceDisks))
-	for _, disk := range instanceDisks {
-		diskLabelIDMap[disk.ID] = disk.Label
 	}
 
 	configs := flattenInstanceConfigs(instanceConfigs, diskLabelIDMap)

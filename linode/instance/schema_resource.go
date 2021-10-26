@@ -583,7 +583,6 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:         schema.TypeString,
 					Description:  "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
 					Optional:     true,
-					ForceNew:     true,
 					Computed:     true,
 					ValidateFunc: validation.StringInSlice([]string{"raw", "swap", "ext3", "ext4", "initrd"}, false),
 				},
@@ -592,7 +591,6 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "If true, this Disk is read-only.",
 					Optional:    true,
 					Computed:    true,
-					ForceNew:    true,
 				},
 				"image": {
 					Type: schema.TypeString,
@@ -600,23 +598,13 @@ var resourceSchema = map[string]*schema.Schema{
 						"while your Images start with private/.",
 					Optional: true,
 					Computed: true,
-					ForceNew: true,
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						// the API does not return this field for existing disks, so must be ignored for diffs/updates
-						return !d.HasChange("label")
-					},
 				},
 				"authorized_keys": {
 					Type: schema.TypeList,
 					Elem: &schema.Schema{Type: schema.TypeString},
 					Description: "A list of SSH public keys to deploy for the root user on the newly created Linode. " +
 						"Only accepted if 'image' is provided.",
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						// the API does not return this field for existing disks, so must be ignored for diffs/updates
-						return !d.HasChange("label")
-					},
 					Optional:  true,
-					ForceNew:  true,
 					StateFunc: sshKeyState,
 				},
 				"authorized_users": {
@@ -625,13 +613,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "A list of Linode usernames. If the usernames have associated SSH keys, " +
 						"the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. " +
 						"Only accepted if 'image' is provided.",
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						// the API does not return this field for existing disks, so must be ignored for diffs/updates
-						return !d.HasChange("label")
-					},
-					Optional:  true,
-					ForceNew:  true,
-					StateFunc: sshKeyState,
+					Optional: true,
 				},
 				"stackscript_id": {
 					Type: schema.TypeInt,
@@ -639,12 +621,6 @@ var resourceSchema = map[string]*schema.Schema{
 						"must also be provided, and must be an Image that is compatible with this StackScript.",
 					Computed: true,
 					Optional: true,
-					ForceNew: true,
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						// the API does not return this field for existing disks, so must be ignored for diffs/updates
-						return !d.HasChange("label")
-					},
-					Default: nil,
 				},
 				"stackscript_data": {
 					Type: schema.TypeMap,
@@ -653,24 +629,13 @@ var resourceSchema = map[string]*schema.Schema{
 						"The required values depend on the StackScript being deployed.",
 					Optional:  true,
 					Computed:  true,
-					ForceNew:  true,
 					Sensitive: true,
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						// the API does not return this field for existing disks, so must be ignored for diffs/updates
-						return !d.HasChange("label")
-					},
-					Default: nil,
 				},
 				"root_pass": {
-					Type:        schema.TypeString,
-					Description: "The password that will be initialially assigned to the 'root' user account.",
-					Sensitive:   true,
-					Optional:    true,
-					ForceNew:    true,
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						// the API does not return this field for existing disks, so must be ignored for diffs/updates
-						return !d.HasChange("label")
-					},
+					Type:         schema.TypeString,
+					Description:  "The password that will be initialially assigned to the 'root' user account.",
+					Sensitive:    true,
+					Optional:     true,
 					ValidateFunc: validation.StringLenBetween(6, 128),
 					StateFunc:    rootPasswordState,
 				},

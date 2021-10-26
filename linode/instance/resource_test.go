@@ -404,6 +404,84 @@ func TestAccResourceInstance_disk(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_diskMultiple(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Disk(t, instanceName, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "status", "offline"),
+					resource.TestCheckResourceAttr(resName, "config.#", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.#", "1"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
+					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
+					checkComputeInstanceDisk(&instance, "disk", 3000),
+				),
+			},
+			{
+				Config: tmpl.DiskMultipleReadOnly(t, instanceName, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "512"),
+					resource.TestCheckResourceAttr(resName, "status", "offline"),
+					resource.TestCheckResourceAttr(resName, "config.#", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.#", "2"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
+					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
+					resource.TestCheckResourceAttr(resName, "disk.1.size", "512"),
+					resource.TestCheckResourceAttr(resName, "disk.1.label", "swap"),
+					resource.TestCheckResourceAttr(resName, "disk.1.read_only", "true"),
+					resource.TestCheckResourceAttr(resName, "disk.1.filesystem", "swap"),
+					checkComputeInstanceDisk(&instance, "disk", 3000),
+				),
+			},
+			{
+				Config: tmpl.Disk(t, instanceName, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
+					resource.TestCheckResourceAttr(resName, "status", "offline"),
+					resource.TestCheckResourceAttr(resName, "config.#", "0"),
+					resource.TestCheckResourceAttr(resName, "disk.#", "1"),
+					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
+					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
+					checkComputeInstanceDisk(&instance, "disk", 3000),
+				),
+			},
+
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_diskImage(t *testing.T) {
 	t.Parallel()
 

@@ -196,6 +196,14 @@ func DiskMultiple(t *testing.T, label, pubKey string) string {
 		})
 }
 
+func DiskMultipleReadOnly(t *testing.T, label, pubKey string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_disk_multiple_readonly", TemplateData{
+			Label:  label,
+			PubKey: pubKey,
+		})
+}
+
 func DiskConfig(t *testing.T, label, pubKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_config", TemplateData{

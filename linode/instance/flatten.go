@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"fmt"
-
 	"github.com/linode/linodego"
 )
 

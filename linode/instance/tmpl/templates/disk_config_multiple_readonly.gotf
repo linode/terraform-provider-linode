@@ -1,0 +1,25 @@
+{{ define "instance_disk_multiple_readonly" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "us-east"
+    group = "tf_test"
+
+    disk {
+        label = "disk"
+        image = "linode/ubuntu18.04"
+        root_pass = "b4d_p4s5"
+        authorized_keys = ["{{.PubKey}}"]
+        size = 3000
+    }
+
+    disk {
+        label = "swap"
+        filesystem = "swap"
+        size = 512
+        read_only = true
+    }
+}
+
+{{ end }}

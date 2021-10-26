@@ -560,7 +560,8 @@ func updateInstanceDisks(
 			hasChanges = true
 		}
 		if spec["filesystem"].(string) != string(existingDisk.Filesystem) {
-			return hasChanges, fmt.Errorf("failed to update disk %d; filesystems can not be changed", existingDisk.ID)
+			return hasChanges, fmt.Errorf("failed to update disk %d; filesystems can not be changed ('%s' -> '%s')",
+				existingDisk.ID, spec["filesystem"].(string), string(existingDisk.Filesystem))
 		}
 		visited[label] = struct{}{}
 	}
@@ -581,6 +582,16 @@ func updateInstanceDisks(
 	}
 
 	return hasChanges, nil
+}
+
+func interfaceToStringSlice(val []interface{}) []string {
+	result := make([]string, len(val))
+
+	for i, v := range val {
+		result[i] = v.(string)
+	}
+
+	return result
 }
 
 // sshKeyState hashes a string passed in as an interface.
@@ -890,6 +901,50 @@ func detachConfigVolumes(
 
 	if len(errStr) > 0 {
 		return fmt.Errorf("Error detaching volumes: %s", errStr)
+	}
+
+	return nil
+}
+
+var diskImmutableFields = []string{
+	"read_only",
+	"filesystem",
+	"image",
+	"authorized_keys",
+	"authorized_users",
+	"stackscript_id",
+	"stackscript_data",
+	"root_pass",
+}
+
+func customDiffDiskForceNew(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+	oldDisks, newDisks := diff.GetChange("disk")
+
+	for i, newDisk := range newDisks.([]interface{}) {
+		oldDisks := oldDisks.([]interface{})
+
+		if i >= len(oldDisks) {
+			break
+		}
+
+		newDisk := newDisk.(map[string]interface{})
+		oldDisk := oldDisks[i].(map[string]interface{})
+
+		for _, field := range diskImmutableFields {
+			newValue := newDisk[field]
+			oldValue := oldDisk[field]
+
+			if field == "root_pass" {
+				oldValue = rootPasswordState(oldValue)
+				newValue = rootPasswordState(newValue)
+			}
+
+			if !reflect.DeepEqual(newDisk[field], oldDisk[field]) {
+				if err := diff.ForceNew(fmt.Sprintf("disk.%d.%s", i, field)); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	return nil
