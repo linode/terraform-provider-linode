@@ -162,7 +162,7 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 
   * `filesystem` - (Optional) The Disk filesystem can be one of: `"raw"`, `"swap"`, `"ext3"`, `"ext4"`, or `"initrd"` which has a max size of 32mb and can be used in the config `initrd` (not currently supported in this Terraform Provider).
 
-  * `readonly` - (Optional) If true, this Disk is read-only.
+  * `read_only` - (Optional) If true, this Disk is read-only.
 
   * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/kernels). *Changing `image` forces the creation of a new Linode Instance.*
 
