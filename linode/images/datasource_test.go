@@ -64,6 +64,16 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "images.#", "0"),
 				),
 			},
+
+			{
+				Config: tmpl.DataOrder(t, imageName),
+				Check: resource.ComposeTestCheckFunc(
+					// Ensure order is correctly appended to filter
+					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
+					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order_by\":\"size\""),
+					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order\":\"desc\""),
+				),
+			},
 		},
 	})
 }

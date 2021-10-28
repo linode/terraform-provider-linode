@@ -32,6 +32,10 @@ func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.monthly"),
+
+					// Ensure order is correctly appended to filter
+					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order_by\":\"vcpus\""),
+					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order\":\"desc\""),
 				),
 			},
 		},

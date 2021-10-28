@@ -36,6 +36,27 @@ func FilterSchema(validFilters []string) *schema.Schema {
 	}
 }
 
+// OrderBySchema should be referenced in a schema configuration in order to
+// enable filter ordering functionality
+func OrderBySchema(validFilters []string) *schema.Schema {
+	return &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		ValidateFunc: validation.StringInSlice(validFilters, false),
+		Description:  "The attribute to order the results by.",
+	}
+}
+
+func OrderSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Default:      "asc",
+		ValidateFunc: validation.StringInSlice([]string{"asc", "desc"}, false),
+		Description:  "The order in which results should be returned.",
+	}
+}
+
 // ConstructFilterString constructs a Linode filter JSON string from each filter element in the schema
 func ConstructFilterString(d *schema.ResourceData, typeFunc FilterTypeFunc) (string, error) {
 	filters := d.Get("filter").([]interface{})
@@ -73,6 +94,11 @@ func ConstructFilterString(d *schema.ResourceData, typeFunc FilterTypeFunc) (str
 	}
 
 	resultMap["+and"] = rootFilter
+
+	if orderBy, ok := d.GetOk("order_by"); ok {
+		resultMap["+order_by"] = orderBy
+		resultMap["+order"] = d.Get("order")
+	}
 
 	result, err := json.Marshal(resultMap)
 	if err != nil {

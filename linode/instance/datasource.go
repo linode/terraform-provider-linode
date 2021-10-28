@@ -3,12 +3,15 @@ package instance
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
+
+var filterableFields = []string{"group", "id", "image", "label", "region", "tags"}
 
 func dataSourceInstance() *schema.Resource {
 	return &schema.Resource{
@@ -20,7 +23,9 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"filter": filterSchema([]string{"group", "id", "image", "label", "region", "tags"}),
+			"filter":   helper.FilterSchema(filterableFields),
+			"order_by": helper.OrderBySchema(filterableFields),
+			"order":    helper.OrderSchema(),
 			"instances": {
 				Type:        schema.TypeList,
 				Description: "The returned list of Instances.",
@@ -34,7 +39,7 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	filter, err := constructFilterString(d, instanceValueToFilterType)
+	filter, err := helper.ConstructFilterString(d, instanceValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
 	}
@@ -63,4 +68,14 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("instances", flattenedInstances)
 
 	return nil
+}
+
+// instanceValueToFilterType converts the given value to the correct type depending on the filter name.
+func instanceValueToFilterType(filterName, value string) (interface{}, error) {
+	switch filterName {
+	case "id":
+		return strconv.Atoi(value)
+	}
+
+	return value, nil
 }

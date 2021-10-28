@@ -6,6 +6,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/image"
 )
 
+var filterableFields = []string{"deprecated", "is_public", "label", "size", "vendor"}
+
 var dataSourceSchema = map[string]*schema.Schema{
 	"latest": {
 		Type:        schema.TypeBool,
@@ -13,7 +15,9 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     false,
 	},
-	"filter": helper.FilterSchema([]string{"deprecated", "is_public", "label", "size", "vendor"}),
+	"order_by": helper.OrderBySchema(filterableFields),
+	"order":    helper.OrderSchema(),
+	"filter":   helper.FilterSchema(filterableFields),
 	"images": {
 		Type:        schema.TypeList,
 		Description: "The returned list of Images.",

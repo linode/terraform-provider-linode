@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var filterableFields = []string{"label", "region"}
+
 func dataSourceVLAN() *schema.Resource {
 	return &schema.Resource{
 		Schema: resourceSchema,
@@ -20,7 +22,9 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"filter": helper.FilterSchema([]string{"label", "region"}),
+			"order_by": helper.OrderBySchema(filterableFields),
+			"order":    helper.OrderSchema(),
+			"filter":   helper.FilterSchema(filterableFields),
 			"vlans": {
 				Type:        schema.TypeList,
 				Description: "The returned list of VLANs.",

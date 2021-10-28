@@ -6,9 +6,13 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 )
 
+var filterableFields = []string{"class", "disk", "gpus", "label",
+	"memory", "network_out", "transfer", "vcpus"}
+
 var dataSourceSchema = map[string]*schema.Schema{
-	"filter": helper.FilterSchema([]string{"class", "disk", "gpus", "label",
-		"memory", "network_out", "transfer", "vcpus"}),
+	"order_by": helper.OrderBySchema(filterableFields),
+	"order":    helper.OrderSchema(),
+	"filter":   helper.FilterSchema(filterableFields),
 	"types": {
 		Type:        schema.TypeList,
 		Description: "The returned list of Types.",

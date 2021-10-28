@@ -60,3 +60,32 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceInstances_order(t *testing.T) {
+	resNameDesc := "data.linode_instances.desc"
+	resNameAsc := "data.linode_instances.asc"
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	groupName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataMultipleOrder(t, instanceName, groupName),
+				Check: resource.ComposeTestCheckFunc(
+					// Ensure order is correctly appended to filter
+					resource.TestCheckResourceAttr(resNameDesc, "instances.#", "3"),
+					acceptance.CheckResourceAttrContains(resNameDesc, "id", "\"+order_by\":\"id\""),
+					acceptance.CheckResourceAttrContains(resNameDesc, "id", "\"+order\":\"desc\""),
+
+					resource.TestCheckResourceAttr(resNameAsc, "instances.#", "3"),
+					acceptance.CheckResourceAttrContains(resNameAsc, "id", "\"+order_by\":\"id\""),
+					acceptance.CheckResourceAttrContains(resNameAsc, "id", "\"+order\":\"asc\""),
+				),
+			},
+		},
+	})
+}

@@ -319,3 +319,11 @@ func DataMultiple(t *testing.T, label, group string) string {
 			Group: group,
 		})
 }
+
+func DataMultipleOrder(t *testing.T, label, group string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_multiple_order", TemplateData{
+			Label: label,
+			Group: group,
+		})
+}
