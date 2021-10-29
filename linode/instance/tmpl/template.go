@@ -327,3 +327,11 @@ func DataMultipleOrder(t *testing.T, label, group string) string {
 			Group: group,
 		})
 }
+
+func DataMultipleRegex(t *testing.T, label, group string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_multiple_regex", TemplateData{
+			Label: label,
+			Group: group,
+		})
+}

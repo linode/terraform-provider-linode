@@ -20,6 +20,11 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	filterID, err := helper.GetFilterID(d)
+	if err != nil {
+		return diag.Errorf("failed to generate filter id: %s", err)
+	}
+
 	filter, err := helper.ConstructFilterString(d, typeValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
@@ -38,8 +43,13 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		typesFlattened[i] = flattenType(&t)
 	}
 
-	d.SetId(filter)
-	d.Set("types", typesFlattened)
+	typesFiltered, err := helper.FilterResults(d, typesFlattened)
+	if err != nil {
+		return diag.Errorf("failed to filter returned types: %s", err)
+	}
+
+	d.SetId(filterID)
+	d.Set("types", typesFiltered)
 
 	return nil
 }
