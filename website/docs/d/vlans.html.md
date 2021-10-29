@@ -50,6 +50,8 @@ The following arguments are supported
 
 * `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
 
+* `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
+
 ## Attributes
 
 Each Linode VLAN will be stored in the `vlans` attribute and will export the following attributes:

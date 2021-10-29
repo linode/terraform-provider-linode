@@ -1,0 +1,11 @@
+{{ define "instance_types_data_regex" }}
+
+data "linode_instance_types" "foobar" {
+    filter {
+        name = "label"
+        values = ["Dedicated .*"]
+        match_by = "re"
+    }
+}
+
+{{ end }}

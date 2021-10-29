@@ -2,7 +2,6 @@ package instance
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -39,6 +38,11 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	filterID, err := helper.GetFilterID(d)
+	if err != nil {
+		return diag.Errorf("failed to generate filter id: %s", err)
+	}
+
 	filter, err := helper.ConstructFilterString(d, instanceValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
@@ -51,7 +55,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to get instances: %s", err)
 	}
 
-	flattenedInstances := make([]map[string]interface{}, len(instances))
+	flattenedInstances := make([]interface{}, len(instances))
 	for i, instance := range instances {
 		instanceMap, err := flattenInstance(ctx, &client, &instance)
 		if err != nil {
@@ -64,8 +68,13 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		flattenedInstances[i] = instanceMap
 	}
 
-	d.SetId(fmt.Sprintf(filter))
-	d.Set("instances", flattenedInstances)
+	instancesFiltered, err := helper.FilterResults(d, flattenedInstances)
+	if err != nil {
+		return diag.Errorf("failed to filter returned instances: %s", err)
+	}
+
+	d.SetId(filterID)
+	d.Set("instances", instancesFiltered)
 
 	return nil
 }

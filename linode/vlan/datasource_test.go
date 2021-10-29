@@ -14,11 +14,20 @@ import (
 	"time"
 )
 
+func preConfigVLANPoll(t *testing.T, vlanName string) func() {
+	return func() {
+		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		if _, err := waitForVLANWithLabel(client, vlanName, 30); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestAccDataSourceVLANs_basic(t *testing.T) {
 	t.Parallel()
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	vlanName := acctest.RandomWithPrefix("tf-test")
+	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
 
 	resource.Test(t, resource.TestCase{
@@ -29,21 +38,42 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t, instanceName, vlanName),
 			},
 			{
-				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-					if _, err := waitForVLANWithLabel(client, vlanName, 30); err != nil {
-						t.Fatal(err)
-					}
-				},
-				Config: tmpl.DataBasic(t, instanceName, vlanName),
+				PreConfig: preConfigVLANPoll(t, vlanName),
+				Config:    tmpl.DataBasic(t, instanceName, vlanName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", "us-southeast"),
 					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.linodes.#"),
+				),
+			},
+		},
+	})
+}
 
-					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order_by\":\"region\""),
-					acceptance.CheckResourceAttrContains(resourceName, "id", "\"+order\":\"desc\""),
+func TestAccDataSourceVLANs_regex(t *testing.T) {
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	vlanName := "tf-test"
+	resourceName := "data.linode_vlans.foolan"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: acceptance.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataRegex(t, instanceName, vlanName),
+			},
+			{
+				PreConfig: preConfigVLANPoll(t, vlanName),
+				Config:    tmpl.DataRegex(t, instanceName, vlanName),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "vlans.#", 0),
+					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName+"-new"),
+					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", "us-southeast"),
+					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.created"),
+					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.linodes.#"),
 				),
 			},
 		},

@@ -26,6 +26,8 @@ import (
 const optInTestsEnvVar = "ACC_OPT_IN_TESTS"
 const SkipInstanceReadyPollKey = "skip_instance_ready_poll"
 
+type AttrValidateFunc func(val string) error
+
 var (
 	optInTests         map[string]struct{}
 	privateKeyMaterial string
@@ -163,11 +165,47 @@ func CheckResourceAttrContains(resName string, path, desiredValue string) resour
 		}
 
 		if !strings.Contains(value, desiredValue) {
-			return fmt.Errorf("value was not found")
+			return fmt.Errorf("value '%s' was not found", desiredValue)
 		}
 
 		return nil
 	}
+}
+
+func ValidateResourceAttr(resName, path string, comparisonFunc AttrValidateFunc) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		value, ok := rs.Primary.Attributes[path]
+		if !ok {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		err := comparisonFunc(value)
+		if err != nil {
+			return fmt.Errorf("comparison failed: %s", err)
+		}
+
+		return nil
+	}
+}
+
+func CheckResourceAttrGreaterThan(resName, path string, target int) resource.TestCheckFunc {
+	return ValidateResourceAttr(resName, path, func(val string) error {
+		valInt, err := strconv.Atoi(val)
+		if err != nil {
+			return err
+		}
+
+		if !(valInt > target) {
+			return fmt.Errorf("%d <= %d", valInt, target)
+		}
+
+		return nil
+	})
 }
 
 func CheckResourceAttrNotEqual(resName string, path, notValue string) resource.TestCheckFunc {

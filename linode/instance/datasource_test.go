@@ -78,12 +78,27 @@ func TestAccDataSourceInstances_order(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Ensure order is correctly appended to filter
 					resource.TestCheckResourceAttr(resNameDesc, "instances.#", "3"),
-					acceptance.CheckResourceAttrContains(resNameDesc, "id", "\"+order_by\":\"id\""),
-					acceptance.CheckResourceAttrContains(resNameDesc, "id", "\"+order\":\"desc\""),
-
 					resource.TestCheckResourceAttr(resNameAsc, "instances.#", "3"),
-					acceptance.CheckResourceAttrContains(resNameAsc, "id", "\"+order_by\":\"id\""),
-					acceptance.CheckResourceAttrContains(resNameAsc, "id", "\"+order\":\"asc\""),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceInstances_regex(t *testing.T) {
+	resName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	groupName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataMultipleRegex(t, instanceName, groupName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
 				),
 			},
 		},

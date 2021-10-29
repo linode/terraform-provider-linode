@@ -38,6 +38,11 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	filterID, err := helper.GetFilterID(d)
+	if err != nil {
+		return diag.Errorf("failed to generate filter id: %s", err)
+	}
+
 	filter, err := helper.ConstructFilterString(d, vlanValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
@@ -56,8 +61,13 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		vlansFlattened[i] = flattenVLAN(&vlan)
 	}
 
-	d.SetId(filter)
-	d.Set("vlans", vlansFlattened)
+	vlansFiltered, err := helper.FilterResults(d, vlansFlattened)
+	if err != nil {
+		return diag.Errorf("failed to filter returned vlans: %s", err)
+	}
+
+	d.SetId(filterID)
+	d.Set("vlans", vlansFiltered)
 
 	return nil
 }

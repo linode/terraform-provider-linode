@@ -1,0 +1,11 @@
+{{ define "instance_types_data_substring" }}
+
+data "linode_instance_types" "foobar" {
+    filter {
+        name = "label"
+        values = ["Linode"]
+        match_by = "substring"
+    }
+}
+
+{{ end }}

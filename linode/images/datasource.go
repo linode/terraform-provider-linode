@@ -24,6 +24,11 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	latestFlag := d.Get("latest").(bool)
 
+	filterID, err := helper.GetFilterID(d)
+	if err != nil {
+		return diag.Errorf("failed to generate filter id: %s", err)
+	}
+
 	filter, err := helper.ConstructFilterString(d, imageValueToFilterType)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
@@ -32,17 +37,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	images, err := client.ListImages(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
-
 	if err != nil {
 		return diag.Errorf("failed to list linode images: %s", err)
-	}
-
-	if latestFlag {
-		latestImage := getLatestImage(images)
-
-		if latestImage != nil {
-			images = []linodego.Image{*latestImage}
-		}
 	}
 
 	imagesFlattened := make([]interface{}, len(images))
@@ -50,8 +46,21 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		imagesFlattened[i] = flattenImage(&image)
 	}
 
-	d.SetId(filter)
-	d.Set("images", imagesFlattened)
+	imagesFiltered, err := helper.FilterResults(d, imagesFlattened)
+	if err != nil {
+		return diag.Errorf("failed to filter returned images: %s", err)
+	}
+
+	if latestFlag {
+		latestImage := getLatestImage(imagesFiltered)
+
+		if latestImage != nil {
+			imagesFiltered = []map[string]interface{}{latestImage}
+		}
+	}
+
+	d.SetId(filterID)
+	d.Set("images", imagesFiltered)
 
 	return nil
 }
@@ -93,20 +102,28 @@ func imageValueToFilterType(filterName, value string) (interface{}, error) {
 	return value, nil
 }
 
-func getLatestImage(images []linodego.Image) *linodego.Image {
-	var result *linodego.Image
+func getLatestImage(images []map[string]interface{}) map[string]interface{} {
+	var latestCreated time.Time
+	var latestImage map[string]interface{}
 
 	for _, image := range images {
-		if image.Created == nil {
+		created, ok := image["created"]
+		if !ok {
 			continue
 		}
 
-		if result != nil && !image.Created.After(*result.Created) {
+		createdTime, err := time.Parse(time.RFC3339, created.(string))
+		if err != nil {
+			return nil
+		}
+
+		if latestImage != nil && !createdTime.After(latestCreated) {
 			continue
 		}
 
-		result = &image
+		latestCreated = createdTime
+		latestImage = image
 	}
 
-	return result
+	return latestImage
 }

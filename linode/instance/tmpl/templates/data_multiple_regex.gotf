@@ -1,0 +1,47 @@
+{{ define "instance_data_multiple_regex" }}
+
+resource "linode_instance" "foobar-0" {
+    label = "{{.Label}}-0"
+    group = "{{.Group}}"
+    tags = ["cool", "cooler"]
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+}
+
+resource "linode_instance" "foobar-1" {
+    label = "{{.Label}}-1"
+    group = "{{.Group}}"
+    tags = ["cool", "cooler"]
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+}
+
+resource "linode_instance" "foobar-2" {
+    label = "{{.Label}}-2"
+    group = "{{.Group}}"
+    tags = ["cool", "cooler"]
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+}
+
+data "linode_instances" "foobar" {
+    depends_on = [
+        linode_instance.foobar-0,
+        linode_instance.foobar-1,
+        linode_instance.foobar-2
+    ]
+
+    filter {
+        name = "label"
+        values = ["{{.Label}}-.*"]
+        match_by = "re"
+    }
+}
+
+{{ end }}

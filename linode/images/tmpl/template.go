@@ -29,3 +29,8 @@ func DataOrder(t *testing.T, image string) string {
 	return acceptance.ExecuteTemplate(t,
 		"images_data_order", TemplateData{Image: image})
 }
+
+func DataSubstring(t *testing.T, image string) string {
+	return acceptance.ExecuteTemplate(t,
+		"images_data_substring", TemplateData{Image: image})
+}
