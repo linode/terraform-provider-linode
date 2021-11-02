@@ -1,15 +1,14 @@
 package images
 
 import (
+	"context"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-
-	"context"
-	"strconv"
 )
 
 func DataSource() *schema.Resource {
@@ -52,7 +51,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if latestFlag {
-		latestImage := getLatestImage(imagesFiltered)
+		latestImage := helper.GetLatestCreated(imagesFiltered)
 
 		if latestImage != nil {
 			imagesFiltered = []map[string]interface{}{latestImage}
@@ -100,30 +99,4 @@ func imageValueToFilterType(filterName, value string) (interface{}, error) {
 	}
 
 	return value, nil
-}
-
-func getLatestImage(images []map[string]interface{}) map[string]interface{} {
-	var latestCreated time.Time
-	var latestImage map[string]interface{}
-
-	for _, image := range images {
-		created, ok := image["created"]
-		if !ok {
-			continue
-		}
-
-		createdTime, err := time.Parse(time.RFC3339, created.(string))
-		if err != nil {
-			return nil
-		}
-
-		if latestImage != nil && !createdTime.After(latestCreated) {
-			continue
-		}
-
-		latestCreated = createdTime
-		latestImage = image
-	}
-
-	return latestImage
 }

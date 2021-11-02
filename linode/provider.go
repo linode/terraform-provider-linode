@@ -34,6 +34,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/region"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
+	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
@@ -139,6 +140,7 @@ func Provider() *schema.Provider {
 			"linode_region":                 region.DataSource(),
 			"linode_sshkey":                 sshkey.DataSource(),
 			"linode_stackscript":            stackscript.DataSource(),
+			"linode_stackscripts":           stackscripts.DataSource(),
 			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  vlan.DataSource(),
 			"linode_volume":                 volume.DataSource(),

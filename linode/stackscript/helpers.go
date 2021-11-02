@@ -11,16 +11,26 @@ func setStackScriptUserDefinedFields(d *schema.ResourceData, ss *linodego.Stacks
 		return
 	}
 
-	udfs := []map[string]string{}
-	for _, udf := range *ss.UserDefinedFields {
-		udfs = append(udfs, map[string]string{
+	udfs := GetStackScriptUserDefinedFields(ss)
+	d.Set("user_defined_fields", udfs)
+}
+
+func GetStackScriptUserDefinedFields(ss *linodego.Stackscript) []map[string]string {
+	if ss.UserDefinedFields == nil {
+		return nil
+	}
+
+	result := make([]map[string]string, len(*ss.UserDefinedFields))
+	for i, udf := range *ss.UserDefinedFields {
+		result[i] = map[string]string{
 			"default": udf.Default,
 			"example": udf.Example,
 			"many_of": udf.ManyOf,
 			"one_of":  udf.OneOf,
 			"label":   udf.Label,
 			"name":    udf.Name,
-		})
+		}
 	}
-	d.Set("user_defined_fields", udfs)
+
+	return result
 }
