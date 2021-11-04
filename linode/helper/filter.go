@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -258,4 +259,30 @@ func validateFilterRegex(values []string, result string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func GetLatestCreated(data []map[string]interface{}) map[string]interface{} {
+	var latestCreated time.Time
+	var latestEntity map[string]interface{}
+
+	for _, image := range data {
+		created, ok := image["created"]
+		if !ok {
+			continue
+		}
+
+		createdTime, err := time.Parse(time.RFC3339, created.(string))
+		if err != nil {
+			return nil
+		}
+
+		if latestEntity != nil && !createdTime.After(latestCreated) {
+			continue
+		}
+
+		latestCreated = createdTime
+		latestEntity = image
+	}
+
+	return latestEntity
 }

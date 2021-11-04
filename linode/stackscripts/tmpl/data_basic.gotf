@@ -1,0 +1,24 @@
+{{ define "stackscripts_data_basic" }}
+
+resource "linode_stackscript" "stackscript" {
+    label = "{{.Label}}"
+    script = <<EOF
+{{.Script}}EOF
+	images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+	description = "test"
+	rev_note = "initial"
+}
+
+data "linode_stackscripts" "stackscript" {
+	filter {
+		name = "label"
+		values = [linode_stackscript.stackscript.label]
+	}
+
+	filter {
+		name = "is_public"
+		values = [false]
+	}
+}
+
+{{ end }}
