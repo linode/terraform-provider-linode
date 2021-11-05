@@ -80,6 +80,51 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 	})
 }
 
+// This test is necessary to test a race-condition introduced by provisioning
+// multiple concurrent VLAN instances.
+// This test is opt-in as it has the potential to spawn a large number of VLANs,
+// which cannot be deleted without admin intervention.
+func TestAccDataSourceVLANs_ensureNoDuplicates(t *testing.T) {
+	acceptance.OptInTest(t)
+
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	vlanName := acctest.RandomWithPrefix("tf-test")
+	resourceName := "data.linode_vlans.foolan"
+
+	createValidateSteps := func(i int) []resource.TestStep {
+		vlanName := fmt.Sprintf("%s-%d", vlanName, i)
+
+		return []resource.TestStep{
+			{
+				Config: tmpl.DataCheckDuplicate(t, instanceName, vlanName),
+			},
+			{
+				PreConfig: preConfigVLANPoll(t, vlanName),
+				Config:    tmpl.DataCheckDuplicate(t, instanceName, vlanName),
+				Check: resource.ComposeTestCheckFunc(
+					// Ensure only one VLAN is created
+					resource.TestCheckResourceAttr(resourceName, "vlans.#", "1"),
+				),
+			},
+		}
+	}
+
+	var steps []resource.TestStep
+
+	// Run this test multiple times to test on updates
+	for i := 0; i < 3; i++ {
+		steps = append(steps, createValidateSteps(i)...)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: acceptance.TestAccProviders,
+		Steps:     steps,
+	})
+}
+
 // waitForVLANWithLabel polls for a VLAN with the given label to exist
 // This is necessary in this context because it is not guaranteed that a VLAN will
 // be created immediately after the instance is created.

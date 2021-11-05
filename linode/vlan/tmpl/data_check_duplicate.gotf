@@ -1,0 +1,26 @@
+{{ define "vlan_data_check_duplicate" }}
+
+resource "linode_instance" "fooinst" {
+    count = 4
+
+    label = "{{.InstLabel}}-${count.index}"
+    type = "g6-standard-1"
+    image = "linode/alpine3.13"
+    region = "us-southeast"
+
+    interface {
+        label = "{{.VLANLabel}}"
+        purpose = "vlan"
+        ipam_address = "10.0.0.${count.index}/24"
+    }
+}
+
+data "linode_vlans" "foolan" {
+    filter {
+        name = "label"
+        values = ["{{.VLANLabel}}"]
+        match_by = "substring"
+    }
+}
+
+{{ end }}
