@@ -116,4 +116,18 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "A node pool in the cluster.",
 	},
+	"control_plane": {
+		Type: schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"high_availability": {
+					Type:        schema.TypeBool,
+					Description: "Defines whether High Availability is enabled for the Control Plane Components of the cluster.",
+					Computed:    true,
+				},
+			},
+		},
+		Computed:    true,
+		Description: "Defines settings for the Kubernetes Control Plane.",
+	},
 }

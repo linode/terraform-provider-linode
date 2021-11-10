@@ -18,7 +18,7 @@ import (
 const uaEnvVar = "TF_APPEND_USER_AGENT"
 
 // DefaultLinodeURL is the Linode APIv4 URL to use.
-const DefaultLinodeURL = "https://api.linode.com/v4"
+const DefaultLinodeURL = "https://api.linode.com"
 
 type ProviderMeta struct {
 	Client linodego.Client

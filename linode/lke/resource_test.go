@@ -3,6 +3,7 @@ package lke_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -95,6 +96,8 @@ func TestAccResourceLKECluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-2"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
 					resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
 					resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 					resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
@@ -314,6 +317,46 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceLKECluster_controlPlane(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+	//newClusterName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ControlPlane(t, clusterName, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
+				),
+			},
+			{
+				Config: tmpl.ControlPlane(t, clusterName, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
+				),
+			},
+			{
+				Config: tmpl.ControlPlane(t, clusterName, false),
+
+				// Expect a 400 response when attempting to disable HA
+				ExpectError: regexp.MustCompile("\\[400]"),
 			},
 		},
 	})

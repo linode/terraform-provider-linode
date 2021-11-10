@@ -1,0 +1,9 @@
+{{ define "lke_cluster_data_control_plane" }}
+
+{{ template "lke_cluster_control_plane" . }}
+
+data "linode_lke_cluster" "test" {
+    id = linode_lke_cluster.test.id
+}
+
+{{ end }}

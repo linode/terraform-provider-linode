@@ -40,6 +40,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
 	}
 
+	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane)
+
 	d.SetId(strconv.Itoa(id))
 	d.Set("label", cluster.Label)
 	d.Set("k8s_version", cluster.K8sVersion)
@@ -49,5 +51,6 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("pools", flattenLKEClusterPools(pools))
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
+	d.Set("control_plane", []interface{}{flattenedControlPlane})
 	return nil
 }

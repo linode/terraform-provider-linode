@@ -61,3 +61,5 @@ In addition to all arguments above, the following attributes are exported:
     * `min` - The minimum number of nodes to autoscale to.
 
     * `max` - The maximum number of nodes to autoscale to.
+
+* `control_plane.0.high_availability` - Whether High Availability is enabled for the cluster Control Plane.
