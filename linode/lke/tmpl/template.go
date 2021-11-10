@@ -7,8 +7,9 @@ import (
 )
 
 type TemplateData struct {
-	Label      string
-	K8sVersion string
+	Label            string
+	K8sVersion       string
+	HighAvailability bool
 }
 
 func Basic(t *testing.T, name string) string {
@@ -49,6 +50,11 @@ func AutoscalerManyPools(t *testing.T, name string) string {
 		"lke_cluster_autoscaler_many_pools", TemplateData{Label: name})
 }
 
+func ControlPlane(t *testing.T, name string, ha bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_control_plane", TemplateData{Label: name, HighAvailability: ha})
+}
+
 func DataBasic(t *testing.T, name string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name})
@@ -57,4 +63,9 @@ func DataBasic(t *testing.T, name string) string {
 func DataAutoscaler(t *testing.T, name string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_autoscaler", TemplateData{Label: name})
+}
+
+func DataControlPlane(t *testing.T, name string, ha bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_control_plane", TemplateData{Label: name, HighAvailability: ha})
 }

@@ -74,6 +74,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
 	}
 
+	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane)
+
 	d.Set("label", cluster.Label)
 	d.Set("k8s_version", cluster.K8sVersion)
 	d.Set("region", cluster.Region)
@@ -82,6 +84,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 	d.Set("pool", flattenLKEClusterPools(matchPoolsWithSchema(pools, declaredPools)))
+	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})
 
 	return nil
 }
@@ -89,10 +92,17 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	controlPlane := d.Get("control_plane").([]interface{})
+
 	createOpts := linodego.LKEClusterCreateOptions{
 		Label:      d.Get("label").(string),
 		Region:     d.Get("region").(string),
 		K8sVersion: d.Get("k8s_version").(string),
+	}
+
+	if len(controlPlane) > 0 {
+		expandedControlPlane := expandLKEClusterControlPlane(controlPlane[0].(map[string]interface{}))
+		createOpts.ControlPlane = &expandedControlPlane
 	}
 
 	for _, nodePool := range d.Get("pool").([]interface{}) {
@@ -134,6 +144,13 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	updateOpts := linodego.LKEClusterUpdateOptions{}
 	updateOpts.Label = d.Get("label").(string)
 	updateOpts.K8sVersion = d.Get("k8s_version").(string)
+
+	controlPlane := d.Get("control_plane").([]interface{})
+	if len(controlPlane) > 0 {
+		expandedControlPlane := expandLKEClusterControlPlane(controlPlane[0].(map[string]interface{}))
+		updateOpts.ControlPlane = &expandedControlPlane
+	}
+
 	if d.HasChange("tags") {
 		tags := []string{}
 		for _, tag := range d.Get("tags").(*schema.Set).List() {
@@ -142,7 +159,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		updateOpts.Tags = &tags
 	}
-	if d.HasChanges("label", "tags", "k8s_version") {
+	if d.HasChanges("label", "tags", "k8s_version", "control_plane") {
 		if _, err := client.UpdateLKECluster(ctx, id, updateOpts); err != nil {
 			return diag.Errorf("failed to update LKE Cluster %d: %s", id, err)
 		}

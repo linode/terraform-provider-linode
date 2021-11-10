@@ -442,3 +442,21 @@ func flattenLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]interf
 	}
 	return flattened
 }
+
+func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane) map[string]interface{} {
+	flattened := make(map[string]interface{})
+
+	flattened["high_availability"] = controlPlane.HighAvailability
+
+	return flattened
+}
+
+func expandLKEClusterControlPlane(controlPlane map[string]interface{}) linodego.LKEClusterControlPlane {
+	var result linodego.LKEClusterControlPlane
+
+	if value, ok := controlPlane["high_availability"]; ok {
+		result.HighAvailability = value.(bool)
+	}
+
+	return result
+}

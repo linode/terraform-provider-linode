@@ -61,11 +61,13 @@ The following arguments are supported:
 
 * [`pool`](#pool) - (Required) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required.
 
+* [`control_plane`](#control_plane) (Optional) Defines settings for the Kubernetes Control Plane.
+
 * `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
 
 ### pool
 
-The following arguments are supported in the pool specification block:
+The following arguments are supported in the `pool` specification block:
 
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
@@ -75,11 +77,17 @@ The following arguments are supported in the pool specification block:
 
 ### autoscaler
 
-The following arguments are supported in the autoscaler specification block:
+The following arguments are supported in the `autoscaler` specification block:
 
 * `min` - (Required) The minimum number of nodes to autoscale to.
 
 * `max` - (Required) The maximum number of nodes to autoscale to.
+
+### control_plane
+
+The following arguments are supported in the `control_plane` specification block:
+
+* `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change. **NOTICE:** High Availability Control Planes are currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/master/EARLY_ACCESS.md).
 
 ## Attributes Reference
 

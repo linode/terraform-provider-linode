@@ -1,0 +1,19 @@
+{{ define "lke_cluster_control_plane" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "us-central"
+    k8s_version = "1.21"
+    tags        = ["test"]
+
+    control_plane {
+        high_availability = {{.HighAvailability}}
+    }
+
+    pool {
+        type  = "g6-standard-2"
+        count = 1
+    }
+}
+
+{{ end }}
