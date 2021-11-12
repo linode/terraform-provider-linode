@@ -55,15 +55,17 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to get instances: %s", err)
 	}
 
+	instanceIDMap := make(map[int]linodego.Instance, len(instances))
+
+	// Create a list of filterable instance maps
 	flattenedInstances := make([]interface{}, len(instances))
 	for i, instance := range instances {
-		instanceMap, err := flattenInstance(ctx, &client, &instance)
-		if err != nil {
-			return diag.Errorf("failed to translate instance to map: %s", err)
-		}
+		instanceIDMap[instance.ID] = instance
 
-		// Merge additional fields
-		instanceMap["id"] = instance.ID
+		instanceMap, err := flattenInstanceSimple(&instance)
+		if err != nil {
+			return diag.Errorf("failed to translate instance to filterable map: %s", err)
+		}
 
 		flattenedInstances[i] = instanceMap
 	}
@@ -71,6 +73,18 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	instancesFiltered, err := helper.FilterResults(d, flattenedInstances)
 	if err != nil {
 		return diag.Errorf("failed to filter returned instances: %s", err)
+	}
+
+	// Fully populate returned instances
+	for i, instance := range instancesFiltered {
+		instanceObject := instanceIDMap[instance["id"].(int)]
+
+		instanceMap, err := flattenInstance(ctx, &client, &instanceObject)
+		if err != nil {
+			return diag.Errorf("failed to translate instance to map: %s", err)
+		}
+
+		instancesFiltered[i] = instanceMap
 	}
 
 	d.SetId(filterID)

@@ -36,6 +36,7 @@ func flattenInstance(
 		result["private_ip_address"] = private[0].Address
 	}
 
+	result["id"] = instance.ID
 	result["label"] = instance.Label
 	result["status"] = instance.Status
 	result["type"] = instance.Type
@@ -196,4 +197,30 @@ func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
 		"memory":   instance.Specs.Memory,
 		"transfer": instance.Specs.Transfer,
 	}}
+}
+
+func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+
+	var ips []string
+	for _, ip := range instance.IPv4 {
+		ips = append(ips, ip.String())
+	}
+
+	result["id"] = instance.ID
+	result["ipv4"] = ips
+	result["ipv6"] = instance.IPv6
+	result["label"] = instance.Label
+	result["status"] = instance.Status
+	result["type"] = instance.Type
+	result["region"] = instance.Region
+	result["watchdog_enabled"] = instance.WatchdogEnabled
+	result["group"] = instance.Group
+	result["tags"] = instance.Tags
+	result["image"] = instance.Image
+	result["backups"] = flattenInstanceBackups(*instance)
+	result["specs"] = flattenInstanceSpecs(*instance)
+	result["alerts"] = flattenInstanceAlerts(*instance)
+
+	return result, nil
 }
