@@ -14,6 +14,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -650,8 +651,18 @@ func changeInstanceType(
 	if err := client.ResizeInstance(ctx, instance.ID, resizeOpts); err != nil {
 		return nil, fmt.Errorf("Error resizing Instance %d: %s", instance.ID, err)
 	}
+
+	// This is necessary as linode_resize events are scheduled to be created long-after the initial
+	// resize request. In order to ensure we're polling on the correct event, we need use the
+	// creation date of the pre-resize event.
+	resizeCreateEvent, err := helper.GetLatestEvent(ctx, client, instance.ID, linodego.EntityLinode,
+		linodego.ActionLinodeResizeCreate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get instance resize_create event %d: %s", instance.ID, err)
+	}
+
 	_, err = client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize,
-		*instance.Created, getDeadlineSeconds(ctx, d))
+		*resizeCreateEvent.Created, getDeadlineSeconds(ctx, d))
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
