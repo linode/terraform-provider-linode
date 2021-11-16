@@ -128,6 +128,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Elem:        &schema.Schema{Type: schema.TypeInt},
 		Description: "The IDs of Linodes to apply this firewall to.",
 		Optional:    true,
+		Computed:    true,
 		Set:         schema.HashInt,
 	},
 	"devices": {
