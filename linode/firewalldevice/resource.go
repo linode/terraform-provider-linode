@@ -113,7 +113,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	firewallID, ok := d.Get("firewall_id").(int)
 	if !ok {
-		return diag.Errorf("Error parsing Linode Firewall Device ID %v as int", d.Get("nodebalancer_id"))
+		return diag.Errorf("Error parsing Linode Firewall Device ID %v as int", d.Get("firewall_id"))
 	}
 
 	err = client.DeleteFirewallDevice(ctx, firewallID, int(id))
