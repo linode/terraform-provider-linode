@@ -313,6 +313,37 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 	}
 }
 
+func CheckEventAbsent(name string, entityType linodego.EntityType, action linodego.EventAction) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error parsing %v to int", rs.Primary.ID)
+		}
+
+		event, err := helper.GetLatestEvent(context.Background(), &client, id, entityType, action)
+		if err != nil {
+			return err
+		}
+
+		if event != nil {
+			return fmt.Errorf("event exists: %d", event.ID)
+		}
+
+		return nil
+	}
+}
+
 func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
 	var b bytes.Buffer
 

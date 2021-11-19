@@ -12,6 +12,7 @@ type TemplateData struct {
 	Type   string
 	Image  string
 	Group  string
+	Tag    string
 
 	SwapSize int
 
@@ -170,6 +171,14 @@ func TagUpdate(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag_update", TemplateData{
 			Label: label,
+		})
+}
+
+func TagVolume(t *testing.T, label, tag string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_tag_volume", TemplateData{
+			Label: label,
+			Tag:   tag,
 		})
 }
 
