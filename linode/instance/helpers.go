@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -220,7 +221,7 @@ func updateInstanceConfigs(
 			}
 
 			if configUpdateOpts.Devices != nil {
-				detacher := makeVolumeDetacher(client, d)
+				detacher := makeVolumeDetacherIgnoreAttached(client, d)
 
 				if detachErr := detachConfigVolumes(ctx, *configUpdateOpts.Devices, detacher); detachErr != nil {
 					return rebootInstance, updatedConfigMap, updatedConfigs, detachErr
@@ -349,6 +350,27 @@ func makeVolumeDetacher(client linodego.Client, d *schema.ResourceData) volumeDe
 			return err
 		}
 		return nil
+	}
+}
+
+func makeVolumeDetacherIgnoreAttached(client linodego.Client, d *schema.ResourceData) volumeDetacher {
+	return func(ctx context.Context, volumeID int, reason string) error {
+		id, err := strconv.Atoi(d.Id())
+		if err != nil {
+			return err
+		}
+
+		vol, err := client.GetVolume(ctx, volumeID)
+		if err != nil {
+			return err
+		}
+
+		if vol.LinodeID != nil && *vol.LinodeID == id {
+			log.Printf("[INFO] Volume %d is already attached to Linode %d, ignoring ...", volumeID, id)
+			return nil
+		}
+
+		return makeVolumeDetacher(client, d)(ctx, volumeID, reason)
 	}
 }
 

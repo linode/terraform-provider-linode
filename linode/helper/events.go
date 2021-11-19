@@ -2,7 +2,6 @@ package helper
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/linode/linodego"
 )
@@ -35,7 +34,7 @@ func GetLatestEvent(ctx context.Context, client *linodego.Client,
 	}
 
 	if len(events) < 1 {
-		return nil, fmt.Errorf("failed to get event %s of %s (%d)", action, entityType, entityID)
+		return nil, nil
 	}
 
 	return &events[0], nil

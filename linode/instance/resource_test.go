@@ -966,6 +966,44 @@ func TestAccResourceInstance_tag(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_tagWithVolume(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	label := acctest.RandomWithPrefix("tf_test")
+
+	instanceResName := "linode_instance.foobar"
+	volumeResName := "linode_volume.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.TagVolume(t, label, "tf_test"),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+					resource.TestCheckResourceAttr(instanceResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(instanceResName, "tags.0", "tf_test"),
+				),
+			},
+			{
+				Config: tmpl.TagVolume(t, label, "tf_test_updated"),
+				Check: resource.ComposeTestCheckFunc(
+					// Ensure the volume is not detached
+					acceptance.CheckEventAbsent(volumeResName, "volume", linodego.ActionVolumeDetach),
+
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+					resource.TestCheckResourceAttr(instanceResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(instanceResName, "tags.0", "tf_test_updated"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_diskRawDeleted(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance
