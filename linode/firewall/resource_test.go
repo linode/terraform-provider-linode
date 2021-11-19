@@ -3,12 +3,10 @@ package firewall_test
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/firewall/tmpl"
@@ -361,7 +359,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					checkFirewallExists(testFirewallResName, &firewall),
+					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
@@ -403,7 +401,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					checkFirewallExists(testFirewallResName, &firewall),
+					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
@@ -468,33 +466,4 @@ func TestAccLinodeFirewall_emptyIPv6(t *testing.T) {
 			},
 		},
 	})
-}
-
-func checkFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("Not found: %s", name)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		found, err := client.GetFirewall(context.Background(), id)
-		if err != nil {
-			return fmt.Errorf("Error retrieving state of Firewall %s: %s", rs.Primary.Attributes["label"], err)
-		}
-
-		*firewall = *found
-
-		return nil
-	}
 }

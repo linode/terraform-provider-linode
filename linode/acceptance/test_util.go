@@ -313,6 +313,35 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 	}
 }
 
+func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+
+		found, err := client.GetFirewall(context.Background(), id)
+		if err != nil {
+			return fmt.Errorf("Error retrieving state of Firewall %s: %s", rs.Primary.Attributes["label"], err)
+		}
+
+		*firewall = *found
+
+		return nil
+	}
+}
+
 func CheckEventAbsent(name string, entityType linodego.EntityType, action linodego.EventAction) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
