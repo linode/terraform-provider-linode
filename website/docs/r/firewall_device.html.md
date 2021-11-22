@@ -10,6 +10,8 @@ description: |-
 
 Manages a Linode Firewall Device.
 
+**NOTICE:** Attaching a Linode Firewall Device to a `linode_firewall` resource with user-defined `linodes` may cause device conflicts.
+
 ## Example Usage
 
 ```terraform
