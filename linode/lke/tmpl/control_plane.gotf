@@ -3,7 +3,7 @@
 resource "linode_lke_cluster" "test" {
     label       = "{{.Label}}"
     region      = "us-central"
-    k8s_version = "1.21"
+    k8s_version = "{{.K8sVersion}}"
     tags        = ["test"]
 
     control_plane {

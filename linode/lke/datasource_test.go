@@ -21,11 +21,11 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, clusterName),
+				Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "region", "us-central"),
-					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", "1.20"),
+					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionLatest),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "pools.#", "1"),
@@ -52,11 +52,11 @@ func TestAccDataSourceLKECluster_autoscaler(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataAutoscaler(t, clusterName),
+				Config: tmpl.DataAutoscaler(t, clusterName, k8sVersionLatest),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "region", "us-central"),
-					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", "1.20"),
+					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionLatest),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "pools.#", "1"),
@@ -85,11 +85,11 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataControlPlane(t, clusterName, true),
+				Config: tmpl.DataControlPlane(t, clusterName, k8sVersionLatest, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "region", "us-central"),
-					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", "1.21"),
+					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionLatest),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "pools.#", "1"),
