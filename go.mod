@@ -1,7 +1,7 @@
 module github.com/linode/terraform-provider-linode
 
 require (
-	github.com/aws/aws-sdk-go v1.41.3
+	github.com/aws/aws-sdk-go v1.42.16
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.9.0
 	github.com/linode/linodego v1.2.1
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
