@@ -152,6 +152,8 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 
 #### Disks
 
+**NOTICE:** Disks must currently be renamed in order to be recreated within Terraform. This may be necessary when updating fields such as `image`.
+
 * `disk`
 
   * `label` - (Required) The disks label, which acts as an identifier in Terraform.  This must be unique within each Linode Instance.
