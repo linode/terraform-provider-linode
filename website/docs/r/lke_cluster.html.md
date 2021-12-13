@@ -97,7 +97,7 @@ The following arguments are supported in the `control_plane` specification block
 
 This Node Pool’s custom disk layout. Each item in this array will create a new disk partition for each node in this Node Pool.
 
-The custom disk layout is applied to each node in this Node Pool.  The maximum number of custom disk partitions that can be configured is 7. Once the requested disk paritions are allocated, the remaining disk space is allocated to the node’s boot disk.
+The custom disk layout is applied to each node in this Node Pool. The maximum number of custom disk partitions that can be configured is 7. Once the requested disk partitions are allocated, the remaining disk space is allocated to the node’s boot disk.
 A Node Pool’s custom disk layout is immutable over the lifetime of the Node Pool.
 
 * `size` - (Required) The size of this custom disk partition in MB.
