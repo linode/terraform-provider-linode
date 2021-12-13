@@ -75,6 +75,11 @@ The following arguments are supported in the `pool` specification block:
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
+* `tags` - (Optional) An array of tags applied to the Node Pool. Tags are for organizational purposes only.
+
+* [`disk`](#disk) - (Optional) An array of custom partitions to create on each node, in addition to the boot partition.
+
+
 ### autoscaler
 
 The following arguments are supported in the `autoscaler` specification block:
@@ -88,6 +93,16 @@ The following arguments are supported in the `autoscaler` specification block:
 The following arguments are supported in the `control_plane` specification block:
 
 * `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change. **NOTICE:** High Availability Control Planes are currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/master/EARLY_ACCESS.md).
+
+### disk
+
+This Node Pool’s custom disk layout. Each item in this array will create a new disk partition for each node in this Node Pool.
+
+The custom disk layout is applied to each node in this Node Pool.  The maximum number of custom disk partitions that can be configured is 7. Once the requested disk paritions are allocated, the remaining disk space is allocated to the node’s boot disk.
+A Node Pool’s custom disk layout is immutable over the lifetime of the Node Pool.
+
+* `size` - (Required) The size of this custom disk partition in MB.
+* `type` - (Required) This custom disk partition’s filesystem type. One of: `raw` `ext4`.
 
 ## Attributes Reference
 

@@ -338,6 +338,14 @@ func waitGroupCh(wg *sync.WaitGroup) <-chan struct{} {
 	return done
 }
 
+func poolMatchesDeclaredPool(pool *linodego.LKEClusterPool, declaredPool map[string]interface{}) bool {
+	if pool.Type != declaredPool["type"] || pool.Count != declaredPool["count"] {
+		return false
+	}
+
+	return true
+}
+
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
 func matchPoolsWithSchema(pools []linodego.LKEClusterPool, declaredPools []interface{}) []linodego.LKEClusterPool {
@@ -352,13 +360,12 @@ func matchPoolsWithSchema(pools []linodego.LKEClusterPool, declaredPools []inter
 		declaredPool := declaredPool.(map[string]interface{})
 
 		for key, pool := range poolMap {
-			if pool.Count != declaredPool["count"] || pool.Type != declaredPool["type"] {
-				continue
+			if pool.ID == declaredPool["id"] || poolMatchesDeclaredPool(&pool, declaredPool) {
+				result[i] = pool
+				delete(poolMap, key)
+				break
 			}
 
-			result[i] = pool
-			delete(poolMap, key)
-			break
 		}
 	}
 
@@ -432,12 +439,22 @@ func flattenLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]interf
 			}
 		}
 
+		disks := make([]map[string]interface{}, len(pool.Disks))
+		for i, disk := range pool.Disks {
+			disks[i] = map[string]interface{}{
+				"size": disk.Size,
+				"type": disk.Type,
+			}
+		}
+
 		flattened[i] = map[string]interface{}{
 			"id":         pool.ID,
 			"count":      pool.Count,
 			"type":       pool.Type,
 			"nodes":      nodes,
 			"autoscaler": autoscaler,
+			"tags":       pool.Tags,
+			"disk":       disks,
 		}
 	}
 	return flattened

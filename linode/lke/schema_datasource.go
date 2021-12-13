@@ -67,6 +67,31 @@ var dataSourceSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "A Linode Type for all of the nodes in the Node Pool.",
 				},
+				"disk": {
+					Type: schema.TypeList,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"size": {
+								Type:        schema.TypeInt,
+								Description: "The size of this custom disk partition in MB. The size of this disk partition must not exceed the capacity of the node’s plan type.",
+								Computed:    true,
+							},
+							"type": {
+								Type:        schema.TypeString,
+								Description: "The custom disk partition type. Supported values: `raw` or `ext4`.",
+								Computed:    true,
+							},
+						},
+					},
+					Description: "If specified, creates additional disk partitions for each node. This field should be omitted except for special use cases. The disks specified here are partitions in addition to the primary partition and reduce the size of the primary partition, which can lead to stability problems for the Node.",
+					Computed:    true,
+				},
+				"tags": {
+					Type:        schema.TypeSet,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Computed:    true,
+					Description: "An array of tags applied to this pool. Tags are for organizational purposes only.",
+				},
 				"nodes": {
 					Type: schema.TypeList,
 					Elem: &schema.Resource{

@@ -62,4 +62,12 @@ In addition to all arguments above, the following attributes are exported:
 
     * `max` - The maximum number of nodes to autoscale to.
 
+  * `tags` - The tags applied to the node pool.
+
+  * `disk` - The custom disk partitions for the node pool.
+  
+    * `size` - The size in MB of the disk partition.
+
+    * `type` - The filesystem type of the partition. (`raw`, `ext4`) 
+
 * `control_plane.0.high_availability` - Whether High Availability is enabled for the cluster Control Plane.

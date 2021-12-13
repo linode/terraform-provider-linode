@@ -108,10 +108,32 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	for _, nodePool := range d.Get("pool").([]interface{}) {
 		poolSpec := nodePool.(map[string]interface{})
 
+		poolTags := make([]string, 0)
+		if tagsRaw, tagsOk := poolSpec["tags"]; tagsOk {
+			for _, tag := range tagsRaw.(*schema.Set).List() {
+				poolTags = append(poolTags, tag.(string))
+			}
+		}
+
+		disks := make([]linodego.LKEClusterPoolDisk, 0)
+		if disksRaw, disksOk := poolSpec["disk"]; disksOk {
+			for _, diskSpec := range disksRaw.([]interface{}) {
+				diskMap := diskSpec.(map[string]interface{})
+				disk := linodego.LKEClusterPoolDisk{
+					Type: diskMap["type"].(string),
+					Size: diskMap["size"].(int),
+				}
+
+				disks = append(disks, disk)
+			}
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKEClusterPoolCreateOptions{
 			Type:       poolSpec["type"].(string),
 			Count:      poolSpec["count"].(int),
 			Autoscaler: expandLinodeLKEClusterAutoscalerFromPool(poolSpec),
+			Tags:       poolTags,
+			Disks:      disks,
 		})
 	}
 
