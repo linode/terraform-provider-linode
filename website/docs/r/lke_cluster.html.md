@@ -79,7 +79,6 @@ The following arguments are supported in the `pool` specification block:
 
 * [`disk`](#disk) - (Optional) An array of custom partitions to create on each node, in addition to the boot partition.
 
-
 ### autoscaler
 
 The following arguments are supported in the `autoscaler` specification block:
