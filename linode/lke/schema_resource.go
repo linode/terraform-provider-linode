@@ -71,9 +71,10 @@ var resourceSchema = map[string]*schema.Schema{
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"size": {
-								Type:        schema.TypeInt,
-								Description: "The size of this custom disk partition in MB. The size of this disk partition must not exceed the capacity of the node’s plan type.",
-								Required:    true,
+								Type: schema.TypeInt,
+								Description: "The size of this custom disk partition in MB. " +
+									"The size of this disk partition must not exceed the capacity of the node’s plan type.",
+								Required: true,
 							},
 							"type": {
 								Type:        schema.TypeString,
@@ -82,9 +83,16 @@ var resourceSchema = map[string]*schema.Schema{
 							},
 						},
 					},
-					Description: "If specified, creates additional disk partitions for each node. This field should be omitted except for special use cases. The disks specified here are partitions in addition to the primary partition and reduce the size of the primary partition, which can lead to stability problems for the Node.",
-					Optional:    true,
-                                        ForceNew:    true,
+					Description: "If specified, creates additional disk partitions for each node. " +
+						"This field should be omitted except for special use cases. The disks specified " +
+						"here are partitions in addition to the primary partition and reduce the size of the " +
+						"primary partition, which can lead to stability problems for the Node.",
+					Optional: true,
+
+					// This ForceNew is necessary for the pool recreation to be shown during plan.
+					// This isn't ideal since it requires the entire cluster to be recreated, but it's
+					// the best solution we have right now.
+					ForceNew: true,
 				},
 				"tags": {
 					Type:        schema.TypeSet,
