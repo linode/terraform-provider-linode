@@ -339,11 +339,7 @@ func waitGroupCh(wg *sync.WaitGroup) <-chan struct{} {
 }
 
 func poolMatchesDeclaredPool(pool *linodego.LKEClusterPool, declaredPool map[string]interface{}) bool {
-	if pool.Type != declaredPool["type"] || pool.Count != declaredPool["count"] {
-		return false
-	}
-
-	return true
+        return pool.Type == declaredPool["type"] && pool.Count == declaredPool["count"]
 }
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
