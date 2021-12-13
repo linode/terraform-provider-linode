@@ -68,6 +68,6 @@ In addition to all arguments above, the following attributes are exported:
   
     * `size` - The size in MB of the disk partition.
 
-    * `type` - The filesystem type of the partition. (`raw`, `ext4`) 
+    * `type` - The filesystem type of the partition. (`raw`, `ext4`)
 
 * `control_plane.0.high_availability` - Whether High Availability is enabled for the cluster Control Plane.
