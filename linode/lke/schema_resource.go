@@ -82,8 +82,6 @@ var resourceSchema = map[string]*schema.Schema{
 							},
 						},
 					},
-					MinItems:    1,
-					MaxItems:    7,
 					Description: "If specified, creates additional disk partitions for each node. This field should be omitted except for special use cases. The disks specified here are partitions in addition to the primary partition and reduce the size of the primary partition, which can lead to stability problems for the Node.",
 					Optional:    true,
 				},
