@@ -356,10 +356,6 @@ func waitGroupCh(wg *sync.WaitGroup) <-chan struct{} {
 	return done
 }
 
-func poolMatchesDeclaredPool(pool *linodego.LKEClusterPool, declaredPool map[string]interface{}) bool {
-	return pool.Type == declaredPool["type"] && pool.Count == declaredPool["count"]
-}
-
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
 func matchPoolsWithSchema(pools []linodego.LKEClusterPool, declaredPools []interface{}) []linodego.LKEClusterPool {
@@ -374,11 +370,13 @@ func matchPoolsWithSchema(pools []linodego.LKEClusterPool, declaredPools []inter
 		declaredPool := declaredPool.(map[string]interface{})
 
 		for key, pool := range poolMap {
-			if pool.ID == declaredPool["id"] || poolMatchesDeclaredPool(&pool, declaredPool) {
-				result[i] = pool
-				delete(poolMap, key)
-				break
+			if pool.Count != declaredPool["count"] || pool.Type != declaredPool["type"] {
+				continue
 			}
+
+			result[i] = pool
+			delete(poolMap, key)
+			break
 		}
 	}
 
