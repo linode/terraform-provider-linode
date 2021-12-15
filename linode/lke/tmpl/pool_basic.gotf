@@ -1,0 +1,15 @@
+{{ define "lke_cluster_pool_basic" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "us-east"
+    k8s_version = "{{.K8sVersion}}"
+    tags        = ["test"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 1
+    }
+}
+
+{{ end }}

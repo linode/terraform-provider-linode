@@ -388,3 +388,55 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceLKECluster_poolTag(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+	//newClusterName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.PoolBasic(t, clusterName, k8sVersionLatest),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.PoolTag(t, clusterName, k8sVersionLatest, "tf-test"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "tf-test"),
+				),
+			},
+			{
+				Config: tmpl.PoolTag(t, clusterName, k8sVersionLatest, "tf-test-2"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "tf-test-2"),
+				),
+			},
+			{
+				Config: tmpl.PoolBasic(t, clusterName, k8sVersionLatest),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "0"),
+				),
+			},
+		},
+	})
+}

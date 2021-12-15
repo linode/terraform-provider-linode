@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"math"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,6 +19,7 @@ import (
 type ClusterPoolSpec struct {
 	Type              string
 	Count             int
+	Tags              string
 	AutoScalerEnabled bool
 	AutoScalerMin     int
 	AutoScalerMax     int
@@ -44,6 +47,7 @@ func getLKEClusterPoolProvisionedSpecs(pools []linodego.LKEClusterPool) map[Clus
 		spec := ClusterPoolSpec{
 			Type:              pool.Type,
 			Count:             pool.Count,
+			Tags:              flattenLKEClusterPoolTags(pool.Tags),
 			AutoScalerEnabled: pool.Autoscaler.Enabled,
 			AutoScalerMin:     pool.Autoscaler.Min,
 			AutoScalerMax:     pool.Autoscaler.Max,
@@ -135,10 +139,17 @@ func ReconcileLKEClusterPoolSpecs(
 			}
 		}
 
-		updates.ToUpdate[request.PoolID] = linodego.LKEClusterPoolUpdateOptions{
+		updateOpts := linodego.LKEClusterPoolUpdateOptions{
 			Count:      request.Spec.Count,
 			Autoscaler: newAutoscaler,
 		}
+
+		tags := expandLKEClusterPoolTags(request.Spec.Tags)
+		if request.Spec.Tags != request.State.Tags {
+			updateOpts.Tags = &tags
+		}
+
+		updates.ToUpdate[request.PoolID] = updateOpts
 
 		assignedPools[request.PoolID] = struct{}{}
 		delete(poolSpecsToAssign, request.SpecIndex)
@@ -161,11 +172,18 @@ func ReconcileLKEClusterPoolSpecs(
 			}
 		}
 
-		updates.ToCreate = append(updates.ToCreate, linodego.LKEClusterPoolCreateOptions{
+		createOpts := linodego.LKEClusterPoolCreateOptions{
 			Count:      poolSpec.Count,
 			Type:       poolSpec.Type,
 			Autoscaler: newAutoscaler,
-		})
+		}
+
+		tags := expandLKEClusterPoolTags(poolSpec.Tags)
+		if len(tags) > 0 {
+			createOpts.Tags = tags
+		}
+
+		updates.ToCreate = append(updates.ToCreate, createOpts)
 	}
 
 	for spec := range provisionedPools {
@@ -399,9 +417,17 @@ func expandLinodeLKEClusterPoolSpecs(pool []interface{}) (poolSpecs []ClusterPoo
 			}
 		}
 
+		tagsInterface := specMap["tags"].(*schema.Set).List()
+		tagsString := make([]string, len(tagsInterface))
+
+		for i, tag := range tagsInterface {
+			tagsString[i] = tag.(string)
+		}
+
 		poolSpecs = append(poolSpecs, ClusterPoolSpec{
 			Type:              specMap["type"].(string),
 			Count:             specMap["count"].(int),
+			Tags:              flattenLKEClusterPoolTags(tagsString),
 			AutoScalerEnabled: autoscaler.Enabled,
 			AutoScalerMin:     autoscaler.Min,
 			AutoScalerMax:     autoscaler.Max,
@@ -468,6 +494,22 @@ func expandLKEClusterControlPlane(controlPlane map[string]interface{}) linodego.
 
 	if value, ok := controlPlane["high_availability"]; ok {
 		result.HighAvailability = value.(bool)
+	}
+
+	return result
+}
+
+// We could use JSON here, but it would introduce additional complexity
+func flattenLKEClusterPoolTags(tags []string) string {
+	return strings.Join(tags, ",")
+}
+
+func expandLKEClusterPoolTags(tags string) []string {
+	result := strings.Split(tags, ",")
+
+	// Handle empty tags
+	if len(result) == 1 && result[0] == "" {
+		return []string{}
 	}
 
 	return result

@@ -116,6 +116,66 @@ func TestReconcileLKEClusterPoolSpecs(t *testing.T) {
 				123: {Count: 3, Autoscaler: &linodego.LKEClusterPoolAutoscaler{Enabled: false, Min: 3, Max: 3}}, // -1
 			},
 		},
+		{
+			name: "tags update from none",
+			provisionedPools: []linodego.LKEClusterPool{
+				{ID: 123, Type: "g6-standard-3", Count: 3},
+				{ID: 124, Type: "g6-standard-3", Count: 4},
+			},
+			specs: []lke.ClusterPoolSpec{
+				{Type: "g6-standard-3", Count: 3, Tags: "tag1,tag2"},
+				{Type: "g6-standard-3", Count: 4, Tags: "tag3,tag4"},
+			},
+			expectedToUpdate: map[int]linodego.LKEClusterPoolUpdateOptions{
+				123: {Count: 3, Tags: &[]string{"tag1", "tag2"}},
+				124: {Count: 4, Tags: &[]string{"tag3", "tag4"}},
+			},
+		},
+		{
+			name: "swap tags",
+			provisionedPools: []linodego.LKEClusterPool{
+				{ID: 123, Type: "g6-standard-3", Count: 3, Tags: []string{"tag1", "tag2"}},
+				{ID: 124, Type: "g6-standard-3", Count: 4, Tags: []string{"tag3", "tag4"}},
+			},
+			specs: []lke.ClusterPoolSpec{
+				{Type: "g6-standard-3", Count: 3, Tags: "tag3,tag4"},
+				{Type: "g6-standard-3", Count: 4, Tags: "tag1,tag2"},
+			},
+			expectedToUpdate: map[int]linodego.LKEClusterPoolUpdateOptions{
+				123: {Count: 3, Tags: &[]string{"tag3", "tag4"}},
+				124: {Count: 4, Tags: &[]string{"tag1", "tag2"}},
+			},
+		},
+		{
+			name: "drop single tag",
+			provisionedPools: []linodego.LKEClusterPool{
+				{ID: 123, Type: "g6-standard-3", Count: 3, Tags: []string{"tag1", "tag2"}},
+				{ID: 124, Type: "g6-standard-3", Count: 4, Tags: []string{"tag3", "tag4"}},
+			},
+			specs: []lke.ClusterPoolSpec{
+				{Type: "g6-standard-3", Count: 3, Tags: "tag1"},
+				{Type: "g6-standard-3", Count: 4, Tags: "tag3"},
+			},
+			expectedToUpdate: map[int]linodego.LKEClusterPoolUpdateOptions{
+				123: {Count: 3, Tags: &[]string{"tag1"}},
+				124: {Count: 4, Tags: &[]string{"tag3"}},
+			},
+		},
+		{
+			name: "drop tags",
+			provisionedPools: []linodego.LKEClusterPool{
+				{ID: 123, Type: "g6-standard-3", Count: 3, Tags: []string{"tag1", "tag2"}},
+				{ID: 124, Type: "g6-standard-3", Count: 3, Tags: []string{"tag3", "tag4"}},
+			},
+			specs: []lke.ClusterPoolSpec{
+				{Type: "g6-standard-3", Count: 3},
+				{Type: "g6-standard-3", Count: 3},
+			},
+			expectedToUpdate: map[int]linodego.LKEClusterPoolUpdateOptions{
+				123: {Count: 3, Tags: &[]string{}},
+				124: {Count: 3, Tags: &[]string{}},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			updates := lke.ReconcileLKEClusterPoolSpecs(tc.specs, tc.provisionedPools)

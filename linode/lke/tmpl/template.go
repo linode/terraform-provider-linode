@@ -10,6 +10,7 @@ type TemplateData struct {
 	Label            string
 	K8sVersion       string
 	HighAvailability bool
+	PoolTag          string
 }
 
 func Basic(t *testing.T, name, version string) string {
@@ -53,6 +54,16 @@ func AutoscalerManyPools(t *testing.T, name, version string) string {
 func ControlPlane(t *testing.T, name, version string, ha bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_control_plane", TemplateData{Label: name, HighAvailability: ha, K8sVersion: version})
+}
+
+func PoolBasic(t *testing.T, name, version string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_pool_basic", TemplateData{Label: name, K8sVersion: version})
+}
+
+func PoolTag(t *testing.T, name, version, tag string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_pool_tag", TemplateData{Label: name, K8sVersion: version, PoolTag: tag})
 }
 
 func DataBasic(t *testing.T, name, version string) string {
