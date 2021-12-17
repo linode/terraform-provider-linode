@@ -3,13 +3,14 @@ package rdns
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"log"
-	"strings"
-	"time"
 )
 
 const updateRDNSTimeout = time.Minute * 10
