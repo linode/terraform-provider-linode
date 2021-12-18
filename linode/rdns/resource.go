@@ -13,8 +13,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-const updateRDNSTimeout = time.Minute * 10
-
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        resourceSchema,
@@ -24,10 +22,6 @@ func Resource() *schema.Resource {
 		UpdateContext: updateResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(updateRDNSTimeout),
-			Update: schema.DefaultTimeout(updateRDNSTimeout),
 		},
 	}
 }
@@ -136,7 +130,7 @@ func updateIPAddress(ctx context.Context, d *schema.ResourceData, meta interface
 	retry := d.Get("wait_for_available").(bool)
 
 	if retry {
-		return updateIPAddressWithRetries(ctx, &client, address, updateOpts, time.Second)
+		return updateIPAddressWithRetries(ctx, &client, address, updateOpts, time.Second*5)
 	}
 
 	return client.UpdateIPAddress(ctx, address, updateOpts)
