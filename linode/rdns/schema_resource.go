@@ -20,4 +20,10 @@ var resourceSchema = map[string]*schema.Schema{
 		Required:     true,
 		ValidateFunc: validation.StringLenBetween(3, 254),
 	},
+	"wait_for_available": {
+		Type:        schema.TypeBool,
+		Description: "If true, the RDNS assignment will be retried within the operation timeout period.",
+		Optional:    true,
+		Default:     false,
+	},
 }
