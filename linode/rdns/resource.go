@@ -98,8 +98,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		RDNS: rdns,
 	}
 
-	if _, err := updateIPAddress(ctx, d, meta, d.Id(), updateOpts); err != nil {
-		return diag.Errorf("Error updating Linode RDNS: %s", err)
+	if d.HasChange("rdns") {
+		if _, err := updateIPAddress(ctx, d, meta, d.Id(), updateOpts); err != nil {
+			return diag.Errorf("Error updating Linode RDNS: %s", err)
+		}
 	}
 
 	return readResource(ctx, d, meta)
