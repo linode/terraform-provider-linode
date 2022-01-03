@@ -13,6 +13,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+const (
+	LinodeRDNSTimeout = 20 * time.Minute
+)
+
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        resourceSchema,
@@ -22,6 +26,10 @@ func Resource() *schema.Resource {
 		UpdateContext: updateResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(LinodeRDNSTimeout),
+			Update: schema.DefaultTimeout(LinodeRDNSTimeout),
 		},
 	}
 }
@@ -90,8 +98,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		RDNS: rdns,
 	}
 
-	if _, err := updateIPAddress(ctx, d, meta, d.Id(), updateOpts); err != nil {
-		return diag.Errorf("Error updating Linode RDNS: %s", err)
+	if d.HasChange("rdns") {
+		if _, err := updateIPAddress(ctx, d, meta, d.Id(), updateOpts); err != nil {
+			return diag.Errorf("Error updating Linode RDNS: %s", err)
+		}
 	}
 
 	return readResource(ctx, d, meta)
