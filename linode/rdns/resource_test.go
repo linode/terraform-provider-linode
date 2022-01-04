@@ -59,7 +59,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, linodeLabel),
+				Config: tmpl.Basic(t, linodeLabel, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
@@ -87,7 +87,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label),
+				Config: tmpl.Basic(t, label, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
@@ -95,7 +95,47 @@ func TestAccResourceRDNS_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Changed(t, label),
+				Config: tmpl.Changed(t, label, false),
+				Check: resource.ComposeTestCheckFunc(
+					checkRDNSExists,
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
+				),
+			},
+			{
+				Config: tmpl.Deleted(t, label),
+			},
+			{
+				Config: tmpl.Deleted(t, label),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
+				),
+			},
+		},
+	})
+}
+
+// This test case simply ensures a
+func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
+	t.Parallel()
+
+	var label = acctest.RandomWithPrefix("tf_test")
+	resName := "linode_rdns.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkRDNSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, label, true),
+				Check: resource.ComposeTestCheckFunc(
+					checkRDNSExists,
+					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`)),
+				),
+			},
+			{
+				Config: tmpl.Changed(t, label, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),

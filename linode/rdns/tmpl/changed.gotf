@@ -11,6 +11,7 @@ resource "linode_instance" "foobar" {
 resource "linode_rdns" "foobar" {
     rdns    = "${replace(linode_instance.foobar.ip_address, ".", "-")}.nip.io"
     address = "${linode_instance.foobar.ip_address}"
+    wait_for_available = {{.WaitForAvailable}}
 }
 
 {{ end }}
