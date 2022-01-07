@@ -466,8 +466,8 @@ func checkBucketDestroy(s *terraform.State) error {
 			return fmt.Errorf("Linode ObjectStorageBucket with id %s still exists", id)
 		}
 
-		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Error requesting Linode ObjectStorageBucket with id %s", id)
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 && apiErr.Code != 500 {
+			return fmt.Errorf("Error requesting Linode ObjectStorageBucket with id %s: %s", id, err)
 		}
 	}
 
