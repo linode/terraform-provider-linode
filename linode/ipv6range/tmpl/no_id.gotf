@@ -1,0 +1,7 @@
+{{ define "ipv6range_no_id" }}
+
+resource "linode_ipv6_range" "foobar" {
+    prefix_length = 64
+}
+
+{{ end }}
