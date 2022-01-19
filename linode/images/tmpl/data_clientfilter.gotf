@@ -1,0 +1,27 @@
+{{ define "images_data_clientfilter" }}
+
+{{ template "images_data_base" . }}
+
+data "linode_images" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_image.foobar.id]
+    }
+
+    filter {
+        name = "status"
+        values = [linode_image.foobar.status]
+    }
+
+    filter {
+        name = "description"
+        values = [linode_image.foobar.description]
+    }
+
+    filter {
+        name = "created_by"
+        values = [linode_image.foobar.created_by]
+    }
+}
+
+{{ end }}

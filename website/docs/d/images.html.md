@@ -82,12 +82,20 @@ Each Linode image will be stored in the `images` attribute and will export the f
 
 ## Filterable Fields
 
+* `created_by`
+
 * `deprecated`
+
+* `description`
+
+* `id`
 
 * `is_public`
 
 * `label`
 
 * `size`
+
+* `status`
 
 * `vendor`

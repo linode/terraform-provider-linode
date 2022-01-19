@@ -5,8 +5,18 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var filterableFields = []string{"deployments_total", "description",
-	"is_public", "label", "mine", "rev_note"}
+var filterConfig = map[string]helper.FilterAttribute{
+	"deployments_total": {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"description":       {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"is_public":         {APIFilterable: true, TypeFunc: helper.FilterTypeBool},
+	"label":             {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+
+	"rev_note":           {TypeFunc: helper.FilterTypeString},
+	"mine":               {TypeFunc: helper.FilterTypeBool},
+	"deployments_active": {TypeFunc: helper.FilterTypeInt},
+	"images":             {TypeFunc: helper.FilterTypeString},
+	"username":           {TypeFunc: helper.FilterTypeString},
+}
 
 var dataSourceSchema = map[string]*schema.Schema{
 	"latest": {
@@ -15,9 +25,9 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     false,
 	},
-	"order_by": helper.OrderBySchema(filterableFields),
+	"order_by": helper.OrderBySchema(filterConfig),
 	"order":    helper.OrderSchema(),
-	"filter":   helper.FilterSchema(filterableFields),
+	"filter":   helper.FilterSchema(filterConfig),
 	"stackscripts": {
 		Type:        schema.TypeList,
 		Description: "The returned list of StackScripts.",

@@ -7,7 +7,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"context"
-	"strconv"
 )
 
 func DataSource() *schema.Resource {
@@ -18,43 +17,35 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
-
-	filterID, err := helper.GetFilterID(d)
+	results, err := helper.FilterResource(ctx, d, meta, filterConfig, listTypes, flattenType)
 	if err != nil {
-		return diag.Errorf("failed to generate filter id: %s", err)
+		return nil
 	}
 
-	filter, err := helper.ConstructFilterString(d, typeValueToFilterType)
-	if err != nil {
-		return diag.Errorf("failed to construct filter: %s", err)
-	}
-
-	types, err := client.ListTypes(ctx, &linodego.ListOptions{
-		Filter: filter,
-	})
-
-	if err != nil {
-		return diag.Errorf("failed to list linode types: %s", err)
-	}
-
-	typesFlattened := make([]interface{}, len(types))
-	for i, t := range types {
-		typesFlattened[i] = flattenType(&t)
-	}
-
-	typesFiltered, err := helper.FilterResults(d, typesFlattened)
-	if err != nil {
-		return diag.Errorf("failed to filter returned types: %s", err)
-	}
-
-	d.SetId(filterID)
-	d.Set("types", typesFiltered)
+	d.Set("types", results)
 
 	return nil
 }
 
-func flattenType(t *linodego.LinodeType) map[string]interface{} {
+func listTypes(
+	ctx context.Context, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	types, err := client.ListTypes(ctx, options)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]interface{}, len(types))
+
+	for i, v := range types {
+		result[i] = v
+	}
+
+	return result, nil
+}
+
+func flattenType(data interface{}) map[string]interface{} {
+	t := data.(linodego.LinodeType)
+
 	result := make(map[string]interface{})
 
 	result["id"] = t.ID
@@ -89,13 +80,4 @@ func flattenType(t *linodego.LinodeType) map[string]interface{} {
 	}
 
 	return result
-}
-
-func typeValueToFilterType(filterName, value string) (interface{}, error) {
-	switch filterName {
-	case "disk", "gpus", "memory", "transfer", "vcpus":
-		return strconv.Atoi(value)
-	}
-
-	return value, nil
 }

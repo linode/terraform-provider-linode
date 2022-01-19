@@ -81,6 +81,14 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 					acceptance.CheckResourceAttrContains(resourceName, "images.0.label", "Alpine"),
 				),
 			},
+
+			{
+				Config: tmpl.DataClientFilter(t, imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "images.#", "1"),
+					acceptance.CheckResourceAttrContains(resourceName, "images.0.label", imageName),
+				),
+			},
 		},
 	})
 }

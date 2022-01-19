@@ -2,7 +2,6 @@ package instance
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,7 +9,23 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var filterableFields = []string{"group", "id", "image", "label", "region", "tags"}
+var filterConfig = map[string]helper.FilterAttribute{
+	"group":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"id":     {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"image":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"label":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"region": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+
+	// Tags must be filtered on the client
+	"tags": {TypeFunc: helper.FilterTypeString},
+	"status": {
+		TypeFunc: func(value string) (interface{}, error) {
+			return linodego.InstanceStatus(value), nil
+		},
+	},
+	"type":             {TypeFunc: helper.FilterTypeString},
+	"watchdog_enabled": {TypeFunc: helper.FilterTypeBool},
+}
 
 func dataSourceInstance() *schema.Resource {
 	return &schema.Resource{
@@ -22,8 +37,8 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"filter":   helper.FilterSchema(filterableFields),
-			"order_by": helper.OrderBySchema(filterableFields),
+			"filter":   helper.FilterSchema(filterConfig),
+			"order_by": helper.OrderBySchema(filterConfig),
 			"order":    helper.OrderSchema(),
 			"instances": {
 				Type:        schema.TypeList,
@@ -43,7 +58,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to generate filter id: %s", err)
 	}
 
-	filter, err := helper.ConstructFilterString(d, instanceValueToFilterType)
+	filter, err := helper.ConstructFilterString(d, filterConfig)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
 	}
@@ -70,7 +85,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		flattenedInstances[i] = instanceMap
 	}
 
-	instancesFiltered, err := helper.FilterResults(d, flattenedInstances)
+	instancesFiltered, err := helper.FilterResults(d, filterConfig, flattenedInstances)
 	if err != nil {
 		return diag.Errorf("failed to filter returned instances: %s", err)
 	}
@@ -91,14 +106,4 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("instances", instancesFiltered)
 
 	return nil
-}
-
-// instanceValueToFilterType converts the given value to the correct type depending on the filter name.
-func instanceValueToFilterType(filterName, value string) (interface{}, error) {
-	switch filterName {
-	case "id":
-		return strconv.Atoi(value)
-	}
-
-	return value, nil
 }

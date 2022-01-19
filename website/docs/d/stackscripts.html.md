@@ -10,6 +10,8 @@ Provides information about Linode StackScripts that match a set of filters.
 
 Provides information about Linode StackScripts that match a set of filters.
 
+**NOTICE:** Due to the large number of public StackScripts, this data source may time out if `is_public` is not filtered on.
+
 ## Example Usage
 
 The following example shows how one might use this data source to access information about a Linode StackScript.
@@ -94,9 +96,13 @@ Each Linode StackScript will be stored in the `stackscripts` attribute and will 
 
 ## Filterable Fields
 
+* `deployments_active`
+
 * `deployments_total`
 
 * `description`
+
+* `images`
 
 * `is_public`
 
@@ -105,3 +111,5 @@ Each Linode StackScript will be stored in the `stackscripts` attribute and will 
 * `mine`
 
 * `rev_note`
+
+* `username`
