@@ -1,0 +1,14 @@
+{{ define "instance_data_multiple_base" }}
+
+resource "linode_instance" "foobar" {
+    count = 3
+
+    label = "{{.Label}}-${count.index}"
+    tags = ["{{ .Tag }}"]
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+}
+
+{{ end }}

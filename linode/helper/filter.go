@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -46,7 +45,7 @@ type FilterAttribute struct {
 
 // FilterSchema should be referenced in a schema configuration in order to
 // enable filter functionality
-func FilterSchema(filterConfig FilterConfig) *schema.Schema {
+func (f FilterConfig) FilterSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
@@ -55,7 +54,7 @@ func FilterSchema(filterConfig FilterConfig) *schema.Schema {
 				"name": {
 					Type:             schema.TypeString,
 					Description:      "The name of the attribute to filter on.",
-					ValidateDiagFunc: filterValidateFunc(filterConfig, false),
+					ValidateDiagFunc: f.ValidateDiagFunc(false),
 					Required:         true,
 				},
 				"values": {
@@ -79,16 +78,16 @@ func FilterSchema(filterConfig FilterConfig) *schema.Schema {
 
 // OrderBySchema should be referenced in a schema configuration in order to
 // enable filter ordering functionality
-func OrderBySchema(filterConfig FilterConfig) *schema.Schema {
+func (f FilterConfig) OrderBySchema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
-		ValidateDiagFunc: filterValidateFunc(filterConfig, true),
+		ValidateDiagFunc: f.ValidateDiagFunc(true),
 		Description:      "The attribute to order the results by.",
 	}
 }
 
-func OrderSchema() *schema.Schema {
+func (f FilterConfig) OrderSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
@@ -98,25 +97,8 @@ func OrderSchema() *schema.Schema {
 	}
 }
 
-// GetFilterID creates a unique ID specific to the current filter data source
-func GetFilterID(d *schema.ResourceData) (string, error) {
-	idMap := map[string]interface{}{
-		"filter":   d.Get("filter"),
-		"order":    d.Get("order"),
-		"order_by": d.Get("order_by"),
-	}
-
-	result, err := json.Marshal(idMap)
-	if err != nil {
-		return "", err
-	}
-
-	hash := sha3.Sum512(result)
-	return base64.StdEncoding.EncodeToString(hash[:]), nil
-}
-
 // ConstructFilterString constructs a Linode filter JSON string from each filter element in the schema
-func ConstructFilterString(d *schema.ResourceData, filterConfig FilterConfig) (string, error) {
+func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, error) {
 	filters := d.Get("filter").([]interface{})
 	resultMap := make(map[string]interface{})
 
@@ -139,14 +121,14 @@ func ConstructFilterString(d *schema.ResourceData, filterConfig FilterConfig) (s
 		}
 
 		// Defer this logic to the client if not API-filterable
-		if cfg, ok := filterConfig[name]; !ok || !cfg.APIFilterable {
+		if cfg, ok := f[name]; !ok || !cfg.APIFilterable {
 			continue
 		}
 
 		subFilter := make([]interface{}, len(values))
 
 		for i, value := range values {
-			value, err := filterConfig[name].TypeFunc(value.(string))
+			value, err := f[name].TypeFunc(value.(string))
 			if err != nil {
 				return "", err
 			}
@@ -178,15 +160,12 @@ func ConstructFilterString(d *schema.ResourceData, filterConfig FilterConfig) (s
 		return "", err
 	}
 
-	log.Println("[INFO]", string(result))
-
 	return string(result), nil
 }
 
-// FilterResults filters the given results on the client-side filters present in the resource
-func FilterResults(
+// FilterResults filters the given results on the client-side filters present in the resource.
+func (f FilterConfig) FilterResults(
 	d *schema.ResourceData,
-	filterConfig FilterConfig,
 	items []interface{}) ([]map[string]interface{}, error) {
 
 	result := make([]map[string]interface{}, 0)
@@ -194,7 +173,7 @@ func FilterResults(
 	for _, item := range items {
 		item := item.(map[string]interface{})
 
-		match, err := itemMatchesFilter(d, filterConfig, item)
+		match, err := f.itemMatchesFilter(d, item)
 		if err != nil {
 			return nil, err
 		}
@@ -209,26 +188,27 @@ func FilterResults(
 	return result, nil
 }
 
-func FilterResource(
+// FilterDataSource should be run from inside the ReadContext function of a data source.
+func (f FilterConfig) FilterDataSource(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta interface{},
-	filterConfig FilterConfig,
 	listFunc FilterListFunc,
 	flattenFunc FilterFlattenFunc,
 ) ([]map[string]interface{}, error) {
 	client := meta.(*ProviderMeta).Client
 
-	filterID, err := GetFilterID(d)
+	filterID, err := f.GetFilterID(d)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate filter id: %s", err)
 	}
 
-	filter, err := ConstructFilterString(d, filterConfig)
+	filter, err := f.ConstructFilterString(d)
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct filter: %s", err)
 	}
 
+	// Call linode list function defined by data source
 	items, err := listFunc(ctx, &client, &linodego.ListOptions{
 		Filter: filter,
 	})
@@ -241,7 +221,7 @@ func FilterResource(
 		itemsFlattened[i] = flattenFunc(image)
 	}
 
-	itemsFiltered, err := FilterResults(d, filterConfig, itemsFlattened)
+	itemsFiltered, err := f.FilterResults(d, itemsFlattened)
 	if err != nil {
 		return nil, fmt.Errorf("failed to filter returned data: %s", err)
 	}
@@ -251,21 +231,101 @@ func FilterResource(
 	return itemsFiltered, nil
 }
 
-func FilterLatest(d *schema.ResourceData, items []map[string]interface{}) []map[string]interface{} {
+// GetValidFilters returns a slice of valid filters for the filter config.
+func (f FilterConfig) GetValidFilters(apiOnly bool) []string {
+	result := make([]string, 0)
+
+	for k, v := range f {
+		if apiOnly && !v.APIFilterable {
+			continue
+		}
+
+		result = append(result, k)
+	}
+
+	return result
+}
+
+// ValidateDiagFunc should be plugged into the `filter` field of a filterable data source.
+func (f FilterConfig) ValidateDiagFunc(apiOnly bool) schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		val := i.(string)
+
+		cfg, ok := f[val]
+
+		if !ok {
+			return diag.Errorf("\"%s\" is not a filterable field. Valid filters: %s",
+				val, strings.Join(f.GetValidFilters(false), ", "))
+		}
+
+		if apiOnly && !cfg.APIFilterable {
+			return diag.Errorf("\"%s\" is an unsupported filter for this field. Valid filters: %s",
+				val, strings.Join(f.GetValidFilters(true), ", "))
+		}
+
+		return nil
+	}
+}
+
+// GetFilterID creates a unique ID specific to the current filter data source
+func (f FilterConfig) GetFilterID(d *schema.ResourceData) (string, error) {
+	idMap := map[string]interface{}{
+		"filter":   d.Get("filter"),
+		"order":    d.Get("order"),
+		"order_by": d.Get("order_by"),
+	}
+
+	result, err := json.Marshal(idMap)
+	if err != nil {
+		return "", err
+	}
+
+	hash := sha3.Sum512(result)
+	return base64.StdEncoding.EncodeToString(hash[:]), nil
+}
+
+// FilterLatest returns only the latest element in the given slice only if `latest` == true.
+func (f FilterConfig) FilterLatest(d *schema.ResourceData, items []map[string]interface{}) []map[string]interface{} {
 	if !d.Get("latest").(bool) {
 		return items
 	}
 
-	if item := GetLatestCreated(items); item != nil {
-		return []map[string]interface{}{GetLatestCreated(items)}
+	if item := f.GetLatestCreated(items); item != nil {
+		return []map[string]interface{}{f.GetLatestCreated(items)}
 	}
 
 	return []map[string]interface{}{}
 }
 
-func itemMatchesFilter(
+// GetLatestCreated returns only the latest element in the given slice.
+func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string]interface{} {
+	var latestCreated time.Time
+	var latestEntity map[string]interface{}
+
+	for _, image := range data {
+		created, ok := image["created"]
+		if !ok {
+			continue
+		}
+
+		createdTime, err := time.Parse(time.RFC3339, created.(string))
+		if err != nil {
+			return nil
+		}
+
+		if latestEntity != nil && !createdTime.After(latestCreated) {
+			continue
+		}
+
+		latestCreated = createdTime
+		latestEntity = image
+	}
+
+	return latestEntity
+}
+
+func (f FilterConfig) itemMatchesFilter(
 	d *schema.ResourceData,
-	filterConfig FilterConfig,
 	item map[string]interface{}) (bool, error) {
 
 	filters := d.Get("filter").([]interface{})
@@ -282,7 +342,7 @@ func itemMatchesFilter(
 			return false, fmt.Errorf("\"%v\" is not a valid attribute", name)
 		}
 
-		valid, err := validateFilter(filterConfig, matchBy, name, ExpandStringList(values), itemValue)
+		valid, err := f.validateFilter(matchBy, name, ExpandStringList(values), itemValue)
 		if err != nil {
 			return false, err
 		}
@@ -295,8 +355,7 @@ func itemMatchesFilter(
 	return true, nil
 }
 
-func validateFilter(
-	filterConfig FilterConfig,
+func (f FilterConfig) validateFilter(
 	matchBy, name string,
 	values []string,
 	itemValue interface{}) (bool, error) {
@@ -304,7 +363,7 @@ func validateFilter(
 	// Filter recursively on lists (tags, etc.)
 	if items, ok := itemValue.([]string); ok {
 		for _, item := range items {
-			valid, err := validateFilter(filterConfig, matchBy, name, values, item)
+			valid, err := f.validateFilter(matchBy, name, values, item)
 			if err != nil {
 				return false, err
 			}
@@ -317,7 +376,7 @@ func validateFilter(
 		return false, nil
 	}
 
-	cfg := filterConfig[name]
+	cfg := f[name]
 
 	valuesNormalized := make([]interface{}, len(values))
 	for i := range valuesNormalized {
@@ -331,7 +390,7 @@ func validateFilter(
 
 	switch matchBy {
 	case "exact":
-		return validateFilterExact(name, valuesNormalized, itemValue)
+		return validateFilterExact(valuesNormalized, itemValue)
 	case "substring", "sub":
 		return validateFilterSubstring(name, valuesNormalized, itemValue)
 	case "re", "regex":
@@ -341,7 +400,7 @@ func validateFilter(
 	return true, nil
 }
 
-func validateFilterExact(name string, values []interface{}, result interface{}) (bool, error) {
+func validateFilterExact(values []interface{}, result interface{}) (bool, error) {
 	for _, value := range values {
 		if reflect.DeepEqual(result, value) {
 			return true, nil
@@ -386,66 +445,6 @@ func validateFilterRegex(name string, values []interface{}, result interface{}) 
 	}
 
 	return false, nil
-}
-
-func GetLatestCreated(data []map[string]interface{}) map[string]interface{} {
-	var latestCreated time.Time
-	var latestEntity map[string]interface{}
-
-	for _, image := range data {
-		created, ok := image["created"]
-		if !ok {
-			continue
-		}
-
-		createdTime, err := time.Parse(time.RFC3339, created.(string))
-		if err != nil {
-			return nil
-		}
-
-		if latestEntity != nil && !createdTime.After(latestCreated) {
-			continue
-		}
-
-		latestCreated = createdTime
-		latestEntity = image
-	}
-
-	return latestEntity
-}
-
-func filterValidateFunc(filterConfig FilterConfig, apiOnly bool) schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
-		val := i.(string)
-
-		cfg, ok := filterConfig[val]
-
-		if !ok {
-			validFilters := make([]string, 0)
-			for k := range filterConfig {
-				validFilters = append(validFilters, k)
-			}
-
-			return diag.Errorf("\"%s\" is not a filterable field. Valid filters: %s",
-				val, strings.Join(validFilters, ", "))
-		}
-
-		if apiOnly && !cfg.APIFilterable {
-			validFilters := make([]string, 0)
-			for k, v := range filterConfig {
-				if !v.APIFilterable {
-					continue
-				}
-
-				validFilters = append(validFilters, k)
-			}
-
-			return diag.Errorf("\"%s\" is an unsupported filter for this field. Valid filters: %s",
-				val, strings.Join(validFilters, ", "))
-		}
-
-		return nil
-	}
 }
 
 func FilterTypeString(value string) (interface{}, error) {

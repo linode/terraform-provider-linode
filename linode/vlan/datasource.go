@@ -1,12 +1,10 @@
 package vlan
 
 import (
+	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-
-	"context"
 	"time"
 )
 
@@ -20,9 +18,9 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"order_by": helper.OrderBySchema(filterConfig),
-			"order":    helper.OrderSchema(),
-			"filter":   helper.FilterSchema(filterConfig),
+			"order_by": filterConfig.OrderBySchema(),
+			"order":    filterConfig.OrderSchema(),
+			"filter":   filterConfig.FilterSchema(),
 			"vlans": {
 				Type:        schema.TypeList,
 				Description: "The returned list of VLANs.",
@@ -34,7 +32,7 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	results, err := helper.FilterResource(ctx, d, meta, filterConfig, listVLANs, flattenVLAN)
+	results, err := filterConfig.FilterDataSource(ctx, d, meta, listVLANs, flattenVLAN)
 	if err != nil {
 		return nil
 	}

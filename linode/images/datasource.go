@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func DataSource() *schema.Resource {
@@ -18,12 +17,12 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	results, err := helper.FilterResource(ctx, d, meta, filterConfig, listImages, flattenImage)
+	results, err := filterConfig.FilterDataSource(ctx, d, meta, listImages, flattenImage)
 	if err != nil {
 		return nil
 	}
 
-	results = helper.FilterLatest(d, results)
+	results = filterConfig.FilterLatest(d, results)
 
 	d.Set("images", results)
 

@@ -1,16 +1,6 @@
 {{ define "instance_data_multiple_regex" }}
 
-resource "linode_instance" "foobar" {
-    count = 3
-
-    label = "{{.Label}}-${count.index}"
-    group = "{{.Group}}"
-    tags = ["cool", "cooler"]
-    type = "g6-nanode-1"
-    image = "linode/ubuntu18.04"
-    region = "us-east"
-    root_pass = "terraform-test"
-}
+{{ template "instance_data_multiple_base" . }}
 
 data "linode_instances" "foobar" {
     depends_on = [

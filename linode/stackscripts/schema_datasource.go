@@ -5,7 +5,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var filterConfig = map[string]helper.FilterAttribute{
+var filterConfig = helper.FilterConfig{
 	"deployments_total": {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
 	"description":       {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"is_public":         {APIFilterable: true, TypeFunc: helper.FilterTypeBool},
@@ -25,9 +25,9 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     false,
 	},
-	"order_by": helper.OrderBySchema(filterConfig),
-	"order":    helper.OrderSchema(),
-	"filter":   helper.FilterSchema(filterConfig),
+	"order_by": filterConfig.OrderBySchema(),
+	"order":    filterConfig.OrderSchema(),
+	"filter":   filterConfig.FilterSchema(),
 	"stackscripts": {
 		Type:        schema.TypeList,
 		Description: "The returned list of StackScripts.",

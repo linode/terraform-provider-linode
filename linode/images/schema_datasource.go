@@ -32,9 +32,9 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     false,
 	},
-	"order_by": helper.OrderBySchema(filterConfig),
-	"order":    helper.OrderSchema(),
-	"filter":   helper.FilterSchema(filterConfig),
+	"order_by": filterConfig.OrderBySchema(),
+	"order":    filterConfig.OrderSchema(),
+	"filter":   filterConfig.FilterSchema(),
 	"images": {
 		Type:        schema.TypeList,
 		Description: "The returned list of Images.",

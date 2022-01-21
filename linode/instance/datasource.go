@@ -9,7 +9,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var filterConfig = map[string]helper.FilterAttribute{
+var filterConfig = helper.FilterConfig{
 	"group":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"id":     {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
 	"image":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
@@ -37,9 +37,9 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"filter":   helper.FilterSchema(filterConfig),
-			"order_by": helper.OrderBySchema(filterConfig),
-			"order":    helper.OrderSchema(),
+			"filter":   filterConfig.FilterSchema(),
+			"order_by": filterConfig.OrderBySchema(),
+			"order":    filterConfig.OrderSchema(),
 			"instances": {
 				Type:        schema.TypeList,
 				Description: "The returned list of Instances.",
@@ -53,12 +53,12 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	filterID, err := helper.GetFilterID(d)
+	filterID, err := filterConfig.GetFilterID(d)
 	if err != nil {
 		return diag.Errorf("failed to generate filter id: %s", err)
 	}
 
-	filter, err := helper.ConstructFilterString(d, filterConfig)
+	filter, err := filterConfig.ConstructFilterString(d)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
 	}
@@ -85,7 +85,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		flattenedInstances[i] = instanceMap
 	}
 
-	instancesFiltered, err := helper.FilterResults(d, filterConfig, flattenedInstances)
+	instancesFiltered, err := filterConfig.FilterResults(d, flattenedInstances)
 	if err != nil {
 		return diag.Errorf("failed to filter returned instances: %s", err)
 	}

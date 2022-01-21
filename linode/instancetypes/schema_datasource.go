@@ -6,7 +6,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 )
 
-var filterConfig = map[string]helper.FilterAttribute{
+var filterConfig = helper.FilterConfig{
 	"class":       {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"disk":        {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
 	"gpus":        {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
@@ -18,9 +18,9 @@ var filterConfig = map[string]helper.FilterAttribute{
 }
 
 var dataSourceSchema = map[string]*schema.Schema{
-	"order_by": helper.OrderBySchema(filterConfig),
-	"order":    helper.OrderSchema(),
-	"filter":   helper.FilterSchema(filterConfig),
+	"order_by": filterConfig.OrderBySchema(),
+	"order":    filterConfig.OrderSchema(),
+	"filter":   filterConfig.FilterSchema(),
 	"types": {
 		Type:        schema.TypeList,
 		Description: "The returned list of Types.",

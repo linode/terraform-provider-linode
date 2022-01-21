@@ -5,7 +5,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var filterConfig = map[string]helper.FilterAttribute{
+var filterConfig = helper.FilterConfig{
 	"label":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 }

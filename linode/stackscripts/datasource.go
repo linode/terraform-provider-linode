@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 )
 
@@ -19,12 +18,12 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	results, err := helper.FilterResource(ctx, d, meta, filterConfig, listStackScripts, flattenStackScript)
+	results, err := filterConfig.FilterDataSource(ctx, d, meta, listStackScripts, flattenStackScript)
 	if err != nil {
 		return nil
 	}
 
-	results = helper.FilterLatest(d, results)
+	results = filterConfig.FilterLatest(d, results)
 
 	d.Set("stackscripts", results)
 
