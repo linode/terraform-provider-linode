@@ -542,7 +542,6 @@ var resourceSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Description: "Optional field for arbitrary User comments on this Config.",
 				},
-
 				"memory_limit": {
 					Type:        schema.TypeInt,
 					Optional:    true,
