@@ -223,7 +223,10 @@ func TestAccResourceInstance_config(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
-					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
+
+					resource.TestCheckResourceAttr(resName, "config.0.run_level", "binbash"),
+					resource.TestCheckResourceAttr(resName, "config.0.virt_mode", "fullvirt"),
+					resource.TestCheckResourceAttr(resName, "config.0.memory_limit", "1024"),
 
 					checkComputeInstanceConfigs(&instance, testConfig("config", testConfigKernel("linode/latest-64bit"))),
 				),

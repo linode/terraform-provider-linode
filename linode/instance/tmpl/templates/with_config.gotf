@@ -12,6 +12,11 @@ resource "linode_instance" "foobar" {
         label = "config"
         kernel = "linode/latest-64bit"
         root_device = "/dev/sda"
+
+        run_level = "binbash"
+        virt_mode = "fullvirt"
+        memory_limit = 1024
+
         helpers {
             network = true
         }

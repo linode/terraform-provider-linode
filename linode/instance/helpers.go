@@ -51,6 +51,9 @@ func createInstanceConfigsFromSet(
 		configOpts.Kernel = config["kernel"].(string)
 		configOpts.Label = config["label"].(string)
 		configOpts.Comments = config["comments"].(string)
+		configOpts.VirtMode = config["virt_mode"].(string)
+		configOpts.MemoryLimit = config["memory_limit"].(int)
+		configOpts.RunLevel = config["run_level"].(string)
 
 		if helpers, ok := config["helpers"].([]interface{}); ok {
 			for _, helper := range helpers {
@@ -88,6 +91,7 @@ func createInstanceConfigsFromSet(
 		if rootDevice != "" {
 			configOpts.RootDevice = &rootDevice
 		}
+
 		// configOpts.InitRD = config["initrd"].(string)
 		// TODO(displague) need a disk_label to initrd lookup?
 		devices, ok := config["devices"].([]interface{})
