@@ -55,7 +55,7 @@ The following arguments are supported:
 
 * `label` - (Required) This Kubernetes cluster's unique label.
 
-* `k8s_version` - (Required) The desired Kubernetes version for this Kubernetes cluster in the format of `major.minor` (e.g. `1.17`), and the latest supported patch version will be deployed.
+* `k8s_version` - (Required) The desired Kubernetes version for this Kubernetes cluster in the format of `major.minor` (e.g. `1.21`), and the latest supported patch version will be deployed.
 
 * `region` - (Required) This Kubernetes cluster's location.
 
