@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -102,6 +103,44 @@ func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 	}
 }
 
+// waitForAllNodesReady waits for every Node in every NodePool of the LKE Cluster to be in
+// a ready state.
+func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterval, timeout time.Duration) {
+	t.Helper()
+
+	ctx := context.Background()
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(timeout))
+	defer cancel()
+
+	for {
+		select {
+		case <-ctx.Done():
+			t.Fatalf("timed out waiting for LKE Cluster (%d) Nodes to be ready", cluster.ID)
+
+		case <-time.NewTicker(pollInterval).C:
+			nodePools, err := client.ListLKEClusterPools(ctx, cluster.ID, &linodego.ListOptions{})
+			if err != nil {
+				t.Fatalf("failed to get NodePools for LKE Cluster (%d): %s", cluster.ID, err)
+			}
+
+			// Check that all NodePools are ready.
+			for _, nodePool := range nodePools {
+				for _, linode := range nodePool.Linodes {
+					if linode.Status != linodego.LKELinodeReady {
+						// This NodePool is not finished initializing; check again later.
+						continue
+					}
+				}
+			}
+
+			// If we get to this point, all NodePools must be ready.
+			return
+		}
+	}
+}
+
 func TestAccResourceLKECluster_basic(t *testing.T) {
 	t.Parallel()
 
@@ -137,6 +176,8 @@ func TestAccResourceLKECluster_basic(t *testing.T) {
 func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 	t.Parallel()
 
+	var cluster linodego.LKECluster
+
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -146,12 +187,19 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 			{
 				Config: tmpl.ManyPools(t, clusterName, k8sVersionPrevious),
 				Check: resource.ComposeTestCheckFunc(
+					checkLKEExists(&cluster),
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "region", "us-central"),
 					resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionPrevious),
 				),
 			},
 			{
+				PreConfig: func() {
+					// Before we upgrade the Cluster to a newer version of Kubernetes, we need to first
+					// ensure that every Node in each of this cluster's NodePool is ready. Otherwise, the
+					// recycle will not actually occur.
+					waitForAllNodesReady(t, &cluster, time.Second*5, time.Minute*5)
+				},
 				Config: tmpl.ManyPools(t, clusterName, k8sVersionLatest),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
