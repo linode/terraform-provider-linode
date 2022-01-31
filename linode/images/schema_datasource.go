@@ -2,11 +2,28 @@ package images
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 )
 
-var filterableFields = []string{"deprecated", "is_public", "label", "size", "vendor"}
+var filterConfig = helper.FilterConfig{
+	"deprecated": {APIFilterable: true, TypeFunc: helper.FilterTypeBool},
+	"is_public":  {APIFilterable: true, TypeFunc: helper.FilterTypeBool},
+	"label":      {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"size":       {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"type":       {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"vendor":     {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+
+	"created_by": {TypeFunc: helper.FilterTypeString},
+	"id":         {TypeFunc: helper.FilterTypeString},
+	"status": {
+		TypeFunc: func(value string) (interface{}, error) {
+			return linodego.ImageStatus(value), nil
+		},
+	},
+	"description": {TypeFunc: helper.FilterTypeString},
+}
 
 var dataSourceSchema = map[string]*schema.Schema{
 	"latest": {
@@ -15,9 +32,9 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     false,
 	},
-	"order_by": helper.OrderBySchema(filterableFields),
-	"order":    helper.OrderSchema(),
-	"filter":   helper.FilterSchema(filterableFields),
+	"order_by": filterConfig.OrderBySchema(),
+	"order":    filterConfig.OrderSchema(),
+	"filter":   filterConfig.FilterSchema(),
 	"images": {
 		Type:        schema.TypeList,
 		Description: "The returned list of Images.",

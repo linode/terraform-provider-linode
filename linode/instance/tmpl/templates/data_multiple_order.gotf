@@ -1,0 +1,32 @@
+{{ define "instance_data_multiple_order" }}
+
+{{ template "instance_data_multiple_base" . }}
+
+data "linode_instances" "asc" {
+    depends_on = [
+        linode_instance.foobar
+    ]
+
+    order_by = "id"
+
+    filter {
+        name = "tags"
+        values = ["{{ .Tag }}"]
+    }
+}
+
+data "linode_instances" "desc" {
+    depends_on = [
+        linode_instance.foobar
+    ]
+
+    order_by = "id"
+    order = "desc"
+
+    filter {
+        name = "tags"
+        values = ["{{ .Tag }}"]
+    }
+}
+
+{{ end }}

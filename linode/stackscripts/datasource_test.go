@@ -45,6 +45,13 @@ func TestAccDataSourceStackscripts_basic(t *testing.T) {
 					validateStackscript(resourceName, stackScriptName),
 				),
 			},
+			{
+				Config: tmpl.DataClientFilter(t, stackScriptName, basicStackScript),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "stackscripts.#", "1"),
+					validateStackscript(resourceName, stackScriptName),
+				),
+			},
 		},
 	})
 }

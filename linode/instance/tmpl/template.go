@@ -321,26 +321,34 @@ func DataBasic(t *testing.T, label string) string {
 		})
 }
 
-func DataMultiple(t *testing.T, label, group string) string {
+func DataMultiple(t *testing.T, label, tag string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple", TemplateData{
 			Label: label,
-			Group: group,
+			Tag:   tag,
 		})
 }
 
-func DataMultipleOrder(t *testing.T, label, group string) string {
+func DataMultipleOrder(t *testing.T, label, tag string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple_order", TemplateData{
 			Label: label,
-			Group: group,
+			Tag:   tag,
 		})
 }
 
-func DataMultipleRegex(t *testing.T, label, group string) string {
+func DataMultipleRegex(t *testing.T, label, tag string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple_regex", TemplateData{
 			Label: label,
-			Group: group,
+			Tag:   tag,
+		})
+}
+
+func DataClientFilter(t *testing.T, label, tag string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_clientfilter", TemplateData{
+			Label: label,
+			Tag:   tag,
 		})
 }

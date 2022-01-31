@@ -34,3 +34,8 @@ func DataSubstring(t *testing.T, image string) string {
 	return acceptance.ExecuteTemplate(t,
 		"images_data_substring", TemplateData{Image: image})
 }
+
+func DataClientFilter(t *testing.T, image string) string {
+	return acceptance.ExecuteTemplate(t,
+		"images_data_clientfilter", TemplateData{Image: image})
+}

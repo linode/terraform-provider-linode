@@ -2,13 +2,11 @@ package images
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func DataSource() *schema.Resource {
@@ -19,52 +17,37 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
-
-	latestFlag := d.Get("latest").(bool)
-
-	filterID, err := helper.GetFilterID(d)
+	results, err := filterConfig.FilterDataSource(ctx, d, meta, listImages, flattenImage)
 	if err != nil {
-		return diag.Errorf("failed to generate filter id: %s", err)
+		return nil
 	}
 
-	filter, err := helper.ConstructFilterString(d, imageValueToFilterType)
-	if err != nil {
-		return diag.Errorf("failed to construct filter: %s", err)
-	}
+	results = filterConfig.FilterLatest(d, results)
 
-	images, err := client.ListImages(ctx, &linodego.ListOptions{
-		Filter: filter,
-	})
-	if err != nil {
-		return diag.Errorf("failed to list linode images: %s", err)
-	}
-
-	imagesFlattened := make([]interface{}, len(images))
-	for i, image := range images {
-		imagesFlattened[i] = flattenImage(&image)
-	}
-
-	imagesFiltered, err := helper.FilterResults(d, imagesFlattened)
-	if err != nil {
-		return diag.Errorf("failed to filter returned images: %s", err)
-	}
-
-	if latestFlag {
-		latestImage := helper.GetLatestCreated(imagesFiltered)
-
-		if latestImage != nil {
-			imagesFiltered = []map[string]interface{}{latestImage}
-		}
-	}
-
-	d.SetId(filterID)
-	d.Set("images", imagesFiltered)
+	d.Set("images", results)
 
 	return nil
 }
 
-func flattenImage(image *linodego.Image) map[string]interface{} {
+func listImages(
+	ctx context.Context, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	images, err := client.ListImages(ctx, options)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]interface{}, len(images))
+
+	for i, v := range images {
+		result[i] = v
+	}
+
+	return result, nil
+}
+
+func flattenImage(data interface{}) map[string]interface{} {
+	image := data.(linodego.Image)
+
 	result := make(map[string]interface{})
 
 	result["id"] = image.ID
@@ -87,16 +70,4 @@ func flattenImage(image *linodego.Image) map[string]interface{} {
 	}
 
 	return result
-}
-
-func imageValueToFilterType(filterName, value string) (interface{}, error) {
-	switch filterName {
-	case "deprecated", "is_public":
-		return strconv.ParseBool(value)
-
-	case "size":
-		return strconv.Atoi(value)
-	}
-
-	return value, nil
 }

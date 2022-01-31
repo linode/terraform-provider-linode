@@ -200,4 +200,10 @@ Each interface exports the following attributes:
 
 * `region`
 
+* `status`
+
 * `tags`
+
+* `type`
+
+* `watchdog_enabled`

@@ -1,0 +1,30 @@
+{{ define "instance_data_clientfilter" }}
+
+resource "linode_instance" "foobar" {
+    count = 3
+
+    label = "{{.Label}}-${count.index}"
+    tags = ["{{ .Tag }}-${count.index}"]
+    type = "g6-nanode-1"
+    image = "linode/ubuntu18.04"
+    region = "us-east"
+    root_pass = "terraform-test"
+}
+
+data "linode_instances" "foobar" {
+    depends_on = [
+        linode_instance.foobar,
+    ]
+
+    filter {
+        name = "tags"
+        values = linode_instance.foobar[0].tags
+    }
+
+    filter {
+        name = "status"
+        values = ["running"]
+    }
+}
+
+{{ end }}

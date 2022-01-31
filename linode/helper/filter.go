@@ -1,35 +1,61 @@
 package helper
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/linodego"
 	"golang.org/x/crypto/sha3"
 )
 
+// FilterConfig stores a map of FilterAttributes for a resource.
+type FilterConfig map[string]FilterAttribute
+
 // FilterTypeFunc is a function that takes in a filter name and value,
 // and returns the value converted to the correct filter type.
-type FilterTypeFunc func(filterName string, value string) (interface{}, error)
+type FilterTypeFunc func(value string) (interface{}, error)
+
+// FilterListFunc wraps a linodego list function.
+type FilterListFunc func(context.Context, *linodego.Client, *linodego.ListOptions) ([]interface{}, error)
+
+// FilterFlattenFunc flattens an object into a map[string]interface{}.
+type FilterFlattenFunc func(object interface{}) map[string]interface{}
+
+// FilterAttribute stores various configuration options about a single
+// filterable field.
+type FilterAttribute struct {
+	// Whether this field can be filtered on at an API level.
+	// If false, this filter will be handled on the client.
+	APIFilterable bool
+
+	// Converts the filter string to the correct type.
+	TypeFunc FilterTypeFunc
+}
 
 // FilterSchema should be referenced in a schema configuration in order to
 // enable filter functionality
-func FilterSchema(validFilters []string) *schema.Schema {
+func (f FilterConfig) FilterSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
-					Type:         schema.TypeString,
-					Description:  "The name of the attribute to filter on.",
-					ValidateFunc: validation.StringInSlice(validFilters, false),
-					Required:     true,
+					Type:             schema.TypeString,
+					Description:      "The name of the attribute to filter on.",
+					ValidateDiagFunc: f.ValidateDiagFunc(false),
+					Required:         true,
 				},
 				"values": {
 					Type:        schema.TypeList,
@@ -52,16 +78,16 @@ func FilterSchema(validFilters []string) *schema.Schema {
 
 // OrderBySchema should be referenced in a schema configuration in order to
 // enable filter ordering functionality
-func OrderBySchema(validFilters []string) *schema.Schema {
+func (f FilterConfig) OrderBySchema() *schema.Schema {
 	return &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		ValidateFunc: validation.StringInSlice(validFilters, false),
-		Description:  "The attribute to order the results by.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: f.ValidateDiagFunc(true),
+		Description:      "The attribute to order the results by.",
 	}
 }
 
-func OrderSchema() *schema.Schema {
+func (f FilterConfig) OrderSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
@@ -71,25 +97,8 @@ func OrderSchema() *schema.Schema {
 	}
 }
 
-// GetFilterID creates a unique ID specific to the current filter data source
-func GetFilterID(d *schema.ResourceData) (string, error) {
-	idMap := map[string]interface{}{
-		"filter":   d.Get("filter"),
-		"order":    d.Get("order"),
-		"order_by": d.Get("order_by"),
-	}
-
-	result, err := json.Marshal(idMap)
-	if err != nil {
-		return "", err
-	}
-
-	hash := sha3.Sum512(result)
-	return base64.StdEncoding.EncodeToString(hash[:]), nil
-}
-
 // ConstructFilterString constructs a Linode filter JSON string from each filter element in the schema
-func ConstructFilterString(d *schema.ResourceData, typeFunc FilterTypeFunc) (string, error) {
+func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, error) {
 	filters := d.Get("filter").([]interface{})
 	resultMap := make(map[string]interface{})
 
@@ -111,10 +120,15 @@ func ConstructFilterString(d *schema.ResourceData, typeFunc FilterTypeFunc) (str
 			continue
 		}
 
+		// Defer this logic to the client if not API-filterable
+		if cfg, ok := f[name]; !ok || !cfg.APIFilterable {
+			continue
+		}
+
 		subFilter := make([]interface{}, len(values))
 
 		for i, value := range values {
-			value, err := typeFunc(name, value.(string))
+			value, err := f[name].TypeFunc(value.(string))
 			if err != nil {
 				return "", err
 			}
@@ -149,14 +163,17 @@ func ConstructFilterString(d *schema.ResourceData, typeFunc FilterTypeFunc) (str
 	return string(result), nil
 }
 
-// FilterResults filters the given results on the client-side filters present in the resource
-func FilterResults(d *schema.ResourceData, items []interface{}) ([]map[string]interface{}, error) {
+// FilterResults filters the given results on the client-side filters present in the resource.
+func (f FilterConfig) FilterResults(
+	d *schema.ResourceData,
+	items []interface{}) ([]map[string]interface{}, error) {
+
 	result := make([]map[string]interface{}, 0)
 
 	for _, item := range items {
 		item := item.(map[string]interface{})
 
-		match, err := itemMatchesFilter(d, item)
+		match, err := f.itemMatchesFilter(d, item)
 		if err != nil {
 			return nil, err
 		}
@@ -171,97 +188,117 @@ func FilterResults(d *schema.ResourceData, items []interface{}) ([]map[string]in
 	return result, nil
 }
 
-func itemMatchesFilter(d *schema.ResourceData, item map[string]interface{}) (bool, error) {
-	filters := d.Get("filter").([]interface{})
+// FilterDataSource should be run from inside the ReadContext function of a data source.
+func (f FilterConfig) FilterDataSource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+	listFunc FilterListFunc,
+	flattenFunc FilterFlattenFunc,
+) ([]map[string]interface{}, error) {
+	client := meta.(*ProviderMeta).Client
 
-	for _, filter := range filters {
-		filter := filter.(map[string]interface{})
+	filterID, err := f.GetFilterID(d)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate filter id: %s", err)
+	}
 
-		name := filter["name"].(string)
-		values := filter["values"].([]interface{})
-		matchBy := filter["match_by"].(string)
+	filter, err := f.ConstructFilterString(d)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct filter: %s", err)
+	}
 
-		if matchBy == "exact" {
+	// Call linode list function defined by data source
+	items, err := listFunc(ctx, &client, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list linode items: %s", err)
+	}
+
+	itemsFlattened := make([]interface{}, len(items))
+	for i, image := range items {
+		itemsFlattened[i] = flattenFunc(image)
+	}
+
+	itemsFiltered, err := f.FilterResults(d, itemsFlattened)
+	if err != nil {
+		return nil, fmt.Errorf("failed to filter returned data: %s", err)
+	}
+
+	d.SetId(filterID)
+
+	return itemsFiltered, nil
+}
+
+// GetValidFilters returns a slice of valid filters for the filter config.
+func (f FilterConfig) GetValidFilters(apiOnly bool) []string {
+	result := make([]string, 0)
+
+	for k, v := range f {
+		if apiOnly && !v.APIFilterable {
 			continue
 		}
 
-		itemValue, ok := item[name]
+		result = append(result, k)
+	}
+
+	return result
+}
+
+// ValidateDiagFunc should be plugged into the `filter` field of a filterable data source.
+func (f FilterConfig) ValidateDiagFunc(apiOnly bool) schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		val := i.(string)
+
+		cfg, ok := f[val]
+
 		if !ok {
-			return false, fmt.Errorf("\"%v\" is not a valid attribute", name)
+			return diag.Errorf("\"%s\" is not a filterable field. Valid filters: %s",
+				val, strings.Join(f.GetValidFilters(false), ", "))
 		}
 
-		valid, err := validateFilter(matchBy, name, ExpandStringList(values), itemValue)
-		if err != nil {
-			return false, err
+		if apiOnly && !cfg.APIFilterable {
+			return diag.Errorf("\"%s\" is an unsupported filter for this field. Valid filters: %s",
+				val, strings.Join(f.GetValidFilters(true), ", "))
 		}
 
-		if !valid {
-			return false, nil
-		}
+		return nil
 	}
-
-	return true, nil
 }
 
-func validateFilter(matchBy, name string, values []string, itemValue interface{}) (bool, error) {
-	// Filter recursively on lists (tags, etc.)
-	if items, ok := itemValue.([]string); ok {
-		for _, item := range items {
-			valid, err := validateFilter(matchBy, name, values, item)
-			if err != nil {
-				return false, err
-			}
-
-			if valid {
-				return true, nil
-			}
-		}
-
-		return false, nil
+// GetFilterID creates a unique ID specific to the current filter data source
+func (f FilterConfig) GetFilterID(d *schema.ResourceData) (string, error) {
+	idMap := map[string]interface{}{
+		"filter":   d.Get("filter"),
+		"order":    d.Get("order"),
+		"order_by": d.Get("order_by"),
 	}
 
-	// Only string attributes should be considered
-	itemValueStr, ok := itemValue.(string)
-	if !ok {
-		return false, fmt.Errorf("\"%s\" is not a string", name)
+	result, err := json.Marshal(idMap)
+	if err != nil {
+		return "", err
 	}
 
-	switch matchBy {
-	case "substring", "sub":
-		return validateFilterSubstring(values, itemValueStr)
-	case "re", "regex":
-		return validateFilterRegex(values, itemValueStr)
-	}
-
-	return true, nil
+	hash := sha3.Sum512(result)
+	return base64.StdEncoding.EncodeToString(hash[:]), nil
 }
 
-func validateFilterSubstring(values []string, result string) (bool, error) {
-	for _, value := range values {
-		if strings.Contains(result, value) {
-			return true, nil
-		}
+// FilterLatest returns only the latest element in the given slice only if `latest` == true.
+func (f FilterConfig) FilterLatest(d *schema.ResourceData, items []map[string]interface{}) []map[string]interface{} {
+	if !d.Get("latest").(bool) {
+		return items
 	}
 
-	return false, nil
-}
-
-func validateFilterRegex(values []string, result string) (bool, error) {
-	for _, value := range values {
-		r, err := regexp.Compile(value)
-		if err != nil {
-			return false, fmt.Errorf("failed to compile regex: %s", err)
-		}
-
-		if r.MatchString(result) {
-			return true, nil
-		}
+	if item := f.GetLatestCreated(items); item != nil {
+		return []map[string]interface{}{f.GetLatestCreated(items)}
 	}
 
-	return false, nil
+	return []map[string]interface{}{}
 }
 
-func GetLatestCreated(data []map[string]interface{}) map[string]interface{} {
+// GetLatestCreated returns only the latest element in the given slice.
+func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string]interface{} {
 	var latestCreated time.Time
 	var latestEntity map[string]interface{}
 
@@ -285,4 +322,139 @@ func GetLatestCreated(data []map[string]interface{}) map[string]interface{} {
 	}
 
 	return latestEntity
+}
+
+func (f FilterConfig) itemMatchesFilter(
+	d *schema.ResourceData,
+	item map[string]interface{}) (bool, error) {
+
+	filters := d.Get("filter").([]interface{})
+
+	for _, filter := range filters {
+		filter := filter.(map[string]interface{})
+
+		name := filter["name"].(string)
+		values := filter["values"].([]interface{})
+		matchBy := filter["match_by"].(string)
+
+		itemValue, ok := item[name]
+		if !ok {
+			return false, fmt.Errorf("\"%v\" is not a valid attribute", name)
+		}
+
+		valid, err := f.validateFilter(matchBy, name, ExpandStringList(values), itemValue)
+		if err != nil {
+			return false, err
+		}
+
+		if !valid {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func (f FilterConfig) validateFilter(
+	matchBy, name string,
+	values []string,
+	itemValue interface{}) (bool, error) {
+
+	// Filter recursively on lists (tags, etc.)
+	if items, ok := itemValue.([]string); ok {
+		for _, item := range items {
+			valid, err := f.validateFilter(matchBy, name, values, item)
+			if err != nil {
+				return false, err
+			}
+
+			if valid {
+				return true, nil
+			}
+		}
+
+		return false, nil
+	}
+
+	cfg := f[name]
+
+	valuesNormalized := make([]interface{}, len(values))
+	for i := range valuesNormalized {
+		n, err := cfg.TypeFunc(values[i])
+		if err != nil {
+			return false, err
+		}
+
+		valuesNormalized[i] = n
+	}
+
+	switch matchBy {
+	case "exact":
+		return validateFilterExact(valuesNormalized, itemValue)
+	case "substring", "sub":
+		return validateFilterSubstring(name, valuesNormalized, itemValue)
+	case "re", "regex":
+		return validateFilterRegex(name, valuesNormalized, itemValue)
+	}
+
+	return true, nil
+}
+
+func validateFilterExact(values []interface{}, result interface{}) (bool, error) {
+	for _, value := range values {
+		if reflect.DeepEqual(result, value) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func validateFilterSubstring(name string, values []interface{}, result interface{}) (bool, error) {
+	itemValueStr, ok := result.(string)
+	if !ok {
+		return false, fmt.Errorf("\"%s\" is not a string (type %s) and cannot be filtered on substring",
+			name, reflect.TypeOf(result))
+	}
+
+	for _, value := range values {
+		if strings.Contains(itemValueStr, value.(string)) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func validateFilterRegex(name string, values []interface{}, result interface{}) (bool, error) {
+	itemValueStr, ok := result.(string)
+	if !ok {
+		return false, fmt.Errorf("\"%s\" is not a string (type %s) and cannot be filtered on regex",
+			name, reflect.TypeOf(result))
+	}
+
+	for _, value := range values {
+		r, err := regexp.Compile(value.(string))
+		if err != nil {
+			return false, fmt.Errorf("failed to compile regex: %s", err)
+		}
+
+		if r.MatchString(itemValueStr) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func FilterTypeString(value string) (interface{}, error) {
+	return value, nil
+}
+
+func FilterTypeInt(value string) (interface{}, error) {
+	return strconv.Atoi(value)
+}
+
+func FilterTypeBool(value string) (interface{}, error) {
+	return strconv.ParseBool(value)
 }

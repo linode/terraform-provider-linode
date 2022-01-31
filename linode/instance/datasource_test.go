@@ -43,30 +43,11 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 	resName := "data.linode_instances.foobar"
-	instanceName := acctest.RandomWithPrefix("tf_test")
-	groupName := acctest.RandomWithPrefix("tf_test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.DataMultiple(t, instanceName, groupName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccDataSourceInstances_order(t *testing.T) {
 	resNameDesc := "data.linode_instances.desc"
 	resNameAsc := "data.linode_instances.asc"
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	groupName := acctest.RandomWithPrefix("tf_test")
+	tagName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -74,31 +55,30 @@ func TestAccDataSourceInstances_order(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataMultipleOrder(t, instanceName, groupName),
+				Config: tmpl.DataMultiple(t, instanceName, tagName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
+				),
+			},
+			{
+				Config: tmpl.DataMultipleOrder(t, instanceName, tagName),
 				Check: resource.ComposeTestCheckFunc(
 					// Ensure order is correctly appended to filter
 					resource.TestCheckResourceAttr(resNameDesc, "instances.#", "3"),
 					resource.TestCheckResourceAttr(resNameAsc, "instances.#", "3"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccDataSourceInstances_regex(t *testing.T) {
-	resName := "data.linode_instances.foobar"
-	instanceName := acctest.RandomWithPrefix("tf_test")
-	groupName := acctest.RandomWithPrefix("tf_test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
-		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataMultipleRegex(t, instanceName, groupName),
+				Config: tmpl.DataMultipleRegex(t, instanceName, tagName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
+				),
+			},
+			{
+				Config: tmpl.DataClientFilter(t, instanceName, tagName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttr(resName, "instances.0.status", "running"),
 				),
 			},
 		},

@@ -1,6 +1,14 @@
 package vlan
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+)
+
+var filterConfig = helper.FilterConfig{
+	"label":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"region": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+}
 
 var resourceSchema = map[string]*schema.Schema{
 	"label": {

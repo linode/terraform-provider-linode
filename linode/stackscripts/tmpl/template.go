@@ -34,3 +34,11 @@ func DataLatest(t *testing.T, label, script string) string {
 			Script: script,
 		})
 }
+
+func DataClientFilter(t *testing.T, label, script string) string {
+	return acceptance.ExecuteTemplate(t,
+		"stackscripts_data_clientfilter", TemplateData{
+			Label:  label,
+			Script: script,
+		})
+}
