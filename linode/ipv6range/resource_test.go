@@ -3,6 +3,9 @@ package ipv6range_test
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -10,8 +13,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range/tmpl"
-	"regexp"
-	"testing"
 )
 
 func TestAccIPv6Range_basic(t *testing.T) {
