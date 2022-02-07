@@ -120,7 +120,7 @@ func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterv
 			t.Fatalf("timed out waiting for LKE Cluster (%d) Nodes to be ready", cluster.ID)
 
 		case <-time.NewTicker(pollInterval).C:
-			nodePools, err := client.ListLKEClusterPools(ctx, cluster.ID, &linodego.ListOptions{})
+			nodePools, err := client.ListLKENodePools(ctx, cluster.ID, &linodego.ListOptions{})
 			if err != nil {
 				t.Fatalf("failed to get NodePools for LKE Cluster (%d): %s", cluster.ID, err)
 			}
@@ -305,14 +305,14 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-					if _, err := client.CreateLKEClusterPool(context.Background(), cluster.ID, linodego.LKEClusterPoolCreateOptions{
+					if _, err := client.CreateLKENodePool(context.Background(), cluster.ID, linodego.LKENodePoolCreateOptions{
 						Count: 1,
 						Type:  "g6-standard-1",
 					}); err != nil {
 						t.Errorf("failed to create unmanaged pool for cluster %d: %s", cluster.ID, err)
 					}
 
-					pools, err := client.ListLKEClusterPools(context.Background(), cluster.ID, nil)
+					pools, err := client.ListLKENodePools(context.Background(), cluster.ID, nil)
 					if err != nil {
 						t.Errorf("failed to get pools for cluster %d: %s", cluster.ID, err)
 					}
