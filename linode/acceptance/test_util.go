@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -35,6 +37,8 @@ var (
 	TestAccProviders   map[string]*schema.Provider
 	TestAccProvider    *schema.Provider
 	ConfigTemplates    *template.Template
+	TestImageLatest    string
+	TestImagePrevious  string
 )
 
 func initOptInTests() {
@@ -48,6 +52,35 @@ func initOptInTests() {
 	for _, testName := range strings.Split(optInTestsValue, ",") {
 		optInTests[testName] = struct{}{}
 	}
+}
+
+// initTestImages grabs the latest Linode Alpine images for acceptance test configurations
+func initTestImages() {
+	client, err := GetClientForSweepers()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	imageFilter := &linodego.Filter{}
+
+	imageFilter.AddField(linodego.Eq, "vendor", "Alpine")
+
+	filterJSON, err := imageFilter.MarshalJSON()
+	if err != nil {
+		log.Fatalf("failed to create image filter json: %s", err)
+	}
+
+	images, err := client.ListImages(context.Background(), &linodego.ListOptions{Filter: string(filterJSON)})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	sort.SliceStable(images, func(i, j int) bool {
+		return images[i].Created.After(*images[j].Created)
+	})
+
+	TestImageLatest = images[0].ID
+	TestImagePrevious = images[1].ID
 }
 
 func init() {
@@ -86,6 +119,8 @@ func init() {
 	if _, err := ConfigTemplates.ParseFiles(templateFiles...); err != nil {
 		log.Fatalf("failed to parse templates: %v", err)
 	}
+
+	initTestImages()
 }
 
 func TestProvider(t *testing.T) {
@@ -382,4 +417,23 @@ func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string
 	}
 
 	return b.String()
+}
+
+func CreateTempFile(t *testing.T, name, content string) *os.File {
+	file, err := ioutil.TempFile(os.TempDir(), name)
+	if err != nil {
+		t.Fatalf("failed to create temp file: %s", err)
+	}
+
+	t.Cleanup(func() {
+		if err := os.Remove(file.Name()); err != nil {
+			t.Fatalf("failed to remove test file: %s", err)
+		}
+	})
+
+	if _, err := file.Write([]byte(content)); err != nil {
+		t.Fatalf("failed to write to temp file: %s", err)
+	}
+
+	return file
 }

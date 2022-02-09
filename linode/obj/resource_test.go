@@ -1,10 +1,8 @@
 package obj_test
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,174 +17,63 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/obj/tmpl"
 )
 
-const objectResourceName = "linode_object_storage_object.object"
-
 func TestAccResourceObject_basic(t *testing.T) {
 	t.Parallel()
 
-	content := "testing123"
-	bucketName := acctest.RandomWithPrefix("tf-test")
-	keyName := acctest.RandomWithPrefix("tf_test")
+	validateObject := func(resourceName, key, content string) resource.TestCheckFunc {
+		var object s3.GetObjectOutput
 
-	var object s3.GetObjectOutput
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, bucketName, keyName, content),
-				Check: resource.ComposeTestCheckFunc(
-					checkObjectExists(&object),
-					checkObjectBodyContains(&object, content),
-					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccResourceObject_base64(t *testing.T) {
-	t.Parallel()
-
-	content := "testing123"
-	base64EncodedContent := base64.StdEncoding.EncodeToString([]byte(content))
-	bucketName := acctest.RandomWithPrefix("tf-test")
-	keyName := acctest.RandomWithPrefix("tf_test")
-
-	var object s3.GetObjectOutput
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Base64(t, bucketName, keyName, base64EncodedContent),
-				Check: resource.ComposeTestCheckFunc(
-					checkObjectExists(&object),
-					checkObjectBodyContains(&object, content),
-					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccResourceObject_source(t *testing.T) {
-	t.Parallel()
-
-	content := "testing123"
-	bucketName := acctest.RandomWithPrefix("tf-test")
-	keyName := acctest.RandomWithPrefix("tf_test")
-
-	file, err := ioutil.TempFile(os.TempDir(), "tf-test-obj-source")
-	if err != nil {
-		t.Fatalf("failed to create temp file: %s", err)
-	}
-	defer os.Remove(file.Name())
-
-	if _, err := file.Write([]byte(content)); err != nil {
-		t.Fatalf("failed to write to temp file: %s", err)
+		return resource.ComposeTestCheckFunc(
+			checkObjectExists(resourceName, &object),
+			checkObjectBodyContains(&object, content),
+			resource.TestCheckResourceAttr(resourceName, "key", key),
+		)
 	}
 
-	var object s3.GetObjectOutput
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Source(t, bucketName, keyName, file.Name()),
-				Check: resource.ComposeTestCheckFunc(
-					checkObjectExists(&object),
-					checkObjectBodyContains(&object, content),
-					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccResourceObject_contentUpdate(t *testing.T) {
-	t.Parallel()
+	validateObjectUpdates := func(resourceName, key, content string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			validateObject(resourceName, key, content),
+			resource.TestCheckResourceAttr(resourceName, "acl", "public-read"),
+			resource.TestCheckResourceAttr(resourceName, "content_type", "text/plain"),
+			resource.TestCheckResourceAttr(resourceName, "content_encoding", "utf8"),
+			resource.TestCheckResourceAttr(resourceName, "content_language", "en"),
+			resource.TestCheckResourceAttr(resourceName, "website_redirect", "test.com"),
+			resource.TestCheckResourceAttr(resourceName, "force_destroy", "true"),
+			resource.TestCheckResourceAttr(resourceName, "content_disposition", "attachment"),
+			resource.TestCheckResourceAttr(resourceName, "cache_control", "max-age=2592000"),
+			resource.TestCheckResourceAttr(resourceName, "metadata.foo", "bar"),
+			resource.TestCheckResourceAttr(resourceName, "metadata.bar", "foo"),
+		)
+	}
 
 	content := "testing123"
+	contentUpdated := "testing456"
+
+	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
+	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
+
 	bucketName := acctest.RandomWithPrefix("tf-test")
 	keyName := acctest.RandomWithPrefix("tf_test")
 
-	var object s3.GetObjectOutput
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkObjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, bucketName, keyName, content),
+				Config: tmpl.Basic(t, bucketName, keyName, content, contentSource.Name()),
 				Check: resource.ComposeTestCheckFunc(
-					checkObjectExists(&object),
-					checkObjectBodyContains(&object, content),
+					validateObject(getObjectResourceName("basic"), "test_basic", content),
+					validateObject(getObjectResourceName("base64"), "test_base64", content),
+					validateObject(getObjectResourceName("source"), "test_source", content),
 				),
 			},
 			{
-				PreConfig: func() {
-					content = "updated456"
-				},
-				Config: tmpl.Basic(t, bucketName, keyName, content),
+				Config: tmpl.Updates(t, bucketName, keyName, contentUpdated, contentSourceUpdated.Name()),
 				Check: resource.ComposeTestCheckFunc(
-					checkObjectExists(&object),
-					checkObjectBodyContains(&object, content),
-				),
-			},
-		},
-	})
-}
-
-func TestAccResourceObject_updates(t *testing.T) {
-	t.Parallel()
-
-	content := "testing123"
-	bucketName := acctest.RandomWithPrefix("tf-test")
-	keyName := acctest.RandomWithPrefix("tf_test")
-
-	var object s3.GetObjectOutput
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, bucketName, keyName, content),
-				Check: resource.ComposeTestCheckFunc(
-					checkObjectExists(&object),
-					checkObjectBodyContains(&object, content),
-					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
-					resource.TestCheckResourceAttr(objectResourceName, "acl", "private"),
-					resource.TestCheckResourceAttr(objectResourceName, "force_destroy", "false"),
-					resource.TestCheckNoResourceAttr(objectResourceName, "metadata"),
-				),
-			},
-			{
-				Config: tmpl.Updates(t, bucketName, keyName, content),
-				Check: resource.ComposeTestCheckFunc(
-					checkObjectExists(&object),
-					checkObjectBodyContains(&object, content),
-					resource.TestCheckResourceAttr(objectResourceName, "key", "test"),
-					resource.TestCheckResourceAttr(objectResourceName, "acl", "public-read"),
-					resource.TestCheckResourceAttr(objectResourceName, "force_destroy", "true"),
-					resource.TestCheckResourceAttr(objectResourceName, "cache_control", "max-age=2592000"),
-					resource.TestCheckResourceAttr(objectResourceName, "content_disposition", "attachment"),
-					resource.TestCheckResourceAttr(objectResourceName, "content_type", "text/plain"),
-					resource.TestCheckResourceAttr(objectResourceName, "content_encoding", "utf8"),
-					resource.TestCheckResourceAttr(objectResourceName, "content_language", "en"),
-					resource.TestCheckResourceAttr(objectResourceName, "website_redirect", "test.com"),
-					resource.TestCheckResourceAttr(objectResourceName, "metadata.%", "2"),
-					resource.TestCheckResourceAttr(objectResourceName, "metadata.foo", "bar"),
-					resource.TestCheckResourceAttr(objectResourceName, "metadata.bar", "foo"),
+					validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
+					validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
+					validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
 				),
 			},
 		},
@@ -215,11 +102,11 @@ func getObject(rs *terraform.ResourceState) (*s3.GetObjectOutput, error) {
 		})
 }
 
-func checkObjectExists(obj *s3.GetObjectOutput) resource.TestCheckFunc {
+func checkObjectExists(resourceName string, obj *s3.GetObjectOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[objectResourceName]
+		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("could not find resource %s in root module", objectResourceName)
+			return fmt.Errorf("could not find resource %s in root module", resourceName)
 		}
 		key := rs.Primary.Attributes["key"]
 		bucket := rs.Primary.Attributes["bucket"]
@@ -263,4 +150,8 @@ func checkObjectBodyContains(obj *s3.GetObjectOutput, expected string) resource.
 		}
 		return nil
 	}
+}
+
+func getObjectResourceName(name string) string {
+	return fmt.Sprintf("linode_object_storage_object.%s", name)
 }

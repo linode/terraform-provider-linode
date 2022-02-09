@@ -8,7 +8,7 @@ resource "linode_instance" "foobar" {
 
     disk {
         label = "disk"
-        image = "linode/ubuntu18.04"
+        image = "{{.Image}}"
         root_pass = "terraform-test"
         authorized_keys = ["{{.PubKey}}"]
         size = 51200

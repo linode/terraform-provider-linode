@@ -1,15 +1,28 @@
 {{ define "instance_stackscript" }}
 
+resource "linode_stackscript" "foo" {
+    label = "foo-label"
+    description = "Installs a Package"
+
+    script = <<EOF
+#!/bin/ash
+# <UDF name="hello" label="Hiya" example="example" default="">
+echo "hello this is a stack script"
+	EOF
+    images = ["{{.Image}}"]
+    rev_note = "hello version"
+}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-nanode-1"
     region = "us-east"
-    stackscript_id = "514388"
+    stackscript_id = linode_stackscript.foo.id
     stackscript_data = {
-        "hostname" = "pulumitesting"
+        "hello" = "cool"
     }
-    image = "linode/debian9"
+    image = "{{.Image}}"
 }
 
 {{ end }}

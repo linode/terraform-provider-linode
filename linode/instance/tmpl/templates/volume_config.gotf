@@ -14,7 +14,7 @@ resource "linode_instance" "foobar" {
 
     disk {
         label = "disk"
-        image = "linode/ubuntu18.04"
+        image = "{{.Image}}"
         root_pass = "b4d_p4s5"
         authorized_keys = ["{{.PubKey}}"]
         size = 3000

@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccDataSourceAccount_basic(t *testing.T) {
+	acceptance.OptInTest(t)
+
 	t.Parallel()
 
 	resourceName := "data.linode_account.foo"

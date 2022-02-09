@@ -10,16 +10,19 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The target bucket to put this object in.",
 		Required:    true,
+		ForceNew:    true,
 	},
 	"cluster": {
 		Type:        schema.TypeString,
 		Description: "The target cluster that the bucket is in.",
 		Required:    true,
+		ForceNew:    true,
 	},
 	"key": {
 		Type:        schema.TypeString,
 		Description: "The name of the uploaded object.",
 		Required:    true,
+		ForceNew:    true,
 	},
 	"secret_key": {
 		Type:        schema.TypeString,

@@ -5,7 +5,7 @@ resource "linode_instance" "fooinst" {
 
     label = "{{.InstLabel}}-${count.index}"
     type = "g6-standard-1"
-    image = "linode/alpine3.13"
+    image = "{{.Image}}"
     region = "us-southeast"
 
     interface {

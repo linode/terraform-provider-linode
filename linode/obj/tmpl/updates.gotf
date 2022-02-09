@@ -3,28 +3,55 @@
 {{ template "object_bucket_basic" .Bucket }}
 {{ template "object_key_basic" .Key }}
 
-resource "linode_object_storage_object" "object" {
+resource "linode_object_storage_object" "basic" {
     bucket     = linode_object_storage_bucket.foobar.label
     cluster    = "us-east-1"
     access_key = linode_object_storage_key.foobar.access_key
     secret_key = linode_object_storage_key.foobar.secret_key
-    key        = "test"
+    key        = "test_basic"
     content    = "{{.Content}}"
-    acl        = "public-read"
 
-    content_type     = "text/plain"
-    content_encoding = "utf8"
-    content_language = "en"
-    website_redirect = "test.com"
-    force_destroy    = true
-
-    content_disposition = "attachment"
-    cache_control       = "max-age=2592000"
-
-    metadata = {
-        foo = "bar"
-        bar = "foo"
-    }
+    {{ template "object_object_updates_fields" . }}
 }
 
+resource "linode_object_storage_object" "base64" {
+    bucket         = linode_object_storage_bucket.foobar.label
+    cluster        = "us-east-1"
+    access_key     = linode_object_storage_key.foobar.access_key
+    secret_key     = linode_object_storage_key.foobar.secret_key
+    key            = "test_base64"
+    content_base64 = base64encode("{{.Content}}")
+
+    {{ template "object_object_updates_fields" . }}
+}
+
+resource "linode_object_storage_object" "source" {
+    bucket     = linode_object_storage_bucket.foobar.label
+    cluster    = "us-east-1"
+    access_key = linode_object_storage_key.foobar.access_key
+    secret_key = linode_object_storage_key.foobar.secret_key
+    key        = "test_source"
+    source     = "{{.Source}}"
+
+    {{ template "object_object_updates_fields" . }}
+}
+
+{{ end }}
+
+{{ define "object_object_updates_fields" }}
+acl        = "public-read"
+
+content_type     = "text/plain"
+content_encoding = "utf8"
+content_language = "en"
+website_redirect = "test.com"
+force_destroy    = true
+
+content_disposition = "attachment"
+cache_control       = "max-age=2592000"
+
+metadata = {
+    foo = "bar"
+    bar = "foo"
+}
 {{ end }}

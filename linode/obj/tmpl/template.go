@@ -16,38 +16,22 @@ type TemplateData struct {
 	Source  string
 }
 
-func Basic(t *testing.T, name, keyName, content string) string {
+func Basic(t *testing.T, name, keyName, content, source string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_basic", TemplateData{
 			Bucket:  objectbucket.TemplateData{Label: name},
 			Key:     objectkey.TemplateData{Label: keyName},
 			Content: content,
+			Source:  source,
 		})
 }
 
-func Base64(t *testing.T, name, keyName, content string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_object_base64", TemplateData{
-			Bucket:  objectbucket.TemplateData{Label: name},
-			Key:     objectkey.TemplateData{Label: keyName},
-			Content: content,
-		})
-}
-
-func Source(t *testing.T, name, keyName, source string) string {
-	return acceptance.ExecuteTemplate(t,
-		"object_object_source", TemplateData{
-			Bucket: objectbucket.TemplateData{Label: name},
-			Key:    objectkey.TemplateData{Label: keyName},
-			Source: source,
-		})
-}
-
-func Updates(t *testing.T, name, keyName, content string) string {
+func Updates(t *testing.T, name, keyName, content, source string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_updates", TemplateData{
 			Bucket:  objectbucket.TemplateData{Label: name},
 			Key:     objectkey.TemplateData{Label: keyName},
 			Content: content,
+			Source:  source,
 		})
 }
