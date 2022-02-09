@@ -68,7 +68,7 @@ func TestAccResourceInstance_basic(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
@@ -128,7 +128,7 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "image", "linode/ubuntu18.04"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
@@ -165,7 +165,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-					resource.TestCheckResourceAttr(resName, "image", "linode/alpine3.13"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
 
@@ -1483,7 +1483,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "image", "linode/debian9"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", "us-east"),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 				),
@@ -1512,13 +1512,13 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DiskBootImage(t, instanceName, "linode/alpine3.10"),
+				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImagePrevious),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName)),
 			},
 			{
-				Config: tmpl.DiskBootImage(t, instanceName, "linode/alpine3.11"),
+				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImageLatest),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),

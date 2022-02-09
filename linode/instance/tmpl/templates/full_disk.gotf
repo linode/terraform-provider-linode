@@ -4,6 +4,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-nanode-1"
+    # This needs to be hardcoded to support the StackScript
     image = "linode/ubuntu18.04"
     region = "us-east"
     root_pass = "terraform-test"

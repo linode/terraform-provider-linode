@@ -6,7 +6,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}-${count.index}"
     tags = ["{{ .Tag }}"]
     type = "g6-nanode-1"
-    image = "linode/ubuntu18.04"
+    image = "{{.Image}}"
     region = "us-east"
     root_pass = "terraform-test"
 }

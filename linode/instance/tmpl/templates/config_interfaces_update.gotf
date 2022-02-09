@@ -57,7 +57,7 @@ resource "linode_instance" "foobar" {
     disk {
         label = "boot"
         size = 3000
-        image  = "linode/ubuntu18.04"
+        image  = "{{.Image}}"
         root_pass = "terr4form-test"
     }
 

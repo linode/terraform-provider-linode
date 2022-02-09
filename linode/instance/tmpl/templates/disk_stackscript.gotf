@@ -5,11 +5,11 @@ resource "linode_stackscript" "foo-script" {
     description = "Installs a Package"
 
     script = <<EOF
-#!/bin/bash
+#!/bin/ash
 # <UDF name="hello" label="Hiya" example="example" default="">
 echo "hello this is a stack script"
 	EOF
-    images = ["linode/debian9"]
+    images = ["{{.Image}}"]
     rev_note = "hello version"
 }
 
@@ -21,7 +21,7 @@ resource "linode_instance" "foobar" {
 
     disk {
         label = "disk"
-        image = "linode/debian9"
+        image = "{{.Image}}"
         root_pass = "b4d_p4s5"
         authorized_keys = ["{{.PubKey}}"]
         size = 3000
