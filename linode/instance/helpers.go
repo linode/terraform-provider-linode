@@ -699,6 +699,7 @@ func changeInstanceType(
 	); err != nil {
 		return nil, fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
 	}
+
 	return instance, nil
 }
 
@@ -850,6 +851,7 @@ func applyInstanceDiskSpec(
 	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
 		return false, err
 	}
+
 	return updateInstanceDisks(ctx, *client, d, *instance)
 }
 
@@ -857,10 +859,12 @@ func applyInstanceDiskSpec(
 // linode type spec for disk capacity.
 func assertDiskConfigFitsInstanceType(d *schema.ResourceData, typ *linodego.LinodeType) error {
 	oldDisks, newDisks := d.GetChange("disk")
+
 	_, newDiskSize := getDiskSizeChange(oldDisks, newDisks)
+
 	if typ.Disk < newDiskSize {
 		return fmt.Errorf(
-			"Linode type %s has insufficient disk capacity for the config. Have %d; want %d",
+			"linode type %s has insufficient disk capacity for the config. Have %d; want %d",
 			typ.Label, typ.Disk, newDiskSize)
 	}
 	return nil

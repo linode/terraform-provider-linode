@@ -1611,21 +1611,10 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 				),
 			},
-			// Downsize the instance and disk
+			// Attempt a downsize
 			{
-				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", true),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					checkInstanceDisks(&instance, func(disk []linodego.InstanceDisk) error {
-						if disk[0].Size >= oldDiskSize {
-							return fmt.Errorf("disk size was unchanged")
-						}
-
-						return nil
-					}),
-					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-				),
+				Config:      tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", true),
+				ExpectError: regexp.MustCompile("Did you try to resize a linode with implicit"),
 			},
 		},
 	})
