@@ -79,7 +79,7 @@ func TestAccResourceInstance_basic(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk"},
 			},
 		},
 	})
@@ -139,7 +139,7 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image", "resize_disk"},
 			},
 		},
 	})
@@ -194,7 +194,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface"},
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk"},
 			},
 		},
 	})
@@ -233,9 +233,10 @@ func TestAccResourceInstance_config(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -272,7 +273,7 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "resize_disk"},
 			},
 		},
 	})
@@ -337,9 +338,10 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -399,9 +401,10 @@ func TestAccResourceInstance_disk(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -436,9 +439,10 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -475,9 +479,10 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -513,9 +518,10 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -563,7 +569,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "resize_disk"},
 			},
 		},
 	})
@@ -606,9 +612,10 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -643,9 +650,10 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -675,9 +683,10 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 		},
 	})
@@ -810,7 +819,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "status", "resize_disk"},
 			},
 			{
 				Config: tmpl.WithConfig(t, instanceName),
@@ -830,7 +839,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label", "status"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "status", "resize_disk"},
 			},
 			{
 				Config: tmpl.ConfigsAllUpdated(t, instanceName),
@@ -1493,7 +1502,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       false,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk"},
 			},
 		},
 	})
@@ -1532,7 +1541,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       false,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk"},
 			},
 		},
 	})
