@@ -1565,6 +1565,111 @@ func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+
+	var instance linodego.Instance
+	oldDiskSize := 0
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Create an initial instance
+			{
+				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance, func(disk []linodego.InstanceDisk) error {
+						oldDiskSize = disk[0].Size
+						return nil
+					}),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+				),
+			},
+			// Upsize the instance and disk
+			{
+				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-standard-1", true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance, func(disk []linodego.InstanceDisk) error {
+						if disk[0].Size <= oldDiskSize {
+							return fmt.Errorf("disk size was unchanged")
+						}
+
+						oldDiskSize = disk[0].Size
+
+						return nil
+					}),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+				),
+			},
+			// Downsize the instance and disk
+			{
+				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					checkInstanceDisks(&instance, func(disk []linodego.InstanceDisk) error {
+						if disk[0].Size >= oldDiskSize {
+							return fmt.Errorf("disk size was unchanged")
+						}
+
+						return nil
+					}),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Create an instance with explicit disks
+			{
+				Config: tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-nanode-1", true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+				),
+			},
+			// Attempt to resize the instance and disk and expect an error
+			{
+				Config:      tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-standard-1", true),
+				ExpectError: regexp.MustCompile("resize_disk requires that no explicit disks are defined"),
+			},
+			// Resize only the instance
+			{
+				Config: tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-standard-1", false),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+				),
+			},
+		},
+	})
+}
+
 func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

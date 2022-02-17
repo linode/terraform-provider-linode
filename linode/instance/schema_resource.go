@@ -138,6 +138,14 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     "g6-standard-1",
 	},
+	"resize_disk": {
+		Type: schema.TypeBool,
+		Description: "If true, changes in Linode type will attempt to upsize or downsize implicitly created disks. " +
+			"This must be false if explicit disks are defined. When resizing down to a smaller plan your Linode's " +
+			"data must fit within the smaller disk size.",
+		Optional: true,
+		Default:  false,
+	},
 	"status": {
 		Type:        schema.TypeString,
 		Description: "The status of the instance, indicating the current readiness state.",

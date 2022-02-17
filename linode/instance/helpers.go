@@ -661,6 +661,7 @@ func changeInstanceType(
 	client *linodego.Client,
 	instanceID int,
 	targetType string,
+	diskResize bool,
 	d *schema.ResourceData,
 ) (*linodego.Instance, error) {
 	instance, err := ensureInstanceOffline(ctx, client, instanceID, getDeadlineSeconds(ctx, d))
@@ -668,7 +669,6 @@ func changeInstanceType(
 		return nil, err
 	}
 
-	diskResize := false
 	resizeOpts := linodego.InstanceResizeOptions{
 		AllowAutoDiskResize: &diskResize,
 		Type:                targetType,
@@ -875,10 +875,21 @@ func applyInstanceTypeChange(
 	instance *linodego.Instance,
 	typ *linodego.LinodeType,
 ) (*linodego.Instance, error) {
+	resizeDisk := d.Get("resize_disk").(bool)
+
+	// We need to pull disks from the raw config in order to differentiate
+	// explicit disks from implicit disks.
+	diskConfigLen := d.GetRawConfig().GetAttr("disk").LengthInt()
+
+	if resizeDisk && diskConfigLen > 0 {
+		return nil, fmt.Errorf("resize_disk requires that no explicit disks are defined")
+	}
+
 	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
 		return nil, err
 	}
-	return changeInstanceType(ctx, client, instance.ID, typ.ID, d)
+
+	return changeInstanceType(ctx, client, instance.ID, typ.ID, resizeDisk, d)
 }
 
 // detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct.
