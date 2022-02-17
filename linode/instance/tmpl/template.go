@@ -17,6 +17,8 @@ type TemplateData struct {
 	SwapSize int
 
 	StackScriptName string
+
+	Booted bool
 }
 
 func Basic(t *testing.T, label, pubKey string) string {
@@ -349,6 +351,15 @@ func DiskStackScript(t *testing.T, label, pubKey string) string {
 			Label:  label,
 			PubKey: pubKey,
 			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func BootState(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Booted: booted,
 		})
 }
 

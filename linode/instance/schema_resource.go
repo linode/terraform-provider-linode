@@ -233,6 +233,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional: true,
 		Default:  true,
 	},
+	"booted": {
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  nil,
+		Computed: true,
+	},
 	"specs": {
 		Computed:    true,
 		Description: "Information about the resources available to this Linode.",

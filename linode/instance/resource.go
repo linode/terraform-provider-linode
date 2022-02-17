@@ -92,6 +92,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
+	d.Set("booted", instance.Status == "running")
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -174,6 +175,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
+	bootedFlag, bootedOk := d.GetOk("booted")
 
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
@@ -191,8 +193,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 				return diag.FromErr(err)
 			}
 		}
+
 		createOpts.Image = d.Get("image").(string)
+
 		createOpts.Booted = &boolTrue
+		if bootedOk {
+			bootedFlag := bootedFlag.(bool)
+			createOpts.Booted = &bootedFlag
+		}
+
 		createOpts.BackupID = d.Get("backup_id").(int)
 		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
 			createOpts.SwapSize = &swapSize
@@ -212,6 +221,12 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	} else {
 		createOpts.Booted = &boolFalse // necessary to prepare disks and configs
+	}
+
+	if !(disksOk && configsOk) && len(createOpts.Image) < 1 {
+		if bootedOk && bootedFlag.(bool) {
+			return diag.Errorf("cannot boot an instance without an image, config, or disks")
+		}
 	}
 
 	instance, err := client.CreateInstance(ctx, createOpts)
@@ -314,7 +329,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	targetStatus := linodego.InstanceRunning
 
 	if createOpts.Booted == nil || !*createOpts.Booted {
-		if disksOk && configsOk {
+		if disksOk && configsOk && (!bootedOk || bootedFlag.(bool)) {
 			if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
 				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 			}
@@ -413,6 +428,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
+
+	bootedCfg := d.Get("booted").(bool)
 
 	updateOpts := linodego.InstanceUpdateOptions{}
 	simpleUpdate := false
@@ -563,6 +580,30 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to set boot config interfaces: %s", err)
 		}
 		rebootInstance = true
+	}
+
+	if !bootedCfg {
+		rebootInstance = false
+	}
+
+	if !bootedCfg && instance.Status == "running" {
+		if err := client.ShutdownInstance(ctx, instance.ID); err != nil {
+			return diag.Errorf("failed to shutdown instance: %s", err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeShutdown, time.Now(), 120); err != nil {
+			return diag.Errorf("failed to wait for instance shutdown: %s", err)
+		}
+	}
+
+	if bootedCfg && instance.Status == "offline" {
+		if err := client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
+			return diag.Errorf("failed to boot instance: %s", err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot, time.Now(), 120); err != nil {
+			return diag.Errorf("failed to wait for instance boot: %s", err)
+		}
 	}
 
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
