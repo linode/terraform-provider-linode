@@ -1580,7 +1580,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	var instance linodego.Instance
-	oldDiskSize := 0
+	//oldDiskSize := 0
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
@@ -1594,10 +1594,6 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
-					checkInstanceDisks(&instance, func(disk []linodego.InstanceDisk) error {
-						oldDiskSize = disk[0].Size
-						return nil
-					}),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 				),
@@ -1607,15 +1603,6 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 				Config: tmpl.TypeChangeDisk(t, instanceName, "g6-standard-1", true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
-					checkInstanceDisks(&instance, func(disk []linodego.InstanceDisk) error {
-						if disk[0].Size <= oldDiskSize {
-							return fmt.Errorf("disk size was unchanged")
-						}
-
-						oldDiskSize = disk[0].Size
-
-						return nil
-					}),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 				),
