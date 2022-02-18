@@ -197,10 +197,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.Image = d.Get("image").(string)
 
 		createOpts.Booted = &boolTrue
-		if bootedOk {
-			bootedFlag := bootedFlag.(bool)
-			createOpts.Booted = &bootedFlag
-		}
+
+		bootedFlag := bootedFlag.(bool)
+		createOpts.Booted = &bootedFlag
 
 		createOpts.BackupID = d.Get("backup_id").(int)
 		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
