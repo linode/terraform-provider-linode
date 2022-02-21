@@ -363,6 +363,14 @@ func BootState(t *testing.T, label string, booted bool) string {
 		})
 }
 
+func BootStateNoImage(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state_noimage", TemplateData{
+			Label:  label,
+			Booted: booted,
+		})
+}
+
 func DataBasic(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{

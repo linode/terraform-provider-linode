@@ -932,6 +932,21 @@ func detachConfigVolumes(
 	return nil
 }
 
+func validateBooted(ctx context.Context, d *schema.ResourceData) error {
+	booted := d.Get("booted").(bool)
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+
+	_, imageOk := d.GetOk("image")
+	_, disksOk := d.GetOk("disk")
+	_, configsOk := d.GetOk("config")
+
+	if !bootedNull && booted && !imageOk && !(disksOk && configsOk) {
+		return fmt.Errorf("booted requires an image or disk/config be defined")
+	}
+
+	return nil
+}
+
 func handleBootedUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int) error {
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -942,12 +957,39 @@ func handleBootedUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		return nil
 	}
 
-	inst, err := client.GetInstance(context.Background(), instanceID)
+	inst, err := client.GetInstance(ctx, instanceID)
 	if err != nil {
 		return err
 	}
 
-	if inst.Status != "running" && booted.(bool) {
+	// TODO: clean up this logic
+	switch inst.Status {
+	case linodego.InstanceRunning:
+	case linodego.InstanceOffline:
+
+	case linodego.InstanceShuttingDown:
+		log.Printf("[INFO] Awaiting instance (%d) shutdown before continuing", instanceID)
+
+		inst, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, 120)
+		if err != nil {
+			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
+		}
+
+	case linodego.InstanceBooting, linodego.InstanceRebooting:
+		log.Printf("[INFO] Awaiting instance (%d) boot before continuing", instanceID)
+
+		inst, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceRunning, 120)
+		if err != nil {
+			return fmt.Errorf("failed to wait for instance running: %s", err)
+		}
+
+	default:
+		return fmt.Errorf("instance is in state %s", inst.Status)
+	}
+
+	if inst.Status != linodego.InstanceRunning && booted.(bool) {
+		log.Printf("[INFO] Booting instance (%d)", instanceID)
+
 		if err := client.BootInstance(ctx, instanceID, configID); err != nil {
 			return fmt.Errorf("failed to boot instance: %s", err)
 		}
@@ -957,7 +999,9 @@ func handleBootedUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 	}
 
-	if inst.Status != "offline" && !booted.(bool) {
+	if inst.Status != linodego.InstanceOffline && !booted.(bool) {
+		log.Printf("[INFO] Shutting down instance (%d)", instanceID)
+
 		if err := client.ShutdownInstance(ctx, instanceID); err != nil {
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}

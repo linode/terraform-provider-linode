@@ -92,7 +92,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
-	d.Set("booted", instance.Status == "running")
+	d.Set("booted", instance.Status == linodego.InstanceRunning ||
+		instance.Status == linodego.InstanceRebooting)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -146,6 +147,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
+
+	if err := validateBooted(ctx, d); err != nil {
+		return diag.Errorf("failed to validate: %v", err)
+	}
 
 	bootConfig := 0
 	createOpts := linodego.InstanceCreateOptions{
@@ -423,6 +428,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+	}
+
+	if err := validateBooted(ctx, d); err != nil {
+		return diag.Errorf("failed to validate: %v", err)
 	}
 
 	instance, err := client.GetInstance(ctx, int(id))
