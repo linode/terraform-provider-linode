@@ -932,6 +932,12 @@ func detachConfigVolumes(
 	return nil
 }
 
+func isInstanceBooted(instance *linodego.Instance) bool {
+	return instance.Status == linodego.InstanceRunning ||
+		instance.Status == linodego.InstanceRebooting ||
+		instance.Status == linodego.InstanceBooting
+}
+
 func validateBooted(ctx context.Context, d *schema.ResourceData) error {
 	booted := d.Get("booted").(bool)
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()

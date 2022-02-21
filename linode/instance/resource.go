@@ -92,9 +92,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
-	d.Set("booted", instance.Status == linodego.InstanceRunning ||
-		instance.Status == linodego.InstanceRebooting ||
-		instance.Status == linodego.InstanceBooting)
+	d.Set("booted", isInstanceBooted(instance))
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
