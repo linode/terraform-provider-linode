@@ -947,7 +947,8 @@ func validateBooted(ctx context.Context, d *schema.ResourceData) error {
 	return nil
 }
 
-func handleBootedUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int) error {
+func handleBootedUpdate(
+	ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int) error {
 	client := meta.(*helper.ProviderMeta).Client
 
 	booted := d.Get("booted")
@@ -994,7 +995,8 @@ func handleBootedUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 			return fmt.Errorf("failed to boot instance: %s", err)
 		}
 
-		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeBoot, time.Now(), 120); err != nil {
+		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
+			linodego.ActionLinodeBoot, time.Now(), 120); err != nil {
 			return fmt.Errorf("failed to wait for instance boot: %s", err)
 		}
 	}
@@ -1006,7 +1008,8 @@ func handleBootedUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown, time.Now(), 120); err != nil {
+		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
+			linodego.ActionLinodeShutdown, time.Now(), 120); err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}
