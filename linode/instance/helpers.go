@@ -931,3 +931,41 @@ func detachConfigVolumes(
 
 	return nil
 }
+
+func handleBootedUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int) error {
+	client := meta.(*helper.ProviderMeta).Client
+
+	booted := d.Get("booted")
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+
+	if bootedNull {
+		return nil
+	}
+
+	inst, err := client.GetInstance(context.Background(), instanceID)
+	if err != nil {
+		return err
+	}
+
+	if inst.Status != "running" && booted.(bool) {
+		if err := client.BootInstance(ctx, instanceID, configID); err != nil {
+			return fmt.Errorf("failed to boot instance: %s", err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeBoot, time.Now(), 120); err != nil {
+			return fmt.Errorf("failed to wait for instance boot: %s", err)
+		}
+	}
+
+	if inst.Status != "offline" && !booted.(bool) {
+		if err := client.ShutdownInstance(ctx, instanceID); err != nil {
+			return fmt.Errorf("failed to shutdown instance: %s", err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown, time.Now(), 120); err != nil {
+			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
+		}
+	}
+
+	return nil
+}

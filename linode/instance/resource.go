@@ -198,8 +198,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		createOpts.Booted = &boolTrue
 
-		bootedFlag := bootedFlag.(bool)
-		createOpts.Booted = &bootedFlag
+		if !d.GetRawConfig().GetAttr("booted").IsNull() {
+			bootedFlag := bootedFlag.(bool)
+			createOpts.Booted = &bootedFlag
+		}
 
 		createOpts.BackupID = d.Get("backup_id").(int)
 		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
@@ -428,8 +430,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
-	bootedCfg := d.Get("booted").(bool)
-
 	updateOpts := linodego.InstanceUpdateOptions{}
 	simpleUpdate := false
 
@@ -581,28 +581,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		rebootInstance = true
 	}
 
-	if !bootedCfg {
+	booted := d.Get("booted")
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+
+	if bootedNull && !booted.(bool) {
 		rebootInstance = false
-	}
-
-	if !bootedCfg && instance.Status == "running" {
-		if err := client.ShutdownInstance(ctx, instance.ID); err != nil {
-			return diag.Errorf("failed to shutdown instance: %s", err)
-		}
-
-		if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeShutdown, time.Now(), 120); err != nil {
-			return diag.Errorf("failed to wait for instance shutdown: %s", err)
-		}
-	}
-
-	if bootedCfg && instance.Status == "offline" {
-		if err := client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
-			return diag.Errorf("failed to boot instance: %s", err)
-		}
-
-		if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot, time.Now(), 120); err != nil {
-			return diag.Errorf("failed to wait for instance boot: %s", err)
-		}
 	}
 
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
@@ -623,6 +606,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		); err != nil {
 			return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 		}
+	}
+
+	if err := handleBootedUpdate(ctx, d, meta, instance.ID, bootConfig); err != nil {
+		return diag.Errorf("failed to handle booted update: %s", err)
 	}
 
 	return readResource(ctx, d, meta)
