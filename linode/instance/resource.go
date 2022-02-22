@@ -228,10 +228,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.Booted = &boolFalse // necessary to prepare disks and configs
 	}
 
-	if !(disksOk && configsOk) && len(createOpts.Image) < 1 {
-		return diag.Errorf("cannot boot an instance without an image, config, or disks")
-	}
-
 	instance, err := client.CreateInstance(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("Error creating a Linode Instance: %s", err)

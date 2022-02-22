@@ -989,7 +989,8 @@ func handleBootedUpdate(
 	case linodego.InstanceShuttingDown:
 		log.Printf("[INFO] Awaiting instance (%d) shutdown before continuing", instanceID)
 
-		_, err = client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown, *inst.Created, deadlineSeconds)
+		_, err = client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
+			linodego.ActionLinodeShutdown, *inst.Created, deadlineSeconds)
 		if err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
