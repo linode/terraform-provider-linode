@@ -1565,7 +1565,7 @@ func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 	})
 }
 
-func TestAccResourceInstance_powerState(t *testing.T) {
+func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -1599,6 +1599,127 @@ func TestAccResourceInstance_powerState(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "status", "offline"),
+				),
+			},
+			// Ensure an implicit reboot isn't triggered when booted == false
+			{
+				Config: tmpl.BootStateInterface(t, instanceName, false),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "status", "offline"),
+				),
+			},
+			{
+				PreConfig: func() {
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+					filter := &linodego.Filter{}
+					filter.AddField(linodego.Eq, "action", linodego.ActionLinodeReboot)
+					filter.AddField(linodego.Eq, "entity.id", instance.ID)
+					filter.AddField(linodego.Eq, "entity.type", linodego.EntityLinode)
+					jsonData, err := filter.MarshalJSON()
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: string(jsonData)})
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					if len(events) > 0 {
+						t.Fatal("found reboot event when no reboot was expected")
+					}
+				},
+				Config: tmpl.BootStateInterface(t, instanceName, false),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.BootStateConfig(t, instanceName, false),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "status", "offline"),
+				),
+			},
+			{
+				Config: tmpl.BootStateConfig(t, instanceName, true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "status", "running"),
+				),
+			},
+			{
+				Config: tmpl.BootStateConfig(t, instanceName, false),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "status", "offline"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_powerStateConfigBooted(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.BootStateConfig(t, instanceName, true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "status", "running"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_powerStateBooted(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.BootState(t, instanceName, true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "status", "running"),
 				),
 			},
 		},

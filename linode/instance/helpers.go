@@ -933,6 +933,10 @@ func detachConfigVolumes(
 }
 
 func isInstanceBooted(instance *linodego.Instance) bool {
+
+	// For diffing purposes, transition states need to be treated as
+	// booted == true. This is because these statuses will eventually
+	// result in a powered on Linode.
 	return instance.Status == linodego.InstanceRunning ||
 		instance.Status == linodego.InstanceRebooting ||
 		instance.Status == linodego.InstanceBooting
@@ -957,6 +961,8 @@ func handleBootedUpdate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int) error {
 	client := meta.(*helper.ProviderMeta).Client
 
+	deadlineSeconds := getDeadlineSeconds(ctx, d)
+
 	booted := d.Get("booted")
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
@@ -969,55 +975,82 @@ func handleBootedUpdate(
 		return err
 	}
 
+	instStatus := inst.Status
+
+	// Ensure the Linode reaches a running or offline state
+	// if in a transition state (shutting down, booting, rebooting)
 	// TODO: clean up this logic
 	switch inst.Status {
+
+	// These cases can be ignored
 	case linodego.InstanceRunning:
 	case linodego.InstanceOffline:
 
 	case linodego.InstanceShuttingDown:
 		log.Printf("[INFO] Awaiting instance (%d) shutdown before continuing", instanceID)
 
-		inst, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, 120)
+		_, err = client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown, *inst.Created, deadlineSeconds)
 		if err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
+
+		instStatus = linodego.InstanceOffline
 
 	case linodego.InstanceBooting, linodego.InstanceRebooting:
 		log.Printf("[INFO] Awaiting instance (%d) boot before continuing", instanceID)
 
-		inst, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceRunning, 120)
+		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceRunning, 120)
 		if err != nil {
 			return fmt.Errorf("failed to wait for instance running: %s", err)
 		}
 
+		instStatus = linodego.InstanceRunning
+
 	default:
-		return fmt.Errorf("instance is in state %s", inst.Status)
+		return fmt.Errorf("instance is in unhandled state %s", inst.Status)
 	}
 
-	if inst.Status != linodego.InstanceRunning && booted.(bool) {
-		log.Printf("[INFO] Booting instance (%d)", instanceID)
-
-		if err := client.BootInstance(ctx, instanceID, configID); err != nil {
-			return fmt.Errorf("failed to boot instance: %s", err)
-		}
-
-		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-			linodego.ActionLinodeBoot, time.Now(), 120); err != nil {
-			return fmt.Errorf("failed to wait for instance boot: %s", err)
+	// Boot or shutdown the instance if necessary
+	if instStatus != linodego.InstanceRunning && booted.(bool) {
+		if err := bootInstanceSync(ctx, client, instanceID, configID, deadlineSeconds); err != nil {
+			return err
 		}
 	}
 
-	if inst.Status != linodego.InstanceOffline && !booted.(bool) {
-		log.Printf("[INFO] Shutting down instance (%d)", instanceID)
-
-		if err := client.ShutdownInstance(ctx, instanceID); err != nil {
-			return fmt.Errorf("failed to shutdown instance: %s", err)
+	if instStatus != linodego.InstanceOffline && !booted.(bool) {
+		if err := shutDownInstanceSync(ctx, client, instanceID, deadlineSeconds); err != nil {
+			return err
 		}
+	}
 
-		if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, time.Now(), 120); err != nil {
-			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
-		}
+	return nil
+}
+
+func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceID, deadlineSeconds int) error {
+	log.Printf("[INFO] Shutting down instance (%d)", instanceID)
+
+	if err := client.ShutdownInstance(ctx, instanceID); err != nil {
+		return fmt.Errorf("failed to shutdown instance: %s", err)
+	}
+
+	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
+		linodego.ActionLinodeShutdown, time.Now(), deadlineSeconds); err != nil {
+		return fmt.Errorf("failed to wait for instance shutdown: %s", err)
+	}
+
+	return nil
+}
+
+func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, configID, deadlineSeconds int) error {
+	log.Printf("[INFO] Booting instance (%d)", instanceID)
+
+	if err := client.BootInstance(ctx, instanceID, configID); err != nil {
+		return fmt.Errorf("failed to boot instance: %s", err)
+	}
+
+	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
+		linodego.ActionLinodeBoot, time.Now(), deadlineSeconds); err != nil {
+		return fmt.Errorf("failed to wait for instance boot: %s", err)
 	}
 
 	return nil

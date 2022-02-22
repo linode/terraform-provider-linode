@@ -179,7 +179,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
-	bootedFlag, bootedOk := d.GetOk("booted")
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+	booted := d.Get("booted").(bool)
 
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
@@ -203,8 +204,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.Booted = &boolTrue
 
 		if !d.GetRawConfig().GetAttr("booted").IsNull() {
-			bootedFlag := bootedFlag.(bool)
-			createOpts.Booted = &bootedFlag
+			createOpts.Booted = &booted
 		}
 
 		createOpts.BackupID = d.Get("backup_id").(int)
@@ -229,9 +229,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if !(disksOk && configsOk) && len(createOpts.Image) < 1 {
-		if bootedOk && bootedFlag.(bool) {
-			return diag.Errorf("cannot boot an instance without an image, config, or disks")
-		}
+		return diag.Errorf("cannot boot an instance without an image, config, or disks")
 	}
 
 	instance, err := client.CreateInstance(ctx, createOpts)
@@ -334,7 +332,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	targetStatus := linodego.InstanceRunning
 
 	if createOpts.Booted == nil || !*createOpts.Booted {
-		if disksOk && configsOk && (!bootedOk || bootedFlag.(bool)) {
+		if disksOk && configsOk && (bootedNull || booted) {
 			if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
 				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 			}
