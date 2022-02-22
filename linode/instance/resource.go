@@ -589,10 +589,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		rebootInstance = true
 	}
 
-	booted := d.Get("booted")
+	booted := d.Get("booted").(bool)
 	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
-	if bootedNull && !booted.(bool) {
+	// Don't reboot if the Linode should be powered off
+	if !bootedNull && !booted {
 		rebootInstance = false
 	}
 
