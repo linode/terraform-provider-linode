@@ -10,7 +10,7 @@ const deviceDescription = "Device can be either a Disk or Volume identified by d
 
 var downsizeFailedMessage = `
 Did you try to resize a linode with implicit, default disks to a smaller type? The provider does
-not automatically scale the boot disk to fit an updated instance type. You may need to switch to
+not automatically downsize the boot disk to fit an updated instance type. You may need to switch to
 an explicit disk configuration.
 
 Take a look at the example here:
@@ -137,6 +137,14 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The type of instance to be deployed, determining the price and size.",
 		Optional:    true,
 		Default:     "g6-standard-1",
+	},
+	"resize_disk": {
+		Type: schema.TypeBool,
+		Description: "If true, changes in Linode type will attempt to upsize or downsize implicitly created disks. " +
+			"This must be false if explicit disks are defined. This is an irreversible action as Linode disks cannot " +
+			"be automatically downsized.",
+		Optional: true,
+		Default:  false,
 	},
 	"status": {
 		Type:        schema.TypeString,

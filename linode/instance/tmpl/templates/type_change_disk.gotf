@@ -1,0 +1,12 @@
+{{ define "instance_type_change_disk" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "{{.Type}}"
+    region = "us-southeast"
+    image = "{{.Image}}"
+    resize_disk = true
+}
+
+{{ end }}
