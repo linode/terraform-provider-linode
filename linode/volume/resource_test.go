@@ -262,10 +262,11 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "linode_instance.foobar",
-				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "linode_instance.foobar",
+				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk"},
 			},
 			{
 				ResourceName:      "linode_instance.foobaz",
