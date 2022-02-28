@@ -1,6 +1,10 @@
 package instance
 
 import (
+	"net"
+
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -254,6 +258,26 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional: true,
 		Default:  nil,
 		Computed: true,
+	},
+	"shared_ipv4": {
+		Type:        schema.TypeSet,
+		Description: "A set of IPv4 addresses to share with this Linode.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+			ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+				ip := net.ParseIP(i.(string))
+				if ip == nil {
+					return diag.Errorf("invalid ipv4 address: %s", i)
+				}
+
+				if ip.To4() == nil {
+					return diag.Errorf("expected ipv4 address, got %s", i)
+				}
+
+				return nil
+			},
+		},
+		Optional: true,
 	},
 	"specs": {
 		Computed:    true,

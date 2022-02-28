@@ -67,6 +67,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 	d.Set("ipv4", ips)
 	d.Set("ipv6", instance.IPv6)
+	d.Set("shared_ipv4", instanceIPSliceToString(instanceNetwork.IPv4.Shared))
+
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
@@ -322,6 +324,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			}
 
 			configIDLabelMap[v.Label] = k
+		}
+	}
+
+	if ipv4Shared, ok := d.GetOk("shared_ipv4"); ok {
+		err = client.ShareIPAddresses(ctx, linodego.IPAddressesShareOptions{
+			IPs:      helper.ExpandStringSet(ipv4Shared.(*schema.Set)),
+			LinodeID: instance.ID,
+		})
+		if err != nil {
+			return diag.Errorf("failed to share ipv4 addresses with instance: %s", err)
 		}
 	}
 
@@ -584,6 +596,16 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to set boot config interfaces: %s", err)
 		}
 		rebootInstance = true
+	}
+
+	if d.HasChange("shared_ipv4") {
+		err = client.ShareIPAddresses(ctx, linodego.IPAddressesShareOptions{
+			IPs:      helper.ExpandStringSet(d.Get("shared_ipv4").(*schema.Set)),
+			LinodeID: instance.ID,
+		})
+		if err != nil {
+			return diag.Errorf("failed to share ipv4 addresses with instance: %s", err)
+		}
 	}
 
 	booted := d.Get("booted").(bool)

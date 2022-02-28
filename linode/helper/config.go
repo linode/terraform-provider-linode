@@ -66,7 +66,9 @@ func (c *Config) Client() linodego.Client {
 
 	if c.APIURL != "" {
 		client.SetBaseURL(c.APIURL)
-	} else if len(c.APIVersion) > 0 {
+	}
+
+	if len(c.APIVersion) > 0 {
 		client.SetAPIVersion(c.APIVersion)
 	} else {
 		client.SetBaseURL(DefaultLinodeURL)
