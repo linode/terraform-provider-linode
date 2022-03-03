@@ -6,17 +6,6 @@ on:
 name: Integration tests
 
 jobs:
-  # Branch-based pull request
-  integration-trusted:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-
-      - name: Branch based PR checkout
-        uses: actions/checkout@v2
-
-    # <insert integration tests needing secrets>
-
   # Repo owner has commented /ok-to-test on a (fork-based) pull request
   integration-fork:
     runs-on: ubuntu-latest
