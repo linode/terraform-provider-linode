@@ -1,7 +1,7 @@
 on:
   pull_request:
   repository_dispatch:
-    types: [ok-to-test-command]
+    types: [acctest-command]
 
 name: Integration tests
 
@@ -32,7 +32,7 @@ jobs:
         with:
           ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
 
-      - run: make testacc
+      - run: make PKG_NAME="${{ github.event.client_payload.slash_command.pkg }}" testacc
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
