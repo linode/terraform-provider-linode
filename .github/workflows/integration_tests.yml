@@ -1,6 +1,8 @@
 name: Integration tests
 on:
   workflow_dispatch: null
+  repository_dispatch:
+    types: [ ok-to-test-command ]
   push:
     branches:
       - main
