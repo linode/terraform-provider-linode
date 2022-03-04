@@ -14,10 +14,16 @@ jobs:
       github.event.client_payload.slash_command.sha != '' &&
       github.event.client_payload.slash_command.pkg != '' &&
       # Ensure package
-      !/[^a-z.\/]/i.test(github.event.client_payload.slash_command.pkg) &&
+      .test(github.event.client_payload.slash_command.pkg) &&
       contains(github.event.client_payload.pull_request.head.sha, github.event.client_payload.slash_command.sha)
 
     steps:
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: validate-pkg
+        with:
+          text: ${{ github.event.client_payload.slash_command.pkg }}
+          regex: '/[^a-z.\/]/i'
+
       # Check out merge commit
       - name: Checkout PR
         uses: actions/checkout@v2
@@ -25,6 +31,7 @@ jobs:
           ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
 
       - run: make PKG_NAME="${{ github.event.client_payload.slash_command.pkg }}" testacc
+        if: ${{ steps.validate-pkg.outputs.match == '' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
