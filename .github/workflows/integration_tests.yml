@@ -6,7 +6,7 @@ on:
 name: Integration tests
 
 jobs:
-  # Repo owner has commented /ok-to-test on a (fork-based) pull request
+  # Maintainer has commented /ok-to-test on a (fork-based) pull request
   integration-fork:
     runs-on: ubuntu-latest
     if:
@@ -25,9 +25,6 @@ jobs:
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
-      - run: |
-          echo "Integration tests... success! ;-)"
-      # Update check run called "integration-fork"
       - uses: actions/github-script@v5
         id: update-check-run
         if: ${{ always() }}
