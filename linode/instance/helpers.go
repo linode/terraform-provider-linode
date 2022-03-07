@@ -661,6 +661,7 @@ func changeInstanceType(
 	client *linodego.Client,
 	instanceID int,
 	targetType string,
+	diskResize bool,
 	d *schema.ResourceData,
 ) (*linodego.Instance, error) {
 	instance, err := ensureInstanceOffline(ctx, client, instanceID, getDeadlineSeconds(ctx, d))
@@ -668,7 +669,6 @@ func changeInstanceType(
 		return nil, err
 	}
 
-	diskResize := false
 	resizeOpts := linodego.InstanceResizeOptions{
 		AllowAutoDiskResize: &diskResize,
 		Type:                targetType,
@@ -699,6 +699,7 @@ func changeInstanceType(
 	); err != nil {
 		return nil, fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
 	}
+
 	return instance, nil
 }
 
@@ -850,6 +851,7 @@ func applyInstanceDiskSpec(
 	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
 		return false, err
 	}
+
 	return updateInstanceDisks(ctx, *client, d, *instance)
 }
 
@@ -857,10 +859,12 @@ func applyInstanceDiskSpec(
 // linode type spec for disk capacity.
 func assertDiskConfigFitsInstanceType(d *schema.ResourceData, typ *linodego.LinodeType) error {
 	oldDisks, newDisks := d.GetChange("disk")
+
 	_, newDiskSize := getDiskSizeChange(oldDisks, newDisks)
+
 	if typ.Disk < newDiskSize {
 		return fmt.Errorf(
-			"Linode type %s has insufficient disk capacity for the config. Have %d; want %d",
+			"linode type %s has insufficient disk capacity for the config. Have %d; want %d",
 			typ.Label, typ.Disk, newDiskSize)
 	}
 	return nil
@@ -875,10 +879,21 @@ func applyInstanceTypeChange(
 	instance *linodego.Instance,
 	typ *linodego.LinodeType,
 ) (*linodego.Instance, error) {
+	resizeDisk := d.Get("resize_disk").(bool)
+
+	// We need to pull disks from the raw config in order to differentiate
+	// explicit disks from implicit disks.
+	diskConfigLen := d.GetRawConfig().GetAttr("disk").LengthInt()
+
+	if resizeDisk && diskConfigLen > 0 {
+		return nil, fmt.Errorf("resize_disk requires that no explicit disks are defined")
+	}
+
 	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
 		return nil, err
 	}
-	return changeInstanceType(ctx, client, instance.ID, typ.ID, d)
+
+	return changeInstanceType(ctx, client, instance.ID, typ.ID, resizeDisk, d)
 }
 
 // detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct.

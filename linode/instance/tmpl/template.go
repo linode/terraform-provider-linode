@@ -18,7 +18,8 @@ type TemplateData struct {
 
 	StackScriptName string
 
-	Booted bool
+	Booted     bool
+	ResizeDisk bool
 }
 
 func Basic(t *testing.T, label, pubKey string) string {
@@ -353,7 +354,6 @@ func DiskStackScript(t *testing.T, label, pubKey string) string {
 			Image:  acceptance.TestImageLatest,
 		})
 }
-
 func BootState(t *testing.T, label string, booted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state", TemplateData{
@@ -386,6 +386,25 @@ func BootStateConfig(t *testing.T, label string, booted bool) string {
 			Label:  label,
 			Booted: booted,
 			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func TypeChangeDisk(t *testing.T, label, instanceType string, resizeDisk bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_type_change_disk", TemplateData{
+			Label:      label,
+			Type:       instanceType,
+			Image:      acceptance.TestImageLatest,
+			ResizeDisk: resizeDisk,
+		})
+}
+
+func TypeChangeDiskExplicit(t *testing.T, label, instanceType string, resizeDisk bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_type_change_disk_explicit", TemplateData{
+			Label:      label,
+			Type:       instanceType,
+			ResizeDisk: resizeDisk,
 		})
 }
 
