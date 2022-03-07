@@ -18,6 +18,7 @@ type TemplateData struct {
 
 	StackScriptName string
 
+	Booted     bool
 	ResizeDisk bool
 }
 
@@ -350,6 +351,40 @@ func DiskStackScript(t *testing.T, label, pubKey string) string {
 		"instance_disk_stackscript", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
+		})
+}
+func BootState(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Booted: booted,
+		})
+}
+
+func BootStateNoImage(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state_noimage", TemplateData{
+			Label:  label,
+			Booted: booted,
+		})
+}
+
+func BootStateInterface(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state_interface", TemplateData{
+			Label:  label,
+			Booted: booted,
+			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func BootStateConfig(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state_config", TemplateData{
+			Label:  label,
+			Booted: booted,
 			Image:  acceptance.TestImageLatest,
 		})
 }

@@ -92,6 +92,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
+	d.Set("booted", isInstanceBooted(instance))
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -146,6 +147,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	if err := validateBooted(ctx, d); err != nil {
+		return diag.Errorf("failed to validate: %v", err)
+	}
+
 	bootConfig := 0
 	createOpts := linodego.InstanceCreateOptions{
 		Region:         d.Get("region").(string),
@@ -174,6 +179,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+	booted := d.Get("booted").(bool)
 
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
@@ -191,8 +198,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 				return diag.FromErr(err)
 			}
 		}
+
 		createOpts.Image = d.Get("image").(string)
+
 		createOpts.Booted = &boolTrue
+
+		if !d.GetRawConfig().GetAttr("booted").IsNull() {
+			createOpts.Booted = &booted
+		}
+
 		createOpts.BackupID = d.Get("backup_id").(int)
 		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
 			createOpts.SwapSize = &swapSize
@@ -314,7 +328,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	targetStatus := linodego.InstanceRunning
 
 	if createOpts.Booted == nil || !*createOpts.Booted {
-		if disksOk && configsOk {
+		if disksOk && configsOk && (bootedNull || booted) {
 			if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
 				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 			}
@@ -407,6 +421,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+	}
+
+	if err := validateBooted(ctx, d); err != nil {
+		return diag.Errorf("failed to validate: %v", err)
 	}
 
 	instance, err := client.GetInstance(ctx, int(id))
@@ -565,6 +583,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		rebootInstance = true
 	}
 
+	booted := d.Get("booted").(bool)
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+
+	// Don't reboot if the Linode should be powered off
+	if !bootedNull && !booted {
+		rebootInstance = false
+	}
+
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
 		err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
@@ -583,6 +609,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		); err != nil {
 			return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 		}
+	}
+
+	if err := handleBootedUpdate(ctx, d, meta, instance.ID, bootConfig); err != nil {
+		return diag.Errorf("failed to handle booted update: %s", err)
 	}
 
 	return readResource(ctx, d, meta)
