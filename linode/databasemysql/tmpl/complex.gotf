@@ -1,0 +1,17 @@
+{{ define "database_mysql_complex" }}
+
+resource "linode_database_mysql" "foobar" {
+    engine = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+
+    allow_list = ["{{.AllowedIP}}"]
+    cluster_size = ["{{.ClusterSize}}"]
+    encrypted = {{.Encrypted}}
+    replication_type = "{{.ReplicationType}}"
+    ssl_connection = {{.SSLConnection}}
+
+}
+
+{{ end }}

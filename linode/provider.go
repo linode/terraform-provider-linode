@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -149,6 +150,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"linode_database_mysql":        databasemysql.Resource(),
 			"linode_domain":                domain.Resource(),
 			"linode_domain_record":         domainrecord.Resource(),
 			"linode_firewall":              firewall.Resource(),

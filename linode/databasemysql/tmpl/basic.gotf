@@ -1,0 +1,10 @@
+{{ define "database_mysql_basic" }}
+
+resource "linode_database_mysql" "foobar" {
+    engine = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+}
+
+{{ end }}
