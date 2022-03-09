@@ -2,6 +2,7 @@ package tmpl
 
 import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+
 	"testing"
 )
 
