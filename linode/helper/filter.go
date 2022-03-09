@@ -27,7 +27,7 @@ type FilterConfig map[string]FilterAttribute
 type FilterTypeFunc func(value string) (interface{}, error)
 
 // FilterListFunc wraps a linodego list function.
-type FilterListFunc func(context.Context, *linodego.Client, *linodego.ListOptions) ([]interface{}, error)
+type FilterListFunc func(context.Context, *schema.ResourceData, *linodego.Client, *linodego.ListOptions) ([]interface{}, error)
 
 // FilterFlattenFunc flattens an object into a map[string]interface{}.
 type FilterFlattenFunc func(object interface{}) map[string]interface{}
@@ -209,7 +209,7 @@ func (f FilterConfig) FilterDataSource(
 	}
 
 	// Call linode list function defined by data source
-	items, err := listFunc(ctx, &client, &linodego.ListOptions{
+	items, err := listFunc(ctx, d, &client, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {

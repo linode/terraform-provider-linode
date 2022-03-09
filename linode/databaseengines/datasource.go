@@ -28,7 +28,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func listEngines(
-	ctx context.Context, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
 	// TODO: return a list of engines
 
 	return nil, nil

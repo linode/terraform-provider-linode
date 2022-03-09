@@ -29,7 +29,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func listBackups(
-	ctx context.Context, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
 	// TODO: return a list of backups
 
 	return nil, nil

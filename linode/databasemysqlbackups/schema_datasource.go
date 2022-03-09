@@ -14,6 +14,12 @@ var filterConfig = helper.FilterConfig{
 }
 
 var dataSourceSchema = map[string]*schema.Schema{
+	"database_id": {
+		Type:        schema.TypeInt,
+		Description: "The ID of the Managed MySQL Database.",
+		Required:    true,
+	},
+
 	"latest": {
 		Type:        schema.TypeBool,
 		Description: "If true, only the latest backup will be returned.",
