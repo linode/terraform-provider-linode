@@ -26,6 +26,28 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "The returned list of engines.",
 		Computed:    true,
-		Elem:        DataSource(),
+		Elem:        engineSchema(),
 	},
+}
+
+func engineSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"engine": {
+				Type:        schema.TypeString,
+				Description: "The Managed Database engine type.",
+				Computed:    true,
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Description: "The Managed Database engine ID in engine/version format.",
+				Computed:    true,
+			},
+			"version": {
+				Type:        schema.TypeString,
+				Description: "The Managed Database engine version.",
+				Computed:    true,
+			},
+		},
+	}
 }

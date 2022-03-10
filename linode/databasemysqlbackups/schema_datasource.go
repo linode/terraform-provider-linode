@@ -33,6 +33,33 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "The returned list of backups.",
 		Computed:    true,
-		Elem:        DataSource(),
+		Elem:        backupsSchema(),
 	},
+}
+
+func backupsSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"created": {
+				Type:        schema.TypeString,
+				Description: "A time value given in a combined date and time format that represents when the database backup was created.",
+				Computed:    true,
+			},
+			"id": {
+				Type:        schema.TypeInt,
+				Description: "The ID of the database backup object.",
+				Computed:    true,
+			},
+			"label": {
+				Type:        schema.TypeString,
+				Description: "The database backup’s label, for display purposes only.",
+				Computed:    true,
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Description: "The type of database backup, determined by how the backup was created.",
+				Computed:    true,
+			},
+		},
+	}
 }

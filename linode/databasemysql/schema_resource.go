@@ -9,7 +9,7 @@ var resourceSchema = map[string]*schema.Schema{
 	// Required fields
 	"engine": {
 		Type:        schema.TypeString,
-		Description: "The Managed Database engine type.",
+		Description: "The Managed Database engine in engine/version format.",
 		Required:    true,
 		ForceNew:    true,
 	},
@@ -36,6 +36,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Description: "A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.",
 		Optional:    true,
+		Elem:        &schema.Schema{Type: schema.TypeString},
 	},
 	"cluster_size": {
 		Type:        schema.TypeInt,

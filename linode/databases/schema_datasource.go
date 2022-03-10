@@ -38,6 +38,94 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "The returned list of databases.",
 		Computed:    true,
-		Elem:        DataSource(),
+		Elem:        databaseSchema(),
 	},
+}
+
+func databaseSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"allow_list": {
+				Type:        schema.TypeList,
+				Description: "A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"cluster_size": {
+				Type:        schema.TypeInt,
+				Description: "The number of Linode Instance nodes deployed to the Managed Database.",
+				Computed:    true,
+			},
+			"created": {
+				Type:        schema.TypeString,
+				Description: "When this Managed Database was created.",
+				Computed:    true,
+			},
+			"encrypted": {
+				Type:        schema.TypeBool,
+				Description: "Whether the Managed Databases is encrypted.",
+				Computed:    true,
+			},
+			"engine": {
+				Type:        schema.TypeString,
+				Description: "The Managed Database engine type.",
+				Computed:    true,
+			},
+			"host_primary": {
+				Type:        schema.TypeString,
+				Description: "The primary host for the Managed Database.",
+				Computed:    true,
+			},
+			"host_secondary": {
+				Type:        schema.TypeString,
+				Description: "The secondary/private network host for the Managed Database.",
+				Computed:    true,
+			},
+			"id": {
+				Type:        schema.TypeInt,
+				Description: "A unique ID that can be used to identify and reference the Managed Database.",
+				Computed:    true,
+			},
+			"label": {
+				Type:        schema.TypeString,
+				Description: "A unique, user-defined string referring to the Managed Database.",
+				Computed:    true,
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Description: "The Region ID for the Managed Database.",
+				Computed:    true,
+			},
+			"replication_type": {
+				Type:        schema.TypeString,
+				Description: "The replication method used for the Managed Database.",
+				Computed:    true,
+			},
+			"ssl_connection": {
+				Type:        schema.TypeBool,
+				Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
+				Computed:    true,
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Description: "The operating status of the Managed Database.",
+				Computed:    true,
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Description: "The Linode Instance type used by the Managed Database for its nodes.",
+				Computed:    true,
+			},
+			"updated": {
+				Type:        schema.TypeString,
+				Description: "When this Managed Database was last updated.",
+				Computed:    true,
+			},
+			"version": {
+				Type:        schema.TypeString,
+				Description: "The Managed Database engine version.",
+				Computed:    true,
+			},
+		},
+	}
 }
