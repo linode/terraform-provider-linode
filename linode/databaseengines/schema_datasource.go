@@ -9,13 +9,13 @@ var filterConfig = helper.FilterConfig{
 	"engine":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"version": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 
-	"id": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"id": {TypeFunc: helper.FilterTypeString},
 }
 
 var dataSourceSchema = map[string]*schema.Schema{
 	"latest": {
 		Type:        schema.TypeBool,
-		Description: "If true, only the latest engine will be returned.",
+		Description: "If true, only the latest engine version will be returned.",
 		Optional:    true,
 		Default:     false,
 	},

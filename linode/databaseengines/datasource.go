@@ -20,7 +20,10 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return nil
 	}
 
-	results = filterConfig.FilterLatest(d, results)
+	results, err = filterConfig.FilterLatestVersion(d, results)
+	if err != nil {
+		return diag.Errorf("failed to filter versions: %s", err)
+	}
 
 	d.Set("engines", results)
 

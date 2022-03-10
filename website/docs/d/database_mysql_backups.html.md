@@ -12,6 +12,14 @@ Provides information about Linode MySQL Database Backups that match a set of fil
 
 ## Example Usage
 
+Get information about all backups for a MySQL database:
+
+```hcl
+data "linode_database_mysql_backups" "all-backups" {
+  database_id = 12345
+}
+```
+
 Get information about all automatic MySQL Database Backups:
 
 ```hcl
@@ -23,14 +31,6 @@ data "linode_database_mysql_backups" "auto-backups" {
     values = ["auto"]
   }
   
-}
-```
-
-Get information about all backups for a MySQL database:
-
-```hcl
-data "linode_database_mysql_backups" "all-backups" {
-  database_id = 12345
 }
 ```
 
@@ -58,7 +58,7 @@ The following arguments are supported:
 
 ## Attributes
 
-Each Linode image will be stored in the `images` attribute and will export the following attributes:
+Each backup will be stored in the `backups` attribute and will export the following attributes:
 
 * `created` - A time value given in a combined date and time format that represents when the database backup was created.
 
