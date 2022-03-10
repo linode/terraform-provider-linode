@@ -1,0 +1,12 @@
+{{ define "databases_data_by_label" }}
+
+{{ template "database_mysql_basic" .DB }}
+
+data "linode_databases" "foobar" {
+    filter {
+        name = "label"
+        values = ["{{.DB.Label}}"]
+    }
+}
+
+{{ end }}

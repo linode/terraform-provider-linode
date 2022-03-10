@@ -2,7 +2,10 @@ package linode
 
 import (
 	"context"
+	"github.com/linode/terraform-provider-linode/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
+	"github.com/linode/terraform-provider-linode/linode/databases"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -123,6 +126,9 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"linode_account":                account.DataSource(),
+			"linode_database_engines":       databaseengines.DataSource(),
+			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
+			"linode_databases":              databases.DataSource(),
 			"linode_domain":                 domain.DataSource(),
 			"linode_domain_record":          domainrecord.DataSource(),
 			"linode_firewall":               firewall.DataSource(),
