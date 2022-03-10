@@ -7,13 +7,12 @@ import (
 )
 
 type TemplateData struct {
-	Engine string
-	Label  string
-
+	Engine          string
+	Label           string
 	AllowedIP       string
+	ReplicationType string
 	ClusterSize     int
 	Encrypted       bool
-	ReplicationType string
 	SSLConnection   bool
 }
 

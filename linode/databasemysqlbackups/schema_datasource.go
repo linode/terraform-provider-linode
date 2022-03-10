@@ -41,9 +41,10 @@ func backupsSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"created": {
-				Type:        schema.TypeString,
-				Description: "A time value given in a combined date and time format that represents when the database backup was created.",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "A time value given in a combined date and time format that represents when the " +
+					"database backup was created.",
+				Computed: true,
 			},
 			"id": {
 				Type:        schema.TypeInt,

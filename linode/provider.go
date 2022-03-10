@@ -2,10 +2,6 @@ package linode
 
 import (
 	"context"
-	"github.com/linode/terraform-provider-linode/linode/databaseengines"
-	"github.com/linode/terraform-provider-linode/linode/databasemysql"
-	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
-	"github.com/linode/terraform-provider-linode/linode/databases"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,6 +9,10 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/databaseengines"
+	"github.com/linode/terraform-provider-linode/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
+	"github.com/linode/terraform-provider-linode/linode/databases"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/firewall"

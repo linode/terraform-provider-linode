@@ -44,7 +44,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func listVLANs(
-	ctx context.Context, d *schema.ResourceData, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
+	options *linodego.ListOptions) ([]interface{}, error) {
 	vlans, err := client.ListVLANs(ctx, options)
 	if err != nil {
 		return nil, err

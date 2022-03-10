@@ -27,7 +27,8 @@ type FilterConfig map[string]FilterAttribute
 type FilterTypeFunc func(value string) (interface{}, error)
 
 // FilterListFunc wraps a linodego list function.
-type FilterListFunc func(context.Context, *schema.ResourceData, *linodego.Client, *linodego.ListOptions) ([]interface{}, error)
+type FilterListFunc func(context.Context, *schema.ResourceData,
+	*linodego.Client, *linodego.ListOptions) ([]interface{}, error)
 
 // FilterFlattenFunc flattens an object into a map[string]interface{}.
 type FilterFlattenFunc func(object interface{}) map[string]interface{}
@@ -325,7 +326,8 @@ func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string
 }
 
 // FilterLatestVersion returns only the latest element in the given slice only if `latest` == true.
-func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData, items []map[string]interface{}) ([]map[string]interface{}, error) {
+func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData,
+	items []map[string]interface{}) ([]map[string]interface{}, error) {
 	if !d.Get("version").(bool) {
 		return items, nil
 	}

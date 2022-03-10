@@ -2,6 +2,7 @@ package databases
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -28,7 +29,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func listDatabases(
-	ctx context.Context, d *schema.ResourceData, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	ctx context.Context, d *schema.ResourceData,
+	client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
 	// TODO: return a list of engines
 
 	return nil, nil

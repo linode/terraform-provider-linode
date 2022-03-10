@@ -33,10 +33,11 @@ var resourceSchema = map[string]*schema.Schema{
 
 	// Optional fields
 	"allow_list": {
-		Type:        schema.TypeSet,
-		Description: "A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.",
-		Optional:    true,
-		Elem:        &schema.Schema{Type: schema.TypeString},
+		Type: schema.TypeSet,
+		Description: "A list of IP addresses that can access the Managed Database. " +
+			"Each item can be a single IP address or a range in CIDR format.",
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
 	},
 	"cluster_size": {
 		Type:        schema.TypeInt,

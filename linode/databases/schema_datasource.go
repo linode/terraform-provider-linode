@@ -46,10 +46,11 @@ func databaseSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"allow_list": {
-				Type:        schema.TypeList,
-				Description: "A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.",
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeList,
+				Description: "A list of IP addresses that can access the Managed Database. " +
+					"Each item can be a single IP address or a range in CIDR format.",
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"cluster_size": {
 				Type:        schema.TypeInt,
