@@ -42,7 +42,7 @@ build: fmtcheck
 test: fmtcheck
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | \
-		xargs -t -n4 go test -v ./$(PKG_NAME) -parallel=2 -timeout=30s
+		xargs -t -n4 go test -parallel=2 -timeout=30s
 
 testacc: fmtcheck
 	TF_ACC=1 \
