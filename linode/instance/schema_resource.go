@@ -18,7 +18,7 @@ https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-w
 
 const invalidImplicitDiskConfigMessage = `
 Did you try to resize a Linode's implicit disks with more than two disks? 
-When resize_disk is true, your linode must have a single ext4 disk as well as an optional swap disk.
+When resize_disk is true, your linode must have a single ext disk as well as an optional swap disk.
 
 You may need to switch to an explicit disk configuration.
 Take a look at the example here:

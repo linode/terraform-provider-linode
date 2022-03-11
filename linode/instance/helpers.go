@@ -1117,10 +1117,12 @@ func getDiskSizeSum(ctx context.Context, d *schema.ResourceData,
 }
 
 func getFirstDiskWithFilesystem(disks []linodego.InstanceDisk,
-	filesystem linodego.DiskFilesystem) *linodego.InstanceDisk {
+	filesystems []linodego.DiskFilesystem) *linodego.InstanceDisk {
 	for _, disk := range disks {
-		if disk.Filesystem == filesystem {
-			return &disk
+		for _, filesystem := range filesystems {
+			if disk.Filesystem == filesystem {
+				return &disk
+			}
 		}
 	}
 
@@ -1135,7 +1137,8 @@ func validateImplicitDisks(ctx context.Context,
 		return fmt.Errorf("failed to get instance disks: %s", err)
 	}
 
-	if getFirstDiskWithFilesystem(disks, linodego.FilesystemExt4) == nil || len(disks) > 2 {
+	if getFirstDiskWithFilesystem(disks,
+		[]linodego.DiskFilesystem{linodego.FilesystemExt4, linodego.FilesystemExt3}) == nil || len(disks) > 2 {
 		return fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
 	}
 
@@ -1153,7 +1156,8 @@ func getPrimaryImplicitDisk(ctx context.Context, d *schema.ResourceData,
 		return nil, fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
 	}
 
-	targetDisk := getFirstDiskWithFilesystem(disks, linodego.FilesystemExt4)
+	targetDisk := getFirstDiskWithFilesystem(disks,
+		[]linodego.DiskFilesystem{linodego.FilesystemExt4, linodego.FilesystemExt3})
 
 	return targetDisk, nil
 }
