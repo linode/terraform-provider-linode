@@ -669,6 +669,16 @@ func changeInstanceType(
 		return nil, err
 	}
 
+	var primaryDisk *linodego.InstanceDisk
+
+	// We only need to make this request if we plan on resizing the disk
+	if diskResize {
+		primaryDisk, err = getPrimaryImplicitDisk(ctx, d, client, instanceID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	resizeOpts := linodego.InstanceResizeOptions{
 		AllowAutoDiskResize: &diskResize,
 		Type:                targetType,
@@ -698,6 +708,14 @@ func changeInstanceType(
 		ctx, instance.ID, linodego.InstanceOffline, getDeadlineSeconds(ctx, d),
 	); err != nil {
 		return nil, fmt.Errorf("Error waiting for Instance %d to enter offline state: %s", instance.ID, err)
+	}
+
+	// Sometimes the API falls behind on updating the disk info, let's make sure it has updated
+	if diskResize && primaryDisk != nil {
+		if _, err := waitForInstanceDiskSizeChange(ctx, client, instance.ID, primaryDisk.ID, primaryDisk.Size,
+			getDeadlineSeconds(ctx, d)); err != nil {
+			return nil, fmt.Errorf("failed to wait for disk resize: %s", err)
+		}
 	}
 
 	return instance, nil
@@ -880,13 +898,24 @@ func applyInstanceTypeChange(
 	typ *linodego.LinodeType,
 ) (*linodego.Instance, error) {
 	resizeDisk := d.Get("resize_disk").(bool)
+	if resizeDisk {
+		// Verify that there are implicit disks defined
+		if d.GetRawConfig().GetAttr("image").IsNull() && d.GetRawConfig().GetAttr("disk").LengthInt() > 0 {
+			return nil, fmt.Errorf("resize_disk requires that no explicit disks are defined")
+		}
 
-	// We need to pull disks from the raw config in order to differentiate
-	// explicit disks from implicit disks.
-	diskConfigLen := d.GetRawConfig().GetAttr("disk").LengthInt()
+		if err := validateImplicitDisks(ctx, client, instance.ID); err != nil {
+			return nil, err
+		}
 
-	if resizeDisk && diskConfigLen > 0 {
-		return nil, fmt.Errorf("resize_disk requires that no explicit disks are defined")
+		usedSpace, err := getDiskSizeSum(ctx, d, client, instance.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to calculate total disk size: %s", err)
+		}
+
+		if typ.Disk < usedSpace {
+			return nil, fmt.Errorf("failed to resize instance and disk: %s", downsizeFailedMessage)
+		}
 	}
 
 	if err := assertDiskConfigFitsInstanceType(d, typ); err != nil {
@@ -1070,4 +1099,96 @@ func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, c
 	}
 
 	return nil
+}
+
+func getDiskSizeSum(ctx context.Context, d *schema.ResourceData,
+	client *linodego.Client, instanceID int) (int, error) {
+	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get instance disks: %s", err)
+	}
+
+	sum := 0
+	for _, disk := range disks {
+		sum += disk.Size
+	}
+
+	return sum, nil
+}
+
+func getFirstDiskWithFilesystem(disks []linodego.InstanceDisk,
+	filesystems []linodego.DiskFilesystem) *linodego.InstanceDisk {
+	for _, disk := range disks {
+		for _, filesystem := range filesystems {
+			if disk.Filesystem == filesystem {
+				return &disk
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateImplicitDisks(ctx context.Context,
+	client *linodego.Client, instanceID int) error {
+
+	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
+	if err != nil {
+		return fmt.Errorf("failed to get instance disks: %s", err)
+	}
+
+	// No disks are an acceptable case
+	if len(disks) < 1 {
+		return nil
+	}
+
+	if getFirstDiskWithFilesystem(disks,
+		[]linodego.DiskFilesystem{linodego.FilesystemExt4, linodego.FilesystemExt3}) == nil || len(disks) > 2 {
+		return fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
+	}
+
+	return nil
+}
+
+func getPrimaryImplicitDisk(ctx context.Context, d *schema.ResourceData,
+	client *linodego.Client, instanceID int) (*linodego.InstanceDisk, error) {
+	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get instance disks: %s", err)
+	}
+
+	if len(disks) > 2 {
+		return nil, fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
+	}
+
+	targetDisk := getFirstDiskWithFilesystem(disks,
+		[]linodego.DiskFilesystem{linodego.FilesystemExt4, linodego.FilesystemExt3})
+
+	return targetDisk, nil
+}
+
+func waitForInstanceDiskSizeChange(ctx context.Context, client *linodego.Client, instanceID,
+	diskID, oldSize, timeoutSeconds int) (*linodego.InstanceDisk, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			disk, err := client.GetInstanceDisk(ctx, instanceID, diskID)
+			if err != nil {
+				return nil, err
+			}
+
+			if disk.Size != oldSize {
+				return disk, nil
+			}
+		case <-ctx.Done():
+			return nil, fmt.Errorf("failed to wait for instance %d disk %d size change from %d: %s",
+				instanceID, diskID, oldSize, ctx.Err())
+		}
+	}
 }

@@ -517,14 +517,17 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		rebootInstance = true
 	}
 
-	if didChange, err := applyInstanceDiskSpec(ctx, d, &client, instance, newSpec); err == nil && didChange {
-		rebootInstance = true
-	} else if err != nil && newSpec.Disk < oldSpec.Disk && !d.HasChange("disk") {
-		// Linode was downsized but the pre-existing disk config does not fit new instance spec
-		// This might mean the user tried to downsize an instance with an implicit, default
-		return diag.Errorf("failed to apply instance disk spec: %s."+downsizeFailedMessage, err)
-	} else if err != nil {
-		return diag.Errorf("failed to apply instance disk spec: %s", err)
+	// We only need to do this if explicit disks are defined
+	if d.GetRawConfig().GetAttr("image").IsNull() {
+		if didChange, err := applyInstanceDiskSpec(ctx, d, &client, instance, newSpec); err == nil && didChange {
+			rebootInstance = true
+		} else if err != nil && newSpec.Disk < oldSpec.Disk && !d.HasChange("disk") {
+			// Linode was downsized but the pre-existing disk config does not fit new instance spec
+			// This might mean the user tried to downsize an instance with an implicit, default
+			return diag.Errorf("failed to apply instance disk spec: %s."+downsizeFailedMessage, err)
+		} else if err != nil {
+			return diag.Errorf("failed to apply instance disk spec: %s", err)
+		}
 	}
 
 	if oldSpec.ID != newSpec.ID && !upsized {

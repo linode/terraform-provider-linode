@@ -408,6 +408,15 @@ func TypeChangeDiskExplicit(t *testing.T, label, instanceType string, resizeDisk
 		})
 }
 
+func TypeChangeDiskNone(t *testing.T, label, instanceType string, resizeDisk bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_type_change_disk_none", TemplateData{
+			Label:      label,
+			Type:       instanceType,
+			ResizeDisk: resizeDisk,
+		})
+}
+
 func DataBasic(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{
