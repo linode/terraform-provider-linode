@@ -16,6 +16,14 @@ an explicit disk configuration.
 Take a look at the example here:
 https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
 
+const invalidImplicitDiskConfigMessage = `
+Did you try to resize a Linode's implicit disks with more than two disks? 
+When resize_disk is true, your linode must have a single swap disk and a single ext4 disk.
+
+You may need to switch to an explicit disk configuration.
+Take a look at the example here:
+https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
+
 func resourceDeviceDisk() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{

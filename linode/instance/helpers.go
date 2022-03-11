@@ -673,7 +673,7 @@ func changeInstanceType(
 
 	// We only need to make this request if we plan on resizing the disk
 	if diskResize {
-		primaryDisk, err = getPrimaryDisk(ctx, d, client, instanceID)
+		primaryDisk, err = getPrimaryImplicitDisk(ctx, d, client, instanceID)
 		if err != nil {
 			return nil, err
 		}
@@ -904,6 +904,10 @@ func applyInstanceTypeChange(
 			return nil, fmt.Errorf("resize_disk requires that no explicit disks are defined")
 		}
 
+		if err := validateImplicitDisks(ctx, client, instance.ID); err != nil {
+			return nil, err
+		}
+
 		usedSpace, err := getDiskSizeSum(ctx, d, client, instance.ID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to calculate total disk size: %s", err)
@@ -1112,28 +1116,46 @@ func getDiskSizeSum(ctx context.Context, d *schema.ResourceData,
 	return sum, nil
 }
 
-func getPrimaryDisk(ctx context.Context, d *schema.ResourceData,
-	client *linodego.Client, instanceID int) (*linodego.InstanceDisk, error) {
-	diskFilter := linodego.Filter{}
-	diskFilter.OrderBy = "size"
-	diskFilter.Order = linodego.Descending
-	diskFilterStr, err := diskFilter.MarshalJSON()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create disk filter: %s", err)
+func getFirstDiskWithFilesystem(disks []linodego.InstanceDisk,
+	filesystem linodego.DiskFilesystem) *linodego.InstanceDisk {
+	for _, disk := range disks {
+		if disk.Filesystem == filesystem {
+			return &disk
+		}
 	}
 
-	disks, err := client.ListInstanceDisks(ctx, instanceID,
-		&linodego.ListOptions{Filter: string(diskFilterStr)})
+	return nil
+}
+
+func validateImplicitDisks(ctx context.Context,
+	client *linodego.Client, instanceID int) error {
+
+	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
+	if err != nil {
+		return fmt.Errorf("failed to get instance disks: %s", err)
+	}
+
+	if getFirstDiskWithFilesystem(disks, linodego.FilesystemExt4) == nil || len(disks) > 2 {
+		return fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
+	}
+
+	return nil
+}
+
+func getPrimaryImplicitDisk(ctx context.Context, d *schema.ResourceData,
+	client *linodego.Client, instanceID int) (*linodego.InstanceDisk, error) {
+	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get instance disks: %s", err)
 	}
 
-	// Nothing to do here
-	if len(disks) < 1 {
-		return nil, nil
+	if len(disks) > 2 {
+		return nil, fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
 	}
 
-	return &disks[0], nil
+	targetDisk := getFirstDiskWithFilesystem(disks, linodego.FilesystemExt4)
+
+	return targetDisk, nil
 }
 
 func waitForInstanceDiskSizeChange(ctx context.Context, client *linodego.Client, instanceID,
