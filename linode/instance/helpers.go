@@ -1137,6 +1137,11 @@ func validateImplicitDisks(ctx context.Context,
 		return fmt.Errorf("failed to get instance disks: %s", err)
 	}
 
+	// No disks are an acceptable case
+	if len(disks) < 1 {
+		return nil
+	}
+
 	if getFirstDiskWithFilesystem(disks,
 		[]linodego.DiskFilesystem{linodego.FilesystemExt4, linodego.FilesystemExt3}) == nil || len(disks) > 2 {
 		return fmt.Errorf("invalid implicit disk configuration: %s", invalidImplicitDiskConfigMessage)
