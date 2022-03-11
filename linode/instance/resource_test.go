@@ -1207,7 +1207,7 @@ func TestAccResourceInstance_downsizeWithoutDisk(t *testing.T) {
 			{
 				Config: tmpl.WithType(t, instanceName, acceptance.PublicKeyMaterial, "g6-nanode-1"),
 				ExpectError: regexp.MustCompile(
-					"Did you try to resize a linode with implicit, default disks to a smaller type?"),
+					"insufficient disk capacity"),
 			},
 		},
 	})
@@ -1649,6 +1649,49 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Create an instance with explicit disks
+			{
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+				),
+			},
+			// Attempt to resize the instance
+			{
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-standard-1", true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+				),
+			},
+			// Attempt to downsize the instance
+			{
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 				),
 			},
 		},
