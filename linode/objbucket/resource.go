@@ -217,7 +217,15 @@ func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 		}
 	}
 
-	d.Set("lifecycle_rule", flattenLifecycleRules(lifecycleConfigOutput.Rules))
+	rulesMatched := lifecycleConfigOutput.Rules
+	declaredRules, ok := d.Get("lifecycle_rule").([]interface{})
+
+	// We should match the existing lifecycle rules to the schema if they're defined
+	if ok {
+		rulesMatched = matchRulesWithSchema(lifecycleConfigOutput.Rules, declaredRules)
+	}
+
+	d.Set("lifecycle_rule", flattenLifecycleRules(rulesMatched))
 
 	return nil
 }
@@ -456,4 +464,33 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 	}
 
 	return rules, nil
+}
+
+func matchRulesWithSchema(rules []*s3.LifecycleRule, declaredRules []interface{}) []*s3.LifecycleRule {
+	result := make([]*s3.LifecycleRule, len(declaredRules))
+
+	ruleMap := make(map[string]*s3.LifecycleRule, len(declaredRules))
+	for _, rule := range rules {
+		ruleMap[*rule.ID] = rule
+	}
+
+	for i, declaredRule := range declaredRules {
+		declaredRule := declaredRule.(map[string]interface{})
+
+		for key, rule := range ruleMap {
+			if *rule.ID != declaredRule["id"] {
+				continue
+			}
+
+			result[i] = rule
+			delete(ruleMap, key)
+			break
+		}
+	}
+
+	for _, rule := range ruleMap {
+		result = append(result, rule)
+	}
+
+	return result
 }

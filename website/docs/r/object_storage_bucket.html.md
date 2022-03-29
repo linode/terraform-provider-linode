@@ -12,7 +12,7 @@ Provides a Linode Object Storage Bucket resource. This can be used to create, mo
 
 ## Example Usage
 
-The following example shows how one might use this resource to create an Object Storage Bucket.
+The following example shows how one might use this resource to create an Object Storage Bucket:
 
 ```hcl
 data "linode_object_storage_cluster" "primary" {
@@ -21,9 +21,37 @@ data "linode_object_storage_cluster" "primary" {
 
 resource "linode_object_storage_bucket" "foobar" {
   cluster = data.linode_object_storage_cluster.primary.id
-  label = "%s"
+  label = "mybucket"
 }
 
+```
+
+Creating an Object Storage Bucket with Lifecycle rules:
+
+```hcl
+
+resource "linode_object_storage_key" "mykey" {
+  label = "image-access"
+}
+
+resource "linode_object_storage_bucket" "mybucket" {
+  access_key = linode_object_storage_key.mykey.access_key
+  secret_key = linode_object_storage_key.mykey.secret_key
+
+  cluster = "us-east-1"
+  label   = "mybucket"
+
+  lifecycle_rule {
+    id      = "my-rule"
+    enabled = true
+
+    abort_incomplete_multipart_upload_days = 5
+
+    expiration {
+      date = "2021-06-21"
+    }
+  }
+}
 ```
 
 ## Argument Reference
