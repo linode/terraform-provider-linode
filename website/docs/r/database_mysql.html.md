@@ -8,8 +8,12 @@ description: |-
 
 # linode\_database\_mysql
 
+**NOTICE:** Managed Databases are currently in beta. Ensure `api_version` is set to `v4beta` in order to use this resource.
+
 Provides a Linode MySQL Database resource. This can be used to create, modify, and delete Linode MySQL Databases.
 For more information, see the [Linode APIv4 docs](https://www.linode.com/docs/api/databases/).
+
+Please keep in mind that Managed Databases can take up to an hour to provision.
 
 ## Example Usage
 

@@ -8,6 +8,8 @@ Provides information about Linode MySQL Database Backups that match a set of fil
 
 # Data Source: linode\_database\_mysql\_backups
 
+**NOTICE:** Managed Databases are currently in beta. Ensure `api_version` is set to `v4beta` in order to use this data source.
+
 Provides information about Linode MySQL Database Backups that match a set of filters.
 
 ## Example Usage
