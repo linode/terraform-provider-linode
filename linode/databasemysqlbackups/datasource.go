@@ -32,9 +32,9 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 func listBackups(
 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
 	options *linodego.ListOptions) ([]interface{}, error) {
-	dbId := d.Get("database_id").(int)
+	dbID := d.Get("database_id").(int)
 
-	backups, err := client.ListMySQLDatabaseBackups(ctx, dbId, options)
+	backups, err := client.ListMySQLDatabaseBackups(ctx, dbID, options)
 	if err != nil {
 		return nil, err
 	}
