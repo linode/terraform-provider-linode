@@ -67,7 +67,7 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 				Config: tmpl.Basic(t, dbName, engineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
-					resource.TestCheckResourceAttr(resName, "engine", engineVersion),
+					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
