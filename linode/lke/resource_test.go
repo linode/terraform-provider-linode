@@ -167,6 +167,7 @@ func TestAccResourceLKECluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
 					resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 					resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+					resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
 				),
 			},
 		},

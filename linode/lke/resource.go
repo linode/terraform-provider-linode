@@ -76,12 +76,18 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane)
 
+	dashboard, err := client.GetLKEClusterDashboard(ctx, id)
+	if err != nil {
+		return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
+	}
+
 	d.Set("label", cluster.Label)
 	d.Set("k8s_version", cluster.K8sVersion)
 	d.Set("region", cluster.Region)
 	d.Set("tags", cluster.Tags)
 	d.Set("status", cluster.Status)
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
+	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 	d.Set("pool", flattenLKENodePools(matchPoolsWithSchema(pools, declaredPools)))
 	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})

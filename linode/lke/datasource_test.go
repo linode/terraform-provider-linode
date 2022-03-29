@@ -36,6 +36,7 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.high_availability", "false"),
 					resource.TestCheckResourceAttrSet(dataSourceClusterName, "pools.0.id"),
 					resource.TestCheckResourceAttrSet(dataSourceClusterName, "kubeconfig"),
+					resource.TestCheckResourceAttrSet(dataSourceClusterName, "dashboard_url"),
 				),
 			},
 		},

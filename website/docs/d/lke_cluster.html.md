@@ -40,6 +40,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
 
+* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster.
+
 * `pools` - Node pools associated with this cluster.
 
   * `id` - The ID of the Node Pool.
