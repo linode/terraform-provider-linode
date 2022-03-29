@@ -27,7 +27,8 @@ type FilterConfig map[string]FilterAttribute
 type FilterTypeFunc func(value string) (interface{}, error)
 
 // FilterListFunc wraps a linodego list function.
-type FilterListFunc func(context.Context, *linodego.Client, *linodego.ListOptions) ([]interface{}, error)
+type FilterListFunc func(context.Context, *schema.ResourceData,
+	*linodego.Client, *linodego.ListOptions) ([]interface{}, error)
 
 // FilterFlattenFunc flattens an object into a map[string]interface{}.
 type FilterFlattenFunc func(object interface{}) map[string]interface{}
@@ -209,7 +210,7 @@ func (f FilterConfig) FilterDataSource(
 	}
 
 	// Call linode list function defined by data source
-	items, err := listFunc(ctx, &client, &linodego.ListOptions{
+	items, err := listFunc(ctx, d, &client, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
@@ -291,7 +292,7 @@ func (f FilterConfig) FilterLatest(d *schema.ResourceData, items []map[string]in
 	}
 
 	if item := f.GetLatestCreated(items); item != nil {
-		return []map[string]interface{}{f.GetLatestCreated(items)}
+		return []map[string]interface{}{item}
 	}
 
 	return []map[string]interface{}{}
@@ -322,6 +323,75 @@ func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string
 	}
 
 	return latestEntity
+}
+
+// FilterLatestVersion returns only the latest element in the given slice only if `latest` == true.
+func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData,
+	items []map[string]interface{}) ([]map[string]interface{}, error) {
+	if !d.Get("latest").(bool) {
+		return items, nil
+	}
+
+	item, err := f.GetLatestVersion(items)
+	if err != nil {
+		return nil, err
+	}
+
+	if item != nil {
+		return []map[string]interface{}{item}, nil
+	}
+
+	return []map[string]interface{}{}, nil
+}
+
+// GetLatestVersion returns only the latest version string (e.g. `8.0.26`) in the given slice.
+func (f FilterConfig) GetLatestVersion(data []map[string]interface{}) (map[string]interface{}, error) {
+	var latestVersion []int
+
+	var latestEntity map[string]interface{}
+
+	for _, entity := range data {
+		version, ok := entity["version"]
+		if !ok {
+			continue
+		}
+
+		versionSplit := strings.Split(version.(string), ".")
+		versionSplitInt := make([]int, len(versionSplit))
+
+		// Parse the versions to []int
+		for i, v := range versionSplit {
+			versionInt, err := strconv.Atoi(v)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse version segment: %s", v)
+			}
+
+			versionSplitInt[i] = versionInt
+		}
+
+		// We should allocate the number of version segments dynamically
+		if latestVersion == nil {
+			latestVersion = make([]int, len(versionSplit))
+			// Just in case :)
+			for i := range latestVersion {
+				latestVersion[i] = 0
+			}
+		}
+
+		for i, seg := range versionSplitInt {
+			if seg < latestVersion[i] {
+				break
+			}
+
+			if seg > latestVersion[i] {
+				latestEntity = entity
+				latestVersion = versionSplitInt
+				break
+			}
+		}
+	}
+
+	return latestEntity, nil
 }
 
 func (f FilterConfig) itemMatchesFilter(

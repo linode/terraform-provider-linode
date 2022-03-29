@@ -31,7 +31,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func listStackScripts(
-	ctx context.Context, client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
+	options *linodego.ListOptions) ([]interface{}, error) {
 	scripts, err := client.ListStackscripts(ctx, options)
 	if err != nil {
 		return nil, err

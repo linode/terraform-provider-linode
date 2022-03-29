@@ -1,0 +1,14 @@
+{{ define "databases_data_by_engine" }}
+
+{{ template "database_mysql_basic" .DB }}
+
+data "linode_databases" "foobar" {
+    depends_on = [linode_database_mysql.foobar]
+
+    filter {
+        name = "engine"
+        values = ["{{.Engine}}"]
+    }
+}
+
+{{ end }}
