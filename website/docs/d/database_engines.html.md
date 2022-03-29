@@ -29,6 +29,26 @@ data "linode_database_engines" "mysql" {
 }
 ```
 
+Create a Linode MySQL Database using the latest support MySQL version:
+
+```hcl
+resource "linode_database_mysql" "my_db" {
+  label = "mydb"
+  engine_id = data.linode_database_engines.mysql.engines.0.id
+  region = "us-southeast"
+  type = "g6-nanode-1"
+}
+
+data "linode_database_engines" "mysql" {
+  latest = true
+  
+  filter {
+    name = "engine"
+    values = ["mysql"]
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:

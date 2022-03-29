@@ -61,7 +61,7 @@ Each engine will be stored in the `databases` attribute and will export the foll
 
 * `encrypted` - Whether the Managed Databases is encrypted.
 
-* `engine` - The Managed Database engine in engine/version format.
+* `engine` - The Managed Database engine.
 
 * `host_primary` - The primary host for the Managed Database.
 

@@ -2,6 +2,7 @@ package databasemysqlbackups
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,12 +32,31 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 func listBackups(
 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
 	options *linodego.ListOptions) ([]interface{}, error) {
-	// TODO: return a list of backups
+	dbId := d.Get("database_id").(int)
 
-	return nil, nil
+	backups, err := client.ListMySQLDatabaseBackups(ctx, dbId, options)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]interface{}, len(backups))
+
+	for i, v := range backups {
+		result[i] = v
+	}
+
+	return result, nil
 }
 
 func flattenBackup(data interface{}) map[string]interface{} {
-	// TODO: Flatten the backup info a map
-	return nil
+	backup := data.(linodego.MySQLDatabaseBackup)
+
+	result := make(map[string]interface{})
+
+	result["id"] = backup.ID
+	result["label"] = backup.Label
+	result["type"] = backup.Type
+	result["created"] = backup.Created.Format(time.RFC3339)
+
+	return result
 }

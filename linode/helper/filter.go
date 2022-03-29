@@ -328,7 +328,7 @@ func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string
 // FilterLatestVersion returns only the latest element in the given slice only if `latest` == true.
 func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData,
 	items []map[string]interface{}) ([]map[string]interface{}, error) {
-	if !d.Get("version").(bool) {
+	if !d.Get("latest").(bool) {
 		return items, nil
 	}
 

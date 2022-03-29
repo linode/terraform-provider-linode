@@ -1,7 +1,11 @@
 package databasemysql_test
 
 import (
+	"context"
 	"fmt"
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -23,14 +27,27 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	_, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetClientForSweepers()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
 
-	_ = acceptance.SweeperListOptions(prefix, "database_mysql")
+	listOpts := acceptance.SweeperListOptions(prefix, "label")
 
-	// TODO: Sweep databases if acceptance.ShouldSweep(prefix, db.Label)
+	dbs, err := client.ListMySQLDatabases(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("error getting mysql databases: %s", err)
+	}
+	for _, db := range dbs {
+		if !acceptance.ShouldSweep(prefix, db.Label) {
+			continue
+		}
+		err := client.DeleteMySQLDatabase(context.Background(), db.ID)
+
+		if err != nil {
+			return fmt.Errorf("error destroying %s during sweep: %s", db.Label, err)
+		}
+	}
 
 	return nil
 }
@@ -55,13 +72,12 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
-					resource.TestCheckResourceAttrSet(resName, "allow_list"),
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "0"),
 					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "false"),
 					resource.TestCheckResourceAttr(resName, "replication_type", "none"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "false"),
 
-					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
 					resource.TestCheckResourceAttrSet(resName, "host_secondary"),
@@ -69,7 +85,9 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
-					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[0]),
+
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{
@@ -104,7 +122,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
-					resource.TestCheckResourceAttr(resName, "engine", engineVersion),
+					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
@@ -125,7 +143,9 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
-					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[0]),
+
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{
@@ -140,7 +160,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
-					resource.TestCheckResourceAttr(resName, "engine", engineVersion),
+					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName+"updated"),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
@@ -161,7 +181,9 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
-					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[0]),
+
+					resource.TestCheckResourceAttr(resName, "engine", strings.Split(engineVersion, "/")[0]),
+					resource.TestCheckResourceAttr(resName, "version", strings.Split(engineVersion, "/")[1]),
 				),
 			},
 			{
@@ -174,12 +196,53 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 }
 
 func checkMySQLDatabaseExists(s *terraform.State) error {
-	// TODO
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_database_mysql" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+
+		_, err = client.GetMySQLDatabase(context.Background(), id)
+		if err != nil {
+			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
+		}
+	}
 
 	return nil
 }
 
 func checkDestroy(s *terraform.State) error {
-	// TODO
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_database_mysql" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+		if id == 0 {
+			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
+
+		}
+
+		_, err = client.GetMySQLDatabase(context.Background(), id)
+
+		if err == nil {
+			return fmt.Errorf("mysql database with id %d still exists", id)
+		}
+
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+			return fmt.Errorf("error requesting mysql database with id %d", id)
+		}
+	}
+
 	return nil
 }

@@ -8,7 +8,8 @@ import (
 )
 
 type TemplateData struct {
-	DB databasemysqltmpl.TemplateData
+	DB     databasemysqltmpl.TemplateData
+	Engine string
 }
 
 // TODO: resolve this dynamically at runtime
@@ -21,9 +22,10 @@ func ByLabel(t *testing.T, label string) string {
 		})
 }
 
-func ByEngine(t *testing.T, label string) string {
+func ByEngine(t *testing.T, label, engine string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_engine", TemplateData{
-			DB: databasemysqltmpl.TemplateData{Engine: engineSlug, Label: label},
+			DB:     databasemysqltmpl.TemplateData{Engine: engineSlug, Label: label},
+			Engine: engine,
 		})
 }

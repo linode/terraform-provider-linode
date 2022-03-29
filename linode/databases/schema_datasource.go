@@ -6,12 +6,11 @@ import (
 )
 
 var filterConfig = helper.FilterConfig{
-	"engine":  {TypeFunc: helper.FilterTypeString, APIFilterable: true},
-	"label":   {TypeFunc: helper.FilterTypeString, APIFilterable: true},
-	"region":  {TypeFunc: helper.FilterTypeString, APIFilterable: true},
-	"status":  {TypeFunc: helper.FilterTypeString, APIFilterable: true},
-	"type":    {TypeFunc: helper.FilterTypeString, APIFilterable: true},
-	"version": {TypeFunc: helper.FilterTypeString, APIFilterable: true},
+	"engine":  {TypeFunc: helper.FilterTypeString},
+	"region":  {TypeFunc: helper.FilterTypeString},
+	"status":  {TypeFunc: helper.FilterTypeString},
+	"type":    {TypeFunc: helper.FilterTypeString},
+	"version": {TypeFunc: helper.FilterTypeString},
 
 	"allow_list":     {TypeFunc: helper.FilterTypeString},
 	"cluster_size":   {TypeFunc: helper.FilterTypeInt},
@@ -22,12 +21,13 @@ var filterConfig = helper.FilterConfig{
 	"id":             {TypeFunc: helper.FilterTypeInt},
 	"instance_uri":   {TypeFunc: helper.FilterTypeString},
 	"updated":        {TypeFunc: helper.FilterTypeString},
+	"label":          {TypeFunc: helper.FilterTypeString},
 }
 
 var dataSourceSchema = map[string]*schema.Schema{
 	"latest": {
 		Type:        schema.TypeBool,
-		Description: "If true, only the latest engine will be returned.",
+		Description: "If true, only the latest created database will be returned.",
 		Optional:    true,
 		Default:     false,
 	},
@@ -85,6 +85,11 @@ func databaseSchema() *schema.Resource {
 			"id": {
 				Type:        schema.TypeInt,
 				Description: "A unique ID that can be used to identify and reference the Managed Database.",
+				Computed:    true,
+			},
+			"instance_uri": {
+				Type:        schema.TypeString,
+				Description: "The API route for the database instance.",
 				Computed:    true,
 			},
 			"label": {

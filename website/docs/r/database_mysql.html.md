@@ -18,7 +18,7 @@ Creating a simple MySQL database instance:
 ```hcl
 resource "linode_database_mysql" "foobar" {
   label = "mydatabase"
-  engine = "mysql/8.0.26"
+  engine_id = "mysql/8.0.26"
   region = "us-southeast"
   type = "g6-nanode-1"
 }
@@ -29,7 +29,7 @@ Creating a complex MySQL database instance:
 ```hcl
 resource "linode_database_mysql" "foobar" {
   label = "mydatabase"
-  engine = "mysql/8.0.26"
+  engine_id = "mysql/8.0.26"
   region = "us-southeast"
   type = "g6-nanode-1"
 
@@ -45,7 +45,7 @@ resource "linode_database_mysql" "foobar" {
 
 The following arguments are supported:
 
-* `engine` - (Required) The Managed Database engine in engine/version format.
+* `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `mysql/8.0.26`)
 
 * `label` - (Required) A unique, user-defined string referring to the Managed Database.
 
@@ -75,19 +75,21 @@ In addition to all arguments above, the following attributes are exported:
 
 * `created` - When this Managed Database was created.
 
+* `engine` - The Managed Database engine. (e.g. `mysql`)
+
 * `host_primary` - The primary host for the Managed Database.
 
 * `host_secondary` - The secondary/private network host for the Managed Database.
 
 * `root_password` - The randomly-generated root password for the Managed Database instance.
 
+* `root_username` - The root username for the Managed Database instance.
+
 * `status` - The operating status of the Managed Database.
 
 * `updated` - When this Managed Database was last updated.
 
-* `root_username` - The root username for the Managed Database instance.
-
-* `version` - The Managed Database engine version.
+* `version` - The Managed Database engine version. (e.g. `v8.0.26`)
 
 ## Import
 

@@ -1,7 +1,7 @@
 {{ define "database_mysql_complex" }}
 
 resource "linode_database_mysql" "foobar" {
-    engine = "{{.Engine}}"
+    engine_id = "{{.Engine}}"
     label = "{{.Label}}"
     region = "us-southeast"
     type = "g6-nanode-1"

@@ -2,7 +2,6 @@ package databaseengines
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -35,12 +34,28 @@ func readDataSource(ctx context.Context, d *schema.ResourceData,
 func listEngines(
 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
 	options *linodego.ListOptions) ([]interface{}, error) {
-	// TODO: return a list of engines
+	engines, err := client.ListDatabaseEngines(ctx, options)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	result := make([]interface{}, len(engines))
+
+	for i, v := range engines {
+		result[i] = v
+	}
+
+	return result, nil
 }
 
 func flattenEngine(data interface{}) map[string]interface{} {
-	// TODO: Flatten the engine info into a map
-	return nil
+	engine := data.(linodego.DatabaseEngine)
+
+	result := make(map[string]interface{})
+
+	result["id"] = engine.ID
+	result["engine"] = engine.Engine
+	result["version"] = engine.Version
+
+	return result
 }

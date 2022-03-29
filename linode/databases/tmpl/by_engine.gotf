@@ -3,9 +3,11 @@
 {{ template "database_mysql_basic" .DB }}
 
 data "linode_databases" "foobar" {
+    depends_on = [linode_database_mysql.foobar]
+
     filter {
         name = "engine"
-        values = ["{{.DB.Engine}}"]
+        values = ["{{.Engine}}"]
     }
 }
 

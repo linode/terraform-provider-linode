@@ -20,7 +20,7 @@ func TestAccDataSourceDatabaseEngines_all(t *testing.T) {
 			{
 				Config: tmpl.DataAll(t),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckResourceAttrGreaterThan(resourceName, "engines", 1),
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "engines.#", 1),
 					resource.TestCheckResourceAttrSet(resourceName, "engines.0.engine"),
 					resource.TestCheckResourceAttrSet(resourceName, "engines.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "engines.0.version"),
@@ -40,7 +40,7 @@ func TestAccDataSourceDatabaseEngines_byEngine(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataAll(t),
+				Config: tmpl.DataByEngine(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "engines.0.engine", "mysql"),
 					resource.TestCheckResourceAttrSet(resourceName, "engines.0.id"),

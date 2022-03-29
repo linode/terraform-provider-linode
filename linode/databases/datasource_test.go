@@ -27,8 +27,8 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "databases.0.engine", "mysql"),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.region", "us-southeast"),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resourceName, "databases.0.allow_list.#", "0"),
 
-					resource.TestCheckResourceAttrSet(resourceName, "databases.0.allow_list"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.host_primary"),
 					resource.TestCheckResourceAttrSet(resourceName, "databases.0.host_secondary"),
@@ -40,9 +40,16 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ByLabel(t, dbName),
+				Config: tmpl.ByLabel(t, "not"+dbName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "databases.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.ByEngine(t, dbName, "mysql"),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "databases.#", 0),
+					resource.TestCheckResourceAttr(resourceName, "databases.0.engine", "mysql"),
 				),
 			},
 		},

@@ -7,9 +7,9 @@ import (
 
 var resourceSchema = map[string]*schema.Schema{
 	// Required fields
-	"engine": {
+	"engine_id": {
 		Type:        schema.TypeString,
-		Description: "The Managed Database engine in engine/version format.",
+		Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.26)",
 		Required:    true,
 		ForceNew:    true,
 	},
@@ -84,6 +84,11 @@ var resourceSchema = map[string]*schema.Schema{
 	"created": {
 		Type:        schema.TypeString,
 		Description: "When this Managed Database was created.",
+		Computed:    true,
+	},
+	"engine": {
+		Type:        schema.TypeString,
+		Description: "The Managed Database engine.",
 		Computed:    true,
 	},
 	// In an attempt to simplify provider/config logic, these should be flattened in schema

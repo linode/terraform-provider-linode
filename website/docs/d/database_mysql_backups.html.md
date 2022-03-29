@@ -30,7 +30,6 @@ data "linode_database_mysql_backups" "auto-backups" {
     name = "type"
     values = ["auto"]
   }
-  
 }
 ```
 
