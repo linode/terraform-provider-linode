@@ -10,15 +10,17 @@ import (
 type TemplateData struct {
 	DB     databasemysqltmpl.TemplateData
 	Engine string
+	Label  string
 }
 
 // TODO: resolve this dynamically at runtime
 const engineSlug = "mysql/8.0.26"
 
-func ByLabel(t *testing.T, label string) string {
+func ByLabel(t *testing.T, instLabel, dsLabel string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_label", TemplateData{
-			DB: databasemysqltmpl.TemplateData{Engine: engineSlug, Label: label},
+			DB:    databasemysqltmpl.TemplateData{Engine: engineSlug, Label: instLabel},
+			Label: dsLabel,
 		})
 }
 

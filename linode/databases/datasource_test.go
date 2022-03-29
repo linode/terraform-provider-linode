@@ -19,7 +19,7 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.ByLabel(t, dbName),
+				Config: tmpl.ByLabel(t, dbName, dbName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "databases.0.label", dbName),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.cluster_size", "1"),
@@ -40,7 +40,7 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ByLabel(t, "not"+dbName),
+				Config: tmpl.ByLabel(t, dbName, "not"+dbName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "databases.#", "0"),
 				),
