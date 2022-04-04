@@ -21,7 +21,7 @@ jobs:
         env:
           TOKEN: ${{ steps.generate_token.outputs.token }}
         with:
-          token: ${{ secrets.TOKEN }} # PAT or OAuth token will also work
+          token: ${{ env.TOKEN }} # PAT or OAuth token will also work
           reaction-token: ${{ secrets.GITHUB_TOKEN }}
           issue-type: pull-request
           commands: acctest
