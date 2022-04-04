@@ -17,7 +17,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:          schema.TypeInt,
 		Description:   "The ID of the Linode to assign this range to.",
 		Optional:      true,
-		ForceNew:      true,
 		ConflictsWith: []string{"route_target"},
 	},
 	"route_target": {
