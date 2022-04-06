@@ -20,7 +20,7 @@ jobs:
         id: validate-pkg
         with:
           text: ${{ github.event.client_payload.slash_command.pkg }}
-          regex: '[^a-z.\/]'
+          regex: '[^a-z0-9.\/]'
           flags: gi
 
       # Check out merge commit
