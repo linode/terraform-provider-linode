@@ -16,6 +16,10 @@ jobs:
       contains(github.event.client_payload.pull_request.head.sha, github.event.client_payload.slash_command.sha)
 
     steps:
+      - uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8 # pin@v2
+        with:
+          go-version: '1.17'
+      - run: go version
       - uses: actions-ecosystem/action-regex-match@v2
         id: validate-pkg
         with:
