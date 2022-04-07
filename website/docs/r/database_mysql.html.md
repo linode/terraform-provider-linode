@@ -59,7 +59,7 @@ The following arguments are supported:
 
 - - -
 
-* `allow_list` - (Optional) A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.
+* `allow_list` - (Optional) A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format. Use `linode_database_mysql_firewall` to manage your allow list separately.
 
 * `cluster_size` - (Optional) The number of Linode Instance nodes deployed to the Managed Database. (default `1`)
 
