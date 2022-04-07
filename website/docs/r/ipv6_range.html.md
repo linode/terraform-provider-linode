@@ -35,7 +35,7 @@ The following arguments are supported:
 
 * `prefix_length` - (Required) The prefix length of the IPv6 range.
 
-* `linode_id` - (Required) The ID of the Linode to assign this range to.
+* `linode_id` - (Required) The ID of the Linode to assign this range to. This field may be updated to reassign the IPv6 range.
 
 * `route_target` - (Required) The IPv6 SLAAC address to assign this range to.
 

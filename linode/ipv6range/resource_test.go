@@ -99,6 +99,65 @@ func TestAccIPv6Range_noID(t *testing.T) {
 	})
 }
 
+func TestAccIPv6Range_reassignment(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_ipv6_range.foobar"
+	instance1ResName := "linode_instance.foobar"
+	instance2ResName := "linode_instance.foobar2"
+
+	instLabel := acctest.RandomWithPrefix("tf_test")
+
+	var instance1 linodego.Instance
+	var instance2 linodego.Instance
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkIPv6RangeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ReassignmentStep1(t, instLabel),
+				Check: resource.ComposeTestCheckFunc(
+					checkIPv6RangeExists(resName, nil),
+					acceptance.CheckInstanceExists(instance1ResName, &instance1),
+					acceptance.CheckInstanceExists(instance2ResName, &instance2),
+
+					resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
+					resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
+					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+
+					resource.TestCheckResourceAttrSet(resName, "range"),
+					resource.TestCheckResourceAttrSet(resName, "linode_id"),
+					resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+				),
+			},
+			{
+				PreConfig: func() {
+					validateInstanceIPv6Assignments(t, instance1.ID, instance2.ID)
+				},
+				Config: tmpl.ReassignmentStep2(t, instLabel),
+				Check: resource.ComposeTestCheckFunc(
+					checkIPv6RangeExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
+					resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
+					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+
+					resource.TestCheckResourceAttrSet(resName, "range"),
+					resource.TestCheckResourceAttrSet(resName, "linode_id"),
+					resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+				),
+			},
+			{
+				Config: tmpl.ReassignmentStep2(t, instLabel),
+				PreConfig: func() {
+					validateInstanceIPv6Assignments(t, instance2.ID, instance1.ID)
+				},
+			},
+		},
+	})
+}
+
 func checkIPv6RangeExists(name string, ipv6Range *linodego.IPv6Range) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
@@ -144,4 +203,26 @@ func checkIPv6RangeDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func validateInstanceIPv6Assignments(t *testing.T, assignedID, unassignedID int) {
+	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+	assignedNetworking, err := client.GetInstanceIPAddresses(context.Background(), assignedID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	unassignedNetworking, err := client.GetInstanceIPAddresses(context.Background(), unassignedID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(unassignedNetworking.IPv6.Global) > 0 {
+		t.Fatalf("expected instance to have no attached ipv6 ranged, got %d", len(unassignedNetworking.IPv6.Global))
+	}
+
+	if len(assignedNetworking.IPv6.Global) < 1 {
+		t.Fatalf("expected instance to have one attached ipv6 ranged, got %d", len(assignedNetworking.IPv6.Global))
+	}
 }

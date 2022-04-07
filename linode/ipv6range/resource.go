@@ -17,6 +17,7 @@ func Resource() *schema.Resource {
 		Schema:        resourceSchema,
 		ReadContext:   readResource,
 		CreateContext: createResource,
+		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -68,6 +69,31 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	d.SetId(strings.TrimSuffix(r.Range, fmt.Sprintf("/%d", createOpts.PrefixLength)))
+
+	return readResource(ctx, d, meta)
+}
+
+func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*helper.ProviderMeta).Client
+
+	r, err := client.GetIPv6Range(ctx, d.Id())
+	if err != nil {
+		return diag.Errorf("failed to get ipv6 range (%s): %s", d.Id(), err)
+	}
+
+	if d.HasChange("linode_id") {
+		linodeID := d.Get("linode_id").(int)
+
+		err := client.InstancesAssignIPs(ctx, linodego.LinodesAssignIPsOptions{
+			Region: r.Region,
+			Assignments: []linodego.LinodeIPAssignment{
+				{LinodeID: linodeID, Address: fmt.Sprintf("%s/%d", r.Range, r.Prefix)},
+			},
+		})
+		if err != nil {
+			return diag.Errorf("failed to assign ipv6 address to instance: %s", err)
+		}
+	}
 
 	return readResource(ctx, d, meta)
 }
