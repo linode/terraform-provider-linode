@@ -1,4 +1,4 @@
-package databasemysqlfirewall_test
+package databasefirewall_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/databasemysqlfirewall/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/databasefirewall/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -23,7 +23,7 @@ func init() {}
 func TestAccResourceDatabaseMySQLAllowList_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_mysql_firewall.foobar"
+	resName := "linode_database_firewall.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
