@@ -1,23 +1,23 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_database_firewall"
-sidebar_current: "docs-linode-database-firewall"
+page_title: "Linode: linode_database_access_controls"
+sidebar_current: "docs-linode-database-access-controls"
 description: |-
-  Manages the access control for a Linode Database.
+  Manages the access controls for a Linode Database.
 ---
 
-# linode\_database\_firewall
+# linode\_database\_access_controls
 
 **NOTICE:** Managed Databases are currently in beta. Ensure `api_version` is set to `v4beta` in order to use this resource.
 
-Manages the access control for a Linode Database. Only one `linode_database_firewall` resource should be defined per-database.
+Manages the access control for a Linode Database. Only one `linode_database_access_controls` resource should be defined per-database.
 
 ## Example Usage
 
 Grant a Linode access to a database:
 
 ```hcl
-resource "linode_database_firewall" "my-firewall" {
+resource "linode_database_access_controls" "my-access" {
   database_id = linode_database_mysql.my-db.id
   allow_list = [linode_instance.my-instance.ip_address]
 }
