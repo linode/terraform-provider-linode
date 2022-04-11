@@ -331,8 +331,6 @@ github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LE
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
 github.com/linode/linodego v0.20.1/go.mod h1:XOWXRHjqeU2uPS84tKLgfWIfTlv3TYzCS0io4GOQzEI=
-github.com/linode/linodego v1.4.0 h1:jayhYLQOWxvr9fchCuB+OWTL+LP3OUPgdr/bc4YLdls=
-github.com/linode/linodego v1.4.0/go.mod h1:PVsRxSlOiJyvG4/scTszpmZDTdgS+to3X6eS8pRrWI8=
 github.com/linode/linodego v1.4.1 h1:cgpY1jCZ47wfJvWH5V8in7Tphj8T0sR1URiH9e6G2bA=
 github.com/linode/linodego v1.4.1/go.mod h1:PVsRxSlOiJyvG4/scTszpmZDTdgS+to3X6eS8pRrWI8=
 github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947 h1:e+tpC7AIiEgfYGEDq9Rjtdybq+V10S6OXzWjeGV/CEk=
