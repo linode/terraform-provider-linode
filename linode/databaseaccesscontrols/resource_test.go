@@ -20,7 +20,7 @@ const engineVersion = "mysql/8.0.26"
 
 func init() {}
 
-func TestAccResourceDatabaseMySQLAllowList_basic(t *testing.T) {
+func TestAccResourceDatabaseMySQLAccessControls_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
