@@ -4,6 +4,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
     region = "us-southeast"
+    booted = false
 }
 
 resource "linode_ipv6_range" "foobar" {
