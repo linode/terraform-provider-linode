@@ -2,7 +2,6 @@
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
-    image = "linode/alpine3.14"
     type = "g6-nanode-1"
     region = "us-southeast"
 }
