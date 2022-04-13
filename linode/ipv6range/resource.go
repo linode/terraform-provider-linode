@@ -102,7 +102,16 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	client := meta.(*helper.ProviderMeta).Client
 
 	if err := client.DeleteIPv6Range(ctx, d.Id()); err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			d.SetId("")
+			log.Printf("[WARN] IPv6 range \"%s\" does not exist, removing from state.", d.Id())
+			return nil
+		}
+
 		return diag.Errorf("failed to delete ipv6 range %s: %s", d.Id(), err)
 	}
+
+	// Deleted successfully
+	d.SetId("")
 	return nil
 }
