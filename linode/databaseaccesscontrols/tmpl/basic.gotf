@@ -1,0 +1,15 @@
+{{ define "database_mysql_allow_list_basic" }}
+
+resource "linode_database_mysql" "foobar" {
+    engine_id = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+}
+
+resource "linode_database_access_controls" "foobar" {
+    database_id = linode_database_mysql.foobar.id
+    allow_list = ["{{.AllowedIP}}"]
+}
+
+{{ end }}
