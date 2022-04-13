@@ -42,3 +42,10 @@ func ReassignmentStep2(t *testing.T, label string) string {
 			Label: label,
 		})
 }
+
+func DataBasic(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"ipv6range_data_basic", TemplateData{
+			Label: label,
+		})
+}

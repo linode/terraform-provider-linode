@@ -3,9 +3,6 @@ package ipv6range_test
 import (
 	"context"
 	"fmt"
-	"regexp"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -13,6 +10,9 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range/tmpl"
+	"regexp"
+	"testing"
+	"time"
 )
 
 func TestAccIPv6Range_basic(t *testing.T) {
@@ -186,23 +186,33 @@ func checkIPv6RangeExists(name string, ipv6Range *linodego.IPv6Range) resource.T
 
 func checkIPv6RangeDestroy(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_ipv6_range" {
-			continue
+
+	// We should retry here as there is sometimes a delay between deletion request and
+	// range deletion. This should significantly reduce the number of intermittent cleanup
+	// failures we get.
+	err := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "linode_ipv6_range" {
+				continue
+			}
+
+			_, err := client.GetIPv6Range(context.Background(), rs.Primary.ID)
+			if err == nil {
+				return resource.RetryableError(fmt.Errorf("ipv6 range still exists: %s", err))
+			}
+
+			if apiErr, ok := err.(*linodego.Error); ok &&
+				// Intermittent error codes
+				apiErr.Code != 403 && apiErr.Code != 404 && apiErr.Code != 405 {
+				return resource.NonRetryableError(
+					fmt.Errorf("error requesting ipv6 range with id %s: %s", rs.Primary.ID, err))
+			}
 		}
 
-		_, err := client.GetIPv6Range(context.Background(), rs.Primary.ID)
+		return nil
+	})
 
-		if err == nil {
-			return fmt.Errorf("Linode IPv6 range with id %s still exists", rs.Primary.ID)
-		}
-
-		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 && apiErr.Code != 405 {
-			return fmt.Errorf("error requesting Linode IPv6 range with id %s: %s", rs.Primary.ID, err)
-		}
-	}
-
-	return nil
+	return err
 }
 
 func validateInstanceIPv6Assignments(t *testing.T, assignedID, unassignedID int) {
