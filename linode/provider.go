@@ -128,6 +128,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"linode_account":                account.DataSource(),
 			"linode_database_engines":       databaseengines.DataSource(),
+			"linode_database_mysql":         databasemysql.DataSource(),
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_databases":              databases.DataSource(),
 			"linode_domain":                 domain.DataSource(),
