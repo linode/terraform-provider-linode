@@ -1,12 +1,31 @@
 package databases_test
 
 import (
+	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databases/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+	"log"
 	"testing"
 )
+
+var engineVersion string
+
+func init() {
+	client, err := acceptance.GetClientForSweepers()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mysql")
+	if err != nil {
+		log.Fatalf("failde to get db engine version: %s", err)
+	}
+
+	engineVersion = v.ID
+}
 
 func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 	t.Parallel()
@@ -19,7 +38,7 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.ByLabel(t, dbName, dbName),
+				Config: tmpl.ByLabel(t, engineVersion, dbName, dbName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "databases.0.label", dbName),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.cluster_size", "1"),
@@ -40,13 +59,13 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ByLabel(t, dbName, "not"+dbName),
+				Config: tmpl.ByLabel(t, engineVersion, dbName, "not"+dbName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "databases.#", "0"),
 				),
 			},
 			{
-				Config: tmpl.ByEngine(t, dbName, "mysql"),
+				Config: tmpl.ByEngine(t, engineVersion, dbName, "mysql"),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "databases.#", 0),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.engine", "mysql"),
