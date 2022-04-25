@@ -13,21 +13,18 @@ type TemplateData struct {
 	Label  string
 }
 
-// TODO: resolve this dynamically at runtime
-const engineSlug = "mysql/8.0.26"
-
-func ByLabel(t *testing.T, instLabel, dsLabel string) string {
+func ByLabel(t *testing.T, engineVersion, instLabel, dsLabel string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_label", TemplateData{
-			DB:    databasemysqltmpl.TemplateData{Engine: engineSlug, Label: instLabel},
+			DB:    databasemysqltmpl.TemplateData{Engine: engineVersion, Label: instLabel},
 			Label: dsLabel,
 		})
 }
 
-func ByEngine(t *testing.T, label, engine string) string {
+func ByEngine(t *testing.T, engineVersion, label, engine string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_engine", TemplateData{
-			DB:     databasemysqltmpl.TemplateData{Engine: engineSlug, Label: label},
+			DB:     databasemysqltmpl.TemplateData{Engine: engineVersion, Label: label},
 			Engine: engine,
 		})
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"log"
 	"strconv"
 	"strings"
 	"testing"
@@ -16,14 +17,25 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/databasemysql/tmpl"
 )
 
-// TODO: resolve this dynamically
-const engineVersion = "mysql/8.0.26"
+var engineVersion string
 
 func init() {
 	resource.AddTestSweepers("linode_database_mysql", &resource.Sweeper{
 		Name: "linode_database_mysql",
 		F:    sweep,
 	})
+
+	client, err := acceptance.GetClientForSweepers()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mysql")
+	if err != nil {
+		log.Fatalf("failde to get db engine version: %s", err)
+	}
+
+	engineVersion = v.ID
 }
 
 func sweep(prefix string) error {
