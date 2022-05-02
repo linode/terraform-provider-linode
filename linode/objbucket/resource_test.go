@@ -282,6 +282,36 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 	})
 }
 
+func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_bucket.foobar"
+	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, objectStorageKeyName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
+					resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.id"),
+					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
+					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
+					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "5"),
+					resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.expiration.0.date"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceBucket_cert(t *testing.T) {
 	t.Parallel()
 

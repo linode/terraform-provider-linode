@@ -1,0 +1,24 @@
+{{ define "object_bucket_lifecycle_no_id" }}
+
+{{ template "object_key_basic" .Key }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    access_key = linode_object_storage_key.foobar.access_key
+    secret_key = linode_object_storage_key.foobar.secret_key
+
+    cluster = "us-east-1"
+    label = "{{.Label}}"
+
+    lifecycle_rule {
+        prefix = "tf"
+        enabled = true
+
+        abort_incomplete_multipart_upload_days = 5
+
+        expiration {
+            date = "2021-06-21"
+        }
+    }
+}
+
+{{ end }}
