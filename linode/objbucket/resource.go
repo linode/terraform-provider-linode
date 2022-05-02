@@ -477,15 +477,15 @@ func matchRulesWithSchema(rules []*s3.LifecycleRule, declaredRules []interface{}
 	for _, declaredRule := range declaredRules {
 		declaredRule := declaredRule.(map[string]interface{})
 
-		declaredId, ok := declaredRule["id"]
+		declaredID, ok := declaredRule["id"]
 
-		if !ok || len(declaredId.(string)) < 1 {
+		if !ok || len(declaredID.(string)) < 1 {
 			continue
 		}
 
-		if rule, ok := ruleMap[declaredId.(string)]; ok {
+		if rule, ok := ruleMap[declaredID.(string)]; ok {
 			result = append(result, rule)
-			delete(ruleMap, declaredId.(string))
+			delete(ruleMap, declaredID.(string))
 		}
 	}
 
