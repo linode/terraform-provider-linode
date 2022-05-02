@@ -467,27 +467,29 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 }
 
 func matchRulesWithSchema(rules []*s3.LifecycleRule, declaredRules []interface{}) []*s3.LifecycleRule {
-	result := make([]*s3.LifecycleRule, len(declaredRules))
+	result := make([]*s3.LifecycleRule, 0)
 
 	ruleMap := make(map[string]*s3.LifecycleRule, len(declaredRules))
 	for _, rule := range rules {
 		ruleMap[*rule.ID] = rule
 	}
 
-	for i, declaredRule := range declaredRules {
+	for _, declaredRule := range declaredRules {
 		declaredRule := declaredRule.(map[string]interface{})
 
-		for key, rule := range ruleMap {
-			if *rule.ID != declaredRule["id"] {
-				continue
-			}
+		declaredID, ok := declaredRule["id"]
 
-			result[i] = rule
-			delete(ruleMap, key)
-			break
+		if !ok || len(declaredID.(string)) < 1 {
+			continue
+		}
+
+		if rule, ok := ruleMap[declaredID.(string)]; ok {
+			result = append(result, rule)
+			delete(ruleMap, declaredID.(string))
 		}
 	}
 
+	// populate remaining values
 	for _, rule := range ruleMap {
 		result = append(result, rule)
 	}
