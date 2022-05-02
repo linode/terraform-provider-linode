@@ -1,0 +1,17 @@
+{{ define "instance_ipv4_sharing_empty" }}
+
+resource "linode_instance" "primary" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-west"
+}
+
+resource "linode_instance" "failover" {
+    label = "{{.Label}}-failover"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-west"
+}
+
+{{ end }}

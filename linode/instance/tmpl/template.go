@@ -417,6 +417,34 @@ func TypeChangeDiskNone(t *testing.T, label, instanceType string, resizeDisk boo
 		})
 }
 
+func IPv4Sharing(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing", TemplateData{
+			Label: label,
+		})
+}
+
+func IPv4SharingEmpty(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing_empty", TemplateData{
+			Label: label,
+		})
+}
+
+func IPv4SharingAllocation(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing_allocation", TemplateData{
+			Label: label,
+		})
+}
+
+func IPv4SharingBadInput(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing_bad_input", TemplateData{
+			Label: label,
+		})
+}
+
 func DataBasic(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{

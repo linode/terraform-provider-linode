@@ -1877,6 +1877,50 @@ func TestAccResourceInstance_powerStateNoImage(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
+	t.Parallel()
+
+	failoverResName := "linode_instance.failover"
+
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.IPv4SharingBadInput(t, instanceName),
+				ExpectError: regexp.MustCompile("expected ipv4 address, got"),
+			},
+			{
+				Config: tmpl.IPv4Sharing(t, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(failoverResName, &instance),
+					resource.TestCheckResourceAttr(failoverResName, "shared_ipv4.#", "1"),
+					resource.TestCheckResourceAttrSet(failoverResName, "shared_ipv4.0"),
+				),
+			},
+			{
+				Config: tmpl.IPv4SharingAllocation(t, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(failoverResName, &instance),
+					resource.TestCheckResourceAttr(failoverResName, "shared_ipv4.#", "1"),
+					resource.TestCheckResourceAttrSet(failoverResName, "shared_ipv4.0"),
+				),
+			},
+			{
+				Config: tmpl.IPv4SharingEmpty(t, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(failoverResName, &instance),
+					resource.TestCheckResourceAttr(failoverResName, "shared_ipv4.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
