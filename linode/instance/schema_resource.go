@@ -278,6 +278,7 @@ var resourceSchema = map[string]*schema.Schema{
 			},
 		},
 		Optional: true,
+		Computed: true,
 	},
 	"specs": {
 		Computed:    true,

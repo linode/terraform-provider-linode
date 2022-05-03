@@ -23,6 +23,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instance"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
+	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
@@ -168,6 +169,7 @@ func Provider() *schema.Provider {
 			"linode_image":                    image.Resource(),
 			"linode_instance":                 instance.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),
+			"linode_instance_shared_ips":      instancesharedips.Resource(),
 			"linode_ipv6_range":               ipv6range.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
 			"linode_nodebalancer":             nb.Resource(),

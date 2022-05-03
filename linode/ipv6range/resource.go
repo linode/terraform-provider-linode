@@ -30,7 +30,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	r, err := client.GetIPv6Range(ctx, d.Id())
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
 			d.SetId("")
 			log.Printf("[WARN] IPv6 range \"%s\" does not exist, removing from state.", d.Id())
 			return nil
