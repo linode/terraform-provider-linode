@@ -1,8 +1,9 @@
 package helper_test
 
 import (
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"testing"
+
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func TestCompareIPv6Ranges(t *testing.T) {
