@@ -1,6 +1,9 @@
 package firewall
 
 import (
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -44,6 +47,19 @@ var resourceRuleSchema = map[string]*schema.Schema{
 		Type: schema.TypeList,
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
+			ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+				err := helper.ValidateIPv6Range(i.(string))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				return nil
+			},
+			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				// We handle validation separately
+				result, _ := helper.CompareIPv6Ranges(oldValue, newValue)
+				return result
+			},
 		},
 		Description: "A list of IPv6 addresses or networks this rule applies to.",
 		Optional:    true,
