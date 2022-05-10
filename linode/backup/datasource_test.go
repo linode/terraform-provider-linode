@@ -79,7 +79,7 @@ func resourceInstanceBasic(label string) string {
 resource "linode_instance" "foobar" {
 	label = "%s"
 	type = "g6-nanode-1"
-	image = "linode/alpine3.13"
+	image = "linode/alpine3.15"
 	region = "us-east"
 	root_pass = "terraform-test"
 	swap_size = 256
