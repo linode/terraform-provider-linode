@@ -105,21 +105,21 @@ func Provider() *schema.Provider {
 			"event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 300),
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 4000),
 				Description: "The rate in milliseconds to poll for events.",
 			},
 
 			"lke_event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     300,
+				Default:     3000,
 				Description: "The rate in milliseconds to poll for LKE events.",
 			},
 
 			"lke_node_ready_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     500,
+				Default:     3000,
 				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
 			},
 		},
