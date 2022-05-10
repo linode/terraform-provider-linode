@@ -439,6 +439,14 @@ func CreateTempFile(t *testing.T, name, content string) *os.File {
 	return file
 }
 
+func CreateTestProvider() (*schema.Provider, map[string]*schema.Provider) {
+	provider := linode.Provider()
+	providerMap := map[string]*schema.Provider{
+		"linode": provider,
+	}
+	return provider, providerMap
+}
+
 type ProviderMetaModifier func(ctx context.Context, config *helper.ProviderMeta) error
 
 func ModifyProviderMeta(t *testing.T, provider *schema.Provider, modifier ProviderMetaModifier) {

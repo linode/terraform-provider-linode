@@ -1934,8 +1934,9 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	// Let's accumulate the number of Linodego requests made during apply
-	acceptance.ModifyProviderMeta(t, acceptance.TestAccProvider,
+	provider, providerMap := acceptance.CreateTestProvider()
+
+	acceptance.ModifyProviderMeta(t, provider,
 		func(ctx context.Context, config *helper.ProviderMeta) error {
 			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
 				if startTime.IsZero() {
@@ -1954,7 +1955,7 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
+		Providers:    providerMap,
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 
