@@ -325,6 +325,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 			configIDLabelMap[v.Label] = k
 		}
+		bootConfigLabel := d.Get("boot_config_label").(string)
+		if bootConfigLabel != "" {
+			if foundConfig, found := configIDLabelMap[bootConfigLabel]; found {
+				bootConfig = foundConfig
+			} else {
+				return diag.Errorf("Error setting boot_config_label: Config label '%s' not found", bootConfigLabel)
+			}
+		}
 	}
 
 	if ipv4Shared, ok := d.GetOk("shared_ipv4"); ok {
