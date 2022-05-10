@@ -8,8 +8,6 @@ description: |-
 
 # linode\_database\_access_controls
 
-**NOTICE:** Managed Databases are currently in beta. Ensure `api_version` is set to `v4beta` in order to use this resource.
-
 Manages the access control for a Linode Database. Only one `linode_database_access_controls` resource should be defined per-database.
 
 ## Example Usage

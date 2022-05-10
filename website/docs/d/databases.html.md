@@ -8,8 +8,6 @@ Provides information about Linode Managed Databases.
 
 # Data Source: linode\_databases
 
-**NOTICE:** Managed Databases are currently in beta. Ensure `api_version` is set to `v4beta` in order to use this data source.
-
 Provides information about Linode Managed Databases that match a set of filters.
 
 ## Example Usage
