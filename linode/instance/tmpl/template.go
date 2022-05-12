@@ -445,6 +445,15 @@ func IPv4SharingBadInput(t *testing.T, label string) string {
 		})
 }
 
+func ManyLinodes(t *testing.T, label, pubKey string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_many_linodes", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			PubKey: pubKey,
+		})
+}
+
 func DataBasic(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -1916,6 +1917,64 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 					acceptance.CheckInstanceExists(failoverResName, &instance),
 					resource.TestCheckResourceAttr(failoverResName, "shared_ipv4.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_requestQuantity(t *testing.T) {
+	t.Parallel()
+
+	const maxRequests = 260
+
+	// We need to make sure we're not running into a race condition here
+	var numRequestsLock sync.Mutex
+	numRequests := 0
+	var startTime time.Time
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	provider, providerMap := acceptance.CreateTestProvider()
+
+	acceptance.ModifyProviderMeta(t, provider,
+		func(ctx context.Context, config *helper.ProviderMeta) error {
+			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
+				if startTime.IsZero() {
+					startTime = time.Now()
+				}
+
+				numRequestsLock.Lock()
+				defer numRequestsLock.Unlock()
+				numRequests++
+
+				return nil
+			})
+
+			return nil
+		})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    providerMap,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+
+			{
+				// Provision a bunch of Linodes and wait for them to boot into an image
+				Config: tmpl.ManyLinodes(t, instanceName, acceptance.PublicKeyMaterial),
+			},
+			{
+				PreConfig: func() {
+					requestsPerMS := float64(numRequests) / float64(time.Since(startTime).Milliseconds())
+
+					t.Logf("\n[INFO] results from 12 linode parallel creation:\n"+
+						"total requests: %d\nfrequency: ~%f requests/second\n", numRequests, requestsPerMS*1000)
+
+					if numRequests > maxRequests {
+						t.Fatalf("too many requests: %d > %d", numRequests, maxRequests)
+					}
+				},
+				Config: tmpl.ManyLinodes(t, instanceName, acceptance.PublicKeyMaterial),
 			},
 		},
 	})

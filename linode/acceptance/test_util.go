@@ -15,6 +15,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -436,4 +437,31 @@ func CreateTempFile(t *testing.T, name, content string) *os.File {
 	}
 
 	return file
+}
+
+func CreateTestProvider() (*schema.Provider, map[string]*schema.Provider) {
+	provider := linode.Provider()
+	providerMap := map[string]*schema.Provider{
+		"linode": provider,
+	}
+	return provider, providerMap
+}
+
+type ProviderMetaModifier func(ctx context.Context, config *helper.ProviderMeta) error
+
+func ModifyProviderMeta(t *testing.T, provider *schema.Provider, modifier ProviderMetaModifier) {
+	oldConfigure := provider.ConfigureContextFunc
+
+	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		config, err := oldConfigure(ctx, data)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := modifier(ctx, config.(*helper.ProviderMeta)); err != nil {
+			t.Fatal(err)
+		}
+
+		return config, nil
+	}
 }
