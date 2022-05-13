@@ -1954,11 +1954,9 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 		})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    providerMap,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
-
 			{
 				// Provision a bunch of Linodes and wait for them to boot into an image
 				Config: tmpl.ManyLinodes(t, instanceName, acceptance.PublicKeyMaterial),
