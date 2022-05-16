@@ -5,6 +5,8 @@ resource "linode_instance" "primary" {
     group = "tf_test"
     type = "g6-nanode-1"
     region = "us-west"
+
+    shared_ipv4 = []
 }
 
 resource "linode_instance" "failover" {
@@ -12,6 +14,8 @@ resource "linode_instance" "failover" {
     group = "tf_test"
     type = "g6-nanode-1"
     region = "us-west"
+
+    shared_ipv4 = []
 }
 
 {{ end }}

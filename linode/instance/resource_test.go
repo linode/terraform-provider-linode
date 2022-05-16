@@ -1925,7 +1925,7 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 func TestAccResourceInstance_requestQuantity(t *testing.T) {
 	t.Parallel()
 
-	const maxRequests = 260
+	const maxRequestsPerSecond = 3.0
 
 	// We need to make sure we're not running into a race condition here
 	var numRequestsLock sync.Mutex
@@ -1954,24 +1954,22 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 		})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    providerMap,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
-
 			{
 				// Provision a bunch of Linodes and wait for them to boot into an image
 				Config: tmpl.ManyLinodes(t, instanceName, acceptance.PublicKeyMaterial),
 			},
 			{
 				PreConfig: func() {
-					requestsPerMS := float64(numRequests) / float64(time.Since(startTime).Milliseconds())
+					requestsPerSecond := (float64(numRequests) / float64(time.Since(startTime).Milliseconds())) * 1000
 
 					t.Logf("\n[INFO] results from 12 linode parallel creation:\n"+
-						"total requests: %d\nfrequency: ~%f requests/second\n", numRequests, requestsPerMS*1000)
+						"total requests: %d\nfrequency: ~%f requests/second\n", numRequests, requestsPerSecond)
 
-					if numRequests > maxRequests {
-						t.Fatalf("too many requests: %d > %d", numRequests, maxRequests)
+					if requestsPerSecond > maxRequestsPerSecond {
+						t.Fatalf("too many requests: %f > %f", requestsPerSecond, maxRequestsPerSecond)
 					}
 				},
 				Config: tmpl.ManyLinodes(t, instanceName, acceptance.PublicKeyMaterial),
