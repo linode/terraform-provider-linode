@@ -96,7 +96,7 @@ The following arguments are supported in the `autoscaler` specification block:
 
 The following arguments are supported in the `control_plane` specification block:
 
-* `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change. **NOTICE:** High Availability Control Planes are currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/master/EARLY_ACCESS.md).
+* `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
 
 ## Attributes Reference
 
