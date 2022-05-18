@@ -46,6 +46,13 @@ resource "linode_lke_cluster" "my-cluster" {
           max = 10
         }
     }
+
+  # Prevent the count field from overriding autoscaler-created nodes
+  lifecycle {
+    ignore_changes = [
+      pool.0.count
+    ]
+  }
 }
 ```
 
