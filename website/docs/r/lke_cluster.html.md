@@ -84,6 +84,8 @@ The following arguments are supported in the `pool` specification block:
 
 ### autoscaler
 
+~> **NOTICE:** To prevent the `count` field from removing nodes created by the autoscaler, consider using the [ignore_changes](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) lifecycle argument.
+
 The following arguments are supported in the `autoscaler` specification block:
 
 * `min` - (Required) The minimum number of nodes to autoscale to.
