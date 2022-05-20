@@ -46,6 +46,13 @@ resource "linode_lke_cluster" "my-cluster" {
           max = 10
         }
     }
+
+  # Prevent the count field from overriding autoscaler-created nodes
+  lifecycle {
+    ignore_changes = [
+      pool.0.count
+    ]
+  }
 }
 ```
 
@@ -77,6 +84,8 @@ The following arguments are supported in the `pool` specification block:
 
 ### autoscaler
 
+~> **NOTICE:** To prevent the `count` field from removing nodes created by the autoscaler, consider using the [ignore_changes](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) lifecycle argument.
+
 The following arguments are supported in the `autoscaler` specification block:
 
 * `min` - (Required) The minimum number of nodes to autoscale to.
@@ -87,7 +96,7 @@ The following arguments are supported in the `autoscaler` specification block:
 
 The following arguments are supported in the `control_plane` specification block:
 
-* `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change. **NOTICE:** High Availability Control Planes are currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/master/EARLY_ACCESS.md).
+* `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
 
 ## Attributes Reference
 
