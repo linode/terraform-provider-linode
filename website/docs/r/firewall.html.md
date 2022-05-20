@@ -12,10 +12,11 @@ Manages a Linode Firewall.
 
 ## Example Usage
 
+Accept only inbound HTTP(s) requests and drop outbound HTTP(s) requests:
+
 ```terraform
 resource "linode_firewall" "my_firewall" {
   label = "my_firewall"
-  tags  = ["test"]
 
   inbound {
     label    = "allow-http"
@@ -91,6 +92,8 @@ The following arguments are supported:
 * `tags` - (Optional) A list of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
 
 ### inbound and outbound
+
+**NOTE:** Firewall rules can be dynamically generated using [dynamic blocks](https://www.terraform.io/language/expressions/dynamic-blocks).
 
 The following arguments are supported in the inbound and outbound rule blocks:
 
