@@ -1,4 +1,4 @@
-{{ define "database_mysql_complex" }}
+{{ define "database_mysql_complex_updates" }}
 
 resource "linode_database_mysql" "foobar" {
     engine_id = "{{.Engine}}"
@@ -13,11 +13,10 @@ resource "linode_database_mysql" "foobar" {
     ssl_connection = {{.SSLConnection}}
 
     updates {
-        day_of_week = "saturday"
-        duration = 1
-        frequency = "monthly"
-        hour_of_day = 22
-        week_of_month = 2
+        day_of_week = "wednesday"
+        duration = 3
+        frequency = "weekly"
+        hour_of_day = 13
     }
 }
 

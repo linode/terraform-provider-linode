@@ -100,6 +100,41 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "When this Managed Database was last updated.",
 		Computed:    true,
 	},
+	"updates": {
+		Type:        schema.TypeList,
+		Description: "Configuration settings for automated patch update maintenance for the Managed Database.",
+		Computed:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"day_of_week": {
+					Type:        schema.TypeString,
+					Description: "The day to perform maintenance.",
+					Computed:    true,
+				},
+				"duration": {
+					Type:        schema.TypeInt,
+					Description: "The maximum maintenance window time in hours.",
+					Computed:    true,
+				},
+				"frequency": {
+					Type:        schema.TypeString,
+					Description: "Whether maintenance occurs on a weekly or monthly basis.",
+					Computed:    true,
+				},
+				"hour_of_day": {
+					Type:        schema.TypeInt,
+					Description: "The hour to begin maintenance based in UTC time.",
+					Computed:    true,
+				},
+				"week_of_month": {
+					Type: schema.TypeInt,
+					Description: "The week of the month to perform monthly frequency updates." +
+						" Required for monthly frequency updates.",
+					Computed: true,
+				},
+			},
+		},
+	},
 	"root_username": {
 		Type:        schema.TypeString,
 		Description: "The root username for the Managed Database instance.",

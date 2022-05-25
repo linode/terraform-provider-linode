@@ -1,8 +1,11 @@
 package databasemysql
 
 import (
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -73,6 +76,56 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     false,
 		ForceNew:    true,
+	},
+	"updates": {
+		Type:        schema.TypeList,
+		Description: "Configuration settings for automated patch update maintenance for the Managed Database.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"day_of_week": {
+					Type:        schema.TypeString,
+					Description: "The day to perform maintenance.",
+					Required:    true,
+					ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+						if _, err := helper.ExpandDayOfWeek(i.(string)); err != nil {
+							return diag.FromErr(err)
+						}
+
+						return nil
+					},
+				},
+				"duration": {
+					Type:             schema.TypeInt,
+					Description:      "The maximum maintenance window time in hours.",
+					Required:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 3)),
+				},
+				"frequency": {
+					Type:        schema.TypeString,
+					Description: "Whether maintenance occurs on a weekly or monthly basis.",
+					Required:    true,
+					ValidateDiagFunc: validation.ToDiagFunc(
+						validation.StringInSlice([]string{"weekly", "monthly"}, true)),
+				},
+				"hour_of_day": {
+					Type:             schema.TypeInt,
+					Description:      "The hour to begin maintenance based in UTC time.",
+					Required:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 23)),
+				},
+				"week_of_month": {
+					Type: schema.TypeInt,
+					Description: "The week of the month to perform monthly frequency updates." +
+						" Required for monthly frequency updates.",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 4)),
+					Optional:         true,
+					Default:          nil,
+				},
+			},
+		},
 	},
 
 	// Computed fields
