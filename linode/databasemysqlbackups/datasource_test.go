@@ -37,7 +37,8 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 	const backupLabel = "coolbackup42"
 	dbLabel := acctest.RandomWithPrefix("tf_test")
 
-	resourceName := "data.linode_database_mysql_backups.foobar"
+	resourceName := "linode_database_mysql.foobar"
+	dataSourceName := "data.linode_database_mysql_backups.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acceptance.PreCheck(t) },
@@ -51,7 +52,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMySQLDatabaseExists(resourceName, &db),
-					resource.TestCheckResourceAttr(resourceName, "backups.#", "0"),
+					resource.TestCheckResourceAttr(dataSourceName, "backups.#", "0"),
 				),
 			},
 			{
@@ -76,9 +77,9 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 					BackupLabel: backupLabel,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "backups.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "backups.0.label", backupLabel),
-					resource.TestCheckResourceAttr(resourceName, "backups.0.type", "snapshot"),
+					resource.TestCheckResourceAttr(dataSourceName, "backups.#", "1"),
+					resource.TestCheckResourceAttr(dataSourceName, "backups.0.label", backupLabel),
+					resource.TestCheckResourceAttr(dataSourceName, "backups.0.type", "snapshot"),
 				),
 			},
 		},
