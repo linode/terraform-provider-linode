@@ -101,7 +101,7 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, dbName, engineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -156,7 +156,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -201,7 +201,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName+"updated"),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -241,28 +241,6 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 			},
 		},
 	})
-}
-
-func checkMySQLDatabaseExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_mysql" {
-			continue
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		_, err = client.GetMySQLDatabase(context.Background(), id)
-		if err != nil {
-			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
-		}
-	}
-
-	return nil
 }
 
 func checkDestroy(s *terraform.State) error {

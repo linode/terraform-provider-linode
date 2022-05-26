@@ -32,7 +32,7 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
