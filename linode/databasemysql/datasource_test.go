@@ -32,7 +32,7 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -45,6 +45,13 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
 					resource.TestCheckResourceAttr(resName, "replication_type", "none"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
+
+					resource.TestCheckResourceAttr(resName, "updates.#", "1"),
+					resource.TestCheckResourceAttr(resName, "updates.0.day_of_week", "saturday"),
+					resource.TestCheckResourceAttr(resName, "updates.0.duration", "1"),
+					resource.TestCheckResourceAttr(resName, "updates.0.frequency", "monthly"),
+					resource.TestCheckResourceAttr(resName, "updates.0.hour_of_day", "22"),
+					resource.TestCheckResourceAttr(resName, "updates.0.week_of_month", "2"),
 
 					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),

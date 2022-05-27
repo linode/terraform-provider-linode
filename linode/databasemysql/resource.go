@@ -86,6 +86,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("updated", db.Updated.Format(time.RFC3339))
 	d.Set("root_username", creds.Username)
 	d.Set("version", db.Version)
+	d.Set("updates", []interface{}{FlattenMaintenanceWindow(db.Updates)})
 
 	return nil
 }
@@ -116,6 +117,22 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to wait for mysql database creation: %s", err)
 	}
 
+	updateList := d.Get("updates").([]interface{})
+
+	if !d.GetRawConfig().GetAttr("updates").IsNull() && len(updateList) > 0 {
+		updates, err := ExpandMaintenanceWindow(updateList[0].(map[string]interface{}))
+		if err != nil {
+			return diag.Errorf("failed to read maintenance window config: %s", err)
+		}
+
+		_, err = client.UpdateMySQLDatabase(ctx, db.ID, linodego.MySQLUpdateOptions{
+			Updates: &updates,
+		})
+		if err != nil {
+			return diag.Errorf("failed to update mysql database maintenance window: %s", err)
+		}
+	}
+
 	return readResource(ctx, d, meta)
 }
 
@@ -133,6 +150,22 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if d.HasChange("allow_list") {
 		updateOpts.AllowList = helper.ExpandStringSet(d.Get("allow_list").(*schema.Set))
+	}
+
+	if d.HasChange("updates") {
+		var updates *linodego.MySQLDatabaseMaintenanceWindow
+
+		updatesRaw := d.Get("updates")
+		if updatesRaw != nil && len(updatesRaw.([]interface{})) > 0 {
+			expanded, err := ExpandMaintenanceWindow(updatesRaw.([]interface{})[0].(map[string]interface{}))
+			if err != nil {
+				return diag.Errorf("failed to update maintenance window: %s", err)
+			}
+
+			updates = &expanded
+		}
+
+		updateOpts.Updates = updates
 	}
 
 	_, err = client.UpdateMySQLDatabase(ctx, int(id), updateOpts)
@@ -167,4 +200,42 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func createEngineSlug(engine, version string) string {
 	return fmt.Sprintf("%s/%s", engine, version)
+}
+
+func FlattenMaintenanceWindow(window linodego.MySQLDatabaseMaintenanceWindow) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	result["day_of_week"] = helper.FlattenDayOfWeek(window.DayOfWeek)
+	result["duration"] = window.Duration
+	result["frequency"] = string(window.Frequency)
+	result["hour_of_day"] = window.HourOfDay
+
+	// Nullable
+	if window.WeekOfMonth != nil {
+		result["week_of_month"] = window.WeekOfMonth
+	}
+
+	return result
+}
+
+func ExpandMaintenanceWindow(window map[string]interface{}) (linodego.MySQLDatabaseMaintenanceWindow, error) {
+	result := linodego.MySQLDatabaseMaintenanceWindow{
+		Duration:    window["duration"].(int),
+		Frequency:   linodego.DatabaseMaintenanceFrequency(window["frequency"].(string)),
+		HourOfDay:   window["hour_of_day"].(int),
+		WeekOfMonth: nil,
+	}
+
+	dayOfWeek, err := helper.ExpandDayOfWeek(window["day_of_week"].(string))
+	if err != nil {
+		return result, err
+	}
+	result.DayOfWeek = dayOfWeek
+
+	if val, ok := window["week_of_month"]; ok && val.(int) > 0 {
+		valInt := val.(int)
+		result.WeekOfMonth = &valInt
+	}
+
+	return result, nil
 }

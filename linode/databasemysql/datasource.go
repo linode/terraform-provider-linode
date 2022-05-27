@@ -54,6 +54,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("root_password", creds.Password)
 	d.Set("status", db.Status)
 	d.Set("updated", db.Updated.Format(time.RFC3339))
+	d.Set("updates", []interface{}{FlattenMaintenanceWindow(db.Updates)})
 	d.Set("root_username", creds.Username)
 	d.Set("version", db.Version)
 

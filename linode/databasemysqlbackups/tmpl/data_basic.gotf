@@ -1,0 +1,24 @@
+{{ define "database_mysql_backups_data_basic" }}
+
+resource "linode_database_mysql" "foobar" {
+    engine_id = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+}
+
+data "linode_database_mysql_backups" "foobar" {
+    database_id = linode_database_mysql.foobar.id
+
+    filter {
+        name = "type"
+        values = ["snapshot"]
+    }
+
+    filter {
+        name = "label"
+        values = ["{{.BackupLabel}}"]
+    }
+}
+
+{{ end }}

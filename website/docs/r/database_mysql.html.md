@@ -40,6 +40,14 @@ resource "linode_database_mysql" "foobar" {
   encrypted = true
   replication_type = "asynch"
   ssl_connection = true
+
+  updates {
+    day_of_week = "saturday"
+    duration = 1
+    frequency = "monthly"
+    hour_of_day = 22
+    week_of_month = 2
+  }
 }
 ```
 
@@ -66,6 +74,22 @@ The following arguments are supported:
 * `replication_type` - (Optional) The replication method used for the Managed Database. (`none`, `asynch`, `semi_synch`; default `none`)
 
 * `ssl_connection` - (Optional) Whether to require SSL credentials to establish a connection to the Managed Database. (default `false`)
+
+* [`updates`](#updates) - (Optional) Configuration settings for automated patch update maintenance for the Managed Database.
+
+## updates
+
+The following arguments are supported in the `updates` specification block:
+
+* `day_of_week` - (Required) The day to perform maintenance. (`monday`, `tuesday`, ...)
+
+* `duration` - (Required) The maximum maintenance window time in hours. (`1`..`3`)
+
+* `frequency` - (Required) Whether maintenance occurs on a weekly or monthly basis. (`weekly`, `monthly`)
+
+* `hour_of_day` - (Required) The hour to begin maintenance based in UTC time. (`0`..`23`)
+
+* `week_of_month` - (Optional) The week of the month to perform monthly frequency updates. Required for `monthly` frequency updates. (`1`..`4`)
 
 ## Attributes
 

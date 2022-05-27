@@ -3,18 +3,21 @@ package databasemysql_test
 import (
 	"context"
 	"fmt"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var engineVersion string
@@ -64,6 +67,26 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
+	data := linodego.MySQLDatabaseMaintenanceWindow{
+		DayOfWeek: linodego.DatabaseMaintenanceDayWednesday,
+		Duration:  1,
+		Frequency: linodego.DatabaseMaintenanceFrequencyWeekly,
+		HourOfDay: 5,
+	}
+
+	dataFlattened := databasemysql.FlattenMaintenanceWindow(data)
+
+	dataExpanded, err := databasemysql.ExpandMaintenanceWindow(dataFlattened)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(dataExpanded, data) {
+		t.Fatalf("maintenance window mismatch: %s", cmp.Diff(dataExpanded, data))
+	}
+}
+
 func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 	t.Parallel()
 
@@ -78,7 +101,7 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, dbName, engineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -133,7 +156,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -146,6 +169,13 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
 					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
+
+					resource.TestCheckResourceAttr(resName, "updates.#", "1"),
+					resource.TestCheckResourceAttr(resName, "updates.0.day_of_week", "saturday"),
+					resource.TestCheckResourceAttr(resName, "updates.0.duration", "1"),
+					resource.TestCheckResourceAttr(resName, "updates.0.frequency", "monthly"),
+					resource.TestCheckResourceAttr(resName, "updates.0.hour_of_day", "22"),
+					resource.TestCheckResourceAttr(resName, "updates.0.week_of_month", "2"),
 
 					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
@@ -161,7 +191,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Complex(t, tmpl.TemplateData{
+				Config: tmpl.ComplexUpdates(t, tmpl.TemplateData{
 					Engine:          engineVersion,
 					Label:           dbName + "updated",
 					AllowedIP:       "192.0.2.1/32",
@@ -171,7 +201,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName+"updated"),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -184,6 +214,12 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
 					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
+
+					resource.TestCheckResourceAttr(resName, "updates.#", "1"),
+					resource.TestCheckResourceAttr(resName, "updates.0.day_of_week", "wednesday"),
+					resource.TestCheckResourceAttr(resName, "updates.0.duration", "3"),
+					resource.TestCheckResourceAttr(resName, "updates.0.frequency", "weekly"),
+					resource.TestCheckResourceAttr(resName, "updates.0.hour_of_day", "13"),
 
 					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
@@ -205,28 +241,6 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 			},
 		},
 	})
-}
-
-func checkMySQLDatabaseExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_mysql" {
-			continue
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		_, err = client.GetMySQLDatabase(context.Background(), id)
-		if err != nil {
-			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
-		}
-	}
-
-	return nil
 }
 
 func checkDestroy(s *terraform.State) error {

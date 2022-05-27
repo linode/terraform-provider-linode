@@ -29,6 +29,11 @@ func Complex(t *testing.T, data TemplateData) string {
 		"database_mysql_complex", data)
 }
 
+func ComplexUpdates(t *testing.T, data TemplateData) string {
+	return acceptance.ExecuteTemplate(t,
+		"database_mysql_complex_updates", data)
+}
+
 func DataBasic(t *testing.T, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_mysql_data_basic", data)
