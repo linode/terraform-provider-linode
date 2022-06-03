@@ -66,9 +66,16 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 						t.Errorf("failed to create db backup: %v", err)
 					}
 
-					_, err := client.WaitForMySQLDatabaseBackup(context.Background(), db.ID, backupLabel, 1200)
+					err := client.WaitForDatabaseStatus(context.Background(), db.ID,
+						linodego.DatabaseEngineTypeMySQL, "backing_up", 120)
 					if err != nil {
-						t.Fatalf("failed to wait for backup: %s", err)
+						t.Fatalf("failed to wait for database backing_up: %s", err)
+					}
+
+					err = client.WaitForDatabaseStatus(context.Background(), db.ID,
+						linodego.DatabaseEngineTypeMySQL, linodego.DatabaseStatusActive, 1200)
+					if err != nil {
+						t.Fatalf("failed to wait for database active: %s", err)
 					}
 				},
 				Config: tmpl.DataBasic(t, tmpl.TemplateData{
