@@ -10,6 +10,7 @@ resource "linode_nodebalancer_config" "foofig" {
     check_path = "/foo"
     check_attempts = 3
     check_timeout = 30
+    check_interval = 31
     check_passive = false
     stickiness = "http_cookie"
     algorithm = "source"
