@@ -1,0 +1,25 @@
+{{ define "database_mongo_complex_updates" }}
+
+resource "linode_database_mongo" "foobar" {
+    engine_id = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+
+    allow_list = ["{{.AllowedIP}}"]
+    cluster_size = {{.ClusterSize}}
+    compression_type = "{{.CompressionType}}"
+    encrypted = {{.Encrypted}}
+    ssl_connection = {{.SSLConnection}}
+    storage_engine = "{{.StorageEngine}}"
+
+    updates {
+        day_of_week = "wednesday"
+        duration = 3
+        frequency = "weekly"
+        hour_of_day = 13
+    }
+}
+
+{{ end }}
+

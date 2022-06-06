@@ -60,3 +60,45 @@ func ExpandDayOfWeek(day string) (linodego.DatabaseDayOfWeek, error) {
 func FlattenDayOfWeek(day linodego.DatabaseDayOfWeek) string {
 	return dayOfWeekKeyToStr[day]
 }
+
+func CreateDatabaseEngineSlug(engine, version string) string {
+	return fmt.Sprintf("%s/%s", engine, version)
+}
+
+func FlattenMaintenanceWindow(window linodego.MySQLDatabaseMaintenanceWindow) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	result["day_of_week"] = FlattenDayOfWeek(window.DayOfWeek)
+	result["duration"] = window.Duration
+	result["frequency"] = string(window.Frequency)
+	result["hour_of_day"] = window.HourOfDay
+
+	// Nullable
+	if window.WeekOfMonth != nil {
+		result["week_of_month"] = window.WeekOfMonth
+	}
+
+	return result
+}
+
+func ExpandMaintenanceWindow(window map[string]interface{}) (linodego.DatabaseMaintenanceWindow, error) {
+	result := linodego.DatabaseMaintenanceWindow{
+		Duration:    window["duration"].(int),
+		Frequency:   linodego.DatabaseMaintenanceFrequency(window["frequency"].(string)),
+		HourOfDay:   window["hour_of_day"].(int),
+		WeekOfMonth: nil,
+	}
+
+	dayOfWeek, err := ExpandDayOfWeek(window["day_of_week"].(string))
+	if err != nil {
+		return result, err
+	}
+	result.DayOfWeek = dayOfWeek
+
+	if val, ok := window["week_of_month"]; ok && val.(int) > 0 {
+		valInt := val.(int)
+		result.WeekOfMonth = &valInt
+	}
+
+	return result, nil
+}
