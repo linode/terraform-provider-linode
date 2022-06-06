@@ -1,6 +1,6 @@
-{{ define "database_mongo_basic" }}
+{{ define "database_mysql_basic" }}
 
-resource "linode_database_mongo" "foobar" {
+resource "linode_database_mysql" "foobar" {
     engine_id = "{{.Engine}}"
     label = "{{.Label}}"
     region = "us-southeast"

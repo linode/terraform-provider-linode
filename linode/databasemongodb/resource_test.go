@@ -1,4 +1,4 @@
-package databasemongo_test
+package databasemongodb_test
 
 import (
 	"context"
@@ -13,15 +13,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/databasemongo/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/databasemongodb/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var engineVersion string
 
 func init() {
-	resource.AddTestSweepers("linode_database_mongo", &resource.Sweeper{
-		Name: "linode_database_mongo",
+	resource.AddTestSweepers("linode_database_mongodb", &resource.Sweeper{
+		Name: "linode_database_mongodb",
 		F:    sweep,
 	})
 
@@ -67,7 +67,7 @@ func sweep(prefix string) error {
 func TestAccResourceDatabaseMongo_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_mongo.foobar"
+	resName := "linode_database_mongodb.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
@@ -114,7 +114,7 @@ func TestAccResourceDatabaseMongo_basic(t *testing.T) {
 func TestAccResourceDatabaseMongo_complex(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_mongo.foobar"
+	resName := "linode_database_mongodb.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
@@ -225,7 +225,7 @@ func TestAccResourceDatabaseMongo_complex(t *testing.T) {
 func checkDestroy(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_mongo" {
+		if rs.Type != "linode_database_mongodb" {
 			continue
 		}
 

@@ -1,4 +1,4 @@
-package databasemongo
+package databasemongodb
 
 import (
 	"context"
@@ -43,28 +43,28 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Mongo database ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode MongoDB database ID %s as int: %s", d.Id(), err)
 	}
 
 	db, err := client.GetMongoDatabase(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Mongo database ID %q from state because it no longer exists", d.Id())
+			log.Printf("[WARN] removing MongoDB database ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
 
-		return diag.Errorf("failed to find the specified mongo database: %s", err)
+		return diag.Errorf("failed to find the specified mongodb database: %s", err)
 	}
 
 	cert, err := client.GetMongoDatabaseSSL(ctx, int(id))
 	if err != nil {
-		return diag.Errorf("failed to get cert for the specified mongo database: %s", err)
+		return diag.Errorf("failed to get cert for the specified mongodb database: %s", err)
 	}
 
 	creds, err := client.GetMongoDatabaseCredentials(ctx, int(id))
 	if err != nil {
-		return diag.Errorf("failed to get credentials for the specified mongo database: %s", err)
+		return diag.Errorf("failed to get credentials for the specified mongodb database: %s", err)
 	}
 
 	d.Set("engine_id", helper.CreateDatabaseEngineSlug(db.Engine, db.Version))
@@ -111,7 +111,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		AllowList:       helper.ExpandStringSet(d.Get("allow_list").(*schema.Set)),
 	})
 	if err != nil {
-		return diag.Errorf("failed to create mongo database: %s", err)
+		return diag.Errorf("failed to create mongodb database: %s", err)
 	}
 
 	d.SetId(strconv.Itoa(db.ID))
@@ -119,7 +119,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	_, err = client.WaitForEventFinished(ctx, db.ID, linodego.EntityDatabase,
 		linodego.ActionDatabaseCreate, *db.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	if err != nil {
-		return diag.Errorf("failed to wait for mongo database creation: %s", err)
+		return diag.Errorf("failed to wait for mongodb database creation: %s", err)
 	}
 
 	updateList := d.Get("updates").([]interface{})
@@ -134,7 +134,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			Updates: &updates,
 		})
 		if err != nil {
-			return diag.Errorf("failed to update mongo database maintenance window: %s", err)
+			return diag.Errorf("failed to update mongodb database maintenance window: %s", err)
 		}
 	}
 
@@ -146,7 +146,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Mongo database ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode MongoDB database ID %s as int: %s", d.Id(), err)
 	}
 
 	updateOpts := linodego.MongoUpdateOptions{
@@ -175,7 +175,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	_, err = client.UpdateMongoDatabase(ctx, int(id), updateOpts)
 	if err != nil {
-		return diag.Errorf("failed to update mongo database: %s", err)
+		return diag.Errorf("failed to update mongodb database: %s", err)
 	}
 
 	return readResource(ctx, d, meta)
@@ -185,7 +185,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Mongo database ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("Error parsing Linode MongoDB database ID %s as int: %s", d.Id(), err)
 	}
 
 	// We should retry on intermittent deletion errors

@@ -1,4 +1,4 @@
-package databasemongo
+package databasemongodb
 
 import (
 	"github.com/hashicorp/go-cty/cty"

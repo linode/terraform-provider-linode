@@ -1,4 +1,4 @@
-package databasemongo_test
+package databasemongodb_test
 
 import (
 	"strings"
@@ -7,13 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/databasemysql/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/databasemongodb/tmpl"
 )
 
-func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
+func TestAccDataSourceDatabaseMongo_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "data.linode_database_mysql.foobar"
+	resName := "data.linode_database_mongodb.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
@@ -27,8 +27,9 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 					Label:           dbName,
 					AllowedIP:       "0.0.0.0/0",
 					ClusterSize:     1,
+					CompressionType: "zlib",
+					StorageEngine:   "wiredtiger",
 					Encrypted:       true,
-					ReplicationType: "none",
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -43,6 +44,8 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
+					resource.TestCheckResourceAttr(resName, "storage_engine", "wiredtiger"),
+					resource.TestCheckResourceAttr(resName, "compression_type", "zlib"),
 					resource.TestCheckResourceAttr(resName, "replication_type", "none"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 
@@ -56,7 +59,6 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
-					resource.TestCheckResourceAttrSet(resName, "host_secondary"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),

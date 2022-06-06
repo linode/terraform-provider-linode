@@ -19,7 +19,7 @@ type TemplateData struct {
 
 func Basic(t *testing.T, label, engine string) string {
 	return acceptance.ExecuteTemplate(t,
-		"database_mongo_basic", TemplateData{
+		"database_mongodb_basic", TemplateData{
 			Engine: engine,
 			Label:  label,
 		})
@@ -27,15 +27,15 @@ func Basic(t *testing.T, label, engine string) string {
 
 func Complex(t *testing.T, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
-		"database_mongo_complex", data)
+		"database_mongodb_complex", data)
 }
 
 func ComplexUpdates(t *testing.T, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
-		"database_mongo_complex_updates", data)
+		"database_mongodb_complex_updates", data)
 }
 
 func DataBasic(t *testing.T, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
-		"database_mongo_data_basic", data)
+		"database_mongodb_data_basic", data)
 }

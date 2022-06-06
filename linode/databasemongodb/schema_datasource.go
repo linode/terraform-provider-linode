@@ -1,4 +1,4 @@
-package databasemongo
+package databasemongodb
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,11 +11,6 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The ID of the MySQL database.",
 	},
 
-	"engine_id": {
-		Type:        schema.TypeString,
-		Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.26)",
-		Computed:    true,
-	},
 	"label": {
 		Type:        schema.TypeString,
 		Description: "A unique, user-defined string referring to the Managed Database.",
@@ -43,61 +38,24 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The number of Linode Instance nodes deployed to the Managed Database. Defaults to 1.",
 		Computed:    true,
 	},
+	"compression_type": {
+		Type:        schema.TypeString,
+		Description: "The type of data compression for this Database.",
+		Computed:    true,
+	},
+	"storage_engine": {
+		Type:        schema.TypeString,
+		Description: "The type of storage engine for this Database.",
+		Computed:    true,
+	},
 	"encrypted": {
 		Type:        schema.TypeBool,
 		Description: "Whether the Managed Databases is encrypted.",
 		Computed:    true,
 	},
-	"replication_type": {
-		Type:        schema.TypeString,
-		Description: "The replication method used for the Managed Database.",
-		Computed:    true,
-	},
 	"ssl_connection": {
 		Type:        schema.TypeBool,
 		Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
-		Computed:    true,
-	},
-	"ca_cert": {
-		Type:        schema.TypeString,
-		Description: "The base64-encoded SSL CA certificate for the Managed Database instance.",
-		Computed:    true,
-		Sensitive:   true,
-	},
-	"created": {
-		Type:        schema.TypeString,
-		Description: "When this Managed Database was created.",
-		Computed:    true,
-	},
-	"engine": {
-		Type:        schema.TypeString,
-		Description: "The Managed Database engine.",
-		Computed:    true,
-	},
-	"host_primary": {
-		Type:        schema.TypeString,
-		Description: "The primary host for the Managed Database.",
-		Computed:    true,
-	},
-	"host_secondary": {
-		Type:        schema.TypeString,
-		Description: "The secondary host for the Managed Database.",
-		Computed:    true,
-	},
-	"root_password": {
-		Type:        schema.TypeString,
-		Description: "The randomly-generated root password for the Managed Database instance.",
-		Computed:    true,
-		Sensitive:   true,
-	},
-	"status": {
-		Type:        schema.TypeString,
-		Description: "The operating status of the Managed Database.",
-		Computed:    true,
-	},
-	"updated": {
-		Type:        schema.TypeString,
-		Description: "When this Managed Database was last updated.",
 		Computed:    true,
 	},
 	"updates": {
@@ -134,6 +92,67 @@ var dataSourceSchema = map[string]*schema.Schema{
 				},
 			},
 		},
+	},
+
+	// Computed fields
+	"ca_cert": {
+		Type:        schema.TypeString,
+		Description: "The base64-encoded SSL CA certificate for the Managed Database instance.",
+		Computed:    true,
+		Sensitive:   true,
+	},
+	"created": {
+		Type:        schema.TypeString,
+		Description: "When this Managed Database was created.",
+		Computed:    true,
+	},
+	"engine": {
+		Type:        schema.TypeString,
+		Description: "The Managed Database engine.",
+		Computed:    true,
+	},
+	"host_primary": {
+		Type:        schema.TypeString,
+		Description: "The primary host for the Managed Database.",
+		Computed:    true,
+	},
+	"host_secondary": {
+		Type:        schema.TypeString,
+		Description: "The secondary host for the Managed Database.",
+		Computed:    true,
+	},
+	"peers": {
+		Type:        schema.TypeSet,
+		Description: "A set of peer addresses for this Database.",
+		Computed:    true,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+	"port": {
+		Type:        schema.TypeInt,
+		Description: "The access port for this Managed Database.",
+		Computed:    true,
+	},
+	"replica_set": {
+		Type: schema.TypeString,
+		Description: "Label for configuring a MongoDB replica set. " +
+			"Choose the same label on multiple Databases to include them in the same replica set.",
+		Computed: true,
+	},
+	"root_password": {
+		Type:        schema.TypeString,
+		Description: "The randomly-generated root password for the Managed Database instance.",
+		Computed:    true,
+		Sensitive:   true,
+	},
+	"status": {
+		Type:        schema.TypeString,
+		Description: "The operating status of the Managed Database.",
+		Computed:    true,
+	},
+	"updated": {
+		Type:        schema.TypeString,
+		Description: "When this Managed Database was last updated.",
+		Computed:    true,
 	},
 	"root_username": {
 		Type:        schema.TypeString,
