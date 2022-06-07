@@ -34,7 +34,6 @@ func TestAccDataSourceDatabaseMongo_basic(t *testing.T) {
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMongoDatabaseExists(resName, nil),
-					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),

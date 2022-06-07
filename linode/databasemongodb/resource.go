@@ -105,8 +105,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Engine:          d.Get("engine_id").(string),
 		Encrypted:       d.Get("encrypted").(bool),
 		ClusterSize:     d.Get("cluster_size").(int),
-		CompressionType: d.Get("compression_type").(string),
-		StorageEngine:   d.Get("storage_engine").(string),
+		CompressionType: linodego.MongoCompressionType(d.Get("compression_type").(string)),
+		StorageEngine:   linodego.MongoStorageEngine(d.Get("storage_engine").(string)),
 		SSLConnection:   d.Get("ssl_connection").(bool),
 		AllowList:       helper.ExpandStringSet(d.Get("allow_list").(*schema.Set)),
 	})
@@ -130,11 +130,22 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to read maintenance window config: %s", err)
 		}
 
-		_, err = client.UpdateMongoDatabase(ctx, db.ID, linodego.MongoUpdateOptions{
+		updatedDB, err := client.UpdateMongoDatabase(ctx, db.ID, linodego.MongoUpdateOptions{
 			Updates: &updates,
 		})
 		if err != nil {
 			return diag.Errorf("failed to update mongodb database maintenance window: %s", err)
+		}
+
+		updatedTime := updatedDB.Updated
+		if updatedTime == nil {
+			return diag.Errorf("failed to get update timestamp for db %d", db.ID)
+		}
+
+		_, err = client.WaitForEventFinished(ctx, db.ID, linodego.EntityDatabase, linodego.ActionDatabaseUpdate,
+			*updatedTime, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		if err != nil {
+			return diag.Errorf("failed to wait for database update: %s", err)
 		}
 	}
 
@@ -153,8 +164,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Label: d.Get("label").(string),
 	}
 
+	shouldUpdate := false
+
 	if d.HasChange("allow_list") {
 		updateOpts.AllowList = helper.ExpandStringSet(d.Get("allow_list").(*schema.Set))
+		shouldUpdate = true
 	}
 
 	if d.HasChange("updates") {
@@ -171,11 +185,25 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		updateOpts.Updates = updates
+		shouldUpdate = true
 	}
 
-	_, err = client.UpdateMongoDatabase(ctx, int(id), updateOpts)
-	if err != nil {
-		return diag.Errorf("failed to update mongodb database: %s", err)
+	if shouldUpdate {
+		updatedDB, err := client.UpdateMongoDatabase(ctx, int(id), updateOpts)
+		if err != nil {
+			return diag.Errorf("failed to update mongodb database: %s", err)
+		}
+
+		updatedTime := updatedDB.Updated
+		if updatedTime == nil {
+			return diag.Errorf("failed to get update timestamp for db %d", id)
+		}
+
+		_, err = client.WaitForEventFinished(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate,
+			*updatedTime, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		if err != nil {
+			return diag.Errorf("failed to wait for database update: %s", err)
+		}
 	}
 
 	return readResource(ctx, d, meta)
