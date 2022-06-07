@@ -55,7 +55,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteMongoDatabase(context.Background(), db.ID)
-
 		if err != nil {
 			return fmt.Errorf("error destroying %s during sweep: %s", db.Label, err)
 		}
@@ -235,7 +234,6 @@ func checkDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetMongoDatabase(context.Background(), id)

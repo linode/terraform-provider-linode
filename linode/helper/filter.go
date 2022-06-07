@@ -529,3 +529,16 @@ func FilterTypeInt(value string) (interface{}, error) {
 func FilterTypeBool(value string) (interface{}, error) {
 	return strconv.ParseBool(value)
 }
+
+func FlattenToInterfaceSlice[T any](list []T) []interface{} {
+	result := make([]interface{}, len(list))
+	for i, v := range list {
+		result[i] = v
+	}
+
+	return result
+}
+
+func ListResultToInterface[T any](list []T, err error) ([]interface{}, error) {
+	return FlattenToInterfaceSlice(list), err
+}

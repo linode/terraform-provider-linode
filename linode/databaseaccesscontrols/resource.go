@@ -116,6 +116,12 @@ var updateDBAllowListEngineMap = map[string]func(context.Context, linodego.Clien
 		})
 		return err
 	},
+	"mongodb": func(ctx context.Context, client linodego.Client, engine string, id int, allowList []string) error {
+		_, err := client.UpdateMongoDatabase(ctx, id, linodego.MongoUpdateOptions{
+			AllowList: allowList,
+		})
+		return err
+	},
 }
 
 func updateDBAllowListByEngine(ctx context.Context, client linodego.Client,

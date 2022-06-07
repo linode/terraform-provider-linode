@@ -24,20 +24,19 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	db, err := client.GetMongoDatabase(ctx, id)
 	if err != nil {
-		return diag.Errorf("failed to get mysql database: %s", err)
+		return diag.Errorf("failed to get mongodb database: %s", err)
 	}
 
 	cert, err := client.GetMongoDatabaseSSL(ctx, int(id))
 	if err != nil {
-		return diag.Errorf("failed to get cert for the specified mysql database: %s", err)
+		return diag.Errorf("failed to get cert for the specified mongodb database: %s", err)
 	}
 
 	creds, err := client.GetMongoDatabaseCredentials(ctx, int(id))
 	if err != nil {
-		return diag.Errorf("failed to get credentials for mysql database: %s", err)
+		return diag.Errorf("failed to get credentials for mongodb database: %s", err)
 	}
 
-	d.Set("engine_id", helper.CreateDatabaseEngineSlug(db.Engine, db.Version))
 	d.Set("engine", db.Engine)
 	d.Set("label", db.Label)
 	d.Set("region", db.Region)

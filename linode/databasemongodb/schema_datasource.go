@@ -8,7 +8,7 @@ var dataSourceSchema = map[string]*schema.Schema{
 	"database_id": {
 		Type:        schema.TypeInt,
 		Required:    true,
-		Description: "The ID of the MySQL database.",
+		Description: "The ID of the MongoDB database.",
 	},
 
 	"label": {
