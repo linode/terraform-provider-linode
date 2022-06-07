@@ -8,6 +8,8 @@ Provides information about Linode MySQL Database Backups that match a set of fil
 
 # Data Source: linode\_database\_mysql\_backups
 
+~> **NOTICE:** This data source has been deprecated in favor of `linode_database_backups`.
+
 Provides information about Linode MySQL Database Backups that match a set of filters.
 
 ## Example Usage
