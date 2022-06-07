@@ -158,6 +158,24 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 	})
 }
 
+func TestAccIPv6Range_raceCondition(t *testing.T) {
+	t.Parallel()
+
+	instLabel := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkIPv6RangeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.RaceCondition(t, instLabel),
+				Check:  checkIPv6RangeNoDuplicates,
+			},
+		},
+	})
+}
+
 func checkIPv6RangeExists(name string, ipv6Range *linodego.IPv6Range) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
@@ -213,6 +231,24 @@ func checkIPv6RangeDestroy(s *terraform.State) error {
 	})
 
 	return err
+}
+
+func checkIPv6RangeNoDuplicates(s *terraform.State) error {
+	existingRanges := make(map[string]bool)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_ipv6_range" {
+			continue
+		}
+
+		if _, ok := existingRanges[rs.Primary.ID]; ok {
+			return fmt.Errorf("duplicate range found: %s", rs.Primary.ID)
+		}
+
+		existingRanges[rs.Primary.ID] = true
+	}
+
+	return nil
 }
 
 func validateInstanceIPv6Assignments(t *testing.T, assignedID, unassignedID int) {
