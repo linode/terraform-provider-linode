@@ -2,13 +2,16 @@ package databasebackups_test
 
 import (
 	"context"
+	"github.com/google/go-cmp/cmp"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -27,6 +30,54 @@ func init() {
 	}
 
 	engineVersion = v.ID
+}
+
+func TestFlattenBackup_MySQL(t *testing.T) {
+	currentTime := time.Now()
+
+	backup := linodego.MySQLDatabaseBackup{
+		ID:      123,
+		Label:   "cool",
+		Type:    "auto",
+		Created: &currentTime,
+	}
+
+	result := databasebackups.FlattenBackup(backup)
+	if result["id"] != backup.ID {
+		t.Fatal(cmp.Diff(result["id"], backup.ID))
+	}
+
+	if result["label"] != backup.Label {
+		t.Fatal(cmp.Diff(result["label"], backup.Label))
+	}
+
+	if result["type"] != backup.Type {
+		t.Fatal(cmp.Diff(result["type"], backup.Type))
+	}
+}
+
+func TestFlattenBackup_MongoDB(t *testing.T) {
+	currentTime := time.Now()
+
+	backup := linodego.MongoDatabaseBackup{
+		ID:      123,
+		Label:   "cool",
+		Type:    "auto",
+		Created: &currentTime,
+	}
+
+	result := databasebackups.FlattenBackup(backup)
+	if result["id"] != backup.ID {
+		t.Fatal(cmp.Diff(result["id"], backup.ID))
+	}
+
+	if result["label"] != backup.Label {
+		t.Fatal(cmp.Diff(result["label"], backup.Label))
+	}
+
+	if result["type"] != backup.Type {
+		t.Fatal(cmp.Diff(result["type"], backup.Type))
+	}
 }
 
 func TestAccDataSourceMongoBackups_basic(t *testing.T) {

@@ -20,7 +20,7 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	results, err := filterConfig.FilterDataSource(ctx, d, meta, listBackups, flattenBackup)
+	results, err := filterConfig.FilterDataSource(ctx, d, meta, listBackups, FlattenBackup)
 	if err != nil {
 		return nil
 	}
@@ -56,7 +56,11 @@ func flattenMySQLBackup(backup linodego.MySQLDatabaseBackup) map[string]interfac
 	result["id"] = backup.ID
 	result["label"] = backup.Label
 	result["type"] = backup.Type
-	result["created"] = backup.Created.Format(time.RFC3339)
+
+	if backup.Created != nil {
+		result["created"] = backup.Created.Format(time.RFC3339)
+	}
+
 	return result
 }
 
@@ -65,11 +69,15 @@ func flattenMongoBackup(backup linodego.MongoDatabaseBackup) map[string]interfac
 	result["id"] = backup.ID
 	result["label"] = backup.Label
 	result["type"] = backup.Type
-	result["created"] = backup.Created.Format(time.RFC3339)
+
+	if backup.Created != nil {
+		result["created"] = backup.Created.Format(time.RFC3339)
+	}
+
 	return result
 }
 
-func flattenBackup(data interface{}) map[string]interface{} {
+func FlattenBackup(data interface{}) map[string]interface{} {
 	switch data.(type) {
 	case linodego.MySQLDatabaseBackup:
 		return flattenMySQLBackup(data.(linodego.MySQLDatabaseBackup))
