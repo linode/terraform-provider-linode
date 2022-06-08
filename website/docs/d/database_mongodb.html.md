@@ -65,7 +65,7 @@ The `linode_database_mongodb` data source exports the following attributes:
 * `root_username` - The root username for the Managed Database instance.
 
 * `ssl_connection` - Whether to require SSL credentials to establish a connection to the Managed Database.
-* 
+
 * `storage_engine` - The type of storage engine for this Database. (`mmapv1`, `wiredtiger`)
 
 * `status` - The operating status of the Managed Database.
