@@ -16,8 +16,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var mysqlEngineVersion string
-var mongoEngineVersion string
+var (
+	mysqlEngineVersion string
+	mongoEngineVersion string
+)
 
 func init() {
 	client, err := acceptance.GetClientForSweepers()
