@@ -150,11 +150,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("Error parsing Linode MySQL database ID %s as int: %s", d.Id(), err)
 	}
 
-	updateOpts := linodego.MySQLUpdateOptions{
-		Label: d.Get("label").(string),
-	}
+	updateOpts := linodego.MySQLUpdateOptions{}
 
 	shouldUpdate := false
+
+	if d.HasChange("label") {
+		updateOpts.Label = d.Get("label").(string)
+		shouldUpdate = true
+	}
 
 	if d.HasChange("allow_list") {
 		allowList := helper.ExpandStringSet(d.Get("allow_list").(*schema.Set))

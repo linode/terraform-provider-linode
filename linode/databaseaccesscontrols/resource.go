@@ -64,7 +64,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("allow_list") {
-		if err := updateDBAllowListByEngine(ctx, client, d, dbType, dbID, []string{}); err != nil {
+		allowList := helper.ExpandStringSet(d.Get("allow_list").(*schema.Set))
+
+		if err := updateDBAllowListByEngine(ctx, client, d, dbType, dbID, allowList); err != nil {
 			return diag.Errorf("failed to update allow_list for database %d: %s", dbID, err)
 		}
 	}
