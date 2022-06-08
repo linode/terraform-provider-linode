@@ -16,7 +16,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var engineVersion string
+var mysqlEngineVersion string
+var mongoEngineVersion string
 
 func init() {
 	client, err := acceptance.GetClientForSweepers()
@@ -29,7 +30,14 @@ func init() {
 		log.Fatalf("failde to get db engine version: %s", err)
 	}
 
-	engineVersion = v.ID
+	mysqlEngineVersion = v.ID
+
+	v, err = helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
+	if err != nil {
+		log.Fatalf("failde to get db engine version: %s", err)
+	}
+
+	mongoEngineVersion = v.ID
 }
 
 func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
@@ -44,7 +52,7 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.MySQL(t, dbName, engineVersion, "0.0.0.0/0"),
+				Config: tmpl.MySQL(t, dbName, mysqlEngineVersion, "0.0.0.0/0"),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
@@ -52,7 +60,7 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.MySQL(t, dbName, engineVersion, "192.168.0.25/32"),
+				Config: tmpl.MySQL(t, dbName, mysqlEngineVersion, "192.168.0.25/32"),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
@@ -80,14 +88,14 @@ func TestAccResourceDatabaseAccessControls_MongoDB(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.MongoDB(t, dbName, engineVersion, "0.0.0.0/0"),
+				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "0.0.0.0/0"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
 					resource.TestCheckResourceAttr(resName, "allow_list.0", "0.0.0.0/0"),
 				),
 			},
 			{
-				Config: tmpl.MongoDB(t, dbName, engineVersion, "192.168.0.25/32"),
+				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "192.168.0.25/32"),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
