@@ -89,21 +89,6 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-var updateDBAllowListEngineMap = map[string]func(context.Context, linodego.Client, string, int, []string) error{
-	"mysql": func(ctx context.Context, client linodego.Client, engine string, id int, allowList []string) error {
-		_, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
-			AllowList: &allowList,
-		})
-		return err
-	},
-	"mongodb": func(ctx context.Context, client linodego.Client, engine string, id int, allowList []string) error {
-		_, err := client.UpdateMongoDatabase(ctx, id, linodego.MongoUpdateOptions{
-			AllowList: &allowList,
-		})
-		return err
-	},
-}
-
 func updateDBAllowListByEngine(ctx context.Context, client linodego.Client, d *schema.ResourceData,
 	engine string, id int, allowList []string,
 ) error {
