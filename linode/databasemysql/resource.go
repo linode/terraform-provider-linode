@@ -132,15 +132,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to update mysql database maintenance window: %s", err)
 		}
 
-		updatedTime := updatedDB.Updated
-		if updatedTime == nil {
-			return diag.Errorf("failed to get update timestamp for db %d", db.ID)
-		}
-
-		_, err = client.WaitForEventFinished(ctx, db.ID, linodego.EntityDatabase, linodego.ActionDatabaseUpdate,
-			*updatedTime, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
+			linodego.DatabaseEngineTypeMongo, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
-			return diag.Errorf("failed to wait for database update: %s", err)
+			return diag.FromErr(err)
 		}
 	}
 
@@ -190,15 +185,15 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to update mysql database: %s", err)
 		}
 
-		updatedTime := updatedDB.Updated
-		if updatedTime == nil {
+		createdTime := updatedDB.Created
+		if createdTime == nil {
 			return diag.Errorf("failed to get update timestamp for db %d", id)
 		}
 
-		_, err = client.WaitForEventFinished(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate,
-			*updatedTime, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		err = helper.WaitForDatabaseUpdated(ctx, client, int(id),
+			linodego.DatabaseEngineTypeMongo, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
-			return diag.Errorf("failed to wait for database update: %s", err)
+			return diag.FromErr(err)
 		}
 	}
 
@@ -226,4 +221,3 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return nil
 	}))
 }
-

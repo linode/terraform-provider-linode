@@ -2,7 +2,6 @@ package databasemongodb
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -138,12 +137,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to update mongodb database maintenance window: %s", err)
 		}
 
-		createdTime := updatedDB.Created
-		if createdTime == nil {
-			return diag.Errorf("failed to get create timestamp for db %d", db.ID)
-		}
-
-		err = waitForDBUpdates(ctx, client, db.ID, *updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
+			linodego.DatabaseEngineTypeMongo, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -190,16 +185,13 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if shouldUpdate {
-		data, _ := json.Marshal(updateOpts)
-
-		log.Println("[INFO]", string(data))
-
 		updatedDB, err := client.UpdateMongoDatabase(ctx, int(id), updateOpts)
 		if err != nil {
 			return diag.Errorf("failed to update mongodb database: %s", err)
 		}
 
-		err = waitForDBUpdates(ctx, client, int(id), *updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		err = helper.WaitForDatabaseUpdated(ctx, client, int(id),
+			linodego.DatabaseEngineTypeMongo, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -228,22 +220,4 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		return nil
 	}))
-}
-
-func waitForDBUpdates(ctx context.Context, client linodego.Client, dbID int,
-	minStart time.Time, timeoutSeconds int) error {
-	_, err := client.WaitForEventFinished(ctx, dbID, linodego.EntityDatabase, linodego.ActionDatabaseUpdate,
-		minStart, timeoutSeconds)
-	if err != nil {
-		return fmt.Errorf("failed to wait for database update: %s", err)
-	}
-
-	// Sometimes the event has finished but the status hasn't caught up
-	err = client.WaitForDatabaseStatus(ctx, dbID, linodego.DatabaseEngineTypeMongo,
-		linodego.DatabaseStatusActive, timeoutSeconds)
-	if err != nil {
-		return fmt.Errorf("failed to wait for database active: %s", err)
-	}
-
-	return nil
 }
