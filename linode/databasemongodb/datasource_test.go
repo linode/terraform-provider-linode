@@ -45,7 +45,6 @@ func TestAccDataSourceDatabaseMongo_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
 					resource.TestCheckResourceAttr(resName, "storage_engine", "wiredtiger"),
 					resource.TestCheckResourceAttr(resName, "compression_type", "zlib"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "none"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 
 					resource.TestCheckResourceAttr(resName, "updates.#", "1"),
