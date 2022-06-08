@@ -3,14 +3,11 @@ package databaseaccesscontrols
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"strconv"
 )
 
 func Resource() *schema.Resource {
@@ -90,23 +87,17 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateAllowList(ctx context.Context, d *schema.ResourceData,
 	client linodego.Client, dbID int, allowList []string,
 ) error {
-	db, err := client.GetMySQLDatabase(ctx, dbID)
+	db, err := getDBByID(ctx, client, dbID)
 	if err != nil {
 		return err
 	}
 
-	return resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
-		if err := updateDBAllowListByEngine(ctx, client, db.Engine, dbID, allowList); err != nil {
-			if lerr, ok := err.(*linodego.Error); ok &&
-				lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to update allow_list on database") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(
-				fmt.Errorf("failed to update database allow_list %d: %s", db.ID, err))
-		}
+	if err := updateDBAllowListByEngine(ctx, client, db.Engine, dbID, allowList); err != nil {
+		return err
+	}
 
-		return nil
-	})
+	return helper.WaitForDatabaseUpdated(ctx, client, dbID, linodego.DatabaseEngineType(db.Engine),
+		db.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 }
 
 var updateDBAllowListEngineMap = map[string]func(context.Context, linodego.Client, string, int, []string) error{

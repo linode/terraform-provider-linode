@@ -97,7 +97,6 @@ func TestAccResourceDatabaseAccessControls_MongoDB(t *testing.T) {
 			{
 				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "192.168.0.25/32"),
 				Check: resource.ComposeTestCheckFunc(
-					checkMySQLDatabaseExists,
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
 					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),
 				),
