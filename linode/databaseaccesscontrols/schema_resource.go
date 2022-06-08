@@ -8,10 +8,17 @@ var resourceSchema = map[string]*schema.Schema{
 	// Required fields
 	"database_id": {
 		Type:        schema.TypeInt,
-		Description: "The ID of the MySQL database to manage the allow list for.",
+		Description: "The ID of the database to manage the allow list for.",
 		Required:    true,
 		ForceNew:    true,
 	},
+	"database_type": {
+		Type:        schema.TypeString,
+		Description: "The type of the  database to manage the allow list for.",
+		Required:    true,
+		ForceNew:    true,
+	},
+
 	"allow_list": {
 		Type: schema.TypeSet,
 		Description: "A list of IP addresses that can access the Managed Database. " +

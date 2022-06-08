@@ -9,6 +9,8 @@ resource "linode_database_mongodb" "foobar" {
 
 resource "linode_database_access_controls" "foobar" {
     database_id = linode_database_mongodb.foobar.id
+    database_type = "mongodb"
+
     allow_list = ["{{.AllowedIP}}"]
 }
 
