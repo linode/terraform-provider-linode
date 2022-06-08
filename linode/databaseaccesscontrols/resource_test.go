@@ -32,7 +32,7 @@ func init() {
 	engineVersion = v.ID
 }
 
-func TestAccResourceDatabaseMySQLAccessControls_basic(t *testing.T) {
+func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
@@ -44,7 +44,7 @@ func TestAccResourceDatabaseMySQLAccessControls_basic(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, dbName, engineVersion, "0.0.0.0/0"),
+				Config: tmpl.MySQL(t, dbName, engineVersion, "0.0.0.0/0"),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
@@ -52,7 +52,42 @@ func TestAccResourceDatabaseMySQLAccessControls_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Basic(t, dbName, engineVersion, "192.168.0.25/32"),
+				Config: tmpl.MySQL(t, dbName, engineVersion, "192.168.0.25/32"),
+				Check: resource.ComposeTestCheckFunc(
+					checkMySQLDatabaseExists,
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccResourceDatabaseAccessControls_MongoDB(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_database_access_controls.foobar"
+	dbName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.MongoDB(t, dbName, engineVersion, "0.0.0.0/0"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "0.0.0.0/0"),
+				),
+			},
+			{
+				Config: tmpl.MongoDB(t, dbName, engineVersion, "192.168.0.25/32"),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),

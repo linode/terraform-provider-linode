@@ -1,6 +1,6 @@
-{{ define "database_mysql_allow_list_basic" }}
+{{ define "database_access_controls_mongodb" }}
 
-resource "linode_database_mysql" "foobar" {
+resource "linode_database_mongodb" "foobar" {
     engine_id = "{{.Engine}}"
     label = "{{.Label}}"
     region = "us-southeast"
@@ -8,7 +8,7 @@ resource "linode_database_mysql" "foobar" {
 }
 
 resource "linode_database_access_controls" "foobar" {
-    database_id = linode_database_mysql.foobar.id
+    database_id = linode_database_mongodb.foobar.id
     allow_list = ["{{.AllowedIP}}"]
 }
 
