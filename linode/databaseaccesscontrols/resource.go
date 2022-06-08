@@ -121,7 +121,7 @@ func updateDBAllowListByEngine(ctx context.Context, client linodego.Client, d *s
 		createdDate = db.Created
 
 	case "mongodb":
-		db, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
+		db, err := client.UpdateMongoDatabase(ctx, id, linodego.MongoUpdateOptions{
 			AllowList: &allowList,
 		})
 		if err != nil {
