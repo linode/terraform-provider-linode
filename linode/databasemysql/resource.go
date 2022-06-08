@@ -162,7 +162,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	shouldUpdate := false
 
 	if d.HasChange("allow_list") {
-		updateOpts.AllowList = helper.ExpandStringSet(d.Get("allow_list").(*schema.Set))
+		allowList := helper.ExpandStringSet(d.Get("allow_list").(*schema.Set))
+		updateOpts.AllowList = &allowList
 		shouldUpdate = true
 	}
 
@@ -225,3 +226,4 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return nil
 	}))
 }
+

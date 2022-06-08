@@ -112,13 +112,13 @@ func updateAllowList(ctx context.Context, d *schema.ResourceData,
 var updateDBAllowListEngineMap = map[string]func(context.Context, linodego.Client, string, int, []string) error{
 	"mysql": func(ctx context.Context, client linodego.Client, engine string, id int, allowList []string) error {
 		_, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
-			AllowList: allowList,
+			AllowList: &allowList,
 		})
 		return err
 	},
 	"mongodb": func(ctx context.Context, client linodego.Client, engine string, id int, allowList []string) error {
 		_, err := client.UpdateMongoDatabase(ctx, id, linodego.MongoUpdateOptions{
-			AllowList: allowList,
+			AllowList: &allowList,
 		})
 		return err
 	},
