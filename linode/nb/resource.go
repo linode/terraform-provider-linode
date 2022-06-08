@@ -165,7 +165,8 @@ func ResourceNodeBalancerV0() *schema.Resource {
 }
 
 func ResourceNodeBalancerV0Upgrade(ctx context.Context,
-	rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	rawState map[string]interface{}, meta interface{},
+) (map[string]interface{}, error) {
 	oldTransfer, ok := rawState["transfer"].(map[string]interface{})
 	newTransfer := []map[string]interface{}{
 		{

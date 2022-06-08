@@ -51,7 +51,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			LinodeID: linodeID,
 			IPs:      ips,
 		})
-
 		if err != nil {
 			return diag.Errorf("failed to update ips for linode %d: %s", linodeID, err)
 		}
@@ -69,7 +68,6 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		LinodeID: linodeID,
 		IPs:      []string{},
 	})
-
 	if err != nil {
 		return diag.Errorf("failed to update ips for linode %d: %s", linodeID, err)
 	}

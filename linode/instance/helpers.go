@@ -148,7 +148,7 @@ func updateInstanceConfigs(
 		configMap[config.Label] = config
 	}
 
-	oldConfigLabels := make([]string, len(tfConfigsOld.([]interface{})))
+	oldConfigLabels := make([]string, 0)
 
 	var oldBootInterfaces, newBootInterfaces []string
 	for _, tfConfigOld := range tfConfigsOld.([]interface{}) {
@@ -163,7 +163,7 @@ func updateInstanceConfigs(
 		}
 	}
 	tfConfigs := tfConfigsNew.([]interface{})
-	updatedConfigs = make([]*linodego.InstanceConfig, len(tfConfigs))
+	updatedConfigs = make([]*linodego.InstanceConfig, 0)
 	updatedConfigMap = make(map[string]int, len(tfConfigs))
 	for _, tfConfig := range tfConfigs {
 		tfc, _ := tfConfig.(map[string]interface{})
@@ -248,8 +248,10 @@ func updateInstanceConfigs(
 				return rebootInstance, updatedConfigMap, updatedConfigs, err
 			}
 			for _, config := range configIDMap {
+				cfg := config
+
 				updatedConfigMap[config.Label] = config.ID
-				updatedConfigs = append(updatedConfigs, &config)
+				updatedConfigs = append(updatedConfigs, &cfg)
 			}
 		}
 	}
@@ -448,7 +450,8 @@ func createInstanceDisk(
 
 // getInstanceDisks returns a map of disks for a given instance that is indexed by label.
 func getInstanceDisks(
-	ctx context.Context, client linodego.Client, instanceID int) (map[string]linodego.InstanceDisk, error) {
+	ctx context.Context, client linodego.Client, instanceID int,
+) (map[string]linodego.InstanceDisk, error) {
 	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error fetching the disks for Instance %d: %s", instanceID, err)
@@ -467,7 +470,8 @@ func getInstanceDisks(
 
 // getInstanceDiskLabelIDMap returns a map of an instances disk labels to their corresponding IDs.
 func getInstanceDiskLabelIDMap(
-	ctx context.Context, client linodego.Client, d *schema.ResourceData, instanceID int) (map[string]int, error) {
+	ctx context.Context, client linodego.Client, d *schema.ResourceData, instanceID int,
+) (map[string]int, error) {
 	diskSpecs := d.Get("disk").([]interface{})
 	disks, err := getInstanceDisks(ctx, client, instanceID)
 	if err != nil {
@@ -507,7 +511,8 @@ func getInstanceDiskSpecChange(d *schema.ResourceData) (oldDiskSpecs, newDiskSpe
 
 // getInstanceDiskSpecDiffs sorts the disk specs by added, removed, and existing.
 func getInstanceDiskSpecDiffs(
-	oldDiskSpecs, newDiskSpecs map[string]diskSpec) (added, removed, existing map[string]diskSpec) {
+	oldDiskSpecs, newDiskSpecs map[string]diskSpec,
+) (added, removed, existing map[string]diskSpec) {
 	added = make(map[string]diskSpec)
 	removed = make(map[string]diskSpec)
 	existing = make(map[string]diskSpec)
@@ -537,7 +542,8 @@ func getInstanceDiskSpecDiffs(
 // This function will also warn when there are disks attached to an instance which are not managed by
 // terraform.
 func updateInstanceDisks(
-	ctx context.Context, client linodego.Client, d *schema.ResourceData, instance linodego.Instance) (bool, error) {
+	ctx context.Context, client linodego.Client, d *schema.ResourceData, instance linodego.Instance,
+) (bool, error) {
 	oldDisk, newDisk := getInstanceDiskSpecChange(d)
 	added, removed, existing := getInstanceDiskSpecDiffs(oldDisk, newDisk)
 	disks, err := getInstanceDisks(ctx, client, instance.ID)
@@ -638,7 +644,8 @@ func createRandomRootPassword() (string, error) {
 
 // ensureInstanceOffline ensures that a given instance is offline.
 func ensureInstanceOffline(
-	ctx context.Context, client *linodego.Client, instanceID, timeout int) (instance *linodego.Instance, err error) {
+	ctx context.Context, client *linodego.Client, instanceID, timeout int,
+) (instance *linodego.Instance, err error) {
 	if instance, err = client.GetInstance(ctx, instanceID); err != nil {
 		return
 	}
@@ -806,7 +813,8 @@ func privateIP(ip net.IP) bool {
 }
 
 func assignConfigDevice(
-	device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int) error {
+	device *linodego.InstanceConfigDevice, dev map[string]interface{}, diskIDLabelMap map[string]int,
+) error {
 	if label, ok := dev["disk_label"].(string); ok && len(label) > 0 {
 		if dev["disk_id"], ok = diskIDLabelMap[label]; !ok {
 			return fmt.Errorf(`Error mapping disk label "%s" to ID`, dev["disk_label"])
@@ -927,7 +935,8 @@ func applyInstanceTypeChange(
 
 // detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct.
 func detachConfigVolumes(
-	ctx context.Context, dmap linodego.InstanceConfigDeviceMap, detacher volumeDetacher) error {
+	ctx context.Context, dmap linodego.InstanceConfigDeviceMap, detacher volumeDetacher,
+) error {
 	// Preallocate our slice of config devices
 	drives := []*linodego.InstanceConfigDevice{
 		dmap.SDA, dmap.SDB, dmap.SDC, dmap.SDD, dmap.SDE, dmap.SDF, dmap.SDG, dmap.SDH,
@@ -977,7 +986,6 @@ func detachConfigVolumes(
 }
 
 func isInstanceBooted(instance *linodego.Instance) bool {
-
 	// For diffing purposes, transition states need to be treated as
 	// booted == true. This is because these statuses will eventually
 	// result in a powered on Linode.
@@ -1002,7 +1010,8 @@ func validateBooted(ctx context.Context, d *schema.ResourceData) error {
 }
 
 func handleBootedUpdate(
-	ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int) error {
+	ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int,
+) error {
 	client := meta.(*helper.ProviderMeta).Client
 
 	deadlineSeconds := getDeadlineSeconds(ctx, d)
@@ -1102,7 +1111,8 @@ func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, c
 }
 
 func getDiskSizeSum(ctx context.Context, d *schema.ResourceData,
-	client *linodego.Client, instanceID int) (int, error) {
+	client *linodego.Client, instanceID int,
+) (int, error) {
 	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get instance disks: %s", err)
@@ -1117,7 +1127,8 @@ func getDiskSizeSum(ctx context.Context, d *schema.ResourceData,
 }
 
 func getFirstDiskWithFilesystem(disks []linodego.InstanceDisk,
-	filesystems []linodego.DiskFilesystem) *linodego.InstanceDisk {
+	filesystems []linodego.DiskFilesystem,
+) *linodego.InstanceDisk {
 	for _, disk := range disks {
 		for _, filesystem := range filesystems {
 			if disk.Filesystem == filesystem {
@@ -1130,8 +1141,8 @@ func getFirstDiskWithFilesystem(disks []linodego.InstanceDisk,
 }
 
 func validateImplicitDisks(ctx context.Context,
-	client *linodego.Client, instanceID int) error {
-
+	client *linodego.Client, instanceID int,
+) error {
 	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to get instance disks: %s", err)
@@ -1151,7 +1162,8 @@ func validateImplicitDisks(ctx context.Context,
 }
 
 func getPrimaryImplicitDisk(ctx context.Context, d *schema.ResourceData,
-	client *linodego.Client, instanceID int) (*linodego.InstanceDisk, error) {
+	client *linodego.Client, instanceID int,
+) (*linodego.InstanceDisk, error) {
 	disks, err := client.ListInstanceDisks(ctx, instanceID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get instance disks: %s", err)
@@ -1168,7 +1180,8 @@ func getPrimaryImplicitDisk(ctx context.Context, d *schema.ResourceData,
 }
 
 func waitForInstanceDiskSizeChange(ctx context.Context, client *linodego.Client, instanceID,
-	diskID, oldSize, timeoutSeconds int) (*linodego.InstanceDisk, error) {
+	diskID, oldSize, timeoutSeconds int,
+) (*linodego.InstanceDisk, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
 	defer cancel()
 

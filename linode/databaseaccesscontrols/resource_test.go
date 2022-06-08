@@ -103,7 +103,6 @@ func checkDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetMySQLDatabase(context.Background(), id)

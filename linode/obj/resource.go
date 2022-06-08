@@ -107,7 +107,8 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func diffResource(
-	ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	ctx context.Context, d *schema.ResourceDiff, meta interface{},
+) error {
 	if d.HasChange("etag") {
 		d.SetNewComputed("version_id")
 	}

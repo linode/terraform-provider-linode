@@ -83,7 +83,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func createResourceFromLinode(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
@@ -120,7 +121,8 @@ func createResourceFromLinode(
 }
 
 func createResourceFromUpload(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	region := d.Get("region").(string)
@@ -217,7 +219,8 @@ func imageFromResourceData(d *schema.ResourceData) (image io.ReadCloser, err err
 
 func uploadImageAndStoreHash(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
-	uploadURL string, image io.Reader) error {
+	uploadURL string, image io.Reader,
+) error {
 	client := meta.(*helper.ProviderMeta).Client
 
 	var buf bytes.Buffer

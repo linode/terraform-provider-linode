@@ -421,7 +421,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		ConflictsWith: []string{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
-			"backup_id", "stackscript_id", "interface"},
+			"backup_id", "stackscript_id", "interface",
+		},
 		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 			_, hasImage := d.GetOk("image")
 			return hasImage
@@ -601,7 +602,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional: true,
 		ConflictsWith: []string{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
-			"backup_id", "stackscript_id", "interface"},
+			"backup_id", "stackscript_id", "interface",
+		},
 		Type: schema.TypeList,
 		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 			_, hasImage := d.GetOk("image")

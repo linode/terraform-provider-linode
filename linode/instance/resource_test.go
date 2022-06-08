@@ -42,7 +42,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteInstance(context.Background(), instance.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", instance.Label, err)
 		}
@@ -355,7 +354,6 @@ func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.In
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
-
 		if err != nil {
 			t.Fail()
 		}
@@ -1581,7 +1579,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	var instance linodego.Instance
-	//oldDiskSize := 0
+	// oldDiskSize := 0
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
@@ -2010,8 +2008,10 @@ func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	}
 }
 
-type testDiskFunc func(disk linodego.InstanceDisk) error
-type testDisksFunc func(disk []linodego.InstanceDisk) error
+type (
+	testDiskFunc  func(disk linodego.InstanceDisk) error
+	testDisksFunc func(disk []linodego.InstanceDisk) error
+)
 
 func testDisk(label string, diskTests ...testDiskFunc) testDisksFunc {
 	return func(disks []linodego.InstanceDisk) error {
@@ -2070,7 +2070,6 @@ func checkInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc
 		}
 
 		instanceDisks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
-
 		if err != nil {
 			return fmt.Errorf("Error fetching disks: %s", err)
 		}
@@ -2089,8 +2088,10 @@ func checkInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc
 	}
 }
 
-type testConfigFunc func(config linodego.InstanceConfig) error
-type testConfigsFunc func(config []linodego.InstanceConfig) error
+type (
+	testConfigFunc  func(config linodego.InstanceConfig) error
+	testConfigsFunc func(config []linodego.InstanceConfig) error
+)
 
 // testConfig verifies a labeled config exists and runs many tests against that config
 func testConfig(label string, configTests ...testConfigFunc) testConfigsFunc {
@@ -2184,7 +2185,6 @@ func checkComputeInstanceConfigs(instance *linodego.Instance, configsTests ...te
 		}
 
 		instanceConfigs, err := client.ListInstanceConfigs(context.Background(), instance.ID, nil)
-
 		if err != nil {
 			return fmt.Errorf("Error fetching configs: %s", err)
 		}
@@ -2212,7 +2212,6 @@ func checkInstanceDiskExists(instance *linodego.Instance, label string, instance
 		}
 
 		instanceDisks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
-
 		if err != nil {
 			return fmt.Errorf("Error fetching disks: %s", err)
 		}
@@ -2241,7 +2240,6 @@ func checkComputeInstanceDisk(instance *linodego.Instance, label string, size in
 		}
 
 		instanceDisks, err := client.ListInstanceDisks(context.Background(), instance.ID, nil)
-
 		if err != nil {
 			return fmt.Errorf("Error fetching disks: %s", err)
 		}

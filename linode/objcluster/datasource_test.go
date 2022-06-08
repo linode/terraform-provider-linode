@@ -1,11 +1,11 @@
 package objcluster_test
 
 import (
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/objcluster/tmpl"
-
-	"testing"
 )
 
 func TestAccDataSourceObjectCluster_basic(t *testing.T) {

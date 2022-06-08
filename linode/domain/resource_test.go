@@ -20,7 +20,6 @@ func init() {
 		Name: "linode_domain",
 		F:    sweep,
 	})
-
 }
 
 func sweep(prefix string) error {
@@ -39,7 +38,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteDomain(context.Background(), domain.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", domain.Domain, err)
 		}
@@ -52,7 +50,7 @@ func TestAccResourceDomain_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_domain.foobar"
-	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
+	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -89,8 +87,8 @@ func TestAccResourceDomain_basic(t *testing.T) {
 func TestAccResourceDomain_update(t *testing.T) {
 	t.Parallel()
 
-	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
-	var resName = "linode_domain.foobar"
+	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
+	resName := "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -121,8 +119,8 @@ func TestAccResourceDomain_update(t *testing.T) {
 func TestAccResourceDomain_roundedDomainSecs(t *testing.T) {
 	t.Parallel()
 
-	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
-	var resName = "linode_domain.foobar"
+	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
+	resName := "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -151,8 +149,8 @@ func TestAccResourceDomain_roundedDomainSecs(t *testing.T) {
 func TestAccResourceDomain_zeroSecs(t *testing.T) {
 	t.Parallel()
 
-	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
-	var resName = "linode_domain.foobar"
+	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
+	resName := "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -181,8 +179,8 @@ func TestAccResourceDomain_zeroSecs(t *testing.T) {
 func TestAccResourceDomain_updateIPs(t *testing.T) {
 	t.Parallel()
 
-	var domainName = acctest.RandomWithPrefix("tf-test") + ".example"
-	var resName = "linode_domain.foobar"
+	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
+	resName := "linode_domain.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -245,7 +243,6 @@ func checkDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetDomain(context.Background(), id)

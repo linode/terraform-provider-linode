@@ -38,7 +38,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteToken(context.Background(), token.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", token.Label, err)
 		}
@@ -51,7 +50,7 @@ func TestAccResourceToken_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_token.foobar"
-	var tokenName = acctest.RandomWithPrefix("tf_test")
+	tokenName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -120,7 +119,6 @@ func checkTokenDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetToken(context.Background(), id)

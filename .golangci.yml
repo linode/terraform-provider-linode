@@ -60,4 +60,27 @@ linters:
     - gocritic
     - scopelint
 
+    # These ignores have been added to maintain compatibility with the existing codebase.
+    # These issues should be resolved at a later date.
+    - wrapcheck
+    - varnamelen
+    - nonamedreturns
+    - nlreturn
+    - thelper
+    - predeclared
+    - nilnil
+    - ifshort
+    - goerr113
+    - errchkjson
+    - cyclop
+    - nestif
+    - maintidx
+    - forcetypeassert
+    - exhaustruct
+    - exhaustivestruct
+    - exhaustive
+    - errorlint
+    - forbidigo
+    - godot
+
   fast: false

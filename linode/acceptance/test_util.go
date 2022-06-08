@@ -26,8 +26,10 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-const optInTestsEnvVar = "ACC_OPT_IN_TESTS"
-const SkipInstanceReadyPollKey = "skip_instance_ready_poll"
+const (
+	optInTestsEnvVar         = "ACC_OPT_IN_TESTS"
+	SkipInstanceReadyPollKey = "skip_instance_ready_poll"
+)
 
 type AttrValidateFunc func(val string) error
 
@@ -125,6 +127,8 @@ func init() {
 }
 
 func TestProvider(t *testing.T) {
+	t.Parallel()
+
 	if err := linode.Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -303,7 +307,6 @@ func CheckVolumeDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetVolume(context.Background(), id)

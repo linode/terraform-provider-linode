@@ -31,7 +31,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func listDatabases(
 	ctx context.Context, d *schema.ResourceData,
-	client *linodego.Client, options *linodego.ListOptions) ([]interface{}, error) {
+	client *linodego.Client, options *linodego.ListOptions,
+) ([]interface{}, error) {
 	dbs, err := client.ListDatabases(ctx, options)
 	if err != nil {
 		return nil, err

@@ -36,7 +36,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteVolume(context.Background(), volume.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", volume.Label, err)
 		}
@@ -70,8 +69,8 @@ func TestAccResourceVolume_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_volume.foobar"
-	var volumeName = acctest.RandomWithPrefix("tf_test")
-	var volume = linodego.Volume{}
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	volume := linodego.Volume{}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
@@ -103,9 +102,9 @@ func TestAccResourceVolume_basic(t *testing.T) {
 func TestAccResourceVolume_update(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test")
-	var volume = linodego.Volume{}
-	var resName = "linode_volume.foobar"
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	volume := linodego.Volume{}
+	resName := "linode_volume.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -136,8 +135,8 @@ func TestAccResourceVolume_update(t *testing.T) {
 func TestAccResourceVolume_resized(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test")
-	var volume = linodego.Volume{}
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -166,8 +165,8 @@ func TestAccResourceVolume_resized(t *testing.T) {
 func TestAccResourceVolume_attached(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test")
-	var volume = linodego.Volume{}
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -203,8 +202,8 @@ func TestAccResourceVolume_attached(t *testing.T) {
 func TestAccResourceVolume_detached(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test")
-	var volume = linodego.Volume{}
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -239,8 +238,8 @@ func TestAccResourceVolume_detached(t *testing.T) {
 func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test")
-	var volume = linodego.Volume{}
+	volumeName := acctest.RandomWithPrefix("tf_test")
+	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },

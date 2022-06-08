@@ -19,9 +19,11 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/lke/tmpl"
 )
 
-var k8sVersions []string
-var k8sVersionLatest string
-var k8sVersionPrevious string
+var (
+	k8sVersions        []string
+	k8sVersionLatest   string
+	k8sVersionPrevious string
+)
 
 const resourceClusterName = "linode_lke_cluster.test"
 
@@ -333,7 +335,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 	t.Parallel()
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
-	//newClusterName := acctest.RandomWithPrefix("tf_test")
+	// newClusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
@@ -402,7 +404,7 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 	t.Parallel()
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
-	//newClusterName := acctest.RandomWithPrefix("tf_test")
+	// newClusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,

@@ -38,7 +38,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteObjectStorageKey(context.Background(), objectStorageKey.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", objectStorageKey.Label, err)
 		}
@@ -51,7 +50,7 @@ func TestAccResourceObjectKey_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_key.foobar"
-	var objectStorageKeyLabel = acctest.RandomWithPrefix("tf_test")
+	objectStorageKeyLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -77,7 +76,7 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_key.foobar"
-	var objectStorageKeyLabel = acctest.RandomWithPrefix("tf-test")
+	objectStorageKeyLabel := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -109,7 +108,7 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 func TestAccResourceObjectKey_update(t *testing.T) {
 	t.Parallel()
 	resName := "linode_object_storage_key.foobar"
-	var objectStorageKeyLabel = acctest.RandomWithPrefix("tf_test")
+	objectStorageKeyLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -194,7 +193,6 @@ func checkObjectKeyDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetObjectStorageKey(context.Background(), id)

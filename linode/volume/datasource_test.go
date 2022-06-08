@@ -12,7 +12,7 @@ import (
 func TestAccDataSourceVolume_basic(t *testing.T) {
 	t.Parallel()
 
-	var volumeName = acctest.RandomWithPrefix("tf_test")
+	volumeName := acctest.RandomWithPrefix("tf_test")
 	resourceName := "data.linode_volume.foobar"
 
 	resource.Test(t, resource.TestCase{

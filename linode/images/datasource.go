@@ -31,7 +31,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func listImages(
 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
-	options *linodego.ListOptions) ([]interface{}, error) {
+	options *linodego.ListOptions,
+) ([]interface{}, error) {
 	images, err := client.ListImages(ctx, options)
 	if err != nil {
 		return nil, err
