@@ -133,7 +133,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
-			linodego.DatabaseEngineTypeMongo, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -194,7 +194,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		err = helper.WaitForDatabaseUpdated(ctx, client, int(id),
-			linodego.DatabaseEngineTypeMongo, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)
 		}

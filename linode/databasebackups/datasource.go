@@ -70,6 +70,8 @@ func flattenMongoBackup(backup linodego.MongoDatabaseBackup) map[string]interfac
 	result["label"] = backup.Label
 	result["type"] = backup.Type
 
+	log.Println("[INFO]", backup)
+
 	if backup.Created != nil {
 		result["created"] = backup.Created.Format(time.RFC3339)
 	}
