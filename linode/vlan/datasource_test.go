@@ -1,17 +1,17 @@
 package vlan_test
 
 import (
+	"context"
+	"fmt"
+	"testing"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/vlan/tmpl"
-
-	"context"
-	"fmt"
-	"testing"
-	"time"
 )
 
 func preConfigVLANPoll(t *testing.T, vlanName string) func() {

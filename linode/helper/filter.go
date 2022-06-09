@@ -167,8 +167,8 @@ func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, err
 // FilterResults filters the given results on the client-side filters present in the resource.
 func (f FilterConfig) FilterResults(
 	d *schema.ResourceData,
-	items []interface{}) ([]map[string]interface{}, error) {
-
+	items []interface{},
+) ([]map[string]interface{}, error) {
 	result := make([]map[string]interface{}, 0)
 
 	for _, item := range items {
@@ -327,7 +327,8 @@ func (f FilterConfig) GetLatestCreated(data []map[string]interface{}) map[string
 
 // FilterLatestVersion returns only the latest element in the given slice only if `latest` == true.
 func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData,
-	items []map[string]interface{}) ([]map[string]interface{}, error) {
+	items []map[string]interface{},
+) ([]map[string]interface{}, error) {
 	if !d.Get("latest").(bool) {
 		return items, nil
 	}
@@ -396,8 +397,8 @@ func (f FilterConfig) GetLatestVersion(data []map[string]interface{}) (map[strin
 
 func (f FilterConfig) itemMatchesFilter(
 	d *schema.ResourceData,
-	item map[string]interface{}) (bool, error) {
-
+	item map[string]interface{},
+) (bool, error) {
 	filters := d.Get("filter").([]interface{})
 
 	for _, filter := range filters {
@@ -428,8 +429,8 @@ func (f FilterConfig) itemMatchesFilter(
 func (f FilterConfig) validateFilter(
 	matchBy, name string,
 	values []string,
-	itemValue interface{}) (bool, error) {
-
+	itemValue interface{},
+) (bool, error) {
 	// Filter recursively on lists (tags, etc.)
 	if items, ok := itemValue.([]string); ok {
 		for _, item := range items {

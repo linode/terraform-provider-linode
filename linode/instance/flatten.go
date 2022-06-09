@@ -8,7 +8,8 @@ import (
 )
 
 func flattenInstance(
-	ctx context.Context, client *linodego.Client, instance *linodego.Instance) (map[string]interface{}, error) {
+	ctx context.Context, client *linodego.Client, instance *linodego.Instance,
+) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 
 	id := instance.ID
@@ -116,7 +117,8 @@ func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[st
 }
 
 func flattenInstanceConfigDevice(
-	dev *linodego.InstanceConfigDevice, diskLabelIDMap map[int]string) []map[string]interface{} {
+	dev *linodego.InstanceConfigDevice, diskLabelIDMap map[int]string,
+) []map[string]interface{} {
 	if dev == nil || emptyInstanceConfigDevice(*dev) {
 		return nil
 	}
@@ -136,7 +138,8 @@ func flattenInstanceConfigDevice(
 }
 
 func flattenInstanceConfigs(
-	instanceConfigs []linodego.InstanceConfig, diskLabelIDMap map[int]string) (configs []map[string]interface{}) {
+	instanceConfigs []linodego.InstanceConfig, diskLabelIDMap map[int]string,
+) (configs []map[string]interface{}) {
 	for _, config := range instanceConfigs {
 
 		devices := []map[string]interface{}{{

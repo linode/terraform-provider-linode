@@ -23,7 +23,8 @@ func Resource() *schema.Resource {
 }
 
 func createResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
@@ -56,7 +57,8 @@ func createResource(
 }
 
 func readResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -85,7 +87,8 @@ func readResource(
 }
 
 func updateResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -114,7 +117,8 @@ func updateResource(
 }
 
 func deleteResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -128,7 +132,8 @@ func deleteResource(
 }
 
 func flattenKeyBucketAccess(
-	bucketAccesses *[]linodego.ObjectStorageKeyBucketAccess) *[]map[string]interface{} {
+	bucketAccesses *[]linodego.ObjectStorageKeyBucketAccess,
+) *[]map[string]interface{} {
 	if bucketAccesses == nil {
 		return nil
 	}
@@ -145,7 +150,8 @@ func flattenKeyBucketAccess(
 }
 
 func expandKeyBucketAccess(
-	bucketAccessSpecs []interface{}) *[]linodego.ObjectStorageKeyBucketAccess {
+	bucketAccessSpecs []interface{},
+) *[]linodego.ObjectStorageKeyBucketAccess {
 	bucketAccesses := make([]linodego.ObjectStorageKeyBucketAccess, len(bucketAccessSpecs))
 	for i, bucketAccessSpec := range bucketAccessSpecs {
 		bucketAccessSpec := bucketAccessSpec.(map[string]interface{})

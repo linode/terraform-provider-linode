@@ -8,7 +8,8 @@ import (
 
 // GetLatestEvent returns the latest Linode event with the given arguments.
 func GetLatestEvent(ctx context.Context, client *linodego.Client,
-	entityID int, entityType linodego.EntityType, action linodego.EventAction) (*linodego.Event, error) {
+	entityID int, entityType linodego.EntityType, action linodego.EventAction,
+) (*linodego.Event, error) {
 	filter := linodego.Filter{
 		Order:   linodego.Descending,
 		OrderBy: "created",

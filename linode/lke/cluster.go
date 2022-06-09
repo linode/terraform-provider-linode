@@ -57,7 +57,8 @@ func getLKENodePoolProvisionedSpecs(pools []linodego.LKENodePool) map[NodePoolSp
 }
 
 func ReconcileLKENodePoolSpecs(
-	poolSpecs []NodePoolSpec, pools []linodego.LKENodePool) (updates NodePoolUpdates) {
+	poolSpecs []NodePoolSpec, pools []linodego.LKENodePool,
+) (updates NodePoolUpdates) {
 	provisionedPools := getLKENodePoolProvisionedSpecs(pools)
 	poolSpecsToAssign := make(map[int]struct{})
 	assignedPools := make(map[int]struct{})
@@ -178,7 +179,8 @@ func ReconcileLKENodePoolSpecs(
 }
 
 func waitForNodePoolReady(
-	ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int) {
+	ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int,
+) {
 	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
 
 main:
@@ -363,6 +365,7 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 	}
 
 	for _, pool := range poolMap {
+		//nolint:makezero
 		result = append(result, pool)
 	}
 

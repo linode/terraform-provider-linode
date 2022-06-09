@@ -16,10 +16,12 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips/tmpl"
 )
 
-const resourcePrimaryNode = "linode_instance.primary"
-const resourceSecondaryNode = "linode_instance.secondary"
-const resourcePrimaryShare = "linode_instance_shared_ips.share-primary"
-const resourceSecondaryShare = "linode_instance_shared_ips.share-secondary"
+const (
+	resourcePrimaryNode    = "linode_instance.primary"
+	resourceSecondaryNode  = "linode_instance.secondary"
+	resourcePrimaryShare   = "linode_instance_shared_ips.share-primary"
+	resourceSecondaryShare = "linode_instance_shared_ips.share-secondary"
+)
 
 func TestAccInstanceSharedIPs_update(t *testing.T) {
 	t.Parallel()

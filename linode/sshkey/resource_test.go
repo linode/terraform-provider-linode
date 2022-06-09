@@ -38,7 +38,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteSSHKey(context.Background(), sshkey.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", sshkey.Label, err)
 		}
@@ -149,7 +148,6 @@ func checkSSHKeyDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetSSHKey(context.Background(), id)

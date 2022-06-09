@@ -1,18 +1,20 @@
 package user
 
 import (
+	"context"
+	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-
-	"context"
-	"fmt"
-	"log"
 )
 
-var resourceLinodeUserGrantFields = []string{"global_grants", "domain_grant", "firewall_grant", "image_grant",
-	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant"}
+var resourceLinodeUserGrantFields = []string{
+	"global_grants", "domain_grant", "firewall_grant", "image_grant",
+	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant",
+}
 
 func Resource() *schema.Resource {
 	return &schema.Resource{

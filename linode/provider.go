@@ -200,7 +200,8 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(
-	ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
+	ctx context.Context, d *schema.ResourceData, terraformVersion string,
+) (interface{}, diag.Diagnostics) {
 	config := &helper.Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),

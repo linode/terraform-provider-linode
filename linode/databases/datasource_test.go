@@ -2,13 +2,14 @@ package databases_test
 
 import (
 	"context"
+	"log"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databases/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"log"
-	"testing"
 )
 
 var engineVersion string

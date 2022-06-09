@@ -41,7 +41,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteNodeBalancer(context.Background(), nodebalancer.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %v during sweep: %s", nodebalancer.Label, err)
 		}
@@ -218,7 +217,6 @@ func checkNodeBalancerDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetNodeBalancer(context.Background(), id)

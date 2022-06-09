@@ -392,7 +392,8 @@ func findDiskByFS(disks []linodego.InstanceDisk, fs linodego.DiskFilesystem) *li
 //
 // returns bool describing whether the linode needs to be restarted.
 func adjustSwapSizeIfNeeded(
-	ctx context.Context, d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance) (bool, error) {
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance,
+) (bool, error) {
 	if !d.HasChange("swap_size") {
 		return false, nil
 	}

@@ -18,20 +18,23 @@ import (
 
 // testImageBytes is a minimal Gzipped image.
 // This is necessary because the API will reject invalid images.
-var testImageBytes = []byte{0x1f, 0x8b, 0x08, 0x08, 0xbd, 0x5c, 0x91, 0x60,
+var testImageBytes = []byte{
+	0x1f, 0x8b, 0x08, 0x08, 0xbd, 0x5c, 0x91, 0x60,
 	0x00, 0x03, 0x74, 0x65, 0x73, 0x74, 0x2e, 0x69, 0x6d, 0x67, 0x00, 0x03, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+}
 
-var testImageBytesNew = []byte{0x1f, 0x8b, 0x08, 0x08, 0x53, 0x13, 0x94, 0x60,
+var testImageBytesNew = []byte{
+	0x1f, 0x8b, 0x08, 0x08, 0x53, 0x13, 0x94, 0x60,
 	0x00, 0x03, 0x74, 0x65, 0x73, 0x74, 0x2e, 0x69, 0x6d, 0x67, 0x00, 0xcb, 0xc8,
-	0xe4, 0x02, 0x00, 0x7a, 0x7a, 0x6f, 0xed, 0x03, 0x00, 0x00, 0x00}
+	0xe4, 0x02, 0x00, 0x7a, 0x7a, 0x6f, 0xed, 0x03, 0x00, 0x00, 0x00,
+}
 
 func init() {
 	resource.AddTestSweepers("linode_image", &resource.Sweeper{
 		Name: "linode_image",
 		F:    sweep,
 	})
-
 }
 
 func sweep(prefix string) error {
@@ -50,7 +53,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteImage(context.Background(), image.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", image.Label, err)
 		}
@@ -63,7 +65,7 @@ func TestAccImage_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_image.foobar"
-	var ImageName = acctest.RandomWithPrefix("tf_test")
+	ImageName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -97,8 +99,8 @@ func TestAccImage_basic(t *testing.T) {
 func TestAccImage_update(t *testing.T) {
 	t.Parallel()
 
-	var imageName = acctest.RandomWithPrefix("tf_test")
-	var resName = "linode_image.foobar"
+	imageName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_image.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },

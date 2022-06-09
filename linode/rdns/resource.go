@@ -135,7 +135,8 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 // updateIPAddress wraps the client.UpdateIPAddress(...) retry logic depending on the 'wait_for_available' field.
 func updateIPAddress(ctx context.Context, d *schema.ResourceData, meta interface{}, address string,
-	updateOpts linodego.IPAddressUpdateOptions) (*linodego.InstanceIP, error) {
+	updateOpts linodego.IPAddressUpdateOptions,
+) (*linodego.InstanceIP, error) {
 	client := meta.(*helper.ProviderMeta).Client
 	retry := d.Get("wait_for_available").(bool)
 
@@ -147,7 +148,8 @@ func updateIPAddress(ctx context.Context, d *schema.ResourceData, meta interface
 }
 
 func updateIPAddressWithRetries(ctx context.Context, client *linodego.Client, address string,
-	updateOpts linodego.IPAddressUpdateOptions, retryDuration time.Duration) (*linodego.InstanceIP, error) {
+	updateOpts linodego.IPAddressUpdateOptions, retryDuration time.Duration,
+) (*linodego.InstanceIP, error) {
 	ticker := time.NewTicker(retryDuration)
 	defer ticker.Stop()
 

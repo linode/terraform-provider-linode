@@ -8,7 +8,8 @@ import (
 )
 
 func ResolveValidDBEngine(
-	ctx context.Context, client linodego.Client, engine string) (*linodego.DatabaseEngine, error) {
+	ctx context.Context, client linodego.Client, engine string,
+) (*linodego.DatabaseEngine, error) {
 	filter := linodego.Filter{}
 	filter.AddField(linodego.Eq, "engine", engine)
 

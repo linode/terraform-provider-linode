@@ -16,7 +16,8 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData,
-	meta interface{}) diag.Diagnostics {
+	meta interface{},
+) diag.Diagnostics {
 	results, err := filterConfig.FilterDataSource(ctx, d, meta, listEngines, flattenEngine)
 	if err != nil {
 		return nil
@@ -34,7 +35,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData,
 
 func listEngines(
 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
-	options *linodego.ListOptions) ([]interface{}, error) {
+	options *linodego.ListOptions,
+) ([]interface{}, error) {
 	engines, err := client.ListDatabaseEngines(ctx, options)
 	if err != nil {
 		return nil, err

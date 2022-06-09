@@ -28,7 +28,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func listTypes(
 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
-	options *linodego.ListOptions) ([]interface{}, error) {
+	options *linodego.ListOptions,
+) ([]interface{}, error) {
 	types, err := client.ListTypes(ctx, options)
 	if err != nil {
 		return nil, err

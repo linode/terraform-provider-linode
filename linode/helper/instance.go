@@ -12,7 +12,8 @@ import (
 
 // set bootConfig = 0 if using existing boot config
 func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
-	meta interface{}, bootConfig int) diag.Diagnostics {
+	meta interface{}, bootConfig int,
+) diag.Diagnostics {
 	client := meta.(*ProviderMeta).Client
 	instance, err := client.GetInstance(ctx, int(entityID))
 	if err != nil {

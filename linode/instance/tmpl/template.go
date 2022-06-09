@@ -354,6 +354,7 @@ func DiskStackScript(t *testing.T, label, pubKey string) string {
 			Image:  acceptance.TestImageLatest,
 		})
 }
+
 func BootState(t *testing.T, label string, booted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state", TemplateData{

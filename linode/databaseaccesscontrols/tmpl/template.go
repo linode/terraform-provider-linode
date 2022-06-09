@@ -1,9 +1,9 @@
 package tmpl
 
 import (
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-
 	"testing"
+
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
 type TemplateData struct {

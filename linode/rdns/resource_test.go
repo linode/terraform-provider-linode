@@ -38,7 +38,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		_, err := client.UpdateIPAddress(context.Background(), ip.Address, updateOpts)
-
 		if err != nil {
 			return fmt.Errorf("Error clearing RDNS %s during sweep: %s", ip.RDNS, err)
 		}
@@ -51,7 +50,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_rdns.foobar"
-	var linodeLabel = acctest.RandomWithPrefix("tf_test")
+	linodeLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -78,7 +77,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 func TestAccResourceRDNS_update(t *testing.T) {
 	t.Parallel()
 
-	var label = acctest.RandomWithPrefix("tf_test")
+	label := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_rdns.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -118,7 +117,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 	t.Parallel()
 
-	var label = acctest.RandomWithPrefix("tf_test")
+	label := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_rdns.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -163,7 +162,6 @@ func checkRDNSExists(s *terraform.State) error {
 		}
 
 		_, err := client.GetIPAddress(context.Background(), rs.Primary.Attributes["address"])
-
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of RDNS %s: %s", rs.Primary.Attributes["rdns"], err)
 		}
@@ -181,7 +179,6 @@ func checkRDNSDestroy(s *terraform.State) error {
 
 		id := rs.Primary.ID
 		ip, err := client.GetIPAddress(context.Background(), id)
-
 		if err != nil {
 			if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code == 404 {
 				return nil

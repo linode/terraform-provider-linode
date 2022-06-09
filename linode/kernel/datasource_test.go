@@ -1,11 +1,11 @@
 package kernel_test
 
 import (
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/kernel/tmpl"
-
-	"testing"
 )
 
 func TestAccDataSourceKernel_basic(t *testing.T) {
