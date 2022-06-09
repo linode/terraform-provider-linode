@@ -136,7 +136,6 @@ func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine 
 	switch engine {
 	case "mysql":
 		db, err := client.GetMySQLDatabase(ctx, id)
-
 		if err != nil {
 			return nil, err
 		}
@@ -144,7 +143,6 @@ func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine 
 		return db.AllowList, nil
 	case "mongodb":
 		db, err := client.GetMongoDatabase(ctx, id)
-
 		if err != nil {
 			return nil, err
 		}

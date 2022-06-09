@@ -2,10 +2,11 @@ package databasebackups_test
 
 import (
 	"context"
-	"github.com/google/go-cmp/cmp"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
