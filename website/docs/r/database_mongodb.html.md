@@ -74,8 +74,6 @@ The following arguments are supported:
 
 * `encrypted` - (Optional) Whether the Managed Databases is encrypted. (default `false`)
 
-* `replication_type` - (Optional) The replication method used for the Managed Database. (`none`, `asynch`, `semi_synch`; default `none`)
-
 * `ssl_connection` - (Optional) Whether to require SSL credentials to establish a connection to the Managed Database. (default `false`)
 
 * `storage_engine` - (Optional) The type of storage engine for this Database. (`mmapv1`, `wiredtiger`; default `wiredtiger`)
