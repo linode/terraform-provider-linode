@@ -3,11 +3,12 @@ package acceptance
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"strconv"
 )
 
 func CheckMySQLDatabaseExists(name string, db *linodego.MySQLDatabase) resource.TestCheckFunc {

@@ -3,8 +3,6 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -17,6 +15,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/databasemongodb"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
+	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/linode/databases"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
