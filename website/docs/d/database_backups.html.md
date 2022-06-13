@@ -1,32 +1,32 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_database_mysql_backups"
-sidebar_current: "docs-linode-datasource-database-mysql-backups"
+page_title: "Linode: linode_database_backups"
+sidebar_current: "docs-linode-datasource-database-backups"
 description: |-
-Provides information about Linode MySQL Database Backups that match a set of filters.
+Provides information about Linode Database Backups that match a set of filters.
 ---
 
-# Data Source: linode\_database\_mysql\_backups
+# Data Source: linode\_database\_backups
 
-~> **NOTICE:** This data source has been deprecated in favor of `linode_database_backups`.
-
-Provides information about Linode MySQL Database Backups that match a set of filters.
+Provides information about Linode Database Backups that match a set of filters.
 
 ## Example Usage
 
 Get information about all backups for a MySQL database:
 
 ```hcl
-data "linode_database_mysql_backups" "all-backups" {
+data "linode_database_backups" "all-backups" {
   database_id = 12345
+  database_type = "mysql"
 }
 ```
 
-Get information about all automatic MySQL Database Backups:
+Get information about all automatic MongoDB Database Backups:
 
 ```hcl
-data "linode_database_mysql_backups" "auto-backups" {
+data "linode_database_backups" "auto-backups" {
   database_id = 12345
+  database_type = "mongodb"
   
   filter {
     name = "type"
@@ -40,6 +40,8 @@ data "linode_database_mysql_backups" "auto-backups" {
 The following arguments are supported:
 
 * `database_id` - (Required) The ID of the database to retrieve backups for.
+
+* `database_type` - (Required) The type of the database to retrieve backups for. (e.g. `mongodb`)
 
 * `latest` - (Optional) If true, only the latest backup will be returned.
 

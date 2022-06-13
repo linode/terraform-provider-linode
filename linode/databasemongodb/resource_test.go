@@ -1,29 +1,27 @@
-package databasemysql_test
+package databasemongodb_test
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/databasemysql/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/databasemongodb/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var engineVersion string
 
 func init() {
-	resource.AddTestSweepers("linode_database_mysql", &resource.Sweeper{
-		Name: "linode_database_mysql",
+	resource.AddTestSweepers("linode_database_mongodb", &resource.Sweeper{
+		Name: "linode_database_mongodb",
 		F:    sweep,
 	})
 
@@ -32,7 +30,7 @@ func init() {
 		log.Fatalf("failed to get client: %s", err)
 	}
 
-	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mysql")
+	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
 	if err != nil {
 		log.Fatalf("failde to get db engine version: %s", err)
 	}
@@ -48,15 +46,15 @@ func sweep(prefix string) error {
 
 	listOpts := acceptance.SweeperListOptions(prefix, "label")
 
-	dbs, err := client.ListMySQLDatabases(context.Background(), listOpts)
+	dbs, err := client.ListMongoDatabases(context.Background(), listOpts)
 	if err != nil {
-		return fmt.Errorf("error getting mysql databases: %s", err)
+		return fmt.Errorf("error getting mongo databases: %s", err)
 	}
 	for _, db := range dbs {
 		if !acceptance.ShouldSweep(prefix, db.Label) {
 			continue
 		}
-		err := client.DeleteMySQLDatabase(context.Background(), db.ID)
+		err := client.DeleteMongoDatabase(context.Background(), db.ID)
 		if err != nil {
 			return fmt.Errorf("error destroying %s during sweep: %s", db.Label, err)
 		}
@@ -65,30 +63,10 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
-	data := linodego.MySQLDatabaseMaintenanceWindow{
-		DayOfWeek: linodego.DatabaseMaintenanceDayWednesday,
-		Duration:  1,
-		Frequency: linodego.DatabaseMaintenanceFrequencyWeekly,
-		HourOfDay: 5,
-	}
-
-	dataFlattened := helper.FlattenMaintenanceWindow(data)
-
-	dataExpanded, err := helper.ExpandMaintenanceWindow(dataFlattened)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !reflect.DeepEqual(dataExpanded, data) {
-		t.Fatalf("maintenance window mismatch: %s", cmp.Diff(dataExpanded, data))
-	}
-}
-
-func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
+func TestAccResourceDatabaseMongo_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_mysql.foobar"
+	resName := "linode_database_mongodb.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
@@ -99,7 +77,7 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, dbName, engineVersion),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckMySQLDatabaseExists(resName, nil),
+					acceptance.CheckMongoDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -108,12 +86,12 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "0"),
 					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "false"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "none"),
+					resource.TestCheckResourceAttr(resName, "storage_engine", "wiredtiger"),
+					resource.TestCheckResourceAttr(resName, "compression_type", "none"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "false"),
 
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
-					resource.TestCheckResourceAttrSet(resName, "host_secondary"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
@@ -132,10 +110,10 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 	})
 }
 
-func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
+func TestAccResourceDatabaseMongo_complex(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_database_mysql.foobar"
+	resName := "linode_database_mongodb.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
@@ -150,11 +128,12 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					AllowedIP:       "0.0.0.0/0",
 					ClusterSize:     3,
 					Encrypted:       true,
-					ReplicationType: "asynch",
+					CompressionType: "zlib",
+					StorageEngine:   "wiredtiger",
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckMySQLDatabaseExists(resName, nil),
+					acceptance.CheckMongoDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -165,7 +144,8 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "cluster_size", "3"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
+					resource.TestCheckResourceAttr(resName, "storage_engine", "wiredtiger"),
+					resource.TestCheckResourceAttr(resName, "compression_type", "zlib"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 
 					resource.TestCheckResourceAttr(resName, "updates.#", "1"),
@@ -178,7 +158,6 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
-					resource.TestCheckResourceAttrSet(resName, "host_secondary"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
@@ -195,11 +174,12 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					AllowedIP:       "192.0.2.1/32",
 					ClusterSize:     3,
 					Encrypted:       true,
-					ReplicationType: "asynch",
+					CompressionType: "zlib",
+					StorageEngine:   "wiredtiger",
 					SSLConnection:   true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckMySQLDatabaseExists(resName, nil),
+					acceptance.CheckMongoDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName+"updated"),
 					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
@@ -210,7 +190,8 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "cluster_size", "3"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
+					resource.TestCheckResourceAttr(resName, "storage_engine", "wiredtiger"),
+					resource.TestCheckResourceAttr(resName, "compression_type", "zlib"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 
 					resource.TestCheckResourceAttr(resName, "updates.#", "1"),
@@ -222,7 +203,6 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "host_primary"),
-					resource.TestCheckResourceAttrSet(resName, "host_secondary"),
 					resource.TestCheckResourceAttrSet(resName, "root_password"),
 					resource.TestCheckResourceAttr(resName, "status", "active"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
@@ -244,7 +224,7 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 func checkDestroy(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_database_mysql" {
+		if rs.Type != "linode_database_mongodb" {
 			continue
 		}
 
@@ -256,14 +236,14 @@ func checkDestroy(s *terraform.State) error {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
 		}
 
-		_, err = client.GetMySQLDatabase(context.Background(), id)
+		_, err = client.GetMongoDatabase(context.Background(), id)
 
 		if err == nil {
-			return fmt.Errorf("mysql database with id %d still exists", id)
+			return fmt.Errorf("mongo database with id %d still exists", id)
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("error requesting mysql database with id %d", id)
+			return fmt.Errorf("error requesting mongo database with id %d", id)
 		}
 	}
 

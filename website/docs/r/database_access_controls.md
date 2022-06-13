@@ -17,6 +17,8 @@ Grant a Linode access to a database:
 ```hcl
 resource "linode_database_access_controls" "my-access" {
   database_id = linode_database_mysql.my-db.id
+  database_type = "mysql"
+  
   allow_list = [linode_instance.my-instance.ip_address]
 }
 
@@ -40,5 +42,7 @@ resource "linode_database_mysql" "my-db" {
 The following arguments are supported:
 
 * `database_id` - (Required) The unique ID of the target database.
+
+* `database_type` - (Required) The unique type of the target database. (`mysql`, `mongodb`)
 
 * `allow_list` - (Required) A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.

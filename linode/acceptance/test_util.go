@@ -135,6 +135,8 @@ func TestProvider(t *testing.T) {
 }
 
 func PreCheck(t *testing.T) {
+	t.Helper()
+
 	if v := os.Getenv("LINODE_TOKEN"); v == "" {
 		t.Fatal("LINODE_TOKEN must be set for acceptance tests")
 	}
@@ -413,6 +415,8 @@ func CheckEventAbsent(name string, entityType linodego.EntityType, action linode
 }
 
 func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
+	t.Helper()
+
 	var b bytes.Buffer
 
 	err := ConfigTemplates.ExecuteTemplate(&b, templateName, data)

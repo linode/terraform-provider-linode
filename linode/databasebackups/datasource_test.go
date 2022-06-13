@@ -1,15 +1,19 @@
-package databasemysqlbackups_test
+package databasebackups_test
 
 import (
 	"context"
 	"log"
 	"testing"
+	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/databasebackups"
+	"github.com/linode/terraform-provider-linode/linode/databasebackups/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -21,7 +25,7 @@ func init() {
 		log.Fatalf("failed to get client: %s", err)
 	}
 
-	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mysql")
+	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
 	if err != nil {
 		log.Fatalf("failde to get db engine version: %s", err)
 	}
@@ -29,16 +33,64 @@ func init() {
 	engineVersion = v.ID
 }
 
-func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
+func TestFlattenBackup_MySQL(t *testing.T) {
+	currentTime := time.Now()
+
+	backup := linodego.MySQLDatabaseBackup{
+		ID:      123,
+		Label:   "cool",
+		Type:    "auto",
+		Created: &currentTime,
+	}
+
+	result := databasebackups.FlattenBackup(backup)
+	if result["id"] != backup.ID {
+		t.Fatal(cmp.Diff(result["id"], backup.ID))
+	}
+
+	if result["label"] != backup.Label {
+		t.Fatal(cmp.Diff(result["label"], backup.Label))
+	}
+
+	if result["type"] != backup.Type {
+		t.Fatal(cmp.Diff(result["type"], backup.Type))
+	}
+}
+
+func TestFlattenBackup_MongoDB(t *testing.T) {
+	currentTime := time.Now()
+
+	backup := linodego.MongoDatabaseBackup{
+		ID:      123,
+		Label:   "cool",
+		Type:    "auto",
+		Created: &currentTime,
+	}
+
+	result := databasebackups.FlattenBackup(backup)
+	if result["id"] != backup.ID {
+		t.Fatal(cmp.Diff(result["id"], backup.ID))
+	}
+
+	if result["label"] != backup.Label {
+		t.Fatal(cmp.Diff(result["label"], backup.Label))
+	}
+
+	if result["type"] != backup.Type {
+		t.Fatal(cmp.Diff(result["type"], backup.Type))
+	}
+}
+
+func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 	t.Parallel()
 
-	var db linodego.MySQLDatabase
+	var db linodego.MongoDatabase
 
 	const backupLabel = "coolbackup42"
 	dbLabel := acctest.RandomWithPrefix("tf_test")
 
-	resourceName := "linode_database_mysql.foobar"
-	dataSourceName := "data.linode_database_mysql_backups.foobar"
+	resourceName := "linode_database_mongodb.foobar"
+	dataSourceName := "data.linode_database_backups.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acceptance.PreCheck(t) },
@@ -51,7 +103,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 					BackupLabel: backupLabel,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckMySQLDatabaseExists(resourceName, &db),
+					acceptance.CheckMongoDatabaseExists(resourceName, &db),
 					resource.TestCheckResourceAttr(dataSourceName, "backups.#", "0"),
 				),
 			},
@@ -59,7 +111,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 				PreConfig: func() {
 					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
-					if err := client.CreateMySQLDatabaseBackup(context.Background(), db.ID, linodego.MySQLBackupCreateOptions{
+					if err := client.CreateMongoDatabaseBackup(context.Background(), db.ID, linodego.MongoBackupCreateOptions{
 						Label:  backupLabel,
 						Target: "primary",
 					}); err != nil {
@@ -67,13 +119,13 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 					}
 
 					err := client.WaitForDatabaseStatus(context.Background(), db.ID,
-						linodego.DatabaseEngineTypeMySQL, linodego.DatabaseStatusBackingUp, 120)
+						linodego.DatabaseEngineTypeMongo, "backing_up", 120)
 					if err != nil {
 						t.Fatalf("failed to wait for database backing_up: %s", err)
 					}
 
 					err = client.WaitForDatabaseStatus(context.Background(), db.ID,
-						linodego.DatabaseEngineTypeMySQL, linodego.DatabaseStatusActive, 1200)
+						linodego.DatabaseEngineTypeMongo, linodego.DatabaseStatusActive, 1200)
 					if err != nil {
 						t.Fatalf("failed to wait for database active: %s", err)
 					}

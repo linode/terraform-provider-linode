@@ -1,0 +1,10 @@
+{{ define "database_mongodb_basic" }}
+
+resource "linode_database_mongodb" "foobar" {
+    engine_id = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+}
+
+{{ end }}

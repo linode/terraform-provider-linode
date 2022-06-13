@@ -12,9 +12,18 @@ type TemplateData struct {
 	AllowedIP string
 }
 
-func Basic(t *testing.T, label, engine, ip string) string {
+func MySQL(t *testing.T, label, engine, ip string) string {
 	return acceptance.ExecuteTemplate(t,
-		"database_mysql_allow_list_basic", TemplateData{
+		"database_access_controls_mysql", TemplateData{
+			Engine:    engine,
+			Label:     label,
+			AllowedIP: ip,
+		})
+}
+
+func MongoDB(t *testing.T, label, engine, ip string) string {
+	return acceptance.ExecuteTemplate(t,
+		"database_access_controls_mongodb", TemplateData{
 			Engine:    engine,
 			Label:     label,
 			AllowedIP: ip,
