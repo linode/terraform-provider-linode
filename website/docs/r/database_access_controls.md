@@ -43,6 +43,6 @@ The following arguments are supported:
 
 * `database_id` - (Required) The unique ID of the target database.
 
-* `database_type` - (Required) The unique type of the target database. (`mysql`, `mongodb`)
+* `database_type` - (Required) The unique type of the target database. (`mysql`, `mongodb`, `postgresql`)
 
 * `allow_list` - (Required) A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.

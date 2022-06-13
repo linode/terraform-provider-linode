@@ -68,8 +68,8 @@ var resourceSchema = map[string]*schema.Schema{
 	"replication_commit_type": {
 		Type: schema.TypeString,
 		Description: "The synchronization level of the replicating server." +
-			"Must be `local` or `false` for the `asynch` replication type. " +
-			"Must be `true`, `remote_write`, or `remote_apply` for the `semi_synch` replication type.",
+			"Must be `local` or `off` for the `asynch` replication type. " +
+			"Must be `on`, `remote_write`, or `remote_apply` for the `semi_synch` replication type.",
 		Optional: true,
 		Default:  "off",
 		ForceNew: true,
