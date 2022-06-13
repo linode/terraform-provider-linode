@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	mysqlEngineVersion string
-	mongoEngineVersion string
+	mysqlEngineVersion    string
+	mongoEngineVersion    string
+	postgresEngineVersion string
 )
 
 func init() {
@@ -40,6 +41,13 @@ func init() {
 	}
 
 	mongoEngineVersion = v.ID
+
+	v, err = helper.ResolveValidDBEngine(context.Background(), *client, "postgresql")
+	if err != nil {
+		log.Fatalf("failde to get db engine version: %s", err)
+	}
+
+	postgresEngineVersion = v.ID
 }
 
 func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
@@ -98,6 +106,40 @@ func TestAccResourceDatabaseAccessControls_MongoDB(t *testing.T) {
 			},
 			{
 				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "192.168.0.25/32"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_database_access_controls.foobar"
+	dbName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.PostgreSQL(t, dbName, postgresEngineVersion, "0.0.0.0/0"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "0.0.0.0/0"),
+				),
+			},
+			{
+				Config: tmpl.PostgreSQL(t, dbName, postgresEngineVersion, "192.168.0.25/32"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
 					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),

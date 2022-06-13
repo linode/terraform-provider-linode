@@ -29,3 +29,12 @@ func MongoDB(t *testing.T, label, engine, ip string) string {
 			AllowedIP: ip,
 		})
 }
+
+func PostgreSQL(t *testing.T, label, engine, ip string) string {
+	return acceptance.ExecuteTemplate(t,
+		"database_access_controls_postgresql", TemplateData{
+			Engine:    engine,
+			Label:     label,
+			AllowedIP: ip,
+		})
+}

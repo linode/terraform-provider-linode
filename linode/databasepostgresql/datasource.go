@@ -1,4 +1,4 @@
-package databasemongodb
+package databasepostgresql
 
 import (
 	"context"
@@ -22,19 +22,19 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	id := d.Get("database_id").(int)
 
-	db, err := client.GetMongoDatabase(ctx, id)
+	db, err := client.GetPostgresDatabase(ctx, id)
 	if err != nil {
-		return diag.Errorf("failed to get mongodb database: %s", err)
+		return diag.Errorf("failed to get postgresql database: %s", err)
 	}
 
-	cert, err := client.GetMongoDatabaseSSL(ctx, int(id))
+	cert, err := client.GetPostgresDatabaseSSL(ctx, int(id))
 	if err != nil {
-		return diag.Errorf("failed to get cert for the specified mongodb database: %s", err)
+		return diag.Errorf("failed to get cert for the specified postgresql database: %s", err)
 	}
 
-	creds, err := client.GetMongoDatabaseCredentials(ctx, int(id))
+	creds, err := client.GetPostgresDatabaseCredentials(ctx, int(id))
 	if err != nil {
-		return diag.Errorf("failed to get credentials for mongodb database: %s", err)
+		return diag.Errorf("failed to get credentials for postgresql database: %s", err)
 	}
 
 	d.Set("engine_id", helper.CreateDatabaseEngineSlug(db.Engine, db.Version))
@@ -44,16 +44,14 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("type", db.Type)
 	d.Set("allow_list", db.AllowList)
 	d.Set("cluster_size", db.ClusterSize)
-	d.Set("compression_type", db.CompressionType)
 	d.Set("encrypted", db.Encrypted)
-	d.Set("storage_engine", db.StorageEngine)
+	d.Set("replication_type", db.ReplicationType)
+	d.Set("replication_commit_type", db.ReplicationCommitType)
 	d.Set("ssl_connection", db.SSLConnection)
 	d.Set("ca_cert", string(cert.CACertificate))
 	d.Set("created", db.Created.Format(time.RFC3339))
 	d.Set("host_primary", db.Hosts.Primary)
 	d.Set("host_secondary", db.Hosts.Secondary)
-	d.Set("peers", db.Peers)
-	d.Set("replica_set", db.ReplicaSet)
 	d.Set("port", db.Port)
 	d.Set("root_password", creds.Password)
 	d.Set("status", db.Status)

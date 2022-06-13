@@ -25,7 +25,7 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The type of the Managed Database",
 		Required:    true,
 		ValidateDiagFunc: validation.ToDiagFunc(
-			validation.StringInSlice([]string{"mysql", "mongodb"}, true)),
+			validation.StringInSlice(helper.ValidDatabaseTypes, true)),
 	},
 
 	"latest": {

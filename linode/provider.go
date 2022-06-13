@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -134,6 +136,7 @@ func Provider() *schema.Provider {
 			"linode_database_engines":       databaseengines.DataSource(),
 			"linode_database_mongodb":       databasemongodb.DataSource(),
 			"linode_database_mysql":         databasemysql.DataSource(),
+			"linode_database_postgresql":    databasepostgresql.DataSource(),
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_databases":              databases.DataSource(),
 			"linode_domain":                 domain.DataSource(),
@@ -167,6 +170,7 @@ func Provider() *schema.Provider {
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
 			"linode_database_mongodb":         databasemongodb.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
+			"linode_database_postgresql":      databasepostgresql.Resource(),
 			"linode_domain":                   domain.Resource(),
 			"linode_domain_record":            domainrecord.Resource(),
 			"linode_firewall":                 firewall.Resource(),

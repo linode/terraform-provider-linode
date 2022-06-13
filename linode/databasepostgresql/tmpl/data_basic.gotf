@@ -1,0 +1,9 @@
+{{ define "database_postgresql_data_basic" }}
+
+{{ template "database_postgresql_complex" . }}
+
+data "linode_database_postgresql" "foobar" {
+    database_id = linode_database_postgresql.foobar.id
+}
+
+{{ end }}
