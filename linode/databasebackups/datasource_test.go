@@ -81,6 +81,30 @@ func TestFlattenBackup_MongoDB(t *testing.T) {
 	}
 }
 
+func TestFlattenBackup_PostgreSQL(t *testing.T) {
+	currentTime := time.Now()
+
+	backup := linodego.PostgresDatabaseBackup{
+		ID:      123,
+		Label:   "cool",
+		Type:    "auto",
+		Created: &currentTime,
+	}
+
+	result := databasebackups.FlattenBackup(backup)
+	if result["id"] != backup.ID {
+		t.Fatal(cmp.Diff(result["id"], backup.ID))
+	}
+
+	if result["label"] != backup.Label {
+		t.Fatal(cmp.Diff(result["label"], backup.Label))
+	}
+
+	if result["type"] != backup.Type {
+		t.Fatal(cmp.Diff(result["type"], backup.Type))
+	}
+}
+
 func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 	t.Parallel()
 

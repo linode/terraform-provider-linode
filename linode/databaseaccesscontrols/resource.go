@@ -124,6 +124,16 @@ func updateDBAllowListByEngine(ctx context.Context, client linodego.Client, d *s
 
 		createdDate = db.Created
 
+	case "postgresql":
+		db, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
+			AllowList: &allowList,
+		})
+		if err != nil {
+			return err
+		}
+
+		createdDate = db.Created
+
 	default:
 		return fmt.Errorf("invalid database engine: %s", engine)
 	}
@@ -143,6 +153,13 @@ func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine 
 		return db.AllowList, nil
 	case "mongodb":
 		db, err := client.GetMongoDatabase(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		return db.AllowList, nil
+	case "postgresql":
+		db, err := client.GetPostgresDatabase(ctx, id)
 		if err != nil {
 			return nil, err
 		}

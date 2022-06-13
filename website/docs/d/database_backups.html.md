@@ -41,7 +41,7 @@ The following arguments are supported:
 
 * `database_id` - (Required) The ID of the database to retrieve backups for.
 
-* `database_type` - (Required) The type of the database to retrieve backups for. (e.g. `mongodb`)
+* `database_type` - (Required) The type of the database to retrieve backups for. (`mysql`, `mongodb`, `postgresql`)
 
 * `latest` - (Optional) If true, only the latest backup will be returned.
 

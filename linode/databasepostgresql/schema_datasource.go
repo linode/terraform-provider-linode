@@ -1,4 +1,4 @@
-package databasemongodb
+package databasepostgresql
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,7 +13,7 @@ var dataSourceSchema = map[string]*schema.Schema{
 
 	"engine_id": {
 		Type:        schema.TypeString,
-		Description: "The Managed Database engine in engine/version format. (e.g. mongodb/4.4.10)",
+		Description: "The Managed Database engine in engine/version format. (e.g. postgresql/12.6)",
 		Computed:    true,
 	},
 	"label": {
@@ -43,19 +43,19 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The number of Linode Instance nodes deployed to the Managed Database. Defaults to 1.",
 		Computed:    true,
 	},
-	"compression_type": {
-		Type:        schema.TypeString,
-		Description: "The type of data compression for this Database.",
-		Computed:    true,
-	},
-	"storage_engine": {
-		Type:        schema.TypeString,
-		Description: "The type of storage engine for this Database.",
-		Computed:    true,
-	},
 	"encrypted": {
 		Type:        schema.TypeBool,
 		Description: "Whether the Managed Databases is encrypted.",
+		Computed:    true,
+	},
+	"replication_type": {
+		Type:        schema.TypeString,
+		Description: "The replication method used for the Managed Database.",
+		Computed:    true,
+	},
+	"replication_commit_type": {
+		Type:        schema.TypeString,
+		Description: "The synchronization level of the replicating server.",
 		Computed:    true,
 	},
 	"ssl_connection": {
@@ -126,22 +126,10 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The secondary host for the Managed Database.",
 		Computed:    true,
 	},
-	"peers": {
-		Type:        schema.TypeSet,
-		Description: "A set of peer addresses for this Database.",
-		Computed:    true,
-		Elem:        &schema.Schema{Type: schema.TypeString},
-	},
 	"port": {
 		Type:        schema.TypeInt,
 		Description: "The access port for this Managed Database.",
 		Computed:    true,
-	},
-	"replica_set": {
-		Type: schema.TypeString,
-		Description: "Label for configuring a MongoDB replica set. " +
-			"Choose the same label on multiple Databases to include them in the same replica set.",
-		Computed: true,
 	},
 	"root_password": {
 		Type:        schema.TypeString,

@@ -1,44 +1,45 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_database_mysql"
-sidebar_current: "docs-linode-resource-database-mysql"
+page_title: "Linode: linode_database_postgresql"
+sidebar_current: "docs-linode-resource-database-postgresql"
 description: |-
-  Manages a Linode MySQL Database.
+  Manages a Linode PostgreSQL Database.
 ---
 
-# linode\_database\_mysql
+# linode\_database\_postgresql
 
-Provides a Linode MySQL Database resource. This can be used to create, modify, and delete Linode MySQL Databases.
+Provides a Linode PostgreSQL Database resource. This can be used to create, modify, and delete Linode PostgreSQL Databases.
 For more information, see the [Linode APIv4 docs](https://www.linode.com/docs/api/databases/).
 
 Please keep in mind that Managed Databases can take up to an hour to provision.
 
 ## Example Usage
 
-Creating a simple MySQL database instance:
+Creating a simple PostgreSQL database instance:
 
 ```hcl
-resource "linode_database_mysql" "foobar" {
+resource "linode_database_postgresql" "foobar" {
   label = "mydatabase"
-  engine_id = "mysql/8.0.26"
+  engine_id = "postgresql/13.2"
   region = "us-southeast"
   type = "g6-nanode-1"
 }
 ```
 
-Creating a complex MySQL database instance:
+Creating a complex PostgreSQL database instance:
 
 ```hcl
-resource "linode_database_mysql" "foobar" {
+resource "linode_database_postgresql" "foobar" {
   label = "mydatabase"
-  engine_id = "mysql/8.0.26"
+  engine_id = "postgresql/13.2"
   region = "us-southeast"
   type = "g6-nanode-1"
 
   allow_list = ["0.0.0.0/0"]
   cluster_size = 3
   encrypted = true
-  replication_type = "asynch"
+  replication_type = "semi_synch"
+  replication_commit_type = "remote_write"
   ssl_connection = true
 
   updates {
@@ -55,7 +56,7 @@ resource "linode_database_mysql" "foobar" {
 
 The following arguments are supported:
 
-* `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `mysql/8.0.26`)
+* `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `postgresql/13.2`)
 
 * `label` - (Required) A unique, user-defined string referring to the Managed Database.
 
@@ -76,6 +77,12 @@ The following arguments are supported:
   * Must be `none` for a single node cluster.
 
   * Must be `asynch` or `semi_synch` for a high availability cluster.
+
+* `replication_commit_type` - (Optional) The synchronization level of the replicating server. (`on`, `local`, `remote_write`, `remote_apply`, `off`; default `off`)
+
+  * Must be `local` or `off` for the `asynch` replication type.
+
+  * Must be `on`, `remote_write`, or `remote_apply` for the `semi_synch` replication type.
 
 * `ssl_connection` - (Optional) Whether to require SSL credentials to establish a connection to the Managed Database. (default `false`)
 
@@ -105,7 +112,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `created` - When this Managed Database was created.
 
-* `engine` - The Managed Database engine. (e.g. `mysql`)
+* `engine` - The Managed Database engine. (e.g. `postgresql`)
 
 * `host_primary` - The primary host for the Managed Database.
 
@@ -119,12 +126,12 @@ In addition to all arguments above, the following attributes are exported:
 
 * `updated` - When this Managed Database was last updated.
 
-* `version` - The Managed Database engine version. (e.g. `v8.0.26`)
+* `version` - The Managed Database engine version. (e.g. `13.2`)
 
 ## Import
 
-Linode MySQL Databases can be imported using the `id`, e.g.
+Linode PostgreSQL Databases can be imported using the `id`, e.g.
 
 ```sh
-terraform import linode_database_mysql.foobar 1234567
+terraform import linode_database_postgresql.foobar 1234567
 ```

@@ -8,6 +8,8 @@ import (
 	"github.com/linode/linodego"
 )
 
+var ValidDatabaseTypes = []string{"mongodb", "postgresql", "mysql"}
+
 func ResolveValidDBEngine(
 	ctx context.Context, client linodego.Client, engine string,
 ) (*linodego.DatabaseEngine, error) {

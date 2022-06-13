@@ -1,99 +1,142 @@
-package databasemongodb
+package databasepostgresql
 
 import (
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var dataSourceSchema = map[string]*schema.Schema{
-	"database_id": {
-		Type:        schema.TypeInt,
-		Required:    true,
-		Description: "The ID of the MongoDB database.",
-	},
-
+var resourceSchema = map[string]*schema.Schema{
+	// Required fields
 	"engine_id": {
 		Type:        schema.TypeString,
 		Description: "The Managed Database engine in engine/version format. (e.g. mongodb/4.4.10)",
-		Computed:    true,
+		Required:    true,
+		ForceNew:    true,
 	},
 	"label": {
 		Type:        schema.TypeString,
 		Description: "A unique, user-defined string referring to the Managed Database.",
-		Computed:    true,
+		Required:    true,
 	},
 	"region": {
 		Type:        schema.TypeString,
 		Description: "The region to use for the Managed Database.",
-		Computed:    true,
+		Required:    true,
+		ForceNew:    true,
 	},
 	"type": {
 		Type:        schema.TypeString,
 		Description: "The Linode Instance type used by the Managed Database for its nodes.",
-		Computed:    true,
+		Required:    true,
+		ForceNew:    true,
 	},
+
+	// Optional fields
 	"allow_list": {
 		Type: schema.TypeSet,
 		Description: "A list of IP addresses that can access the Managed Database. " +
 			"Each item can be a single IP address or a range in CIDR format.",
+		Optional: true,
 		Computed: true,
 		Elem:     &schema.Schema{Type: schema.TypeString},
 	},
 	"cluster_size": {
 		Type:        schema.TypeInt,
 		Description: "The number of Linode Instance nodes deployed to the Managed Database. Defaults to 1.",
-		Computed:    true,
+		Optional:    true,
+		Default:     1,
+		ForceNew:    true,
+
+		// We should enforce this during plan to prevent invalid DBs from being attempted
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntInSlice([]int{1, 3})),
 	},
-	"compression_type": {
-		Type:        schema.TypeString,
-		Description: "The type of data compression for this Database.",
-		Computed:    true,
+	"replication_type": {
+		Type: schema.TypeString,
+		Description: "The replication method used for the Managed Database. " +
+			"Must be `none` for a single node cluster. " +
+			"Must be `asynch` or `semi_synch` for a high availability cluster.",
+		Optional: true,
+		Default:  "none",
+		ForceNew: true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.All(
+			validation.StringInSlice([]string{"none", "asynch", "semi_synch"}, false),
+		)),
 	},
-	"storage_engine": {
-		Type:        schema.TypeString,
-		Description: "The type of storage engine for this Database.",
-		Computed:    true,
+	"replication_commit_type": {
+		Type: schema.TypeString,
+		Description: "The synchronization level of the replicating server." +
+			"Must be `local` or `off` for the `asynch` replication type. " +
+			"Must be `on`, `remote_write`, or `remote_apply` for the `semi_synch` replication type.",
+		Optional: true,
+		Default:  "off",
+		ForceNew: true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.All(
+			validation.StringInSlice([]string{"on", "local", "remote_write", "remote_apply", "off"}, false),
+		)),
 	},
 	"encrypted": {
 		Type:        schema.TypeBool,
 		Description: "Whether the Managed Databases is encrypted.",
-		Computed:    true,
+		Optional:    true,
+		Default:     false,
+		ForceNew:    true,
 	},
 	"ssl_connection": {
 		Type:        schema.TypeBool,
 		Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
-		Computed:    true,
+		Optional:    true,
+		Default:     false,
+		ForceNew:    true,
 	},
 	"updates": {
 		Type:        schema.TypeList,
 		Description: "Configuration settings for automated patch update maintenance for the Managed Database.",
+		Optional:    true,
 		Computed:    true,
+		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"day_of_week": {
 					Type:        schema.TypeString,
 					Description: "The day to perform maintenance.",
-					Computed:    true,
+					Required:    true,
+					ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+						if _, err := helper.ExpandDayOfWeek(i.(string)); err != nil {
+							return diag.FromErr(err)
+						}
+
+						return nil
+					},
 				},
 				"duration": {
-					Type:        schema.TypeInt,
-					Description: "The maximum maintenance window time in hours.",
-					Computed:    true,
+					Type:             schema.TypeInt,
+					Description:      "The maximum maintenance window time in hours.",
+					Required:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 3)),
 				},
 				"frequency": {
 					Type:        schema.TypeString,
 					Description: "Whether maintenance occurs on a weekly or monthly basis.",
-					Computed:    true,
+					Required:    true,
+					ValidateDiagFunc: validation.ToDiagFunc(
+						validation.StringInSlice([]string{"weekly", "monthly"}, true)),
 				},
 				"hour_of_day": {
-					Type:        schema.TypeInt,
-					Description: "The hour to begin maintenance based in UTC time.",
-					Computed:    true,
+					Type:             schema.TypeInt,
+					Description:      "The hour to begin maintenance based in UTC time.",
+					Required:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 23)),
 				},
 				"week_of_month": {
 					Type: schema.TypeInt,
 					Description: "The week of the month to perform monthly frequency updates." +
 						" Required for monthly frequency updates.",
-					Computed: true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 4)),
+					Optional:         true,
+					Default:          nil,
 				},
 			},
 		},
@@ -116,6 +159,7 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The Managed Database engine.",
 		Computed:    true,
 	},
+	// In an attempt to simplify provider/config logic, these should be flattened in schema
 	"host_primary": {
 		Type:        schema.TypeString,
 		Description: "The primary host for the Managed Database.",
@@ -126,22 +170,10 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The secondary host for the Managed Database.",
 		Computed:    true,
 	},
-	"peers": {
-		Type:        schema.TypeSet,
-		Description: "A set of peer addresses for this Database.",
-		Computed:    true,
-		Elem:        &schema.Schema{Type: schema.TypeString},
-	},
 	"port": {
 		Type:        schema.TypeInt,
 		Description: "The access port for this Managed Database.",
 		Computed:    true,
-	},
-	"replica_set": {
-		Type: schema.TypeString,
-		Description: "Label for configuring a MongoDB replica set. " +
-			"Choose the same label on multiple Databases to include them in the same replica set.",
-		Computed: true,
 	},
 	"root_password": {
 		Type:        schema.TypeString,

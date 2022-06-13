@@ -5,7 +5,7 @@ require (
 	github.com/google/go-cmp v0.5.8
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
-	github.com/linode/linodego v1.7.2
+	github.com/linode/linodego v1.8.0
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
