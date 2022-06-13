@@ -74,13 +74,13 @@ The following arguments are supported:
 
 * `replication_type` - (Optional) The replication method used for the Managed Database. (`none`, `asynch`, `semi_synch`; default `none`)
 
-  * Must be `none` for a single node cluster. 
+  * Must be `none` for a single node cluster.
 
   * Must be `asynch` or `semi_synch` for a high availability cluster.
 
 * `replication_commit_type` - (Optional) The synchronization level of the replicating server. (`on`, `local`, `remote_write`, `remote_apply`, `off`; default `off`)
 
-  * Must be `local` or `off` for the `asynch` replication type. 
+  * Must be `local` or `off` for the `asynch` replication type.
 
   * Must be `on`, `remote_write`, or `remote_apply` for the `semi_synch` replication type.
 
