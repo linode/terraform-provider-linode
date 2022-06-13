@@ -83,6 +83,4 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace github.com/linode/linodego => /Users/lgarber/Projects/linodego/linodego
-
 go 1.18
