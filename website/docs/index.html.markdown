@@ -64,7 +64,9 @@ The following keys can be used to configure the provider.
 
    The Linode Token can also be specified using the `LINODE_TOKEN` environment variable.
 
-   Overrides the Linode Config `token` field.
+   This field overrides the Linode Config `token` field.
+
+   Configs are not required if a `token` is defined.
 
 * `url` - (Optional) The HTTP(S) API address of the Linode API to use.
 
@@ -136,6 +138,7 @@ token = mylinodetoken
 `providers.tf`
 
 ```terraform
+# Uses the default config and profile
 provider "linode" {}
 ```
 
