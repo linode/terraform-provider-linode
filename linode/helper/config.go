@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/version"
-	"golang.org/x/oauth2"
 )
 
 const uaEnvVar = "TF_APPEND_USER_AGENT"
@@ -32,6 +31,9 @@ type Config struct {
 	APIVersion  string
 	UAPrefix    string
 
+	ConfigPath    string
+	ConfigProfile string
+
 	TerraformVersion string
 
 	SkipInstanceReadyPoll        bool
@@ -44,25 +46,35 @@ type Config struct {
 }
 
 // Client returns a fully initialized Linode client.
-func (c *Config) Client() linodego.Client {
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.AccessToken})
-	oauthTransport := &oauth2.Transport{
-		Source: tokenSource,
-	}
-	loggingTransport := logging.NewTransport("Linode", oauthTransport)
+func (c *Config) Client() (*linodego.Client, error) {
+	loggingTransport := logging.NewTransport("Linode", http.DefaultTransport)
 
 	oauth2Client := &http.Client{
 		Transport: loggingTransport,
 	}
+
 	client := linodego.NewClient(oauth2Client)
 
-	tfUserAgent := terraformUserAgent(c.TerraformVersion)
-	userAgent := strings.TrimSpace(fmt.Sprintf("%s terraform-provider-linode/%s",
-		tfUserAgent, version.ProviderVersion))
-	if c.UAPrefix != "" {
-		userAgent = c.UAPrefix + " " + userAgent
+	client.SetBaseURL(DefaultLinodeURL)
+
+	// Load the config file if it exists
+	if _, err := os.Stat(c.ConfigPath); err == nil {
+		log.Println("[INFO] Using Linode profile: ", c.ConfigPath)
+		err = client.LoadConfig(&linodego.LoadConfigOptions{
+			Path:    c.ConfigPath,
+			Profile: c.ConfigProfile,
+		})
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		log.Println("[INFO] Linode config does not exist, skipping..")
 	}
-	client.SetUserAgent(userAgent)
+
+	// Overrides
+	if c.AccessToken != "" {
+		client.SetToken(c.AccessToken)
+	}
 
 	if c.APIURL != "" {
 		client.SetBaseURL(c.APIURL)
@@ -70,8 +82,6 @@ func (c *Config) Client() linodego.Client {
 
 	if len(c.APIVersion) > 0 {
 		client.SetAPIVersion(c.APIVersion)
-	} else {
-		client.SetBaseURL(DefaultLinodeURL)
 	}
 
 	if c.EventPollMilliseconds != 0 {
@@ -84,7 +94,15 @@ func (c *Config) Client() linodego.Client {
 		client.SetRetryMaxWaitTime(time.Duration(c.MaxRetryDelayMilliseconds) * time.Millisecond)
 	}
 
-	return client
+	tfUserAgent := terraformUserAgent(c.TerraformVersion)
+	userAgent := strings.TrimSpace(fmt.Sprintf("%s terraform-provider-linode/%s",
+		tfUserAgent, version.ProviderVersion))
+	if c.UAPrefix != "" {
+		userAgent = c.UAPrefix + " " + userAgent
+	}
+	client.SetUserAgent(userAgent)
+
+	return &client, nil
 }
 
 func terraformUserAgent(version string) string {
