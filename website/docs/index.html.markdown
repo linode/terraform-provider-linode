@@ -127,12 +127,14 @@ Configuration files can be used to specify Linode client configuration options a
 For example:
 
 `~/.config/linode`
+
 ```ini
 [default]
 token = mylinodetoken
 ```
 
 `providers.tf`
+
 ```terraform
 provider "linode" {}
 ```
@@ -144,6 +146,7 @@ Profiles can also be defined for multitenant use-cases. Every profile will inher
 For example:
 
 `~/.config/linode`
+
 ```ini
 [default]
 token = alinodetoken
@@ -156,6 +159,7 @@ token = yetanotherlinodetoken
 ```
 
 `providers.tf`
+
 ```terraform
 provider "linode" {
   # Let's use the `bar` profile
@@ -168,6 +172,7 @@ Configuration Profiles also expose additional client configuration fields such a
 For example:
 
 `~/.config/linode`
+
 ```ini
 [default]
 token = mylinodetoken
@@ -184,6 +189,7 @@ api_url = https://my.alpha.endpoint.com
 ```
 
 `providers.tf`
+
 ```terraform
 provider "linode" {
   # Let's use the `beta` profile

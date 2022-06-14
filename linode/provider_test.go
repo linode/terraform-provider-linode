@@ -3,10 +3,11 @@ package linode_test
 import (
 	"context"
 	"fmt"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func TestAccProvider_Overrides(t *testing.T) {
