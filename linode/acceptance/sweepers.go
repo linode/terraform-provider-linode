@@ -23,7 +23,11 @@ func GetClientForSweepers() (*linodego.Client, error) {
 	}
 
 	config := &helper.Config{AccessToken: token, APIVersion: "v4beta"}
-	client := config.Client()
+	client, err := config.Client()
+	if err != nil {
+		return nil, err
+	}
+
 	return &client, nil
 }
 
