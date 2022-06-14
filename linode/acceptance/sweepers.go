@@ -28,7 +28,7 @@ func GetClientForSweepers() (*linodego.Client, error) {
 		return nil, err
 	}
 
-	return &client, nil
+	return client, nil
 }
 
 func SweeperListOptions(prefix, field string) *linodego.ListOptions {
