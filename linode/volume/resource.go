@@ -86,8 +86,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		volume = newVolume
 	}
 
-	d.SetId(fmt.Sprintf("%d", volume.ID))
-
 	// Wait for the volume to be created
 	if lID, ok := d.GetOk("linode_id"); ok {
 		id := lID.(int)
@@ -232,7 +230,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.FromErr(err)
 	}
 
-	err = client.DeleteVolume(ctx, int(id))
+	err = client.DeleteVolume(ctx, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode Volume %d: %s", id, err)
 	}
@@ -275,6 +273,8 @@ func createVolume(ctx context.Context, d *schema.ResourceData, client linodego.C
 		return nil, fmt.Errorf("failed to create linode volume: %s", err)
 	}
 
+	d.SetId(strconv.Itoa(newVolume.ID))
+
 	return newVolume, nil
 }
 
@@ -306,6 +306,8 @@ func createVolumeFromSource(ctx context.Context, d *schema.ResourceData, client 
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone volume %d: %s", sourceVolumeID, err)
 	}
+
+	d.SetId(strconv.Itoa(clonedVolume.ID))
 
 	// Since a cloned volume will have the attributes of the source volume, we need to update
 	// to match the schema.
