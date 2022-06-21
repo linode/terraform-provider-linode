@@ -3,6 +3,15 @@ package volume
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 var resourceSchema = map[string]*schema.Schema{
+	"source_volume_id": {
+		Type:        schema.TypeInt,
+		Description: "The ID of a volume to clone.",
+		Optional:    true,
+		ForceNew:    true,
+		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+			return newValue == ""
+		},
+	},
 	"label": {
 		Type:        schema.TypeString,
 		Description: "The label of the Linode Volume.",
