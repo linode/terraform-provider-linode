@@ -317,7 +317,7 @@ func createVolumeFromSource(ctx context.Context, d *schema.ResourceData, client 
 	}
 
 	if clonedVolume, err = client.UpdateVolume(ctx, clonedVolume.ID, updateOpts); err != nil {
-		return nil, fmt.Errorf("failed to update cloned volume %d: %s", clonedVolume.ID, err)
+		return nil, fmt.Errorf("failed to update cloned volume: %s", err)
 	}
 
 	// Resize the volume if necessary
@@ -332,7 +332,7 @@ func createVolumeFromSource(ctx context.Context, d *schema.ResourceData, client 
 		if clonedVolume, err = client.AttachVolume(ctx, clonedVolume.ID, &linodego.VolumeAttachOptions{
 			LinodeID: lID.(int),
 		}); err != nil {
-			return nil, fmt.Errorf("failed to attach cloned volume %d: %s", clonedVolume.ID, err)
+			return nil, fmt.Errorf("failed to attach cloned volume: %s", err)
 		}
 	}
 
