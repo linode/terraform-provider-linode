@@ -1,6 +1,7 @@
 package volume_test
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"testing"
@@ -273,6 +274,101 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"resize_disk"},
+			},
+		},
+	})
+}
+
+func TestAccResourceVolume_cloned(t *testing.T) {
+	t.Parallel()
+
+	volumeName := acctest.RandomWithPrefix("tf_test")
+
+	var instance linodego.Instance
+	var instance2 linodego.Instance
+
+	var volume linodego.Volume
+	var volume2 linodego.Volume
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ClonedStep1(t, volumeName, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar2", &instance2),
+
+					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
+					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
+				),
+			},
+			{
+				Config: tmpl.ClonedStep1(t, volumeName, acceptance.PublicKeyMaterial),
+				PreConfig: func() {
+					outBuffer := new(bytes.Buffer)
+
+					client := acceptance.GetSSHClient(t, "root", instance.IPv4[0].String())
+
+					defer client.Close()
+					session, err := client.NewSession()
+					if err != nil {
+						t.Fatalf("failed to establish SSH session: %s", err)
+					}
+
+					session.Stdout = outBuffer
+
+					// Format the first volume and drop a file onto it
+					err = session.Run(fmt.Sprintf("mkfs.ext4 \"%s\" && mkdir -p /mnt/vol && "+
+						"mount \"%s\" /mnt/vol && touch /mnt/vol/itworks.txt",
+						volume.FilesystemPath, volume.FilesystemPath))
+					if err != nil {
+						t.Fatalf("failed to format and mount volume: %s", err)
+					}
+				},
+			},
+			{
+				// Clone the volume
+				Config: tmpl.ClonedStep2(t, volumeName, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar2", &instance2),
+
+					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
+					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
+
+					acceptance.CheckVolumeExists("linode_volume.foobar-cloned", &volume2),
+					resource.TestCheckResourceAttr("linode_volume.foobar-cloned", "label", volumeName+"-c"),
+					resource.TestCheckResourceAttrSet("linode_volume.foobar-cloned", "linode_id"),
+				),
+			},
+			{
+				Config: tmpl.ClonedStep2(t, volumeName, acceptance.PublicKeyMaterial),
+				PreConfig: func() {
+					outBuffer := new(bytes.Buffer)
+
+					client := acceptance.GetSSHClient(t, "root", instance2.IPv4[0].String())
+
+					defer client.Close()
+					session, err := client.NewSession()
+					if err != nil {
+						t.Fatalf("failed to establish SSH session: %s", err)
+					}
+
+					session.Stdout = outBuffer
+
+					// Check that the file was cloned onto the new volume
+					err = session.Run(fmt.Sprintf("mkdir -p /mnt/vol && "+
+						"mount \"%s\" /mnt/vol && cat /mnt/vol/itworks.txt",
+						volume2.FilesystemPath))
+					if err != nil {
+						t.Fatalf("failed to check for cloned file: %s", err)
+					}
+				},
 			},
 		},
 	})

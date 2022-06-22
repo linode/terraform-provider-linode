@@ -283,7 +283,7 @@ func createVolumeFromSource(ctx context.Context, d *schema.ResourceData, client 
 
 	newRegion := d.Get("region").(string)
 	newLabel := d.Get("label").(string)
-	newSize := d.Get("size").(int)
+	newSize, sizeOk := d.GetOk("size")
 
 	sourceVolumeID := d.Get("source_volume_id").(int)
 
@@ -297,7 +297,7 @@ func createVolumeFromSource(ctx context.Context, d *schema.ResourceData, client 
 			sourceVolume.Region, newRegion)
 	}
 
-	if sourceVolume.Size > newSize {
+	if sizeOk && sourceVolume.Size > newSize.(int) {
 		return nil, fmt.Errorf("`size` must be greater than or equal to the size of the source volume: %d < %d",
 			newSize, sourceVolume.Size)
 	}
@@ -308,6 +308,11 @@ func createVolumeFromSource(ctx context.Context, d *schema.ResourceData, client 
 	}
 
 	d.SetId(strconv.Itoa(clonedVolume.ID))
+
+	if _, err := client.WaitForVolumeStatus(ctx, clonedVolume.ID, linodego.VolumeActive,
+		int(LinodeVolumeUpdateTimeout.Seconds())); err != nil {
+		return nil, fmt.Errorf("failed to wait for volume to clone: %s", err)
+	}
 
 	// Since a cloned volume will have the attributes of the source volume, we need to update
 	// to match the schema.
@@ -323,9 +328,15 @@ func createVolumeFromSource(ctx context.Context, d *schema.ResourceData, client 
 	}
 
 	// Resize the volume if necessary
-	if clonedVolume.Size != newSize {
-		if err := client.ResizeVolume(ctx, clonedVolume.ID, newSize); err != nil {
+	if sizeOk && clonedVolume.Size != newSize.(int) {
+		if err := client.ResizeVolume(ctx, clonedVolume.ID, newSize.(int)); err != nil {
 			return nil, fmt.Errorf("failed to resize cloned volume %d: %s", clonedVolume.ID, err)
+		}
+
+		if _, err := client.WaitForVolumeStatus(
+			ctx, clonedVolume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+		); err != nil {
+			return nil, fmt.Errorf("failed to wait for volume active: %s", err)
 		}
 	}
 
