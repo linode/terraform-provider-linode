@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -309,7 +310,7 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 			{
 				Config: tmpl.ClonedStep1(t, volumeName, acceptance.PublicKeyMaterial),
 				PreConfig: func() {
-					outBuffer := new(bytes.Buffer)
+					//outBuffer := new(bytes.Buffer)
 
 					client := acceptance.GetSSHClient(t, "root", instance.IPv4[0].String())
 
@@ -319,12 +320,11 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 						t.Fatalf("failed to establish SSH session: %s", err)
 					}
 
-					session.Stdout = outBuffer
+					session.Stdout = os.Stdout
 
 					// Format the first volume and drop a file onto it
-					err = session.Run(fmt.Sprintf("mkfs.ext4 \"%s\" && mkdir -p /mnt/vol && "+
-						"mount \"%s\" /mnt/vol && touch /mnt/vol/itworks.txt",
-						volume.FilesystemPath, volume.FilesystemPath))
+					err = session.Run(fmt.Sprintf(scriptFormatDrive,
+						volume.FilesystemPath, volume.FilesystemPath, volume.FilesystemPath))
 					if err != nil {
 						t.Fatalf("failed to format and mount volume: %s", err)
 					}
@@ -362,9 +362,8 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 					session.Stdout = outBuffer
 
 					// Check that the file was cloned onto the new volume
-					err = session.Run(fmt.Sprintf("mkdir -p /mnt/vol && "+
-						"mount \"%s\" /mnt/vol && cat /mnt/vol/itworks.txt",
-						volume2.FilesystemPath))
+					err = session.Run(fmt.Sprintf(scriptCheckCloneExists,
+						volume2.FilesystemPath, volume2.FilesystemPath))
 					if err != nil {
 						t.Fatalf("failed to check for cloned file: %s", err)
 					}
@@ -373,3 +372,22 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 		},
 	})
 }
+
+const scriptFormatDrive = `
+until [ -e "%s" ]; do sleep .1; done && \
+mkfs.ext4 "%s" && \
+mkdir -p /mnt/vol && \
+mount "%s" "/mnt/vol" && \
+touch /mnt/vol/itworks.txt
+`
+
+const scriptCheckCloneExists = `
+until [ -e "%s" ]; do sleep .1; done && \
+echo $? && \
+mkdir -p /mnt/vol && \
+echo $? && \
+mount "%s" "/mnt/vol" && \
+echo $? && \
+test -f /mnt/vol/itworks.txt && \
+echo $? 
+`
