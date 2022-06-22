@@ -279,7 +279,8 @@ func createVolume(ctx context.Context, d *schema.ResourceData, client linodego.C
 }
 
 func createVolumeFromSource(
-	ctx context.Context, d *schema.ResourceData, client linodego.Client) (*linodego.Volume, error) {
+	ctx context.Context, d *schema.ResourceData, client linodego.Client,
+) (*linodego.Volume, error) {
 	var clonedVolume *linodego.Volume
 
 	newRegion := d.Get("region").(string)
