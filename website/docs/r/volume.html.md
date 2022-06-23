@@ -57,6 +57,8 @@ Volumes may also be cloned from existing volumes.
 resource "linode_volume" "foobar" {
   label = "my-cloned-volume"
   source_volume_id = 12345
+  
+  # Region is optional when cloning a volume
 }
 ```
 
