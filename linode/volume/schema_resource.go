@@ -4,10 +4,11 @@ import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 var resourceSchema = map[string]*schema.Schema{
 	"source_volume_id": {
-		Type:        schema.TypeInt,
-		Description: "The ID of a volume to clone.",
-		Optional:    true,
-		ForceNew:    true,
+		Type:         schema.TypeInt,
+		Description:  "The ID of a volume to clone.",
+		Optional:     true,
+		ForceNew:     true,
+		AtLeastOneOf: []string{"region", "source_volume_id"},
 		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 			return newValue == ""
 		},
@@ -25,8 +26,10 @@ var resourceSchema = map[string]*schema.Schema{
 	"region": {
 		Type:         schema.TypeString,
 		Description:  "The region where this volume will be deployed.",
-		Required:     true,
+		Optional:     true,
 		ForceNew:     true,
+		Computed:     true,
+		AtLeastOneOf: []string{"region", "source_volume_id"},
 		InputDefault: "us-east",
 	},
 	"size": {

@@ -55,10 +55,8 @@ Volumes may also be cloned from existing volumes.
 
 ```hcl
 resource "linode_volume" "foobar" {
+  label = "my-cloned-volume"
   source_volume_id = 12345
-
-  label  = "my-cloned-volume"
-  region = "us-west"
 }
 ```
 
@@ -68,7 +66,7 @@ The following arguments are supported:
 
 * `label` - (Required) The label of the Linode Volume
 
-* `region` - (Required) The region where this volume will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). *Changing `region` forces the creation of a new Linode Volume.*.
+* `region` - (Required) The region where this volume will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). This field is optional for cloned volumes. *Changing `region` forces the creation of a new Linode Volume.*.
 
 - - -
 

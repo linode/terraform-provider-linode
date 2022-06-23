@@ -283,7 +283,7 @@ func createVolumeFromSource(
 ) (*linodego.Volume, error) {
 	var clonedVolume *linodego.Volume
 
-	newRegion := d.Get("region").(string)
+	newRegion, regionOk := d.GetOk("region")
 	newLabel := d.Get("label").(string)
 	newSize, sizeOk := d.GetOk("size")
 
@@ -294,7 +294,7 @@ func createVolumeFromSource(
 		return nil, fmt.Errorf("failed to get source volume %d: %s", sourceVolumeID, err)
 	}
 
-	if sourceVolume.Region != newRegion {
+	if regionOk && sourceVolume.Region != newRegion.(string) {
 		return nil, fmt.Errorf("`region` of source volume differs from specified region: %s != %s",
 			sourceVolume.Region, newRegion)
 	}

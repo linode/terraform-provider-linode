@@ -58,7 +58,6 @@ resource "linode_volume" "foobar-cloned" {
     source_volume_id = linode_volume.foobar.id
 
     label = "{{.Label}}-c"
-    region = "us-west"
     tags = ["tf_test"]
     size = 11
 
