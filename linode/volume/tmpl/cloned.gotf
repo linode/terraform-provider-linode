@@ -1,0 +1,67 @@
+{{ define "volume_cloned_step1" }}
+
+resource "linode_instance" "foobar" {
+    type   = "g6-nanode-1"
+    region = "us-west"
+    label = "{{.Label}}"
+    image = "linode/ubuntu20.04"
+    authorized_keys = ["{{.PubKey}}"]
+}
+
+resource "linode_instance" "foobar2" {
+    type   = "g6-nanode-1"
+    region = "us-west"
+    label = "{{.Label}}-2"
+    authorized_keys = ["{{.PubKey}}"]
+    image = "linode/ubuntu20.04"
+}
+
+resource "linode_volume" "foobar" {
+    label = "{{.Label}}"
+    region = "us-west"
+    tags = ["tf_test"]
+    size = 10
+
+    linode_id = linode_instance.foobar.id
+}
+
+{{ end }}
+
+{{ define "volume_cloned_step2" }}
+
+resource "linode_instance" "foobar" {
+    type   = "g6-nanode-1"
+    region = "us-west"
+    label = "{{.Label}}"
+    image = "linode/ubuntu20.04"
+    authorized_keys = ["{{.PubKey}}"]
+}
+
+resource "linode_instance" "foobar2" {
+    type   = "g6-nanode-1"
+    region = "us-west"
+    label = "{{.Label}}-2"
+    image = "linode/ubuntu20.04"
+    authorized_keys = ["{{.PubKey}}"]
+}
+
+resource "linode_volume" "foobar" {
+    label = "{{.Label}}"
+    region = "us-west"
+    tags = ["tf_test"]
+    size = 10
+
+    linode_id = linode_instance.foobar.id
+}
+
+resource "linode_volume" "foobar-cloned" {
+    source_volume_id = linode_volume.foobar.id
+
+    label = "{{.Label}}-c"
+    tags = ["tf_test"]
+    size = 11
+
+    linode_id = linode_instance.foobar2.id
+}
+
+{{ end }}
