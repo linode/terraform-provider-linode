@@ -2,6 +2,8 @@ package linode
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -58,9 +60,26 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"token": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LINODE_TOKEN", nil),
 				Description: "The token that allows you access to your Linode account",
+			},
+			"config_path": {
+				Type:     schema.TypeString,
+				Optional: true,
+				DefaultFunc: func() (interface{}, error) {
+					homeDir, err := os.UserHomeDir()
+					if err != nil {
+						return "", err
+					}
+
+					return fmt.Sprintf("%s/.config/linode", homeDir), nil
+				},
+			},
+			"config_profile": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "default",
 			},
 			"url": {
 				Type:         schema.TypeString,
@@ -216,6 +235,9 @@ func providerConfigure(
 		APIVersion:  d.Get("api_version").(string),
 		UAPrefix:    d.Get("ua_prefix").(string),
 
+		ConfigPath:    d.Get("config_path").(string),
+		ConfigProfile: d.Get("config_profile").(string),
+
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
 
@@ -228,14 +250,17 @@ func providerConfigure(
 		LKENodeReadyPollMilliseconds: d.Get("lke_node_ready_poll_ms").(int),
 	}
 	config.TerraformVersion = terraformVersion
-	client := config.Client()
+	client, err := config.Client()
+	if err != nil {
+		return nil, diag.Errorf("failed to initialize client: %s", err)
+	}
 
 	// Ping the API for an empty response to verify the configuration works
 	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
 		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
 	return &helper.ProviderMeta{
-		Client: client,
+		Client: *client,
 		Config: config,
 	}, nil
 }

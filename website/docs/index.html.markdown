@@ -56,13 +56,23 @@ resource "linode_instance" "foobar" {
 
 The following keys can be used to configure the provider.
 
-* `token` - (Required) This is your [Linode APIv4 Token](https://developers.linode.com/api/v4#section/Personal-Access-Token).
+* `config_path` - (Optional) The path to the Linode config file to use. (default `~/.config/linode`)
+
+* `config_profile` - (Optional) The Linode config profile to use. (default `default`)
+
+* `token` - (Optional) This is your [Linode APIv4 Token](https://developers.linode.com/api/v4#section/Personal-Access-Token).
 
    The Linode Token can also be specified using the `LINODE_TOKEN` environment variable.
+
+   This field overrides the Linode Config `token` field.
+
+   Configs are not required if a `token` is defined.
 
 * `url` - (Optional) The HTTP(S) API address of the Linode API to use.
 
    The Linode API URL can also be specified using the `LINODE_URL` environment variable.
+  
+   Overrides the Linode Config `api_url` field.
 
 * `ua_prefix` - (Optional) An HTTP User-Agent Prefix to prepend in API requests.
 
@@ -111,3 +121,81 @@ The [Linode APIv4 wrapper](https://github.com/linode/linodego) used by this prov
 If this variable is assigned to `1`, the request and response of all Linode API traffic will be reported through [Terraform debugging and logging facilities](https://www.terraform.io/docs/internals/debugging.html).
 
 Use of the `LINODE_DEBUG` variable in production settings is **strongly discouraged** with the `linode_account` datasource.  While Terraform does not directly store sensitive data from this datasource, the Linode Account API endpoint returns **sensitive data** such as the account `tax_id` (VAT) and the credit card `last_four` and `expiry`.  Be very cautious about storing this debug output.
+
+## Using Configuration Files
+
+Configuration files can be used to specify Linode client configuration options across various Linode integrations.
+
+For example:
+
+`~/.config/linode`
+
+```ini
+[default]
+token = mylinodetoken
+```
+
+`providers.tf`
+
+```terraform
+# Uses the default config and profile
+provider "linode" {}
+```
+
+Specifying the `token` provider options or defining `LINODE_TOKEN` in the environment will override any tokens loaded from a configuration file.
+
+Profiles can also be defined for multitenant use-cases. Every profile will inherit fields from the `default` profile.
+
+For example:
+
+`~/.config/linode`
+
+```ini
+[default]
+token = alinodetoken
+
+[foo]
+token = anotherlinodetoken
+
+[bar]
+token = yetanotherlinodetoken
+```
+
+`providers.tf`
+
+```terraform
+provider "linode" {
+  # Let's use the `bar` profile
+  config_profile = "bar"
+}
+```
+
+Configuration Profiles also expose additional client configuration fields such as `api_url` and `api_version`.
+
+For example:
+
+`~/.config/linode`
+
+```ini
+[default]
+token = mylinodetoken
+
+[stable]
+api_version = v4
+
+[beta]
+api_version = v4beta
+
+[alpha]
+api_version = v4beta
+api_url = https://my.alpha.endpoint.com
+```
+
+`providers.tf`
+
+```terraform
+provider "linode" {
+  # Let's use the `beta` profile
+  config_profile = "beta"
+}
+```
