@@ -43,7 +43,7 @@ Terraform 0.12 and earlier:
 ```terraform
 # Configure the Linode Provider
 provider "linode" {
-  token = "$LINODE_TOKEN"
+  # token = "..."
 }
 
 # Create a Linode
@@ -62,9 +62,9 @@ The following keys can be used to configure the provider.
 
 * `token` - (Optional) This is your [Linode APIv4 Token](https://developers.linode.com/api/v4#section/Personal-Access-Token).
 
-   The Linode Token can also be specified using the `LINODE_TOKEN` environment variable.
+   The Linode Token can also be specified using the `LINODE_TOKEN` shell environment variable. (e.g. `export LINODE_TOKEN=mytoken`)
 
-   This field overrides the Linode Config `token` field.
+   Specifying a token through the `token` field or through the `LINODE_TOKEN` shell environment variable will override the token loaded through a config.
 
    Configs are not required if a `token` is defined.
 
