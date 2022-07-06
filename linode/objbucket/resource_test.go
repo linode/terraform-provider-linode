@@ -161,6 +161,7 @@ func TestAccResourceBucket_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					resource.TestCheckResourceAttrSet(resName, "hostname"),
 				),
 			},
 			{
