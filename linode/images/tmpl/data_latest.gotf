@@ -8,6 +8,7 @@ data "linode_images" "foobar" {
     filter {
         name = "label"
         values = [linode_image.foobar.label]
+        match_by = "substring"
     }
 
     filter {

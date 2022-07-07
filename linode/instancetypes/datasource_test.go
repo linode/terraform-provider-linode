@@ -20,6 +20,7 @@ func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "types.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "types.0.id", "g6-standard-2"),
 					resource.TestCheckResourceAttr(resourceName, "types.0.label", "Linode 4GB"),
 					resource.TestCheckResourceAttr(resourceName, "types.0.class", "standard"),
@@ -32,6 +33,46 @@ func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.monthly"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceInstanceTypes_substring(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_instance_types.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: acceptance.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataSubstring(t),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "types.#", 1),
+					acceptance.CheckResourceAttrContains(resourceName, "types.0.label", "Linode"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceInstanceTypes_regex(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_instance_types.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: acceptance.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataRegex(t),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "types.#", 1),
+					acceptance.CheckResourceAttrContains(resourceName, "types.0.label", "Dedicated"),
 				),
 			},
 		},

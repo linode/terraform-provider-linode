@@ -1,11 +1,11 @@
 package profile_test
 
 import (
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/profile/tmpl"
-
-	"testing"
 )
 
 func TestAccDataSourceProfile_basic(t *testing.T) {

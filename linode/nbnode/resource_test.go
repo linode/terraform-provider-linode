@@ -184,7 +184,6 @@ func checkNodeBalancerNodeDestroy(s *terraform.State) error {
 
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetNodeBalancerNode(context.Background(), nodebalancerID, configID, id)

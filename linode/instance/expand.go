@@ -7,7 +7,8 @@ import (
 // expandInstanceConfigDeviceMap converts a terraform linode_instance config.*.devices map to a InstanceConfigDeviceMap
 // for the Linode API.
 func expandInstanceConfigDeviceMap(
-	m map[string]interface{}, diskIDLabelMap map[string]int) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
+	m map[string]interface{}, diskIDLabelMap map[string]int,
+) (deviceMap *linodego.InstanceConfigDeviceMap, err error) {
 	if len(m) == 0 {
 		return nil, nil
 	}

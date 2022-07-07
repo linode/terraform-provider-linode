@@ -38,7 +38,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		_, err := client.UpdateIPAddress(context.Background(), ip.Address, updateOpts)
-
 		if err != nil {
 			return fmt.Errorf("Error clearing RDNS %s during sweep: %s", ip.RDNS, err)
 		}
@@ -51,7 +50,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_rdns.foobar"
-	var linodeLabel = acctest.RandomWithPrefix("tf_test")
+	linodeLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -59,16 +58,17 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, linodeLabel),
+				Config: tmpl.Basic(t, linodeLabel, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_available"},
 			},
 		},
 	})
@@ -77,7 +77,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 func TestAccResourceRDNS_update(t *testing.T) {
 	t.Parallel()
 
-	var label = acctest.RandomWithPrefix("tf_test")
+	label := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_rdns.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -86,7 +86,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 		CheckDestroy: checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label),
+				Config: tmpl.Basic(t, label, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
@@ -94,7 +94,47 @@ func TestAccResourceRDNS_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Changed(t, label),
+				Config: tmpl.Changed(t, label, false),
+				Check: resource.ComposeTestCheckFunc(
+					checkRDNSExists,
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
+				),
+			},
+			{
+				Config: tmpl.Deleted(t, label),
+			},
+			{
+				Config: tmpl.Deleted(t, label),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestMatchResourceAttr("data.linode_networking_ip.foobar", "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
+				),
+			},
+		},
+	})
+}
+
+// This test case simply ensures a
+func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
+	t.Parallel()
+
+	label := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_rdns.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkRDNSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, label, true),
+				Check: resource.ComposeTestCheckFunc(
+					checkRDNSExists,
+					resource.TestCheckResourceAttrPair(resName, "address", "linode_instance.foobar", "ip_address"),
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\.){4}nip.io$`)),
+				),
+			},
+			{
+				Config: tmpl.Changed(t, label, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkRDNSExists,
 					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
@@ -122,7 +162,6 @@ func checkRDNSExists(s *terraform.State) error {
 		}
 
 		_, err := client.GetIPAddress(context.Background(), rs.Primary.Attributes["address"])
-
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of RDNS %s: %s", rs.Primary.Attributes["rdns"], err)
 		}
@@ -140,7 +179,6 @@ func checkRDNSDestroy(s *terraform.State) error {
 
 		id := rs.Primary.ID
 		ip, err := client.GetIPAddress(context.Background(), id)
-
 		if err != nil {
 			if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code == 404 {
 				return nil

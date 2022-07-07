@@ -37,7 +37,7 @@ resource "linode_instance" "mysql" {
   label = "my-mysql-server"
   type = data.linode_instance_type.default.id
   region = var.region
-  image = "linode/alpine3.13"
+  image = "linode/alpine3.15"
   authorized_keys = [
     chomp(file(var.public_ssh_key))
   ]
@@ -84,7 +84,7 @@ resource "linode_instance" "adminer" {
   label = "my-adminer-server"
   type = data.linode_instance_type.default.id
   region = var.region
-  image = "linode/alpine3.13"
+  image = "linode/alpine3.15"
   authorized_keys = [
     chomp(file(var.public_ssh_key))
   ]

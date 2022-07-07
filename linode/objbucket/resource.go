@@ -47,7 +47,8 @@ func Resource() *schema.Resource {
 }
 
 func readResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	cluster, label, err := DecodeBucketID(d.Id())
@@ -103,7 +104,8 @@ func readResource(
 }
 
 func createResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
@@ -129,7 +131,8 @@ func createResource(
 }
 
 func updateResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	accessKey := d.Get("access_key")
@@ -175,7 +178,8 @@ func updateResource(
 }
 
 func deleteResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx context.Context, d *schema.ResourceData, meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	cluster, label, err := DecodeBucketID(d.Id())
 	if err != nil {
@@ -209,7 +213,6 @@ func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 
 	lifecycleConfigOutput, err := conn.GetBucketLifecycleConfiguration(
 		&s3.GetBucketLifecycleConfigurationInput{Bucket: &label})
-
 	// A "NoSuchLifecycleConfiguration" error should be ignored in this context
 	if err != nil {
 		if err, ok := err.(awserr.Error); !ok || (ok && err.Code() != "NoSuchLifecycleConfiguration") {
@@ -217,7 +220,15 @@ func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 		}
 	}
 
-	d.Set("lifecycle_rule", flattenLifecycleRules(lifecycleConfigOutput.Rules))
+	rulesMatched := lifecycleConfigOutput.Rules
+	declaredRules, ok := d.Get("lifecycle_rule").([]interface{})
+
+	// We should match the existing lifecycle rules to the schema if they're defined
+	if ok {
+		rulesMatched = matchRulesWithSchema(lifecycleConfigOutput.Rules, declaredRules)
+	}
+
+	d.Set("lifecycle_rule", flattenLifecycleRules(rulesMatched))
 
 	return nil
 }
@@ -265,7 +276,8 @@ func updateBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 }
 
 func updateBucketAccess(
-	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
+	ctx context.Context, d *schema.ResourceData, client linodego.Client,
+) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 
@@ -287,7 +299,8 @@ func updateBucketAccess(
 }
 
 func updateBucketCert(
-	ctx context.Context, d *schema.ResourceData, client linodego.Client) error {
+	ctx context.Context, d *schema.ResourceData, client linodego.Client,
+) error {
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
@@ -456,4 +469,35 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 	}
 
 	return rules, nil
+}
+
+func matchRulesWithSchema(rules []*s3.LifecycleRule, declaredRules []interface{}) []*s3.LifecycleRule {
+	result := make([]*s3.LifecycleRule, 0)
+
+	ruleMap := make(map[string]*s3.LifecycleRule, len(declaredRules))
+	for _, rule := range rules {
+		ruleMap[*rule.ID] = rule
+	}
+
+	for _, declaredRule := range declaredRules {
+		declaredRule := declaredRule.(map[string]interface{})
+
+		declaredID, ok := declaredRule["id"]
+
+		if !ok || len(declaredID.(string)) < 1 {
+			continue
+		}
+
+		if rule, ok := ruleMap[declaredID.(string)]; ok {
+			result = append(result, rule)
+			delete(ruleMap, declaredID.(string))
+		}
+	}
+
+	// populate remaining values
+	for _, rule := range ruleMap {
+		result = append(result, rule)
+	}
+
+	return result
 }

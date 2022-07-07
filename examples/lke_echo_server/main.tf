@@ -15,7 +15,7 @@ locals {
 
 resource "linode_lke_cluster" "my-cluster" {
   label = "really-cool-cluster"
-  k8s_version = "1.20"
+  k8s_version = "1.21"
   region = var.region
 
   pool {

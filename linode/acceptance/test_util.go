@@ -4,15 +4,18 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
 	"text/template"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,8 +26,12 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-const optInTestsEnvVar = "ACC_OPT_IN_TESTS"
-const SkipInstanceReadyPollKey = "skip_instance_ready_poll"
+const (
+	optInTestsEnvVar         = "ACC_OPT_IN_TESTS"
+	SkipInstanceReadyPollKey = "skip_instance_ready_poll"
+)
+
+type AttrValidateFunc func(val string) error
 
 var (
 	optInTests         map[string]struct{}
@@ -33,6 +40,8 @@ var (
 	TestAccProviders   map[string]*schema.Provider
 	TestAccProvider    *schema.Provider
 	ConfigTemplates    *template.Template
+	TestImageLatest    string
+	TestImagePrevious  string
 )
 
 func initOptInTests() {
@@ -46,6 +55,35 @@ func initOptInTests() {
 	for _, testName := range strings.Split(optInTestsValue, ",") {
 		optInTests[testName] = struct{}{}
 	}
+}
+
+// initTestImages grabs the latest Linode Alpine images for acceptance test configurations
+func initTestImages() {
+	client, err := GetClientForSweepers()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	imageFilter := &linodego.Filter{}
+
+	imageFilter.AddField(linodego.Eq, "vendor", "Alpine")
+
+	filterJSON, err := imageFilter.MarshalJSON()
+	if err != nil {
+		log.Fatalf("failed to create image filter json: %s", err)
+	}
+
+	images, err := client.ListImages(context.Background(), &linodego.ListOptions{Filter: string(filterJSON)})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	sort.SliceStable(images, func(i, j int) bool {
+		return images[i].Created.After(*images[j].Created)
+	})
+
+	TestImageLatest = images[0].ID
+	TestImagePrevious = images[1].ID
 }
 
 func init() {
@@ -84,15 +122,21 @@ func init() {
 	if _, err := ConfigTemplates.ParseFiles(templateFiles...); err != nil {
 		log.Fatalf("failed to parse templates: %v", err)
 	}
+
+	initTestImages()
 }
 
 func TestProvider(t *testing.T) {
+	t.Parallel()
+
 	if err := linode.Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
 func PreCheck(t *testing.T) {
+	t.Helper()
+
 	if v := os.Getenv("LINODE_TOKEN"); v == "" {
 		t.Fatal("LINODE_TOKEN must be set for acceptance tests")
 	}
@@ -148,6 +192,62 @@ func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 		t.Fatal("failed to get ssh client")
 	}
 	return
+}
+
+func CheckResourceAttrContains(resName string, path, desiredValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		value, ok := rs.Primary.Attributes[path]
+		if !ok {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		if !strings.Contains(value, desiredValue) {
+			return fmt.Errorf("value '%s' was not found", desiredValue)
+		}
+
+		return nil
+	}
+}
+
+func ValidateResourceAttr(resName, path string, comparisonFunc AttrValidateFunc) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		value, ok := rs.Primary.Attributes[path]
+		if !ok {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		err := comparisonFunc(value)
+		if err != nil {
+			return fmt.Errorf("comparison failed: %s", err)
+		}
+
+		return nil
+	}
+}
+
+func CheckResourceAttrGreaterThan(resName, path string, target int) resource.TestCheckFunc {
+	return ValidateResourceAttr(resName, path, func(val string) error {
+		valInt, err := strconv.Atoi(val)
+		if err != nil {
+			return err
+		}
+
+		if !(valInt > target) {
+			return fmt.Errorf("%d <= %d", valInt, target)
+		}
+
+		return nil
+	})
 }
 
 func CheckResourceAttrNotEqual(resName string, path, notValue string) resource.TestCheckFunc {
@@ -209,7 +309,6 @@ func CheckVolumeDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetVolume(context.Background(), id)
@@ -255,7 +354,69 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 	}
 }
 
+func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+
+		found, err := client.GetFirewall(context.Background(), id)
+		if err != nil {
+			return fmt.Errorf("Error retrieving state of Firewall %s: %s", rs.Primary.Attributes["label"], err)
+		}
+
+		*firewall = *found
+
+		return nil
+	}
+}
+
+func CheckEventAbsent(name string, entityType linodego.EntityType, action linodego.EventAction) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("not found: %s", name)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("error parsing %v to int", rs.Primary.ID)
+		}
+
+		event, err := helper.GetLatestEvent(context.Background(), &client, id, entityType, action)
+		if err != nil {
+			return err
+		}
+
+		if event != nil {
+			return fmt.Errorf("event exists: %d", event.ID)
+		}
+
+		return nil
+	}
+}
+
 func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
+	t.Helper()
+
 	var b bytes.Buffer
 
 	err := ConfigTemplates.ExecuteTemplate(&b, templateName, data)
@@ -264,4 +425,50 @@ func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string
 	}
 
 	return b.String()
+}
+
+func CreateTempFile(t *testing.T, name, content string) *os.File {
+	file, err := ioutil.TempFile(os.TempDir(), name)
+	if err != nil {
+		t.Fatalf("failed to create temp file: %s", err)
+	}
+
+	t.Cleanup(func() {
+		if err := os.Remove(file.Name()); err != nil {
+			t.Fatalf("failed to remove test file: %s", err)
+		}
+	})
+
+	if _, err := file.Write([]byte(content)); err != nil {
+		t.Fatalf("failed to write to temp file: %s", err)
+	}
+
+	return file
+}
+
+func CreateTestProvider() (*schema.Provider, map[string]*schema.Provider) {
+	provider := linode.Provider()
+	providerMap := map[string]*schema.Provider{
+		"linode": provider,
+	}
+	return provider, providerMap
+}
+
+type ProviderMetaModifier func(ctx context.Context, config *helper.ProviderMeta) error
+
+func ModifyProviderMeta(t *testing.T, provider *schema.Provider, modifier ProviderMetaModifier) {
+	oldConfigure := provider.ConfigureContextFunc
+
+	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		config, err := oldConfigure(ctx, data)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := modifier(ctx, config.(*helper.ProviderMeta)); err != nil {
+			t.Fatal(err)
+		}
+
+		return config, nil
+	}
 }

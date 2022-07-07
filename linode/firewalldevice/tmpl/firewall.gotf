@@ -1,0 +1,30 @@
+# Template firewall for use with firewall devices
+
+{{ define "firewall_device_firewall" }}
+
+resource "linode_firewall" "foobar" {
+    label = "{{.Label}}"
+    tags  = ["test"]
+
+    inbound {
+        label    = "tf-test-in"
+        action = "ACCEPT"
+        protocol  = "TCP"
+        ports     = "80"
+        ipv4 = ["0.0.0.0/0"]
+        ipv6 = ["::/0"]
+    }
+    inbound_policy = "DROP"
+
+    outbound {
+        label    = "tf-test-out"
+        action = "ACCEPT"
+        protocol  = "TCP"
+        ports     = "80"
+        ipv4 = ["0.0.0.0/0"]
+        ipv6 = ["2001:db8::/32"]
+    }
+    outbound_policy = "DROP"
+}
+
+{{ end }}

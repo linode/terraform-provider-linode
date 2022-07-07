@@ -60,6 +60,8 @@ The following arguments are supported:
 
 * `rdns` - The name of the RDNS address.
 
+* `wait_for_available` - (Optional) If true, the RDNS assignment will be retried within the operation timeout period.
+
 ## Import
 
 Linodes RDNS resources can be imported using the address as the `id`.

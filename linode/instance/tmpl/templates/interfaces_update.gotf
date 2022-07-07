@@ -5,7 +5,7 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     type = "g6-nanode-1"
     region = "us-southeast"
-    image = "linode/alpine3.13"
+    image = "{{.Image}}"
 
     interface {
         purpose = "public"

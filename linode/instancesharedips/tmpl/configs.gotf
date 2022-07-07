@@ -1,0 +1,61 @@
+{{ define "instance_shared_ips_single_node" }}
+
+# Share with primary node
+resource "linode_instance_shared_ips" "share-primary" {
+    linode_id = linode_instance.primary.id
+    addresses = [linode_ipv6_range.foobar.range]
+}
+
+resource "linode_ipv6_range" "foobar" {
+    prefix_length = 64
+    linode_id = linode_instance.primary.id
+}
+
+resource "linode_instance" "primary" {
+    label = "{{.Label}}-primary"
+    type = "g6-nanode-1"
+    region = "eu-central"
+}
+
+resource "linode_instance" "secondary" {
+    label = "{{.Label}}-secondary"
+    type = "g6-nanode-1"
+    region = "eu-central"
+}
+
+{{ end }}
+
+{{ define "instance_shared_ips_dual_node" }}
+
+# Share with primary node
+resource "linode_instance_shared_ips" "share-primary" {
+    linode_id = linode_instance.primary.id
+    addresses = [linode_ipv6_range.foobar.range]
+}
+
+# Share with secondary nodes
+resource "linode_instance_shared_ips" "share-secondary" {
+    depends_on = [linode_instance_shared_ips.share-primary]
+
+    linode_id = linode_instance.secondary.id
+    addresses = [linode_ipv6_range.foobar.range]
+}
+
+resource "linode_ipv6_range" "foobar" {
+    prefix_length = 64
+    linode_id = linode_instance.primary.id
+}
+
+resource "linode_instance" "primary" {
+    label = "{{.Label}}-primary"
+    type = "g6-nanode-1"
+    region = "eu-central"
+}
+
+resource "linode_instance" "secondary" {
+    label = "{{.Label}}-secondary"
+    type = "g6-nanode-1"
+    region = "eu-central"
+}
+
+{{ end }}

@@ -1,0 +1,18 @@
+{{ define "images_data_substring" }}
+
+{{ template "images_data_base" . }}
+
+data "linode_images" "foobar" {
+    filter {
+        name = "label"
+        values = ["Alpine"]
+        match_by = "substring"
+    }
+
+    filter {
+        name = "is_public"
+        values = [true]
+    }
+}
+
+{{ end }}

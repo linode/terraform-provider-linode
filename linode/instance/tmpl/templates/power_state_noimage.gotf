@@ -1,0 +1,11 @@
+{{ define "instance_boot_state_noimage" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+    booted = {{.Booted}}
+}
+
+{{ end }}

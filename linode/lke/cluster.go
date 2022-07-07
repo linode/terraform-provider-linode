@@ -14,7 +14,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-type ClusterPoolSpec struct {
+type NodePoolSpec struct {
 	Type              string
 	Count             int
 	AutoScalerEnabled bool
@@ -22,26 +22,26 @@ type ClusterPoolSpec struct {
 	AutoScalerMax     int
 }
 
-type ClusterPoolUpdates struct {
+type NodePoolUpdates struct {
 	ToDelete []int
-	ToCreate []linodego.LKEClusterPoolCreateOptions
-	ToUpdate map[int]linodego.LKEClusterPoolUpdateOptions
+	ToCreate []linodego.LKENodePoolCreateOptions
+	ToUpdate map[int]linodego.LKENodePoolUpdateOptions
 }
 
-type clusterPoolAssignRequest struct {
-	Spec, State ClusterPoolSpec
+type nodePoolAssignRequest struct {
+	Spec, State NodePoolSpec
 	PoolID      int
 	SpecIndex   int
 }
 
-func (r clusterPoolAssignRequest) Diff() int {
+func (r nodePoolAssignRequest) Diff() int {
 	return int(math.Abs(float64(r.State.Count - r.Spec.Count)))
 }
 
-func getLKEClusterPoolProvisionedSpecs(pools []linodego.LKEClusterPool) map[ClusterPoolSpec]map[int]struct{} {
-	provisioned := make(map[ClusterPoolSpec]map[int]struct{})
+func getLKENodePoolProvisionedSpecs(pools []linodego.LKENodePool) map[NodePoolSpec]map[int]struct{} {
+	provisioned := make(map[NodePoolSpec]map[int]struct{})
 	for _, pool := range pools {
-		spec := ClusterPoolSpec{
+		spec := NodePoolSpec{
 			Type:              pool.Type,
 			Count:             pool.Count,
 			AutoScalerEnabled: pool.Autoscaler.Enabled,
@@ -56,12 +56,13 @@ func getLKEClusterPoolProvisionedSpecs(pools []linodego.LKEClusterPool) map[Clus
 	return provisioned
 }
 
-func ReconcileLKEClusterPoolSpecs(
-	poolSpecs []ClusterPoolSpec, pools []linodego.LKEClusterPool) (updates ClusterPoolUpdates) {
-	provisionedPools := getLKEClusterPoolProvisionedSpecs(pools)
+func ReconcileLKENodePoolSpecs(
+	poolSpecs []NodePoolSpec, pools []linodego.LKENodePool,
+) (updates NodePoolUpdates) {
+	provisionedPools := getLKENodePoolProvisionedSpecs(pools)
 	poolSpecsToAssign := make(map[int]struct{})
 	assignedPools := make(map[int]struct{})
-	updates.ToUpdate = make(map[int]linodego.LKEClusterPoolUpdateOptions)
+	updates.ToUpdate = make(map[int]linodego.LKENodePoolUpdateOptions)
 
 	// find exact pool matches and filter out
 	for i, spec := range poolSpecs {
@@ -82,7 +83,7 @@ func ReconcileLKEClusterPoolSpecs(
 	}
 
 	// calculate diffs for assigning remaining provisioned pools to remaining pool specs
-	poolAssignRequests := []clusterPoolAssignRequest{}
+	poolAssignRequests := []nodePoolAssignRequest{}
 	for i := range poolSpecsToAssign {
 		poolSpec := poolSpecs[i]
 		for pool := range provisionedPools {
@@ -91,7 +92,7 @@ func ReconcileLKEClusterPoolSpecs(
 			}
 
 			for id := range provisionedPools[pool] {
-				poolAssignRequests = append(poolAssignRequests, clusterPoolAssignRequest{
+				poolAssignRequests = append(poolAssignRequests, nodePoolAssignRequest{
 					Spec:      poolSpec,
 					State:     pool,
 					PoolID:    id,
@@ -116,10 +117,10 @@ func ReconcileLKEClusterPoolSpecs(
 			continue
 		}
 
-		var newAutoscaler *linodego.LKEClusterPoolAutoscaler
+		var newAutoscaler *linodego.LKENodePoolAutoscaler
 
 		if request.Spec.AutoScalerEnabled {
-			newAutoscaler = &linodego.LKEClusterPoolAutoscaler{
+			newAutoscaler = &linodego.LKENodePoolAutoscaler{
 				Enabled: request.Spec.AutoScalerEnabled,
 				Min:     request.Spec.AutoScalerMin,
 				Max:     request.Spec.AutoScalerMax,
@@ -128,14 +129,14 @@ func ReconcileLKEClusterPoolSpecs(
 
 		// Only disable if already enabled
 		if !request.Spec.AutoScalerEnabled && request.State.AutoScalerEnabled {
-			newAutoscaler = &linodego.LKEClusterPoolAutoscaler{
+			newAutoscaler = &linodego.LKENodePoolAutoscaler{
 				Enabled: request.Spec.AutoScalerEnabled,
 				Min:     request.Spec.Count,
 				Max:     request.Spec.Count,
 			}
 		}
 
-		updates.ToUpdate[request.PoolID] = linodego.LKEClusterPoolUpdateOptions{
+		updates.ToUpdate[request.PoolID] = linodego.LKENodePoolUpdateOptions{
 			Count:      request.Spec.Count,
 			Autoscaler: newAutoscaler,
 		}
@@ -151,17 +152,17 @@ func ReconcileLKEClusterPoolSpecs(
 	for i := range poolSpecsToAssign {
 		poolSpec := poolSpecs[i]
 
-		var newAutoscaler *linodego.LKEClusterPoolAutoscaler
+		var newAutoscaler *linodego.LKENodePoolAutoscaler
 
 		if poolSpec.AutoScalerEnabled {
-			newAutoscaler = &linodego.LKEClusterPoolAutoscaler{
+			newAutoscaler = &linodego.LKENodePoolAutoscaler{
 				Enabled: poolSpec.AutoScalerEnabled,
 				Min:     poolSpec.AutoScalerMin,
 				Max:     poolSpec.AutoScalerMax,
 			}
 		}
 
-		updates.ToCreate = append(updates.ToCreate, linodego.LKEClusterPoolCreateOptions{
+		updates.ToCreate = append(updates.ToCreate, linodego.LKENodePoolCreateOptions{
 			Count:      poolSpec.Count,
 			Type:       poolSpec.Type,
 			Autoscaler: newAutoscaler,
@@ -177,8 +178,9 @@ func ReconcileLKEClusterPoolSpecs(
 	return
 }
 
-func waitForClusterPoolReady(
-	ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int) {
+func waitForNodePoolReady(
+	ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int,
+) {
 	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
 
 main:
@@ -189,7 +191,7 @@ main:
 			return
 
 		case <-eventTicker.C:
-			pool, err := client.GetLKEClusterPool(ctx, clusterID, poolID)
+			pool, err := client.GetLKENodePool(ctx, clusterID, poolID)
 			if err != nil {
 				errCh <- fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
 			}
@@ -207,8 +209,8 @@ main:
 	}
 }
 
-func waitForClusterPoolsToStartRecycle(
-	ctx context.Context, client *linodego.Client, pollMs, clusterID int, pools []linodego.LKEClusterPool,
+func waitForNodePoolsToStartRecycle(
+	ctx context.Context, client *linodego.Client, pollMs, clusterID int, pools []linodego.LKENodePool,
 ) (<-chan int, <-chan error) {
 	clusterInstances := make(map[int]int)
 	poolInstances := make(map[int]map[int]struct{}, len(pools))
@@ -285,7 +287,7 @@ func waitForClusterPoolsToStartRecycle(
 	return poolRecyclesCh, errCh
 }
 
-func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, pools []linodego.LKEClusterPool) error {
+func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, pools []linodego.LKENodePool) error {
 	client := meta.Client
 
 	if err := client.RecycleLKEClusterNodes(ctx, id); err != nil {
@@ -295,7 +297,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	poolRecyclesCh, errCh := waitForClusterPoolsToStartRecycle(
+	poolRecyclesCh, errCh := waitForNodePoolsToStartRecycle(
 		ctx, &client, meta.Config.LKEEventPollMilliseconds, id, pools)
 
 	var wg sync.WaitGroup
@@ -307,7 +309,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 	go func() {
 		for poolID := range poolRecyclesCh {
-			go waitForClusterPoolReady(ctx, &client, readyErrCh, &wg, meta.Config.LKENodeReadyPollMilliseconds, id, poolID)
+			go waitForNodePoolReady(ctx, &client, readyErrCh, &wg, meta.Config.LKENodeReadyPollMilliseconds, id, poolID)
 		}
 	}()
 
@@ -340,10 +342,10 @@ func waitGroupCh(wg *sync.WaitGroup) <-chan struct{} {
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
-func matchPoolsWithSchema(pools []linodego.LKEClusterPool, declaredPools []interface{}) []linodego.LKEClusterPool {
-	result := make([]linodego.LKEClusterPool, len(declaredPools))
+func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interface{}) []linodego.LKEClusterPool {
+	result := make([]linodego.LKENodePool, len(declaredPools))
 
-	poolMap := make(map[int]linodego.LKEClusterPool, len(declaredPools))
+	poolMap := make(map[int]linodego.LKENodePool, len(declaredPools))
 	for _, pool := range pools {
 		poolMap[pool.ID] = pool
 	}
@@ -363,13 +365,14 @@ func matchPoolsWithSchema(pools []linodego.LKEClusterPool, declaredPools []inter
 	}
 
 	for _, pool := range poolMap {
+		//nolint:makezero
 		result = append(result, pool)
 	}
 
 	return result
 }
 
-func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *linodego.LKEClusterPoolAutoscaler {
+func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *linodego.LKENodePoolAutoscaler {
 	scalersSpec, ok := pool["autoscaler"].([]interface{})
 
 	// Return nil if the autoscaler isn't defined
@@ -378,26 +381,26 @@ func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *lino
 	}
 
 	scalerSpec := scalersSpec[0].(map[string]interface{})
-	return &linodego.LKEClusterPoolAutoscaler{
+	return &linodego.LKENodePoolAutoscaler{
 		Enabled: true,
 		Min:     scalerSpec["min"].(int),
 		Max:     scalerSpec["max"].(int),
 	}
 }
 
-func expandLinodeLKEClusterPoolSpecs(pool []interface{}) (poolSpecs []ClusterPoolSpec) {
+func expandLinodeLKENodePoolSpecs(pool []interface{}) (poolSpecs []NodePoolSpec) {
 	for _, spec := range pool {
 		specMap := spec.(map[string]interface{})
 		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(specMap)
 		if autoscaler == nil {
-			autoscaler = &linodego.LKEClusterPoolAutoscaler{
+			autoscaler = &linodego.LKENodePoolAutoscaler{
 				Enabled: false,
 				Min:     specMap["count"].(int),
 				Max:     specMap["count"].(int),
 			}
 		}
 
-		poolSpecs = append(poolSpecs, ClusterPoolSpec{
+		poolSpecs = append(poolSpecs, NodePoolSpec{
 			Type:              specMap["type"].(string),
 			Count:             specMap["count"].(int),
 			AutoScalerEnabled: autoscaler.Enabled,
@@ -408,7 +411,7 @@ func expandLinodeLKEClusterPoolSpecs(pool []interface{}) (poolSpecs []ClusterPoo
 	return
 }
 
-func flattenLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]interface{} {
+func flattenLKENodePools(pools []linodego.LKEClusterPool) []map[string]interface{} {
 	flattened := make([]map[string]interface{}, len(pools))
 	for i, pool := range pools {
 
@@ -441,4 +444,22 @@ func flattenLKEClusterPools(pools []linodego.LKEClusterPool) []map[string]interf
 		}
 	}
 	return flattened
+}
+
+func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane) map[string]interface{} {
+	flattened := make(map[string]interface{})
+
+	flattened["high_availability"] = controlPlane.HighAvailability
+
+	return flattened
+}
+
+func expandLKEClusterControlPlane(controlPlane map[string]interface{}) linodego.LKEClusterControlPlane {
+	var result linodego.LKEClusterControlPlane
+
+	if value, ok := controlPlane["high_availability"]; ok {
+		result.HighAvailability = value.(bool)
+	}
+
+	return result
 }

@@ -110,7 +110,8 @@ func Basic(t *testing.T, nodebalancerName string) string {
 		"nodebalancer_config_basic", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label: nodebalancerName,
-			}})
+			},
+		})
 }
 
 func Updates(t *testing.T, nodebalancerName string) string {
@@ -118,7 +119,8 @@ func Updates(t *testing.T, nodebalancerName string) string {
 		"nodebalancer_config_updates", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label: nodebalancerName,
-			}})
+			},
+		})
 }
 
 func SSL(t *testing.T, nodebalancerName, cert, privKey string) string {
@@ -128,7 +130,8 @@ func SSL(t *testing.T, nodebalancerName, cert, privKey string) string {
 			SSLKey:  privKey,
 			NodeBalancer: nodebalancer.TemplateData{
 				Label: nodebalancerName,
-			}})
+			},
+		})
 }
 
 func ProxyProtocol(t *testing.T, nodebalancerName string) string {
@@ -136,7 +139,8 @@ func ProxyProtocol(t *testing.T, nodebalancerName string) string {
 		"nodebalancer_config_proxy_protocol", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label: nodebalancerName,
-			}})
+			},
+		})
 }
 
 func DataBasic(t *testing.T, nodebalancerName string) string {
@@ -144,5 +148,6 @@ func DataBasic(t *testing.T, nodebalancerName string) string {
 		"nodebalancer_config_data_basic", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
 				Label: nodebalancerName,
-			}})
+			},
+		})
 }

@@ -42,11 +42,17 @@ The following arguments are supported:
 
 * [`filter`](#filter) - (Optional) A set of filters used to select Linode images that meet certain requirements.
 
+* `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
+
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+
 ### Filter
 
 * `name` - (Required) The name of the field to filter by. See the [Filterable Fields section](#filterable-fields) for a complete list of filterable fields.
 
 * `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
+
+* `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
 ## Attributes
 
@@ -76,12 +82,20 @@ Each Linode image will be stored in the `images` attribute and will export the f
 
 ## Filterable Fields
 
+* `created_by`
+
 * `deprecated`
+
+* `description`
+
+* `id`
 
 * `is_public`
 
 * `label`
 
 * `size`
+
+* `status`
 
 * `vendor`

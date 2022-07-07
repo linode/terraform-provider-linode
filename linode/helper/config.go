@@ -18,7 +18,7 @@ import (
 const uaEnvVar = "TF_APPEND_USER_AGENT"
 
 // DefaultLinodeURL is the Linode APIv4 URL to use.
-const DefaultLinodeURL = "https://api.linode.com/v4"
+const DefaultLinodeURL = "https://api.linode.com"
 
 type ProviderMeta struct {
 	Client linodego.Client
@@ -66,7 +66,9 @@ func (c *Config) Client() linodego.Client {
 
 	if c.APIURL != "" {
 		client.SetBaseURL(c.APIURL)
-	} else if len(c.APIVersion) > 0 {
+	}
+
+	if len(c.APIVersion) > 0 {
 		client.SetAPIVersion(c.APIVersion)
 	} else {
 		client.SetBaseURL(DefaultLinodeURL)

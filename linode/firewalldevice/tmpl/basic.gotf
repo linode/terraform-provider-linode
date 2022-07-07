@@ -1,0 +1,12 @@
+{{ define "firewall_device_basic" }}
+
+{{ template "firewall_device_firewall" . }}
+
+{{ template "firewall_device_instance" . }}
+
+resource "linode_firewall_device" "foobar" {
+    firewall_id = linode_firewall.foobar.id
+    entity_id = linode_instance.foobar.id
+}
+
+{{ end }}

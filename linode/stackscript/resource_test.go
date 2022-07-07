@@ -38,7 +38,6 @@ func sweep(prefix string) error {
 			continue
 		}
 		err := client.DeleteStackscript(context.Background(), stackscript.ID)
-
 		if err != nil {
 			return fmt.Errorf("Error destroying %s during sweep: %s", stackscript.Label, err)
 		}
@@ -51,7 +50,7 @@ func TestAccResourceStackscript_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_stackscript.foobar"
-	var stackscriptName = acctest.RandomWithPrefix("tf_test")
+	stackscriptName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -81,8 +80,8 @@ func TestAccResourceStackscript_basic(t *testing.T) {
 func TestAccResourceStackscript_update(t *testing.T) {
 	t.Parallel()
 
-	var stackscriptName = acctest.RandomWithPrefix("tf_test")
-	var resName = "linode_stackscript.foobar"
+	stackscriptName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
@@ -120,8 +119,8 @@ func TestAccResourceStackscript_update(t *testing.T) {
 func TestAccResourceStackscript_codeChange(t *testing.T) {
 	t.Parallel()
 
-	var stackscriptName = acctest.RandomWithPrefix("tf_test")
-	var resName = "linode_stackscript.foobar"
+	stackscriptName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
 		Providers:    acceptance.TestAccProviders,
@@ -200,7 +199,6 @@ func checkStackscriptDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-
 		}
 
 		_, err = client.GetStackscript(context.Background(), id)

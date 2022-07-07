@@ -9,16 +9,27 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
+	"github.com/linode/terraform-provider-linode/linode/databasebackups"
+	"github.com/linode/terraform-provider-linode/linode/databaseengines"
+	"github.com/linode/terraform-provider-linode/linode/databasemongodb"
+	"github.com/linode/terraform-provider-linode/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
+	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/linode/databases"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
+	"github.com/linode/terraform-provider-linode/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instance"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
+	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/instancetypes"
+	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lke"
 	"github.com/linode/terraform-provider-linode/linode/nb"
@@ -34,6 +45,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/region"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
+	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
@@ -98,27 +110,34 @@ func Provider() *schema.Provider {
 			"event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 300),
+				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 4000),
 				Description: "The rate in milliseconds to poll for events.",
 			},
 
 			"lke_event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     300,
+				Default:     3000,
 				Description: "The rate in milliseconds to poll for LKE events.",
 			},
 
 			"lke_node_ready_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     500,
+				Default:     3000,
 				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
 			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"linode_account":                account.DataSource(),
+			"linode_database_backups":       databasebackups.DataSource(),
+			"linode_database_engines":       databaseengines.DataSource(),
+			"linode_database_mongodb":       databasemongodb.DataSource(),
+			"linode_database_mysql":         databasemysql.DataSource(),
+			"linode_database_postgresql":    databasepostgresql.DataSource(),
+			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
+			"linode_databases":              databases.DataSource(),
 			"linode_domain":                 domain.DataSource(),
 			"linode_domain_record":          domainrecord.DataSource(),
 			"linode_firewall":               firewall.DataSource(),
@@ -128,6 +147,7 @@ func Provider() *schema.Provider {
 			"linode_instance_backups":       backup.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),
+			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_networking_ip":          networkingip.DataSource(),
@@ -139,31 +159,39 @@ func Provider() *schema.Provider {
 			"linode_region":                 region.DataSource(),
 			"linode_sshkey":                 sshkey.DataSource(),
 			"linode_stackscript":            stackscript.DataSource(),
+			"linode_stackscripts":           stackscripts.DataSource(),
 			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  vlan.DataSource(),
 			"linode_volume":                 volume.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_domain":                domain.Resource(),
-			"linode_domain_record":         domainrecord.Resource(),
-			"linode_firewall":              firewall.Resource(),
-			"linode_image":                 image.Resource(),
-			"linode_instance":              instance.Resource(),
-			"linode_instance_ip":           instanceip.Resource(),
-			"linode_lke_cluster":           lke.Resource(),
-			"linode_nodebalancer":          nb.Resource(),
-			"linode_nodebalancer_node":     nbnode.Resource(),
-			"linode_nodebalancer_config":   nbconfig.Resource(),
-			"linode_object_storage_key":    objkey.Resource(),
-			"linode_object_storage_bucket": objbucket.Resource(),
-			"linode_object_storage_object": obj.Resource(),
-			"linode_rdns":                  rdns.Resource(),
-			"linode_sshkey":                sshkey.Resource(),
-			"linode_stackscript":           stackscript.Resource(),
-			"linode_token":                 token.Resource(),
-			"linode_user":                  user.Resource(),
-			"linode_volume":                volume.Resource(),
+			"linode_database_access_controls": databaseaccesscontrols.Resource(),
+			"linode_database_mongodb":         databasemongodb.Resource(),
+			"linode_database_mysql":           databasemysql.Resource(),
+			"linode_database_postgresql":      databasepostgresql.Resource(),
+			"linode_domain":                   domain.Resource(),
+			"linode_domain_record":            domainrecord.Resource(),
+			"linode_firewall":                 firewall.Resource(),
+			"linode_firewall_device":          firewalldevice.Resource(),
+			"linode_image":                    image.Resource(),
+			"linode_instance":                 instance.Resource(),
+			"linode_instance_ip":              instanceip.Resource(),
+			"linode_instance_shared_ips":      instancesharedips.Resource(),
+			"linode_ipv6_range":               ipv6range.Resource(),
+			"linode_lke_cluster":              lke.Resource(),
+			"linode_nodebalancer":             nb.Resource(),
+			"linode_nodebalancer_node":        nbnode.Resource(),
+			"linode_nodebalancer_config":      nbconfig.Resource(),
+			"linode_object_storage_key":       objkey.Resource(),
+			"linode_object_storage_bucket":    objbucket.Resource(),
+			"linode_object_storage_object":    obj.Resource(),
+			"linode_rdns":                     rdns.Resource(),
+			"linode_sshkey":                   sshkey.Resource(),
+			"linode_stackscript":              stackscript.Resource(),
+			"linode_token":                    token.Resource(),
+			"linode_user":                     user.Resource(),
+			"linode_volume":                   volume.Resource(),
 		},
 	}
 
@@ -180,7 +208,8 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(
-	ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
+	ctx context.Context, d *schema.ResourceData, terraformVersion string,
+) (interface{}, diag.Diagnostics) {
 	config := &helper.Config{
 		AccessToken: d.Get("token").(string),
 		APIURL:      d.Get("url").(string),

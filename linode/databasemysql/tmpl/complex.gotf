@@ -1,0 +1,24 @@
+{{ define "database_mysql_complex" }}
+
+resource "linode_database_mysql" "foobar" {
+    engine_id = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+
+    allow_list = ["{{.AllowedIP}}"]
+    cluster_size = {{.ClusterSize}}
+    encrypted = {{.Encrypted}}
+    replication_type = "{{.ReplicationType}}"
+    ssl_connection = {{.SSLConnection}}
+
+    updates {
+        day_of_week = "saturday"
+        duration = 1
+        frequency = "monthly"
+        hour_of_day = 22
+        week_of_month = 2
+    }
+}
+
+{{ end }}

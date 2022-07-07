@@ -2,13 +2,30 @@ package instance
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
+
+var filterConfig = helper.FilterConfig{
+	"group":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"id":     {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"image":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"label":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"region": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+
+	// Tags must be filtered on the client
+	"tags": {TypeFunc: helper.FilterTypeString},
+	"status": {
+		TypeFunc: func(value string) (interface{}, error) {
+			return linodego.InstanceStatus(value), nil
+		},
+	},
+	"type":             {TypeFunc: helper.FilterTypeString},
+	"watchdog_enabled": {TypeFunc: helper.FilterTypeBool},
+}
 
 func dataSourceInstance() *schema.Resource {
 	return &schema.Resource{
@@ -20,7 +37,9 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"filter": filterSchema([]string{"group", "id", "image", "label", "region", "tags"}),
+			"filter":   filterConfig.FilterSchema(),
+			"order_by": filterConfig.OrderBySchema(),
+			"order":    filterConfig.OrderSchema(),
 			"instances": {
 				Type:        schema.TypeList,
 				Description: "The returned list of Instances.",
@@ -34,7 +53,12 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	filter, err := constructFilterString(d, instanceValueToFilterType)
+	filterID, err := filterConfig.GetFilterID(d)
+	if err != nil {
+		return diag.Errorf("failed to generate filter id: %s", err)
+	}
+
+	filter, err := filterConfig.ConstructFilterString(d)
 	if err != nil {
 		return diag.Errorf("failed to construct filter: %s", err)
 	}
@@ -46,21 +70,40 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to get instances: %s", err)
 	}
 
-	flattenedInstances := make([]map[string]interface{}, len(instances))
-	for i, instance := range instances {
-		instanceMap, err := flattenInstance(ctx, &client, &instance)
-		if err != nil {
-			return diag.Errorf("failed to translate instance to map: %s", err)
-		}
+	instanceIDMap := make(map[int]linodego.Instance, len(instances))
 
-		// Merge additional fields
-		instanceMap["id"] = instance.ID
+	// Create a list of filterable instance maps
+	flattenedInstances := make([]interface{}, len(instances))
+	for i, instance := range instances {
+		instanceIDMap[instance.ID] = instance
+
+		instanceMap, err := flattenInstanceSimple(&instance)
+		if err != nil {
+			return diag.Errorf("failed to translate instance to filterable map: %s", err)
+		}
 
 		flattenedInstances[i] = instanceMap
 	}
 
-	d.SetId(fmt.Sprintf(filter))
-	d.Set("instances", flattenedInstances)
+	instancesFiltered, err := filterConfig.FilterResults(d, flattenedInstances)
+	if err != nil {
+		return diag.Errorf("failed to filter returned instances: %s", err)
+	}
+
+	// Fully populate returned instances
+	for i, instance := range instancesFiltered {
+		instanceObject := instanceIDMap[instance["id"].(int)]
+
+		instanceMap, err := flattenInstance(ctx, &client, &instanceObject)
+		if err != nil {
+			return diag.Errorf("failed to translate instance to map: %s", err)
+		}
+
+		instancesFiltered[i] = instanceMap
+	}
+
+	d.SetId(filterID)
+	d.Set("instances", instancesFiltered)
 
 	return nil
 }

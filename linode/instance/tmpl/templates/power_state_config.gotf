@@ -1,0 +1,32 @@
+{{ define "instance_boot_state_config" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+
+    disk {
+        label = "boot"
+        size = 3000
+        image  = "{{.Image}}"
+        root_pass = "terr4form-test"
+    }
+
+    config {
+        label = "boot_config"
+        kernel = "linode/latest-64bit"
+
+        devices {
+            sda {
+                disk_label = "boot"
+            }
+        }
+
+        root_device = "/dev/sda"
+    }
+
+    booted = {{.Booted}}
+}
+
+{{ end }}

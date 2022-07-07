@@ -1,0 +1,20 @@
+{{ define "ipv6range_race_condition" }}
+
+resource "linode_instance" "foobar" {
+    count = 5
+
+    label = "{{.Label}}-${count.index}"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+    booted = false
+}
+
+resource "linode_ipv6_range" "foobar" {
+    count = 5
+
+    linode_id = linode_instance.foobar[count.index].id
+
+    prefix_length = 64
+}
+
+{{ end }}

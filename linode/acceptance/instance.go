@@ -72,6 +72,8 @@ func CheckInstanceDestroy(s *terraform.State) error {
 }
 
 func AssertInstanceReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
+	t.Helper()
+
 	return func() {
 		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(
@@ -79,7 +81,6 @@ func AssertInstanceReboot(t *testing.T, shouldRestart bool, instance *linodego.I
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
-
 		if err != nil {
 			t.Fail()
 		}

@@ -1,0 +1,16 @@
+{{ define "ipv6range_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+    booted = false
+}
+
+resource "linode_ipv6_range" "foobar" {
+    linode_id = linode_instance.foobar.id
+
+    prefix_length = 64
+}
+
+{{ end }}

@@ -165,18 +165,22 @@ func ResourceNodeBalancerV0() *schema.Resource {
 }
 
 func ResourceNodeBalancerV0Upgrade(ctx context.Context,
-	rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	rawState map[string]interface{}, meta interface{},
+) (map[string]interface{}, error) {
 	oldTransfer, ok := rawState["transfer"].(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("failed to upgrade state: transfer key does not exist")
-	}
-
 	newTransfer := []map[string]interface{}{
 		{
 			"in":    0.0,
 			"out":   0.0,
 			"total": 0.0,
 		},
+	}
+	rawState["transfer"] = newTransfer
+
+	if !ok {
+		// The transfer key does not exist; this is a computed map so it will be populated with the next
+		// state refresh.
+		return rawState, nil
 	}
 
 	for key, val := range oldTransfer {
@@ -196,6 +200,5 @@ func ResourceNodeBalancerV0Upgrade(ctx context.Context,
 		newTransfer[0][key] = result
 	}
 
-	rawState["transfer"] = newTransfer
 	return rawState, nil
 }

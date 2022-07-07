@@ -1,0 +1,23 @@
+{{ define "database_mysql_complex_updates" }}
+
+resource "linode_database_mysql" "foobar" {
+    engine_id = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+
+    allow_list = ["{{.AllowedIP}}"]
+    cluster_size = {{.ClusterSize}}
+    encrypted = {{.Encrypted}}
+    replication_type = "{{.ReplicationType}}"
+    ssl_connection = {{.SSLConnection}}
+
+    updates {
+        day_of_week = "wednesday"
+        duration = 3
+        frequency = "weekly"
+        hour_of_day = 13
+    }
+}
+
+{{ end }}

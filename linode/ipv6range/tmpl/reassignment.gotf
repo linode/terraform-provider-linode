@@ -1,0 +1,43 @@
+{{ define "ipv6range_reassign_step1" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+}
+
+resource "linode_instance" "foobar2" {
+    label = "{{.Label}}-2"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+}
+
+resource "linode_ipv6_range" "foobar" {
+    linode_id = linode_instance.foobar.id
+
+    prefix_length = 64
+}
+
+{{ end }}
+
+{{ define "ipv6range_reassign_step2" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+}
+
+resource "linode_instance" "foobar2" {
+    label = "{{.Label}}-2"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+}
+
+resource "linode_ipv6_range" "foobar" {
+    linode_id = linode_instance.foobar2.id
+
+    prefix_length = 64
+}
+
+{{ end }}

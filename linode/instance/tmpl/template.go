@@ -12,10 +12,14 @@ type TemplateData struct {
 	Type   string
 	Image  string
 	Group  string
+	Tag    string
 
 	SwapSize int
 
 	StackScriptName string
+
+	Booted     bool
+	ResizeDisk bool
 }
 
 func Basic(t *testing.T, label, pubKey string) string {
@@ -23,6 +27,7 @@ func Basic(t *testing.T, label, pubKey string) string {
 		"instance_basic", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -30,6 +35,7 @@ func Updates(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_updates", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -37,6 +43,7 @@ func WatchdogDisabled(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_watchdog_disabled", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -46,6 +53,7 @@ func WithType(t *testing.T, label, pubKey, typ string) string {
 			Label:  label,
 			PubKey: pubKey,
 			Type:   typ,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -55,6 +63,7 @@ func WithSwapSize(t *testing.T, label, pubKey string, swapSize int) string {
 			Label:    label,
 			PubKey:   pubKey,
 			SwapSize: swapSize,
+			Image:    acceptance.TestImageLatest,
 		})
 }
 
@@ -65,6 +74,7 @@ func FullDisk(t *testing.T, label, pubKey, stackScriptName string, swapSize int)
 			PubKey:          pubKey,
 			SwapSize:        swapSize,
 			StackScriptName: stackScriptName,
+			Image:           acceptance.TestImageLatest,
 		})
 }
 
@@ -72,6 +82,7 @@ func WithConfig(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_config", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -79,6 +90,7 @@ func MultipleConfigs(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_multiple_configs", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -86,6 +98,7 @@ func Interfaces(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -93,6 +106,7 @@ func InterfacesUpdate(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces_update", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -100,6 +114,7 @@ func InterfacesUpdateEmpty(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces_update_empty", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -107,6 +122,7 @@ func ConfigInterfaces(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -114,6 +130,7 @@ func ConfigInterfacesMultiple(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_multiple", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -121,6 +138,7 @@ func ConfigInterfacesUpdate(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_update", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -128,6 +146,7 @@ func ConfigInterfacesUpdateEmpty(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_update_empty", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -135,6 +154,7 @@ func ConfigUpdates(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_updates", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -142,6 +162,7 @@ func ConfigsAllUpdated(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_configs_all_updated", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -149,6 +170,7 @@ func RawDisk(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_raw_disk", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -156,6 +178,7 @@ func RawDiskDeleted(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_raw_disk_deleted", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -163,6 +186,7 @@ func Tag(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -170,6 +194,16 @@ func TagUpdate(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag_update", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
+		})
+}
+
+func TagVolume(t *testing.T, label, tag string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_tag_volume", TemplateData{
+			Label: label,
+			Tag:   tag,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -177,6 +211,7 @@ func RawDiskExpanded(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_raw_disk_expanded", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -185,6 +220,7 @@ func Disk(t *testing.T, label, pubKey string) string {
 		"instance_disk", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -193,6 +229,7 @@ func DiskMultiple(t *testing.T, label, pubKey string) string {
 		"instance_disk_multiple", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -201,6 +238,7 @@ func DiskConfig(t *testing.T, label, pubKey string) string {
 		"instance_disk_config", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -209,6 +247,7 @@ func DiskConfigExpanded(t *testing.T, label, pubKey string) string {
 		"instance_disk_config_expanded", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -217,6 +256,7 @@ func DiskConfigResized(t *testing.T, label, pubKey string) string {
 		"instance_disk_config_resized", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -225,6 +265,7 @@ func DiskConfigResizedExpanded(t *testing.T, label, pubKey string) string {
 		"instance_disk_config_resized_expanded", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -233,6 +274,7 @@ func DiskConfigReordered(t *testing.T, label, pubKey string) string {
 		"instance_disk_config_reordered", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -241,6 +283,7 @@ func DiskConfigMultiple(t *testing.T, label, pubKey string) string {
 		"instance_disk_config_multiple", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -257,6 +300,7 @@ func VolumeConfig(t *testing.T, label, pubKey string) string {
 		"instance_volume_config", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -264,6 +308,7 @@ func PrivateImage(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_private_image", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -271,6 +316,7 @@ func NoImage(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_no_image", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -279,6 +325,7 @@ func PrivateNetworking(t *testing.T, label, pubKey string) string {
 		"instance_private_networking", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -287,6 +334,7 @@ func AuthorizedUsers(t *testing.T, label, pubKey string) string {
 		"instance_authorized_users", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
 		})
 }
 
@@ -294,6 +342,7 @@ func StackScript(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_stackscript", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
@@ -302,6 +351,107 @@ func DiskStackScript(t *testing.T, label, pubKey string) string {
 		"instance_disk_stackscript", TemplateData{
 			Label:  label,
 			PubKey: pubKey,
+			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func BootState(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Booted: booted,
+		})
+}
+
+func BootStateNoImage(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state_noimage", TemplateData{
+			Label:  label,
+			Booted: booted,
+		})
+}
+
+func BootStateInterface(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state_interface", TemplateData{
+			Label:  label,
+			Booted: booted,
+			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func BootStateConfig(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_boot_state_config", TemplateData{
+			Label:  label,
+			Booted: booted,
+			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func TypeChangeDisk(t *testing.T, label, instanceType string, resizeDisk bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_type_change_disk", TemplateData{
+			Label:      label,
+			Type:       instanceType,
+			Image:      acceptance.TestImageLatest,
+			ResizeDisk: resizeDisk,
+		})
+}
+
+func TypeChangeDiskExplicit(t *testing.T, label, instanceType string, resizeDisk bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_type_change_disk_explicit", TemplateData{
+			Label:      label,
+			Type:       instanceType,
+			ResizeDisk: resizeDisk,
+		})
+}
+
+func TypeChangeDiskNone(t *testing.T, label, instanceType string, resizeDisk bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_type_change_disk_none", TemplateData{
+			Label:      label,
+			Type:       instanceType,
+			ResizeDisk: resizeDisk,
+		})
+}
+
+func IPv4Sharing(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing", TemplateData{
+			Label: label,
+		})
+}
+
+func IPv4SharingEmpty(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing_empty", TemplateData{
+			Label: label,
+		})
+}
+
+func IPv4SharingAllocation(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing_allocation", TemplateData{
+			Label: label,
+		})
+}
+
+func IPv4SharingBadInput(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ipv4_sharing_bad_input", TemplateData{
+			Label: label,
+		})
+}
+
+func ManyLinodes(t *testing.T, label, pubKey string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_many_linodes", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			PubKey: pubKey,
 		})
 }
 
@@ -309,13 +459,42 @@ func DataBasic(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{
 			Label: label,
+			Image: acceptance.TestImageLatest,
 		})
 }
 
-func DataMultiple(t *testing.T, label, group string) string {
+func DataMultiple(t *testing.T, label, tag string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple", TemplateData{
 			Label: label,
-			Group: group,
+			Tag:   tag,
+			Image: acceptance.TestImageLatest,
+		})
+}
+
+func DataMultipleOrder(t *testing.T, label, tag string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_multiple_order", TemplateData{
+			Label: label,
+			Tag:   tag,
+			Image: acceptance.TestImageLatest,
+		})
+}
+
+func DataMultipleRegex(t *testing.T, label, tag string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_multiple_regex", TemplateData{
+			Label: label,
+			Tag:   tag,
+			Image: acceptance.TestImageLatest,
+		})
+}
+
+func DataClientFilter(t *testing.T, label, tag string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_clientfilter", TemplateData{
+			Label: label,
+			Tag:   tag,
+			Image: acceptance.TestImageLatest,
 		})
 }

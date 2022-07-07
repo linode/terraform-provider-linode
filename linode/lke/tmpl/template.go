@@ -7,18 +7,19 @@ import (
 )
 
 type TemplateData struct {
-	Label      string
-	K8sVersion string
+	Label            string
+	K8sVersion       string
+	HighAvailability bool
 }
 
-func Basic(t *testing.T, name string) string {
+func Basic(t *testing.T, name, version string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_basic", TemplateData{Label: name})
+		"lke_cluster_basic", TemplateData{Label: name, K8sVersion: version})
 }
 
-func Updates(t *testing.T, name string) string {
+func Updates(t *testing.T, name, version string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_updates", TemplateData{Label: name})
+		"lke_cluster_updates", TemplateData{Label: name, K8sVersion: version})
 }
 
 func ManyPools(t *testing.T, name, k8sVersion string) string {
@@ -29,32 +30,42 @@ func ManyPools(t *testing.T, name, k8sVersion string) string {
 		})
 }
 
-func ComplexPools(t *testing.T, name string) string {
+func ComplexPools(t *testing.T, name, version string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_complex_pools", TemplateData{Label: name})
+		"lke_cluster_complex_pools", TemplateData{Label: name, K8sVersion: version})
 }
 
-func Autoscaler(t *testing.T, name string) string {
+func Autoscaler(t *testing.T, name, version string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_autoscaler", TemplateData{Label: name})
+		"lke_cluster_autoscaler", TemplateData{Label: name, K8sVersion: version})
 }
 
-func AutoscalerUpdates(t *testing.T, name string) string {
+func AutoscalerUpdates(t *testing.T, name, version string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_autoscaler_updates", TemplateData{Label: name})
+		"lke_cluster_autoscaler_updates", TemplateData{Label: name, K8sVersion: version})
 }
 
-func AutoscalerManyPools(t *testing.T, name string) string {
+func AutoscalerManyPools(t *testing.T, name, version string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_autoscaler_many_pools", TemplateData{Label: name})
+		"lke_cluster_autoscaler_many_pools", TemplateData{Label: name, K8sVersion: version})
 }
 
-func DataBasic(t *testing.T, name string) string {
+func ControlPlane(t *testing.T, name, version string, ha bool) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_data_basic", TemplateData{Label: name})
+		"lke_cluster_control_plane", TemplateData{Label: name, HighAvailability: ha, K8sVersion: version})
 }
 
-func DataAutoscaler(t *testing.T, name string) string {
+func DataBasic(t *testing.T, name, version string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_data_autoscaler", TemplateData{Label: name})
+		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version})
+}
+
+func DataAutoscaler(t *testing.T, name, version string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_autoscaler", TemplateData{Label: name, K8sVersion: version})
+}
+
+func DataControlPlane(t *testing.T, name, version string, ha bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_control_plane", TemplateData{Label: name, HighAvailability: ha, K8sVersion: version})
 }

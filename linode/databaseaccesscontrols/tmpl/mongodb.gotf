@@ -1,0 +1,17 @@
+{{ define "database_access_controls_mongodb" }}
+
+resource "linode_database_mongodb" "foobar" {
+    engine_id = "{{.Engine}}"
+    label = "{{.Label}}"
+    region = "us-southeast"
+    type = "g6-nanode-1"
+}
+
+resource "linode_database_access_controls" "foobar" {
+    database_id = linode_database_mongodb.foobar.id
+    database_type = "mongodb"
+
+    allow_list = ["{{.AllowedIP}}"]
+}
+
+{{ end }}

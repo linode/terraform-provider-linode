@@ -40,6 +40,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
 
+* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster.
+
 * `pools` - Node pools associated with this cluster.
 
   * `id` - The ID of the Node Pool.
@@ -61,3 +63,5 @@ In addition to all arguments above, the following attributes are exported:
     * `min` - The minimum number of nodes to autoscale to.
 
     * `max` - The maximum number of nodes to autoscale to.
+
+* `control_plane.0.high_availability` - Whether High Availability is enabled for the cluster Control Plane.

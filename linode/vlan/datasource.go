@@ -1,13 +1,12 @@
 package vlan
 
 import (
+	"context"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-
-	"context"
-	"time"
 )
 
 func dataSourceVLAN() *schema.Resource {
@@ -20,7 +19,9 @@ func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataSource,
 		Schema: map[string]*schema.Schema{
-			"filter": helper.FilterSchema([]string{"label", "region"}),
+			"order_by": filterConfig.OrderBySchema(),
+			"order":    filterConfig.OrderSchema(),
+			"filter":   filterConfig.FilterSchema(),
 			"vlans": {
 				Type:        schema.TypeList,
 				Description: "The returned list of VLANs.",
@@ -32,37 +33,37 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
-
-	filter, err := helper.ConstructFilterString(d, vlanValueToFilterType)
+	results, err := filterConfig.FilterDataSource(ctx, d, meta, listVLANs, flattenVLAN)
 	if err != nil {
-		return diag.Errorf("failed to construct filter: %s", err)
+		return nil
 	}
 
-	vlans, err := client.ListVLANs(ctx, &linodego.ListOptions{
-		Filter: filter,
-	})
-
-	if err != nil {
-		return diag.Errorf("failed to list linode vlans: %s", err)
-	}
-
-	vlansFlattened := make([]interface{}, len(vlans))
-	for i, vlan := range vlans {
-		vlansFlattened[i] = flattenVLAN(&vlan)
-	}
-
-	d.SetId(filter)
-	d.Set("vlans", vlansFlattened)
+	d.Set("vlans", results)
 
 	return nil
 }
 
-func vlanValueToFilterType(_, value string) (interface{}, error) {
-	return value, nil
+func listVLANs(
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
+	options *linodego.ListOptions,
+) ([]interface{}, error) {
+	vlans, err := client.ListVLANs(ctx, options)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]interface{}, len(vlans))
+
+	for i, v := range vlans {
+		result[i] = v
+	}
+
+	return result, nil
 }
 
-func flattenVLAN(vlan *linodego.VLAN) map[string]interface{} {
+func flattenVLAN(data interface{}) map[string]interface{} {
+	vlan := data.(linodego.VLAN)
+
 	result := make(map[string]interface{})
 
 	result["label"] = vlan.Label

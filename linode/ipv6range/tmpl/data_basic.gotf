@@ -1,0 +1,9 @@
+{{ define "ipv6range_data_basic" }}
+
+{{ template "ipv6range_basic" . }}
+
+data "linode_ipv6_range" "foobar" {
+    range = linode_ipv6_range.foobar.range
+}
+
+{{ end }}

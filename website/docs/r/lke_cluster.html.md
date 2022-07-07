@@ -46,6 +46,13 @@ resource "linode_lke_cluster" "my-cluster" {
           max = 10
         }
     }
+
+  # Prevent the count field from overriding autoscaler-created nodes
+  lifecycle {
+    ignore_changes = [
+      pool.0.count
+    ]
+  }
 }
 ```
 
@@ -55,17 +62,19 @@ The following arguments are supported:
 
 * `label` - (Required) This Kubernetes cluster's unique label.
 
-* `k8s_version` - (Required) The desired Kubernetes version for this Kubernetes cluster in the format of `major.minor` (e.g. `1.17`), and the latest supported patch version will be deployed.
+* `k8s_version` - (Required) The desired Kubernetes version for this Kubernetes cluster in the format of `major.minor` (e.g. `1.21`), and the latest supported patch version will be deployed.
 
 * `region` - (Required) This Kubernetes cluster's location.
 
 * [`pool`](#pool) - (Required) The Node Pool specifications for the Kubernetes cluster. At least one Node Pool is required.
 
+* [`control_plane`](#control_plane) (Optional) Defines settings for the Kubernetes Control Plane.
+
 * `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
 
 ### pool
 
-The following arguments are supported in the pool specification block:
+The following arguments are supported in the `pool` specification block:
 
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
@@ -75,11 +84,19 @@ The following arguments are supported in the pool specification block:
 
 ### autoscaler
 
-The following arguments are supported in the autoscaler specification block:
+~> **NOTICE:** To prevent the `count` field from removing nodes created by the autoscaler, consider using the [ignore_changes](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) lifecycle argument.
+
+The following arguments are supported in the `autoscaler` specification block:
 
 * `min` - (Required) The minimum number of nodes to autoscale to.
 
 * `max` - (Required) The maximum number of nodes to autoscale to.
+
+### control_plane
+
+The following arguments are supported in the `control_plane` specification block:
+
+* `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
 
 ## Attributes Reference
 
@@ -92,6 +109,8 @@ In addition to all arguments above, the following attributes are exported:
 * `api_endpoints` - The endpoints for the Kubernetes API server.
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
+
+* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster.
 
 * `pool` - Additional nested attributes:
 

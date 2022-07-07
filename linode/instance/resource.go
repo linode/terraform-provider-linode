@@ -67,6 +67,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 	d.Set("ipv4", ips)
 	d.Set("ipv6", instance.IPv6)
+	d.Set("shared_ipv4", instanceIPSliceToString(instanceNetwork.IPv4.Shared))
+
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
@@ -92,6 +94,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
+	d.Set("booted", isInstanceBooted(instance))
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -146,6 +149,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	if err := validateBooted(ctx, d); err != nil {
+		return diag.Errorf("failed to validate: %v", err)
+	}
+
 	bootConfig := 0
 	createOpts := linodego.InstanceCreateOptions{
 		Region:         d.Get("region").(string),
@@ -174,6 +181,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+	booted := d.Get("booted").(bool)
 
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
@@ -191,8 +200,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 				return diag.FromErr(err)
 			}
 		}
+
 		createOpts.Image = d.Get("image").(string)
+
 		createOpts.Booted = &boolTrue
+
+		if !d.GetRawConfig().GetAttr("booted").IsNull() {
+			createOpts.Booted = &booted
+		}
+
 		createOpts.BackupID = d.Get("backup_id").(int)
 		if swapSize := d.Get("swap_size").(int); swapSize > 0 {
 			createOpts.SwapSize = &swapSize
@@ -309,12 +325,30 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 			configIDLabelMap[v.Label] = k
 		}
+		bootConfigLabel := d.Get("boot_config_label").(string)
+		if bootConfigLabel != "" {
+			if foundConfig, found := configIDLabelMap[bootConfigLabel]; found {
+				bootConfig = foundConfig
+			} else {
+				return diag.Errorf("Error setting boot_config_label: Config label '%s' not found", bootConfigLabel)
+			}
+		}
+	}
+
+	if ipv4Shared, ok := d.GetOk("shared_ipv4"); ok {
+		err = client.ShareIPAddresses(ctx, linodego.IPAddressesShareOptions{
+			IPs:      helper.ExpandStringSet(ipv4Shared.(*schema.Set)),
+			LinodeID: instance.ID,
+		})
+		if err != nil {
+			return diag.Errorf("failed to share ipv4 addresses with instance: %s", err)
+		}
 	}
 
 	targetStatus := linodego.InstanceRunning
 
 	if createOpts.Booted == nil || !*createOpts.Booted {
-		if disksOk && configsOk {
+		if disksOk && configsOk && (bootedNull || booted) {
 			if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
 				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 			}
@@ -358,7 +392,8 @@ func findDiskByFS(disks []linodego.InstanceDisk, fs linodego.DiskFilesystem) *li
 //
 // returns bool describing whether the linode needs to be restarted.
 func adjustSwapSizeIfNeeded(
-	ctx context.Context, d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance) (bool, error) {
+	ctx context.Context, d *schema.ResourceData, client *linodego.Client, instance *linodego.Instance,
+) (bool, error) {
 	if !d.HasChange("swap_size") {
 		return false, nil
 	}
@@ -407,6 +442,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+	}
+
+	if err := validateBooted(ctx, d); err != nil {
+		return diag.Errorf("failed to validate: %v", err)
 	}
 
 	instance, err := client.GetInstance(ctx, int(id))
@@ -499,14 +538,17 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		rebootInstance = true
 	}
 
-	if didChange, err := applyInstanceDiskSpec(ctx, d, &client, instance, newSpec); err == nil && didChange {
-		rebootInstance = true
-	} else if err != nil && newSpec.Disk < oldSpec.Disk && !d.HasChange("disk") {
-		// Linode was downsized but the pre-existing disk config does not fit new instance spec
-		// This might mean the user tried to downsize an instance with an implicit, default
-		return diag.Errorf("failed to apply instance disk spec: %s."+downsizeFailedMessage, err)
-	} else if err != nil {
-		return diag.Errorf("failed to apply instance disk spec: %s", err)
+	// We only need to do this if explicit disks are defined
+	if d.GetRawConfig().GetAttr("image").IsNull() {
+		if didChange, err := applyInstanceDiskSpec(ctx, d, &client, instance, newSpec); err == nil && didChange {
+			rebootInstance = true
+		} else if err != nil && newSpec.Disk < oldSpec.Disk && !d.HasChange("disk") {
+			// Linode was downsized but the pre-existing disk config does not fit new instance spec
+			// This might mean the user tried to downsize an instance with an implicit, default
+			return diag.Errorf("failed to apply instance disk spec: %s."+downsizeFailedMessage, err)
+		} else if err != nil {
+			return diag.Errorf("failed to apply instance disk spec: %s", err)
+		}
 	}
 
 	if oldSpec.ID != newSpec.ID && !upsized {
@@ -565,6 +607,24 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		rebootInstance = true
 	}
 
+	if d.HasChange("shared_ipv4") {
+		err = client.ShareIPAddresses(ctx, linodego.IPAddressesShareOptions{
+			IPs:      helper.ExpandStringSet(d.Get("shared_ipv4").(*schema.Set)),
+			LinodeID: instance.ID,
+		})
+		if err != nil {
+			return diag.Errorf("failed to share ipv4 addresses with instance: %s", err)
+		}
+	}
+
+	booted := d.Get("booted").(bool)
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+
+	// Don't reboot if the Linode should be powered off
+	if !bootedNull && !booted {
+		rebootInstance = false
+	}
+
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
 		err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
@@ -583,6 +643,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		); err != nil {
 			return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
 		}
+	}
+
+	if err := handleBootedUpdate(ctx, d, meta, instance.ID, bootConfig); err != nil {
+		return diag.Errorf("failed to handle booted update: %s", err)
 	}
 
 	return readResource(ctx, d, meta)

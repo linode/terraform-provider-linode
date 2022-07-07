@@ -1,6 +1,10 @@
 package instance
 
 import (
+	"net"
+
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -10,9 +14,17 @@ const deviceDescription = "Device can be either a Disk or Volume identified by d
 
 var downsizeFailedMessage = `
 Did you try to resize a linode with implicit, default disks to a smaller type? The provider does
-not automatically scale the boot disk to fit an updated instance type. You may need to switch to
+not automatically downsize the boot disk to fit an updated instance type. You may need to switch to
 an explicit disk configuration.
 
+Take a look at the example here:
+https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
+
+const invalidImplicitDiskConfigMessage = `
+Did you try to resize a Linode's implicit disks with more than two disks? 
+When resize_disk is true, your linode must have a single ext disk as well as an optional swap disk.
+
+You may need to switch to an explicit disk configuration.
 Take a look at the example here:
 https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
 
@@ -138,6 +150,14 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     "g6-standard-1",
 	},
+	"resize_disk": {
+		Type: schema.TypeBool,
+		Description: "If true, changes in Linode type will attempt to upsize or downsize implicitly created disks. " +
+			"This must be false if explicit disks are defined. This is an irreversible action as Linode disks cannot " +
+			"be automatically downsized.",
+		Optional: true,
+		Default:  false,
+	},
 	"status": {
 		Type:        schema.TypeString,
 		Description: "The status of the instance, indicating the current readiness state.",
@@ -232,6 +252,33 @@ var resourceSchema = map[string]*schema.Schema{
 			"more than 5 boot jobs issued within 15 minutes.",
 		Optional: true,
 		Default:  true,
+	},
+	"booted": {
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  nil,
+		Computed: true,
+	},
+	"shared_ipv4": {
+		Type:        schema.TypeSet,
+		Description: "A set of IPv4 addresses to share with this Linode.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+			ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+				ip := net.ParseIP(i.(string))
+				if ip == nil {
+					return diag.Errorf("invalid ipv4 address: %s", i)
+				}
+
+				if ip.To4() == nil {
+					return diag.Errorf("expected ipv4 address, got %s", i)
+				}
+
+				return nil
+			},
+		},
+		Optional: true,
+		Computed: true,
 	},
 	"specs": {
 		Computed:    true,
@@ -374,7 +421,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		ConflictsWith: []string{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
-			"backup_id", "stackscript_id", "interface"},
+			"backup_id", "stackscript_id", "interface",
+		},
 		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 			_, hasImage := d.GetOk("image")
 			return hasImage
@@ -542,7 +590,6 @@ var resourceSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Description: "Optional field for arbitrary User comments on this Config.",
 				},
-
 				"memory_limit": {
 					Type:        schema.TypeInt,
 					Optional:    true,
@@ -555,7 +602,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional: true,
 		ConflictsWith: []string{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
-			"backup_id", "stackscript_id", "interface"},
+			"backup_id", "stackscript_id", "interface",
+		},
 		Type: schema.TypeList,
 		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 			_, hasImage := d.GetOk("image")

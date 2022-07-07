@@ -64,6 +64,14 @@ func LifeCycle(t *testing.T, label, keyName string) string {
 		})
 }
 
+func LifeCycleNoID(t *testing.T, label, keyName string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_lifecycle_no_id", TemplateData{
+			Key:   objkey.TemplateData{Label: keyName},
+			Label: label,
+		})
+}
+
 func LifeCycleUpdates(t *testing.T, label, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_updates", TemplateData{

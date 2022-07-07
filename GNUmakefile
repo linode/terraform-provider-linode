@@ -8,7 +8,6 @@ MARKDOWNLINT_TAG := 0.19.0
 
 ACCTEST_COUNT?=1
 ACCTEST_PARALLELISM?=20
-ACCTEST_POLL_MS?=1000
 ACCTEST_TIMEOUT?=240m
 
 tooldeps:
@@ -47,7 +46,6 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
-	LINODE_EVENT_POLL_MS=$(ACCTEST_POLL_MS) \
 	go test -v ./$(PKG_NAME) $(TESTARGS) -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
 
 vet:

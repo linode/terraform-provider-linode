@@ -41,6 +41,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Sensitive:   true,
 		Description: "The Base64-encoded Kubeconfig for the cluster.",
 	},
+	"dashboard_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The dashboard URL of the cluster.",
+	},
 	"status": {
 		Type:        schema.TypeString,
 		Computed:    true,
@@ -116,5 +121,22 @@ var resourceSchema = map[string]*schema.Schema{
 		MinItems:    1,
 		Required:    true,
 		Description: "A node pool in the cluster.",
+	},
+	"control_plane": {
+		Type:     schema.TypeList,
+		MaxItems: 1,
+		Optional: true,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"high_availability": {
+					Type:        schema.TypeBool,
+					Description: "Defines whether High Availability is enabled for the Control Plane Components of the cluster.",
+					Optional:    true,
+					Computed:    true,
+				},
+			},
+		},
+		Description: "Defines settings for the Kubernetes Control Plane.",
 	},
 }

@@ -132,6 +132,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "check_path", "/foo"),
 					resource.TestCheckResourceAttr(resName, "check_attempts", "3"),
 					resource.TestCheckResourceAttr(resName, "check_timeout", "30"),
+					resource.TestCheckResourceAttr(resName, "check_interval", "31"),
 					resource.TestCheckResourceAttr(resName, "check_passive", "false"),
 
 					resource.TestCheckResourceAttr(resName, "stickiness", string(linodego.StickinessHTTPCookie)),

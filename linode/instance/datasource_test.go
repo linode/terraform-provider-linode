@@ -27,7 +27,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
 					resource.TestCheckResourceAttr(resName, "instances.0.type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.tags.#", "2"),
-					resource.TestCheckResourceAttr(resName, "instances.0.image", "linode/ubuntu18.04"),
+					resource.TestCheckResourceAttr(resName, "instances.0.image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "instances.0.region", "us-southeast"),
 					resource.TestCheckResourceAttr(resName, "instances.0.group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "instances.0.swap_size", "256"),
@@ -43,8 +43,11 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 	resName := "data.linode_instances.foobar"
+	resNameDesc := "data.linode_instances.desc"
+	resNameAsc := "data.linode_instances.asc"
+
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	groupName := acctest.RandomWithPrefix("tf_test")
+	tagName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -52,9 +55,30 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataMultiple(t, instanceName, groupName),
+				Config: tmpl.DataMultiple(t, instanceName, tagName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
+				),
+			},
+			{
+				Config: tmpl.DataMultipleOrder(t, instanceName, tagName),
+				Check: resource.ComposeTestCheckFunc(
+					// Ensure order is correctly appended to filter
+					resource.TestCheckResourceAttr(resNameDesc, "instances.#", "3"),
+					resource.TestCheckResourceAttr(resNameAsc, "instances.#", "3"),
+				),
+			},
+			{
+				Config: tmpl.DataMultipleRegex(t, instanceName, tagName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
+				),
+			},
+			{
+				Config: tmpl.DataClientFilter(t, instanceName, tagName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttr(resName, "instances.0.status", "running"),
 				),
 			},
 		},
