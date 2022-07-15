@@ -1,4 +1,4 @@
-package instance_disk
+package instanceconfig
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,7 +16,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"devices": {
 		Type:        schema.TypeList,
-		Elem:        &schema.Resource{Schema: disksSchema},
+		Elem:        &schema.Resource{Schema: devicesSchema},
 		Required:    true,
 		Description: "A dictionary of device disks to use as a device map in a Linode’s configuration profile.",
 	},
@@ -26,6 +26,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The Config’s label is for display purposes only.",
 	},
 
+	"booted": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "If true, the Linode will be booted to running state. If false, the Linode will be shutdown. If undefined, no action will be taken.",
+	},
 	"comments": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -46,17 +51,19 @@ var resourceSchema = map[string]*schema.Schema{
 	"kernel": {
 		Type:        schema.TypeString,
 		Optional:    true,
+		Computed:    true,
 		Description: "A Kernel ID to boot a Linode with. Defaults to “linode/latest-64bit”.",
-		Default:     "linode/latest-64bit",
 	},
 	"memory_limit": {
 		Type:        schema.TypeInt,
 		Optional:    true,
+		Computed:    true,
 		Description: "The memory limit of the Linode.",
 	},
 	"root_device": {
 		Type:     schema.TypeString,
 		Optional: true,
+		Computed: true,
 		Description: "The root device to boot. " +
 			"If no value or an invalid value is provided, root device will default to /dev/sda. " +
 			"If the device specified at the root device location is not mounted, the Linode will not boot until a device is mounted.",
@@ -64,100 +71,86 @@ var resourceSchema = map[string]*schema.Schema{
 	"run_level": {
 		Type:        schema.TypeString,
 		Optional:    true,
+		Computed:    true,
 		Description: "Defines the state of your Linode after booting.",
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{"default", "single", "binbash"}, true),
 		),
-		Default: "default",
 	},
 	"virt_mode": {
 		Type:        schema.TypeString,
 		Optional:    true,
+		Computed:    true,
 		Description: "Controls the virtualization mode.",
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{"paravirt", "fullvirt"}, true),
 		),
-		Default: "paravirt",
 	},
 }
 
-var disksSchema = map[string]*schema.Schema{
+var devicesSchema = map[string]*schema.Schema{
 	"sda": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
-		Computed:    true,
 		Optional:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 	"sdb": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
 		Optional:    true,
-		Computed:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 	"sdc": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
 		Optional:    true,
-		Computed:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 	"sdd": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
 		Optional:    true,
-		Computed:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 	"sde": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
 		Optional:    true,
-		Computed:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 	"sdf": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
 		Optional:    true,
-		Computed:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 	"sdg": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
 		Optional:    true,
-		Computed:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 	"sdh": {
 		Type:        schema.TypeList,
 		Description: deviceDescription,
 		MaxItems:    1,
 		Optional:    true,
-		Computed:    true,
-		Elem:        deviceSchema,
+		Elem:        &schema.Resource{Schema: deviceSchema},
 	},
 }
 
 var deviceSchema = map[string]*schema.Schema{
-	"disk_label": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "The `label` of the `disk` to map to this `device` slot.",
-	},
 	"disk_id": {
 		Type:        schema.TypeInt,
 		Optional:    true,
-		Computed:    true,
 		Description: "The Disk ID to map to this disk slot",
 	},
 	"volume_id": {

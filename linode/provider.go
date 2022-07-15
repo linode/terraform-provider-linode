@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/linode/terraform-provider-linode/linode/instance2"
+	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
+	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -199,6 +201,8 @@ func Provider() *schema.Provider {
 			"linode_image":                    image.Resource(),
 			"linode_instance":                 instance.Resource(),
 			"linode_instance2":                instance2.Resource(),
+			"linode_instance_config":          instanceconfig.Resource(),
+			"linode_instance_disk":            instancedisk.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),
 			"linode_instance_shared_ips":      instancesharedips.Resource(),
 			"linode_ipv6_range":               ipv6range.Resource(),

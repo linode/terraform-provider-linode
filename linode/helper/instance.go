@@ -33,20 +33,20 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 		return diag.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
 	}
 	_, err = client.WaitForEventFinished(ctx, entityID, linodego.EntityLinode,
-		linodego.ActionLinodeReboot, *instance.Created, getDeadlineSeconds(ctx, d))
+		linodego.ActionLinodeReboot, *instance.Created, GetDeadlineSeconds(ctx, d))
 	if err != nil {
 		return diag.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
 	}
 	if _, err = client.WaitForInstanceStatus(
-		ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
+		ctx, instance.ID, linodego.InstanceRunning, GetDeadlineSeconds(ctx, d),
 	); err != nil {
 		return diag.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
 	}
 	return nil
 }
 
-// getDeadlineSeconds gets the seconds remaining until deadline is met.
-func getDeadlineSeconds(ctx context.Context, d *schema.ResourceData) int {
+// GetDeadlineSeconds gets the seconds remaining until deadline is met.
+func GetDeadlineSeconds(ctx context.Context, d *schema.ResourceData) int {
 	duration := d.Timeout(schema.TimeoutUpdate)
 	if deadline, ok := ctx.Deadline(); ok {
 		duration = time.Until(deadline)
