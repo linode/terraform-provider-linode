@@ -121,6 +121,12 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		shouldUpdate = true
 	}
 
+	if watchdog, ok := d.GetOk("watchdog_enabled"); ok {
+		watchdogBool := watchdog.(bool)
+		putRequest.WatchdogEnabled = &watchdogBool
+		shouldUpdate = true
+	}
+
 	if shouldUpdate {
 		if _, err := client.UpdateInstance(ctx, inst.ID, putRequest); err != nil {
 			return diag.Errorf("failed to update instance %d: %s", inst.ID, err)
@@ -192,6 +198,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			}{Day: day, Window: window},
 		}
 
+		shouldUpdate = true
+	}
+
+	if d.HasChange("watchdog_enabled") {
+		watchdogBool := d.Get("watchdog_enabled").(bool)
+		putRequest.WatchdogEnabled = &watchdogBool
 		shouldUpdate = true
 	}
 

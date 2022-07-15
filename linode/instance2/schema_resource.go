@@ -59,6 +59,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     false,
 	},
+	"watchdog_enabled": {
+		Type:        schema.TypeBool,
+		Description: "The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly.",
+		Optional:    true,
+	},
 
 	// Computed fields
 	"created": {
@@ -127,11 +132,6 @@ var resourceSchema = map[string]*schema.Schema{
 	"updated": {
 		Type:        schema.TypeString,
 		Description: "When this Linode was last updated.",
-		Computed:    true,
-	},
-	"watchdog_enabled": {
-		Type:        schema.TypeBool,
-		Description: "The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly.",
 		Computed:    true,
 	},
 }
