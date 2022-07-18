@@ -6,21 +6,17 @@ import (
 )
 
 func TestExpandDeviceMap(t *testing.T) {
-	inputValue := []map[string]interface{}{
-		{
-			"sda": map[string]interface{}{
-				"disk_id": 12345,
-			},
-			"sdb": map[string]interface{}{
-				"volume_id": 54321,
-			},
+	inputValue := make([]interface{}, 1)
+	inputValue[0] = map[string]interface{}{
+		"sda": map[string]interface{}{
+			"disk_id": 12345,
+		},
+		"sdb": map[string]interface{}{
+			"volume_id": 54321,
 		},
 	}
 
-	result, err := expandDeviceMap(inputValue)
-	if err != nil {
-		t.Fatal(err)
-	}
+	result := expandDeviceMap(inputValue)
 
 	if result.SDA.DiskID != 12345 {
 		t.Fatal("disk id != 12345")

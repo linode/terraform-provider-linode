@@ -29,6 +29,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"booted": {
 		Type:        schema.TypeBool,
 		Optional:    true,
+		Computed:    true,
 		Description: "If true, the Linode will be booted to running state. If false, the Linode will be shutdown. If undefined, no action will be taken.",
 	},
 	"comments": {

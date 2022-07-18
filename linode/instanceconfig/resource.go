@@ -2,6 +2,7 @@ package instanceconfig
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -50,6 +51,11 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
 	}
 
+	configBooted, err := isConfigBooted(ctx, &client, inst, cfg.ID)
+	if err != nil {
+		return diag.Errorf("failed to check instance boot status: %s", err)
+	}
+
 	d.Set("label", cfg.Label)
 	d.Set("comments", cfg.Comments)
 	d.Set("kernel", cfg.Kernel)
@@ -58,7 +64,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("run_level", cfg.RunLevel)
 	d.Set("virt_mode", cfg.VirtMode)
 	d.Set("interface", flattenInterfaces(cfg.Interfaces))
-	d.Set("booted", isInstanceBooted(inst.Status))
+	d.Set("booted", configBooted)
 
 	if cfg.Devices != nil {
 		d.Set("devices", flattenDeviceMap(*cfg.Devices))
@@ -117,6 +123,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	linodeID := d.Get("linode_id").(int)
 
+	inst, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
 	putRequest := linodego.InstanceConfigUpdateOptions{}
 	shouldUpdate := false
 
@@ -172,21 +183,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() && d.HasChange("booted") {
-		booted := d.Get("booted").(bool)
-
-		if booted {
-			if err := client.BootInstance(ctx, linodeID, int(id)); err != nil {
-				return diag.Errorf("failed to boot to instance config: %s", err)
-			}
-
-			if _, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode,
-				linodego.ActionLinodeBoot, time.Now(), helper.GetDeadlineSeconds(ctx, d)); err != nil {
-				return diag.Errorf("failed to wait for instance boot: %s", err)
-			}
-		} else {
-			if err := client.ShutdownInstance(ctx, linodeID); err != nil {
-				return diag.Errorf("failed to shutdown instance: %s", err)
-			}
+		if err := applyBootStatus(ctx, &client, inst, int(id), helper.GetDeadlineSeconds(ctx, d), d.Get("booted").(bool)); err != nil {
+			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}
 
@@ -312,11 +310,104 @@ func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
 	}
 }
 
-func isInstanceBooted(status linodego.InstanceStatus) bool {
+func applyBootStatus(ctx context.Context, client *linodego.Client, instance *linodego.Instance, configID int,
+	timeoutSeconds int, booted bool) error {
+	isBooted := isInstanceInBootedState(instance.Status)
+	currentConfig, err := getCurrentBootedConfig(ctx, client, instance.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get current booted config id: %s", err)
+	}
+
+	bootedTrue := func() error {
+		// Instance is already in desired state
+		if currentConfig == configID && isBooted {
+			return nil
+		}
+
+		// Instance is booted into the wrong config
+		if isBooted && currentConfig != configID {
+			if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
+				return fmt.Errorf("failed to wait for instance running: %s", err)
+			}
+
+			if err := client.RebootInstance(ctx, instance.ID, configID); err != nil {
+				return fmt.Errorf("failed to reboot instance %d: %s", instance.ID, err)
+			}
+
+			if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
+				linodego.ActionLinodeReboot, time.Now(), timeoutSeconds); err != nil {
+				return fmt.Errorf("failed to wait for instance reboot: %s", err)
+			}
+
+			return nil
+		}
+
+		// Boot the instance
+		if !isBooted {
+			if err := client.BootInstance(ctx, instance.ID, configID); err != nil {
+				return fmt.Errorf("failed to boot instance %d: %s", instance.ID, err)
+			}
+
+			if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
+				linodego.ActionLinodeBoot, time.Now(), timeoutSeconds); err != nil {
+				return fmt.Errorf("failed to wait for instance boot: %s", err)
+			}
+		}
+
+		return nil
+	}
+
+	bootedFalse := func() error {
+		// Instance is already in desired state
+		if !isBooted || currentConfig != configID {
+			return nil
+		}
+
+		if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
+			return fmt.Errorf("failed to wait for instance running: %s", err)
+		}
+
+		if err := client.ShutdownInstance(ctx, instance.ID); err != nil {
+			return fmt.Errorf("failed to shutdown instance: %s", err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
+			linodego.ActionLinodeShutdown, time.Now(), timeoutSeconds); err != nil {
+			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
+		}
+
+		return nil
+	}
+
+	if booted {
+		if err := bootedTrue(); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := bootedFalse(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func isInstanceInBootedState(status linodego.InstanceStatus) bool {
 	// For diffing purposes, transition states need to be treated as
 	// booted == true. This is because these statuses will eventually
 	// result in a powered on Linode.
 	return status == linodego.InstanceRunning ||
 		status == linodego.InstanceRebooting ||
 		status == linodego.InstanceBooting
+}
+
+func isConfigBooted(ctx context.Context, client *linodego.Client, instance *linodego.Instance, configID int) (bool, error) {
+	currentConfig, err := getCurrentBootedConfig(ctx, client, instance.ID)
+	if err != nil {
+		return false, fmt.Errorf("failed to get current booted config id: %s", err)
+	}
+
+	return isInstanceInBootedState(instance.Status) && currentConfig == configID, nil
 }
