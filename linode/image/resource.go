@@ -131,7 +131,7 @@ func createResourceFromUpload(
 
 	imageReader, err := imageFromResourceData(d)
 	if err != nil {
-		diag.Errorf("failed to get image source: %v", err)
+		return diag.Errorf("failed to get image source: %v", err)
 	}
 	defer imageReader.Close()
 
