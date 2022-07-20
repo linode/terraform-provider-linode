@@ -6,7 +6,7 @@ var dataSourceSchema = map[string]*schema.Schema{
 	"domain_id": {
 		Type:        schema.TypeInt,
 		Description: "The domain's ID.",
-		Required:    false,
+		Required:    true,
 	},
 	"zone_file": {
 		Type:        schema.TypeList,

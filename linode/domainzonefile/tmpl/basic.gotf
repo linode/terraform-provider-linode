@@ -1,4 +1,4 @@
-{{ define "domain_record_basic" }}
+{{ define "domain_zonefile_basic" }}
 
 {{ template "domain_basic" .Domain }}
 

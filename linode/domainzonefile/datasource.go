@@ -2,10 +2,13 @@ package domainzonefile
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -18,12 +21,13 @@ func DataSource() *schema.Resource {
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
+	ticker := time.NewTicker(time.Second * 2)
+	defer ticker.Stop()
 
 	domainID := d.Get("domain_id").(int)
-
-	zf, err := client.GetDomainZoneFile(ctx, domainID)
+	zf, err := getZoneFileRetry(ctx, &client, domainID, time.Second*5)
 	if err != nil {
-		return diag.Errorf("Error fetching domain record: %v", err)
+		return diag.Errorf("%s", err)
 	}
 
 	d.SetId(strconv.Itoa(domainID))
@@ -31,4 +35,25 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("zone_file", zf.ZoneFile)
 
 	return nil
+}
+
+func getZoneFileRetry(ctx context.Context, client *linodego.Client,
+	domainID int, retryDuration time.Duration,
+) (*linodego.DomainZoneFile, error) {
+	ticker := time.NewTicker(time.Second * 2)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			zf, err := client.GetDomainZoneFile(ctx, domainID)
+			if err != nil {
+				return nil, fmt.Errorf("error fetching domain record: %v", err)
+			}
+			if len(zf.ZoneFile) > 0 {
+				return zf, nil
+			}
+		case <-ctx.Done():
+			return nil, fmt.Errorf("unable to fetch domain record")
+		}
+	}
 }

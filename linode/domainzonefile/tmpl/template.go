@@ -9,11 +9,14 @@ import (
 
 type TemplateData struct {
 	Domain domain.TemplateData
+
+	Record string
 }
 
 func Basic(t *testing.T, domainRecord string) string {
 	return acceptance.ExecuteTemplate(t,
-		"domain_record_basic", TemplateData{
+		"domain_zonefile_basic", TemplateData{
 			Domain: domain.TemplateData{Domain: domainRecord + ".example"},
+			Record: domainRecord,
 		})
 }
