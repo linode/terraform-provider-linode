@@ -3,7 +3,6 @@ package linode
 import (
 	"context"
 	"fmt"
-	"github.com/linode/terraform-provider-linode/linode/instance2"
 	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"os"
@@ -200,7 +199,6 @@ func Provider() *schema.Provider {
 			"linode_firewall_device":          firewalldevice.Resource(),
 			"linode_image":                    image.Resource(),
 			"linode_instance":                 instance.Resource(),
-			"linode_instance2":                instance2.Resource(),
 			"linode_instance_config":          instanceconfig.Resource(),
 			"linode_instance_disk":            instancedisk.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),

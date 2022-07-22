@@ -125,10 +125,16 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	linodeID := d.Get("linode_id").(int)
 
+	//disk, err := client.GetInstanceDisk(ctx, linodeID, int(id64))
+	//if err != nil {
+	//	return diag.Errorf("failed to get disk: %s", err)
+	//}
+
 	err = client.DeleteInstanceDisk(ctx, linodeID, int(id64))
 	if err != nil {
 		return diag.Errorf("Error deleting Linode Instance Disk %d: %s", id64, err)
 	}
+
 	d.SetId("")
 	return nil
 }

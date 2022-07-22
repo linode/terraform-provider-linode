@@ -17,7 +17,9 @@ var resourceSchema = map[string]*schema.Schema{
 	"devices": {
 		Type:        schema.TypeList,
 		Elem:        &schema.Resource{Schema: devicesSchema},
-		Required:    true,
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
 		Description: "A dictionary of device disks to use as a device map in a Linode’s configuration profile.",
 	},
 	"label": {
