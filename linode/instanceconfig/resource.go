@@ -8,6 +8,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"log"
 	"strconv"
+	"time"
 )
 
 func Resource() *schema.Resource {
@@ -208,6 +209,25 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	linodeID := d.Get("linode_id").(int)
+
+	inst, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
+	if booted, err := isConfigBooted(ctx, &client, inst, int(id64)); err != nil {
+		return diag.Errorf("failed to check if config is booted: %s", err)
+	} else if booted {
+		log.Printf("[INFO] Shutting down instance %d for config deletion: %s\n", inst.ID, err)
+		if err := client.ShutdownInstance(ctx, inst.ID); err != nil {
+			return diag.Errorf("failed to shutdown instance: %s", err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, inst.ID, linodego.EntityLinode,
+			linodego.ActionLinodeShutdown, time.Now(), helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			return diag.Errorf("failed to wait for instance shutdown: %s", err)
+		}
+	}
 
 	err = client.DeleteInstanceConfig(ctx, linodeID, int(id64))
 	if err != nil {
