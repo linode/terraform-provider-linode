@@ -12,6 +12,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"linode_id": {
 		Type:        schema.TypeInt,
 		Required:    true,
+		ForceNew:    true,
 		Description: "The ID of the Linode to create this configuration profile under.",
 	},
 	"devices": {
@@ -43,6 +44,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Elem:        &schema.Resource{Schema: helpersSchema},
 		Optional:    true,
+		Computed:    true,
 		Description: "Helpers enabled when booting to this Linode Config.",
 	},
 	"interface": {

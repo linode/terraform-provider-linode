@@ -2,12 +2,14 @@ package instanceconfig
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -19,21 +21,45 @@ func Resource() *schema.Resource {
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: importResource,
 		},
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	s := strings.Split(d.Id(), "/")
+	if len(s) != 2 {
+		return nil, fmt.Errorf("invalid number of id segments")
 	}
 
-	linodeID := d.Get("linode_id").(int)
+	linodeID, err := strconv.Atoi(s[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid linode ID: %v", err)
+	}
 
-	cfg, err := client.GetInstanceConfig(ctx, linodeID, int(id))
+	d.SetId(d.Id())
+	d.Set("linode_id", linodeID)
+
+	diagError := readResource(ctx, d, meta)
+	if diagError != nil {
+		return nil, fmt.Errorf("unable to import %v as instance config: %v", d.Id(), diagError)
+	}
+
+	results := make([]*schema.ResourceData, 0)
+	results = append(results, d)
+
+	return results, nil
+}
+
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*helper.ProviderMeta).Client
+
+	linodeID, id, err := parseID(d.Id())
+	if err != nil {
+		return diag.Errorf("failed to parse id: %s", err)
+	}
+
+	cfg, err := client.GetInstanceConfig(ctx, linodeID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Instance Config ID %q from state because it no longer exists", d.Id())
@@ -109,7 +135,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to create linode instance config: %s", err)
 	}
 
-	d.SetId(strconv.Itoa(cfg.ID))
+	d.SetId(formatID(linodeID, cfg.ID))
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
 		if err := applyBootStatus(ctx, &client, inst, cfg.ID, helper.GetDeadlineSeconds(ctx, d), d.Get("booted").(bool)); err != nil {
@@ -122,12 +148,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	linodeID, id, err := parseID(d.Id())
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("failed to parse id: %s", err)
 	}
-
-	linodeID := d.Get("linode_id").(int)
 
 	inst, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
@@ -203,19 +227,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id64, err := strconv.ParseInt(d.Id(), 10, 64)
+	linodeID, id, err := parseID(d.Id())
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Instance id %s as int", d.Id())
+		return diag.Errorf("failed to parse id: %s", err)
 	}
-
-	linodeID := d.Get("linode_id").(int)
 
 	inst, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
 		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
 	}
 
-	if booted, err := isConfigBooted(ctx, &client, inst, int(id64)); err != nil {
+	// Shutdown the instance if the config is in use
+	if booted, err := isConfigBooted(ctx, &client, inst, id); err != nil {
 		return diag.Errorf("failed to check if config is booted: %s", err)
 	} else if booted {
 		log.Printf("[INFO] Shutting down instance %d for config deletion: %s\n", inst.ID, err)
@@ -229,9 +252,9 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
-	err = client.DeleteInstanceConfig(ctx, linodeID, int(id64))
+	err = client.DeleteInstanceConfig(ctx, linodeID, id)
 	if err != nil {
-		return diag.Errorf("Error deleting Linode Instance Config %d: %s", id64, err)
+		return diag.Errorf("Error deleting Linode Instance Config %d: %s", id, err)
 	}
 	d.SetId("")
 	return nil

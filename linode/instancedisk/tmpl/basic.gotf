@@ -1,0 +1,5 @@
+{{ define "instance_disk_basic" }}
+
+
+
+{{ end }}

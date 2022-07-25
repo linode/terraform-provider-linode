@@ -45,7 +45,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	d.Set("created", disk.Created.Format(time.RFC3339))
 	d.Set("filesystem", disk.Filesystem)
-	d.Set("id", disk.ID)
 	d.Set("label", disk.Label)
 	d.Set("size", disk.Size)
 	d.Set("status", disk.Status)

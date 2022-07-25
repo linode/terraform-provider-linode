@@ -6,14 +6,38 @@ import (
 	"fmt"
 	"github.com/linode/linodego"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
 
 var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
 
-func getCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID int) (int, error) {
+func parseID(id string) (int, int, error) {
+	s := strings.Split(id, "/")
 
+	if len(s) != 2 {
+		return 0, 0, fmt.Errorf("invalid number of id segments")
+	}
+
+	linodeID, err := strconv.Atoi(s[0])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	configID, err := strconv.Atoi(s[1])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return linodeID, configID, nil
+}
+
+func formatID(linodeID, configID int) string {
+	return fmt.Sprintf("%d/%d", linodeID, configID)
+}
+
+func getCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID int) (int, error) {
 	filter := map[string]any{
 		"entity.id":   instID,
 		"entity.type": linodego.EntityLinode,
@@ -57,9 +81,11 @@ func flattenDeviceMap(deviceMap linodego.InstanceConfigDeviceMap) []map[string]a
 
 		fieldName := strings.ToLower(reflectMap.Type().Field(i).Name)
 
-		result[fieldName] = map[string]any{
-			"disk_id":   field.DiskID,
-			"volume_id": field.VolumeID,
+		result[fieldName] = []map[string]any{
+			{
+				"disk_id":   field.DiskID,
+				"volume_id": field.VolumeID,
+			},
 		}
 	}
 
@@ -73,7 +99,7 @@ func flattenHelpers(helpers linodego.InstanceConfigHelpers) []map[string]any {
 	result["distro"] = helpers.Distro
 	result["modules_dep"] = helpers.ModulesDep
 	result["network"] = helpers.Network
-	result["updatedb_disable"] = helpers.UpdateDBDisabled
+	result["updatedb_disabled"] = helpers.UpdateDBDisabled
 
 	return []map[string]any{result}
 }
@@ -94,6 +120,7 @@ func flattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[stri
 
 func expandDeviceMap(deviceMap any) *linodego.InstanceConfigDeviceMap {
 	var result linodego.InstanceConfigDeviceMap
+
 	deviceMapSlice := deviceMap.([]any)
 
 	if len(deviceMapSlice) < 1 {
