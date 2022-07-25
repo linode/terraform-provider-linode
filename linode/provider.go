@@ -3,9 +3,10 @@ package linode
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

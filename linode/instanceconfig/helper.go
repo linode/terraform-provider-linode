@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/linode/linodego"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/linode/linodego"
 )
 
 var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
@@ -174,7 +175,8 @@ func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
 }
 
 func applyBootStatus(ctx context.Context, client *linodego.Client, instance *linodego.Instance, configID int,
-	timeoutSeconds int, booted bool) error {
+	timeoutSeconds int, booted bool,
+) error {
 	isBooted := isInstanceInBootedState(instance.Status)
 	currentConfig, err := getCurrentBootedConfig(ctx, client, instance.ID)
 	if err != nil {
