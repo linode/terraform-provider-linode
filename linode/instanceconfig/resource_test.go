@@ -114,6 +114,114 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstanceConfig_booted(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	resName := "linode_instance_config.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Booted(t, instanceName, false),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					checkConfigExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					resource.TestCheckResourceAttr(resName, "booted", "false"),
+					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
+				),
+			},
+			{
+				PreConfig: func() {
+					if instance.Status != linodego.InstanceOffline {
+						t.Fatalf("expected instance to be offline, got %s", instance.Status)
+					}
+				},
+				Config: tmpl.Booted(t, instanceName, true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					checkConfigExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
+					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
+				),
+			},
+			{
+				PreConfig: func() {
+					if instance.Status != linodego.InstanceRunning {
+						t.Fatalf("expected instance to be running, got %s", instance.Status)
+					}
+				},
+				Config: tmpl.Booted(t, instanceName, true),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	config1Name := "linode_instance_config.foobar1"
+	config2Name := "linode_instance_config.foobar2"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.BootedSwap(t, instanceName, false),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					checkConfigExists(config1Name, nil),
+					checkConfigExists(config2Name, nil),
+
+					resource.TestCheckResourceAttr(config1Name, "booted", "false"),
+					resource.TestCheckResourceAttr(config2Name, "booted", "true"),
+				),
+			},
+			{
+				PreConfig: func() {
+					if instance.Status != linodego.InstanceRunning {
+						t.Fatalf("expected instance to be running, got %s", instance.Status)
+					}
+				},
+				Config: tmpl.BootedSwap(t, instanceName, true),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					checkConfigExists(config1Name, nil),
+					checkConfigExists(config2Name, nil),
+
+					resource.TestCheckResourceAttr(config1Name, "booted", "true"),
+					resource.TestCheckResourceAttr(config2Name, "booted", "false"),
+				),
+			},
+			{
+				PreConfig: func() {
+					if instance.Status != linodego.InstanceRunning {
+						t.Fatalf("expected instance to be running, got %s", instance.Status)
+					}
+				},
+				Config: tmpl.BootedSwap(t, instanceName, true),
+			},
+		},
+	})
+}
+
 func checkConfigExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client

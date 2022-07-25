@@ -1,0 +1,20 @@
+{{ define "instance_config_booted" }}
+
+{{ template "instance_config_empty_instance" . }}
+
+{{ template "instance_config_disk" . }}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config"
+
+  devices {
+    sda {
+      disk_id = linode_instance_disk.foobar.id
+    }
+  }
+
+  booted = {{ .Booted }}
+}
+
+{{ end }}

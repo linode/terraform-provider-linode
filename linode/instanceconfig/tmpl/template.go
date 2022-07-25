@@ -6,7 +6,8 @@ import (
 )
 
 type TemplateData struct {
-	Label string
+	Label  string
+	Booted bool
 }
 
 func Basic(t *testing.T, label string) string {
@@ -27,5 +28,21 @@ func ComplexUpdates(t *testing.T, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_complex_updates", TemplateData{
 			Label: label,
+		})
+}
+
+func Booted(t *testing.T, label string, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_config_booted", TemplateData{
+			Label:  label,
+			Booted: booted,
+		})
+}
+
+func BootedSwap(t *testing.T, label string, swap bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_config_booted_swap", TemplateData{
+			Label:  label,
+			Booted: swap,
 		})
 }
