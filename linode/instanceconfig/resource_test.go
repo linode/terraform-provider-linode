@@ -79,6 +79,33 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				),
 			},
 			{
+				Config: tmpl.ComplexUpdates(t, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					checkConfigExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config-updated"),
+					resource.TestCheckResourceAttr(resName, "comments", "cool-updated"),
+
+					resource.TestCheckResourceAttr(resName, "helpers.0.devtmpfs_automount", "false"),
+					resource.TestCheckResourceAttr(resName, "helpers.0.distro", "false"),
+					resource.TestCheckResourceAttr(resName, "helpers.0.modules_dep", "false"),
+					resource.TestCheckResourceAttr(resName, "helpers.0.network", "false"),
+					resource.TestCheckResourceAttr(resName, "helpers.0.updatedb_disabled", "false"),
+
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "vlan"),
+					resource.TestCheckResourceAttr(resName, "interface.0.label", "cool"),
+					resource.TestCheckResourceAttr(resName, "interface.0.ipam_address", "10.0.0.3/24"),
+
+					resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-32bit"),
+					resource.TestCheckResourceAttr(resName, "memory_limit", "513"),
+					resource.TestCheckResourceAttr(resName, "root_device", "/dev/sdb"),
+					resource.TestCheckResourceAttr(resName, "virt_mode", "fullvirt"),
+
+					resource.TestCheckResourceAttr(resName, "booted", "false"),
+
+					resource.TestCheckResourceAttrSet(resName, "devices.0.sdb.0.disk_id"),
+				),
+			},
+			{
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -22,3 +22,10 @@ func Complex(t *testing.T, label string) string {
 			Label: label,
 		})
 }
+
+func ComplexUpdates(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_config_complex_updates", TemplateData{
+			Label: label,
+		})
+}
