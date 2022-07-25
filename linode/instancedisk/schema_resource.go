@@ -14,6 +14,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"linode_id": {
 		Type:        schema.TypeInt,
 		Required:    true,
+		ForceNew:    true,
 		Description: "The ID of the Linode to assign this disk to.",
 	},
 	"size": {
