@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -26,19 +28,26 @@ func Resource() *schema.Resource {
 }
 
 func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	ids, err := helper.ParseMultiSegmentID(d.Id(), 2)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse id: %s", err)
+	if strings.Contains(d.Id(), ",") {
+		s := strings.Split(d.Id(), ",")
+		// Validate that this is an ID by making sure it can be converted into an int
+		_, err := strconv.Atoi(s[1])
+		if err != nil {
+			return nil, fmt.Errorf("invalid config ID: %v", err)
+		}
+
+		instID, err := strconv.Atoi(s[0])
+		if err != nil {
+			return nil, fmt.Errorf("invalid instance ID: %v", err)
+		}
+
+		d.SetId(s[1])
+		d.Set("linode_id", instID)
 	}
 
-	linodeID := ids[0]
-
-	d.SetId(d.Id())
-	d.Set("linode_id", linodeID)
-
-	diagError := readResource(ctx, d, meta)
-	if diagError != nil {
-		return nil, fmt.Errorf("unable to import %v as instance config: %v", d.Id(), diagError)
+	err := readResource(ctx, d, meta)
+	if err != nil {
+		return nil, fmt.Errorf("unable to import %v as instance config: %v", d.Id(), err)
 	}
 
 	results := make([]*schema.ResourceData, 0)
@@ -50,12 +59,12 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	ids, err := helper.ParseMultiSegmentID(d.Id(), 2)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse id: %s", err)
 	}
 
-	linodeID, id := ids[0], ids[1]
+	linodeID := d.Get("linode_id").(int)
 
 	cfg, err := client.GetInstanceConfig(ctx, linodeID, id)
 	if err != nil {
@@ -134,7 +143,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to create linode instance config: %s", err)
 	}
 
-	d.SetId(helper.FormatMultiSegmentID(linodeID, cfg.ID))
+	d.SetId(strconv.Itoa(cfg.ID))
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
 		if err := applyBootStatus(ctx, &client, inst, cfg.ID, helper.GetDeadlineSeconds(ctx, d), d.Get("booted").(bool)); err != nil {
@@ -147,12 +156,12 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	ids, err := helper.ParseMultiSegmentID(d.Id(), 2)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse id: %s", err)
 	}
 
-	linodeID, id := ids[0], ids[1]
+	linodeID := d.Get("linode_id").(int)
 
 	inst, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
@@ -228,12 +237,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	ids, err := helper.ParseMultiSegmentID(d.Id(), 2)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse id: %s", err)
 	}
 
-	linodeID, id := ids[0], ids[1]
+	linodeID := d.Get("linode_id").(int)
 
 	inst, err := client.GetInstance(ctx, linodeID)
 	if err != nil {

@@ -3,6 +3,9 @@ package instancedisk_test
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -10,7 +13,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk/tmpl"
-	"testing"
 )
 
 func TestAccResourceInstanceDisk_basic(t *testing.T) {
@@ -63,6 +65,7 @@ func TestAccResourceInstanceDisk_basic(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
 			},
 		},
 	})
@@ -94,6 +97,63 @@ func TestAccResourceInstanceDisk_complex(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_disk.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	var instance linodego.Instance
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.BootedResize(t, label, 2048),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttr(resName, "size", "2048"),
+					resource.TestCheckResourceAttr(resName, "status", "ready"),
+
+					resource.TestCheckResourceAttrSet(resName, "linode_id"),
+				),
+			},
+			// Resize up
+			{
+				Config: tmpl.BootedResize(t, label, 2049),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttr(resName, "size", "2049"),
+					resource.TestCheckResourceAttr(resName, "status", "ready"),
+
+					resource.TestCheckResourceAttrSet(resName, "linode_id"),
+				),
+			},
+			{
+				PreConfig: func() {
+					if instance.Status != linodego.InstanceRunning {
+						t.Fatalf("expected instance to be running, found %s", instance.Status)
+					}
+				},
+				Config: tmpl.BootedResize(t, label, 2049),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"image", "root_pass"},
 			},
 		},
 	})
@@ -112,12 +172,10 @@ func checkExists(name string, disk *linodego.InstanceDisk) resource.TestCheckFun
 			return fmt.Errorf("No ID is set")
 		}
 
-		ids, err := helper.ParseMultiSegmentID(rs.Primary.ID, 2)
+		linodeID, id, err := getResourceIDs(rs)
 		if err != nil {
 			return fmt.Errorf("failed to get disk info: %v", err)
 		}
-
-		linodeID, id := ids[0], ids[1]
 
 		found, err := client.GetInstanceDisk(context.Background(), linodeID, id)
 		if err != nil {
@@ -139,14 +197,12 @@ func checkDestroy(s *terraform.State) error {
 			continue
 		}
 
-		ids, err := helper.ParseMultiSegmentID(rs.Primary.ID, 2)
+		linodeID, id, err := getResourceIDs(rs)
 		if err != nil {
 			return fmt.Errorf("failed to get disk info: %v", err)
 		}
 
-		linodeID, id := ids[0], ids[1]
-
-		_, err = client.GetInstanceConfig(context.Background(), linodeID, id)
+		_, err = client.GetInstanceDisk(context.Background(), linodeID, id)
 
 		if err == nil {
 			return fmt.Errorf("disk with id %d still exists", id)
@@ -158,4 +214,35 @@ func checkDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func getResourceIDs(rs *terraform.ResourceState) (int, int, error) {
+	id, err := strconv.Atoi(rs.Primary.ID)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	linodeID, err := strconv.Atoi(rs.Primary.Attributes["linode_id"])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return linodeID, id, nil
+}
+
+func resourceImportStateID(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_instance_disk" {
+			continue
+		}
+
+		linodeID, id, err := getResourceIDs(rs)
+		if err != nil {
+			return "", fmt.Errorf("failed to get disk info: %v", err)
+		}
+
+		return fmt.Sprintf("%d,%d", linodeID, id), nil
+	}
+
+	return "", fmt.Errorf("Error finding linode_instance_disk")
 }

@@ -1,8 +1,9 @@
 package tmpl
 
 import (
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"testing"
+
+	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -25,5 +26,13 @@ func Complex(t *testing.T, label string, size int) string {
 			Label:  label,
 			Size:   size,
 			PubKey: acceptance.PublicKeyMaterial,
+		})
+}
+
+func BootedResize(t *testing.T, label string, size int) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_disk_booted_resize", TemplateData{
+			Label: label,
+			Size:  size,
 		})
 }

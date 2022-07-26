@@ -48,12 +48,3 @@ func BootedSwap(t *testing.T, label string, swap bool) string {
 			Swap:  swap,
 		})
 }
-
-func DiskSwap(t *testing.T, label string, swap, booted bool) string {
-	return acceptance.ExecuteTemplate(t,
-		"instance_config_disk_swap", TemplateData{
-			Label:  label,
-			Swap:   swap,
-			Booted: booted,
-		})
-}

@@ -3,6 +3,7 @@ package instanceconfig_test
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -36,6 +37,7 @@ func TestAccResourceInstanceConfig_basic(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
 			},
 		},
 	})
@@ -108,6 +110,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
 			},
 		},
 	})
@@ -163,6 +166,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
 			},
 		},
 	})
@@ -234,12 +238,10 @@ func checkExists(name string, config *linodego.InstanceConfig) resource.TestChec
 			return fmt.Errorf("No ID is set")
 		}
 
-		ids, err := helper.ParseMultiSegmentID(rs.Primary.ID, 2)
+		linodeID, id, err := getResourceIDs(rs)
 		if err != nil {
-			return fmt.Errorf("failed to get config info: %v", err)
+			return fmt.Errorf("failed to get disk info: %v", err)
 		}
-
-		linodeID, id := ids[0], ids[1]
 
 		found, err := client.GetInstanceConfig(context.Background(), linodeID, id)
 		if err != nil {
@@ -261,12 +263,10 @@ func checkDestroy(s *terraform.State) error {
 			continue
 		}
 
-		ids, err := helper.ParseMultiSegmentID(rs.Primary.ID, 2)
+		linodeID, id, err := getResourceIDs(rs)
 		if err != nil {
-			return fmt.Errorf("failed to get config info: %v", err)
+			return fmt.Errorf("failed to get disk info: %v", err)
 		}
-
-		linodeID, id := ids[0], ids[1]
 
 		_, err = client.GetInstanceConfig(context.Background(), linodeID, id)
 
@@ -280,4 +280,35 @@ func checkDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func getResourceIDs(rs *terraform.ResourceState) (int, int, error) {
+	id, err := strconv.Atoi(rs.Primary.ID)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	linodeID, err := strconv.Atoi(rs.Primary.Attributes["linode_id"])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return linodeID, id, nil
+}
+
+func resourceImportStateID(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_instance_config" {
+			continue
+		}
+
+		linodeID, id, err := getResourceIDs(rs)
+		if err != nil {
+			return "", fmt.Errorf("failed to get config info: %v", err)
+		}
+
+		return fmt.Sprintf("%d,%d", linodeID, id), nil
+	}
+
+	return "", fmt.Errorf("Error finding linode_instance_config")
 }

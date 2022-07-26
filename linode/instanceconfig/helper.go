@@ -2,47 +2,15 @@ package instanceconfig
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
 
+	"github.com/linode/terraform-provider-linode/linode/helper"
+
 	"github.com/linode/linodego"
 )
-
-var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
-
-func getCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID int) (int, error) {
-	filter := map[string]any{
-		"entity.id":   instID,
-		"entity.type": linodego.EntityLinode,
-		"+or":         []map[string]any{},
-	}
-
-	for _, v := range bootEvents {
-		filter["+or"] = append(filter["+or"].([]map[string]any), map[string]any{"action": v})
-	}
-
-	filterBytes, err := json.Marshal(filter)
-	if err != nil {
-		return 0, err
-	}
-
-	events, err := client.ListEvents(ctx, &linodego.ListOptions{
-		Filter: string(filterBytes),
-	})
-	if err != nil {
-		return 0, err
-	}
-
-	if len(events) < 1 {
-		// This is a valid exit case
-		return 0, nil
-	}
-
-	return int(events[0].SecondaryEntity.ID.(float64)), nil
-}
 
 func flattenDeviceMap(deviceMap linodego.InstanceConfigDeviceMap) []map[string]any {
 	result := make(map[string]any)
@@ -152,8 +120,8 @@ func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
 func applyBootStatus(ctx context.Context, client *linodego.Client, instance *linodego.Instance, configID int,
 	timeoutSeconds int, booted bool,
 ) error {
-	isBooted := isInstanceInBootedState(instance.Status)
-	currentConfig, err := getCurrentBootedConfig(ctx, client, instance.ID)
+	isBooted := helper.IsInstanceInBootedState(instance.Status)
+	currentConfig, err := helper.GetCurrentBootedConfig(ctx, client, instance.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get current booted config id: %s", err)
 	}
@@ -250,20 +218,11 @@ func expandInterfaces(ifaces []any) []linodego.InstanceConfigInterface {
 	return result
 }
 
-func isInstanceInBootedState(status linodego.InstanceStatus) bool {
-	// For diffing purposes, transition states need to be treated as
-	// booted == true. This is because these statuses will eventually
-	// result in a powered on Linode.
-	return status == linodego.InstanceRunning ||
-		status == linodego.InstanceRebooting ||
-		status == linodego.InstanceBooting
-}
-
 func isConfigBooted(ctx context.Context, client *linodego.Client, instance *linodego.Instance, configID int) (bool, error) {
-	currentConfig, err := getCurrentBootedConfig(ctx, client, instance.ID)
+	currentConfig, err := helper.GetCurrentBootedConfig(ctx, client, instance.ID)
 	if err != nil {
 		return false, fmt.Errorf("failed to get current booted config id: %s", err)
 	}
 
-	return isInstanceInBootedState(instance.Status) && currentConfig == configID, nil
+	return helper.IsInstanceInBootedState(instance.Status) && currentConfig == configID, nil
 }
