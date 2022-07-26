@@ -21,11 +21,10 @@ func DataSource() *schema.Resource {
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	ticker := time.NewTicker(time.Second * 2)
-	defer ticker.Stop()
 
 	domainID := d.Get("domain_id").(int)
-	zf, err := getZoneFileRetry(ctx, &client, domainID, time.Second*5)
+	retryDuration := time.Duration(meta.(*helper.ProviderMeta).Config.EventPollMilliseconds)
+	zf, err := getZoneFileRetry(ctx, &client, domainID, retryDuration)
 	if err != nil {
 		return diag.Errorf("%s", err)
 	}
@@ -40,7 +39,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 func getZoneFileRetry(ctx context.Context, client *linodego.Client,
 	domainID int, retryDuration time.Duration,
 ) (*linodego.DomainZoneFile, error) {
-	ticker := time.NewTicker(time.Second * 2)
+	ticker := time.NewTicker(retryDuration)
 	defer ticker.Stop()
 	for {
 		select {

@@ -16,7 +16,7 @@ type TemplateData struct {
 func Basic(t *testing.T, domainRecord string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_zonefile_basic", TemplateData{
-			Domain: domain.TemplateData{Domain: domainRecord + ".example"},
+			Domain: domain.TemplateData{Domain: domainRecord},
 			Record: domainRecord,
 		})
 }

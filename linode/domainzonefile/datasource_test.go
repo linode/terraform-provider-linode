@@ -11,7 +11,7 @@ import (
 
 func TestAccDataSourceDomainZonefile_basic(t *testing.T) {
 	datasourceName := "data.linode_domain_zonefile.foobar"
-	domain := acctest.RandomWithPrefix("zone") + ".example"
+	domain := acctest.RandomWithPrefix("tf-test") + ".example"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { acceptance.PreCheck(t) },
