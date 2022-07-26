@@ -24,26 +24,29 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 
 	"authorized_keys": {
-		Type:        schema.TypeSet,
-		Elem:        &schema.Schema{Type: schema.TypeString},
-		Optional:    true,
-		ForceNew:    true,
-		Description: "A list of public SSH keys that will be automatically appended to the root user’s ~/.ssh/authorized_keys file when deploying from an Image.",
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Optional: true,
+		ForceNew: true,
+		Description: "A list of public SSH keys that will be automatically appended to the root " +
+			"user’s ~/.ssh/authorized_keys file when deploying from an Image.",
 	},
 	"authorized_users": {
-		Type:        schema.TypeSet,
-		Elem:        &schema.Schema{Type: schema.TypeString},
-		Optional:    true,
-		ForceNew:    true,
-		Description: "A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root users ~/.ssh/authorized_keys file automatically when deploying from an Image.",
+		Type:     schema.TypeSet,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Optional: true,
+		ForceNew: true,
+		Description: "A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the " +
+			"root users ~/.ssh/authorized_keys file automatically when deploying from an Image.",
 	},
 	"filesystem": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ForceNew:         true,
-		Computed:         true,
-		Description:      "The filesystem of this disk.",
-		ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"raw", "swap", "ext3", "ext4", "initrd"}, true)),
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Computed:    true,
+		Description: "The filesystem of this disk.",
+		ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(
+			[]string{"raw", "swap", "ext3", "ext4", "initrd"}, true)),
 	},
 	"image": {
 		Type:        schema.TypeString,
@@ -68,10 +71,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Sensitive: true,
 	},
 	"stackscript_id": {
-		Type:        schema.TypeInt,
-		Description: "A StackScript ID that will cause the referenced StackScript to be run during deployment of this Linode.",
-		Optional:    true,
-		ForceNew:    true,
+		Type: schema.TypeInt,
+		Description: "A StackScript ID that will cause the referenced StackScript " +
+			"to be run during deployment of this Linode.",
+		Optional: true,
+		ForceNew: true,
 	},
 
 	"created": {

@@ -30,10 +30,11 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 
 	"booted": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Computed:    true,
-		Description: "If true, the Linode will be booted to running state. If false, the Linode will be shutdown. If undefined, no action will be taken.",
+		Type:     schema.TypeBool,
+		Optional: true,
+		Computed: true,
+		Description: "If true, the Linode will be booted to running state. " +
+			"If false, the Linode will be shutdown. If undefined, no action will be taken.",
 	},
 	"comments": {
 		Type:        schema.TypeString,
@@ -71,7 +72,8 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed: true,
 		Description: "The root device to boot. " +
 			"If no value or an invalid value is provided, root device will default to /dev/sda. " +
-			"If the device specified at the root device location is not mounted, the Linode will not boot until a device is mounted.",
+			"If the device specified at the root device location is not mounted, " +
+			"the Linode will not boot until a device is mounted.",
 	},
 	"run_level": {
 		Type:        schema.TypeString,

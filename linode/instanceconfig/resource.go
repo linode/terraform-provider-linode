@@ -146,7 +146,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	d.SetId(strconv.Itoa(cfg.ID))
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
-		if err := applyBootStatus(ctx, &client, inst, cfg.ID, helper.GetDeadlineSeconds(ctx, d), d.Get("booted").(bool)); err != nil {
+		if err := applyBootStatus(ctx, &client, inst, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
+			d.Get("booted").(bool)); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}
@@ -227,7 +228,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() && d.HasChange("booted") {
-		if err := applyBootStatus(ctx, &client, inst, int(id), helper.GetDeadlineSeconds(ctx, d), d.Get("booted").(bool)); err != nil {
+		if err := applyBootStatus(ctx, &client, inst, int(id), helper.GetDeadlineSeconds(ctx, d),
+			d.Get("booted").(bool)); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}

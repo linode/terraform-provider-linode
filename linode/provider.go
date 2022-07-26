@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
-	"github.com/linode/terraform-provider-linode/linode/instancedisk"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -31,6 +28,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instance"
+	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
+	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"

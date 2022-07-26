@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/linode/terraform-provider-linode/linode/helper"
-
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func flattenDeviceMap(deviceMap linodego.InstanceConfigDeviceMap) []map[string]any {
@@ -218,7 +217,9 @@ func expandInterfaces(ifaces []any) []linodego.InstanceConfigInterface {
 	return result
 }
 
-func isConfigBooted(ctx context.Context, client *linodego.Client, instance *linodego.Instance, configID int) (bool, error) {
+func isConfigBooted(ctx context.Context, client *linodego.Client,
+	instance *linodego.Instance, configID int,
+) (bool, error) {
 	currentConfig, err := helper.GetCurrentBootedConfig(ctx, client, instance.ID)
 	if err != nil {
 		return false, fmt.Errorf("failed to get current booted config id: %s", err)
