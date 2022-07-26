@@ -1,6 +1,6 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_daomin_record"
+page_title: "Linode: linode_domain_record"
 sidebar_current: "docs-linode-datasource-domain-record"
 description: |-
   Provides details about a Linode Domain Record.
