@@ -82,5 +82,6 @@ linters:
     - errorlint
     - forbidigo
     - godot
+    - typecheck
 
   fast: false
