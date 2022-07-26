@@ -14,7 +14,7 @@ resource "linode_instance_config" "foobar1" {
     }
   }
 
-  booted = {{ .Booted }}
+  booted = {{ .Swap }}
 }
 
 resource "linode_instance_config" "foobar2" {
@@ -27,7 +27,7 @@ resource "linode_instance_config" "foobar2" {
     }
   }
 
-  booted = {{ not .Booted }}
+  booted = {{ not .Swap }}
 }
 
 {{ end }}

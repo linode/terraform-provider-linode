@@ -9,6 +9,7 @@ import (
 type TemplateData struct {
 	Label  string
 	Booted bool
+	Swap   bool
 }
 
 func Basic(t *testing.T, label string) string {
@@ -43,7 +44,16 @@ func Booted(t *testing.T, label string, booted bool) string {
 func BootedSwap(t *testing.T, label string, swap bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_booted_swap", TemplateData{
+			Label: label,
+			Swap:  swap,
+		})
+}
+
+func DiskSwap(t *testing.T, label string, swap, booted bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_config_disk_swap", TemplateData{
 			Label:  label,
-			Booted: swap,
+			Swap:   swap,
+			Booted: booted,
 		})
 }

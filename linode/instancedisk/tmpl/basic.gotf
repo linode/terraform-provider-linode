@@ -7,9 +7,9 @@ resource "linode_instance" "foobar" {
 }
 
 resource "linode_instance_disk" "foobar" {
-  label = "boot"
+  label = "{{ .Label }}"
   linode_id = linode_instance.foobar.id
-  size = linode_instance.foobar.specs.0.disk
+  size = {{ .Size }}
 }
 
 {{ end }}

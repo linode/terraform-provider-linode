@@ -3,7 +3,6 @@ package instancedisk
 import (
 	"context"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -27,14 +26,14 @@ func Resource() *schema.Resource {
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	ids, err := helper.ParseMultiSegmentID(d.Id(), 2)
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("failed to parse id: %s", err)
 	}
 
-	linodeID := d.Get("linode_id").(int)
+	linodeID, id := ids[0], ids[1]
 
-	disk, err := client.GetInstanceDisk(ctx, linodeID, int(id))
+	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Instance Disk ID %q from state because it no longer exists", d.Id())
@@ -44,6 +43,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("Error finding the specified Linode Instance Disk: %s", err)
 	}
 
+	d.Set("linode_id", linodeID)
 	d.Set("created", disk.Created.Format(time.RFC3339))
 	d.Set("filesystem", disk.Filesystem)
 	d.Set("label", disk.Label)
@@ -74,28 +74,58 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.StackscriptData = expandStackScriptData(stackscriptData)
 	}
 
-	cfg, err := client.CreateInstanceDisk(ctx, linodeID, createOpts)
+	disk, err := client.CreateInstanceDisk(ctx, linodeID, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create linode instance disk: %s", err)
 	}
 
-	d.SetId(strconv.Itoa(cfg.ID))
+	d.SetId(helper.FormatMultiSegmentID(linodeID, disk.ID))
+
+	// Wait for the resize event to complete
+	_, err = client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate,
+		*disk.Updated, helper.GetDeadlineSeconds(ctx, d))
+	if err != nil {
+		return diag.Errorf("failed to wait for disk creation: %s", err)
+	}
 
 	return readResource(ctx, d, meta)
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	ids, err := helper.ParseMultiSegmentID(d.Id(), 2)
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
+		return diag.Errorf("failed to parse id: %s", err)
 	}
 
-	linodeID := d.Get("linode_id").(int)
+	linodeID, id := ids[0], ids[1]
+
+	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
+	if err != nil {
+		return diag.Errorf("failed to get instance disk: %s", err)
+	}
 
 	if d.HasChange("size") {
-		if err := client.ResizeInstanceDisk(ctx, linodeID, int(id), d.Get("size").(int)); err != nil {
+		newSize := d.Get("size").(int)
+
+		if err := client.ResizeInstanceDisk(ctx, linodeID, id, newSize); err != nil {
 			return diag.Errorf("failed to resize disk: %s", err)
+		}
+
+		// Wait for the resize event to complete
+		_, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskResize,
+			*disk.Updated, helper.GetDeadlineSeconds(ctx, d))
+		if err != nil {
+			return diag.Errorf("failed to resize disk: %s", err)
+		}
+
+		// Check to see if the resize operation worked
+		if updatedDisk, err := client.WaitForInstanceDiskStatus(ctx, linodeID, disk.ID, linodego.DiskReady,
+			helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			return diag.Errorf("failed to wait for disk ready: %s", err)
+		} else if updatedDisk.Size != newSize {
+			return diag.Errorf(
+				"failed to resize disk %d from %d to %d", disk.ID, disk.Size, newSize)
 		}
 	}
 
@@ -108,7 +138,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if shouldUpdate {
-		if _, err := client.UpdateInstanceDisk(ctx, linodeID, int(id), putRequest); err != nil {
+		if _, err := client.UpdateInstanceDisk(ctx, linodeID, id, putRequest); err != nil {
 			return diag.Errorf("failed to update instance disk: %s", err)
 		}
 	}
@@ -118,34 +148,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id64, err := strconv.ParseInt(d.Id(), 10, 64)
+	ids, err := helper.ParseMultiSegmentID(d.Id(), 2)
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Instance id %s as int", d.Id())
+		return diag.Errorf("failed to parse id: %s", err)
 	}
 
-	linodeID := d.Get("linode_id").(int)
+	linodeID, id := ids[0], ids[1]
 
-	//disk, err := client.GetInstanceDisk(ctx, linodeID, int(id64))
-	//if err != nil {
-	//	return diag.Errorf("failed to get disk: %s", err)
-	//}
-
-	err = client.DeleteInstanceDisk(ctx, linodeID, int(id64))
+	err = client.DeleteInstanceDisk(ctx, linodeID, id)
 	if err != nil {
-		return diag.Errorf("Error deleting Linode Instance Disk %d: %s", id64, err)
+		return diag.Errorf("Error deleting Linode Instance Disk %d: %s", id, err)
 	}
 
 	d.SetId("")
 	return nil
-}
-
-func expandStackScriptData(data any) map[string]string {
-	dataMap := data.(map[string]any)
-	result := make(map[string]string, len(dataMap))
-
-	for k, v := range dataMap {
-		result[k] = v.(string)
-	}
-
-	return result
 }

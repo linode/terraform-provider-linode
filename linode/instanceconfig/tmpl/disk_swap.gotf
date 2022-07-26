@@ -1,0 +1,33 @@
+{{ define "instance_config_disk_swap" }}
+
+{{ template "instance_config_empty_instance" . }}
+
+resource "linode_instance_disk" "foobar" {
+  count = 2
+
+  label = "boot-${count.index}"
+  linode_id = linode_instance.foobar.id
+  size = linode_instance.foobar.specs.0.disk/2
+
+  image = "linode/alpine3.15"
+  root_pass = "myc00lpass!"
+}
+
+resource "linode_instance_config" "foobar2" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config-2"
+
+  devices {
+    sda {
+{{ if .Swap }}
+      disk_id = linode_instance_disk.foobar[0].id
+{{ else }}
+      disk_id = linode_instance_disk.foobar[1].id
+{{ end }
+    }
+  }
+
+  booted = {{ .Booted }}
+}
+
+{{ end }}

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -13,30 +12,6 @@ import (
 )
 
 var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
-
-func parseID(id string) (int, int, error) {
-	s := strings.Split(id, "/")
-
-	if len(s) != 2 {
-		return 0, 0, fmt.Errorf("invalid number of id segments")
-	}
-
-	linodeID, err := strconv.Atoi(s[0])
-	if err != nil {
-		return 0, 0, err
-	}
-
-	configID, err := strconv.Atoi(s[1])
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return linodeID, configID, nil
-}
-
-func formatID(linodeID, configID int) string {
-	return fmt.Sprintf("%d/%d", linodeID, configID)
-}
 
 func getCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID int) (int, error) {
 	filter := map[string]any{

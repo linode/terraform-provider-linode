@@ -3,8 +3,6 @@ package instanceconfig_test
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -30,7 +28,7 @@ func TestAccResourceInstanceConfig_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					checkConfigExists(resName, nil),
+					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
 				),
 			},
@@ -57,7 +55,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 			{
 				Config: tmpl.Complex(t, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					checkConfigExists(resName, nil),
+					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
 					resource.TestCheckResourceAttr(resName, "comments", "cool"),
 
@@ -82,7 +80,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 			{
 				Config: tmpl.ComplexUpdates(t, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					checkConfigExists(resName, nil),
+					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config-updated"),
 					resource.TestCheckResourceAttr(resName, "comments", "cool-updated"),
 
@@ -132,7 +130,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 				Config: tmpl.Booted(t, instanceName, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkConfigExists(resName, nil),
+					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
 					resource.TestCheckResourceAttr(resName, "booted", "false"),
 					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
@@ -147,7 +145,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 				Config: tmpl.Booted(t, instanceName, true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkConfigExists(resName, nil),
+					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
 					resource.TestCheckResourceAttr(resName, "booted", "true"),
 					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
@@ -188,8 +186,8 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 				Config: tmpl.BootedSwap(t, instanceName, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkConfigExists(config1Name, nil),
-					checkConfigExists(config2Name, nil),
+					checkExists(config1Name, nil),
+					checkExists(config2Name, nil),
 
 					resource.TestCheckResourceAttr(config1Name, "booted", "false"),
 					resource.TestCheckResourceAttr(config2Name, "booted", "true"),
@@ -204,8 +202,8 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 				Config: tmpl.BootedSwap(t, instanceName, true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkConfigExists(config1Name, nil),
-					checkConfigExists(config2Name, nil),
+					checkExists(config1Name, nil),
+					checkExists(config2Name, nil),
 
 					resource.TestCheckResourceAttr(config1Name, "booted", "true"),
 					resource.TestCheckResourceAttr(config2Name, "booted", "false"),
@@ -223,7 +221,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 	})
 }
 
-func checkConfigExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
+func checkExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
@@ -236,10 +234,12 @@ func checkConfigExists(name string, config *linodego.InstanceConfig) resource.Te
 			return fmt.Errorf("No ID is set")
 		}
 
-		linodeID, id, err := getConfigInfo(rs)
+		ids, err := helper.ParseMultiSegmentID(rs.Primary.ID, 2)
 		if err != nil {
 			return fmt.Errorf("failed to get config info: %v", err)
 		}
+
+		linodeID, id := ids[0], ids[1]
 
 		found, err := client.GetInstanceConfig(context.Background(), linodeID, id)
 		if err != nil {
@@ -261,15 +261,17 @@ func checkDestroy(s *terraform.State) error {
 			continue
 		}
 
-		linodeID, id, err := getConfigInfo(rs)
+		ids, err := helper.ParseMultiSegmentID(rs.Primary.ID, 2)
 		if err != nil {
 			return fmt.Errorf("failed to get config info: %v", err)
 		}
 
+		linodeID, id := ids[0], ids[1]
+
 		_, err = client.GetInstanceConfig(context.Background(), linodeID, id)
 
 		if err == nil {
-			return fmt.Errorf("config database with id %d still exists", id)
+			return fmt.Errorf("config with id %d still exists", id)
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
@@ -278,30 +280,4 @@ func checkDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func getConfigInfo(rs *terraform.ResourceState) (int, int, error) {
-	idSlug := strings.Split(rs.Primary.ID, "/")
-
-	if len(idSlug) != 2 {
-		return 0, 0, fmt.Errorf("invalid number of id segments")
-	}
-
-	linodeID, err := strconv.Atoi(idSlug[0])
-	if err != nil {
-		return 0, 0, fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-	}
-	if linodeID == 0 {
-		return 0, 0, fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, linodeID)
-	}
-
-	id, err := strconv.Atoi(idSlug[1])
-	if err != nil {
-		return 0, 0, fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-	}
-	if id == 0 {
-		return 0, 0, fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
-	}
-
-	return linodeID, id, nil
 }
