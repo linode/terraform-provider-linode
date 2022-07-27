@@ -164,7 +164,7 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 
 #### Disks
 
-**NOTICE:** Creating explicit disks within the `linode_instance` resource is deprecated. Use the `linode_instance_disk` resource for all new configurations. 
+**NOTICE:** Creating explicit disks within the `linode_instance` resource is deprecated. Use the `linode_instance_disk` resource for all new configurations.
 
 * `disk`
 
