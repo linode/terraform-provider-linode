@@ -116,7 +116,7 @@ The following arguments are supported:
 
 - - -
 
-* `booted` - (Optional) If true, the Linode will be booted into this config. If another config is booted, the Linode will be rebooted into this config. If false, the Linode will be shutdown only if it is currently booted into this config.
+* `booted` - (Optional) If true, the Linode will be booted into this config. If another config is booted, the Linode will be rebooted into this config. If false, the Linode will be shutdown only if it is currently booted into this config. If undefined, the config will alter the boot status of the Linode.
 
 * `comments` - (Optional) Optional field for arbitrary User comments on this Config.
 
@@ -150,15 +150,15 @@ The following attributes are available on devices:
 
 The following attributes are available on helpers:
 
-* `devtmpfs_automount` - (Optional) Populates the /dev directory early during boot without udev.
+* `devtmpfs_automount` - (Optional) Populates the /dev directory early during boot without udev. (default `true`)
 
-* `distro` - (Optional) Helps maintain correct inittab/upstart console device.
+* `distro` - (Optional) Helps maintain correct inittab/upstart console device. (default `true`)
 
-* `modules_dep` - (Optional) Creates a modules dependency file for the Kernel you run.
+* `modules_dep` - (Optional) Creates a modules dependency file for the Kernel you run. (default `true`)
 
-* `network` - (Optional) Automatically configures static networking.
+* `network` - (Optional) Automatically configures static networking. (default `true`)
 
-* `updatedb_disabled` - (Optional) Disables updatedb cron job to avoid disk thrashing.
+* `updatedb_disabled` - (Optional) Disables updatedb cron job to avoid disk thrashing. (default `true`)
 
 ### interface
 
@@ -172,7 +172,7 @@ The following attributes are available on interface:
 
 ## Import
 
-Instance Configs can be imported using the `instance_id` followed by the Instance Config `id` separated by a comma, e.g.
+Instance Configs can be imported using the `linode_id` followed by the Instance Config `id` separated by a comma, e.g.
 
 ```sh
 terraform import linode_instance_config.my-config 1234567,7654321
