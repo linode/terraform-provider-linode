@@ -1,0 +1,11 @@
+{{ define "domain_basic" }}
+
+resource "linode_domain" "foobar" {
+    domain = "{{.Domain}}"
+    soa_email = "admin@{{.Domain}}"
+    type = "master"
+    status = "active"
+    tags = ["tf_test"]
+}
+
+{{ end }}
