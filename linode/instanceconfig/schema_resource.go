@@ -15,6 +15,12 @@ var resourceSchema = map[string]*schema.Schema{
 		ForceNew:    true,
 		Description: "The ID of the Linode to create this configuration profile under.",
 	},
+	"label": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The Config’s label for display purposes only.",
+	},
+
 	"devices": {
 		Type:        schema.TypeList,
 		Elem:        &schema.Resource{Schema: devicesSchema},
@@ -22,11 +28,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		MaxItems:    1,
 		Description: "A dictionary of device disks to use as a device map in a Linode’s configuration profile.",
-	},
-	"label": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The Config’s label is for display purposes only.",
 	},
 
 	"booted": {
@@ -57,7 +58,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"kernel": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Computed:    true,
+		Default:     "linode/latest-64bit",
 		Description: "A Kernel ID to boot a Linode with. Defaults to “linode/latest-64bit”.",
 	},
 	"memory_limit": {
@@ -69,7 +70,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"root_device": {
 		Type:     schema.TypeString,
 		Optional: true,
-		Computed: true,
+		Default:  "/dev/sda",
 		Description: "The root device to boot. " +
 			"If no value or an invalid value is provided, root device will default to /dev/sda. " +
 			"If the device specified at the root device location is not mounted, " +
@@ -78,7 +79,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"run_level": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Computed:    true,
+		Default:     "default",
 		Description: "Defines the state of your Linode after booting.",
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{"default", "single", "binbash"}, true),
@@ -87,7 +88,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"virt_mode": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Computed:    true,
+		Default:     "paravirt",
 		Description: "Controls the virtualization mode.",
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{"paravirt", "fullvirt"}, true),

@@ -55,7 +55,7 @@ resource "linode_instance_config" "my-config" {
     sda {
       disk_id = linode_instance_disk.boot.id
     }
-    
+
     sdb {
       disk_id = linode_instance-disk.swap.id
     }
@@ -142,9 +142,9 @@ The following attributes are available on devices:
 
 * `sda` ... `sdh` - (Optional) The SDA-SDH slots, represent the Linux block device nodes for the first 8 disks attached to the Linode.  Each device must be suplied sequentially.  The device can be either a Disk or a Volume identified by `disk_id` or `volume_id`. Only one disk identifier is permitted per slot. Devices mapped from `sde` through `sdh` are unavailable in `"fullvirt"` `virt_mode`.
 
-    * `volume_id` - (Optional) The Volume ID to map to this `device` slot.
+  * `volume_id` - (Optional) The Volume ID to map to this `device` slot.
 
-    * `disk_id` - (Optional) The Disk ID to map to this `device` slot
+  * `disk_id` - (Optional) The Disk ID to map to this `device` slot
 
 ### helpers
 
