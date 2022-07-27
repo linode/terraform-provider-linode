@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -113,7 +114,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	d.SetId(strconv.Itoa(disk.ID))
 
-	// Wait for the resize event to complete
+	// Wait for the create event to complete
 	_, err = client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate,
 		*disk.Updated, helper.GetDeadlineSeconds(ctx, d))
 	if err != nil {
@@ -165,11 +166,80 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	linodeID := d.Get("linode_id").(int)
 
+	configID, err := helper.GetCurrentBootedConfig(ctx, &client, linodeID)
+	if err != nil {
+		return diag.Errorf("failed to get current booted config: %s", err)
+	}
+
+	isDiskInConfig := func() (bool, error) {
+		if configID == 0 {
+			return false, nil
+		}
+
+		cfg, err := client.GetInstanceConfig(ctx, linodeID, configID)
+		if err != nil {
+			return false, err
+		}
+
+		if cfg.Devices == nil {
+			return false, nil
+		}
+
+		reflectMap := reflect.ValueOf(*cfg.Devices)
+
+		for i := 0; i < reflectMap.NumField(); i++ {
+			field := reflectMap.Field(i).Interface().(*linodego.InstanceConfigDevice)
+			if field == nil {
+				continue
+			}
+
+			if field.DiskID == id {
+				return true, nil
+			}
+		}
+
+		return false, nil
+	}
+
+	shouldShutdown := configID != 0
+	diskInConfig, err := isDiskInConfig()
+	if err != nil {
+		return diag.Errorf("failed to check if disk is in use: %s", err)
+	}
+
+	// Shutdown instance if active
+	if shouldShutdown {
+		log.Printf("[INFO] Shutting down instance %d for disk %d deletion", linodeID, id)
+
+		if err := client.ShutdownInstance(ctx, linodeID); err != nil {
+			return diag.Errorf("failed to shutdown instance: %s", err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode,
+			linodego.ActionLinodeShutdown, time.Now(), helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			return diag.Errorf("failed to wait for instance shutdown: %s", err)
+		}
+	}
+
 	err = client.DeleteInstanceDisk(ctx, linodeID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode Instance Disk %d: %s", id, err)
 	}
 
 	d.SetId("")
+
+	// Reboot the instance if necessary
+	if shouldShutdown && !diskInConfig {
+		log.Printf("[INFO] Booting instance %d to config %d", linodeID, configID)
+		if err := client.BootInstance(ctx, linodeID, configID); err != nil {
+			return diag.Errorf("failed to boot instance %d %d: %s", linodeID, configID, err)
+		}
+
+		if _, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode,
+			linodego.ActionLinodeBoot, time.Now(), helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			return diag.Errorf("failed to wait for instance boot: %s", err)
+		}
+	}
+
 	return nil
 }

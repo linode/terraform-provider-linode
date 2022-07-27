@@ -227,8 +227,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
-	if !d.GetRawConfig().GetAttr("booted").IsNull() && d.HasChange("booted") {
-		if err := applyBootStatus(ctx, &client, inst, int(id), helper.GetDeadlineSeconds(ctx, d),
+	// We should not use `HasChange(...)` here because of possible mid-apply changes
+	if !d.GetRawConfig().GetAttr("booted").IsNull() {
+		if err := applyBootStatus(ctx, &client, inst, id, helper.GetDeadlineSeconds(ctx, d),
 			d.Get("booted").(bool)); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
