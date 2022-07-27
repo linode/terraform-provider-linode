@@ -93,7 +93,6 @@ This resource exports the following attributes:
 
 * `updated` - When this disk was last updated.
 
-
 ## Import
 
 Instance Disks can be imported using the `linode_id` followed by the Instance Disk `id` separated by a comma, e.g.
