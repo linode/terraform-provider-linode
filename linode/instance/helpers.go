@@ -1088,12 +1088,15 @@ func handleBootedUpdate(
 func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceID, deadlineSeconds int) error {
 	log.Printf("[INFO] Shutting down instance (%d)", instanceID)
 
+	// TODO: Don't rely on local machine time for event discovery
+	startTime := time.Now()
+
 	if err := client.ShutdownInstance(ctx, instanceID); err != nil {
 		return fmt.Errorf("failed to shutdown instance: %s", err)
 	}
 
 	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-		linodego.ActionLinodeShutdown, time.Now(), deadlineSeconds); err != nil {
+		linodego.ActionLinodeShutdown, startTime, deadlineSeconds); err != nil {
 		return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
