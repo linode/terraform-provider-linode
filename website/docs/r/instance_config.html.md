@@ -8,7 +8,9 @@ Manages a Linode Instance Config.
 
 # linode\_instance\_config
 
-Provides a Linode Instance Config resource.  This can be used to create, modify, and delete Linodes Instance Configs.
+Provides a Linode Instance Config resource. This can be used to create, modify, and delete Linode Instance Configs.
+
+**NOTE:** Deleting a config will shut down the attached instance if the config is in use.
 
 ## Example Usage
 
