@@ -65,7 +65,7 @@ The following arguments are supported:
 
 * `label` - (Required) The Disk's label for display purposes only.
 
-* `size` - (Required) The size of the Disk in MB.
+* `size` - (Required) The size of the Disk in MB. **NOTE:** Resizing a disk will trigger a Linode reboot.
 
 - - -
 
