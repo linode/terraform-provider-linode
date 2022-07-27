@@ -57,7 +57,7 @@ resource "linode_instance_config" "my-config" {
     }
 
     sdb {
-      disk_id = linode_instance-disk.swap.id
+      disk_id = linode_instance_disk.swap.id
     }
   }
   
