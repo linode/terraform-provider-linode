@@ -137,12 +137,15 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 				return fmt.Errorf("failed to wait for instance running: %s", err)
 			}
 
+			// TODO: Don't rely on local machine time for event discovery
+			startTime := time.Now()
+
 			if err := client.RebootInstance(ctx, instance.ID, configID); err != nil {
 				return fmt.Errorf("failed to reboot instance %d: %s", instance.ID, err)
 			}
 
 			if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-				linodego.ActionLinodeReboot, time.Now(), timeoutSeconds); err != nil {
+				linodego.ActionLinodeReboot, startTime, timeoutSeconds); err != nil {
 				return fmt.Errorf("failed to wait for instance reboot: %s", err)
 			}
 
@@ -151,12 +154,15 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 
 		// Boot the instance
 		if !isBooted {
+			// TODO: Don't rely on local machine time for event discovery
+			startTime := time.Now()
+
 			if err := client.BootInstance(ctx, instance.ID, configID); err != nil {
 				return fmt.Errorf("failed to boot instance %d %d: %s", instance.ID, configID, err)
 			}
 
 			if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-				linodego.ActionLinodeBoot, time.Now(), timeoutSeconds); err != nil {
+				linodego.ActionLinodeBoot, startTime, timeoutSeconds); err != nil {
 				return fmt.Errorf("failed to wait for instance boot: %s", err)
 			}
 		}
@@ -174,12 +180,15 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 			return fmt.Errorf("failed to wait for instance running: %s", err)
 		}
 
+		// TODO: Don't rely on local machine time for event discovery
+		startTime := time.Now()
+
 		if err := client.ShutdownInstance(ctx, instance.ID); err != nil {
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
 		if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, time.Now(), timeoutSeconds); err != nil {
+			linodego.ActionLinodeShutdown, startTime, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 

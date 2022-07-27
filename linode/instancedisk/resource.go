@@ -211,12 +211,15 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if shouldShutdown {
 		log.Printf("[INFO] Shutting down instance %d for disk %d deletion", linodeID, id)
 
+		// TODO: Don't rely on local machine time for event discovery
+		startTime := time.Now()
+
 		if err := client.ShutdownInstance(ctx, linodeID); err != nil {
 			return diag.Errorf("failed to shutdown instance: %s", err)
 		}
 
 		if _, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, time.Now(), helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			linodego.ActionLinodeShutdown, startTime, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}
@@ -231,12 +234,16 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	// Reboot the instance if necessary
 	if shouldShutdown && !diskInConfig {
 		log.Printf("[INFO] Booting instance %d to config %d", linodeID, configID)
+
+		// TODO: Don't rely on local machine time for event discovery
+		startTime := time.Now()
+
 		if err := client.BootInstance(ctx, linodeID, configID); err != nil {
 			return diag.Errorf("failed to boot instance %d %d: %s", linodeID, configID, err)
 		}
 
 		if _, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode,
-			linodego.ActionLinodeBoot, time.Now(), helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			linodego.ActionLinodeBoot, startTime, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance boot: %s", err)
 		}
 	}

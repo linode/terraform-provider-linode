@@ -3,15 +3,14 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"log"
+	"strconv"
+	"strings"
+	"time"
 )
 
 func Resource() *schema.Resource {
@@ -257,12 +256,16 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to check if config is booted: %s", err)
 	} else if booted {
 		log.Printf("[INFO] Shutting down instance %d for config deletion: %s\n", inst.ID, err)
+
+		// TODO: Don't rely on local machine time for event discovery
+		startTime := time.Now()
+
 		if err := client.ShutdownInstance(ctx, inst.ID); err != nil {
 			return diag.Errorf("failed to shutdown instance: %s", err)
 		}
 
 		if _, err := client.WaitForEventFinished(ctx, inst.ID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, time.Now(), helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			linodego.ActionLinodeShutdown, startTime, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}

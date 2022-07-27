@@ -32,12 +32,15 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 	if shouldShutdown {
 		log.Printf("[INFO] Shutting down instance %d for disk %d resize", instID, diskID)
 
+		// TODO: Don't rely on local machine time for event discovery
+		startTime := time.Now()
+
 		if err := client.ShutdownInstance(ctx, instID); err != nil {
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
 		if _, err := client.WaitForEventFinished(ctx, instID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, time.Now(), timeoutSeconds); err != nil {
+			linodego.ActionLinodeShutdown, startTime, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}
@@ -47,13 +50,16 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 		return fmt.Errorf("failed to get instance disk: %s", err)
 	}
 
+	// TODO: Don't rely on local machine time for event discovery
+	startTime := time.Now()
+
 	if err := client.ResizeInstanceDisk(ctx, instID, diskID, newSize); err != nil {
 		return fmt.Errorf("failed to resize disk: %s", err)
 	}
 
 	// Wait for the resize event to complete
 	_, err = client.WaitForEventFinished(ctx, instID, linodego.EntityLinode, linodego.ActionDiskResize,
-		time.Now(), timeoutSeconds)
+		startTime, timeoutSeconds)
 	if err != nil {
 		return fmt.Errorf("failed to resize disk: %s", err)
 	}
@@ -70,12 +76,16 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 	// Reboot the instance if necessary
 	if shouldShutdown {
 		log.Printf("[INFO] Booting instance %d to config %d", instID, configID)
+
+		// TODO: Don't rely on local machine time for event discovery
+		startTime := time.Now()
+
 		if err := client.BootInstance(ctx, instID, configID); err != nil {
 			return fmt.Errorf("failed to boot instance %d %d: %s", instID, configID, err)
 		}
 
 		if _, err := client.WaitForEventFinished(ctx, instID, linodego.EntityLinode,
-			linodego.ActionLinodeBoot, time.Now(), timeoutSeconds); err != nil {
+			linodego.ActionLinodeBoot, startTime, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance boot: %s", err)
 		}
 	}
