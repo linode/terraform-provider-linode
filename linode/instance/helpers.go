@@ -1103,17 +1103,15 @@ func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceI
 func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, configID, deadlineSeconds int) error {
 	log.Printf("[INFO] Booting instance (%d)", instanceID)
 
-	instance, err := client.GetInstance(ctx, instanceID)
-	if err != nil {
-		return err
-	}
+	// TODO: Don't rely on local machine time for event discovery
+	startTime := time.Now()
 
 	if err := client.BootInstance(ctx, instanceID, configID); err != nil {
 		return fmt.Errorf("failed to boot instance: %s", err)
 	}
 
 	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-		linodego.ActionLinodeBoot, *instance.Updated, deadlineSeconds); err != nil {
+		linodego.ActionLinodeBoot, startTime, deadlineSeconds); err != nil {
 		return fmt.Errorf("failed to wait for instance boot: %s", err)
 	}
 
