@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"log"
 	"strconv"
 	"time"
@@ -26,6 +27,14 @@ func Resource() *schema.Resource {
 		CreateContext: createResource,
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
+
+		CustomizeDiff: customdiff.All(
+			// We only want to apply diffs on disks if the disk field was previously specified
+			customdiff.ComputedIf("disk", func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+				old, _ := d.GetChange("disk")
+
+				return old != nil
+			})),
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
