@@ -601,6 +601,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"disk": {
 		Optional: true,
+		Computed: true,
 		ConflictsWith: []string{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
 			"backup_id", "stackscript_id", "interface",

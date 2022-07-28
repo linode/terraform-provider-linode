@@ -107,6 +107,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.StackscriptData = expandStackScriptData(stackscriptData)
 	}
 
+	p, err := client.InitializeEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate)
+	if err != nil {
+		return diag.Errorf("failed to poll for events: %s", err)
+	}
+
 	disk, err := client.CreateInstanceDisk(ctx, linodeID, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create linode instance disk: %s", err)
@@ -114,11 +119,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	d.SetId(strconv.Itoa(disk.ID))
 
-	// Wait for the create event to complete
-	_, err = client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate,
-		*disk.Updated, helper.GetDeadlineSeconds(ctx, d))
-	if err != nil {
-		return diag.Errorf("failed to wait for disk creation: %s", err)
+	if _, err := p.WaitForNewEventFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		return diag.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
 	return readResource(ctx, d, meta)
@@ -211,15 +213,16 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if shouldShutdown {
 		log.Printf("[INFO] Shutting down instance %d for disk %d deletion", linodeID, id)
 
-		// TODO: Don't rely on local machine time for event discovery
-		startTime := time.Now()
+		p, err := client.InitializeEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+		if err != nil {
+			return diag.Errorf("failed to poll for events: %s", err)
+		}
 
 		if err := client.ShutdownInstance(ctx, linodeID); err != nil {
 			return diag.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		if _, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, startTime, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		if _, err := p.WaitForNewEventFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}
@@ -235,15 +238,16 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if shouldShutdown && !diskInConfig {
 		log.Printf("[INFO] Booting instance %d to config %d", linodeID, configID)
 
-		// TODO: Don't rely on local machine time for event discovery
-		startTime := time.Now()
+		p, err := client.InitializeEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+		if err != nil {
+			return diag.Errorf("failed to poll for events: %s", err)
+		}
 
 		if err := client.BootInstance(ctx, linodeID, configID); err != nil {
 			return diag.Errorf("failed to boot instance %d %d: %s", linodeID, configID, err)
 		}
 
-		if _, err := client.WaitForEventFinished(ctx, linodeID, linodego.EntityLinode,
-			linodego.ActionLinodeBoot, startTime, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		if _, err := p.WaitForNewEventFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance boot: %s", err)
 		}
 	}
