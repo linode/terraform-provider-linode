@@ -3,12 +3,10 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
-	"reflect"
-	"strings"
-	"time"
-
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"reflect"
+	"strings"
 )
 
 func flattenDeviceMap(deviceMap linodego.InstanceConfigDeviceMap) []map[string]any {
@@ -137,15 +135,16 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 				return fmt.Errorf("failed to wait for instance running: %s", err)
 			}
 
-			// TODO: Don't rely on local machine time for event discovery
-			startTime := time.Now()
+			p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeReboot)
+			if err != nil {
+				return fmt.Errorf("failed to poll for events: %s", err)
+			}
 
 			if err := client.RebootInstance(ctx, instance.ID, configID); err != nil {
 				return fmt.Errorf("failed to reboot instance %d: %s", instance.ID, err)
 			}
 
-			if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-				linodego.ActionLinodeReboot, startTime, timeoutSeconds); err != nil {
+			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 				return fmt.Errorf("failed to wait for instance reboot: %s", err)
 			}
 
@@ -154,15 +153,16 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 
 		// Boot the instance
 		if !isBooted {
-			// TODO: Don't rely on local machine time for event discovery
-			startTime := time.Now()
+			p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+			if err != nil {
+				return fmt.Errorf("failed to poll for events: %s", err)
+			}
 
 			if err := client.BootInstance(ctx, instance.ID, configID); err != nil {
 				return fmt.Errorf("failed to boot instance %d %d: %s", instance.ID, configID, err)
 			}
 
-			if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-				linodego.ActionLinodeBoot, startTime, timeoutSeconds); err != nil {
+			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 				return fmt.Errorf("failed to wait for instance boot: %s", err)
 			}
 		}
@@ -180,15 +180,16 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 			return fmt.Errorf("failed to wait for instance running: %s", err)
 		}
 
-		// TODO: Don't rely on local machine time for event discovery
-		startTime := time.Now()
+		p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+		if err != nil {
+			return fmt.Errorf("failed to poll for events: %s", err)
+		}
 
 		if err := client.ShutdownInstance(ctx, instance.ID); err != nil {
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		if _, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, startTime, timeoutSeconds); err != nil {
+		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 

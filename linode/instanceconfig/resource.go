@@ -3,15 +3,13 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"log"
+	"strconv"
+	"strings"
 )
 
 func Resource() *schema.Resource {
@@ -258,15 +256,16 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	} else if booted {
 		log.Printf("[INFO] Shutting down instance %d for config deletion: %s\n", inst.ID, err)
 
-		// TODO: Don't rely on local machine time for event discovery
-		startTime := time.Now()
+		p, err := client.NewEventPoller(ctx, inst.ID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+		if err != nil {
+			return diag.Errorf("failed to poll for events: %s", err)
+		}
 
 		if err := client.ShutdownInstance(ctx, inst.ID); err != nil {
 			return diag.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		if _, err := client.WaitForEventFinished(ctx, inst.ID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, startTime, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}

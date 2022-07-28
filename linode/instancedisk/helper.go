@@ -30,7 +30,7 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 	if shouldShutdown {
 		log.Printf("[INFO] Shutting down instance %d for disk %d resize", instID, diskID)
 
-		p, err := client.InitializeEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+		p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
 		if err != nil {
 			return fmt.Errorf("failed to poll for events: %s", err)
 		}
@@ -39,7 +39,7 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		if _, err := p.WaitForNewEventFinished(ctx, timeoutSeconds); err != nil {
+		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}
@@ -49,7 +49,7 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 		return fmt.Errorf("failed to get instance disk: %s", err)
 	}
 
-	p, err := client.InitializeEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionDiskResize)
+	p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionDiskResize)
 	if err != nil {
 		return fmt.Errorf("failed to poll for events: %s", err)
 	}
@@ -59,7 +59,7 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 	}
 
 	// Wait for the resize event to complete
-	if _, err := p.WaitForNewEventFinished(ctx, timeoutSeconds); err != nil {
+	if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 		return fmt.Errorf("failed to wait for disk resize: %s", err)
 	}
 
@@ -76,7 +76,7 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 	if shouldShutdown {
 		log.Printf("[INFO] Booting instance %d to config %d", instID, configID)
 
-		p, err := client.InitializeEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+		p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeBoot)
 		if err != nil {
 			return fmt.Errorf("failed to poll for events: %s", err)
 		}
@@ -85,7 +85,7 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 			return fmt.Errorf("failed to boot instance %d %d: %s", instID, configID, err)
 		}
 
-		if _, err := p.WaitForNewEventFinished(ctx, timeoutSeconds); err != nil {
+		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance boot: %s", err)
 		}
 	}

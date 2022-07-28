@@ -107,7 +107,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.StackscriptData = expandStackScriptData(stackscriptData)
 	}
 
-	p, err := client.InitializeEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate)
+	p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate)
 	if err != nil {
 		return diag.Errorf("failed to poll for events: %s", err)
 	}
@@ -119,7 +119,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	d.SetId(strconv.Itoa(disk.ID))
 
-	if _, err := p.WaitForNewEventFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+	if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 		return diag.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
@@ -213,7 +213,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if shouldShutdown {
 		log.Printf("[INFO] Shutting down instance %d for disk %d deletion", linodeID, id)
 
-		p, err := client.InitializeEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+		p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
 		if err != nil {
 			return diag.Errorf("failed to poll for events: %s", err)
 		}
@@ -222,7 +222,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		if _, err := p.WaitForNewEventFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
 		}
 	}
@@ -238,7 +238,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if shouldShutdown && !diskInConfig {
 		log.Printf("[INFO] Booting instance %d to config %d", linodeID, configID)
 
-		p, err := client.InitializeEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+		p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeBoot)
 		if err != nil {
 			return diag.Errorf("failed to poll for events: %s", err)
 		}
@@ -247,7 +247,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to boot instance %d %d: %s", linodeID, configID, err)
 		}
 
-		if _, err := p.WaitForNewEventFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance boot: %s", err)
 		}
 	}
