@@ -3,9 +3,10 @@ package instancedisk
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"log"
 )
 
 func expandStackScriptData(data any) map[string]string {

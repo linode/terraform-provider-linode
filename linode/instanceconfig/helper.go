@@ -3,10 +3,11 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"reflect"
 	"strings"
+
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func flattenDeviceMap(deviceMap linodego.InstanceConfigDeviceMap) []map[string]any {
