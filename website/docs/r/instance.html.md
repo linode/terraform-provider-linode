@@ -39,7 +39,7 @@ resource "linode_instance" "web" {
 
 ### Linode Instance with explicit Configs and Disks
 
-Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance.  This can be used to provision multiple disks and volumes during Instance creation.
+Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance. This can be used to provision multiple disks and volumes during Instance creation.
 
 ```hcl
 data "linode_profile" "me" {}
@@ -51,40 +51,44 @@ resource "linode_instance" "web" {
   region     = "us-central"
   type       = "g6-nanode-1"
   private_ip = true
-
-  disk {
-    label = "boot"
-    size = 3000
-    image  = "linode/ubuntu18.04"
-
-    # Any of authorized_keys, authorized_users, and root_pass
-    # can be used for provisioning.
-    authorized_keys = [ "ssh-rsa AAAA...Gw== user@example.local" ]
-    authorized_users = [ data.linode_profile.me.username ]
-    root_pass = "terr4form-test"
-  }
-
-  config {
-    label = "boot_config"
-    kernel = "linode/latest-64bit"
-    devices {
-      sda {
-        disk_label = "boot"
-      }
-      sdb {
-        volume_id = linode_volume.web_volume.id
-      }
-    }
-    root_device = "/dev/sda"
-  }
-
-  boot_config_label = "boot_config"
 }
 
 resource "linode_volume" "web_volume" {
   label = "web_volume"
   size = 20
   region = "us-central"
+}
+
+resource "linode_instance_disk" "boot_disk" {
+  label = "boot"
+  linode_id = linode_instance.web.id
+
+  size = 3000
+  image  = "linode/ubuntu18.04"
+
+  # Any of authorized_keys, authorized_users, and root_pass
+  # can be used for provisioning.
+  authorized_keys = [ "ssh-rsa AAAA...Gw== user@example.local" ]
+  authorized_users = [ data.linode_profile.me.username ]
+  root_pass = "terr4form-test"
+}
+
+resource "linode_instance_config" "boot_config" {
+  label = "boot_config"
+  linode_id = linode_instance.web.id
+  
+  devices {
+    sda {
+      disk_id = linode_instance_disk.boot_disk.id
+    }
+    sdb {
+      volume_id = linode_volume.web_volume.id
+    }
+  }
+  
+  root_device = "/dev/sda"
+  kernel = "linode/latest-64bit"
+  booted = true
 }
 ```
 
@@ -150,6 +154,8 @@ Just as the Linode API provides, these fields are for the most common provisioni
 
 ### Disk and Config Arguments
 
+**NOTICE:** Creating explicit disks and configs within the `linode_instance` resource is deprecated. Use the `linode_instance_disk` and `linode_instance_config` resources for all new explicit config/disk configurations.
+
 Instances which do not explicitly declare `disk`s have default boot and swap disks created. The swap disk will be allocated with the value of the `swap_size` attribute and the boot disk will take up the remainder of disk space alotted by the instance type's specification. When the swap size is changed, the boot disk will scale as needed. When the linode's type is changed to a larger config the boot disk will scale up to fill the disk alottment, but the boot disk will _not_ scale down to a smaller type. In order to downsize an instance, you must switch to an [explicit disk configuration](#Linode-Instance-with-explicit-Configs-and-Disks).
 
 By specifying the `disk` and `config` fields for a Linode instance, it is possible to use non-standard kernels, boot with and provision multiple disks, and modify the boot behaviors (`helpers`) of the Linode.
@@ -158,7 +164,7 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 
 #### Disks
 
-**NOTICE:** Disks must currently be renamed in order to be recreated within Terraform. This may be necessary when updating fields such as `image`.
+**NOTICE:** Creating explicit disks within the `linode_instance` resource is deprecated. Use the `linode_instance_disk` resource for all new configurations.
 
 * `disk`
 
@@ -187,6 +193,8 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 #### Configs
 
 Configuration profiles define the VM settings and boot behavior of the Linode Instance.  Multiple configurations profiles can be provided but their `label` values must be unique.
+
+**NOTICE:** Creating explicit configs within the `linode_instance` resource is deprecated. Use the `linode_instance_config` resource for all new configurations.
 
 * `config`
 

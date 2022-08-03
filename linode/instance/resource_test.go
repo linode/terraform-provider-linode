@@ -1016,6 +1016,9 @@ func TestAccResourceInstance_tagWithVolume(t *testing.T) {
 }
 
 func TestAccResourceInstance_diskRawDeleted(t *testing.T) {
+	t.Skip("This test is currently disabled as null disk " +
+		"configurations are now computed by default.")
+
 	t.Parallel()
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")

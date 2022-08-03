@@ -310,7 +310,7 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 			{
 				Config: tmpl.ClonedStep1(t, volumeName, acceptance.PublicKeyMaterial),
 				PreConfig: func() {
-					//outBuffer := new(bytes.Buffer)
+					// outBuffer := new(bytes.Buffer)
 
 					client := acceptance.GetSSHClient(t, "root", instance.IPv4[0].String())
 

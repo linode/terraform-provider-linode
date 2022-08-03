@@ -28,6 +28,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instance"
+	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
+	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
@@ -197,6 +199,8 @@ func Provider() *schema.Provider {
 			"linode_firewall_device":          firewalldevice.Resource(),
 			"linode_image":                    image.Resource(),
 			"linode_instance":                 instance.Resource(),
+			"linode_instance_config":          instanceconfig.Resource(),
+			"linode_instance_disk":            instancedisk.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),
 			"linode_instance_shared_ips":      instancesharedips.Resource(),
 			"linode_ipv6_range":               ipv6range.Resource(),
