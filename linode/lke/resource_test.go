@@ -51,8 +51,18 @@ func init() {
 
 	sort.Strings(k8sVersions)
 
+	if len(k8sVersions) < 1 {
+		log.Fatal("no k8s versions found")
+	}
+
 	k8sVersionLatest = k8sVersions[len(k8sVersions)-1]
-	k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
+
+	k8sVersionPrevious = k8sVersionLatest
+
+	// If there are multiple images, use the second to last image
+	if len(k8sVersions) > 1 {
+		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
+	}
 }
 
 func sweep(prefix string) error {
