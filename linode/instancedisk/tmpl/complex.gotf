@@ -1,0 +1,38 @@
+{{ define "instance_disk_complex" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{ .Label }}"
+    type = "g6-nanode-1"
+    region = "us-southeast"
+}
+
+resource "linode_stackscript" "foo" {
+  label = "foo"
+  description = "foo"
+  script = <<EOF
+#!/bin/bash
+# <UDF name="cool" label="a really cool arg" example="cool value" default="">
+echo $COOL
+EOF
+  images = ["linode/alpine3.15"]
+}
+
+resource "linode_instance_disk" "foobar" {
+  label = "{{ .Label }}"
+  linode_id = linode_instance.foobar.id
+  size = {{ .Size }}
+
+  authorized_keys = [
+    "{{ .PubKey }}"
+  ]
+  filesystem = "ext4"
+  image = "linode/alpine3.15"
+  root_pass = "c00lp@ss!"
+
+  stackscript_id = linode_stackscript.foo.id
+  stackscript_data = {
+    "cool" = "really cool"
+  }
+}
+
+{{ end }}

@@ -97,6 +97,7 @@ func readResource(
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 	d.Set("cluster", bucket.Cluster)
 	d.Set("label", bucket.Label)
+	d.Set("hostname", bucket.Hostname)
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
 

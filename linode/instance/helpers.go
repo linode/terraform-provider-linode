@@ -569,11 +569,16 @@ func updateInstanceDisks(
 			// It's ok if a removed disk is not found
 			continue
 		}
+
+		// TODO: Don't rely on local machine time for event discovery
+		startTime := time.Now()
+
 		if err := client.DeleteInstanceDisk(ctx, instance.ID, disk.ID); err != nil {
 			return hasChanges, err
 		}
+
 		_, err = client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-			linodego.ActionDiskDelete, *instance.Created, getDeadlineSeconds(ctx, d))
+			linodego.ActionDiskDelete, startTime, getDeadlineSeconds(ctx, d))
 		if err != nil {
 			return hasChanges, fmt.Errorf(
 				"error waiting for Instance %d Disk %d to finish deleting: %s", instance.ID, disk.ID, err)
@@ -1083,12 +1088,15 @@ func handleBootedUpdate(
 func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceID, deadlineSeconds int) error {
 	log.Printf("[INFO] Shutting down instance (%d)", instanceID)
 
+	// TODO: Don't rely on local machine time for event discovery
+	startTime := time.Now()
+
 	if err := client.ShutdownInstance(ctx, instanceID); err != nil {
 		return fmt.Errorf("failed to shutdown instance: %s", err)
 	}
 
 	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-		linodego.ActionLinodeShutdown, time.Now(), deadlineSeconds); err != nil {
+		linodego.ActionLinodeShutdown, startTime, deadlineSeconds); err != nil {
 		return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
@@ -1098,12 +1106,15 @@ func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceI
 func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, configID, deadlineSeconds int) error {
 	log.Printf("[INFO] Booting instance (%d)", instanceID)
 
+	// TODO: Don't rely on local machine time for event discovery
+	startTime := time.Now()
+
 	if err := client.BootInstance(ctx, instanceID, configID); err != nil {
 		return fmt.Errorf("failed to boot instance: %s", err)
 	}
 
 	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-		linodego.ActionLinodeBoot, time.Now(), deadlineSeconds); err != nil {
+		linodego.ActionLinodeBoot, startTime, deadlineSeconds); err != nil {
 		return fmt.Errorf("failed to wait for instance boot: %s", err)
 	}
 
