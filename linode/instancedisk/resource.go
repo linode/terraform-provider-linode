@@ -123,6 +123,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
+	if _, err := client.WaitForInstanceDiskStatus(
+		ctx, linodeID, disk.ID, linodego.DiskReady, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		return diag.Errorf("failed ot wait for disk ready: %s", err)
+	}
+
 	return readResource(ctx, d, meta)
 }
 
