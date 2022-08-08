@@ -96,6 +96,11 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	p, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
+	if err != nil {
+		return diag.Errorf("failed to initialize event poller: %s", err)
+	}
+
 	db, err := client.CreatePostgresDatabase(ctx, linodego.PostgresCreateOptions{
 		Label:                 d.Get("label").(string),
 		Region:                d.Get("region").(string),
@@ -114,8 +119,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	d.SetId(strconv.Itoa(db.ID))
 
-	_, err = client.WaitForEventFinished(ctx, db.ID, linodego.EntityDatabase,
-		linodego.ActionDatabaseCreate, *db.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	p.EntityID = db.ID
+
+	_, err = p.WaitForFinished(ctx, int(d.Timeout(schema.TimeoutCreate).Seconds()))
 	if err != nil {
 		return diag.Errorf("failed to wait for postgresql database creation: %s", err)
 	}

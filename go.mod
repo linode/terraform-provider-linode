@@ -84,3 +84,5 @@ require (
 )
 
 go 1.18
+
+replace github.com/linode/linodego => /home/lgarber/Projects/linodego
