@@ -172,7 +172,7 @@ Each interface exports the following attributes:
 
 * `purpose` - (Required) The type of interface. (`public`, `vlan`)
 
-* `label` - (Optional) The name of this interface. If the interface is a VLAN, a label is required.
+* `label` - (Optional) The name of this interface. If the interface is a `vlan`, a label is required. Must be undefined for `public` purpose interfaces.
 
 * `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation.
 
