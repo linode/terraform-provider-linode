@@ -124,9 +124,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	// We need to inject the entity id after creation
 	p.EntityID = db.ID
 
-	_, err = p.WaitForFinished(ctx, int(d.Timeout(schema.TimeoutCreate).Seconds()))
-	if err != nil {
-		return diag.Errorf("failed to wait for mongodb database creation: %s", err)
+	if _, err := p.WaitForLatestUnknownEvent(ctx); err != nil {
+		return diag.Errorf("failed to wait for mysql database creation event: %s", err)
+	}
+
+	if err := client.WaitForDatabaseStatus(
+		ctx, db.ID, linodego.DatabaseEngineTypeMongo,
+		linodego.DatabaseStatusActive, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
+		return diag.Errorf("failed to wait for database active: %s", err)
 	}
 
 	updateList := d.Get("updates").([]interface{})
