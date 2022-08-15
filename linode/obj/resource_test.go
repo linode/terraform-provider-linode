@@ -52,9 +52,10 @@ func TestAccResourceObject_basic(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	bucketName := acctest.RandomWithPrefix("tf-test")
-	keyName := acctest.RandomWithPrefix("tf_test")
 	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+		bucketName := acctest.RandomWithPrefix("tf-test")
+		keyName := acctest.RandomWithPrefix("tf_test")
+
 		resource.Test(tRetry, resource.TestCase{
 			PreCheck:     func() { acceptance.PreCheck(t) },
 			Providers:    acceptance.TestAccProviders,

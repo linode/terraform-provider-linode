@@ -3,6 +3,7 @@ package volume
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strconv"
 	"time"
@@ -218,12 +219,27 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	id := int(id64)
 
-	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
-	if err := client.DetachVolume(ctx, id); err != nil {
-		return diag.Errorf("Error detaching Linode Volume %d: %s", id, err)
-	}
+	// We should retry on intermittent deletion errors
+	return diag.FromErr(resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		p, err := client.NewEventPoller(ctx, int(id64), "volume", linodego.ActionVolumeDetach)
+		if err != nil {
+			return resource.NonRetryableError(fmt.Errorf("failed to initialize event poller: %s", err))
+		}
 
-	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
+		log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
+		if err := client.DetachVolume(ctx, id); err != nil {
+			return resource.NonRetryableError(fmt.Errorf("error detaching Linode Volume %d: %s", id, err))
+		}
+
+		log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
+		if _, err := p.WaitForFinished(ctx, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
+			return resource.RetryableError(fmt.Errorf("failed to wait for volume detach: %s", err))
+		}
+
+		return nil
+	}))
+
+	// Let's make sure the volume is fully offline
 	if _, err := client.WaitForVolumeLinodeID(
 		ctx, id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
 	); err != nil {
