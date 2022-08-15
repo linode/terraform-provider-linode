@@ -236,22 +236,20 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return resource.RetryableError(fmt.Errorf("failed to wait for volume detach: %s", err))
 		}
 
+		// Let's make sure the volume is fully offline
+		if _, err := client.WaitForVolumeLinodeID(
+			ctx, id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+		); err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		err = client.DeleteVolume(ctx, id)
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("Error deleting Linode Volume %d: %s", id, err))
+		}
+		d.SetId("")
 		return nil
 	}))
-
-	// Let's make sure the volume is fully offline
-	if _, err := client.WaitForVolumeLinodeID(
-		ctx, id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
-	); err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.DeleteVolume(ctx, id)
-	if err != nil {
-		return diag.Errorf("Error deleting Linode Volume %d: %s", id, err)
-	}
-	d.SetId("")
-	return nil
 }
 
 func DetectVolumeIDChange(have *int, want *int) (changed bool) {
