@@ -221,31 +221,42 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	// We should retry on intermittent deletion errors
 	return diag.FromErr(resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		p, err := client.NewEventPoller(ctx, int(id64), "volume", linodego.ActionVolumeDetach)
+		vol, err := client.GetVolume(ctx, id)
 		if err != nil {
-			return resource.NonRetryableError(fmt.Errorf("failed to initialize event poller: %s", err))
+			return resource.NonRetryableError(err)
 		}
 
-		log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
-		if err := client.DetachVolume(ctx, id); err != nil {
-			return resource.NonRetryableError(fmt.Errorf("error detaching Linode Volume %d: %s", id, err))
-		}
+		// We only want to detach if the volume is already attached to an instance,
+		// otherwise a context timeout will be thrown for non-attached volumes.
+		if vol.LinodeID != nil && *vol.LinodeID != 0 {
+			p, err := client.NewEventPoller(ctx, int(id64), "volume", linodego.ActionVolumeDetach)
+			if err != nil {
+				return resource.NonRetryableError(fmt.Errorf("failed to initialize event poller: %s", err))
+			}
 
-		log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
-		if _, err := p.WaitForFinished(ctx, int(d.Timeout(schema.TimeoutUpdate).Seconds())); err != nil {
-			return resource.RetryableError(fmt.Errorf("failed to wait for volume detach: %s", err))
+			log.Printf("[INFO] Detaching Linode Volume %d for deletion\n", id)
+
+			if err := client.DetachVolume(ctx, id); err != nil {
+				return resource.RetryableError(fmt.Errorf("error detaching Linode Volume %d: %s", id, err))
+			}
+
+			log.Printf("[INFO] Waiting for Linode Volume %d to detach...\n", id)
+
+			if _, err := p.WaitForFinished(ctx, 5); err != nil {
+				return resource.RetryableError(err)
+			}
 		}
 
 		// Let's make sure the volume is fully offline
 		if _, err := client.WaitForVolumeLinodeID(
-			ctx, id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+			ctx, id, nil, int(d.Timeout(schema.TimeoutDelete).Seconds()),
 		); err != nil {
 			return resource.NonRetryableError(err)
 		}
 
 		err = client.DeleteVolume(ctx, id)
 		if err != nil {
-			return resource.RetryableError(fmt.Errorf("Error deleting Linode Volume %d: %s", id, err))
+			return resource.RetryableError(fmt.Errorf("error deleting Linode Volume %d: %s", id, err))
 		}
 		d.SetId("")
 		return nil
