@@ -83,7 +83,7 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 
 * `create` - (Defaults to 20 mins) Used when creating the instance image (until the instance is available)
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

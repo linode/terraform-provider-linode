@@ -22,7 +22,7 @@ data "linode_profile" "profile" {}
 
 There are no supported arguments because the provider `token` can only access the associated profile.
 
-## Attributes
+## Attributes Reference
 
 The Linode Profile resource exports the following attributes:
 

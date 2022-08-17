@@ -76,7 +76,7 @@ The following arguments are supported:
 
 * `weight` - (Optional) Used when picking a backend to serve a request and is not pinned to a single backend yet. Nodes with a higher weight will receive more traffic. (1-255).
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

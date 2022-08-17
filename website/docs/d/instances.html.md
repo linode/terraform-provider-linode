@@ -52,7 +52,7 @@ The following arguments are supported:
 
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
-## Attributes
+## Attributes Reference
 
 Each Linode instance will be stored in the `instances` attribute and will export the following attributes:
 

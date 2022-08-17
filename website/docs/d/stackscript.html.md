@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `id` - (Required) The unique numeric ID of the StackScript to query.
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `database_id` - The ID of the MySQL database.
 
-## Attributes
+## Attributes Reference
 
 The `linode_database_mysql` data source exports the following attributes:
 

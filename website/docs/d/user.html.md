@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `username` - (Required) The unique username of this User.
 
-## Attributes
+## Attributes Reference
 
 The Linode User resource exports the following attributes:
 

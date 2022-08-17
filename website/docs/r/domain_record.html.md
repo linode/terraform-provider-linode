@@ -58,7 +58,7 @@ The following arguments are supported:
 
 * `weight` - (Optional) The relative weight of this Record. Higher values are preferred.
 
-## Attributes
+## Attributes Reference
 
 This resource exports no additional attributes.
 

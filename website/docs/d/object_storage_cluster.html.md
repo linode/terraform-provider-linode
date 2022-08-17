@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `id` - (Required) The unique ID of this cluster.
 
-## Attributes
+## Attributes Reference
 
 The Linode Object Storage Cluster resource exports the following attributes:
 

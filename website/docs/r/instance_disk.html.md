@@ -83,7 +83,7 @@ The following arguments are supported:
 
 * `stackscript_id` - (Optional) A StackScript ID that will cause the referenced StackScript to be run during deployment of this Disk.
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 
