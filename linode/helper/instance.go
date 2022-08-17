@@ -83,6 +83,8 @@ func GetCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID
 		"entity.id":   instID,
 		"entity.type": linodego.EntityLinode,
 		"+or":         []map[string]any{},
+		"+order_by":   "created",
+		"+order":      "desc",
 	}
 
 	for _, v := range bootEvents {
