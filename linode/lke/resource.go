@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	createLKETimeout = 15 * time.Minute
+	createLKETimeout = 25 * time.Minute
 	updateLKETimeout = 30 * time.Minute
 	deleteLKETimeout = 10 * time.Minute
 )
