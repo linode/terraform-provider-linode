@@ -59,7 +59,7 @@ The following arguments are supported:
 
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
-## Attributes
+## Attributes Reference
 
 Each backup will be stored in the `backups` attribute and will export the following attributes:
 

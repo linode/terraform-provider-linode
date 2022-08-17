@@ -95,7 +95,7 @@ The following arguments are supported in the `updates` specification block:
 
 * `week_of_month` - (Optional) The week of the month to perform monthly frequency updates. Required for `monthly` frequency updates. (`1`..`4`)
 
-## Attributes
+## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 

@@ -75,7 +75,7 @@ The following arguments are supported:
 
 * `ssl_key` - (Optional) The private key corresponding to this port's certificate. This is not returned. If set, this field will come back as `<REDACTED>`. Please use the ssl_commonname and ssl_fingerprint to identify the certificate.
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

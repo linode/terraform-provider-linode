@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `database_id` - The ID of the MongoDB database.
 
-## Attributes
+## Attributes Reference
 
 The `linode_database_mongodb` data source exports the following attributes:
 

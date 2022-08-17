@@ -26,7 +26,7 @@ The following argument is required:
 
 - `domain_id` - (Required) The associated domain's unique ID.
 
-## Attributes
+## Attributes Reference
 
 The Linode Volume resource exports the following attributes:
 

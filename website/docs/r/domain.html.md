@@ -65,7 +65,7 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
-## Attributes
+## Attributes Reference
 
 This resource exports no additional attributes, however `status` may reflect degraded states.
 
