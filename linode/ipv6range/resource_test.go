@@ -168,18 +168,21 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 func TestAccIPv6Range_raceCondition(t *testing.T) {
 	t.Parallel()
 
-	instLabel := acctest.RandomWithPrefix("tf_test")
+	// Occasionally IPv6 range deletions take a bit to replicate
+	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+		instLabel := acctest.RandomWithPrefix("tf_test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkIPv6RangeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.RaceCondition(t, instLabel),
-				Check:  checkIPv6RangeNoDuplicates,
+		resource.Test(t, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkIPv6RangeDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.RaceCondition(t, instLabel),
+					Check:  checkIPv6RangeNoDuplicates,
+				},
 			},
-		},
+		})
 	})
 }
 

@@ -434,13 +434,17 @@ func createInstanceDisk(
 		}
 	}
 
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize event poller: %s", err)
+	}
+
 	instanceDisk, err := client.CreateInstanceDisk(ctx, instance.ID, diskOpts)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating Linode instance %d disk: %s", instance.ID, err)
 	}
 
-	_, err = client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-		linodego.ActionDiskCreate, *instanceDisk.Created, getDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
 	}
@@ -570,15 +574,16 @@ func updateInstanceDisks(
 			continue
 		}
 
-		// TODO: Don't rely on local machine time for event discovery
-		startTime := time.Now()
+		p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskDelete)
+		if err != nil {
+			return false, fmt.Errorf("failed to initialize event poller: %s", err)
+		}
 
 		if err := client.DeleteInstanceDisk(ctx, instance.ID, disk.ID); err != nil {
 			return hasChanges, err
 		}
 
-		_, err = client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode,
-			linodego.ActionDiskDelete, startTime, getDeadlineSeconds(ctx, d))
+		_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 		if err != nil {
 			return hasChanges, fmt.Errorf(
 				"error waiting for Instance %d Disk %d to finish deleting: %s", instance.ID, disk.ID, err)
@@ -696,21 +701,16 @@ func changeInstanceType(
 		Type:                targetType,
 	}
 
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize event poller %d: %s", instance.ID, err)
+	}
+
 	if err := client.ResizeInstance(ctx, instance.ID, resizeOpts); err != nil {
 		return nil, fmt.Errorf("Error resizing Instance %d: %s", instance.ID, err)
 	}
 
-	// This is necessary as linode_resize events are scheduled to be created long-after the initial
-	// resize request. In order to ensure we're polling on the correct event, we need use the
-	// creation date of the pre-resize event.
-	resizeCreateEvent, err := helper.GetLatestEvent(ctx, client, instance.ID, linodego.EntityLinode,
-		linodego.ActionLinodeResizeCreate)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get instance resize_create event %d: %s", instance.ID, err)
-	}
-
-	_, err = client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize,
-		*resizeCreateEvent.Created, getDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
@@ -784,13 +784,17 @@ func changeInstanceDiskSize(
 		return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 	}
 
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskResize)
+	if err != nil {
+		return fmt.Errorf("failed to initialize event poller: %s", err)
+	}
+
 	if err := client.ResizeInstanceDisk(ctx, instance.ID, disk.ID, targetSize); err != nil {
 		return fmt.Errorf("Error resizing disk %d for Instance %d: %s", disk.ID, instance.ID, err)
 	}
 
 	// Wait for the disk resize operation to complete, and boot instance.
-	_, err := client.WaitForEventFinished(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskResize,
-		*disk.Updated, getDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
 		return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
 	}
@@ -1047,10 +1051,9 @@ func handleBootedUpdate(
 	case linodego.InstanceShuttingDown:
 		log.Printf("[INFO] Awaiting instance (%d) shutdown before continuing", instanceID)
 
-		_, err = client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-			linodego.ActionLinodeShutdown, *inst.Created, deadlineSeconds)
+		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, 120)
 		if err != nil {
-			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
+			return fmt.Errorf("failed to wait for instance offline: %s", err)
 		}
 
 		instStatus = linodego.InstanceOffline
@@ -1088,15 +1091,16 @@ func handleBootedUpdate(
 func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceID, deadlineSeconds int) error {
 	log.Printf("[INFO] Shutting down instance (%d)", instanceID)
 
-	// TODO: Don't rely on local machine time for event discovery
-	startTime := time.Now()
+	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+	if err != nil {
+		return fmt.Errorf("failed to initialize event poller: %s", err)
+	}
 
 	if err := client.ShutdownInstance(ctx, instanceID); err != nil {
 		return fmt.Errorf("failed to shutdown instance: %s", err)
 	}
 
-	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-		linodego.ActionLinodeShutdown, startTime, deadlineSeconds); err != nil {
+	if _, err := p.WaitForFinished(ctx, deadlineSeconds); err != nil {
 		return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
@@ -1106,15 +1110,16 @@ func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceI
 func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, configID, deadlineSeconds int) error {
 	log.Printf("[INFO] Booting instance (%d)", instanceID)
 
-	// TODO: Don't rely on local machine time for event discovery
-	startTime := time.Now()
+	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+	if err != nil {
+		return fmt.Errorf("failed to initialize event poller: %s", err)
+	}
 
 	if err := client.BootInstance(ctx, instanceID, configID); err != nil {
 		return fmt.Errorf("failed to boot instance: %s", err)
 	}
 
-	if _, err := client.WaitForEventFinished(ctx, instanceID, linodego.EntityLinode,
-		linodego.ActionLinodeBoot, startTime, deadlineSeconds); err != nil {
+	if _, err := p.WaitForFinished(ctx, deadlineSeconds); err != nil {
 		return fmt.Errorf("failed to wait for instance boot: %s", err)
 	}
 
