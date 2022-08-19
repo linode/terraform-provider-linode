@@ -175,53 +175,55 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 	t.Parallel()
 
-	var instance linodego.Instance
+	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+		var instance linodego.Instance
 
-	config1Name := "linode_instance_config.foobar1"
-	config2Name := "linode_instance_config.foobar2"
-	instanceName := acctest.RandomWithPrefix("tf_test")
+		config1Name := "linode_instance_config.foobar1"
+		config2Name := "linode_instance_config.foobar2"
+		instanceName := acctest.RandomWithPrefix("tf_test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.BootedSwap(t, instanceName, false),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkExists(config1Name, nil),
-					checkExists(config2Name, nil),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.BootedSwap(t, instanceName, false),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+						checkExists(config1Name, nil),
+						checkExists(config2Name, nil),
 
-					resource.TestCheckResourceAttr(config1Name, "booted", "false"),
-					resource.TestCheckResourceAttr(config2Name, "booted", "true"),
-				),
-			},
-			{
-				PreConfig: func() {
-					if instance.Status != linodego.InstanceRunning {
-						t.Fatalf("expected instance to be running, got %s", instance.Status)
-					}
+						resource.TestCheckResourceAttr(config1Name, "booted", "false"),
+						resource.TestCheckResourceAttr(config2Name, "booted", "true"),
+					),
 				},
-				Config: tmpl.BootedSwap(t, instanceName, true),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					checkExists(config1Name, nil),
-					checkExists(config2Name, nil),
+				{
+					PreConfig: func() {
+						if instance.Status != linodego.InstanceRunning {
+							t.Fatalf("expected instance to be running, got %s", instance.Status)
+						}
+					},
+					Config: tmpl.BootedSwap(t, instanceName, true),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+						checkExists(config1Name, nil),
+						checkExists(config2Name, nil),
 
-					resource.TestCheckResourceAttr(config1Name, "booted", "true"),
-					resource.TestCheckResourceAttr(config2Name, "booted", "false"),
-				),
-			},
-			{
-				PreConfig: func() {
-					if instance.Status != linodego.InstanceRunning {
-						t.Fatalf("expected instance to be running, got %s", instance.Status)
-					}
+						resource.TestCheckResourceAttr(config1Name, "booted", "true"),
+						resource.TestCheckResourceAttr(config2Name, "booted", "false"),
+					),
 				},
-				Config: tmpl.BootedSwap(t, instanceName, true),
+				{
+					PreConfig: func() {
+						if instance.Status != linodego.InstanceRunning {
+							t.Fatalf("expected instance to be running, got %s", instance.Status)
+						}
+					},
+					Config: tmpl.BootedSwap(t, instanceName, true),
+				},
 			},
-		},
+		})
 	})
 }
 

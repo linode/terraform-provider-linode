@@ -254,7 +254,7 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 * `update` - (Defaults to 20 mins) Used when stopping and starting the instance when necessary during update - e.g. when changing instance type
 * `delete` - (Defaults to 10 mins) Used when terminating the instance
 
-## Attributes
+## Attributes Reference
 
 This Linode Instance resource exports the following attributes:
 

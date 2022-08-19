@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -310,7 +309,7 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 			{
 				Config: tmpl.ClonedStep1(t, volumeName, acceptance.PublicKeyMaterial),
 				PreConfig: func() {
-					// outBuffer := new(bytes.Buffer)
+					outBuffer := new(bytes.Buffer)
 
 					client := acceptance.GetSSHClient(t, "root", instance.IPv4[0].String())
 
@@ -320,7 +319,7 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 						t.Fatalf("failed to establish SSH session: %s", err)
 					}
 
-					session.Stdout = os.Stdout
+					session.Stdout = outBuffer
 
 					// Format the first volume and drop a file onto it
 					err = session.Run(fmt.Sprintf(scriptFormatDrive,
@@ -350,7 +349,6 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 				Config: tmpl.ClonedStep2(t, volumeName, acceptance.PublicKeyMaterial),
 				PreConfig: func() {
 					outBuffer := new(bytes.Buffer)
-
 					client := acceptance.GetSSHClient(t, "root", instance2.IPv4[0].String())
 
 					defer client.Close()
@@ -378,7 +376,8 @@ until [ -e "%s" ]; do sleep .1; done && \
 mkfs.ext4 "%s" && \
 mkdir -p /mnt/vol && \
 mount "%s" "/mnt/vol" && \
-touch /mnt/vol/itworks.txt
+touch /mnt/vol/itworks.txt && \
+umount /mnt/vol
 `
 
 const scriptCheckCloneExists = `
@@ -389,5 +388,6 @@ echo $? && \
 mount "%s" "/mnt/vol" && \
 echo $? && \
 test -f /mnt/vol/itworks.txt && \
-echo $? 
+echo $? && \
+umount /mnt/vol
 `

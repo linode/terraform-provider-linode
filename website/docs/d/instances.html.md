@@ -52,7 +52,7 @@ The following arguments are supported:
 
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
-## Attributes
+## Attributes Reference
 
 Each Linode instance will be stored in the `instances` attribute and will export the following attributes:
 
@@ -172,7 +172,7 @@ Each interface exports the following attributes:
 
 * `purpose` - (Required) The type of interface. (`public`, `vlan`)
 
-* `label` - (Optional) The name of this interface. If the interface is a VLAN, a label is required.
+* `label` - (Optional) The name of this interface. If the interface is a `vlan`, a label is required. Must be undefined for `public` purpose interfaces.
 
 * `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation.
 

@@ -30,16 +30,21 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 
 	log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
 
+	p, err := client.NewEventPoller(ctx, entityID, linodego.EntityLinode, linodego.ActionLinodeReboot)
+	if err != nil {
+		return diag.Errorf("failed to initialize event poller: %s", err)
+	}
+
 	err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
 	if err != nil {
 		return diag.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
 	}
-	_, err = client.WaitForEventFinished(ctx, entityID, linodego.EntityLinode,
-		linodego.ActionLinodeReboot, *instance.Created, GetDeadlineSeconds(ctx, d))
+	_, err = p.WaitForFinished(ctx, GetDeadlineSeconds(ctx, d))
 	if err != nil {
 		return diag.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
 	}
+
 	if _, err = client.WaitForInstanceStatus(
 		ctx, instance.ID, linodego.InstanceRunning, GetDeadlineSeconds(ctx, d),
 	); err != nil {
@@ -83,6 +88,8 @@ func GetCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID
 		"entity.id":   instID,
 		"entity.type": linodego.EntityLinode,
 		"+or":         []map[string]any{},
+		"+order_by":   "created",
+		"+order":      "desc",
 	}
 
 	for _, v := range bootEvents {

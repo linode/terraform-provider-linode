@@ -32,7 +32,7 @@ The following arguments are supported, at least one is required:
 
 * `domain` - (Optional) The unique domain name of the Domain record to query.
 
-## Attributes
+## Attributes Reference
 
 The Linode Domain resource exports the following attributes:
 

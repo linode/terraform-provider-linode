@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `address` - (Required) The IP Address to access.  The address must be associated with the account and a resource that the user has access to view.
 
-## Attributes
+## Attributes Reference
 
 The Linode Network IP Address resource exports the following attributes:
 

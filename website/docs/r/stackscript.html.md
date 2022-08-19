@@ -64,7 +64,7 @@ The following arguments are supported:
 
 * `is_public` - (Optional) This determines whether other users can use your StackScript. Once a StackScript is made public, it cannot be made private. *Changing `is_public` forces the creation of a new StackScript*
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

@@ -88,7 +88,7 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 * `update` - (Defaults to 20 mins) Used when updating the volume when necessary during update - e.g. when resizing the volume
 * `delete` - (Defaults to 10 mins) Used when deleting the volume
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

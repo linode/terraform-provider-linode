@@ -148,137 +148,145 @@ func sweep(prefix string) error {
 func TestAccResourceBucket_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_object_storage_bucket.foobar"
-	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resName := "linode_object_storage_bucket.foobar"
+		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, objectStorageBucketName),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttrSet(resName, "hostname"),
-				),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, objectStorageBucketName),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttrSet(resName, "hostname"),
+					),
+				},
+				{
+					ResourceName:      resName,
+					ImportState:       true,
+					ImportStateVerify: true,
+				},
 			},
-			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
+		})
 	})
 }
 
 func TestAccResourceBucket_access(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_object_storage_bucket.foobar"
-	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resName := "linode_object_storage_bucket.foobar"
+		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Access(t, objectStorageBucketName, "public-read", true),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "acl", "public-read"),
-					resource.TestCheckResourceAttr(resName, "cors_enabled", "true"),
-				),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Access(t, objectStorageBucketName, "public-read", true),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "acl", "public-read"),
+						resource.TestCheckResourceAttr(resName, "cors_enabled", "true"),
+					),
+				},
+				{
+					Config: tmpl.Access(t, objectStorageBucketName, "private", false),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "acl", "private"),
+						resource.TestCheckResourceAttr(resName, "cors_enabled", "false"),
+					),
+				},
 			},
-			{
-				Config: tmpl.Access(t, objectStorageBucketName, "private", false),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "acl", "private"),
-					resource.TestCheckResourceAttr(resName, "cors_enabled", "false"),
-				),
-			},
-		},
+		})
 	})
 }
 
 func TestAccResourceBucket_versioning(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_object_storage_bucket.foobar"
-	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
-	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resName := "linode_object_storage_bucket.foobar"
+		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, true),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "versioning", "true"),
-				),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, true),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "versioning", "true"),
+					),
+				},
+				{
+					Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, false),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "versioning", "false"),
+					),
+				},
 			},
-			{
-				Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, false),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "versioning", "false"),
-				),
-			},
-		},
+		})
 	})
 }
 
 func TestAccResourceBucket_lifecycle(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_object_storage_bucket.foobar"
-	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
-	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resName := "linode_object_storage_bucket.foobar"
+		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.LifeCycle(t, objectStorageBucketName, objectStorageKeyName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.enabled", "true"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "5"),
-					resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.expiration.0.date"),
-				),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.LifeCycle(t, objectStorageBucketName, objectStorageKeyName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.enabled", "true"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "5"),
+						resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.expiration.0.date"),
+					),
+				},
+				{
+					Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, objectStorageKeyName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule-update"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf-update"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.enabled", "false"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "42"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.0.days", "37"),
+					),
+				},
 			},
-			{
-				Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, objectStorageKeyName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule-update"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf-update"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.enabled", "false"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "42"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.0.days", "37"),
-				),
-			},
-		},
+		})
 	})
 }
 

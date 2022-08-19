@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `range` - (Required) The IPv6 range to retrieve information about.
 
-## Attributes
+## Attributes Reference
 
 The `linode_ipv6_range` data source exports the following attributes:
 

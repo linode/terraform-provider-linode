@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `id` - (Required) The unique ID of this Kernel.
 
-## Attributes
+## Attributes Reference
 
 The Linode Kernel resource exports the following attributes:
 

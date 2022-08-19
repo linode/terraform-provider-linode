@@ -24,7 +24,7 @@ data "linode_account" "account" {}
 
 There are no supported arguments because the provider `token` can only access the associated account.
 
-## Attributes
+## Attributes Reference
 
 The Linode Account resource exports the following attributes:
 

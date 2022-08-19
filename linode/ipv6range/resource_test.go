@@ -19,68 +19,72 @@ import (
 func TestAccIPv6Range_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_ipv6_range.foobar"
-	instLabel := acctest.RandomWithPrefix("tf_test")
+	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+		resName := "linode_ipv6_range.foobar"
+		instLabel := acctest.RandomWithPrefix("tf_test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkIPv6RangeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, instLabel),
-				Check: resource.ComposeTestCheckFunc(
-					checkIPv6RangeExists(resName, nil),
-					resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
-					resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkIPv6RangeDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, instLabel),
+					Check: resource.ComposeTestCheckFunc(
+						checkIPv6RangeExists(resName, nil),
+						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
+						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
+						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 
-					resource.TestCheckResourceAttrSet(resName, "range"),
-					resource.TestCheckResourceAttrSet(resName, "linode_id"),
-					resource.TestCheckResourceAttrSet(resName, "linodes.0"),
-				),
+						resource.TestCheckResourceAttrSet(resName, "range"),
+						resource.TestCheckResourceAttrSet(resName, "linode_id"),
+						resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+					),
+				},
+				{
+					ResourceName:            resName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"linode_id", "route_target"},
+				},
 			},
-			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"linode_id", "route_target"},
-			},
-		},
+		})
 	})
 }
 
 func TestAccIPv6Range_routeTarget(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_ipv6_range.foobar"
-	instLabel := acctest.RandomWithPrefix("tf_test")
+	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+		resName := "linode_ipv6_range.foobar"
+		instLabel := acctest.RandomWithPrefix("tf_test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkIPv6RangeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.RouteTarget(t, instLabel),
-				Check: resource.ComposeTestCheckFunc(
-					checkIPv6RangeExists(resName, nil),
-					resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
-					resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkIPv6RangeDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.RouteTarget(t, instLabel),
+					Check: resource.ComposeTestCheckFunc(
+						checkIPv6RangeExists(resName, nil),
+						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
+						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
+						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 
-					resource.TestCheckResourceAttrSet(resName, "range"),
-					resource.TestCheckResourceAttrSet(resName, "route_target"),
-					resource.TestCheckResourceAttrSet(resName, "linodes.0"),
-				),
+						resource.TestCheckResourceAttrSet(resName, "range"),
+						resource.TestCheckResourceAttrSet(resName, "route_target"),
+						resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+					),
+				},
+				{
+					ResourceName:            resName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"linode_id", "route_target"},
+				},
 			},
-			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"linode_id", "route_target"},
-			},
-		},
+		})
 	})
 }
 
@@ -103,77 +107,82 @@ func TestAccIPv6Range_noID(t *testing.T) {
 func TestAccIPv6Range_reassignment(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_ipv6_range.foobar"
-	instance1ResName := "linode_instance.foobar"
-	instance2ResName := "linode_instance.foobar2"
+	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+		resName := "linode_ipv6_range.foobar"
+		instance1ResName := "linode_instance.foobar"
+		instance2ResName := "linode_instance.foobar2"
 
-	instLabel := acctest.RandomWithPrefix("tf_test")
+		instLabel := acctest.RandomWithPrefix("tf_test")
 
-	var instance1 linodego.Instance
-	var instance2 linodego.Instance
+		var instance1 linodego.Instance
+		var instance2 linodego.Instance
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkIPv6RangeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.ReassignmentStep1(t, instLabel),
-				Check: resource.ComposeTestCheckFunc(
-					checkIPv6RangeExists(resName, nil),
-					acceptance.CheckInstanceExists(instance1ResName, &instance1),
-					acceptance.CheckInstanceExists(instance2ResName, &instance2),
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkIPv6RangeDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.ReassignmentStep1(t, instLabel),
+					Check: resource.ComposeTestCheckFunc(
+						checkIPv6RangeExists(resName, nil),
+						acceptance.CheckInstanceExists(instance1ResName, &instance1),
+						acceptance.CheckInstanceExists(instance2ResName, &instance2),
 
-					resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
-					resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
+						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
+						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 
-					resource.TestCheckResourceAttrSet(resName, "range"),
-					resource.TestCheckResourceAttrSet(resName, "linode_id"),
-					resource.TestCheckResourceAttrSet(resName, "linodes.0"),
-				),
-			},
-			{
-				PreConfig: func() {
-					validateInstanceIPv6Assignments(t, instance1.ID, instance2.ID)
+						resource.TestCheckResourceAttrSet(resName, "range"),
+						resource.TestCheckResourceAttrSet(resName, "linode_id"),
+						resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+					),
 				},
-				Config: tmpl.ReassignmentStep2(t, instLabel),
-				Check: resource.ComposeTestCheckFunc(
-					checkIPv6RangeExists(resName, nil),
-					resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
-					resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+				{
+					PreConfig: func() {
+						validateInstanceIPv6Assignments(t, instance1.ID, instance2.ID)
+					},
+					Config: tmpl.ReassignmentStep2(t, instLabel),
+					Check: resource.ComposeTestCheckFunc(
+						checkIPv6RangeExists(resName, nil),
+						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
+						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
+						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
 
-					resource.TestCheckResourceAttrSet(resName, "range"),
-					resource.TestCheckResourceAttrSet(resName, "linode_id"),
-					resource.TestCheckResourceAttrSet(resName, "linodes.0"),
-				),
-			},
-			{
-				Config: tmpl.ReassignmentStep2(t, instLabel),
-				PreConfig: func() {
-					validateInstanceIPv6Assignments(t, instance2.ID, instance1.ID)
+						resource.TestCheckResourceAttrSet(resName, "range"),
+						resource.TestCheckResourceAttrSet(resName, "linode_id"),
+						resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+					),
+				},
+				{
+					Config: tmpl.ReassignmentStep2(t, instLabel),
+					PreConfig: func() {
+						validateInstanceIPv6Assignments(t, instance2.ID, instance1.ID)
+					},
 				},
 			},
-		},
+		})
 	})
 }
 
 func TestAccIPv6Range_raceCondition(t *testing.T) {
 	t.Parallel()
 
-	instLabel := acctest.RandomWithPrefix("tf_test")
+	// Occasionally IPv6 range deletions take a bit to replicate
+	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+		instLabel := acctest.RandomWithPrefix("tf_test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkIPv6RangeDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.RaceCondition(t, instLabel),
-				Check:  checkIPv6RangeNoDuplicates,
+		resource.Test(t, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkIPv6RangeDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.RaceCondition(t, instLabel),
+					Check:  checkIPv6RangeNoDuplicates,
+				},
 			},
-		},
+		})
 	})
 }
 
