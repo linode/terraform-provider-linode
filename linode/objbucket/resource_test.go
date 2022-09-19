@@ -37,6 +37,17 @@ const (
 	objSecretKeyEnvVar = "LINODE_OBJ_SECRET_KEY"
 )
 
+var testCluster string
+
+func init() {
+	cluster, err := acceptance.GetRandomOBJCluster()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testCluster = cluster
+}
+
 func init() {
 	resource.AddTestSweepers("linode_object_storage_bucket", &resource.Sweeper{
 		Name: "linode_object_storage_bucket",
@@ -118,7 +129,7 @@ func sweep(prefix string) error {
 
 		if haveBucketAccess {
 			conn := s3.New(session.New(&aws.Config{
-				Region:      aws.String("us-east-1"),
+				Region:      aws.String(testCluster),
 				Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
 				Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, objectStorageBucket.Cluster)),
 			}))
@@ -158,7 +169,7 @@ func TestAccResourceBucket_basic(t *testing.T) {
 			CheckDestroy: checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, objectStorageBucketName),
+					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -188,7 +199,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 			CheckDestroy: checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Access(t, objectStorageBucketName, "public-read", true),
+					Config: tmpl.Access(t, objectStorageBucketName, testCluster, "public-read", true),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -197,7 +208,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Access(t, objectStorageBucketName, "private", false),
+					Config: tmpl.Access(t, objectStorageBucketName, testCluster, "private", false),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -224,7 +235,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 			CheckDestroy: checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, true),
+					Config: tmpl.Versioning(t, objectStorageBucketName, testCluster, objectStorageKeyName, true),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -232,7 +243,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Versioning(t, objectStorageBucketName, objectStorageKeyName, false),
+					Config: tmpl.Versioning(t, objectStorageBucketName, testCluster, objectStorageKeyName, false),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -258,10 +269,10 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 			CheckDestroy: checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.LifeCycle(t, objectStorageBucketName, objectStorageKeyName),
+					Config: tmpl.LifeCycle(t, objectStorageBucketName, testCluster, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
+						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
@@ -272,10 +283,10 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, objectStorageKeyName),
+					Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, testCluster, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-						resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
+						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule-update"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf-update"),
@@ -303,10 +314,10 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, objectStorageKeyName),
+				Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, testCluster, objectStorageKeyName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "cluster", "us-east-1"),
+					resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 					resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.id"),
 					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
@@ -346,7 +357,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Cert(t, objectStorageBucketName, cert, key),
+				Config: tmpl.Cert(t, objectStorageBucketName, testCluster, cert, key),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					checkBucketHasSSL(true),
@@ -354,11 +365,11 @@ func TestAccResourceBucket_cert(t *testing.T) {
 				),
 			},
 			{
-				Config:      tmpl.Cert(t, objectStorageBucketName, invalidCert, invalidKey),
+				Config:      tmpl.Cert(t, objectStorageBucketName, testCluster, invalidCert, invalidKey),
 				ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
 			},
 			{
-				Config: tmpl.Cert(t, objectStorageBucketName, otherCert, otherKey),
+				Config: tmpl.Cert(t, objectStorageBucketName, testCluster, otherCert, otherKey),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					checkBucketHasSSL(true),
@@ -366,7 +377,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Basic(t, objectStorageBucketName),
+				Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					checkBucketHasSSL(false),
@@ -389,7 +400,7 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, objectStorageBucketName),
+				Config: tmpl.DataBasic(t, objectStorageBucketName, testCluster),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -416,14 +427,14 @@ func TestAccResourceBucket_update(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, objectStorageBucketName),
+				Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 				),
 			},
 			{
-				Config: tmpl.Updates(t, objectStorageBucketName),
+				Config: tmpl.Updates(t, objectStorageBucketName, testCluster),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", objectStorageBucketName)),

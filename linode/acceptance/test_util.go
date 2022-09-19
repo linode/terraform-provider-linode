@@ -530,3 +530,24 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 
 	return regions[rand.Intn(len(regions))], nil
 }
+
+// GetRandomOBJCluster gets a random Object Storage cluster.
+func GetRandomOBJCluster() (string, error) {
+	rand.Seed(time.Now().UnixNano())
+
+	client, err := GetClientForSweepers()
+	if err != nil {
+		return "", err
+	}
+
+	clusters, err := client.ListObjectStorageClusters(context.Background(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	if len(clusters) < 1 {
+		return "", fmt.Errorf("no clusters found")
+	}
+
+	return clusters[rand.Intn(len(clusters))].ID, nil
+}

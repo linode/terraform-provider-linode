@@ -1,7 +1,7 @@
 {{ define "object_bucket_data_basic" }}
 
 data "linode_object_storage_cluster" "baz" {
-    id = "us-east-1"
+    id = "{{ .Cluster }}"
 }
 
 resource "linode_object_storage_bucket" "foobar" {

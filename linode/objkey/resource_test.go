@@ -3,6 +3,7 @@ package objkey_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"testing"
@@ -16,11 +17,20 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/objkey/tmpl"
 )
 
+var testCluster string
+
 func init() {
 	resource.AddTestSweepers("linode_object_storage_key", &resource.Sweeper{
 		Name: "linode_object_storage_key",
 		F:    sweep,
 	})
+
+	cluster, err := acceptance.GetRandomOBJCluster()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testCluster = cluster
 }
 
 func sweep(prefix string) error {
@@ -84,7 +94,7 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 		CheckDestroy: checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Limited(t, objectStorageKeyLabel),
+				Config: tmpl.Limited(t, objectStorageKeyLabel, testCluster),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible,
@@ -95,8 +105,8 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "bucket_access.#", "2"),
 					resource.TestCheckResourceAttrSet(resName, "bucket_access.0.bucket_name"),
 					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", "us-east-1"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", "us-east-1"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", testCluster),
+					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
 				),

@@ -8,28 +8,32 @@ import (
 
 type TemplateData struct {
 	Label            string
+	Region           string
 	WaitForAvailable bool
 }
 
-func Basic(t *testing.T, label string, waitForAvailable bool) string {
+func Basic(t *testing.T, label, region string, waitForAvailable bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_basic", TemplateData{
 			Label:            label,
 			WaitForAvailable: waitForAvailable,
+			Region:           region,
 		})
 }
 
-func Changed(t *testing.T, label string, waitForAvailable bool) string {
+func Changed(t *testing.T, label, region string, waitForAvailable bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_changed", TemplateData{
 			Label:            label,
 			WaitForAvailable: waitForAvailable,
+			Region:           region,
 		})
 }
 
-func Deleted(t *testing.T, label string) string {
+func Deleted(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_deleted", TemplateData{
-			Label: label,
+			Label:  label,
+			Region: region,
 		})
 }

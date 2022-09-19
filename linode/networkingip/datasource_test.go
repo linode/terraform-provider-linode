@@ -1,6 +1,7 @@
 package networkingip_test
 
 import (
+	"log"
 	"regexp"
 	"testing"
 
@@ -9,6 +10,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/networkingip/tmpl"
 )
+
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"linodes"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
 
 func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 	t.Parallel()
@@ -23,12 +35,12 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, label), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, label, testRegion), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, label), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, label, testRegion), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
