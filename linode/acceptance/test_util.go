@@ -472,3 +472,58 @@ func ModifyProviderMeta(t *testing.T, provider *schema.Provider, modifier Provid
 		return config, nil
 	}
 }
+
+// GetRegionsWithCaps returns a list of regions that support the given capabilities.
+func GetRegionsWithCaps(capabilities []string) ([]string, error) {
+	result := make([]string, 0)
+
+	client, err := GetClientForSweepers()
+	if err != nil {
+		return nil, err
+	}
+
+	regions, err := client.ListRegions(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	regionHasCaps := func(r linodego.Region) bool {
+		capsMap := make(map[string]bool)
+
+		for _, c := range r.Capabilities {
+			capsMap[strings.ToUpper(c)] = true
+		}
+
+		for _, c := range capabilities {
+			if _, ok := capsMap[strings.ToUpper(c)]; !ok {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	for _, region := range regions {
+		if region.Status != "ok" || !regionHasCaps(region) {
+			continue
+		}
+
+		result = append(result, region.ID)
+	}
+
+	return result, nil
+}
+
+// GetRegionWithCaps gets a single region given a list of region capabilities.
+func GetRegionWithCaps(capabilities []string) (string, error) {
+	regions, err := GetRegionsWithCaps(capabilities)
+	if err != nil {
+		return "", nil
+	}
+
+	if len(regions) < 1 {
+		return "", fmt.Errorf("no region found with the provided caps")
+	}
+
+	return regions[0], nil
+}
