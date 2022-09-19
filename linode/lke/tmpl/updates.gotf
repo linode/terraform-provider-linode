@@ -2,7 +2,7 @@
 
 resource "linode_lke_cluster" "test" {
     label       = "{{.Label}}"
-    region      = "us-central"
+    region      = "{{ .Region }}"
     k8s_version = "{{.K8sVersion}}"
     tags        = ["test", "new_tag"]
 

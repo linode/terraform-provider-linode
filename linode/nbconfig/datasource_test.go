@@ -23,7 +23,7 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 		CheckDestroy: checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, nodebalancerName),
+				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),

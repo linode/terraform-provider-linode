@@ -22,7 +22,7 @@ func TestAccDataSourceFirewall_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, firewallName, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, firewallName, devicePrefix, testRegion),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),

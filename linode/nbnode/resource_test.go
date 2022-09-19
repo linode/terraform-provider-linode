@@ -3,6 +3,7 @@ package nbnode_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"testing"
@@ -17,12 +18,23 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
+
 func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
-	config := tmpl.Basic(t, nodeName)
+	config := tmpl.Basic(t, nodeName, testRegion)
 
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -64,7 +76,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 		CheckDestroy: checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, nodeName), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, nodeName, testRegion), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(
@@ -74,7 +86,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, nodeName), map[string]interface{}{
+				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, nodeName, testRegion), map[string]interface{}{
 					acceptance.SkipInstanceReadyPollKey: true,
 				}),
 				Check: resource.ComposeTestCheckFunc(

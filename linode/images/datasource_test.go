@@ -1,6 +1,7 @@
 package images_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -8,6 +9,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/images/tmpl"
 )
+
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
 
 func TestAccDataSourceImages_basic(t *testing.T) {
 	t.Parallel()
@@ -20,7 +32,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, imageName),
+				Config: tmpl.DataBasic(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.label", imageName),
@@ -44,7 +56,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 
 			// These cases are all used in the same test to avoid recreating images unnecessarily
 			{
-				Config: tmpl.DataLatest(t, imageName),
+				Config: tmpl.DataLatest(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "images.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.label", imageName),
@@ -59,14 +71,14 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 			},
 
 			{
-				Config: tmpl.DataLatestEmpty(t, imageName),
+				Config: tmpl.DataLatestEmpty(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "images.#", "0"),
 				),
 			},
 
 			{
-				Config: tmpl.DataOrder(t, imageName),
+				Config: tmpl.DataOrder(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					// Ensure order is correctly appended to filter
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
@@ -74,7 +86,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 			},
 
 			{
-				Config: tmpl.DataSubstring(t, imageName),
+				Config: tmpl.DataSubstring(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					// Ensure order is correctly appended to filter
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "images.#", 1),
@@ -83,7 +95,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 			},
 
 			{
-				Config: tmpl.DataClientFilter(t, imageName),
+				Config: tmpl.DataClientFilter(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "images.#", "1"),
 					acceptance.CheckResourceAttrContains(resourceName, "images.0.label", imageName),

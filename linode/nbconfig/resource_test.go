@@ -3,6 +3,7 @@ package nbconfig_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"testing"
@@ -18,6 +19,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
+
 func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 	t.Parallel()
 
@@ -30,7 +42,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:       tmpl.Basic(t, nodebalancerName),
+				Config:       tmpl.Basic(t, nodebalancerName, testRegion),
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
@@ -76,7 +88,7 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:       tmpl.SSL(t, nodebalancerName, tmpl.TestCertifcate, tmpl.TestPrivateKey),
+				Config:       tmpl.SSL(t, nodebalancerName, testRegion, tmpl.TestCertifcate, tmpl.TestPrivateKey),
 				ResourceName: resName,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
@@ -108,7 +120,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 		CheckDestroy: checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
@@ -123,7 +135,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, nodebalancerName),
+				Config: tmpl.Updates(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8088"),
@@ -154,7 +166,7 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 		CheckDestroy: checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.ProxyProtocol(t, nodebalancerName),
+				Config: tmpl.ProxyProtocol(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "80"),

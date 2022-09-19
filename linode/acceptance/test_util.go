@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sort"
@@ -514,8 +515,10 @@ func GetRegionsWithCaps(capabilities []string) ([]string, error) {
 	return result, nil
 }
 
-// GetRegionWithCaps gets a single region given a list of region capabilities.
-func GetRegionWithCaps(capabilities []string) (string, error) {
+// GetRandomRegionWithCaps gets a random region given a list of region capabilities.
+func GetRandomRegionWithCaps(capabilities []string) (string, error) {
+	rand.Seed(time.Now().UnixNano())
+
 	regions, err := GetRegionsWithCaps(capabilities)
 	if err != nil {
 		return "", nil
@@ -525,5 +528,5 @@ func GetRegionWithCaps(capabilities []string) (string, error) {
 		return "", fmt.Errorf("no region found with the provided caps")
 	}
 
-	return regions[0], nil
+	return regions[rand.Intn(len(regions))], nil
 }

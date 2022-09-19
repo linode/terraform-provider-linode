@@ -17,9 +17,10 @@ type TemplateData struct {
 type InstanceTemplateData struct {
 	Label  string
 	PubKey string
+	Region string
 }
 
-func Basic(t *testing.T, nodebalancer string) string {
+func Basic(t *testing.T, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_basic",
 		TemplateData{
@@ -27,16 +28,18 @@ func Basic(t *testing.T, nodebalancer string) string {
 			Instance: InstanceTemplateData{
 				Label:  nodebalancer,
 				PubKey: acceptance.PublicKeyMaterial,
+				Region: region,
 			},
 			Config: config.TemplateData{
 				NodeBalancer: tmpl.TemplateData{
-					Label: nodebalancer,
+					Label:  nodebalancer,
+					Region: region,
 				},
 			},
 		})
 }
 
-func Updates(t *testing.T, nodebalancer string) string {
+func Updates(t *testing.T, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_updates",
 		TemplateData{
@@ -44,16 +47,18 @@ func Updates(t *testing.T, nodebalancer string) string {
 			Instance: InstanceTemplateData{
 				Label:  nodebalancer,
 				PubKey: acceptance.PublicKeyMaterial,
+				Region: region,
 			},
 			Config: config.TemplateData{
 				NodeBalancer: tmpl.TemplateData{
-					Label: nodebalancer,
+					Label:  nodebalancer,
+					Region: region,
 				},
 			},
 		})
 }
 
-func DataBasic(t *testing.T, nodebalancer string) string {
+func DataBasic(t *testing.T, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_data_basic",
 		TemplateData{
@@ -61,10 +66,12 @@ func DataBasic(t *testing.T, nodebalancer string) string {
 			Instance: InstanceTemplateData{
 				Label:  nodebalancer,
 				PubKey: acceptance.PublicKeyMaterial,
+				Region: region,
 			},
 			Config: config.TemplateData{
 				NodeBalancer: tmpl.TemplateData{
-					Label: nodebalancer,
+					Label:  nodebalancer,
+					Region: region,
 				},
 			},
 		})

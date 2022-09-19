@@ -3,6 +3,7 @@ package instancedisk_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"testing"
 
@@ -14,6 +15,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk/tmpl"
 )
+
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
 
 func TestAccResourceInstanceDisk_basic(t *testing.T) {
 	t.Parallel()
@@ -27,7 +39,7 @@ func TestAccResourceInstanceDisk_basic(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, 2048),
+				Config: tmpl.Basic(t, label, testRegion, 2048),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
@@ -39,7 +51,7 @@ func TestAccResourceInstanceDisk_basic(t *testing.T) {
 			},
 			// Resize up
 			{
-				Config: tmpl.Basic(t, label, 2049),
+				Config: tmpl.Basic(t, label, testRegion, 2049),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
@@ -51,7 +63,7 @@ func TestAccResourceInstanceDisk_basic(t *testing.T) {
 			},
 			// Resize down
 			{
-				Config: tmpl.Basic(t, label, 2047),
+				Config: tmpl.Basic(t, label, testRegion, 2047),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
@@ -83,7 +95,7 @@ func TestAccResourceInstanceDisk_complex(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Complex(t, label, 2048),
+				Config: tmpl.Complex(t, label, testRegion, 2048),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
@@ -117,7 +129,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.BootedResize(t, label, 2048),
+				Config: tmpl.BootedResize(t, label, testRegion, 2048),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
@@ -129,7 +141,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 			},
 			// Resize up
 			{
-				Config: tmpl.BootedResize(t, label, 2049),
+				Config: tmpl.BootedResize(t, label, testRegion, 2049),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
@@ -146,7 +158,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 						t.Fatalf("expected instance to be running, found %s", instance.Status)
 					}
 				},
-				Config: tmpl.BootedResize(t, label, 2049),
+				Config: tmpl.BootedResize(t, label, testRegion, 2049),
 			},
 			{
 				ResourceName:            resName,

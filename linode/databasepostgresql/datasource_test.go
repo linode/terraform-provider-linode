@@ -31,11 +31,12 @@ func TestAccDataSourceDatabasePostgres_basic(t *testing.T) {
 					ReplicationCommitType: "off",
 					Encrypted:             true,
 					SSLConnection:         true,
+					Region:                testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckPostgresDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),

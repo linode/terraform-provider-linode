@@ -7,19 +7,22 @@ import (
 )
 
 type TemplateData struct {
-	Label string
+	Label  string
+	Region string
 }
 
-func Basic(t *testing.T, label string) string {
+func Basic(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_device_basic", TemplateData{
-			Label: label,
+			Label:  label,
+			Region: region,
 		})
 }
 
-func Detached(t *testing.T, label string) string {
+func Detached(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_device_detached", TemplateData{
-			Label: label,
+			Label:  label,
+			Region: region,
 		})
 }

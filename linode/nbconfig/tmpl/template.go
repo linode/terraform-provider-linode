@@ -105,49 +105,54 @@ type TemplateData struct {
 	SSLKey       string
 }
 
-func Basic(t *testing.T, nodebalancerName string) string {
+func Basic(t *testing.T, nodebalancerName, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_basic", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
-				Label: nodebalancerName,
+				Label:  nodebalancerName,
+				Region: region,
 			},
 		})
 }
 
-func Updates(t *testing.T, nodebalancerName string) string {
+func Updates(t *testing.T, nodebalancerName, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_updates", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
-				Label: nodebalancerName,
+				Label:  nodebalancerName,
+				Region: region,
 			},
 		})
 }
 
-func SSL(t *testing.T, nodebalancerName, cert, privKey string) string {
+func SSL(t *testing.T, nodebalancerName, region, cert, privKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_ssl", TemplateData{
 			SSLCert: cert,
 			SSLKey:  privKey,
 			NodeBalancer: nodebalancer.TemplateData{
-				Label: nodebalancerName,
+				Label:  nodebalancerName,
+				Region: region,
 			},
 		})
 }
 
-func ProxyProtocol(t *testing.T, nodebalancerName string) string {
+func ProxyProtocol(t *testing.T, nodebalancerName, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_proxy_protocol", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
-				Label: nodebalancerName,
+				Label:  nodebalancerName,
+				Region: region,
 			},
 		})
 }
 
-func DataBasic(t *testing.T, nodebalancerName string) string {
+func DataBasic(t *testing.T, nodebalancerName, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_config_data_basic", TemplateData{
 			NodeBalancer: nodebalancer.TemplateData{
-				Label: nodebalancerName,
+				Label:  nodebalancerName,
+				Region: region,
 			},
 		})
 }

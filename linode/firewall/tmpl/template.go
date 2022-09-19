@@ -10,6 +10,7 @@ type InstanceTemplateData struct {
 	Prefix string
 	ID     string
 	PubKey string
+	Region string
 }
 
 type TemplateData struct {
@@ -18,7 +19,7 @@ type TemplateData struct {
 	Label string
 }
 
-func Basic(t *testing.T, label, devicePrefix string) string {
+func Basic(t *testing.T, label, devicePrefix, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_basic", TemplateData{
 			Label: label,
@@ -27,12 +28,13 @@ func Basic(t *testing.T, label, devicePrefix string) string {
 					Prefix: devicePrefix,
 					ID:     "one",
 					PubKey: acceptance.PublicKeyMaterial,
+					Region: region,
 				},
 			},
 		})
 }
 
-func Updates(t *testing.T, label, devicePrefix string) string {
+func Updates(t *testing.T, label, devicePrefix, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_updates", TemplateData{
 			Label: label,
@@ -41,11 +43,13 @@ func Updates(t *testing.T, label, devicePrefix string) string {
 					Prefix: devicePrefix,
 					ID:     "one",
 					PubKey: acceptance.PublicKeyMaterial,
+					Region: region,
 				},
 				{
 					Prefix: devicePrefix,
 					ID:     "two",
 					PubKey: acceptance.PublicKeyMaterial,
+					Region: region,
 				},
 			},
 		})
@@ -58,7 +62,7 @@ func Minimum(t *testing.T, label string) string {
 		})
 }
 
-func MultipleRules(t *testing.T, label, devicePrefix string) string {
+func MultipleRules(t *testing.T, label, devicePrefix, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_multiple_rules", TemplateData{
 			Label: label,
@@ -67,6 +71,7 @@ func MultipleRules(t *testing.T, label, devicePrefix string) string {
 					Prefix: devicePrefix,
 					ID:     "one",
 					PubKey: acceptance.PublicKeyMaterial,
+					Region: region,
 				},
 			},
 		})
@@ -86,7 +91,7 @@ func NoIPv6(t *testing.T, label string) string {
 		})
 }
 
-func DataBasic(t *testing.T, label, devicePrefix string) string {
+func DataBasic(t *testing.T, label, devicePrefix, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_data_basic", TemplateData{
 			Label: label,
@@ -95,6 +100,7 @@ func DataBasic(t *testing.T, label, devicePrefix string) string {
 					Prefix: devicePrefix,
 					ID:     "one",
 					PubKey: acceptance.PublicKeyMaterial,
+					Region: region,
 				},
 			},
 		})

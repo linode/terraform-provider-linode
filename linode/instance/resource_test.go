@@ -28,7 +28,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRegionWithCaps([]string{"Vlans"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Vlans"})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -3,6 +3,7 @@ package firewall_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -15,11 +16,20 @@ import (
 
 const testFirewallResName = "linode_firewall.test"
 
+var testRegion string
+
 func init() {
 	resource.AddTestSweepers("linode_firewall", &resource.Sweeper{
 		Name: "linode_firewall",
 		F:    sweep,
 	})
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -56,7 +66,7 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -152,7 +162,7 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.MultipleRules(t, name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.MultipleRules(t, name, devicePrefix, testRegion),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -266,7 +276,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -299,7 +309,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, newName, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, newName, devicePrefix, testRegion),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -354,7 +364,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),
@@ -396,7 +406,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 						t.Fatalf("failed to delete firewall: %s", err)
 					}
 				},
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix),
+				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
 					map[string]interface{}{
 						acceptance.SkipInstanceReadyPollKey: true,
 					}),

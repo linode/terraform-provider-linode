@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
@@ -30,11 +31,20 @@ var testImageBytesNew = []byte{
 	0xe4, 0x02, 0x00, 0x7a, 0x7a, 0x6f, 0xed, 0x03, 0x00, 0x00, 0x00,
 }
 
+var testRegion string
+
 func init() {
 	resource.AddTestSweepers("linode_image", &resource.Sweeper{
 		Name: "linode_image",
 		F:    sweep,
 	})
+
+	region, err := acceptance.GetRandomRegionWithCaps(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -65,7 +75,7 @@ func TestAccImage_basic(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_image.foobar"
-	ImageName := acctest.RandomWithPrefix("tf_test")
+	imageName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
@@ -73,10 +83,10 @@ func TestAccImage_basic(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, ImageName),
+				Config: tmpl.Basic(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
-					resource.TestCheckResourceAttr(resName, "label", ImageName),
+					resource.TestCheckResourceAttr(resName, "label", imageName),
 					resource.TestCheckResourceAttr(resName, "description", "descriptive text"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
 					resource.TestCheckResourceAttrSet(resName, "created_by"),
@@ -108,7 +118,7 @@ func TestAccImage_update(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, imageName),
+				Config: tmpl.Basic(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -116,7 +126,7 @@ func TestAccImage_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, imageName),
+				Config: tmpl.Updates(t, imageName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", imageName)),
@@ -159,7 +169,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Upload(t, imageName, file.Name()),
+				Config: tmpl.Upload(t, imageName, file.Name(), testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -178,7 +188,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 				PreConfig: func() {
 					file.Write(testImageBytesNew)
 				},
-				Config: tmpl.Upload(t, imageName, file.Name()),
+				Config: tmpl.Upload(t, imageName, file.Name(), testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),

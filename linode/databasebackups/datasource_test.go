@@ -17,7 +17,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var engineVersion string
+var (
+	engineVersion string
+	testRegion    string
+)
 
 func init() {
 	client, err := acceptance.GetClientForSweepers()
@@ -31,6 +34,13 @@ func init() {
 	}
 
 	engineVersion = v.ID
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func TestFlattenBackup_MySQL(t *testing.T) {
@@ -158,6 +168,7 @@ func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 					Engine:      engineVersion,
 					Label:       dbLabel,
 					BackupLabel: backupLabel,
+					Region:      testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "backups.#", "1"),

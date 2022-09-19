@@ -22,9 +22,10 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 		CheckDestroy: checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, nodebalancerName), map[string]interface{}{
-					acceptance.SkipInstanceReadyPollKey: true,
-				}),
+				Config: acceptance.AccTestWithProvider(tmpl.DataBasic(t, nodebalancerName, testRegion),
+					map[string]interface{}{
+						acceptance.SkipInstanceReadyPollKey: true,
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),

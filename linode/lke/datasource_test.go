@@ -21,10 +21,10 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(dataSourceClusterName, "region", "us-central"),
+					resource.TestCheckResourceAttr(dataSourceClusterName, "region", testRegion),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionLatest),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
@@ -53,10 +53,10 @@ func TestAccDataSourceLKECluster_autoscaler(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataAutoscaler(t, clusterName, k8sVersionLatest),
+				Config: tmpl.DataAutoscaler(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(dataSourceClusterName, "region", "us-central"),
+					resource.TestCheckResourceAttr(dataSourceClusterName, "region", testRegion),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionLatest),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
@@ -86,10 +86,10 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataControlPlane(t, clusterName, k8sVersionLatest, true),
+				Config: tmpl.DataControlPlane(t, clusterName, k8sVersionLatest, testRegion, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(dataSourceClusterName, "region", "us-central"),
+					resource.TestCheckResourceAttr(dataSourceClusterName, "region", testRegion),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionLatest),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 					resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),

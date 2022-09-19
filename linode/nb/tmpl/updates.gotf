@@ -2,7 +2,7 @@
 
 resource "linode_nodebalancer" "foobar" {
     label = "{{.Label}}_r"
-    region = "us-east"
+    region = "{{ .Region }}"
     client_conn_throttle = 0
     tags = ["tf_test", "tf_test_2"]
 }
