@@ -60,16 +60,19 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
+	provider, providerMap := acceptance.CreateTestProvider()
+	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
+		config.Config.SkipInstanceReadyPoll = true
+		config.Config.SkipInstanceDeletePoll = true
+		return nil
+	})
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
-					map[string]interface{}{
-						acceptance.SkipInstanceReadyPollKey: true,
-					}),
+				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -115,16 +118,19 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 
 	name := acctest.RandomWithPrefix("tf_test")
 
+	provider, providerMap := acceptance.CreateTestProvider()
+	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
+		config.Config.SkipInstanceReadyPoll = true
+		config.Config.SkipInstanceDeletePoll = true
+		return nil
+	})
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Minimum(t, name),
-					map[string]interface{}{
-						acceptance.SkipInstanceReadyPollKey: true,
-					}),
+				Config: tmpl.Minimum(t, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -156,16 +162,19 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
+	provider, providerMap := acceptance.CreateTestProvider()
+	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
+		config.Config.SkipInstanceReadyPoll = true
+		config.Config.SkipInstanceDeletePoll = true
+		return nil
+	})
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.MultipleRules(t, name, devicePrefix, testRegion),
-					map[string]interface{}{
-						acceptance.SkipInstanceReadyPollKey: true,
-					}),
+				Config: tmpl.MultipleRules(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -270,16 +279,19 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 	newName := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
+	provider, providerMap := acceptance.CreateTestProvider()
+	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
+		config.Config.SkipInstanceReadyPoll = true
+		config.Config.SkipInstanceDeletePoll = true
+		return nil
+	})
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
-					map[string]interface{}{
-						acceptance.SkipInstanceReadyPollKey: true,
-					}),
+				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -309,10 +321,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, newName, devicePrefix, testRegion),
-					map[string]interface{}{
-						acceptance.SkipInstanceReadyPollKey: true,
-					}),
+				Config: tmpl.Updates(t, newName, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", newName),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "true"),
@@ -358,16 +367,19 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
+	provider, providerMap := acceptance.CreateTestProvider()
+	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
+		config.Config.SkipInstanceReadyPoll = true
+		config.Config.SkipInstanceDeletePoll = true
+		return nil
+	})
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
-					map[string]interface{}{
-						acceptance.SkipInstanceReadyPollKey: true,
-					}),
+				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
@@ -406,10 +418,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 						t.Fatalf("failed to delete firewall: %s", err)
 					}
 				},
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, name, devicePrefix, testRegion),
-					map[string]interface{}{
-						acceptance.SkipInstanceReadyPollKey: true,
-					}),
+				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),

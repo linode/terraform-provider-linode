@@ -1943,7 +1943,7 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 
 	provider, providerMap := acceptance.CreateTestProvider()
 
-	acceptance.ModifyProviderMeta(t, provider,
+	acceptance.ModifyProviderMeta(provider,
 		func(ctx context.Context, config *helper.ProviderMeta) error {
 			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
 				if startTime.IsZero() {

@@ -143,16 +143,6 @@ func PreCheck(t *testing.T) {
 	}
 }
 
-func AccTestWithProvider(config string, options map[string]interface{}) string {
-	sb := strings.Builder{}
-	sb.WriteString("provider \"linode\" {\n")
-	for key, value := range options {
-		sb.WriteString(fmt.Sprintf("\t%s = %#v\n", key, value))
-	}
-	sb.WriteString("}\n")
-	return sb.String() + config
-}
-
 func OptInTest(t *testing.T) {
 	t.Helper()
 
@@ -457,7 +447,7 @@ func CreateTestProvider() (*schema.Provider, map[string]*schema.Provider) {
 
 type ProviderMetaModifier func(ctx context.Context, config *helper.ProviderMeta) error
 
-func ModifyProviderMeta(t *testing.T, provider *schema.Provider, modifier ProviderMetaModifier) {
+func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier) {
 	oldConfigure := provider.ConfigureContextFunc
 
 	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
@@ -467,7 +457,7 @@ func ModifyProviderMeta(t *testing.T, provider *schema.Provider, modifier Provid
 		}
 
 		if err := modifier(ctx, config.(*helper.ProviderMeta)); err != nil {
-			t.Fatal(err)
+			return nil, diag.FromErr(err)
 		}
 
 		return config, nil
