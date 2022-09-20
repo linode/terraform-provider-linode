@@ -58,7 +58,8 @@ func ControlPlane(t *testing.T, name, version, region string, ha bool) string {
 			Label:            name,
 			HighAvailability: ha,
 			K8sVersion:       version,
-			Region:           region})
+			Region:           region,
+		})
 }
 
 func DataBasic(t *testing.T, name, version, region string) string {
