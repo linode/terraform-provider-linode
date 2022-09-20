@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/linode/terraform-provider-linode/linode/nbnode/tmpl"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -18,9 +20,23 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var testRegion string
+var (
+	testProviders map[string]*schema.Provider
+	testProvider  *schema.Provider
+	testRegion    string
+)
 
 func init() {
+	provider, providerMap := acceptance.CreateTestProvider()
+	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
+		config.Config.SkipInstanceReadyPoll = true
+		config.Config.SkipInstanceDeletePoll = true
+		return nil
+	})
+
+	testProvider = provider
+	testProviders = providerMap
+
 	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})
 	if err != nil {
 		log.Fatal(err)
@@ -39,13 +55,11 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		Providers:                 acceptance.TestAccProviders,
+		Providers:                 testProviders,
 		CheckDestroy:              checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(config, map[string]interface{}{
-					acceptance.SkipInstanceReadyPollKey: true,
-				}),
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
@@ -72,13 +86,11 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
+		Providers:    testProviders,
 		CheckDestroy: checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Basic(t, nodeName, testRegion), map[string]interface{}{
-					acceptance.SkipInstanceReadyPollKey: true,
-				}),
+				Config: tmpl.Basic(t, nodeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
@@ -86,9 +98,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
-				Config: acceptance.AccTestWithProvider(tmpl.Updates(t, nodeName, testRegion), map[string]interface{}{
-					acceptance.SkipInstanceReadyPollKey: true,
-				}),
+				Config: tmpl.Updates(t, nodeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodeName)),
@@ -106,7 +116,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 }
 
 func checkNodeBalancerNodeExists(s *terraform.State) (err error) {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := testProvider.Meta().(*helper.ProviderMeta).Client
 
 	var linodeID, nodebalancerID, nodeID, configID int
 	var expectedNodePort string
@@ -173,7 +183,7 @@ func checkNodeBalancerNodeExists(s *terraform.State) (err error) {
 }
 
 func checkNodeBalancerNodeDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := testProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_node" {
 			continue
