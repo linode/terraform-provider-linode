@@ -45,7 +45,7 @@ func TestAccResourceFirewallDevice_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 					resource.TestCheckResourceAttrSet(deviceName, "created"),
 				),
 			},
@@ -53,7 +53,7 @@ func TestAccResourceFirewallDevice_basic(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
 					resource.TestCheckResourceAttrPair(firewallName, "linodes.0", instanceName, "id"),
 				),
@@ -67,14 +67,14 @@ func TestAccResourceFirewallDevice_basic(t *testing.T) {
 			{
 				Config: tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 				),
 			},
 			// Refresh the state and verify the detachment
 			{
 				Config: tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "0"),
 					resource.TestCheckResourceAttr(firewallName, "linodes.#", "0"),
 				),

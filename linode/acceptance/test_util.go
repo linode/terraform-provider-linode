@@ -345,9 +345,9 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 	}
 }
 
-func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
+func CheckFirewallExists(provider *schema.Provider, name string, firewall *linodego.Firewall) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {

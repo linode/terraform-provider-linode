@@ -1,8 +1,6 @@
 package firewall_test
 
 import (
-	"context"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -16,18 +14,11 @@ const testFirewallDataName = "data.linode_firewall.test"
 func TestAccDataSourceFirewall_basic(t *testing.T) {
 	t.Parallel()
 
-	provider, providerMap := acceptance.CreateTestProvider()
-	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
-		config.Config.SkipInstanceReadyPoll = true
-		config.Config.SkipInstanceDeletePoll = true
-		return nil
-	})
-
 	firewallName := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: providerMap,
+		Providers: testProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, firewallName, devicePrefix, testRegion),
