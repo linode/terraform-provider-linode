@@ -28,12 +28,13 @@ func init() {
 		log.Fatalf("failed to get client: %s", err)
 	}
 
-	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
-	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
-	}
-
-	engineVersion = v.ID
+	// TODO: Uncomment when Mongo support is active again
+	//v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
+	//if err != nil {
+	//	log.Fatalf("failde to get db engine version: %s", err)
+	//}
+	//
+	//engineVersion = v.ID
 
 	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
 	if err != nil {

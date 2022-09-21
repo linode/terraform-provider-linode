@@ -31,21 +31,22 @@ func init() {
 
 	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mysql")
 	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
+		log.Fatalf("failed to get db engine version: %s", err)
 	}
 
 	mysqlEngineVersion = v.ID
 
-	v, err = helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
-	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
-	}
-
-	mongoEngineVersion = v.ID
+	// TODO: Uncomment once Mongo support is re-enabled
+	//v, err = helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
+	//if err != nil {
+	//	log.Fatalf("failed to get db engine version: %s", err)
+	//}
+	//
+	//mongoEngineVersion = v.ID
 
 	v, err = helper.ResolveValidDBEngine(context.Background(), *client, "postgresql")
 	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
+		log.Fatalf("failed to get db engine version: %s", err)
 	}
 
 	postgresEngineVersion = v.ID
