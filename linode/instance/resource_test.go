@@ -1888,6 +1888,10 @@ func TestAccResourceInstance_powerStateNoImage(t *testing.T) {
 func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 	t.Parallel()
 
+	// We need to manually override the region as IP sharing capabilities aren't
+	// explicitly mentioned by the API.
+	const region = "us-west"
+
 	failoverResName := "linode_instance.failover"
 
 	var instance linodego.Instance
@@ -1899,11 +1903,11 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.IPv4SharingBadInput(t, instanceName, testRegion),
+				Config:      tmpl.IPv4SharingBadInput(t, instanceName, region),
 				ExpectError: regexp.MustCompile("expected ipv4 address, got"),
 			},
 			{
-				Config: tmpl.IPv4Sharing(t, instanceName, testRegion),
+				Config: tmpl.IPv4Sharing(t, instanceName, region),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(failoverResName, &instance),
 					resource.TestCheckResourceAttr(failoverResName, "shared_ipv4.#", "1"),
@@ -1911,7 +1915,7 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.IPv4SharingAllocation(t, instanceName, testRegion),
+				Config: tmpl.IPv4SharingAllocation(t, instanceName, region),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(failoverResName, &instance),
 					resource.TestCheckResourceAttr(failoverResName, "shared_ipv4.#", "1"),
@@ -1919,7 +1923,7 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.IPv4SharingEmpty(t, instanceName, testRegion),
+				Config: tmpl.IPv4SharingEmpty(t, instanceName, region),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(failoverResName, &instance),
 					resource.TestCheckResourceAttr(failoverResName, "shared_ipv4.#", "0"),

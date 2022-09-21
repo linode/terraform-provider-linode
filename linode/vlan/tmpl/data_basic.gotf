@@ -20,6 +20,16 @@ data "linode_vlans" "foolan" {
         name = "label"
         values = ["{{.VLANLabel}}"]
     }
+
+    filter {
+        name = "linodes"
+        values = [linode_instance.fooinst.id]
+    }
+
+    filter {
+        name = "region"
+        values = [linode_instance.fooinst.region]
+    }
 }
 
 {{ end }}

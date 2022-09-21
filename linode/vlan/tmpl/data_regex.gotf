@@ -7,7 +7,7 @@ resource "linode_instance" "fooinst" {
     region = "{{ .Region }}"
 
     interface {
-        label = "{{.VLANLabel}}-new"
+        label = "{{.VLANLabel}}"
         purpose = "vlan"
     }
 }
@@ -18,8 +18,21 @@ data "linode_vlans" "foolan" {
 
     filter {
         name = "label"
-        values = ["{{.VLANLabel}}-n.*"]
+
+        # Arbitrary regex
+        values = [format("%s.*", substr("{{.VLANLabel}}", 0, 5))]
         match_by = "regex"
+    }
+
+    filter {
+        name = "region"
+        values = ["{{ .Region }}"]
+        match_by = "regex"
+    }
+
+    filter {
+        name = "linodes"
+        values = [linode_instance.fooinst.id]
     }
 }
 

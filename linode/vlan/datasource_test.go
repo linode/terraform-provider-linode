@@ -82,7 +82,7 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 				Config:    tmpl.DataRegex(t, instanceName, testRegion, vlanName),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vlans.#", 0),
-					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName+"-new"),
+					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", testRegion),
 					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "vlans.0.linodes.#"),
@@ -102,7 +102,7 @@ func TestAccDataSourceVLANs_ensureNoDuplicates(t *testing.T) {
 	t.Parallel()
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	vlanName := acctest.RandomWithPrefix("tf-test")
+	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
 
 	createValidateSteps := func(i int) []resource.TestStep {
