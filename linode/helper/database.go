@@ -28,6 +28,10 @@ func ResolveValidDBEngine(
 		return nil, err
 	}
 
+	if len(engines) < 1 {
+		return nil, fmt.Errorf("no db engines were found")
+	}
+
 	return &engines[0], nil
 }
 
