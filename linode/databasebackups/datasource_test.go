@@ -117,6 +117,7 @@ func TestFlattenBackup_PostgreSQL(t *testing.T) {
 
 func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 	t.Parallel()
+	t.Skip()
 
 	var db linodego.MongoDatabase
 

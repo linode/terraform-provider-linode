@@ -96,6 +96,7 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 
 func TestAccResourceDatabaseAccessControls_MongoDB(t *testing.T) {
 	t.Parallel()
+	t.Skip()
 
 	resName := "linode_database_access_controls.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
