@@ -23,10 +23,10 @@ var (
 )
 
 func init() {
-	client, err := acceptance.GetClientForSweepers()
-	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
-	}
+	//client, err := acceptance.GetClientForSweepers()
+	//if err != nil {
+	//	log.Fatalf("failed to get client: %s", err)
+	//}
 
 	// TODO: Uncomment when Mongo support is active again
 	//v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
