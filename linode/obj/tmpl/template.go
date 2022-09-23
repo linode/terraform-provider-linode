@@ -9,29 +9,32 @@ import (
 )
 
 type TemplateData struct {
-	Bucket objectbucket.TemplateData
-	Key    objectkey.TemplateData
+	Bucket  objectbucket.TemplateData
+	Key     objectkey.TemplateData
+	Cluster string
 
 	Content string
 	Source  string
 }
 
-func Basic(t *testing.T, name, keyName, content, source string) string {
+func Basic(t *testing.T, name, cluster, keyName, content, source string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_basic", TemplateData{
-			Bucket:  objectbucket.TemplateData{Label: name},
+			Bucket:  objectbucket.TemplateData{Label: name, Cluster: cluster},
 			Key:     objectkey.TemplateData{Label: keyName},
 			Content: content,
 			Source:  source,
+			Cluster: cluster,
 		})
 }
 
-func Updates(t *testing.T, name, keyName, content, source string) string {
+func Updates(t *testing.T, name, cluster, keyName, content, source string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_updates", TemplateData{
-			Bucket:  objectbucket.TemplateData{Label: name},
+			Bucket:  objectbucket.TemplateData{Label: name, Cluster: cluster},
 			Key:     objectkey.TemplateData{Label: keyName},
 			Content: content,
 			Source:  source,
+			Cluster: cluster,
 		})
 }

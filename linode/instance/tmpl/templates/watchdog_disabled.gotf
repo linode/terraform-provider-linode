@@ -2,7 +2,7 @@
 
 resource "linode_instance" "foobar" {
     label     = "{{.Label}}"
-    region    = "ca-central"
+    region    = "{{ .Region }}"
     image     = "{{.Image}}"
     type      = "g6-nanode-1"
     root_pass = "terraform-test"

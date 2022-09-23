@@ -3,13 +3,13 @@
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
-    region = "us-southeast"
+    region = "{{ .Region }}"
 }
 
 resource "linode_instance" "foobar2" {
     label = "{{.Label}}-2"
     type = "g6-nanode-1"
-    region = "us-southeast"
+    region = "{{ .Region }}"
 }
 
 resource "linode_ipv6_range" "foobar" {
@@ -25,13 +25,13 @@ resource "linode_ipv6_range" "foobar" {
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
-    region = "us-southeast"
+    region = "{{ .Region }}"
 }
 
 resource "linode_instance" "foobar2" {
     label = "{{.Label}}-2"
     type = "g6-nanode-1"
-    region = "us-southeast"
+    region = "{{ .Region }}"
 }
 
 resource "linode_ipv6_range" "foobar" {

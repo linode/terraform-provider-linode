@@ -2,7 +2,7 @@
 
 resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
-    region = "us-west"
+    region = "{{ .Region }}"
 
     config {
         label = "config"
@@ -17,7 +17,7 @@ resource "linode_instance" "foobar" {
 
 resource "linode_volume" "foobar" {
     label = "{{.Label}}"
-    region = "us-west"
+    region = "{{ .Region }}"
 }
 
 {{ end }}

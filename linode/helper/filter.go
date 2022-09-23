@@ -431,9 +431,20 @@ func (f FilterConfig) validateFilter(
 	values []string,
 	itemValue interface{},
 ) (bool, error) {
-	// Filter recursively on lists (tags, etc.)
-	if items, ok := itemValue.([]string); ok {
-		for _, item := range items {
+	// Handles slice types and recursive validation
+	recursiveValidate := func() (bool, error) {
+		var s []any
+
+		switch itemValue.(type) {
+		case []int:
+			s = TypedSliceToAny(itemValue.([]int))
+		case []string:
+			s = TypedSliceToAny(itemValue.([]string))
+		default:
+			return false, fmt.Errorf("unknown slice type")
+		}
+
+		for _, item := range s {
 			valid, err := f.validateFilter(matchBy, name, values, item)
 			if err != nil {
 				return false, err
@@ -445,6 +456,12 @@ func (f FilterConfig) validateFilter(
 		}
 
 		return false, nil
+	}
+
+	// Filter recursively on lists (tags, ids, etc.); calling a closure
+	// for code readability.
+	if reflect.TypeOf(itemValue).Kind() == reflect.Slice {
+		return recursiveValidate()
 	}
 
 	cfg := f[name]

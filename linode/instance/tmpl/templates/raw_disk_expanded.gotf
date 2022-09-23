@@ -4,7 +4,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-standard-1"
-    region = "us-east"
+    region = "{{ .Region }}"
     disk {
         label = "disk"
         size = 6000

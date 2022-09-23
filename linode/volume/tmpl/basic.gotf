@@ -2,7 +2,7 @@
 
 resource "linode_volume" "foobar" {
     label = "{{.Label}}"
-    region = "us-west"
+    region = "{{ .Region }}"
     tags = ["tf_test"]
 }
 

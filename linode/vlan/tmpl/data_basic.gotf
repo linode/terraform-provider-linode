@@ -4,7 +4,7 @@ resource "linode_instance" "fooinst" {
     label = "{{.InstLabel}}"
     type = "g6-standard-1"
     image = "linode/alpine3.15"
-    region = "us-southeast"
+    region = "{{ .Region }}"
 
     interface {
         label = "{{.VLANLabel}}"
@@ -19,6 +19,16 @@ data "linode_vlans" "foolan" {
     filter {
         name = "label"
         values = ["{{.VLANLabel}}"]
+    }
+
+    filter {
+        name = "linodes"
+        values = [linode_instance.fooinst.id]
+    }
+
+    filter {
+        name = "region"
+        values = [linode_instance.fooinst.region]
     }
 }
 

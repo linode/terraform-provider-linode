@@ -2,7 +2,7 @@
 
 resource "linode_instance" "foobar" {
     type   = "g6-nanode-1"
-    region = "us-west"
+    region = "{{ .Region }}"
     label = "{{.Label}}"
     image = "linode/ubuntu20.04"
     authorized_keys = ["{{.PubKey}}"]
@@ -10,7 +10,7 @@ resource "linode_instance" "foobar" {
 
 resource "linode_instance" "foobar2" {
     type   = "g6-nanode-1"
-    region = "us-west"
+    region = "{{ .Region }}"
     label = "{{.Label}}-2"
     authorized_keys = ["{{.PubKey}}"]
     image = "linode/ubuntu20.04"
@@ -18,7 +18,7 @@ resource "linode_instance" "foobar2" {
 
 resource "linode_volume" "foobar" {
     label = "{{.Label}}"
-    region = "us-west"
+    region = "{{ .Region }}"
     tags = ["tf_test"]
     size = 10
 
@@ -31,7 +31,7 @@ resource "linode_volume" "foobar" {
 
 resource "linode_instance" "foobar" {
     type   = "g6-nanode-1"
-    region = "us-west"
+    region = "{{ .Region }}"
     label = "{{.Label}}"
     image = "linode/ubuntu20.04"
     authorized_keys = ["{{.PubKey}}"]
@@ -39,7 +39,7 @@ resource "linode_instance" "foobar" {
 
 resource "linode_instance" "foobar2" {
     type   = "g6-nanode-1"
-    region = "us-west"
+    region = "{{ .Region }}"
     label = "{{.Label}}-2"
     image = "linode/ubuntu20.04"
     authorized_keys = ["{{.PubKey}}"]
@@ -47,7 +47,7 @@ resource "linode_instance" "foobar2" {
 
 resource "linode_volume" "foobar" {
     label = "{{.Label}}"
-    region = "us-west"
+    region = "{{ .Region }}"
     tags = ["tf_test"]
     size = 10
 

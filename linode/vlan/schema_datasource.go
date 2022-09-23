@@ -8,6 +8,8 @@ import (
 var filterConfig = helper.FilterConfig{
 	"label":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+
+	"linodes": {TypeFunc: helper.FilterTypeInt},
 }
 
 var resourceSchema = map[string]*schema.Schema{

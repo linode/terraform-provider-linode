@@ -7,21 +7,31 @@ import (
 )
 
 type TemplateData struct {
-	Label string
+	Label  string
+	Region string
 }
 
-func Basic(t *testing.T, nodebalancer string) string {
+func Basic(t *testing.T, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"nodebalancer_basic", TemplateData{Label: nodebalancer})
+		"nodebalancer_basic", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
 }
 
-func Updates(t *testing.T, nodebalancer string) string {
+func Updates(t *testing.T, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"nodebalancer_updates", TemplateData{Label: nodebalancer})
+		"nodebalancer_updates", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
 }
 
-func DataBasic(t *testing.T, nodebalancer string) string {
+func DataBasic(t *testing.T, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_data_basic",
-		TemplateData{Label: nodebalancer})
+		TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
 }

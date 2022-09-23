@@ -5,7 +5,7 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     type = "{{.Type}}"
     image = "{{.Image}}"
-    region = "us-east"
+    region = "{{ .Region }}"
     root_pass = "terraform-test"
     swap_size = 256
     authorized_keys = ["{{.PubKey}}"]

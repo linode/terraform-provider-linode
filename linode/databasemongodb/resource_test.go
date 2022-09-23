@@ -17,7 +17,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var engineVersion string
+var (
+	engineVersion string
+	testRegion    string
+)
 
 func init() {
 	resource.AddTestSweepers("linode_database_mongodb", &resource.Sweeper{
@@ -25,17 +28,25 @@ func init() {
 		F:    sweep,
 	})
 
-	client, err := acceptance.GetClientForSweepers()
+	// TODO: Uncomment when MongoDB is re-enabled
+	//client, err := acceptance.GetClientForSweepers()
+	//if err != nil {
+	//	log.Fatalf("failed to get client: %s", err)
+	//}
+	//
+	//v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
+	//if err != nil {
+	//	log.Fatalf("failde to get db engine version: %s", err)
+	//}
+	//
+	//engineVersion = v.ID
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
 	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
+		log.Fatal(err)
 	}
 
-	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
-	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
-	}
-
-	engineVersion = v.ID
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -64,6 +75,7 @@ func sweep(prefix string) error {
 }
 
 func TestAccResourceDatabaseMongo_basic(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	resName := "linode_database_mongodb.foobar"
@@ -75,12 +87,12 @@ func TestAccResourceDatabaseMongo_basic(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, dbName, engineVersion),
+				Config: tmpl.Basic(t, dbName, engineVersion, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMongoDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "0"),
@@ -111,6 +123,7 @@ func TestAccResourceDatabaseMongo_basic(t *testing.T) {
 }
 
 func TestAccResourceDatabaseMongo_complex(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	resName := "linode_database_mongodb.foobar"
@@ -131,12 +144,13 @@ func TestAccResourceDatabaseMongo_complex(t *testing.T) {
 					CompressionType: "zlib",
 					StorageEngine:   "wiredtiger",
 					SSLConnection:   true,
+					Region:          testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMongoDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
@@ -177,12 +191,13 @@ func TestAccResourceDatabaseMongo_complex(t *testing.T) {
 					CompressionType: "zlib",
 					StorageEngine:   "wiredtiger",
 					SSLConnection:   true,
+					Region:          testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMongoDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName+"updated"),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),

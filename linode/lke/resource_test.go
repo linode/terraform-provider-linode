@@ -23,6 +23,7 @@ var (
 	k8sVersions        []string
 	k8sVersionLatest   string
 	k8sVersionPrevious string
+	testRegion         string
 )
 
 const resourceClusterName = "linode_lke_cluster.test"
@@ -63,6 +64,13 @@ func init() {
 	if len(k8sVersions) > 1 {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -163,10 +171,10 @@ func TestAccResourceLKECluster_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "region", "us-central"),
+					resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
 					resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
 					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
@@ -198,11 +206,11 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.ManyPools(t, clusterName, k8sVersionPrevious),
+				Config: tmpl.ManyPools(t, clusterName, k8sVersionPrevious, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkLKEExists(&cluster),
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "region", "us-central"),
+					resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
 					resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionPrevious),
 				),
 			},
@@ -213,10 +221,10 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 					// recycle will not actually occur.
 					waitForAllNodesReady(t, &cluster, time.Second*5, time.Minute*5)
 				},
-				Config: tmpl.ManyPools(t, clusterName, k8sVersionLatest),
+				Config: tmpl.ManyPools(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "region", "us-central"),
+					resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
 					resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
 				),
 			},
@@ -235,7 +243,7 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
@@ -244,7 +252,7 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, newClusterName, k8sVersionLatest),
+				Config: tmpl.Updates(t, newClusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "2"),
@@ -266,7 +274,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -274,7 +282,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ComplexPools(t, newClusterName, k8sVersionLatest),
+				Config: tmpl.ComplexPools(t, newClusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
@@ -284,7 +292,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -307,7 +315,7 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkLKEExists(&cluster),
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
@@ -334,7 +342,7 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 						t.Errorf("expected cluster to have 2 pools but got %d", len(pools))
 					}
 				},
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check:  resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 			},
 		},
@@ -352,7 +360,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -361,7 +369,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Autoscaler(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Autoscaler(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -372,7 +380,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.AutoscalerUpdates(t, clusterName, k8sVersionLatest),
+				Config: tmpl.AutoscalerUpdates(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -383,7 +391,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.AutoscalerManyPools(t, clusterName, k8sVersionLatest),
+				Config: tmpl.AutoscalerManyPools(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "2"),
@@ -398,7 +406,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest),
+				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -421,7 +429,7 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, false),
+				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -431,7 +439,7 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, true),
+				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
@@ -441,7 +449,7 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, false),
+				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
 
 				// Expect a 400 response when attempting to disable HA
 				ExpectError: regexp.MustCompile("\\[400]"),

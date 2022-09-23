@@ -4,14 +4,14 @@ resource "linode_instance" "primary" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-nanode-1"
-    region = "us-west"
+    region = "{{ .Region }}"
 }
 
 resource "linode_instance" "failover" {
     label = "{{.Label}}-failover"
     group = "tf_test"
     type = "g6-nanode-1"
-    region = "us-west"
+    region = "{{ .Region }}"
 
     shared_ipv4 = [linode_instance.primary.ip_address]
 }
