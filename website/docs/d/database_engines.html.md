@@ -16,6 +16,10 @@ Get information about all Linode Managed Database engines:
 
 ```hcl
 data "linode_database_engines" "all" {}
+
+output "engine_ids" {
+  value = data.linode_database_engines.all.engines.*.id
+}
 ```
 
 Get information about all Linode MySQL Database engines:
@@ -26,6 +30,10 @@ data "linode_database_engines" "mysql" {
     name = "engine"
     values = ["mysql"]
   }
+}
+
+output "engine_ids" {
+  value = data.linode_database_engines.mysql.engines.*.id
 }
 ```
 

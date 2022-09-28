@@ -161,6 +161,8 @@ func (f FilterConfig) ConstructFilterString(d *schema.ResourceData) (string, err
 		return "", err
 	}
 
+	fmt.Println(string(result))
+
 	return string(result), nil
 }
 

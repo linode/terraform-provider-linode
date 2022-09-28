@@ -26,12 +26,20 @@ data "linode_instances" "my-instances" {
     values = ["my-tag"]
   }
 }
+
+output "instance_id" {
+  value = data.linode_instances.my-instances.instances.0.id
+}
 ```
 
 Get information about all Linode instances associated with the current token:
 
 ```hcl
 data "linode_instances" "all-instances" {}
+
+output "instance_ids" {
+  value = data.linode_instances.all-instances.instances.*.id
+}
 ```
 
 ## Argument Reference
