@@ -32,6 +32,10 @@ data "linode_vlans" "my-vlans" {
     values = ["my-vlan"]
   }
 }
+
+output "vlan_linodes" {
+  value = data.linode_vlans.my-vlans.vlans.0.linodes
+}
 ```
 
 ## Argument Reference

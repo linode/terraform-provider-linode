@@ -28,6 +28,10 @@ data "linode_stackscripts" "specific-stackscripts" {
     values = [false]
   }
 }
+
+output "stackscript_id" {
+  value = data.linode_stackscripts.specific-stackscripts.stackscripts.0.id
+}
 ```
 
 ## Argument Reference
