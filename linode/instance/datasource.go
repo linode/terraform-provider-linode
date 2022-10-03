@@ -17,12 +17,8 @@ var filterConfig = helper.FilterConfig{
 	"region": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 
 	// Tags must be filtered on the client
-	"tags": {TypeFunc: helper.FilterTypeString},
-	"status": {
-		TypeFunc: func(value string) (interface{}, error) {
-			return linodego.InstanceStatus(value), nil
-		},
-	},
+	"tags":             {TypeFunc: helper.FilterTypeString},
+	"status":           {TypeFunc: helper.FilterTypeString},
 	"type":             {TypeFunc: helper.FilterTypeString},
 	"watchdog_enabled": {TypeFunc: helper.FilterTypeBool},
 }
