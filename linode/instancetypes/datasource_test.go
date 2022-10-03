@@ -78,3 +78,23 @@ func TestAccDataSourceInstanceTypes_regex(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceInstanceTypes_byClass(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_instance_types.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: acceptance.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataByClass(t),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "types.#", 0),
+					acceptance.CheckResourceAttrContains(resourceName, "types.0.label", "Linode"),
+				),
+			},
+		},
+	})
+}

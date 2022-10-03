@@ -464,6 +464,9 @@ func (f FilterConfig) validateFilter(
 		return recursiveValidate()
 	}
 
+	// Normalize item value types
+	itemValue = normalizeItemValue(itemValue)
+
 	cfg := f[name]
 
 	valuesNormalized := make([]interface{}, len(values))
@@ -533,6 +536,23 @@ func validateFilterRegex(name string, values []interface{}, result interface{}) 
 	}
 
 	return false, nil
+}
+
+// normalizeItemValue converts similar item values (i.e. enum types) into their underlying types.
+func normalizeItemValue(value any) any {
+	kind := reflect.TypeOf(value).Kind()
+	rValue := reflect.ValueOf(value)
+
+	switch kind {
+	case reflect.String:
+		return rValue.String()
+	case reflect.Int:
+		return int(rValue.Int())
+	case reflect.Bool:
+		return rValue.Bool()
+	}
+
+	return value
 }
 
 func FilterTypeString(value string) (interface{}, error) {
