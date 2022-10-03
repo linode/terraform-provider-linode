@@ -19,6 +19,14 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// validFilterValueTypes is a list of valid underlying types for filterable fields.
+var validFilterValueTypes = []reflect.Kind{
+	reflect.String, reflect.Int,
+	reflect.Int32, reflect.Array,
+	reflect.Float64, reflect.Float32,
+	reflect.Slice, reflect.Bool,
+}
+
 // FilterConfig stores a map of FilterAttributes for a resource.
 type FilterConfig map[string]FilterAttribute
 
@@ -458,6 +466,11 @@ func (f FilterConfig) validateFilter(
 		return false, nil
 	}
 
+	// Ensure that the filter value has a valid type
+	if err := validateItemValueType(itemValue); err != nil {
+		return false, err
+	}
+
 	// Filter recursively on lists (tags, ids, etc.); calling a closure
 	// for code readability.
 	if reflect.TypeOf(itemValue).Kind() == reflect.Slice {
@@ -553,6 +566,22 @@ func normalizeItemValue(value any) any {
 	}
 
 	return value
+}
+
+// validateItemValueType ensures that all underlying filter values have a supported underlying type.
+func validateItemValueType(value any) error {
+	kind := reflect.TypeOf(value).Kind()
+
+	for _, v := range validFilterValueTypes {
+		if kind == v {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("The underlying type (%v) for this filterable field is not supported. "+
+		"This is always a provider bug. Please create an issue describing this bug on the terraform-provider-linode "+
+		"GitHub repository. (https://github.com/linode/terraform-provider-linode/issues)",
+		kind)
 }
 
 func FilterTypeString(value string) (interface{}, error) {
