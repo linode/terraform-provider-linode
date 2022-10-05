@@ -20,3 +20,8 @@ func DataRegex(t *testing.T) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_types_data_regex", nil)
 }
+
+func DataByClass(t *testing.T) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_types_data_by_class", nil)
+}
