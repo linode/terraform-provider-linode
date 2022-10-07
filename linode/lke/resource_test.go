@@ -2,6 +2,7 @@ package lke_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"regexp"
@@ -235,11 +236,39 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 	t.Parallel()
 
+	provider, providerMap := acceptance.CreateTestProvider()
+
+	// We want to ensure that non-updated values are excluded from update requests
+	acceptance.ModifyProviderMeta(provider,
+		func(ctx context.Context, config *helper.ProviderMeta) error {
+			config.Client.OnBeforeRequest(func(request *linodego.Request) error {
+				if request.Method != "PUT" {
+					return nil
+				}
+
+				var opts linodego.LKEClusterUpdateOptions
+
+				if err := json.Unmarshal([]byte(request.Body.(string)), &opts); err != nil {
+					t.Fatal(err)
+				}
+
+				if opts.K8sVersion != "" {
+					t.Fatalf(
+						"expected k8s version to be excluded from update request, got %s",
+						opts.K8sVersion)
+				}
+
+				return nil
+			})
+
+			return nil
+		})
+
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	newClusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
+		Providers:    providerMap,
 		CheckDestroy: acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
