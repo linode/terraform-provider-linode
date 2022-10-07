@@ -267,9 +267,8 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	newClusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    providerMap,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: providerMap,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
