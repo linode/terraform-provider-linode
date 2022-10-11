@@ -195,7 +195,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.RootPass = d.Get("root_pass").(string)
 		if createOpts.RootPass == "" {
 			var err error
-			createOpts.RootPass, err = createRandomRootPassword()
+			createOpts.RootPass, err = helper.CreateRandomRootPassword()
 			if err != nil {
 				return diag.FromErr(err)
 			}
