@@ -1,6 +1,7 @@
 package region_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -8,11 +9,21 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/region/tmpl"
 )
 
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"linodes"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
+
 func TestAccDataSourceRegion_basic(t *testing.T) {
 	t.Parallel()
 
-	country := "us"
-	regionID := "us-east"
+	regionID := testRegion
 	resourceName := "data.linode_region.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -22,7 +33,7 @@ func TestAccDataSourceRegion_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, regionID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "country", country),
+					resource.TestCheckResourceAttrSet(resourceName, "country"),
 					resource.TestCheckResourceAttr(resourceName, "id", regionID),
 				),
 			},

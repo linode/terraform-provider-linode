@@ -5,7 +5,7 @@ resource "linode_instance" "foobar" {
     image = "{{.Image}}"
     group = "tf_test"
     type = "g6-nanode-1"
-    region = "us-southeast"
+    region = "{{ .Region }}"
     booted = {{.Booted}}
 
     interface {

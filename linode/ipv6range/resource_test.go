@@ -16,6 +16,9 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/ipv6range/tmpl"
 )
 
+// TODO: don't hardcode this once IPv6 sharing has a proper capability string
+const testRegion = "eu-central"
+
 func TestAccIPv6Range_basic(t *testing.T) {
 	t.Parallel()
 
@@ -29,12 +32,12 @@ func TestAccIPv6Range_basic(t *testing.T) {
 			CheckDestroy: checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, instLabel),
+					Config: tmpl.Basic(t, instLabel, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkIPv6RangeExists(resName, nil),
 						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
 						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 						resource.TestCheckResourceAttrSet(resName, "range"),
 						resource.TestCheckResourceAttrSet(resName, "linode_id"),
@@ -65,12 +68,12 @@ func TestAccIPv6Range_routeTarget(t *testing.T) {
 			CheckDestroy: checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.RouteTarget(t, instLabel),
+					Config: tmpl.RouteTarget(t, instLabel, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkIPv6RangeExists(resName, nil),
 						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
 						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 						resource.TestCheckResourceAttrSet(resName, "range"),
 						resource.TestCheckResourceAttrSet(resName, "route_target"),
@@ -123,7 +126,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 			CheckDestroy: checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.ReassignmentStep1(t, instLabel),
+					Config: tmpl.ReassignmentStep1(t, instLabel, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkIPv6RangeExists(resName, nil),
 						acceptance.CheckInstanceExists(instance1ResName, &instance1),
@@ -131,7 +134,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 
 						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
 						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 						resource.TestCheckResourceAttrSet(resName, "range"),
 						resource.TestCheckResourceAttrSet(resName, "linode_id"),
@@ -142,12 +145,12 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 					PreConfig: func() {
 						validateInstanceIPv6Assignments(t, instance1.ID, instance2.ID)
 					},
-					Config: tmpl.ReassignmentStep2(t, instLabel),
+					Config: tmpl.ReassignmentStep2(t, instLabel, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkIPv6RangeExists(resName, nil),
 						resource.TestCheckResourceAttr(resName, "prefix_length", "64"),
 						resource.TestCheckResourceAttr(resName, "is_bgp", "false"),
-						resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 						resource.TestCheckResourceAttrSet(resName, "range"),
 						resource.TestCheckResourceAttrSet(resName, "linode_id"),
@@ -155,7 +158,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.ReassignmentStep2(t, instLabel),
+					Config: tmpl.ReassignmentStep2(t, instLabel, testRegion),
 					PreConfig: func() {
 						validateInstanceIPv6Assignments(t, instance2.ID, instance1.ID)
 					},
@@ -178,7 +181,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 			CheckDestroy: checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.RaceCondition(t, instLabel),
+					Config: tmpl.RaceCondition(t, instLabel, testRegion),
 					Check:  checkIPv6RangeNoDuplicates,
 				},
 			},

@@ -3,6 +3,7 @@ package nb_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"testing"
@@ -18,11 +19,20 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+var testRegion string
+
 func init() {
 	resource.AddTestSweepers("linode_nodebalancer", &resource.Sweeper{
 		Name: "linode_nodebalancer",
 		F:    sweep,
 	})
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -61,12 +71,12 @@ func TestAccResourceNodeBalancer_basic(t *testing.T) {
 		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
-					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
@@ -99,7 +109,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodebalancerName),
+				Config: tmpl.Basic(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
@@ -107,7 +117,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, nodebalancerName),
+				Config: tmpl.Updates(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodebalancerName)),

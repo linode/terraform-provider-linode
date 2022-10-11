@@ -21,12 +21,20 @@ data "linode_instance_types" "specific-types" {
     values = [2]
   }
 }
+
+output "type_ids" {
+  value = data.linode_instance_types.specific-types.types.*.id
+}
 ```
 
 Get information about all Linode Instance types:
 
 ```hcl
 data "linode_instance_types" "all-types" {}
+
+output "type_ids" {
+  value = data.linode_instance_types.all-types.types.*.id
+}
 ```
 
 ## Argument Reference

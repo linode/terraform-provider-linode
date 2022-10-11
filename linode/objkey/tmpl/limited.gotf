@@ -1,14 +1,14 @@
 {{ define "object_key_limited" }}
 
 resource "linode_object_storage_bucket" "foobar" {
-    cluster = "us-east-1"
+    cluster = "{{ .Cluster }}"
     label = "{{.Label}}-bucket"
 }
 resource "linode_object_storage_key" "foobar" {
     label = "{{.Label}}_key"
     bucket_access {
         bucket_name = "{{.Label}}-bucket"
-        cluster = "us-east-1"
+        cluster = "{{ .Cluster }}"
         permissions = "read_only"
     }
     bucket_access {

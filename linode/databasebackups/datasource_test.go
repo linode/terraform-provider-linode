@@ -17,20 +17,31 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var engineVersion string
+var (
+	engineVersion string
+	testRegion    string
+)
 
 func init() {
-	client, err := acceptance.GetClientForSweepers()
+	//client, err := acceptance.GetClientForSweepers()
+	//if err != nil {
+	//	log.Fatalf("failed to get client: %s", err)
+	//}
+
+	// TODO: Uncomment when Mongo support is active again
+	//v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
+	//if err != nil {
+	//	log.Fatalf("failde to get db engine version: %s", err)
+	//}
+	//
+	//engineVersion = v.ID
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
 	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
+		log.Fatal(err)
 	}
 
-	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
-	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
-	}
-
-	engineVersion = v.ID
+	testRegion = region
 }
 
 func TestFlattenBackup_MySQL(t *testing.T) {
@@ -107,6 +118,7 @@ func TestFlattenBackup_PostgreSQL(t *testing.T) {
 
 func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 	t.Parallel()
+	t.Skip()
 
 	var db linodego.MongoDatabase
 
@@ -158,6 +170,7 @@ func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 					Engine:      engineVersion,
 					Label:       dbLabel,
 					BackupLabel: backupLabel,
+					Region:      testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "backups.#", "1"),

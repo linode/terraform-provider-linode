@@ -1,7 +1,7 @@
 {{ define "object_bucket_updates" }}
 
 resource "linode_object_storage_bucket" "foobar" {
-    cluster = "us-east-1"
+    cluster = "{{ .Cluster }}"
     label = "{{.Label}}-renamed"
 }
 

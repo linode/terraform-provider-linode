@@ -30,12 +30,13 @@ func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
 					Encrypted:       true,
 					ReplicationType: "none",
 					SSLConnection:   true,
+					Region:          testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),

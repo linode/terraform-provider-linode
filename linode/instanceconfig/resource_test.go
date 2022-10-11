@@ -3,6 +3,7 @@ package instanceconfig_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"testing"
 
@@ -14,6 +15,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instanceconfig/tmpl"
 )
+
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"vlans"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
 
 func TestAccResourceInstanceConfig_basic(t *testing.T) {
 	t.Parallel()
@@ -27,7 +39,7 @@ func TestAccResourceInstanceConfig_basic(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, instanceName),
+				Config: tmpl.Basic(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
@@ -55,7 +67,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Complex(t, instanceName),
+				Config: tmpl.Complex(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
@@ -80,7 +92,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ComplexUpdates(t, instanceName),
+				Config: tmpl.ComplexUpdates(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config-updated"),
@@ -130,7 +142,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Booted(t, instanceName, false),
+				Config: tmpl.Booted(t, instanceName, testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					checkExists(resName, nil),
@@ -145,7 +157,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 						t.Fatalf("expected instance to be offline, got %s", instance.Status)
 					}
 				},
-				Config: tmpl.Booted(t, instanceName, true),
+				Config: tmpl.Booted(t, instanceName, testRegion, true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					checkExists(resName, nil),
@@ -160,7 +172,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 						t.Fatalf("expected instance to be running, got %s", instance.Status)
 					}
 				},
-				Config: tmpl.Booted(t, instanceName, true),
+				Config: tmpl.Booted(t, instanceName, testRegion, true),
 			},
 			{
 				ResourceName:      resName,
@@ -188,7 +200,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 			CheckDestroy: checkDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.BootedSwap(t, instanceName, false),
+					Config: tmpl.BootedSwap(t, instanceName, testRegion, false),
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 						checkExists(config1Name, nil),
@@ -204,7 +216,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 							t.Fatalf("expected instance to be running, got %s", instance.Status)
 						}
 					},
-					Config: tmpl.BootedSwap(t, instanceName, true),
+					Config: tmpl.BootedSwap(t, instanceName, testRegion, true),
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 						checkExists(config1Name, nil),
@@ -220,7 +232,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 							t.Fatalf("expected instance to be running, got %s", instance.Status)
 						}
 					},
-					Config: tmpl.BootedSwap(t, instanceName, true),
+					Config: tmpl.BootedSwap(t, instanceName, testRegion, true),
 				},
 			},
 		})

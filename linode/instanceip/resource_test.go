@@ -1,6 +1,7 @@
 package instanceip_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -11,6 +12,17 @@ import (
 )
 
 const testInstanceIPResName = "linode_instance_ip.test"
+
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
 
 func TestAccInstanceIP_basic(t *testing.T) {
 	t.Parallel()
@@ -24,7 +36,7 @@ func TestAccInstanceIP_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, name, true),
+				Config: tmpl.Basic(t, name, testRegion, true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -32,7 +44,7 @@ func TestAccInstanceIP_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "prefix"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "rdns"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "subnet_mask"),
-					resource.TestCheckResourceAttr(testInstanceIPResName, "region", "us-east"),
+					resource.TestCheckResourceAttr(testInstanceIPResName, "region", testRegion),
 					resource.TestCheckResourceAttr(testInstanceIPResName, "type", "ipv4"),
 				),
 			},
@@ -40,7 +52,7 @@ func TestAccInstanceIP_basic(t *testing.T) {
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, true, &instance)
 				},
-				Config: tmpl.Basic(t, name, true),
+				Config: tmpl.Basic(t, name, testRegion, true),
 			},
 		},
 	})
@@ -58,7 +70,7 @@ func TestAccInstanceIP_noboot(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NoBoot(t, name, true),
+				Config: tmpl.NoBoot(t, name, testRegion, true),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -66,12 +78,12 @@ func TestAccInstanceIP_noboot(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "prefix"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "rdns"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "subnet_mask"),
-					resource.TestCheckResourceAttr(testInstanceIPResName, "region", "us-east"),
+					resource.TestCheckResourceAttr(testInstanceIPResName, "region", testRegion),
 					resource.TestCheckResourceAttr(testInstanceIPResName, "type", "ipv4"),
 				),
 			},
 			{
-				Config: tmpl.NoBoot(t, name, true),
+				Config: tmpl.NoBoot(t, name, testRegion, true),
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
@@ -92,7 +104,7 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 		CheckDestroy: acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, name, false),
+				Config: tmpl.Basic(t, name, testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
@@ -100,7 +112,7 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "prefix"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "rdns"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "subnet_mask"),
-					resource.TestCheckResourceAttr(testInstanceIPResName, "region", "us-east"),
+					resource.TestCheckResourceAttr(testInstanceIPResName, "region", testRegion),
 					resource.TestCheckResourceAttr(testInstanceIPResName, "type", "ipv4"),
 				),
 			},
@@ -108,7 +120,7 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 				PreConfig: func() {
 					acceptance.AssertInstanceReboot(t, false, &instance)
 				},
-				Config: tmpl.Basic(t, name, false),
+				Config: tmpl.Basic(t, name, testRegion, false),
 			},
 		},
 	})

@@ -14,13 +14,13 @@ resource "linode_ipv6_range" "foobar" {
 resource "linode_instance" "primary" {
     label = "{{.Label}}-primary"
     type = "g6-nanode-1"
-    region = "eu-central"
+    region = "{{ .Region }}"
 }
 
 resource "linode_instance" "secondary" {
     label = "{{.Label}}-secondary"
     type = "g6-nanode-1"
-    region = "eu-central"
+    region = "{{ .Region }}"
 }
 
 {{ end }}
@@ -49,13 +49,13 @@ resource "linode_ipv6_range" "foobar" {
 resource "linode_instance" "primary" {
     label = "{{.Label}}-primary"
     type = "g6-nanode-1"
-    region = "eu-central"
+    region = "{{ .Region }}"
 }
 
 resource "linode_instance" "secondary" {
     label = "{{.Label}}-secondary"
     type = "g6-nanode-1"
-    region = "eu-central"
+    region = "{{ .Region }}"
 }
 
 {{ end }}

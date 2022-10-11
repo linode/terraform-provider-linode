@@ -5,7 +5,7 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     image = "linode/alpine3.15"
     type = "g6-standard-1"
-    region = "us-east"
+    region = "{{ .Region }}"
 }
 
 resource "linode_rdns" "foobar" {

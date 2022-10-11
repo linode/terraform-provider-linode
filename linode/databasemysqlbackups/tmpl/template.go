@@ -10,6 +10,7 @@ type TemplateData struct {
 	Engine      string
 	Label       string
 	BackupLabel string
+	Region      string
 }
 
 func DataBasic(t *testing.T, data TemplateData) string {

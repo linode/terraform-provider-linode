@@ -15,13 +15,15 @@ type TemplateData struct {
 	SSLConnection   bool
 	StorageEngine   string
 	CompressionType string
+	Region          string
 }
 
-func Basic(t *testing.T, label, engine string) string {
+func Basic(t *testing.T, label, engine, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_mongodb_basic", TemplateData{
 			Engine: engine,
 			Label:  label,
+			Region: region,
 		})
 }
 

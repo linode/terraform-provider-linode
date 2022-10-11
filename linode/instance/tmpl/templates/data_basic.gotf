@@ -6,7 +6,7 @@ resource "linode_instance" "foobar" {
     tags = ["cool", "cooler"]
     type = "g6-nanode-1"
     image = "{{.Image}}"
-    region = "us-southeast"
+    region = "{{ .Region }}"
     root_pass = "terraform-test"
     swap_size = 256
     private_ip = true

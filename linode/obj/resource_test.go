@@ -3,6 +3,7 @@ package obj_test
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,6 +17,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/obj/tmpl"
 )
+
+var testCluster string
+
+func init() {
+	cluster, err := acceptance.GetRandomOBJCluster()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testCluster = cluster
+}
 
 func TestAccResourceObject_basic(t *testing.T) {
 	t.Parallel()
@@ -62,7 +74,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 			CheckDestroy: checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, bucketName, keyName, content, contentSource.Name()),
+					Config: tmpl.Basic(t, bucketName, testCluster, keyName, content, contentSource.Name()),
 					Check: resource.ComposeTestCheckFunc(
 						validateObject(getObjectResourceName("basic"), "test_basic", content),
 						validateObject(getObjectResourceName("base64"), "test_base64", content),
@@ -70,7 +82,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Updates(t, bucketName, keyName, contentUpdated, contentSourceUpdated.Name()),
+					Config: tmpl.Updates(t, bucketName, testCluster, keyName, contentUpdated, contentSourceUpdated.Name()),
 					Check: resource.ComposeTestCheckFunc(
 						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
 						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
@@ -91,7 +103,7 @@ func getObject(rs *terraform.ResourceState) (*s3.GetObjectOutput, error) {
 	cluster := rs.Primary.Attributes["cluster"]
 
 	conn := s3.New(session.New(&aws.Config{
-		Region:      aws.String("us-east-1"),
+		Region:      aws.String(testCluster),
 		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
 		Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, cluster)),
 	}))

@@ -9,6 +9,7 @@ import (
 type TemplateData struct {
 	Engine          string
 	Label           string
+	Region          string
 	AllowedIP       string
 	ReplicationType string
 	ClusterSize     int
@@ -16,11 +17,12 @@ type TemplateData struct {
 	SSLConnection   bool
 }
 
-func Basic(t *testing.T, label, engine string) string {
+func Basic(t *testing.T, label, engine, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_mysql_basic", TemplateData{
 			Engine: engine,
 			Label:  label,
+			Region: region,
 		})
 }
 

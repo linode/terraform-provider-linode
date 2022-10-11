@@ -17,7 +17,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-nanode-1"
-    region = "us-east"
+    region = "{{ .Region }}"
     stackscript_id = linode_stackscript.foo.id
     stackscript_data = {
         "hello" = "cool"

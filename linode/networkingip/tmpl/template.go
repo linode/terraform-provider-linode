@@ -7,10 +7,11 @@ import (
 )
 
 type TemplateData struct {
-	Label string
+	Label  string
+	Region string
 }
 
-func DataBasic(t *testing.T, label string) string {
+func DataBasic(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"networking_ip_data_basic", TemplateData{Label: label})
+		"networking_ip_data_basic", TemplateData{Label: label, Region: region})
 }

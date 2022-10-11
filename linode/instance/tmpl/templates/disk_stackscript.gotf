@@ -16,7 +16,7 @@ echo "hello this is a stack script"
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
-    region = "us-east"
+    region = "{{ .Region }}"
     group = "tf_test"
 
     disk {

@@ -6,7 +6,7 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     # This needs to be hardcoded to support the StackScript
     image = "linode/ubuntu18.04"
-    region = "us-east"
+    region = "{{ .Region }}"
     root_pass = "terraform-test"
     swap_size = {{.SwapSize}}
     authorized_keys = ["{{.PubKey}}"]

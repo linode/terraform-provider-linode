@@ -2,8 +2,11 @@ package helper
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -114,4 +117,14 @@ func GetCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID
 	}
 
 	return int(events[0].SecondaryEntity.ID.(float64)), nil
+}
+
+func CreateRandomRootPassword() (string, error) {
+	rawRootPass := make([]byte, 50)
+	_, err := rand.Read(rawRootPass)
+	if err != nil {
+		return "", fmt.Errorf("Failed to generate random password")
+	}
+	rootPass := base64.StdEncoding.EncodeToString(rawRootPass)
+	return rootPass, nil
 }

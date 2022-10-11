@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccDataSourceDatabaseMongo_basic(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	resName := "data.linode_database_mongodb.foobar"
@@ -31,11 +32,12 @@ func TestAccDataSourceDatabaseMongo_basic(t *testing.T) {
 					StorageEngine:   "wiredtiger",
 					Encrypted:       true,
 					SSLConnection:   true,
+					Region:          testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMongoDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),

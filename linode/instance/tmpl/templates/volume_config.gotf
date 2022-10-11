@@ -3,13 +3,13 @@
 resource "linode_volume" "foo" {
     label = "{{.Label}}"
     size = "10"
-    region = "us-east"
+    region = "{{ .Region }}"
 }
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
-    region = "us-east"
+    region = "{{ .Region }}"
     group = "tf_test"
 
     disk {

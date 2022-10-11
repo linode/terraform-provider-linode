@@ -148,8 +148,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	updateOpts := linodego.LKEClusterUpdateOptions{}
-	updateOpts.Label = d.Get("label").(string)
-	updateOpts.K8sVersion = d.Get("k8s_version").(string)
+
+	if d.HasChange("label") {
+		updateOpts.Label = d.Get("label").(string)
+	}
+
+	if d.HasChange("k8s_version") {
+		updateOpts.K8sVersion = d.Get("k8s_version").(string)
+	}
 
 	controlPlane := d.Get("control_plane").([]interface{})
 	if len(controlPlane) > 0 {

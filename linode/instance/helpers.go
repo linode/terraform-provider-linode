@@ -2,7 +2,6 @@ package instance
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"log"
@@ -400,7 +399,7 @@ func createInstanceDisk(
 			diskOpts.RootPass = rootPass.(string)
 		} else {
 			var err error
-			diskOpts.RootPass, err = createRandomRootPassword()
+			diskOpts.RootPass, err = helper.CreateRandomRootPassword()
 			if err != nil {
 				return nil, err
 			}
@@ -640,16 +639,6 @@ func rootPasswordState(val interface{}) string {
 func hashString(key string) string {
 	hash := sha3.Sum512([]byte(key))
 	return base64.StdEncoding.EncodeToString(hash[:])
-}
-
-func createRandomRootPassword() (string, error) {
-	rawRootPass := make([]byte, 50)
-	_, err := rand.Read(rawRootPass)
-	if err != nil {
-		return "", fmt.Errorf("Failed to generate random password")
-	}
-	rootPass := base64.StdEncoding.EncodeToString(rawRootPass)
-	return rootPass, nil
 }
 
 // ensureInstanceOffline ensures that a given instance is offline.
