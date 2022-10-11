@@ -170,7 +170,7 @@ The following attributes are available on interface:
 
 * `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation. (e.g. `10.0.0.1/24`)
 
-* `label` - (Optional) The name of this interface.
+* `label` - (Optional) The name of the VLAN to join. This field is only allowed for interfaces with the `vlan` purpose.
 
 ## Import
 
