@@ -107,6 +107,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.StackscriptData = expandStackScriptData(stackscriptData)
 	}
 
+	createOpts.RootPass = d.Get("root_pass").(string)
+	if createOpts.RootPass == "" {
+		var err error
+		createOpts.RootPass, err = helper.CreateRandomRootPassword()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskCreate)
 	if err != nil {
 		return diag.Errorf("failed to poll for events: %s", err)
