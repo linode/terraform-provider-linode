@@ -2,11 +2,11 @@ package helper
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
