@@ -5,5 +5,8 @@ Terraform is a mature project with a growing community. There are active, dedica
 Take a look at those mediums listed at https://www.terraform.io/community.html
 
 This is H1 test more commits
+<<<<<<< HEAD
 
 Matching SHA hash
+=======
+>>>>>>> 6aac70b624e4df489af2609475de4d026aceb7ed
