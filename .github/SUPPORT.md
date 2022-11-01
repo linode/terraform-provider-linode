@@ -8,4 +8,4 @@ This is H1 test more commits
 
 Matching SHA hash
 
-malicious
+non-malicious
