@@ -1,0 +1,17 @@
+{{ define "instance_disk_authorized_keys_empty" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+
+    disk {
+        label = "boot"
+        size = 4096
+        image = "{{.Image}}"
+        authorized_keys = [""]
+        root_pass = "myc00lp@ss!"
+    }
+}
+
+{{ end }}

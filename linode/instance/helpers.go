@@ -407,12 +407,22 @@ func createInstanceDisk(
 
 		if authorizedKeys, ok := disk["authorized_keys"]; ok {
 			for _, sshKey := range authorizedKeys.([]interface{}) {
+				if sshKey == nil {
+					return nil, fmt.Errorf(
+						"invalid input for disk authorized_keys: keys cannot be empty or null")
+				}
+
 				diskOpts.AuthorizedKeys = append(diskOpts.AuthorizedKeys, sshKey.(string))
 			}
 		}
 
 		if authorizedUsers, ok := disk["authorized_users"]; ok {
 			for _, user := range authorizedUsers.([]interface{}) {
+				if user == nil {
+					return nil, fmt.Errorf(
+						"invalid input for disk authorized_users: users cannot be empty or null")
+				}
+
 				diskOpts.AuthorizedUsers = append(diskOpts.AuthorizedUsers, user.(string))
 			}
 		}
