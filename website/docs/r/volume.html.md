@@ -51,15 +51,28 @@ resource "linode_instance" "foo" {
 }
 ```
 
+Volumes may also be cloned from existing volumes.
+
+```hcl
+resource "linode_volume" "foobar" {
+  label = "my-cloned-volume"
+  source_volume_id = 12345
+  
+  # Region is optional when cloning a volume
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `label` - (Required) The label of the Linode Volume
 
-* `region` - (Required) The region where this volume will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). *Changing `region` forces the creation of a new Linode Volume.*.
+* `region` - (Required) The region where this volume will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). This field is optional for cloned volumes. *Changing `region` forces the creation of a new Linode Volume.*.
 
 - - -
+
+* `source_volume_id` - (Optional) The ID of a Linode Volume to clone. NOTE: Cloned volumes must be in the same region as the source volume.
 
 * `size` - (Optional) Size of the Volume in GB.
 
@@ -75,7 +88,7 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 * `update` - (Defaults to 20 mins) Used when updating the volume when necessary during update - e.g. when resizing the volume
 * `delete` - (Defaults to 10 mins) Used when deleting the volume
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

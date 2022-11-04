@@ -2,6 +2,7 @@ package firewalldevice_test
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"testing"
 
@@ -13,6 +14,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/firewalldevice/tmpl"
 )
+
+var testRegion string
+
+func init() {
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
+}
 
 func TestAccResourceFirewallDevice_basic(t *testing.T) {
 	t.Parallel()
@@ -31,17 +43,17 @@ func TestAccResourceFirewallDevice_basic(t *testing.T) {
 		Providers:                 acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label),
+				Config: tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 					resource.TestCheckResourceAttrSet(deviceName, "created"),
 				),
 			},
 			// Refresh the state and verify the attachment
 			{
-				Config: tmpl.Basic(t, label),
+				Config: tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
 					resource.TestCheckResourceAttrPair(firewallName, "linodes.0", instanceName, "id"),
 				),
@@ -53,16 +65,16 @@ func TestAccResourceFirewallDevice_basic(t *testing.T) {
 				ImportStateIdFunc: resourceImportStateID,
 			},
 			{
-				Config: tmpl.Detached(t, label),
+				Config: tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 				),
 			},
 			// Refresh the state and verify the detachment
 			{
-				Config: tmpl.Detached(t, label),
+				Config: tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(firewallName, &firewall),
+					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "0"),
 					resource.TestCheckResourceAttr(firewallName, "linodes.#", "0"),
 				),

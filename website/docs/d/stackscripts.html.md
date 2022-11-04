@@ -28,6 +28,10 @@ data "linode_stackscripts" "specific-stackscripts" {
     values = [false]
   }
 }
+
+output "stackscript_id" {
+  value = data.linode_stackscripts.specific-stackscripts.stackscripts.0.id
+}
 ```
 
 ## Argument Reference
@@ -50,7 +54,7 @@ The following arguments are supported:
 
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
-## Attributes
+## Attributes Reference
 
 Each Linode StackScript will be stored in the `stackscripts` attribute and will export the following attributes:
 

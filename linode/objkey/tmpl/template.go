@@ -7,7 +7,8 @@ import (
 )
 
 type TemplateData struct {
-	Label string
+	Label   string
+	Cluster string
 }
 
 func Basic(t *testing.T, label string) string {
@@ -20,7 +21,7 @@ func Updates(t *testing.T, label string) string {
 		"object_key_updates", TemplateData{Label: label})
 }
 
-func Limited(t *testing.T, label string) string {
+func Limited(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
-		"object_key_limited", TemplateData{Label: label})
+		"object_key_limited", TemplateData{Label: label, Cluster: cluster})
 }

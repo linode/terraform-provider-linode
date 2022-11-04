@@ -1,0 +1,18 @@
+{{ define "instance_types_data_by_class" }}
+
+data "linode_instance_types" "foobar" {
+  filter {
+    name = "vcpus"
+    values = [ "4" ]
+  }
+  filter {
+    name = "memory"
+    values = [ "8192" ]
+  }
+  filter {
+    name = "class"
+    values = [ "standard" ]
+  }
+}
+
+{{ end }}

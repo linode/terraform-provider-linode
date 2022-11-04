@@ -1,0 +1,9 @@
+{{ define "domain_zonefile_basic" }}
+
+{{ template "domain_basic" .Domain }}
+
+data "linode_domain_zonefile" "foobar" {
+    domain_id = "${linode_domain.foobar.id}"
+}
+
+{{ end }}

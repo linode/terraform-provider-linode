@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -68,42 +69,36 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	var linodeID *int
-
-	createOpts := linodego.VolumeCreateOptions{
-		Label:  d.Get("label").(string),
-		Region: d.Get("region").(string),
-		Size:   d.Get("size").(int),
-	}
-
-	if lID, ok := d.GetOk("linode_id"); ok {
-		lidInt := lID.(int)
-		linodeID = &lidInt
-		createOpts.LinodeID = *linodeID
-	}
-
-	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
-		for _, tag := range tagsRaw.(*schema.Set).List() {
-			createOpts.Tags = append(createOpts.Tags, tag.(string))
+	var volume *linodego.Volume
+	// Clone the source volume if `source_volume_id` is specified
+	if _, ok := d.GetOk("source_volume_id"); ok {
+		newVolume, err := createVolumeFromSource(ctx, d, client)
+		if err != nil {
+			return diag.Errorf("failed to clone volume: %s", err)
 		}
+
+		volume = newVolume
+	} else {
+		newVolume, err := createVolume(ctx, d, client)
+		if err != nil {
+			return diag.Errorf("failed to create volume: %s", err)
+		}
+
+		volume = newVolume
 	}
 
-	volume, err := client.CreateVolume(ctx, createOpts)
-	if err != nil {
-		return diag.Errorf("Error creating a Linode Volume: %s", err)
-	}
+	// Wait for the volume to be created
+	if lID, ok := d.GetOk("linode_id"); ok {
+		id := lID.(int)
 
-	d.SetId(fmt.Sprintf("%d", volume.ID))
-
-	if createOpts.LinodeID > 0 {
 		if _, err := client.WaitForVolumeLinodeID(
-			ctx, volume.ID, linodeID, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+			ctx, volume.ID, &id, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
 		); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if _, err = client.WaitForVolumeStatus(
+	if _, err := client.WaitForVolumeStatus(
 		ctx, volume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutCreate).Seconds()),
 	); err != nil {
 		return diag.FromErr(err)
@@ -224,24 +219,48 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	id := int(id64)
 
-	log.Printf("[INFO] Detaching Linode Volume %d for deletion", id)
-	if err := client.DetachVolume(ctx, id); err != nil {
-		return diag.Errorf("Error detaching Linode Volume %d: %s", id, err)
-	}
+	// We should retry on intermittent deletion errors
+	return diag.FromErr(resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		vol, err := client.GetVolume(ctx, id)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
 
-	log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", id)
-	if _, err := client.WaitForVolumeLinodeID(
-		ctx, id, nil, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
-	); err != nil {
-		return diag.FromErr(err)
-	}
+		// We only want to detach if the volume is already attached to an instance,
+		// otherwise a context timeout will be thrown for non-attached volumes.
+		if vol.LinodeID != nil && *vol.LinodeID != 0 {
+			p, err := client.NewEventPoller(ctx, int(id64), "volume", linodego.ActionVolumeDetach)
+			if err != nil {
+				return resource.NonRetryableError(fmt.Errorf("failed to initialize event poller: %s", err))
+			}
 
-	err = client.DeleteVolume(ctx, int(id))
-	if err != nil {
-		return diag.Errorf("Error deleting Linode Volume %d: %s", id, err)
-	}
-	d.SetId("")
-	return nil
+			log.Printf("[INFO] Detaching Linode Volume %d for deletion\n", id)
+
+			if err := client.DetachVolume(ctx, id); err != nil {
+				return resource.RetryableError(fmt.Errorf("error detaching Linode Volume %d: %s", id, err))
+			}
+
+			log.Printf("[INFO] Waiting for Linode Volume %d to detach...\n", id)
+
+			if _, err := p.WaitForFinished(ctx, 5); err != nil {
+				return resource.RetryableError(err)
+			}
+		}
+
+		// Let's make sure the volume is fully offline
+		if _, err := client.WaitForVolumeLinodeID(
+			ctx, id, nil, int(d.Timeout(schema.TimeoutDelete).Seconds()),
+		); err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		err = client.DeleteVolume(ctx, id)
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("error deleting Linode Volume %d: %s", id, err))
+		}
+		d.SetId("")
+		return nil
+	}))
 }
 
 func DetectVolumeIDChange(have *int, want *int) (changed bool) {
@@ -254,4 +273,108 @@ func DetectVolumeIDChange(have *int, want *int) (changed bool) {
 		changed = changed || (*have != *want)
 	}
 	return changed
+}
+
+func createVolume(ctx context.Context, d *schema.ResourceData, client linodego.Client) (*linodego.Volume, error) {
+	createOpts := linodego.VolumeCreateOptions{
+		Label:  d.Get("label").(string),
+		Region: d.Get("region").(string),
+		Size:   d.Get("size").(int),
+	}
+
+	if lID, ok := d.GetOk("linode_id"); ok {
+		lidInt := lID.(int)
+		createOpts.LinodeID = lidInt
+	}
+
+	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+		for _, tag := range tagsRaw.(*schema.Set).List() {
+			createOpts.Tags = append(createOpts.Tags, tag.(string))
+		}
+	}
+
+	newVolume, err := client.CreateVolume(ctx, createOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create linode volume: %s", err)
+	}
+
+	d.SetId(strconv.Itoa(newVolume.ID))
+
+	return newVolume, nil
+}
+
+func createVolumeFromSource(
+	ctx context.Context, d *schema.ResourceData, client linodego.Client,
+) (*linodego.Volume, error) {
+	var clonedVolume *linodego.Volume
+
+	newRegion, regionOk := d.GetOk("region")
+	newLabel := d.Get("label").(string)
+	newSize, sizeOk := d.GetOk("size")
+
+	sourceVolumeID := d.Get("source_volume_id").(int)
+
+	sourceVolume, err := client.GetVolume(ctx, sourceVolumeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get source volume %d: %s", sourceVolumeID, err)
+	}
+
+	if regionOk && sourceVolume.Region != newRegion.(string) {
+		return nil, fmt.Errorf("`region` of source volume differs from specified region: %s != %s",
+			sourceVolume.Region, newRegion)
+	}
+
+	if sizeOk && sourceVolume.Size > newSize.(int) {
+		return nil, fmt.Errorf("`size` must be greater than or equal to the size of the source volume: %d < %d",
+			newSize, sourceVolume.Size)
+	}
+
+	clonedVolume, err = client.CloneVolume(ctx, sourceVolumeID, newLabel)
+	if err != nil {
+		return nil, fmt.Errorf("failed to clone volume %d: %s", sourceVolumeID, err)
+	}
+
+	d.SetId(strconv.Itoa(clonedVolume.ID))
+
+	if _, err := client.WaitForVolumeStatus(ctx, clonedVolume.ID, linodego.VolumeActive,
+		int(LinodeVolumeUpdateTimeout.Seconds())); err != nil {
+		return nil, fmt.Errorf("failed to wait for volume to clone: %s", err)
+	}
+
+	// Since a cloned volume will have the attributes of the source volume, we need to update
+	// to match the schema.
+	var updateOpts linodego.VolumeUpdateOptions
+
+	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
+		tags := helper.ExpandStringSet(tagsRaw.(*schema.Set))
+		updateOpts.Tags = &tags
+	}
+
+	if clonedVolume, err = client.UpdateVolume(ctx, clonedVolume.ID, updateOpts); err != nil {
+		return nil, fmt.Errorf("failed to update cloned volume: %s", err)
+	}
+
+	// Resize the volume if necessary
+	if sizeOk && clonedVolume.Size != newSize.(int) {
+		if err := client.ResizeVolume(ctx, clonedVolume.ID, newSize.(int)); err != nil {
+			return nil, fmt.Errorf("failed to resize cloned volume %d: %s", clonedVolume.ID, err)
+		}
+
+		if _, err := client.WaitForVolumeStatus(
+			ctx, clonedVolume.ID, linodego.VolumeActive, int(d.Timeout(schema.TimeoutUpdate).Seconds()),
+		); err != nil {
+			return nil, fmt.Errorf("failed to wait for volume active: %s", err)
+		}
+	}
+
+	// Attach the volume if necessary
+	if lID, ok := d.GetOk("linode_id"); ok {
+		if clonedVolume, err = client.AttachVolume(ctx, clonedVolume.ID, &linodego.VolumeAttachOptions{
+			LinodeID: lID.(int),
+		}); err != nil {
+			return nil, fmt.Errorf("failed to attach cloned volume: %s", err)
+		}
+	}
+
+	return clonedVolume, nil
 }

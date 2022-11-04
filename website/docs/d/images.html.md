@@ -18,7 +18,7 @@ Get information about all Linode images with a certain label and visibility:
 data "linode_images" "specific-images" {
   filter {
     name = "label"
-    values = ["Debian 8"]
+    values = ["Debian 11"]
   }
 
   filter {
@@ -26,12 +26,20 @@ data "linode_images" "specific-images" {
     values = ["true"]
   }
 }
+
+output "image_id" {
+  value = data.linode_images.specific-images.images.0.id
+}
 ```
 
 Get information about all Linode images associated with the current token:
 
 ```hcl
 data "linode_images" "all-images" {}
+
+output "image_ids" {
+  value = data.linode_images.all-images.images.*.id
+}
 ```
 
 ## Argument Reference
@@ -54,7 +62,7 @@ The following arguments are supported:
 
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
-## Attributes
+## Attributes Reference
 
 Each Linode image will be stored in the `images` attribute and will export the following attributes:
 

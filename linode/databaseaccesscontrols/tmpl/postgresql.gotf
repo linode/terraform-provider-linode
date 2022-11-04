@@ -3,7 +3,7 @@
 resource "linode_database_postgresql" "foobar" {
     engine_id = "{{.Engine}}"
     label = "{{.Label}}"
-    region = "us-southeast"
+    region = "{{ .Region }}"
     type = "g6-nanode-1"
 }
 

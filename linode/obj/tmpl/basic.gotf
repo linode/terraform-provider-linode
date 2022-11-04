@@ -5,7 +5,7 @@
 
 resource "linode_object_storage_object" "basic" {
     bucket     = linode_object_storage_bucket.foobar.label
-    cluster    = "us-east-1"
+    cluster    = "{{ .Cluster }}"
     access_key = linode_object_storage_key.foobar.access_key
     secret_key = linode_object_storage_key.foobar.secret_key
     key        = "test_basic"
@@ -14,7 +14,7 @@ resource "linode_object_storage_object" "basic" {
 
 resource "linode_object_storage_object" "base64" {
     bucket         = linode_object_storage_bucket.foobar.label
-    cluster        = "us-east-1"
+    cluster        = "{{ .Cluster }}"
     access_key     = linode_object_storage_key.foobar.access_key
     secret_key     = linode_object_storage_key.foobar.secret_key
     key            = "test_base64"
@@ -23,7 +23,7 @@ resource "linode_object_storage_object" "base64" {
 
 resource "linode_object_storage_object" "source" {
     bucket     = linode_object_storage_bucket.foobar.label
-    cluster    = "us-east-1"
+    cluster    = "{{ .Cluster }}"
     access_key = linode_object_storage_key.foobar.access_key
     secret_key = linode_object_storage_key.foobar.secret_key
     key        = "test_source"

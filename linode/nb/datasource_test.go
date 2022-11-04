@@ -22,12 +22,12 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 		CheckDestroy: checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, nodebalancerName),
+				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
-					resource.TestCheckResourceAttr(resName, "region", "us-east"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resName, "ipv6"),

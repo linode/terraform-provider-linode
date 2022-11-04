@@ -19,7 +19,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var engineVersion string
+var (
+	engineVersion string
+	testRegion    string
+)
 
 func init() {
 	resource.AddTestSweepers("linode_database_mysql", &resource.Sweeper{
@@ -38,6 +41,13 @@ func init() {
 	}
 
 	engineVersion = v.ID
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -97,12 +107,12 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 		CheckDestroy: checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, dbName, engineVersion),
+				Config: tmpl.Basic(t, dbName, engineVersion, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "0"),
@@ -152,12 +162,13 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					Encrypted:       true,
 					ReplicationType: "asynch",
 					SSLConnection:   true,
+					Region:          testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
@@ -197,12 +208,13 @@ func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
 					Encrypted:       true,
 					ReplicationType: "asynch",
 					SSLConnection:   true,
+					Region:          testRegion,
 				}),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckMySQLDatabaseExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "engine_id", engineVersion),
 					resource.TestCheckResourceAttr(resName, "label", dbName+"updated"),
-					resource.TestCheckResourceAttr(resName, "region", "us-southeast"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),

@@ -12,7 +12,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var engineVersion string
+var (
+	testRegion    string
+	engineVersion string
+)
 
 func init() {
 	client, err := acceptance.GetClientForSweepers()
@@ -26,6 +29,13 @@ func init() {
 	}
 
 	engineVersion = v.ID
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func TestAccDataSourceDatabases_byAttr(t *testing.T) {
@@ -39,13 +49,13 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 		Providers: acceptance.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.ByLabel(t, engineVersion, dbName, dbName),
+				Config: tmpl.ByLabel(t, engineVersion, dbName, dbName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "databases.0.label", dbName),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.cluster_size", "1"),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.encrypted", "false"),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.engine", "mysql"),
-					resource.TestCheckResourceAttr(resourceName, "databases.0.region", "us-southeast"),
+					resource.TestCheckResourceAttr(resourceName, "databases.0.region", testRegion),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.allow_list.#", "0"),
 
@@ -60,13 +70,13 @@ func TestAccDataSourceDatabases_byAttr(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ByLabel(t, engineVersion, dbName, "not"+dbName),
+				Config: tmpl.ByLabel(t, engineVersion, dbName, "not"+dbName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "databases.#", "0"),
 				),
 			},
 			{
-				Config: tmpl.ByEngine(t, engineVersion, dbName, "mysql"),
+				Config: tmpl.ByEngine(t, engineVersion, dbName, "mysql", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "databases.#", 0),
 					resource.TestCheckResourceAttr(resourceName, "databases.0.engine", "mysql"),

@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `id` - (Required) Label used to identify instance type
 
-## Attributes
+## Attributes Reference
 
 The Linode Instance Type resource exports the following attributes:
 

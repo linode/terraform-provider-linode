@@ -2,6 +2,8 @@ package linode
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,12 +21,15 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/databases"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instance"
+	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
+	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
@@ -58,9 +63,26 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"token": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LINODE_TOKEN", nil),
 				Description: "The token that allows you access to your Linode account",
+			},
+			"config_path": {
+				Type:     schema.TypeString,
+				Optional: true,
+				DefaultFunc: func() (interface{}, error) {
+					homeDir, err := os.UserHomeDir()
+					if err != nil {
+						return "", err
+					}
+
+					return fmt.Sprintf("%s/.config/linode", homeDir), nil
+				},
+			},
+			"config_profile": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "default",
 			},
 			"url": {
 				Type:         schema.TypeString,
@@ -140,6 +162,7 @@ func Provider() *schema.Provider {
 			"linode_databases":              databases.DataSource(),
 			"linode_domain":                 domain.DataSource(),
 			"linode_domain_record":          domainrecord.DataSource(),
+			"linode_domain_zonefile":        domainzonefile.DataSource(),
 			"linode_firewall":               firewall.DataSource(),
 			"linode_image":                  image.DataSource(),
 			"linode_images":                 images.DataSource(),
@@ -176,6 +199,8 @@ func Provider() *schema.Provider {
 			"linode_firewall_device":          firewalldevice.Resource(),
 			"linode_image":                    image.Resource(),
 			"linode_instance":                 instance.Resource(),
+			"linode_instance_config":          instanceconfig.Resource(),
+			"linode_instance_disk":            instancedisk.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),
 			"linode_instance_shared_ips":      instancesharedips.Resource(),
 			"linode_ipv6_range":               ipv6range.Resource(),
@@ -216,6 +241,9 @@ func providerConfigure(
 		APIVersion:  d.Get("api_version").(string),
 		UAPrefix:    d.Get("ua_prefix").(string),
 
+		ConfigPath:    d.Get("config_path").(string),
+		ConfigProfile: d.Get("config_profile").(string),
+
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
 
@@ -228,14 +256,17 @@ func providerConfigure(
 		LKENodeReadyPollMilliseconds: d.Get("lke_node_ready_poll_ms").(int),
 	}
 	config.TerraformVersion = terraformVersion
-	client := config.Client()
+	client, err := config.Client()
+	if err != nil {
+		return nil, diag.Errorf("failed to initialize client: %s", err)
+	}
 
 	// Ping the API for an empty response to verify the configuration works
 	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
 		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
 	return &helper.ProviderMeta{
-		Client: client,
+		Client: *client,
 		Config: config,
 	}, nil
 }

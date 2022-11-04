@@ -1,0 +1,38 @@
+{{ define "instance_config_complex" }}
+
+{{ template "instance_config_empty_instance" . }}
+
+{{ template "instance_config_disk" . }}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config"
+  comments = "cool"
+
+  devices {
+    sda {
+      disk_id = linode_instance_disk.foobar.id
+    }
+  }
+
+  helpers {
+    devtmpfs_automount = true
+    distro = true
+    modules_dep = true
+    network = true
+    updatedb_disabled = true
+  }
+
+  interface {
+    purpose = "public"
+  }
+
+  kernel = "linode/latest-64bit"
+  memory_limit = 512
+  root_device = "/dev/sda"
+  virt_mode = "paravirt"
+
+  booted = true
+}
+
+{{ end }}

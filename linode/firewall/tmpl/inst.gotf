@@ -4,7 +4,7 @@ resource "linode_instance" "{{.ID}}" {
     label = "{{.Prefix}}-{{.ID}}"
     group = "tf_test"
     type = "g6-nanode-1"
-    region = "ca-central"
+    region = "{{ .Region }}"
     disk {
         label = "disk"
         image = "linode/alpine3.15"

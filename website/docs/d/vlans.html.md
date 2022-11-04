@@ -32,6 +32,10 @@ data "linode_vlans" "my-vlans" {
     values = ["my-vlan"]
   }
 }
+
+output "vlan_linodes" {
+  value = data.linode_vlans.my-vlans.vlans.0.linodes
+}
 ```
 
 ## Argument Reference
@@ -52,7 +56,7 @@ The following arguments are supported
 
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
-## Attributes
+## Attributes Reference
 
 Each Linode VLAN will be stored in the `vlans` attribute and will export the following attributes:
 

@@ -4,7 +4,7 @@ resource "linode_image" "foobar" {
     label = "{{.Image}}"
     file_path = "{{.FilePath}}"
     file_hash = filemd5("{{.FilePath}}")
-    region = "us-southeast"
+    region = "{{ .Region }}"
     description = "really descriptive text"
 }
 

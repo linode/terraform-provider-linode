@@ -41,7 +41,7 @@ The following arguments are supported in the bucket_access block:
 
 * `permissions` - This Limited Access Key’s permissions for the selected bucket. *Changing `permissions` forces the creation of a new Object Storage Key.* (`read_write`, `read_only`)
 
-## Attributes
+## Attributes Reference
 
 This resource exports the following attributes:
 

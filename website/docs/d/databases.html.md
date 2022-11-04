@@ -16,6 +16,10 @@ Get information about all Linode Managed Databases:
 
 ```hcl
 data "linode_databases" "all" {}
+
+output "database_ids" {
+  value = data.linode_databases.all.databases.*.id
+}
 ```
 
 Get information about all Linode MySQL Databases:
@@ -26,6 +30,10 @@ data "linode_databases" "mysql" {
     name = "engine"
     values = ["mysql"]
   }
+}
+
+output "database_ids" {
+  value = data.linode_databases.mysql.databases.*.id
 }
 ```
 
@@ -49,7 +57,7 @@ The following arguments are supported:
 
 * `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
-## Attributes
+## Attributes Reference
 
 Each engine will be stored in the `databases` attribute and will export the following attributes:
 

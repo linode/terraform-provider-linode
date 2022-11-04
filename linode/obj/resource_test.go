@@ -3,6 +3,7 @@ package obj_test
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,6 +17,17 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/obj/tmpl"
 )
+
+var testCluster string
+
+func init() {
+	cluster, err := acceptance.GetRandomOBJCluster()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testCluster = cluster
+}
 
 func TestAccResourceObject_basic(t *testing.T) {
 	t.Parallel()
@@ -52,31 +64,33 @@ func TestAccResourceObject_basic(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	bucketName := acctest.RandomWithPrefix("tf-test")
-	keyName := acctest.RandomWithPrefix("tf_test")
+	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+		bucketName := acctest.RandomWithPrefix("tf-test")
+		keyName := acctest.RandomWithPrefix("tf_test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, bucketName, keyName, content, contentSource.Name()),
-				Check: resource.ComposeTestCheckFunc(
-					validateObject(getObjectResourceName("basic"), "test_basic", content),
-					validateObject(getObjectResourceName("base64"), "test_base64", content),
-					validateObject(getObjectResourceName("source"), "test_source", content),
-				),
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: checkObjectDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, bucketName, testCluster, keyName, content, contentSource.Name()),
+					Check: resource.ComposeTestCheckFunc(
+						validateObject(getObjectResourceName("basic"), "test_basic", content),
+						validateObject(getObjectResourceName("base64"), "test_base64", content),
+						validateObject(getObjectResourceName("source"), "test_source", content),
+					),
+				},
+				{
+					Config: tmpl.Updates(t, bucketName, testCluster, keyName, contentUpdated, contentSourceUpdated.Name()),
+					Check: resource.ComposeTestCheckFunc(
+						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
+					),
+				},
 			},
-			{
-				Config: tmpl.Updates(t, bucketName, keyName, contentUpdated, contentSourceUpdated.Name()),
-				Check: resource.ComposeTestCheckFunc(
-					validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
-					validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
-					validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
-				),
-			},
-		},
+		})
 	})
 }
 
@@ -89,7 +103,7 @@ func getObject(rs *terraform.ResourceState) (*s3.GetObjectOutput, error) {
 	cluster := rs.Primary.Attributes["cluster"]
 
 	conn := s3.New(session.New(&aws.Config{
-		Region:      aws.String("us-east-1"),
+		Region:      aws.String(testCluster),
 		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
 		Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, cluster)),
 	}))

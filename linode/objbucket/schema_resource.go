@@ -44,6 +44,12 @@ var resourceSchema = map[string]*schema.Schema{
 		RequiredWith: []string{"access_key", "secret_key"},
 		Elem:         resourceLifeCycle(),
 	},
+	"hostname": {
+		Type: schema.TypeString,
+		Description: "The hostname where this bucket can be accessed. " +
+			"This hostname can be accessed through a browser if the bucket is made public.",
+		Computed: true,
+	},
 	"versioning": {
 		Type:         schema.TypeBool,
 		Description:  "Whether to enable versioning.",

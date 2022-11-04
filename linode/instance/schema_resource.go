@@ -417,6 +417,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"config": {
 		Optional:    true,
+		Computed:    true,
 		Description: "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
 		Type:        schema.TypeList,
 		ConflictsWith: []string{
@@ -600,6 +601,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"disk": {
 		Optional: true,
+		Computed: true,
 		ConflictsWith: []string{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
 			"backup_id", "stackscript_id", "interface",

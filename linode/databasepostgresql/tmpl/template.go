@@ -15,13 +15,15 @@ type TemplateData struct {
 	SSLConnection         bool
 	ReplicationType       string
 	ReplicationCommitType string
+	Region                string
 }
 
-func Basic(t *testing.T, label, engine string) string {
+func Basic(t *testing.T, label, engine, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_postgresql_basic", TemplateData{
 			Engine: engine,
 			Label:  label,
+			Region: region,
 		})
 }
 

@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `id` - (Required) The unique ID of this Image.  The ID of private images begin with `private/` followed by the numeric identifier of the private image, for example `private/12345`.
 
-## Attributes
+## Attributes Reference
 
 The Linode Image resource exports the following attributes:
 

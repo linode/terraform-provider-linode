@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	createDBTimeout = 60 * time.Minute
+	createDBTimeout = 75 * time.Minute
 	updateDBTimeout = 5 * time.Minute
 	deleteDBTimeout = 5 * time.Minute
 )
@@ -96,6 +96,11 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
+	p, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
+	if err != nil {
+		return diag.Errorf("failed to initialize event poller: %s", err)
+	}
+
 	db, err := client.CreatePostgresDatabase(ctx, linodego.PostgresCreateOptions{
 		Label:                 d.Get("label").(string),
 		Region:                d.Get("region").(string),
@@ -114,10 +119,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	d.SetId(strconv.Itoa(db.ID))
 
-	_, err = client.WaitForEventFinished(ctx, db.ID, linodego.EntityDatabase,
-		linodego.ActionDatabaseCreate, *db.Created, int(d.Timeout(schema.TimeoutCreate).Seconds()))
-	if err != nil {
-		return diag.Errorf("failed to wait for postgresql database creation: %s", err)
+	p.EntityID = db.ID
+
+	if _, err := p.WaitForLatestUnknownEvent(ctx); err != nil {
+		return diag.Errorf("failed to wait for mysql database creation event: %s", err)
+	}
+
+	if err := client.WaitForDatabaseStatus(
+		ctx, db.ID, linodego.DatabaseEngineTypePostgres,
+		linodego.DatabaseStatusActive, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
+		return diag.Errorf("failed to wait for database active: %s", err)
 	}
 
 	updateList := d.Get("updates").([]interface{})

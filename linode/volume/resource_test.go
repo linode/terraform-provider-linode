@@ -1,8 +1,10 @@
 package volume_test
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -13,11 +15,20 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/volume/tmpl"
 )
 
+var testRegion string
+
 func init() {
 	resource.AddTestSweepers("linode_volume", &resource.Sweeper{
 		Name: "linode_volume",
 		F:    sweep,
 	})
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Block Storage"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -77,13 +88,13 @@ func TestAccResourceVolume_basic(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, volumeName),
+				Config: tmpl.Basic(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
-					resource.TestCheckResourceAttr(resName, "region", "us-west"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "linode_id", "0"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
@@ -112,14 +123,14 @@ func TestAccResourceVolume_update(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, volumeName),
+				Config: tmpl.Basic(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists(resName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", volumeName),
 				),
 			},
 			{
-				Config: tmpl.Updates(t, volumeName),
+				Config: tmpl.Updates(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists(resName, &volume),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", volumeName)),
@@ -144,14 +155,14 @@ func TestAccResourceVolume_resized(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, volumeName),
+				Config: tmpl.Basic(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			{
-				Config: tmpl.Resized(t, volumeName),
+				Config: tmpl.Resized(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "size", "30"),
@@ -174,7 +185,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, volumeName),
+				Config: tmpl.Basic(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
@@ -182,7 +193,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Attached(t, volumeName),
+				Config: tmpl.Attached(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttrSet("linode_instance.foobar", "id"),
@@ -211,21 +222,21 @@ func TestAccResourceVolume_detached(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Attached(t, volumeName),
+				Config: tmpl.Attached(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
 				),
 			},
 			{
-				Config:            tmpl.Attached(t, volumeName),
+				Config:            tmpl.Attached(t, volumeName, testRegion),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 			{
-				Config:            tmpl.Attached(t, volumeName),
+				Config:            tmpl.Attached(t, volumeName, testRegion),
 				ResourceName:      "linode_volume.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -247,7 +258,7 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 		CheckDestroy: acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Attached(t, volumeName),
+				Config: tmpl.Attached(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
@@ -255,7 +266,7 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ReAttached(t, volumeName),
+				Config: tmpl.ReAttached(t, volumeName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
 				),
@@ -277,3 +288,116 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceVolume_cloned(t *testing.T) {
+	t.Parallel()
+
+	volumeName := acctest.RandomWithPrefix("tf_test")
+
+	var instance linodego.Instance
+	var instance2 linodego.Instance
+
+	var volume linodego.Volume
+	var volume2 linodego.Volume
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ClonedStep1(t, volumeName, testRegion, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar2", &instance2),
+
+					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
+					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
+				),
+			},
+			{
+				Config: tmpl.ClonedStep1(t, volumeName, testRegion, acceptance.PublicKeyMaterial),
+				PreConfig: func() {
+					outBuffer := new(bytes.Buffer)
+
+					client := acceptance.GetSSHClient(t, "root", instance.IPv4[0].String())
+
+					defer client.Close()
+					session, err := client.NewSession()
+					if err != nil {
+						t.Fatalf("failed to establish SSH session: %s", err)
+					}
+
+					session.Stdout = outBuffer
+
+					// Format the first volume and drop a file onto it
+					err = session.Run(fmt.Sprintf(scriptFormatDrive,
+						volume.FilesystemPath, volume.FilesystemPath, volume.FilesystemPath))
+					if err != nil {
+						t.Fatalf("failed to format and mount volume: %s", err)
+					}
+				},
+			},
+			{
+				// Clone the volume
+				Config: tmpl.ClonedStep2(t, volumeName, testRegion, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
+					acceptance.CheckInstanceExists("linode_instance.foobar2", &instance2),
+
+					acceptance.CheckVolumeExists("linode_volume.foobar", &volume),
+					resource.TestCheckResourceAttr("linode_volume.foobar", "label", volumeName),
+					resource.TestCheckResourceAttrSet("linode_volume.foobar", "linode_id"),
+
+					acceptance.CheckVolumeExists("linode_volume.foobar-cloned", &volume2),
+					resource.TestCheckResourceAttr("linode_volume.foobar-cloned", "label", volumeName+"-c"),
+					resource.TestCheckResourceAttrSet("linode_volume.foobar-cloned", "linode_id"),
+				),
+			},
+			{
+				Config: tmpl.ClonedStep2(t, volumeName, testRegion, acceptance.PublicKeyMaterial),
+				PreConfig: func() {
+					outBuffer := new(bytes.Buffer)
+					client := acceptance.GetSSHClient(t, "root", instance2.IPv4[0].String())
+
+					defer client.Close()
+					session, err := client.NewSession()
+					if err != nil {
+						t.Fatalf("failed to establish SSH session: %s", err)
+					}
+
+					session.Stdout = outBuffer
+
+					// Check that the file was cloned onto the new volume
+					err = session.Run(fmt.Sprintf(scriptCheckCloneExists,
+						volume2.FilesystemPath, volume2.FilesystemPath))
+					if err != nil {
+						t.Fatalf("failed to check for cloned file: %s", err)
+					}
+				},
+			},
+		},
+	})
+}
+
+const scriptFormatDrive = `
+until [ -e "%s" ]; do sleep .1; done && \
+mkfs.ext4 "%s" && \
+mkdir -p /mnt/vol && \
+mount "%s" "/mnt/vol" && \
+touch /mnt/vol/itworks.txt && \
+umount /mnt/vol
+`
+
+const scriptCheckCloneExists = `
+until [ -e "%s" ]; do sleep .1; done && \
+echo $? && \
+mkdir -p /mnt/vol && \
+echo $? && \
+mount "%s" "/mnt/vol" && \
+echo $? && \
+test -f /mnt/vol/itworks.txt && \
+echo $? && \
+umount /mnt/vol
+`

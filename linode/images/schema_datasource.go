@@ -2,7 +2,6 @@ package images
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 )
@@ -15,13 +14,9 @@ var filterConfig = helper.FilterConfig{
 	"type":       {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"vendor":     {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 
-	"created_by": {TypeFunc: helper.FilterTypeString},
-	"id":         {TypeFunc: helper.FilterTypeString},
-	"status": {
-		TypeFunc: func(value string) (interface{}, error) {
-			return linodego.ImageStatus(value), nil
-		},
-	},
+	"created_by":  {TypeFunc: helper.FilterTypeString},
+	"id":          {TypeFunc: helper.FilterTypeString},
+	"status":      {TypeFunc: helper.FilterTypeString},
 	"description": {TypeFunc: helper.FilterTypeString},
 }
 

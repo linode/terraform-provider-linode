@@ -17,72 +17,80 @@ type TemplateData struct {
 
 	Cert    string
 	PrivKey string
+	Cluster string
 }
 
-func Basic(t *testing.T, label string) string {
+func Basic(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
-		"object_bucket_basic", TemplateData{Label: label})
+		"object_bucket_basic", TemplateData{Label: label, Cluster: cluster})
 }
 
-func Updates(t *testing.T, label string) string {
+func Updates(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
-		"object_bucket_updates", TemplateData{Label: label})
+		"object_bucket_updates", TemplateData{Label: label, Cluster: cluster})
 }
 
-func Access(t *testing.T, label, acl string, cors bool) string {
+func Access(t *testing.T, label, cluster, acl string, cors bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_access", TemplateData{
 			Label:       label,
 			ACL:         acl,
 			CORSEnabled: cors,
+			Cluster:     cluster,
 		})
 }
 
-func Cert(t *testing.T, label, cert, privKey string) string {
+func Cert(t *testing.T, label, cluster, cert, privKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cert", TemplateData{
 			Label:   label,
 			Cert:    cert,
 			PrivKey: privKey,
+			Cluster: cluster,
 		})
 }
 
-func Versioning(t *testing.T, label, keyName string, versioning bool) string {
+func Versioning(t *testing.T, label, cluster, keyName string, versioning bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_versioning", TemplateData{
 			Key:        objkey.TemplateData{Label: keyName},
 			Label:      label,
 			Versioning: versioning,
+			Cluster:    cluster,
 		})
 }
 
-func LifeCycle(t *testing.T, label, keyName string) string {
+func LifeCycle(t *testing.T, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle", TemplateData{
-			Key:   objkey.TemplateData{Label: keyName},
-			Label: label,
+			Key:     objkey.TemplateData{Label: keyName},
+			Label:   label,
+			Cluster: cluster,
 		})
 }
 
-func LifeCycleNoID(t *testing.T, label, keyName string) string {
+func LifeCycleNoID(t *testing.T, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_no_id", TemplateData{
-			Key:   objkey.TemplateData{Label: keyName},
-			Label: label,
+			Key:     objkey.TemplateData{Label: keyName},
+			Label:   label,
+			Cluster: cluster,
 		})
 }
 
-func LifeCycleUpdates(t *testing.T, label, keyName string) string {
+func LifeCycleUpdates(t *testing.T, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_updates", TemplateData{
-			Key:   objkey.TemplateData{Label: keyName},
-			Label: label,
+			Key:     objkey.TemplateData{Label: keyName},
+			Label:   label,
+			Cluster: cluster,
 		})
 }
 
-func DataBasic(t *testing.T, label string) string {
+func DataBasic(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_data_basic", TemplateData{
-			Label: label,
+			Label:   label,
+			Cluster: cluster,
 		})
 }

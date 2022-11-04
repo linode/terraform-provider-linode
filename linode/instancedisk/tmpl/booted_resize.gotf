@@ -1,0 +1,31 @@
+{{ define "instance_disk_booted_resize" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{ .Label }}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+}
+
+resource "linode_instance_disk" "foobar" {
+  label = "{{ .Label }}"
+  linode_id = linode_instance.foobar.id
+  size = {{ .Size }}
+
+  image = "linode/alpine3.15"
+  root_pass = "r00tp@ss!"
+}
+
+resource "linode_instance_config" "cfg" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config"
+
+  devices {
+    sda {
+      disk_id = linode_instance_disk.foobar.id
+    }
+  }
+
+  booted = true
+}
+
+{{ end }}

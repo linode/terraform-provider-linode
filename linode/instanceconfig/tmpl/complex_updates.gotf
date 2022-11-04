@@ -1,0 +1,40 @@
+{{ define "instance_config_complex_updates" }}
+
+{{ template "instance_config_empty_instance" . }}
+
+{{ template "instance_config_disk" . }}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config-updated"
+  comments = "cool-updated"
+
+  devices {
+    sdb {
+      disk_id = linode_instance_disk.foobar.id
+    }
+  }
+
+  helpers {
+    devtmpfs_automount = false
+    distro = false
+    modules_dep = false
+    network = false
+    updatedb_disabled = false
+  }
+
+  interface {
+    purpose = "vlan"
+    label = "cool"
+    ipam_address = "10.0.0.3/24"
+  }
+
+  kernel = "linode/latest-32bit"
+  memory_limit = 513
+  root_device = "/dev/sdb"
+  virt_mode = "fullvirt"
+
+  booted = false
+}
+
+{{ end }}
