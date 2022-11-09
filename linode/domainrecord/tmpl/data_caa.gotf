@@ -11,7 +11,7 @@ resource "linode_domain_record" "record" {
     domain_id = linode_domain.domain.id
     record_type = "CAA"
     tag = "issue"
-    target = "test"
+    target = "example.com"
 }
 
 data "linode_domain_record" "record" {
