@@ -3,7 +3,7 @@
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
-    image = "linode/alpine3.12"
+    image = "linode/alpine3.16"
     type = "g6-standard-1"
     region = "{{ .Region }}"
 }
