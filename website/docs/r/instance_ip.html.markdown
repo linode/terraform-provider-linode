@@ -18,7 +18,7 @@ Manages a Linode instance IP.
 
 ```terraform
 resource "linode_instance" "foo" {
-    image = "linode/alpine3.12"
+    image = "linode/alpine3.16"
     label = "foobar-test"
     type = "g6-nanode-1"
     region = "us-east"

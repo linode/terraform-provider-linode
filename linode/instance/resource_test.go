@@ -155,6 +155,30 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_validateAuthorizedKeys(t *testing.T) {
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.AuthorizedKeysEmpty(t, instanceName, testRegion),
+				ExpectError: regexp.MustCompile(
+					"invalid input for authorized_keys"),
+			},
+			{
+				Config: tmpl.DiskAuthorizedKeysEmpty(t, instanceName, testRegion),
+				ExpectError: regexp.MustCompile(
+					"invalid input for disk authorized_keys"),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_interfaces(t *testing.T) {
 	t.Parallel()
 
