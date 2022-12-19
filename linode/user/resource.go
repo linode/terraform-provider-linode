@@ -209,6 +209,7 @@ func flattenGrantsEntities(entities []linodego.GrantedEntity) []interface{} {
 	var result []interface{}
 
 	for _, entity := range entities {
+		entity := entity
 		// Filter out entities without any permissions set.
 		// This is necessary because Linode will automatically
 		// create empty entities that will trigger false diffs.

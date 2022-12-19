@@ -3,7 +3,7 @@ package image
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -230,7 +230,7 @@ func uploadImageAndStoreHash(
 		return err
 	}
 
-	hash := md5.New()
+	hash := sha256.New()
 
 	if _, err := io.Copy(hash, &buf); err != nil {
 		return err

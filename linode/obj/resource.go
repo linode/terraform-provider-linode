@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -241,7 +242,7 @@ func objectBodyFromResourceData(d *schema.ResourceData) (body aws.ReaderSeekerCl
 	if source, ok := d.GetOk("source"); ok {
 		sourceFilePath := source.(string)
 
-		file, err := os.Open(sourceFilePath)
+		file, err := os.Open(filepath.Clean(sourceFilePath))
 		if err != nil {
 			return aws.ReaderSeekerCloser{}, err
 		}
