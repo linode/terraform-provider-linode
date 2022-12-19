@@ -82,6 +82,7 @@ func TestAccResourceInstance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
+					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
 				),
 			},
 

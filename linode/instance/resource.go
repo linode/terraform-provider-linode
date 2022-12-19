@@ -95,6 +95,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
 	d.Set("booted", isInstanceBooted(instance))
+	d.Set("host_uuid", instance.HostUUID)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
