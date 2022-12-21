@@ -3,7 +3,7 @@ package image
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
+	"crypto/md5" // #nosec G501 -- endpoint expecting md5
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -230,7 +230,7 @@ func uploadImageAndStoreHash(
 		return err
 	}
 
-	hash := md5.New()
+	hash := md5.New() // #nosec G401 -- endpoint expecting md5
 
 	if _, err := io.Copy(hash, &buf); err != nil {
 		return err
