@@ -177,6 +177,11 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"available": {
+					Type:        schema.TypeBool,
+					Computed:    true,
+					Description: "Whether this Backup is available for restoration.",
+				},
 				"enabled": {
 					Type:        schema.TypeBool,
 					Computed:    true,

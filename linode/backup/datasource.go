@@ -69,6 +69,8 @@ func flattenInstanceSnapshot(snapshot *linodego.InstanceSnapshot) map[string]int
 	result["label"] = snapshot.Label
 	result["status"] = snapshot.Status
 	result["type"] = snapshot.Type
+	result["configs"] = snapshot.Configs
+	result["available"] = snapshot.Available
 
 	if snapshot.Created != nil {
 		result["created"] = snapshot.Created.Format(time.RFC3339)
@@ -81,8 +83,6 @@ func flattenInstanceSnapshot(snapshot *linodego.InstanceSnapshot) map[string]int
 	if snapshot.Finished != nil {
 		result["finished"] = snapshot.Finished.Format(time.RFC3339)
 	}
-
-	result["configs"] = snapshot.Configs
 
 	flattenedDisks := make([]map[string]interface{}, len(snapshot.Disks))
 	for i, disk := range snapshot.Disks {
