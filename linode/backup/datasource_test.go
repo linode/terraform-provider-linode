@@ -62,6 +62,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.status"),
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.type"),
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.created"),
+					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.available"),
 				),
 			},
 			{
@@ -76,6 +77,8 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "current.0.label", snapshotName),
 					resource.TestCheckResourceAttr(resourceName, "current.0.status", "successful"),
+					resource.TestCheckResourceAttr(resourceName, "current.0.available", "true"),
+					resource.TestCheckResourceAttr("linode_instance.foobar", "backups.0.available", "true"),
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.type"),
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.updated"),
