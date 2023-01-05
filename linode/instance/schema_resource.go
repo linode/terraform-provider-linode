@@ -253,6 +253,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional: true,
 		Default:  true,
 	},
+	"host_uuid": {
+		Type:        schema.TypeString,
+		Description: "The Linode’s host machine, as a UUID.",
+		Computed:    true,
+	},
 	"booted": {
 		Type:     schema.TypeBool,
 		Optional: true,
