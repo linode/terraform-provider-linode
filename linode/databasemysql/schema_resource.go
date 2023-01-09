@@ -114,7 +114,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:             schema.TypeInt,
 					Description:      "The hour to begin maintenance based in UTC time.",
 					Required:         true,
-					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 23)),
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 23)),
 				},
 				"week_of_month": {
 					Type: schema.TypeInt,
