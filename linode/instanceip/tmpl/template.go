@@ -21,6 +21,14 @@ func Basic(t *testing.T, instanceLabel, region string, applyImmediately bool) st
 		})
 }
 
+func DataBasic(t *testing.T, instanceLabel, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_ip_data_basic", TemplateData{
+			Label:  instanceLabel,
+			Region: region,
+		})
+}
+
 func NoBoot(t *testing.T, instanceLabel, region string, applyImmediately bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ip_no_boot", TemplateData{
