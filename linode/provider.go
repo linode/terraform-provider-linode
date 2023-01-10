@@ -118,6 +118,13 @@ func Provider() *schema.Provider {
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
 
+			"disable_internal_cache": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Disable the internal caching system that backs certain Linode API requests.",
+			},
+
 			"min_retry_delay_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -128,14 +135,12 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "Maximum delay in milliseconds before retrying a request.",
 			},
-
 			"event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 4000),
 				Description: "The rate in milliseconds to poll for events.",
 			},
-
 			"lke_event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -246,6 +251,8 @@ func providerConfigure(
 
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
+
+		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
