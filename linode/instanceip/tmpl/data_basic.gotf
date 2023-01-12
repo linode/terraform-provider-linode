@@ -8,7 +8,7 @@ resource "linode_instance" "foobar" {
     image = "linode/alpine3.14"
 }
 
-data "linode_instance_ip" "test" {
+data "linode_instance_networking" "test" {
     linode_id = linode_instance.foobar.id
 }
 

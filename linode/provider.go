@@ -170,7 +170,7 @@ func Provider() *schema.Provider {
 			"linode_instance_backups":       backup.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),
-			"linode_instance_ip":            instanceip.DataSource(),
+			"linode_instance_networking":    instanceip.DataSource(),
 			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),

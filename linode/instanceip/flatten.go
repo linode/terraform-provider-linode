@@ -4,29 +4,29 @@ import (
 	"github.com/linode/linodego"
 )
 
-func flattenIPv4(network *linodego.InstanceIPv4Response) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenIPv4(network *linodego.InstanceIPv4Response) []map[string]any {
+	result := make(map[string]any)
 
 	result["private"] = flattenIPs(network.Private)
 	result["public"] = flattenIPs(network.Public)
 	result["reserved"] = flattenIPs(network.Reserved)
 	result["shared"] = flattenIPs(network.Shared)
 
-	return result
+	return []map[string]any{result}
 }
 
-func flattenIPv6(network *linodego.InstanceIPv6Response) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenIPv6(network *linodego.InstanceIPv6Response) []map[string]any {
+	result := make(map[string]any)
 
 	result["global"] = flattenGlobal(network.Global)
-	result["link_local"] = flattenIP(network.LinkLocal)
-	result["slaac"] = flattenIP(network.SLAAC)
+	result["link_local"] = []any{flattenIP(network.LinkLocal)}
+	result["slaac"] = []any{flattenIP(network.SLAAC)}
 
-	return result
+	return []map[string]any{result}
 }
 
-func flattenIP(network *linodego.InstanceIP) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenIP(network *linodego.InstanceIP) map[string]any {
+	result := make(map[string]any)
 
 	result["address"] = network.Address
 	result["gateway"] = network.Gateway
@@ -39,24 +39,18 @@ func flattenIP(network *linodego.InstanceIP) map[string]interface{} {
 	return result
 }
 
-func flattenIPs(network []*linodego.InstanceIP) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenIPs(network []*linodego.InstanceIP) []map[string]any {
+	result := make([]map[string]any, len(network))
 
-	for _, net := range network {
-		result["address"] = net.Address
-		result["gateway"] = net.Gateway
-		result["prefix"] = net.Prefix
-		result["rdns"] = net.RDNS
-		result["region"] = net.Region
-		result["subnet_mask"] = net.SubnetMask
-		result["type"] = net.Type
+	for i, net := range network {
+		result[i] = flattenIP(net)
 	}
 
 	return result
 }
 
-func flattenGlobal(network []linodego.IPv6Range) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenGlobal(network []linodego.IPv6Range) []any {
+	result := make(map[string]any)
 
 	for _, net := range network {
 		result["prefix"] = net.Prefix
@@ -65,5 +59,5 @@ func flattenGlobal(network []linodego.IPv6Range) map[string]interface{} {
 		result["route_target"] = net.RouteTarget
 	}
 
-	return result
+	return []any{result}
 }
