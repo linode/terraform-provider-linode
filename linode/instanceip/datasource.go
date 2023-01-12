@@ -2,6 +2,7 @@ package instanceip
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,6 +29,6 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("ipv4", flattenIPv4(netInfo.IPv4))
 	d.Set("ipv6", flattenIPv6(netInfo.IPv6))
 
-	d.SetId("")
+	d.SetId(fmt.Sprintf("%d", linodeID))
 	return nil
 }

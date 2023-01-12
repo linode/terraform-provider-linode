@@ -11,6 +11,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instanceip/tmpl"
 )
 
+const testInstanceNetworkResName = "data.linode_instance_networking.test"
+
 func init() {
 	region, err := acceptance.GetRandomRegionWithCaps(nil)
 	if err != nil {
@@ -38,8 +40,8 @@ func TestAccDataSourceInstanceIP_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t, name, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					resource.TestCheckResourceAttrSet(testInstanceIPResName, "ipv4"),
-					resource.TestCheckResourceAttrSet(testInstanceIPResName, "ipv6"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.#"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.#"),
 				),
 			},
 		},
