@@ -91,30 +91,31 @@ var dataSourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Description: "An object representing an IPv6 pool.",
 					Computed:    true,
-					Elem: &schema.Resource{Schema: map[string]*schema.Schema{
-						"prefix": {
-							Type: schema.TypeInt,
-							Description: "The number of bits set in the subnet mask." +
-								"addresses can be assigned from this pool" +
-								"calculated as 2 128-prefix.",
-							Computed: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"prefix": {
+								Type: schema.TypeInt,
+								Description: "The number of bits set in the subnet mask." +
+									"addresses can be assigned from this pool" +
+									"calculated as 2 128-prefix.",
+								Computed: true,
+							},
+							"range": {
+								Type:        schema.TypeString,
+								Description: "The IPv6 range of addresses in this pool.",
+								Computed:    true,
+							},
+							"region": {
+								Type:        schema.TypeString,
+								Description: "The region for this pool of IPv6 addresses.",
+								Computed:    true,
+							},
+							"route_target": {
+								Type:        schema.TypeString,
+								Description: "The last address in this block of IPv6 addresses.",
+								Computed:    true,
+							},
 						},
-						"range": {
-							Type:        schema.TypeString,
-							Description: "The IPv6 range of addresses in this pool.",
-							Computed:    true,
-						},
-						"region": {
-							Type:        schema.TypeString,
-							Description: "The region for this pool of IPv6 addresses.",
-							Computed:    true,
-						},
-						"route_target": {
-							Type:        schema.TypeString,
-							Description: "The last address in this block of IPv6 addresses.",
-							Computed:    true,
-						},
-					},
 					},
 				},
 				"link_local": {
