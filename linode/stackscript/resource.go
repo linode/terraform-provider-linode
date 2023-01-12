@@ -34,7 +34,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	stackscript, err := client.GetStackscript(ctx, int(id))
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 401 {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing StackScript ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
