@@ -49,18 +49,18 @@ make build
 
 ### Testing the provider
 
-In order to test the provider, you can simply run `make test`.
-
-```sh
-make test
-```
-
 In order to run the full suite of Acceptance tests, run `make testacc`. Acceptance testing will require the `LINODE_TOKEN` variable to be populated with a Linode APIv4 Token.  See [Linode Provider documentation](https://www.terraform.io/docs/providers/linode/index.html) for more details.
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
 ```sh
 make testacc
+```
+
+In order to run specific Acceptance tests, the following command template can be used.
+
+```shell
+make PKG_NAME="linode/volume" TESTARGS="-run TestAccResourceVolume_basic" testacc
 ```
 
 There are a number of useful flags and variables to aid in debugging.
@@ -72,7 +72,3 @@ There are a number of useful flags and variables to aid in debugging.
 - `TF_SCHEMA_PANIC_ON_ERROR` - This forces Terraform to panic if a Schema Set command failed.
 
 These values (along with `LINODE_TOKEN`) can be placed in a `.env` file in the repository root to avoid repeating them on the command line.
-
-```sh
-LINODE_TOKEN="__YOUR_APIV4_TOKEN__" TESTARGS="-run TestAccLinodeVolume -count=1"  make testacc
-```
