@@ -13,9 +13,7 @@ var filterConfig = helper.FilterConfig{
 }
 
 var dataSourceSchema = map[string]*schema.Schema{
-	"order_by": filterConfig.OrderBySchema(),
-	"order":    filterConfig.OrderSchema(),
-	"filter":   filterConfig.FilterSchema(),
+	"filter": filterConfig.FilterSchema(),
 	"logins": {
 		Type:        schema.TypeList,
 		Description: "The returned list of account logins.",

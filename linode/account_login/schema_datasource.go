@@ -12,7 +12,7 @@ var dataSourceSchema = map[string]*schema.Schema{ //This is wrong. Need to call 
 	"id": {
 		Type:        schema.TypeInt,
 		Description: "The unique ID of this login object.",
-		Computed:    true,
+		Required:    true,
 	},
 	"ip": {
 		Type:        schema.TypeString,

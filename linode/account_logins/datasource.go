@@ -2,6 +2,7 @@ package account_logins
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,10 +51,10 @@ func flattenLogins(data interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	result["id"] = t.ID
-	result["label"] = t.Datetime
-	result["disk"] = t.IP
-	result["class"] = t.Restricted
-	result["network_out"] = t.Username
+	result["datetime"] = t.Datetime.Format(time.RFC3339)
+	result["ip"] = t.IP
+	result["restricted"] = t.Restricted
+	result["username"] = t.Username
 
 	return result
 }
