@@ -1,4 +1,4 @@
-package instanceip_test
+package instancenetworking_test
 
 import (
 	"log"
@@ -8,10 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/instanceip/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/instancenetworking/tmpl"
 )
 
 const testInstanceNetworkResName = "data.linode_instance_networking.test"
+
+var testRegion string
 
 func init() {
 	region, err := acceptance.GetRandomRegionWithCaps(nil)
@@ -22,7 +24,7 @@ func init() {
 	testRegion = region
 }
 
-func TestAccDataSourceInstanceIP_basic(t *testing.T) {
+func TestAccDataSourceInstanceNetworking_basic(t *testing.T) {
 	t.Parallel()
 
 	var instance linodego.Instance

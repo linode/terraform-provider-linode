@@ -1,4 +1,4 @@
-package instanceip
+package instancenetworking
 
 import (
 	"github.com/linode/linodego"

@@ -1,4 +1,4 @@
-{{ define "instance_ip_data_basic" }}
+{{ define "instance_networking_data_basic" }}
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
