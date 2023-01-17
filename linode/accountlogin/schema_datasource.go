@@ -1,9 +1,8 @@
-package account_login
+package accountlogin
 
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-var dataSourceSchema = map[string]*schema.Schema{ //This is wrong. Need to call ListLogins func in linodego
-
+var dataSourceSchema = map[string]*schema.Schema{
 	"datetime": {
 		Type:        schema.TypeString,
 		Description: "The time when the login was initiated.",

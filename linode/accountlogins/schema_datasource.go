@@ -1,8 +1,8 @@
-package account_logins
+package accountlogins
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/linode/terraform-provider-linode/linode/account_login"
+	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -18,6 +18,6 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "The returned list of account logins.",
 		Computed:    true,
-		Elem:        account_login.DataSource(),
+		Elem:        accountlogin.DataSource(),
 	},
 }

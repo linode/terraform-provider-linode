@@ -1,4 +1,4 @@
-package account_logins_test
+package accountlogins_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/account_logins/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/accountlogins/tmpl"
 )
 
 func TestAccDataSourceAccountLogins_basic(t *testing.T) {

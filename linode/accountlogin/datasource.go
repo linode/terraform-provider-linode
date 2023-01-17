@@ -1,4 +1,4 @@
-package account_login
+package accountlogin
 
 import (
 	"context"
