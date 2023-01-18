@@ -788,7 +788,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 						acceptance.CheckInstanceExists(resName, &instance),
 						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
 						resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
-						// changed kerel, not label
+						// changed kernel, not label
 						resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 						resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
 						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
