@@ -207,8 +207,8 @@ func checkStackscriptDestroy(s *terraform.State) error {
 			return fmt.Errorf("Linode Stackscript with id %d still exists", id)
 		}
 
-		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 401 {
-			return fmt.Errorf("Error requesting Linode Stackscript with id %d", id)
+		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+			return fmt.Errorf("error requesting Linode Stackscript with id %d: %s", id, apiErr)
 		}
 	}
 

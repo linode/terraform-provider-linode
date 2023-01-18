@@ -18,42 +18,35 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	types, err := client.ListTypes(ctx, nil)
+	id := d.Get("id").(string)
+
+	typeInfo, err := client.GetType(ctx, id)
 	if err != nil {
-		return diag.Errorf("Error listing ranges: %s", err)
+		return diag.Errorf("Error getting type %s: %s", id, err)
 	}
 
-	reqType := d.Get("id").(string)
+	d.SetId(typeInfo.ID)
+	d.Set("label", typeInfo.Label)
+	d.Set("disk", typeInfo.Disk)
+	d.Set("memory", typeInfo.Memory)
+	d.Set("vcpus", typeInfo.VCPUs)
+	d.Set("network_out", typeInfo.NetworkOut)
+	d.Set("transfer", typeInfo.Transfer)
+	d.Set("class", typeInfo.Class)
 
-	for _, r := range types {
-		if r.ID == reqType {
-			d.SetId(r.ID)
-			d.Set("label", r.Label)
-			d.Set("disk", r.Disk)
-			d.Set("memory", r.Memory)
-			d.Set("vcpus", r.VCPUs)
-			d.Set("network_out", r.NetworkOut)
-			d.Set("transfer", r.Transfer)
-			d.Set("class", r.Class)
+	d.Set("price", []map[string]interface{}{{
+		"hourly":  typeInfo.Price.Hourly,
+		"monthly": typeInfo.Price.Monthly,
+	}})
 
-			d.Set("price", []map[string]interface{}{{
-				"hourly":  r.Price.Hourly,
-				"monthly": r.Price.Monthly,
-			}})
+	d.Set("addons", []map[string]interface{}{{
+		"backups": []map[string]interface{}{{
+			"price": []map[string]interface{}{{
+				"hourly":  typeInfo.Addons.Backups.Price.Hourly,
+				"monthly": typeInfo.Addons.Backups.Price.Monthly,
+			}},
+		}},
+	}})
 
-			d.Set("addons", []map[string]interface{}{{
-				"backups": []map[string]interface{}{{
-					"price": []map[string]interface{}{{
-						"hourly":  r.Addons.Backups.Price.Hourly,
-						"monthly": r.Addons.Backups.Price.Monthly,
-					}},
-				}},
-			}})
-			return nil
-		}
-	}
-
-	d.SetId("")
-
-	return diag.Errorf("Instance Type %s was not found", reqType)
+	return nil
 }

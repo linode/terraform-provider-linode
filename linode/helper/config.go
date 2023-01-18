@@ -38,6 +38,7 @@ type Config struct {
 
 	SkipInstanceReadyPoll        bool
 	SkipInstanceDeletePoll       bool
+	DisableInternalCache         bool
 	MinRetryDelayMilliseconds    int
 	MaxRetryDelayMilliseconds    int
 	EventPollMilliseconds        int
@@ -83,6 +84,8 @@ func (c *Config) Client() (*linodego.Client, error) {
 	if len(c.APIVersion) > 0 {
 		client.SetAPIVersion(c.APIVersion)
 	}
+
+	client.UseCache(!c.DisableInternalCache)
 
 	if c.EventPollMilliseconds != 0 {
 		client.SetPollDelay(time.Duration(c.EventPollMilliseconds))

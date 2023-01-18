@@ -31,6 +31,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
+	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/instancetypes"
@@ -118,6 +119,13 @@ func Provider() *schema.Provider {
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
 
+			"disable_internal_cache": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Disable the internal caching system that backs certain Linode API requests.",
+			},
+
 			"min_retry_delay_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -128,14 +136,12 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "Maximum delay in milliseconds before retrying a request.",
 			},
-
 			"event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 4000),
 				Description: "The rate in milliseconds to poll for events.",
 			},
-
 			"lke_event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -170,6 +176,7 @@ func Provider() *schema.Provider {
 			"linode_instance_backups":       backup.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),
+			"linode_instance_networking":    instancenetworking.DataSource(),
 			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
@@ -246,6 +253,8 @@ func providerConfigure(
 
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
+
+		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),

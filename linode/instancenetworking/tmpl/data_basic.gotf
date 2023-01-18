@@ -1,4 +1,4 @@
-{{ define "instance_ip_basic" }}
+{{ define "instance_networking_data_basic" }}
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
@@ -8,10 +8,8 @@ resource "linode_instance" "foobar" {
     image = "linode/alpine3.14"
 }
 
-resource "linode_instance_ip" "test" {
+data "linode_instance_networking" "test" {
     linode_id = linode_instance.foobar.id
-    public = true
-    apply_immediately = {{.ApplyImmediately}}
 }
 
 {{ end }}
