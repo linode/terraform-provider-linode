@@ -1,0 +1,5 @@
+{{ define "account_logins_data_basic" }}
+
+data "linode_account_logins" "foobar" {}
+
+{{ end }}
