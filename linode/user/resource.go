@@ -192,6 +192,7 @@ func expandGrantsGlobal(global map[string]interface{}) linodego.GlobalUserGrants
 	}
 
 	result.AddDomains = global["add_domains"].(bool)
+	result.AddDatabases = global["add_databases"].(bool)
 	result.AddFirewalls = global["add_firewalls"].(bool)
 	result.AddImages = global["add_images"].(bool)
 	result.AddLinodes = global["add_linodes"].(bool)
