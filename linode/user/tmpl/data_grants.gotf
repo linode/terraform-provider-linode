@@ -1,0 +1,9 @@
+{{ define "data_grants" }}
+
+{{ template "user_grants" . }}
+
+data "linode_user" "test" {
+    username = "${linode_user.test.username}"
+}
+
+{{ end }}

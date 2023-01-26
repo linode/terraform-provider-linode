@@ -48,3 +48,11 @@ func DataNoUser(t *testing.T) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_data_nouser", nil)
 }
+
+func DataGrants(t *testing.T, username, email string) string {
+	return acceptance.ExecuteTemplate(t,
+		"data_grants", TemplateData{
+			Username: username,
+			Email:    email,
+		})
+}
