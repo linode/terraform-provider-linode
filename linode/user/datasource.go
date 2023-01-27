@@ -46,6 +46,24 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		d.Set("ssh_keys", user.SSHKeys)
 		d.Set("restricted", user.Restricted)
 
+		if user.Restricted {
+			grants, err := client.GetUserGrants(ctx, reqUsername)
+			if err != nil {
+				return diag.Errorf("failed to get user grants (%s): %s", reqUsername, err)
+			}
+
+			d.Set("global_grants", []interface{}{flattenGrantsGlobal(&grants.Global)})
+
+			d.Set("domain_grant", flattenGrantsEntities(grants.Domain))
+			d.Set("firewall_grant", flattenGrantsEntities(grants.Firewall))
+			d.Set("image_grant", flattenGrantsEntities(grants.Image))
+			d.Set("linode_grant", flattenGrantsEntities(grants.Linode))
+			d.Set("longview_grant", flattenGrantsEntities(grants.Longview))
+			d.Set("nodebalancer_grant", flattenGrantsEntities(grants.NodeBalancer))
+			d.Set("stackscript_grant", flattenGrantsEntities(grants.StackScript))
+			d.Set("volume_grant", flattenGrantsEntities(grants.Volume))
+		}
+
 		return nil
 	}
 
