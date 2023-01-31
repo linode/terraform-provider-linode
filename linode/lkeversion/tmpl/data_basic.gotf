@@ -1,7 +1,0 @@
-{{ define "lke_version_data_basic" }}
-
-data "linode_lke_version" "foobar" {
-    id = "{{.ID}}"
-}
-
-{{ end }}
