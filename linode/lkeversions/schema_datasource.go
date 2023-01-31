@@ -6,7 +6,7 @@ var dataSourceSchema = map[string]*schema.Schema{
 	"versions": {
 		Type:        schema.TypeList,
 		Elem:        &schema.Resource{Schema: elem},
-		Description: "The Kubernetes version numbers available for deployment to a Kubernetes cluster in the format of <major>.<minor>, and the latest supported patch version.",
+		Description: "The Kubernetes version numbers available for deployment to a Kubernetes cluster.",
 		Computed:    true,
 	},
 }
