@@ -22,4 +22,4 @@ data "linode_lke_versions" "example" {}
 
 Each Linode LKE Version will be stored in the `versions` attribute and will export the following attributes:
 
-* `id` - The Kubernetes version numbers available for deployment to a Kubernetes cluster in the format of <major>.<minor>, and the latest supported patch version.
+* `id` - The Kubernetes version numbers available for deployment to a Kubernetes cluster in the format of [major].[minor], and the latest supported patch version.
