@@ -1,0 +1,5 @@
+{{ define "lke_versions_data_basic" }}
+
+data "linode_lke_versions" "foobar" {}
+
+{{ end }}
