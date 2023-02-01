@@ -7,6 +7,7 @@ Provides details about the networking configuration of an Instance.
 ---
 
 # Data Source: linode\_instance\_networking
+
 Provides details about the networking configuration of an Instance.
 
 ## Example Usage
