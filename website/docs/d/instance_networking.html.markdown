@@ -145,7 +145,7 @@ A list of shared IP Address objects assigned to this Linode.
 
 An object representing an IPv6 pool.
 
-* `prefix` - The prefix length of the address, denoting how many addresses can be assigned from this pool calculated as 2<sup>128-prefix</sup>.
+* `prefix` - The prefix length of the address, denoting how many addresses can be assigned from this pool calculated as 2^128-prefix.
 
 * `range` - The IPv6 range of addresses in this pool.
 
