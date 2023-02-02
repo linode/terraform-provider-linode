@@ -28,4 +28,18 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "If true, this User must be granted access to perform actions or access entities on this Account.",
 		Computed:    true,
 	},
+	"global_grants": {
+		Type:        schema.TypeList,
+		Description: "A structure containing the Account-level grants a User has.",
+		Computed:    true,
+		Elem:        resourceLinodeUserGrantsGlobal(),
+	},
+	"domain_grant":       resourceLinodeUserGrantsEntitySet(),
+	"firewall_grant":     resourceLinodeUserGrantsEntitySet(),
+	"image_grant":        resourceLinodeUserGrantsEntitySet(),
+	"linode_grant":       resourceLinodeUserGrantsEntitySet(),
+	"longview_grant":     resourceLinodeUserGrantsEntitySet(),
+	"nodebalancer_grant": resourceLinodeUserGrantsEntitySet(),
+	"stackscript_grant":  resourceLinodeUserGrantsEntitySet(),
+	"volume_grant":       resourceLinodeUserGrantsEntitySet(),
 }

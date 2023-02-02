@@ -64,6 +64,12 @@ func resourceLinodeUserGrantsGlobal() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"add_databases": {
+				Type:        schema.TypeBool,
+				Description: "If true, this User may add Databases.",
+				Optional:    true,
+				Default:     false,
+			},
 			"add_firewalls": {
 				Type:        schema.TypeBool,
 				Description: "If true, this User may add Firewalls.",

@@ -158,6 +158,8 @@ func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 	if err != nil {
 		t.Fatalf("failed to parse private key: %s", err)
 	}
+
+	// #nosec G106 -- Test data, not used in production
 	config := &ssh.ClientConfig{
 		User:            "root",
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
@@ -518,6 +520,7 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 		return "", fmt.Errorf("no region found with the provided caps")
 	}
 
+	// #nosec G404 -- Test data, doesn't need to be cryptography
 	return regions[rand.Intn(len(regions))], nil
 }
 
@@ -539,5 +542,6 @@ func GetRandomOBJCluster() (string, error) {
 		return "", fmt.Errorf("no clusters found")
 	}
 
+	// #nosec G404 -- Test data, doesn't need to be cryptography
 	return clusters[rand.Intn(len(clusters))].ID, nil
 }

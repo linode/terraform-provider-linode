@@ -1,0 +1,10 @@
+{{ define "account_logins_data_filter_by_username" }}
+
+data "linode_account_logins" "foobar" {
+  filter {
+    name = "username"
+    values = ["{{ .Username }}"]
+  }
+}
+
+{{ end }}

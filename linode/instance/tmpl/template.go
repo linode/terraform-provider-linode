@@ -376,6 +376,24 @@ func AuthorizedUsers(t *testing.T, label, pubKey, region string) string {
 		})
 }
 
+func AuthorizedKeysEmpty(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_authorized_keys_empty", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func DiskAuthorizedKeysEmpty(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_disk_authorized_keys_empty", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
 func StackScript(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_stackscript", TemplateData{

@@ -92,6 +92,11 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 			"been more than 5 boot jobs issued within 15 minutes.",
 		Computed: true,
 	},
+	"host_uuid": {
+		Type:        schema.TypeString,
+		Description: "The Linode’s host machine, as a UUID.",
+		Computed:    true,
+	},
 	"specs": {
 		Computed: true,
 		Type:     schema.TypeList,
@@ -177,6 +182,11 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"available": {
+					Type:        schema.TypeBool,
+					Computed:    true,
+					Description: "Whether this Backup is available for restoration.",
+				},
 				"enabled": {
 					Type:        schema.TypeBool,
 					Computed:    true,

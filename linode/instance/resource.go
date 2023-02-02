@@ -95,6 +95,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
 	d.Set("booted", isInstanceBooted(instance))
+	d.Set("host_uuid", instance.HostUUID)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -187,10 +188,18 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	// If we don't have disks and we don't have configs, use the single API call approach
 	if !disksOk && !configsOk {
 		for _, key := range d.Get("authorized_keys").([]interface{}) {
+			if key == nil {
+				return diag.Errorf("invalid input for authorized_keys: keys cannot be empty or null")
+			}
+
 			createOpts.AuthorizedKeys = append(createOpts.AuthorizedKeys, key.(string))
 		}
-		for _, key := range d.Get("authorized_users").([]interface{}) {
-			createOpts.AuthorizedUsers = append(createOpts.AuthorizedUsers, key.(string))
+		for _, user := range d.Get("authorized_users").([]interface{}) {
+			if user == nil {
+				return diag.Errorf("invalid input for authorized_users: users cannot be empty or null")
+			}
+
+			createOpts.AuthorizedUsers = append(createOpts.AuthorizedUsers, user.(string))
 		}
 		createOpts.RootPass = d.Get("root_pass").(string)
 		if createOpts.RootPass == "" {

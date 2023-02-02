@@ -1,0 +1,15 @@
+{{ define "instance_networking_data_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image = "linode/alpine3.14"
+}
+
+data "linode_instance_networking" "test" {
+    linode_id = linode_instance.foobar.id
+}
+
+{{ end }}

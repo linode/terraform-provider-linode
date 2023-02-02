@@ -54,3 +54,11 @@ func BootedSwap(t *testing.T, label, region string, swap bool) string {
 			Region: region,
 		})
 }
+
+func Provisioner(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_config_provisioner", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}

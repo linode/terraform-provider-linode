@@ -46,6 +46,7 @@ func flattenInstance(
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
 	result["image"] = instance.Image
+	result["host_uuid"] = instance.HostUUID
 
 	result["backups"] = flattenInstanceBackups(*instance)
 	result["specs"] = flattenInstanceSpecs(*instance)
@@ -92,7 +93,8 @@ func flattenInstanceAlerts(instance linodego.Instance) []map[string]int {
 
 func flattenInstanceBackups(instance linodego.Instance) []map[string]interface{} {
 	return []map[string]interface{}{{
-		"enabled": instance.Backups.Enabled,
+		"available": instance.Backups.Available,
+		"enabled":   instance.Backups.Enabled,
 		"schedule": []map[string]interface{}{{
 			"day":    instance.Backups.Schedule.Day,
 			"window": instance.Backups.Schedule.Window,
@@ -221,6 +223,7 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
 	result["image"] = instance.Image
+	result["host_uuid"] = instance.HostUUID
 	result["backups"] = flattenInstanceBackups(*instance)
 	result["specs"] = flattenInstanceSpecs(*instance)
 	result["alerts"] = flattenInstanceAlerts(*instance)

@@ -80,6 +80,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
 	}
 
+	// We want to guarantee that we're resolving a public IPv4 address
+	instNetworking, err := client.GetInstanceIPAddresses(ctx, linodeID)
+	if err != nil {
+		return diag.Errorf("failed to get instance networking: %s", err)
+	}
+
 	configBooted, err := isConfigBooted(ctx, &client, inst, cfg.ID)
 	if err != nil {
 		return diag.Errorf("failed to check instance boot status: %s", err)
@@ -103,6 +109,11 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	if cfg.Helpers != nil {
 		d.Set("helpers", flattenHelpers(*cfg.Helpers))
 	}
+
+	d.SetConnInfo(map[string]string{
+		"type": "ssh",
+		"host": instNetworking.IPv4.Public[0].Address,
+	})
 
 	return nil
 }

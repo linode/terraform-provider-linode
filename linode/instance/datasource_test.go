@@ -33,6 +33,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.swap_size", "256"),
 					resource.TestCheckResourceAttr(resName, "instances.0.ipv4.#", "2"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.ipv6"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.host_uuid"),
 					resource.TestCheckResourceAttr(resName, "instances.0.disk.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.config.#", "1"),
 				),

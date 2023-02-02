@@ -69,6 +69,11 @@ var backupSchema = map[string]*schema.Schema{
 		Elem:        dataSourceDisk(),
 		Computed:    true,
 	},
+	"available": {
+		Type:        schema.TypeBool,
+		Description: "Whether this Backup is available for restoration.",
+		Computed:    true,
+	},
 }
 
 var dataSourceSchema = map[string]*schema.Schema{

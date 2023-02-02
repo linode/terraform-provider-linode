@@ -82,6 +82,7 @@ func TestAccResourceInstance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
+					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
 				),
 			},
 
@@ -150,6 +151,30 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image", "resize_disk"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_validateAuthorizedKeys(t *testing.T) {
+	t.Parallel()
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acceptance.PreCheck(t) },
+		Providers:    acceptance.TestAccProviders,
+		CheckDestroy: acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.AuthorizedKeysEmpty(t, instanceName, testRegion),
+				ExpectError: regexp.MustCompile(
+					"invalid input for authorized_keys"),
+			},
+			{
+				Config: tmpl.DiskAuthorizedKeysEmpty(t, instanceName, testRegion),
+				ExpectError: regexp.MustCompile(
+					"invalid input for disk authorized_keys"),
 			},
 		},
 	})
@@ -738,38 +763,41 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.WithConfig(t, instanceName, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
-					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
-					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
-					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
-					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
-				),
+	// This test can occasionally fail while running the entire test suite in parallel
+	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:     func() { acceptance.PreCheck(t) },
+			Providers:    acceptance.TestAccProviders,
+			CheckDestroy: acceptance.CheckInstanceDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.WithConfig(t, instanceName, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists(resName, &instance),
+						resource.TestCheckResourceAttr(resName, "label", instanceName),
+						resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+						resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-64bit"),
+						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
+						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "true"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
+					),
+				},
+				{
+					Config: tmpl.ConfigUpdates(t, instanceName, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists(resName, &instance),
+						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
+						resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
+						// changed kernel, not label
+						resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+						resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
+						resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
+						resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "false"),
+						resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "80"),
+					),
+				},
 			},
-			{
-				Config: tmpl.ConfigUpdates(t, instanceName, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", instanceName)),
-					resource.TestCheckResourceAttr(resName, "group", "tf_test_r"),
-					// changed kerel, not label
-					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
-					resource.TestCheckResourceAttr(resName, "config.0.kernel", "linode/latest-32bit"),
-					resource.TestCheckResourceAttr(resName, "config.0.root_device", "/dev/sda"),
-					resource.TestCheckResourceAttr(resName, "config.0.helpers.0.network", "false"),
-					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "80"),
-				),
-			},
-		},
+		})
 	})
 }
 

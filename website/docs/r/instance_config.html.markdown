@@ -81,6 +81,19 @@ resource "linode_instance_config" "my-config" {
   }
   
   booted = true
+
+  // Run a remote-exec provisioner
+  connection {
+    host        = linode_instance.my-instance.ip_address
+    user        = "root"
+    password    = "myc00lpass!"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Hello World!'"
+    ]
+  }
 }
 
 # Create a boot disk

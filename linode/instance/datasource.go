@@ -71,6 +71,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	// Create a list of filterable instance maps
 	flattenedInstances := make([]interface{}, len(instances))
 	for i, instance := range instances {
+		instance := instance
 		instanceIDMap[instance.ID] = instance
 
 		instanceMap, err := flattenInstanceSimple(&instance)
