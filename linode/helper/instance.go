@@ -14,6 +14,11 @@ import (
 	"github.com/linode/linodego"
 )
 
+const (
+	RootPassMinimumCharacters = 7
+	RootPassMaximumCharacters = 128
+)
+
 var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
 
 // set bootConfig = 0 if using existing boot config

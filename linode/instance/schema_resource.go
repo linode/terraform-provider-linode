@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"net"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -224,6 +225,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     rootPasswordState,
+		ValidateFunc: validation.StringLenBetween(
+			helper.RootPassMinimumCharacters,
+			helper.RootPassMaximumCharacters),
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"swap_size": {
@@ -731,7 +735,9 @@ var resourceSchema = map[string]*schema.Schema{
 						// the API does not return this field for existing disks, so must be ignored for diffs/updates
 						return !d.HasChange("label")
 					},
-					ValidateFunc: validation.StringLenBetween(6, 128),
+					ValidateFunc: validation.StringLenBetween(
+						helper.RootPassMinimumCharacters,
+						helper.RootPassMaximumCharacters),
 					StateFunc:    rootPasswordState,
 				},
 			},

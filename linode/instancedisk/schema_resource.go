@@ -3,6 +3,7 @@ package instancedisk
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -60,6 +61,9 @@ var resourceSchema = map[string]*schema.Schema{
 		ForceNew:    true,
 		Sensitive:   true,
 		Description: "This sets the root user’s password on a newly-created Linode Disk when deploying from an Image.",
+		ValidateFunc: validation.StringLenBetween(
+			helper.RootPassMinimumCharacters,
+			helper.RootPassMaximumCharacters),
 	},
 	"stackscript_data": {
 		Type: schema.TypeMap,
