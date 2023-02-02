@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	RootPassMinimumCharacters = 7
+	RootPassMinimumCharacters = 11
 	RootPassMaximumCharacters = 128
 )
 
