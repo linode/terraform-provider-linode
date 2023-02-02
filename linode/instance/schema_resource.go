@@ -219,12 +219,12 @@ var resourceSchema = map[string]*schema.Schema{
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"root_pass": {
-		Type:          schema.TypeString,
-		Description:   "The password that will be initialially assigned to the 'root' user account.",
-		Sensitive:     true,
-		Optional:      true,
-		ForceNew:      true,
-		StateFunc:     rootPasswordState,
+		Type:        schema.TypeString,
+		Description: "The password that will be initialially assigned to the 'root' user account.",
+		Sensitive:   true,
+		Optional:    true,
+		ForceNew:    true,
+		StateFunc:   rootPasswordState,
 		ValidateFunc: validation.StringLenBetween(
 			helper.RootPassMinimumCharacters,
 			helper.RootPassMaximumCharacters),
@@ -738,7 +738,7 @@ var resourceSchema = map[string]*schema.Schema{
 					ValidateFunc: validation.StringLenBetween(
 						helper.RootPassMinimumCharacters,
 						helper.RootPassMaximumCharacters),
-					StateFunc:    rootPasswordState,
+					StateFunc: rootPasswordState,
 				},
 			},
 		},
