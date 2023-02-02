@@ -1,13 +1,13 @@
 package instance
 
 import (
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"net"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
