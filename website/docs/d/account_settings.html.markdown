@@ -20,8 +20,6 @@ data "linode_account_settings" "example" {}
 
 ## Attributes Reference
 
-Each Linode LKE Version will be stored in the `versions` attribute and will export the following attributes:
-
 * `backups_enabled` - Account-wide backups default.
 
 * `longview_subscription` - The Longview Pro tier you are currently subscribed to.
