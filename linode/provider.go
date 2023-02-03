@@ -12,6 +12,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
+	"github.com/linode/terraform-provider-linode/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
@@ -164,6 +165,7 @@ func Provider() *schema.Provider {
 			"linode_account":                account.DataSource(),
 			"linode_account_login":          accountlogin.DataSource(),
 			"linode_account_logins":         accountlogins.DataSource(),
+			"linode_account_settings":       accountsettings.DataSource(),
 			"linode_database_backups":       databasebackups.DataSource(),
 			"linode_database_engines":       databaseengines.DataSource(),
 			"linode_database_mongodb":       databasemongodb.DataSource(),
