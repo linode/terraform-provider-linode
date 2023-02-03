@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -218,12 +219,15 @@ var resourceSchema = map[string]*schema.Schema{
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"root_pass": {
-		Type:          schema.TypeString,
-		Description:   "The password that will be initialially assigned to the 'root' user account.",
-		Sensitive:     true,
-		Optional:      true,
-		ForceNew:      true,
-		StateFunc:     rootPasswordState,
+		Type:        schema.TypeString,
+		Description: "The password that will be initialially assigned to the 'root' user account.",
+		Sensitive:   true,
+		Optional:    true,
+		ForceNew:    true,
+		StateFunc:   rootPasswordState,
+		ValidateFunc: validation.StringLenBetween(
+			helper.RootPassMinimumCharacters,
+			helper.RootPassMaximumCharacters),
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"swap_size": {
@@ -731,8 +735,10 @@ var resourceSchema = map[string]*schema.Schema{
 						// the API does not return this field for existing disks, so must be ignored for diffs/updates
 						return !d.HasChange("label")
 					},
-					ValidateFunc: validation.StringLenBetween(6, 128),
-					StateFunc:    rootPasswordState,
+					ValidateFunc: validation.StringLenBetween(
+						helper.RootPassMinimumCharacters,
+						helper.RootPassMaximumCharacters),
+					StateFunc: rootPasswordState,
 				},
 			},
 		},
