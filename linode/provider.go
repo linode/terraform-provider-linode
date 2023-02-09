@@ -204,6 +204,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"linode_account_settings":         accountsettings.Resource(),
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
 			"linode_database_mongodb":         databasemongodb.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
