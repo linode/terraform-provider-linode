@@ -24,6 +24,8 @@ func DataBasic(t *testing.T) string {
 
 func Updates(t *testing.T, longviewSubscription string, backupsEnabled, networkHelper bool) string {
 	return acceptance.ExecuteTemplate(t,
-		"account_settings_updates", TemplateData{LongviewSubscription: longviewSubscription,
-			BackupsEnabled: backupsEnabled, NetworkHelper: networkHelper})
+		"account_settings_updates", TemplateData{
+			LongviewSubscription: longviewSubscription,
+			BackupsEnabled:       backupsEnabled, NetworkHelper: networkHelper,
+		})
 }
