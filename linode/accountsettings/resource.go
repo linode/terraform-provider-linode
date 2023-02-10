@@ -51,9 +51,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	_, errSettings := client.GetAccountSettings(ctx)
+	accountSettings, errSettings := client.GetAccountSettings(ctx)
 	if errSettings != nil {
 		return diag.Errorf("Error fetching the account settings: %s", errSettings)
+	}
+
+	longviewPlan, errLongview := client.GetLongviewPlan(ctx)
+	if errLongview != nil {
+		return diag.Errorf("Error fetching the longview plan: %s", errLongview)
 	}
 
 	accountUpdateOpts := linodego.AccountSettingsUpdateOptions{}
@@ -62,20 +67,19 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	accountUpdate := false
 	longviewUpdate := false
 
-	if d.HasChange("backups_enabled") {
+	if d.HasChange("backups_enabled") || d.Get("backups_enabled") != accountSettings.BackupsEnabled {
 		backupsEnabled := d.Get("backups_enabled").(bool)
 		accountUpdateOpts.BackupsEnabled = &backupsEnabled
 		accountUpdate = true
-
 	}
 
-	if d.HasChange("network_helper") {
+	if d.HasChange("network_helper") || d.Get("network_helper") != accountSettings.NetworkHelper {
 		networkHelper := d.Get("network_helper").(bool)
 		accountUpdateOpts.NetworkHelper = &networkHelper
 		accountUpdate = true
 	}
 
-	if d.HasChange("longview_subscription") {
+	if d.HasChange("longview_subscription") || d.Get("longview_subscription") != longviewPlan.ID {
 		longviewUpdateOpts.LongviewSubscription = d.Get("longview_subscription").(string)
 		longviewUpdate = true
 	}

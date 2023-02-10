@@ -1,11 +1,11 @@
 package accountsettings_test
 
 import (
+	"context"
 	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings/tmpl"
 )
@@ -37,8 +37,14 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 
 	resourceName := "linode_account_settings.foobar"
 
-	accountSettings := linodego.AccountSettings{}
-	longviewSettings := linodego.LongviewPlan{}
+	client, err := acceptance.GetClientForSweepers()
+	if err != nil {
+		t.Fail()
+		t.Log("Failed to get testing client.")
+	}
+
+	accountSettings, _ := client.GetAccountSettings(context.Background())
+	longviewSettings, _ := client.GetLongviewPlan(context.Background())
 
 	currLongviewPlan := longviewSettings.ID
 	currBackupsEnabled := accountSettings.BackupsEnabled
@@ -66,6 +72,11 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 			},
 			{
 				Config: tmpl.Updates(t, currLongviewPlan, currBackupsEnabled, currNetworkHelper),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "longview_subscription", currLongviewPlan),
+					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(currBackupsEnabled)),
+					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(currNetworkHelper)),
+				),
 			},
 		},
 	})
