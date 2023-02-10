@@ -64,6 +64,9 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(updatedNetworkHelper)),
 				),
 			},
+			{
+				Config: tmpl.Updates(t, currLongviewPlan, currBackupsEnabled, currNetworkHelper),
+			},
 		},
 	})
 }
