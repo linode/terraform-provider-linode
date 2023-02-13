@@ -14,4 +14,9 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The unique ID of this Region.",
 		Required:    true,
 	},
+	"label": {
+		Type:        schema.TypeString,
+		Description: "Detailed location information for this Region, including city, state or region, and country.",
+		Computed:    true,
+	},
 }

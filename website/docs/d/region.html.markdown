@@ -29,3 +29,5 @@ data "linode_region" "region" {
 In addition to all arguments above, the following attributes are exported:
 
 - `country` - The country the region resides in.
+
+- `label` - Detailed location information for this Region, including city, state or region, and country.

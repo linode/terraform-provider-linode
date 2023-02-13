@@ -32,6 +32,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if region != nil {
 		d.SetId(region.ID)
 		d.Set("country", region.Country)
+		d.Set("label", region.Label)
 		return nil
 	}
 
