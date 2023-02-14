@@ -37,7 +37,7 @@ func TestAccDataSourceRegions_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceAccountRegions_filterByCountry(t *testing.T) {
+func TestAccDataSourceRegions_filterByCountry(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_regions.foobar"
