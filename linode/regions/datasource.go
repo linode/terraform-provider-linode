@@ -53,11 +53,10 @@ func flattenRegions(data interface{}) map[string]interface{} {
 	result["country"] = t.Country
 	result["id"] = t.ID
 	result["label"] = t.Label
-	result["resolvers"] =
-		[]map[string]interface{}{{
-			"ipv4": t.Resolvers.IPv4,
-			"ipv6": t.Resolvers.IPv6,
-		}}
+	result["resolvers"] = []map[string]interface{}{{
+		"ipv4": t.Resolvers.IPv4,
+		"ipv6": t.Resolvers.IPv6,
+	}}
 	result["status"] = t.Status
 
 	return result
