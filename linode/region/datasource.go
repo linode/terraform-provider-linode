@@ -33,8 +33,25 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 		d.SetId(region.ID)
 		d.Set("country", region.Country)
 		d.Set("label", region.Label)
+		d.Set("capabilities", region.Capabilities)
+		d.Set("status", region.Status)
+		d.Set("resolvers", []map[string]interface{}{{
+			"ipv4": region.Resolvers.IPv4,
+			"ipv6": region.Resolvers.IPv6,
+		}})
 		return nil
 	}
 
 	return diag.Errorf("Linode Region %s was not found", reqRegion)
 }
+
+// func flattenRegionResolvers(data interface{}) map[string]interface{} {
+// 	t := data.(linodego.RegionResolvers)
+
+// 	result := make(map[string]interface{})
+
+// 	result["ipv4"] = t.IPv4
+// 	result["ipv6"] = t.IPv4
+
+// 	return result
+// }

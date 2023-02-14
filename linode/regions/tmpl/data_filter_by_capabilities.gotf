@@ -1,0 +1,10 @@
+{{ define "regions_data_filter_by_capabilities" }}
+
+data "linode_regions" "foobar" {
+  filter {
+    name = "capabilities"
+    values = ["{{ .Capabilities }}"]
+  }
+}
+
+{{ end }}

@@ -34,6 +34,8 @@ const (
 
 type AttrValidateFunc func(val string) error
 
+type ListAttrValidateFunc func(resourceName, path string, state *terraform.State) error
+
 var (
 	optInTests         map[string]struct{}
 	privateKeyMaterial string
@@ -254,6 +256,51 @@ func CheckResourceAttrNotEqual(resName string, path, notValue string) resource.T
 			return fmt.Errorf("attribute %s does not exist", path)
 		} else if value == notValue {
 			return fmt.Errorf("attribute was equal")
+		}
+
+		return nil
+	}
+}
+
+func CheckResourceAttrListContains(resName, path, desiredValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		length, err := strconv.Atoi(rs.Primary.Attributes[path+".#"])
+		if err != nil {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		for i := 0; i < length; i++ {
+			if rs.Primary.Attributes[path+"."+strconv.Itoa(i)] == desiredValue {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("Desired value not found in resource attribute")
+	}
+}
+
+func LoopThroughStringList(resName, path string, listValidateFunc ListAttrValidateFunc) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		length, err := strconv.Atoi(rs.Primary.Attributes[path+".#"])
+		if err != nil {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		for i := 0; i < length; i++ {
+			err := listValidateFunc(resName, path+"."+strconv.Itoa(i), s)
+			if err != nil {
+				return fmt.Errorf("Value not found:%s", err)
+			}
 		}
 
 		return nil
