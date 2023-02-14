@@ -22,24 +22,24 @@ data "linode_region" "region" {
 
 ## Argument Reference
 
-- `id` - (Required) The code name of the region to select.
+* `id` - (Required) The code name of the region to select.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `country` - The country the region resides in.
+* `country` - The country the region resides in.
 
-- `label` - Detailed location information for this Region, including city, state or region, and country.
+* `label` - Detailed location information for this Region, including city, state or region, and country.
 
-- `capabilities` - A list of capabilities of this region.
+* `capabilities` - A list of capabilities of this region.
 
-- `status` - This region’s current operational status (ok or outage).
+* `status` - This region’s current operational status (ok or outage).
 
-- [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
+* [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
 
 ### Resolvers
 
-- `ipv4` - The IPv4 addresses for this region’s DNS resolvers, separated by commas.
+* `ipv4` - The IPv4 addresses for this region’s DNS resolvers, separated by commas.
 
-- `ipv6` - The IPv6 addresses for this region’s DNS resolvers, separated by commas.
+* `ipv6` - The IPv6 addresses for this region’s DNS resolvers, separated by commas.
