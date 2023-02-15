@@ -203,7 +203,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	for _, createOpts := range updates.ToCreate {
 		pool, err := client.CreateLKENodePool(ctx, id, createOpts)
-
 		if err != nil {
 			return diag.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
 		}
