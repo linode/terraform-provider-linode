@@ -1,0 +1,10 @@
+{{ define "regions_data_filter_by_country" }}
+
+data "linode_regions" "foobar" {
+  filter {
+    name = "country"
+    values = ["{{ .Country }}"]
+  }
+}
+
+{{ end }}
