@@ -192,12 +192,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	poolSpecs := expandLinodeLKENodePoolSpecs(d.Get("pool").([]interface{}))
 	updates := ReconcileLKENodePoolSpecs(poolSpecs, pools)
 
+	updatedIds := []int{}
+
 	for poolID, updateOpts := range updates.ToUpdate {
 		if _, err := client.UpdateLKENodePool(ctx, id, poolID, updateOpts); err != nil {
 			return diag.Errorf("failed to update LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 
-		waitForNodePoolReady(ctx, &client, make(chan<- error), &sync.WaitGroup{}, int(updateLKETimeout), id, poolID)
+		updatedIds = append(updatedIds, poolID)
 	}
 
 	for _, createOpts := range updates.ToCreate {
@@ -206,7 +208,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
 		}
 
-		waitForNodePoolReady(ctx, &client, make(chan<- error), &sync.WaitGroup{}, int(updateLKETimeout), id, pool.ID)
+		updatedIds = append(updatedIds, pool.ID)
 	}
 
 	for _, poolID := range updates.ToDelete {
@@ -214,6 +216,15 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to delete LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(updatedIds))
+
+	for _, poolID := range updatedIds {
+		go waitForNodePoolReady(ctx, &client, make(chan<- error), &wg, providerMeta.Config.LKENodeReadyPollMilliseconds, id, poolID)
+	}
+
+	wg.Wait()
 
 	return nil
 }
