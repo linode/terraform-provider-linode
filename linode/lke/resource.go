@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -191,14 +192,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	poolSpecs := expandLinodeLKENodePoolSpecs(d.Get("pool").([]interface{}))
 	updates := ReconcileLKENodePoolSpecs(poolSpecs, pools)
 
-	updatedIds := []int{}
-
 	for poolID, updateOpts := range updates.ToUpdate {
 		if _, err := client.UpdateLKENodePool(ctx, id, poolID, updateOpts); err != nil {
 			return diag.Errorf("failed to update LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
 
-		updatedIds = append(updatedIds, poolID)
+		waitForNodePoolReady(ctx, &client, make(chan<- error), &sync.WaitGroup{}, int(updateLKETimeout), id, poolID)
 	}
 
 	for _, createOpts := range updates.ToCreate {
@@ -207,19 +206,13 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
 		}
 
-		updatedIds = append(updatedIds, pool.ID)
+		waitForNodePoolReady(ctx, &client, make(chan<- error), &sync.WaitGroup{}, int(updateLKETimeout), id, pool.ID)
 	}
 
 	for _, poolID := range updates.ToDelete {
 		if err := client.DeleteLKENodePool(ctx, id, poolID); err != nil {
 			return diag.Errorf("failed to delete LKE Cluster %d Pool %d: %s", id, poolID, err)
 		}
-	}
-
-	for _, id := range updatedIds {
-		client.WaitForLKEClusterConditions(ctx, id, linodego.LKEClusterPollOptions{
-			TimeoutSeconds: 10 * 60,
-		}, k8scondition.ClusterHasReadyNode)
 	}
 
 	return nil
