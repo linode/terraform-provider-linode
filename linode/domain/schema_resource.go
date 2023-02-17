@@ -42,7 +42,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"description": {
 		Type:         schema.TypeString,
 		Description:  "A description for this Domain. This is for display purposes only.",
-		ValidateFunc: validation.StringLenBetween(0, 255),
+		ValidateFunc: validation.StringLenBetween(0, 253),
 		Optional:     true,
 	},
 	"master_ips": {
