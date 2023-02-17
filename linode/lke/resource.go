@@ -221,7 +221,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	wg.Add(len(updatedIds))
 
 	for _, poolID := range updatedIds {
-		go waitForNodePoolReady(ctx, &client, make(chan<- error), &wg, providerMeta.Config.LKENodeReadyPollMilliseconds, id, poolID)
+		go waitForNodePoolReady(ctx, &client, make(chan<- error),
+			&wg, providerMeta.Config.LKENodeReadyPollMilliseconds, id, poolID)
 	}
 
 	wg.Wait()
