@@ -47,6 +47,10 @@ func TestAccDataSourceAccountLogins_filterByRestricted(t *testing.T) {
 	}
 
 	logins, err := client.ListLogins(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to list logins: %s", err)
+	}
+
 	randIndex := rand.Intn(len(logins))
 	login := logins[randIndex]
 
@@ -90,6 +94,10 @@ func TestAccDataSourceAccountLogins_filterByUsername(t *testing.T) {
 	}
 
 	logins, err := client.ListLogins(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to list logins: %s", err)
+	}
+
 	randIndex := rand.Intn(len(logins))
 	login := logins[randIndex]
 
@@ -133,6 +141,10 @@ func TestAccDataSourceAccountLogins_filterByIP(t *testing.T) {
 	}
 
 	logins, err := client.ListLogins(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to list logins: %s", err)
+	}
+
 	randIndex := rand.Intn(len(logins))
 	login := logins[randIndex]
 

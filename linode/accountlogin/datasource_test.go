@@ -23,6 +23,10 @@ func TestAccDataSourceLinodeAccountLogin_basic(t *testing.T) {
 	}
 
 	logins, err := client.ListLogins(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to list logins: %s", err)
+	}
+
 	login := logins[0]
 	accountID := login.ID
 
