@@ -96,7 +96,7 @@ resource "linode_instance" "foobar" {
 	type = "g6-nanode-1"
 	image = "linode/alpine3.15"
 	region = "%s"
-	root_pass = "terraform-test"
+	root_pass = "myr00tp@ssw0rd!!!"
 	swap_size = 256
 	backups_enabled = true
 }`, label, region)

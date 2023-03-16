@@ -26,7 +26,7 @@ resource "linode_instance" "foobar" {
         label = "boot"
         size = 3000
         image  = "{{.Image}}"
-        root_pass = "terr4form-test"
+        root_pass = "myr00tp@ssw0rd!!!"
     }
 
     boot_config_label = "config"
