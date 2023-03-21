@@ -19,7 +19,7 @@ resource "linode_instance_config" "foobar" {
   connection {
     host        = linode_instance.foobar.ip_address
     user        = "root"
-    password    = "myc00lpass!"
+    password    = "myr00tp@ssw0rd!!!"
   }
 
   provisioner "remote-exec" {
