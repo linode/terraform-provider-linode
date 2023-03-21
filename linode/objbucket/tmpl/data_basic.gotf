@@ -10,6 +10,7 @@ resource "linode_object_storage_bucket" "foobar" {
 data "linode_object_storage_bucket" "foobar" {
     cluster = "{{ .Cluster }}"
     label = "{{.Label}}"
+    id = linode_object_storage_bucket.foobar.id
 }
 
 {{ end }}
