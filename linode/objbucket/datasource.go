@@ -21,14 +21,8 @@ func DataSource() *schema.Resource {
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-
-	//	cluster, label, err := DecodeBucketID(d.Id())
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
-
-	// if err != nil {
-	// 	return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
-	// }
 
 	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
