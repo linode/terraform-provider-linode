@@ -14,9 +14,10 @@ var bucketDataSourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"hostname": {
-		Type:        schema.TypeString,
-		Description: "The hostname where this bucket can be accessed. This hostname can be accessed through a browser if the bucket is made public.",
-		Computed:    true,
+		Type: schema.TypeString,
+		Description: "The hostname where this bucket can be accessed." +
+			"This hostname can be accessed through a browser if the bucket is made public.",
+		Computed: true,
 	},
 	"id": {
 		Type:        schema.TypeString,
