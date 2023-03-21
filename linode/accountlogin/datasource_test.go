@@ -48,6 +48,7 @@ func TestAccDataSourceLinodeAccountLogin_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "username", login.Username),
 					resource.TestCheckResourceAttr(resourceName, "datetime", login.Datetime.Format(time.RFC3339)),
 					resource.TestCheckResourceAttr(resourceName, "restricted", strconv.FormatBool(login.Restricted)),
+					resource.TestCheckResourceAttr(resourceName, "status", login.Status),
 				),
 			},
 		},
