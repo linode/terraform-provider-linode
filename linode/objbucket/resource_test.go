@@ -400,7 +400,7 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 		CheckDestroy: checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, objectStorageBucketName, testCluster),
+				Config: tmpl.ClusterDataBasic(t, objectStorageBucketName, testCluster),
 				Check: resource.ComposeTestCheckFunc(
 					checkBucketExists,
 					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
