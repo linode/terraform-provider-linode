@@ -32,6 +32,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("ip", loginInfo.IP)
 	d.Set("restricted", loginInfo.Restricted)
 	d.Set("username", loginInfo.Username)
+	d.Set("status", loginInfo.Status)
 
 	d.SetId(strconv.Itoa(loginInfo.ID))
 	return nil

@@ -55,6 +55,7 @@ func flattenLogins(data interface{}) map[string]interface{} {
 	result["ip"] = t.IP
 	result["restricted"] = t.Restricted
 	result["username"] = t.Username
+	result["status"] = t.Status
 
 	return result
 }
