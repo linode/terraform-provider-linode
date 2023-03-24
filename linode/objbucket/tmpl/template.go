@@ -87,6 +87,14 @@ func LifeCycleUpdates(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
+func ClusterDataBasic(t *testing.T, label, cluster string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_cluster_data_basic", TemplateData{
+			Label:   label,
+			Cluster: cluster,
+		})
+}
+
 func DataBasic(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_data_basic", TemplateData{

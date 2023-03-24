@@ -193,6 +193,7 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer":           nb.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_nodebalancer_config":    nbconfig.DataSource(),
+			"linode_object_storage_bucket":  objbucket.DataSource(),
 			"linode_object_storage_cluster": objcluster.DataSource(),
 			"linode_profile":                profile.DataSource(),
 			"linode_region":                 region.DataSource(),

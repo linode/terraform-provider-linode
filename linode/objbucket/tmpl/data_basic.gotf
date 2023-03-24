@@ -1,12 +1,13 @@
 {{ define "object_bucket_data_basic" }}
 
-data "linode_object_storage_cluster" "baz" {
-    id = "{{ .Cluster }}"
+resource "linode_object_storage_bucket" "foobar" {
+    cluster = "{{ .Cluster }}"
+    label = "{{.Label}}"
 }
 
-resource "linode_object_storage_bucket" "foobar" {
-    cluster = data.linode_object_storage_cluster.baz.id
-    label = "{{.Label}}"
+data "linode_object_storage_bucket" "foobar" {
+    cluster = linode_object_storage_bucket.foobar.cluster
+    label = linode_object_storage_bucket.foobar.label
 }
 
 {{ end }}
