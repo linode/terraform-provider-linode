@@ -39,6 +39,8 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("created", bucket.Created.Format(time.RFC3339))
 	d.Set("hostname", bucket.Hostname)
 	d.Set("label", bucket.Label)
+	d.Set("objects", bucket.Objects)
+	d.Set("size", bucket.Size)
 
 	return nil
 }
