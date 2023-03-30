@@ -29,4 +29,14 @@ var bucketDataSourceSchema = map[string]*schema.Schema{
 		Description: "The name of this bucket.",
 		Required:    true,
 	},
+	"objects": {
+		Type:        schema.TypeInt,
+		Description: "The number of objects stored in this bucket.",
+		Computed:    true,
+	},
+	"size": {
+		Type:        schema.TypeInt,
+		Description: "The size of the bucket in bytes.",
+		Computed:    true,
+	},
 }

@@ -28,6 +28,8 @@ func TestAccDataSourceBucket_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "label", objectStorageBucketName),
 					resource.TestCheckResourceAttrSet(resourceName, "hostname"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
+					resource.TestCheckResourceAttrSet(resourceName, "objects"),
+					resource.TestCheckResourceAttrSet(resourceName, "size"),
 				),
 			},
 		},
