@@ -6,12 +6,14 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/token/tmpl"
 )
 
@@ -54,8 +56,26 @@ func TestAccResourceToken_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
 		CheckDestroy: checkTokenDestroy,
+		ProtoV5ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
+			"linode": func() (tfprotov5.ProviderServer, error) {
+				ctx := context.Background()
+				providers := []func() tfprotov5.ProviderServer{
+					acceptance.TestAccProviders["linode"].GRPCProvider,
+					providerserver.NewProtocol5(
+						acceptance.TestAccFrameworkProvider,
+					),
+				}
+
+				muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+
+				if err != nil {
+					return nil, err
+				}
+
+				return muxServer.ProviderServer(), nil
+			},
+		},
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, tokenName),
@@ -85,7 +105,7 @@ func TestAccResourceToken_basic(t *testing.T) {
 }
 
 func checkTokenExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_token" {
@@ -107,7 +127,7 @@ func checkTokenExists(s *terraform.State) error {
 }
 
 func checkTokenDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_token" {
 			continue

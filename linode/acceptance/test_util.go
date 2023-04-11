@@ -37,14 +37,15 @@ type AttrValidateFunc func(val string) error
 type ListAttrValidateFunc func(resourceName, path string, state *terraform.State) error
 
 var (
-	optInTests         map[string]struct{}
-	privateKeyMaterial string
-	PublicKeyMaterial  string
-	TestAccProviders   map[string]*schema.Provider
-	TestAccProvider    *schema.Provider
-	ConfigTemplates    *template.Template
-	TestImageLatest    string
-	TestImagePrevious  string
+	optInTests               map[string]struct{}
+	privateKeyMaterial       string
+	PublicKeyMaterial        string
+	TestAccProviders         map[string]*schema.Provider
+	TestAccProvider          *schema.Provider
+	TestAccFrameworkProvider *linode.FrameworkProvider
+	ConfigTemplates          *template.Template
+	TestImageLatest          string
+	TestImagePrevious        string
 )
 
 func initOptInTests() {
@@ -99,23 +100,27 @@ func init() {
 	initOptInTests()
 
 	TestAccProvider = linode.Provider()
+	TestAccFrameworkProvider = linode.CreateFrameworkProvider("dev").(*linode.FrameworkProvider)
 	TestAccProviders = map[string]*schema.Provider{
 		"linode": TestAccProvider,
 	}
 
 	var templateFiles []string
 
-	err = filepath.Walk("../", func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
+	err = filepath.Walk(
+		"../",
+		func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				return nil
+			}
+
+			if filepath.Ext(path) == ".gotf" {
+				templateFiles = append(templateFiles, path)
+			}
+
 			return nil
-		}
-
-		if filepath.Ext(path) == ".gotf" {
-			templateFiles = append(templateFiles, path)
-		}
-
-		return nil
-	})
+		},
+	)
 
 	if err != nil {
 		log.Fatalf("failed to load template files: %v", err)
