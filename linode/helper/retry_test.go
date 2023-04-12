@@ -2,10 +2,11 @@ package helper_test
 
 import (
 	"fmt"
-	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"testing"
 	"time"
+
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func TestRunWithStatusRetries_basic(t *testing.T) {
@@ -20,7 +21,6 @@ func TestRunWithStatusRetries_basic(t *testing.T) {
 
 		return nil
 	})
-
 	if err != nil {
 		t.Fatalf("got unexpected error: %s", err)
 	}
