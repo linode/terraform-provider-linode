@@ -125,9 +125,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to wait for mysql database creation event: %s", err)
 	}
 
-	if err := client.WaitForDatabaseStatus(
-		ctx, db.ID, linodego.DatabaseEngineTypePostgres,
-		linodego.DatabaseStatusActive, int(d.Timeout(schema.TimeoutCreate).Seconds())); err != nil {
+	err = helper.WaitForDatabaseStatusWithRetries(
+		ctx, client, db.ID, linodego.DatabaseEngineTypePostgres,
+		linodego.DatabaseStatusActive, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	if err != nil {
 		return diag.Errorf("failed to wait for database active: %s", err)
 	}
 

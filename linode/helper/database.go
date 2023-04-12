@@ -124,11 +124,22 @@ func WaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID in
 	}
 
 	// Sometimes the event has finished but the status hasn't caught up
-	err = client.WaitForDatabaseStatus(ctx, dbID, dbType,
+	err = WaitForDatabaseStatusWithRetries(ctx, client, dbID, dbType,
 		linodego.DatabaseStatusActive, timeoutSeconds)
 	if err != nil {
 		return fmt.Errorf("failed to wait for database active: %s", err)
 	}
 
 	return nil
+}
+
+// WaitForDatabaseStatusWithRetries waits for a database to reach a certain status
+// with tolerance for intermittent API errors.
+func WaitForDatabaseStatusWithRetries(
+	ctx context.Context, client linodego.Client, dbID int, dbEngine linodego.DatabaseEngineType,
+	status linodego.DatabaseStatus, timeoutSeconds int,
+) error {
+	return RunWithStatusRetries([]int{502}, 10, time.Second*5, func() error {
+		return client.WaitForDatabaseStatus(ctx, dbID, dbEngine, status, timeoutSeconds)
+	})
 }
