@@ -28,7 +28,7 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "memory", "4096"),
 					resource.TestCheckResourceAttr(resourceName, "vcpus", "2"),
 					resource.TestCheckResourceAttr(resourceName, "network_out", "4000"),
-					resource.TestCheckResourceAttr(resourceName, "price.0.hourly", "0.029999999329447746"),
+					resource.TestCheckResourceAttr(resourceName, "price.0.hourly", "0.035999998450279236"),
 					resource.TestCheckResourceAttr(resourceName, "price.0.monthly", "20"),
 					resource.TestCheckResourceAttr(resourceName, "addons.0.backups.0.price.0.hourly", "0.00800000037997961"),
 					resource.TestCheckResourceAttr(resourceName, "addons.0.backups.0.price.0.monthly", "5"),
