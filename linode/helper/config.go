@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/linode/linodego"
