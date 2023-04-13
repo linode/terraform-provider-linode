@@ -8,8 +8,6 @@ import (
 	"github.com/linode/linodego"
 )
 
-const defaultStatusRetryDelay = 5 * time.Second
-
 var ValidDatabaseTypes = []string{"mongodb", "postgresql", "mysql"}
 
 func ResolveValidDBEngine(

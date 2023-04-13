@@ -2,7 +2,6 @@ package helper
 
 import (
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"log"
 	"net/http"
 	"net/url"
@@ -10,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/go-resty/resty/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
