@@ -8,6 +8,8 @@ import (
 	"github.com/linode/linodego"
 )
 
+const defaultStatusRetryDelay = 5 * time.Second
+
 var ValidDatabaseTypes = []string{"mongodb", "postgresql", "mysql"}
 
 func ResolveValidDBEngine(
@@ -136,10 +138,15 @@ func WaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID in
 // WaitForDatabaseStatusWithRetries waits for a database to reach a certain status
 // with tolerance for intermittent API errors.
 func WaitForDatabaseStatusWithRetries(
-	ctx context.Context, client linodego.Client, dbID int, dbEngine linodego.DatabaseEngineType,
+	ctx context.Context, meta *ProviderMeta, dbID int, dbEngine linodego.DatabaseEngineType,
 	status linodego.DatabaseStatus, timeoutSeconds int,
 ) error {
-	return RunWithStatusRetries([]int{502}, 10, time.Second*5, func() error {
-		return client.WaitForDatabaseStatus(ctx, dbID, dbEngine, status, timeoutSeconds)
+	retryDelay := defaultStatusRetryDelay
+	if meta.Config.MinRetryDelayMilliseconds != 0 {
+		retryDelay = time.Duration(meta.Config.MinRetryDelayMilliseconds) * time.Millisecond
+	}
+
+	return RunWithStatusRetries([]int{502}, 10, retryDelay, func() error {
+		return meta.Client.WaitForDatabaseStatus(ctx, dbID, dbEngine, status, timeoutSeconds)
 	})
 }
