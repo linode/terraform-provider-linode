@@ -2,9 +2,12 @@ package helper
 
 import (
 	"fmt"
+	"github.com/go-resty/resty/v2"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -104,6 +107,22 @@ func (c *Config) Client() (*linodego.Client, error) {
 		userAgent = c.UAPrefix + " " + userAgent
 	}
 	client.SetUserAgent(userAgent)
+
+	// Workaround for intermittent 5xx errors when retrieving a database from the API
+	databaseGetRegex, err := regexp.Compile("[A-Za-z0-9]+/databases/[a-z]+/instances/[0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client.AddRetryCondition(func(response *resty.Response, err error) bool {
+		requestURL, err := url.ParseRequestURI(response.Request.URL)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Check whether the string matches
+		return databaseGetRegex.MatchString(requestURL.Path)
+	})
 
 	return &client, nil
 }
