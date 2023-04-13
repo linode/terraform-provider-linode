@@ -121,7 +121,8 @@ func (c *Config) Client() (*linodego.Client, error) {
 
 		requestURL, err := url.ParseRequestURI(response.Request.URL)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("[WARN] failed to parse request URL: %s", err)
+			return false
 		}
 
 		// Check whether the string matches
