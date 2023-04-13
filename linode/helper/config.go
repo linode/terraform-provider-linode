@@ -115,6 +115,10 @@ func (c *Config) Client() (*linodego.Client, error) {
 	}
 
 	client.AddRetryCondition(func(response *resty.Response, err error) bool {
+		if response.StatusCode() != 502 || response.Request == nil {
+			return false
+		}
+
 		requestURL, err := url.ParseRequestURI(response.Request.URL)
 		if err != nil {
 			log.Fatal(err)
