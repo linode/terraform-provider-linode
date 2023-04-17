@@ -10,8 +10,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/region/tmpl"
 )
 
-var testRegion string
-var testLabel string
+var (
+	testRegion string
+	testLabel  string
+)
 
 func init() {
 	region, err := acceptance.GetRandomRegionWithCaps([]string{"linodes"})
@@ -32,7 +34,6 @@ func init() {
 	}
 
 	testLabel = r.Label
-
 }
 
 func TestAccDataSourceRegion_basic(t *testing.T) {
