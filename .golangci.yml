@@ -47,6 +47,14 @@ linters:
     - wsl
     - interfacer
     - gomnd
+    
+    # deprecated linters
+    - deadcode
+    - structcheck
+    - varcheck
+    - golint
+    - nosnakecase
+    - maligned
 
     # TODO(charliekenney23): enable these rules once compliant
     - prealloc
