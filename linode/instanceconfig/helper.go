@@ -198,18 +198,12 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 	}
 
 	if booted {
-		if err := bootedTrue(); err != nil {
-			return err
-		}
-
-		return nil
+		err = bootedTrue()
+	} else {
+		err = bootedFalse()
 	}
 
-	if err := bootedFalse(); err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func expandInterfaces(ifaces []any) []linodego.InstanceConfigInterface {
