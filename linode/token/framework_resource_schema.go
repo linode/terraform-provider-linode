@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -36,7 +37,7 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.RequiresReplace(),
 			},
 			Validators: []validator.String{
-				NewDateTimeStringValidator(time.RFC3339),
+				helper.NewDateTimeStringValidator(time.RFC3339),
 			},
 		},
 		"created": schema.StringAttribute{
