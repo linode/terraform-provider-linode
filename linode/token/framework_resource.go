@@ -40,17 +40,8 @@ func (r *Resource) Configure(
 		return
 	}
 
-	meta, ok := req.ProviderData.(*helper.FrameworkProviderMeta)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf(
-				"Expected *http.Client, got: %T. Please report this issue to the provider developers.",
-				req.ProviderData,
-			),
-		)
-
+	meta := helper.GetMetaFromProviderData(req, resp)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
