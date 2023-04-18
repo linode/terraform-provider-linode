@@ -14,10 +14,11 @@ var filterConfig = helper.FilterConfig{
 	"type":       {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"vendor":     {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 
-	"created_by":  {TypeFunc: helper.FilterTypeString},
-	"id":          {TypeFunc: helper.FilterTypeString},
-	"status":      {TypeFunc: helper.FilterTypeString},
-	"description": {TypeFunc: helper.FilterTypeString},
+	"capabilities": {TypeFunc: helper.FilterTypeString},
+	"created_by":   {TypeFunc: helper.FilterTypeString},
+	"id":           {TypeFunc: helper.FilterTypeString},
+	"status":       {TypeFunc: helper.FilterTypeString},
+	"description":  {TypeFunc: helper.FilterTypeString},
 }
 
 var dataSourceSchema = map[string]*schema.Schema{

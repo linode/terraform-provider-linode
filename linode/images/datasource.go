@@ -53,6 +53,7 @@ func flattenImage(data interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	result["id"] = image.ID
+	result["capabilities"] = image.Capabilities
 	result["label"] = image.Label
 	result["description"] = image.Description
 	result["created_by"] = image.CreatedBy

@@ -8,6 +8,12 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The unique ID assigned to this Image.",
 		Required:    true,
 	},
+	"capabilities": {
+		Type:        schema.TypeList,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Description: "The capabilities of this Image.",
+		Computed:    true,
+	},
 	"label": {
 		Type:        schema.TypeString,
 		Description: "A short description of the Image. Labels cannot contain special characters.",

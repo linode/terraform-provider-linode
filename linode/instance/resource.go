@@ -96,6 +96,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("tags", instance.Tags)
 	d.Set("booted", isInstanceBooted(instance))
 	d.Set("host_uuid", instance.HostUUID)
+	d.Set("has_user_data", instance.HasUserData)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -178,6 +179,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		for i, ni := range interfaces {
 			createOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
 		}
+	}
+
+	if _, metadataOk := d.GetOk("metadata.0"); metadataOk {
+		var metadata linodego.InstanceMetadataOptions
+
+		if userData, userDataOk := d.GetOk("metadata.0.user_data"); userDataOk {
+			metadata.UserData = userData.(string)
+		}
+
+		createOpts.Metadata = &metadata
 	}
 
 	_, disksOk := d.GetOk("disk")

@@ -43,6 +43,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.deprecated"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.label", imageName),
 					resource.TestCheckResourceAttr(resourceName, "images.1.description", "descriptive text"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.is_public", "false"),
@@ -51,6 +52,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.deprecated"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities"),
 				),
 			},
 

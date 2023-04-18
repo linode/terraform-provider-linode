@@ -93,6 +93,7 @@ func TestAccImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "type", "manual"),
 					resource.TestCheckResourceAttr(resName, "is_public", "false"),
+					resource.TestCheckResourceAttr(resName, "capabilities.0", "cloud-init"),
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
 				),
 			},
@@ -123,6 +124,7 @@ func TestAccImage_update(t *testing.T) {
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
 					resource.TestCheckResourceAttr(resName, "description", "descriptive text"),
+					resource.TestCheckResourceAttrSet(resName, "capabilities"),
 				),
 			},
 			{

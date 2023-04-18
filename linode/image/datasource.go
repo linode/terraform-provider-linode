@@ -32,6 +32,7 @@ func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if image != nil {
 		d.SetId(image.ID)
+		d.Set("capabilities", image.Capabilities)
 		d.Set("label", image.Label)
 		d.Set("description", image.Description)
 		if image.Created != nil {
