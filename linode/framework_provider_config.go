@@ -80,40 +80,36 @@ func GetIntFromEnv(
 	diags *diag.Diagnostics,
 ) basetypes.Int64Value {
 	envVarVal := os.Getenv(key)
-
-	var result basetypes.Int64Value
 	if envVarVal == "" {
-		result = defaultValue
-	} else {
-		intVal, err := strconv.ParseInt(envVarVal, 10, 64)
-
-		if err != nil {
-			diags.AddWarning(
-				fmt.Sprintf(
-					"Failed to parse the environment variable %v "+
-						"to an integer. Will use default value: %v instead",
-					key,
-					defaultValue.ValueInt64(),
-				),
-				err.Error(),
-			)
-			result = defaultValue
-		} else {
-			result = types.Int64Value(intVal)
-		}
+		return defaultValue
 	}
-	return result
+
+	intVal, err := strconv.ParseInt(envVarVal, 10, 64)
+	if err != nil {
+		diags.AddWarning(
+			fmt.Sprintf(
+				"Failed to parse the environment variable %v "+
+					"to an integer. Will use default value: %v instead",
+				key,
+				defaultValue.ValueInt64(),
+			),
+			err.Error(),
+		)
+
+		return defaultValue
+	}
+
+	return types.Int64Value(intVal)
 }
 
 func GetStringFromEnv(key string, defaultValue basetypes.StringValue) basetypes.StringValue {
 	envVarVal := os.Getenv(key)
-	var result basetypes.StringValue
+
 	if envVarVal == "" {
-		result = defaultValue
-	} else {
-		result = types.StringValue(envVarVal)
+		return defaultValue
 	}
-	return result
+
+	return types.StringValue(envVarVal)
 }
 
 func (fp *FrameworkProvider) HandleDefaults(
