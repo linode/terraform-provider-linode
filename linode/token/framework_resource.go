@@ -211,8 +211,14 @@ func (r *Resource) Update(
 	updateOpts := token.GetUpdateOptions()
 	plannedTokenLabel := data.Label.ValueString()
 
+	resourceUpdated := false
+
 	if updateOpts.Label != plannedTokenLabel {
 		updateOpts.Label = plannedTokenLabel
+		resourceUpdated = true
+	}
+
+	if resourceUpdated {
 		token, err = client.UpdateToken(ctx, token.ID, updateOpts)
 
 		if err != nil {
