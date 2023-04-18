@@ -11,22 +11,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/provider"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func (p *FrameworkProvider) Configure(
+func (fp *FrameworkProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
 ) {
-	var data LinodeProviderModel
+	var data FrameworkProviderModel
 	var meta helper.FrameworkProviderMeta
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -34,31 +33,31 @@ func (p *FrameworkProvider) Configure(
 		return
 	}
 
-	p.HandleDefaults(&data, &resp.Diagnostics)
+	fp.HandleDefaults(&data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	p.InitProvider(&data, req.TerraformVersion, &resp.Diagnostics, &meta)
+	fp.InitProvider(&data, req.TerraformVersion, &resp.Diagnostics, &meta)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.ResourceData = &meta
 	resp.DataSourceData = &meta
-	p.Meta = &meta
+	fp.Meta = &meta
 }
 
 // We should replace this with an official validator if
 // HashiCorp decide to implement it in the future
 // feature request track:
 // https://github.com/hashicorp/terraform-plugin-framework-validators/issues/125
-func (p *FrameworkProvider) ValidateConfig(
+func (fp *FrameworkProvider) ValidateConfig(
 	ctx context.Context,
 	req provider.ValidateConfigRequest,
 	resp *provider.ValidateConfigResponse,
 ) {
-	var data LinodeProviderModel
+	var data FrameworkProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -80,7 +79,6 @@ func GetIntFromEnv(
 	defaultValue basetypes.Int64Value,
 	diags *diag.Diagnostics,
 ) basetypes.Int64Value {
-
 	envVarVal := os.Getenv(key)
 
 	var result basetypes.Int64Value
@@ -106,6 +104,7 @@ func GetIntFromEnv(
 	}
 	return result
 }
+
 func GetStringFromEnv(key string, defaultValue basetypes.StringValue) basetypes.StringValue {
 	envVarVal := os.Getenv(key)
 	var result basetypes.StringValue
@@ -118,7 +117,7 @@ func GetStringFromEnv(key string, defaultValue basetypes.StringValue) basetypes.
 }
 
 func (fp *FrameworkProvider) HandleDefaults(
-	lpm *LinodeProviderModel,
+	lpm *FrameworkProviderModel,
 	diags *diag.Diagnostics,
 ) {
 	if lpm.AccessToken.IsNull() {
@@ -173,7 +172,6 @@ func (fp *FrameworkProvider) HandleDefaults(
 	}
 
 	if lpm.EventPollMilliseconds.IsNull() {
-
 		lpm.EventPollMilliseconds = GetIntFromEnv(
 			"LINODE_EVENT_POLL_MS",
 			types.Int64Value(4000),
@@ -191,7 +189,7 @@ func (fp *FrameworkProvider) HandleDefaults(
 }
 
 func (fp *FrameworkProvider) InitProvider(
-	lpm *LinodeProviderModel,
+	lpm *FrameworkProviderModel,
 	tfVersion string,
 	diags *diag.Diagnostics,
 	meta *helper.FrameworkProviderMeta,
@@ -279,8 +277,14 @@ func (fp *FrameworkProvider) terraformUserAgent(
 	tfVersion string,
 	UAPrefix string,
 ) string {
-	userAgent := strings.TrimSpace(fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform-Plugin-SDK/terraform-plugin-framework terraform-provider-linode/%s",
-		tfVersion, fp.ProviderVersion))
+	userAgent := strings.TrimSpace(
+		fmt.Sprintf(
+			"HashiCorp Terraform/%s (+https://www.terraform.io) "+
+				"Terraform-Plugin-SDK/terraform-plugin-framework terraform-provider-linode/%s",
+			tfVersion,
+			fp.ProviderVersion,
+		),
+	)
 
 	if add := os.Getenv(uaEnvVar); add != "" {
 		add = strings.TrimSpace(add)

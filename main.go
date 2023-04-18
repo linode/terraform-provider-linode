@@ -29,7 +29,6 @@ func main() {
 	}
 
 	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
-
 	if err != nil {
 		log.Fatal(err)
 	}

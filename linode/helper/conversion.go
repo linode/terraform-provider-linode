@@ -2,8 +2,9 @@ package helper
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 func TypedSliceToAny[T any](obj []T) []any {
@@ -18,7 +19,6 @@ func TypedSliceToAny[T any](obj []T) []any {
 
 func StringToInt64(s string, diags diag.Diagnostics) int64 {
 	num, err := strconv.ParseInt(s, 10, 64)
-
 	if err != nil {
 		diags.AddError(
 			fmt.Sprintf("Invalid number string: %v", s),

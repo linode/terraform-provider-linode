@@ -8,7 +8,7 @@ const uaEnvVar = "TF_APPEND_USER_AGENT"
 
 const DefaultLinodeURL = "https://api.linode.com"
 
-type LinodeProviderModel struct {
+type FrameworkProviderModel struct {
 	AccessToken types.String `tfsdk:"token"`
 	APIURL      types.String `tfsdk:"url"`
 	APIVersion  types.String `tfsdk:"api_version"`

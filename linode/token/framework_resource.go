@@ -13,16 +13,15 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func NewTokenResource() resource.Resource {
-	return &TokenResource{}
+func NewResource() resource.Resource {
+	return &Resource{}
 }
 
-type TokenResource struct {
+type Resource struct {
 	client *linodego.Client
 }
 
-func (data *TokenResourceModel) parseToken(token *linodego.Token) {
-
+func (data *ResourceModel) parseToken(token *linodego.Token) {
 	data.Created = types.StringValue(token.Created.Format(time.RFC3339))
 	data.Expiry = types.StringValue(token.Expiry.Format(time.RFC3339))
 	data.Label = types.StringValue(token.Label)
@@ -31,7 +30,7 @@ func (data *TokenResourceModel) parseToken(token *linodego.Token) {
 	data.ID = types.StringValue(strconv.Itoa(token.ID))
 }
 
-func (r *TokenResource) Configure(
+func (r *Resource) Configure(
 	ctx context.Context,
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
@@ -58,9 +57,9 @@ func (r *TokenResource) Configure(
 	r.client = meta.Client
 }
 
-// TokenResourceModel describes the Terraform resource data model to match the
+// ResourceModel describes the Terraform resource data model to match the
 // resource schema.
-type TokenResourceModel struct {
+type ResourceModel struct {
 	Label   types.String `tfsdk:"label"`
 	Scopes  types.String `tfsdk:"scopes"`
 	Expiry  types.String `tfsdk:"expiry"`
@@ -69,7 +68,7 @@ type TokenResourceModel struct {
 	ID      types.String `tfsdk:"id"`
 }
 
-func (r *TokenResource) Metadata(
+func (r *Resource) Metadata(
 	ctx context.Context,
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
@@ -77,7 +76,7 @@ func (r *TokenResource) Metadata(
 	resp.TypeName = "linode_token"
 }
 
-func (r *TokenResource) Schema(
+func (r *Resource) Schema(
 	ctx context.Context,
 	req resource.SchemaRequest,
 	resp *resource.SchemaResponse,
@@ -85,7 +84,7 @@ func (r *TokenResource) Schema(
 	resp.Schema = frameworkResourceSchema
 }
 
-func (r *TokenResource) ImportState(
+func (r *Resource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
@@ -93,12 +92,12 @@ func (r *TokenResource) ImportState(
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *TokenResource) Create(
+func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data TokenResourceModel
+	var data ResourceModel
 	client := r.client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -139,14 +138,14 @@ func (r *TokenResource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *TokenResource) Read(
+func (r *Resource) Read(
 	ctx context.Context,
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
 	client := r.client
 
-	var data TokenResourceModel
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -170,29 +169,26 @@ func (r *TokenResource) Read(
 			)
 			resp.State.RemoveResource(ctx)
 			return
-		} else {
-			resp.Diagnostics.AddError(
-				"Unable to Refresh the Token",
-				fmt.Sprintf(
-					"Error finding the specified Linode Token: %s",
-					err.Error(),
-				),
-			)
-			return
 		}
-
+		resp.Diagnostics.AddError(
+			"Unable to Refresh the Token",
+			fmt.Sprintf(
+				"Error finding the specified Linode Token: %s",
+				err.Error(),
+			),
+		)
 	}
 
 	data.parseToken(token)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *TokenResource) Update(
+func (r *Resource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data TokenResourceModel
+	var data ResourceModel
 	var tokenIDString string
 	resp.Diagnostics.Append(
 		req.State.GetAttribute(ctx, path.Root("id"), &tokenIDString)...,
@@ -213,7 +209,6 @@ func (r *TokenResource) Update(
 
 	client := r.client
 	token, err := client.GetToken(ctx, tokenID)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to get the token with id %v", tokenID),
@@ -242,12 +237,12 @@ func (r *TokenResource) Update(
 	}
 }
 
-func (r *TokenResource) Delete(
+func (r *Resource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data TokenResourceModel
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -261,7 +256,6 @@ func (r *TokenResource) Delete(
 
 	client := r.client
 	err := client.DeleteToken(ctx, tokenID)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to delete the token with id %v", tokenID),

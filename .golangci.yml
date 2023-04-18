@@ -6,6 +6,11 @@ run:
   timeout: 2m
 
 linters-settings:
+  revive:
+    rules:
+      - name: unused-parameter
+        severity: warning
+        disabled: true
   errcheck:
     check-type-assertions: true
     check-blank: true
@@ -15,6 +20,7 @@ linters-settings:
 
     enable:
       - atomicalign
+      - fieldalignment
     enable-all: false
     disable:
       - shadow
@@ -25,8 +31,6 @@ linters-settings:
   #   min-complexity: 30
   # gocognit:
   #   min-complexity: 30
-  maligned:
-    suggest-new: true
   dupl:
     threshold: 100
 
@@ -47,6 +51,17 @@ linters:
     - wsl
     - interfacer
     - gomnd
+
+    # not compatible with upper stream design
+    - ireturn
+
+    # deprecated linters
+    - deadcode
+    - structcheck
+    - varcheck
+    - golint
+    - nosnakecase
+    - maligned
 
     # TODO(charliekenney23): enable these rules once compliant
     - prealloc

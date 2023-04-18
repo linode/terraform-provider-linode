@@ -3,24 +3,25 @@ package token
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatordiag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"time"
 )
 
-type dateTimeStringValidator struct {
+type DateTimeStringValidator struct {
 	Format string
 }
 
-func (dtv dateTimeStringValidator) Description(ctx context.Context) string {
+func (dtv DateTimeStringValidator) Description(ctx context.Context) string {
 	return dtv.MarkdownDescription(ctx)
 }
 
-func (dtv dateTimeStringValidator) MarkdownDescription(ctx context.Context) string {
+func (dtv DateTimeStringValidator) MarkdownDescription(ctx context.Context) string {
 	return fmt.Sprintf("value must meet ISO 8601 standard format, e.g., '%s'.", time.RFC3339)
 }
 
-func (dtv dateTimeStringValidator) ValidateString(
+func (dtv DateTimeStringValidator) ValidateString(
 	ctx context.Context,
 	request validator.StringRequest,
 	response *validator.StringResponse,
@@ -41,6 +42,6 @@ func (dtv dateTimeStringValidator) ValidateString(
 	}
 }
 
-func DateTimeStringValidator(format string) validator.String {
-	return dateTimeStringValidator{Format: format}
+func NewDateTimeStringValidator(format string) DateTimeStringValidator {
+	return DateTimeStringValidator{Format: format}
 }
