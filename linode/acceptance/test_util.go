@@ -24,6 +24,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/version"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -100,7 +101,7 @@ func init() {
 	initOptInTests()
 
 	TestAccProvider = linode.Provider()
-	TestAccFrameworkProvider = linode.CreateFrameworkProvider("dev").(*linode.FrameworkProvider)
+	TestAccFrameworkProvider = linode.CreateFrameworkProvider(version.ProviderVersion).(*linode.FrameworkProvider)
 	TestAccProviders = map[string]*schema.Provider{
 		"linode": TestAccProvider,
 	}
