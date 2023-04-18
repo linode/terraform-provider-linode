@@ -27,7 +27,7 @@ func (p *FrameworkProvider) Metadata(
 	req provider.MetadataRequest,
 	resp *provider.MetadataResponse,
 ) {
-	resp.TypeName = "Linode cloud"
+	resp.TypeName = "linodecloud"
 }
 
 func (p *FrameworkProvider) Schema(
