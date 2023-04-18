@@ -97,7 +97,7 @@ func updateResource(
 	}
 
 	if d.HasChange("label") {
-		objectStorageKey, err := client.GetObjectStorageKey(ctx, int(id))
+		_, err := client.GetObjectStorageKey(ctx, int(id))
 
 		updateOpts := linodego.ObjectStorageKeyUpdateOptions{
 			Label: d.Get("label").(string),
@@ -107,7 +107,8 @@ func updateResource(
 			return diag.Errorf("Error fetching data about the current Linode Object Storage Key: %s", err)
 		}
 
-		if objectStorageKey, err = client.UpdateObjectStorageKey(ctx, int(id), updateOpts); err != nil {
+		objectStorageKey, err := client.UpdateObjectStorageKey(ctx, int(id), updateOpts)
+		if err != nil {
 			return diag.FromErr(err)
 		}
 		d.Set("label", objectStorageKey.Label)
