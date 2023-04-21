@@ -94,7 +94,7 @@ func Provider() *schema.Provider {
 			"api_version": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
+				Description: "The version of Linode API.",
 			},
 
 			"skip_instance_ready_poll": {
