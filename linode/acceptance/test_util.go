@@ -566,7 +566,7 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 
 	regions, err := GetRegionsWithCaps(capabilities)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	if len(regions) < 1 {

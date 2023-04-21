@@ -3,12 +3,11 @@ package nbconfig_test
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/nbconfig/tmpl"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/nbconfig/tmpl"
 )
 
 func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
