@@ -13,7 +13,7 @@ func TestCreatingFrameworkProvider(t *testing.T) {
 	_ = linode.CreateFrameworkProvider("test")
 }
 
-func TestAccFrameworkProviderMeta_setModuleName(t *testing.T) {
+func TestAccFrameworkProvider_AlternativeEndpoint(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
