@@ -44,8 +44,8 @@ terraform {
 }
 
 provider "linode" {
-	url = "%s"
-	api_version = "%s"
+  url = "%s"
+  api_version = "%s"
 }
-`, url, apiVersion)
+`, url, apiVersion) //lintignore:AT004
 }
