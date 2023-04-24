@@ -58,7 +58,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
-	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
@@ -95,7 +94,7 @@ func Provider() *schema.Provider {
 			"api_version": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
+				Description: "The version of Linode API.",
 			},
 
 			"skip_instance_ready_poll": {
@@ -215,7 +214,6 @@ func Provider() *schema.Provider {
 			"linode_rdns":                     rdns.Resource(),
 			"linode_sshkey":                   sshkey.Resource(),
 			"linode_stackscript":              stackscript.Resource(),
-			"linode_token":                    token.Resource(),
 			"linode_user":                     user.Resource(),
 			"linode_volume":                   volume.Resource(),
 		},
