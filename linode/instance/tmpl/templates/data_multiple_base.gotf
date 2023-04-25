@@ -8,7 +8,7 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     image = "{{.Image}}"
     region = "{{ .Region }}"
-    root_pass = "terraform-test"
+    root_pass = "myr00tp@ssw0rd!!!"
 }
 
 {{ end }}

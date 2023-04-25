@@ -1,0 +1,5 @@
+{{ define "regions_data_basic" }}
+
+data "linode_regions" "foobar" {}
+
+{{ end }}

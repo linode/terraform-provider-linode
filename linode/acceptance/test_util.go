@@ -24,6 +24,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/version"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -34,15 +35,18 @@ const (
 
 type AttrValidateFunc func(val string) error
 
+type ListAttrValidateFunc func(resourceName, path string, state *terraform.State) error
+
 var (
-	optInTests         map[string]struct{}
-	privateKeyMaterial string
-	PublicKeyMaterial  string
-	TestAccProviders   map[string]*schema.Provider
-	TestAccProvider    *schema.Provider
-	ConfigTemplates    *template.Template
-	TestImageLatest    string
-	TestImagePrevious  string
+	optInTests               map[string]struct{}
+	privateKeyMaterial       string
+	PublicKeyMaterial        string
+	TestAccProviders         map[string]*schema.Provider
+	TestAccProvider          *schema.Provider
+	TestAccFrameworkProvider *linode.FrameworkProvider
+	ConfigTemplates          *template.Template
+	TestImageLatest          string
+	TestImagePrevious        string
 )
 
 func initOptInTests() {
@@ -97,23 +101,27 @@ func init() {
 	initOptInTests()
 
 	TestAccProvider = linode.Provider()
+	TestAccFrameworkProvider = linode.CreateFrameworkProvider(version.ProviderVersion).(*linode.FrameworkProvider)
 	TestAccProviders = map[string]*schema.Provider{
 		"linode": TestAccProvider,
 	}
 
 	var templateFiles []string
 
-	err = filepath.Walk("../", func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
+	err = filepath.Walk(
+		"../",
+		func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				return nil
+			}
+
+			if filepath.Ext(path) == ".gotf" {
+				templateFiles = append(templateFiles, path)
+			}
+
 			return nil
-		}
-
-		if filepath.Ext(path) == ".gotf" {
-			templateFiles = append(templateFiles, path)
-		}
-
-		return nil
-	})
+		},
+	)
 
 	if err != nil {
 		log.Fatalf("failed to load template files: %v", err)
@@ -254,6 +262,51 @@ func CheckResourceAttrNotEqual(resName string, path, notValue string) resource.T
 			return fmt.Errorf("attribute %s does not exist", path)
 		} else if value == notValue {
 			return fmt.Errorf("attribute was equal")
+		}
+
+		return nil
+	}
+}
+
+func CheckResourceAttrListContains(resName, path, desiredValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		length, err := strconv.Atoi(rs.Primary.Attributes[path+".#"])
+		if err != nil {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		for i := 0; i < length; i++ {
+			if rs.Primary.Attributes[path+"."+strconv.Itoa(i)] == desiredValue {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("Desired value not found in resource attribute")
+	}
+}
+
+func LoopThroughStringList(resName, path string, listValidateFunc ListAttrValidateFunc) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		length, err := strconv.Atoi(rs.Primary.Attributes[path+".#"])
+		if err != nil {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		for i := 0; i < length; i++ {
+			err := listValidateFunc(resName, path+"."+strconv.Itoa(i), s)
+			if err != nil {
+				return fmt.Errorf("Value not found:%s", err)
+			}
 		}
 
 		return nil
@@ -513,7 +566,7 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 
 	regions, err := GetRegionsWithCaps(capabilities)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	if len(regions) < 1 {

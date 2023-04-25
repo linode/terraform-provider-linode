@@ -6,11 +6,10 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/helper"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/networkingip/tmpl"
 )
 

@@ -28,4 +28,9 @@ var dataSourceSchema = map[string]*schema.Schema{
 		Description: "The username of the User that was logged into.",
 		Computed:    true,
 	},
+	"status": {
+		Type:        schema.TypeString,
+		Description: "Whether the login attempt succeeded or failed.",
+		Computed:    true,
+	},
 }

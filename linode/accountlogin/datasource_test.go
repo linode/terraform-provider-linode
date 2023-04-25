@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccDataSourceLinodeAccountLogin_basic(t *testing.T) {
+	acceptance.OptInTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_account_login.foobar"
@@ -23,6 +24,10 @@ func TestAccDataSourceLinodeAccountLogin_basic(t *testing.T) {
 	}
 
 	logins, err := client.ListLogins(context.TODO(), nil)
+	if err != nil {
+		t.Fatalf("Failed to list logins: %s", err)
+	}
+
 	login := logins[0]
 	accountID := login.ID
 
@@ -43,6 +48,7 @@ func TestAccDataSourceLinodeAccountLogin_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "username", login.Username),
 					resource.TestCheckResourceAttr(resourceName, "datetime", login.Datetime.Format(time.RFC3339)),
 					resource.TestCheckResourceAttr(resourceName, "restricted", strconv.FormatBool(login.Restricted)),
+					resource.TestCheckResourceAttr(resourceName, "status", login.Status),
 				),
 			},
 		},

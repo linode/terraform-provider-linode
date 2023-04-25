@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/token/tmpl"
 )
 
@@ -53,9 +52,9 @@ func TestAccResourceToken_basic(t *testing.T) {
 	tokenName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkTokenDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		CheckDestroy:             checkTokenDestroy,
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, tokenName),
@@ -85,7 +84,7 @@ func TestAccResourceToken_basic(t *testing.T) {
 }
 
 func checkTokenExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_token" {
@@ -107,7 +106,7 @@ func checkTokenExists(s *terraform.State) error {
 }
 
 func checkTokenDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_token" {
 			continue

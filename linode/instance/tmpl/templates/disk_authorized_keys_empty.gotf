@@ -10,7 +10,7 @@ resource "linode_instance" "foobar" {
         size = 4096
         image = "{{.Image}}"
         authorized_keys = [""]
-        root_pass = "myc00lp@ss!"
+        root_pass = "myr00tp@ssw0rd!!!"
     }
 }
 

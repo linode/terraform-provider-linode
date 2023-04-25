@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/linode/linodego"
@@ -18,6 +21,10 @@ const uaEnvVar = "TF_APPEND_USER_AGENT"
 
 // DefaultLinodeURL is the Linode APIv4 URL to use.
 const DefaultLinodeURL = "https://api.linode.com"
+
+type FrameworkProviderMeta struct {
+	Client *linodego.Client
+}
 
 type ProviderMeta struct {
 	Client linodego.Client
@@ -104,6 +111,27 @@ func (c *Config) Client() (*linodego.Client, error) {
 		userAgent = c.UAPrefix + " " + userAgent
 	}
 	client.SetUserAgent(userAgent)
+
+	// Workaround for intermittent 5xx errors when retrieving a database from the API
+	databaseGetRegex, err := regexp.Compile("[A-Za-z0-9]+/databases/[a-z]+/instances/[0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client.AddRetryCondition(func(response *resty.Response, err error) bool {
+		if response.StatusCode() != 502 || response.Request == nil {
+			return false
+		}
+
+		requestURL, err := url.ParseRequestURI(response.Request.URL)
+		if err != nil {
+			log.Printf("[WARN] failed to parse request URL: %s", err)
+			return false
+		}
+
+		// Check whether the string matches
+		return databaseGetRegex.MatchString(requestURL.Path)
+	})
 
 	return &client, nil
 }

@@ -12,7 +12,7 @@ resource "linode_instance_disk" "foobar" {
   size = {{ .Size }}
 
   image = "linode/alpine3.15"
-  root_pass = "r00tp@ss!"
+  root_pass = "myr00tp@ssw0rd!!!"
 }
 
 resource "linode_instance_config" "cfg" {

@@ -8,7 +8,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@8af60513daf46d35533e7d765d4553d223d810e0 # pin@main
+      - uses: actions/stale@v5
         id: stale
         with:
           stale-issue-message: 'This issue is stale because it has been open 30 days with

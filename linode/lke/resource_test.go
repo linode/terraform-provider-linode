@@ -307,6 +307,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 				),
 			},
 			{
@@ -317,6 +318,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.2.count", "2"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.3.count", "2"),
+					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 				),
 			},
 			{
@@ -325,6 +327,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 				),
 			},
 		},
@@ -394,6 +397,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 				),
 			},
 			{
@@ -405,6 +409,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "5"),
+					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 				),
 			},
 			{
@@ -416,6 +421,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
+					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 				),
 			},
 			{
@@ -431,6 +437,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.min", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.max", "8"),
+					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 				),
 			},
 			{

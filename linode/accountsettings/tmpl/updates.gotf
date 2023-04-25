@@ -1,0 +1,9 @@
+{{ define "account_settings_updates" }}
+
+resource "linode_account_settings" "foobar" {
+    longview_subscription = "{{ .LongviewSubscription }}"
+    backups_enabled = "{{ .BackupsEnabled }}"
+    network_helper = "{{ .NetworkHelper }}"
+}
+
+{{ end }}

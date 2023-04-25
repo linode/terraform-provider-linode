@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
+	"github.com/linode/terraform-provider-linode/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
@@ -52,10 +54,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/profile"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
+	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
-	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
@@ -68,64 +70,48 @@ func Provider() *schema.Provider {
 			"token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_TOKEN", nil),
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": {
 				Type:     schema.TypeString,
 				Optional: true,
-				DefaultFunc: func() (interface{}, error) {
-					homeDir, err := os.UserHomeDir()
-					if err != nil {
-						return "", err
-					}
-
-					return fmt.Sprintf("%s/.config/linode", homeDir), nil
-				},
 			},
 			"config_profile": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "default",
 			},
 			"url": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("LINODE_URL", nil),
 				Description:  "The HTTP(S) API address of the Linode API to use.",
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 			"ua_prefix": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_UA_PREFIX", nil),
 				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
 			},
 			"api_version": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_API_VERSION", nil),
-				Description: "An HTTP User-Agent Prefix to prepend in API requests.",
+				Description: "The version of Linode API.",
 			},
 
 			"skip_instance_ready_poll": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "Skip waiting for a linode_instance resource to be running.",
 			},
 
 			"skip_instance_delete_poll": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
 
 			"disable_internal_cache": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "Disable the internal caching system that backs certain Linode API requests.",
 			},
 
@@ -142,20 +128,17 @@ func Provider() *schema.Provider {
 			"event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LINODE_EVENT_POLL_MS", 4000),
 				Description: "The rate in milliseconds to poll for events.",
 			},
 			"lke_event_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     3000,
 				Description: "The rate in milliseconds to poll for LKE events.",
 			},
 
 			"lke_node_ready_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     3000,
 				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
 			},
 		},
@@ -164,6 +147,7 @@ func Provider() *schema.Provider {
 			"linode_account":                account.DataSource(),
 			"linode_account_login":          accountlogin.DataSource(),
 			"linode_account_logins":         accountlogins.DataSource(),
+			"linode_account_settings":       accountsettings.DataSource(),
 			"linode_database_backups":       databasebackups.DataSource(),
 			"linode_database_engines":       databaseengines.DataSource(),
 			"linode_database_mongodb":       databasemongodb.DataSource(),
@@ -190,9 +174,11 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer":           nb.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_nodebalancer_config":    nbconfig.DataSource(),
+			"linode_object_storage_bucket":  objbucket.DataSource(),
 			"linode_object_storage_cluster": objcluster.DataSource(),
 			"linode_profile":                profile.DataSource(),
 			"linode_region":                 region.DataSource(),
+			"linode_regions":                regions.DataSource(),
 			"linode_sshkey":                 sshkey.DataSource(),
 			"linode_stackscript":            stackscript.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
@@ -202,6 +188,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"linode_account_settings":         accountsettings.Resource(),
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
 			"linode_database_mongodb":         databasemongodb.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
@@ -227,7 +214,6 @@ func Provider() *schema.Provider {
 			"linode_rdns":                     rdns.Resource(),
 			"linode_sshkey":                   sshkey.Resource(),
 			"linode_stackscript":              stackscript.Resource(),
-			"linode_token":                    token.Resource(),
 			"linode_user":                     user.Resource(),
 			"linode_volume":                   volume.Resource(),
 		},
@@ -245,18 +231,79 @@ func Provider() *schema.Provider {
 	return provider
 }
 
+func handleDefault(config *helper.Config, d *schema.ResourceData) diag.Diagnostics {
+	if v, ok := d.GetOk("token"); ok {
+		config.AccessToken = v.(string)
+	} else {
+		config.AccessToken = os.Getenv("LINODE_TOKEN")
+	}
+
+	if v, ok := d.GetOk("api_version"); ok {
+		config.APIVersion = v.(string)
+	} else {
+		config.APIVersion = os.Getenv("LINODE_API_VERSION")
+	}
+
+	if v, ok := d.GetOk("config_path"); ok {
+		config.ConfigPath = v.(string)
+	} else {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return diag.Errorf(
+				"Failed to get user home directory: %s",
+				err.Error(),
+			)
+		}
+		config.ConfigPath = fmt.Sprintf("%s/.config/linode", homeDir)
+	}
+
+	if v, ok := d.GetOk("config_profile"); ok {
+		config.ConfigProfile = v.(string)
+	} else {
+		config.ConfigProfile = "default"
+	}
+
+	if v, ok := d.GetOk("url"); ok {
+		config.APIURL = v.(string)
+	} else {
+		config.APIURL = os.Getenv("LINODE_URL")
+	}
+
+	if v, ok := d.GetOk("ua_prefix"); ok {
+		config.UAPrefix = v.(string)
+	} else {
+		config.UAPrefix = os.Getenv("LINODE_UA_PREFIX")
+	}
+
+	if v, ok := d.GetOk("event_poll_ms"); ok {
+		config.EventPollMilliseconds = v.(int)
+	} else {
+		eventPollMs, err := strconv.ParseInt(os.Getenv("LINODE_EVENT_POLL_MS"), 10, 64)
+		if err != nil {
+			eventPollMs = 4000
+		}
+		config.EventPollMilliseconds = int(eventPollMs)
+	}
+
+	if v, ok := d.GetOk("lke_event_poll_ms"); ok {
+		config.LKEEventPollMilliseconds = v.(int)
+	} else {
+		config.LKEEventPollMilliseconds = 3000
+	}
+
+	if v, ok := d.GetOk("lke_node_ready_poll_ms"); ok {
+		config.LKENodeReadyPollMilliseconds = v.(int)
+	} else {
+		config.LKENodeReadyPollMilliseconds = 3000
+	}
+
+	return nil
+}
+
 func providerConfigure(
 	ctx context.Context, d *schema.ResourceData, terraformVersion string,
 ) (interface{}, diag.Diagnostics) {
 	config := &helper.Config{
-		AccessToken: d.Get("token").(string),
-		APIURL:      d.Get("url").(string),
-		APIVersion:  d.Get("api_version").(string),
-		UAPrefix:    d.Get("ua_prefix").(string),
-
-		ConfigPath:    d.Get("config_path").(string),
-		ConfigProfile: d.Get("config_profile").(string),
-
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
 
@@ -264,12 +311,10 @@ func providerConfigure(
 
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
-
-		EventPollMilliseconds:    d.Get("event_poll_ms").(int),
-		LKEEventPollMilliseconds: d.Get("lke_event_poll_ms").(int),
-
-		LKENodeReadyPollMilliseconds: d.Get("lke_node_ready_poll_ms").(int),
 	}
+
+	handleDefault(config, d)
+
 	config.TerraformVersion = terraformVersion
 	client, err := config.Client()
 	if err != nil {

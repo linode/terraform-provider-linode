@@ -132,7 +132,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		updateOpts.Tags = &tags
 
-		if nodebalancer, err = client.UpdateNodeBalancer(ctx, nodebalancer.ID, updateOpts); err != nil {
+		if _, err = client.UpdateNodeBalancer(ctx, nodebalancer.ID, updateOpts); err != nil {
 			return diag.FromErr(err)
 		}
 	}

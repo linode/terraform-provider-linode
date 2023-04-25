@@ -133,7 +133,12 @@ func createResourceFromUpload(
 	if err != nil {
 		return diag.Errorf("failed to get image source: %v", err)
 	}
-	defer imageReader.Close()
+
+	defer func() {
+		if err := imageReader.Close(); err != nil {
+			log.Printf("[WARN] Failed to close image reader: %s\n", err)
+		}
+	}()
 
 	createOpts := linodego.ImageCreateUploadOptions{
 		Region:      region,

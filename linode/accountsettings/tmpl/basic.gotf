@@ -1,0 +1,5 @@
+{{ define "account_settings_basic" }}
+
+resource "linode_account_settings" "foobar" {}
+
+{{ end }}

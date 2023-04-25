@@ -10,6 +10,7 @@ var filterConfig = helper.FilterConfig{
 	"ip":         {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 	"restricted": {APIFilterable: false, TypeFunc: helper.FilterTypeBool},
 	"username":   {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"status":     {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 }
 
 var dataSourceSchema = map[string]*schema.Schema{
