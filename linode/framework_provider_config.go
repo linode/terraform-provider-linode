@@ -140,7 +140,7 @@ func (fp *FrameworkProvider) HandleDefaults(
 	if lpm.APIURL.IsNull() {
 		lpm.APIURL = GetStringFromEnv(
 			"LINODE_URL",
-			types.StringValue("https://api.linode.com"),
+			types.StringValue(DefaultLinodeURL),
 		)
 	}
 
@@ -219,8 +219,6 @@ func (fp *FrameworkProvider) InitProvider(
 	// LKENodeReadyPollMilliseconds := lpm.LKEEventPollMilliseconds.ValueInt64()
 
 	client := linodego.NewClient(oauth2Client)
-
-	client.SetBaseURL(DefaultLinodeURL)
 
 	// Load the config file if it exists
 	if _, err := os.Stat(configPath); err == nil {
