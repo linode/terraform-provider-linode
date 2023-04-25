@@ -26,7 +26,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.18
+          go-version: 1.19
       - name: Import GPG key
         id: import_gpg
         uses: paultyng/ghaction-import-gpg@53deb67fe3b05af114ad9488a4da7b782455d588 # pin@v2.1.0
