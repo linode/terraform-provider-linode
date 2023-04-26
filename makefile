@@ -14,7 +14,7 @@ tooldeps:
 	go generate -tags tools tools/tools.go
 
 lint: fmtcheck
-	golangci-lint run
+	golangci-lint run --timeout 15m0s
 	tfproviderlint \
 		-AT001=false \
 		-S006=false \
