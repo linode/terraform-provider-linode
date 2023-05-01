@@ -168,6 +168,7 @@ func (r *Resource) Read(
 				err.Error(),
 			),
 		)
+		return
 	}
 
 	data.parseToken(token)

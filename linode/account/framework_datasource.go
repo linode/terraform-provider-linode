@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func NewDatasource() datasource.DataSource {
@@ -30,10 +31,27 @@ func (data *DatasourceModel) parseAccount(account *linodego.Account) {
 	data.Country = types.StringValue(account.Country)
 	data.Zip = types.StringValue(account.Zip)
 	data.Balance = types.Float64Value(float64(account.Balance))
+	data.ID = types.StringValue(account.Email)
 }
 
-// ResourceModel describes the Terraform resource data model to match the
-// resource schema.
+func (d *Datasource) Configure(
+	ctx context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
+	// Prevent panic if the provider has not been configured.
+	if req.ProviderData == nil {
+		return
+	}
+
+	meta := helper.GetMetaFromProviderDataDatasource(req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	d.client = meta.Client
+}
+
 type DatasourceModel struct {
 	Email     types.String  `tfsdk:"email"`
 	FirstName types.String  `tfsdk:"first_name"`
@@ -47,6 +65,7 @@ type DatasourceModel struct {
 	Country   types.String  `tfsdk:"country"`
 	Zip       types.String  `tfsdk:"zip"`
 	Balance   types.Float64 `tfsdk:"balance"`
+	ID        types.String  `tfsdk:"id"`
 }
 
 func (d *Datasource) Metadata(
@@ -83,6 +102,7 @@ func (d *Datasource) Read(
 				err.Error(),
 			),
 		)
+		return
 	}
 
 	data.parseAccount(account)

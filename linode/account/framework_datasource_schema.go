@@ -57,5 +57,9 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "This Account's balance, in US dollars.",
 			Computed:    true,
 		},
+		"id": schema.StringAttribute{
+			Description: "The Email of the Account.",
+			Computed:    true,
+		},
 	},
 }
