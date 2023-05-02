@@ -64,7 +64,8 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"user_defined_fields": schema.ListAttribute{
-			Description: "This is a list of fields defined with a special syntax inside this StackScript that allow for supplying customized parameters during deployment.",
+			Description: "This is a list of fields defined with a special syntax inside this " +
+				"StackScript that allow for supplying customized parameters during deployment.",
 			Computed:    true,
 			ElementType: udfObjectType,
 		},
