@@ -10,15 +10,15 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func NewDatasource() datasource.DataSource {
-	return &Datasource{}
+func NewDataSource() datasource.DataSource {
+	return &DataSource{}
 }
 
-type Datasource struct {
+type DataSource struct {
 	client *linodego.Client
 }
 
-func (data *DatasourceModel) parseAccount(account *linodego.Account) {
+func (data *DataSourceModel) parseAccount(account *linodego.Account) {
 	data.Email = types.StringValue(account.Email)
 	data.FirstName = types.StringValue(account.FirstName)
 	data.LastName = types.StringValue(account.LastName)
@@ -34,7 +34,7 @@ func (data *DatasourceModel) parseAccount(account *linodego.Account) {
 	data.ID = types.StringValue(account.Email)
 }
 
-func (d *Datasource) Configure(
+func (d *DataSource) Configure(
 	ctx context.Context,
 	req datasource.ConfigureRequest,
 	resp *datasource.ConfigureResponse,
@@ -52,7 +52,7 @@ func (d *Datasource) Configure(
 	d.client = meta.Client
 }
 
-type DatasourceModel struct {
+type DataSourceModel struct {
 	Email     types.String  `tfsdk:"email"`
 	FirstName types.String  `tfsdk:"first_name"`
 	LastName  types.String  `tfsdk:"last_name"`
@@ -68,7 +68,7 @@ type DatasourceModel struct {
 	ID        types.String  `tfsdk:"id"`
 }
 
-func (d *Datasource) Metadata(
+func (d *DataSource) Metadata(
 	ctx context.Context,
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
@@ -76,7 +76,7 @@ func (d *Datasource) Metadata(
 	resp.TypeName = "linode_account"
 }
 
-func (d *Datasource) Schema(
+func (d *DataSource) Schema(
 	ctx context.Context,
 	req datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
@@ -84,14 +84,14 @@ func (d *Datasource) Schema(
 	resp.Schema = frameworkDatasourceSchema
 }
 
-func (d *Datasource) Read(
+func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	client := d.client
 
-	var data DatasourceModel
+	var data DataSourceModel
 
 	account, err := client.GetAccount(ctx)
 	if err != nil {
