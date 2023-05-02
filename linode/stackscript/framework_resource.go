@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
@@ -76,8 +75,8 @@ func (r *Resource) Create(
 
 	var images []string
 
-	if err := data.Images.ElementsAs(ctx, &images, false); err != nil {
-		resp.Diagnostics.Append(err...)
+	resp.Diagnostics.Append(data.Images.ElementsAs(ctx, &images, false)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -99,8 +98,8 @@ func (r *Resource) Create(
 		return
 	}
 
-	if err := data.parseStackScript(ctx, stackscript); err != nil {
-		resp.Diagnostics.Append(err...)
+	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -149,8 +148,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	if err := data.parseStackScript(ctx, stackscript); err != nil {
-		resp.Diagnostics.Append(err...)
+	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -188,7 +187,7 @@ func (r *Resource) Update(
 
 	// Apply the change if necessary
 	if !isUnchanged {
-		resp.Diagnostics.Append(r.updateStackScript(ctx, resp, plan, stackScriptID)...)
+		r.updateStackScript(ctx, resp, plan, stackScriptID)
 	}
 }
 
@@ -225,7 +224,7 @@ func (r *Resource) updateStackScript(
 	resp *resource.UpdateResponse,
 	plan StackScriptModel,
 	stackScriptID int,
-) diag.Diagnostics {
+) {
 	client := r.client
 
 	updateOpts := linodego.StackscriptUpdateOptions{
@@ -237,23 +236,24 @@ func (r *Resource) updateStackScript(
 	}
 
 	// Special handling for images
-	if err := plan.Images.ElementsAs(ctx, &updateOpts.Images, false); err != nil {
-		return err
+	resp.Diagnostics.Append(plan.Images.ElementsAs(ctx, &updateOpts.Images, false)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	stackScript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
 	if err != nil {
-		return diag.Diagnostics{
-			diag.NewErrorDiagnostic(
-				fmt.Sprintf("Failed to update the StackScript with id %v", stackScriptID),
-				err.Error(),
-			),
-		}
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to update the StackScript with id %v", stackScriptID),
+			err.Error(),
+		)
+		return
 	}
 
-	if err := plan.parseStackScript(ctx, stackScript); err != nil {
-		return err
+	resp.Diagnostics.Append(plan.parseStackScript(ctx, stackScript)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	return resp.State.Set(ctx, &plan)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

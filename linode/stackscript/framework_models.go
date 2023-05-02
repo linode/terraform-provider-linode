@@ -52,7 +52,6 @@ func (data *StackScriptModel) parseStackScript(ctx context.Context, stackscript 
 	data.Created = types.StringValue(stackscript.Created.Format(time.RFC3339))
 	data.Updated = types.StringValue(stackscript.Updated.Format(time.RFC3339))
 
-	//
 	if stackscript.UserDefinedFields != nil {
 		udf, err := flattenUserDefinedFields(*stackscript.UserDefinedFields)
 		if err != nil {

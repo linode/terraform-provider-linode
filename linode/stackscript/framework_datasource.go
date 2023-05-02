@@ -82,8 +82,8 @@ func (r *DataSource) Read(
 		return
 	}
 
-	if err := data.parseStackScript(ctx, stackscript); err != nil {
-		resp.Diagnostics.Append(err...)
+	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
