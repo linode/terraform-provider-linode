@@ -180,48 +180,32 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data ResourceModel
-	var tokenIDString string
-	resp.Diagnostics.Append(
-		req.State.GetAttribute(ctx, path.Root("id"), &tokenIDString)...,
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	var state ResourceModel
+	var plan ResourceModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
-	tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	client := r.client
-	token, err := client.GetToken(ctx, tokenID)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get the token with id %v", tokenID),
-			err.Error(),
-		)
-		return
-	}
-
-	updateOpts := token.GetUpdateOptions()
-	plannedTokenLabel := data.Label.ValueString()
-
-	resourceUpdated := false
-
-	if updateOpts.Label != plannedTokenLabel {
-		updateOpts.Label = plannedTokenLabel
-		resourceUpdated = true
-	}
+	resourceUpdated := !state.Label.Equal(plan.Label)
 
 	if resourceUpdated {
-		token, err = client.UpdateToken(ctx, token.ID, updateOpts)
+		tokenIDString := state.ID.ValueString()
+		tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
 
+		client := r.client
+		token, err := client.GetToken(ctx, tokenID)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to get the token with id %v", tokenID),
+				err.Error(),
+			)
+			return
+		}
+
+		updateOpts := token.GetUpdateOptions()
+		updateOpts.Label = plan.Label.ValueString()
+
+		token, err = client.UpdateToken(ctx, token.ID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update the token with id %v", tokenID),
@@ -230,8 +214,8 @@ func (r *Resource) Update(
 			return
 		}
 
-		data.parseToken(token)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		state.parseToken(token)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	}
 }
 
