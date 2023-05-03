@@ -2,7 +2,6 @@ package account
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -96,11 +95,7 @@ func (d *DataSource) Read(
 	account, err := client.GetAccount(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get Account",
-			fmt.Sprintf(
-				"Error finding Linode Account: %s",
-				err.Error(),
-			),
+			"Unable to get Account: %s", err.Error(),
 		)
 		return
 	}
