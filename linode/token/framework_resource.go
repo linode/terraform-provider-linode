@@ -40,7 +40,7 @@ func (r *Resource) Configure(
 		return
 	}
 
-	meta := helper.GetMetaFromProviderData(req, resp)
+	meta := helper.GetResourceMeta(req, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}

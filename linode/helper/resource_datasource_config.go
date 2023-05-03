@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-func GetMetaFromProviderData(
+func GetResourceMeta(
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
 ) *FrameworkProviderMeta {
@@ -27,7 +27,7 @@ func GetMetaFromProviderData(
 	return meta
 }
 
-func GetMetaFromProviderDataDatasource(
+func GetDataSourceMeta(
 	req datasource.ConfigureRequest,
 	resp *datasource.ConfigureResponse,
 ) *FrameworkProviderMeta {
@@ -35,7 +35,7 @@ func GetMetaFromProviderDataDatasource(
 
 	if !ok {
 		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
+			"Unexpected DataSource Configure Type",
 			fmt.Sprintf(
 				"Expected *http.Client, got: %T. Please report this issue to the provider developers.",
 				req.ProviderData,

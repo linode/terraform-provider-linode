@@ -43,7 +43,7 @@ func (d *DataSource) Configure(
 		return
 	}
 
-	meta := helper.GetMetaFromProviderDataDatasource(req, resp)
+	meta := helper.GetDataSourceMeta(req, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
