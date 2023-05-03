@@ -31,7 +31,10 @@ type StackScriptModel struct {
 	UserDefinedFields basetypes.ListValue `tfsdk:"user_defined_fields"`
 }
 
-func (data *StackScriptModel) parseStackScript(ctx context.Context, stackscript *linodego.Stackscript) diag.Diagnostics {
+func (data *StackScriptModel) parseStackScript(
+	ctx context.Context,
+	stackscript *linodego.Stackscript,
+) diag.Diagnostics {
 	data.ID = types.StringValue(strconv.Itoa(stackscript.ID))
 	data.Label = types.StringValue(stackscript.Label)
 	data.Script = types.StringValue(stackscript.Script)
