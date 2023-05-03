@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/token"
 )
 
@@ -107,5 +108,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		// func() datasource.DataSource {
 		//     return dataSourceExample{}
 		// },
+		kernel.NewDataSource,
 	}
 }
