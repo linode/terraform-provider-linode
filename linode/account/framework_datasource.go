@@ -91,6 +91,7 @@ func (d *DataSource) Read(
 	client := d.client
 
 	var data DataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	account, err := client.GetAccount(ctx)
 	if err != nil {
