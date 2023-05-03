@@ -23,16 +23,6 @@ func MySQL(t *testing.T, label, engine, ip, region string) string {
 		})
 }
 
-func MongoDB(t *testing.T, label, engine, ip, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"database_access_controls_mongodb", TemplateData{
-			Engine:    engine,
-			Label:     label,
-			AllowedIP: ip,
-			Region:    region,
-		})
-}
-
 func PostgreSQL(t *testing.T, label, engine, ip, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_access_controls_postgresql", TemplateData{

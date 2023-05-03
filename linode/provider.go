@@ -18,7 +18,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
-	"github.com/linode/terraform-provider-linode/linode/databasemongodb"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
 	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
@@ -150,7 +149,6 @@ func Provider() *schema.Provider {
 			"linode_account_settings":       accountsettings.DataSource(),
 			"linode_database_backups":       databasebackups.DataSource(),
 			"linode_database_engines":       databaseengines.DataSource(),
-			"linode_database_mongodb":       databasemongodb.DataSource(),
 			"linode_database_mysql":         databasemysql.DataSource(),
 			"linode_database_postgresql":    databasepostgresql.DataSource(),
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
@@ -190,7 +188,6 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"linode_account_settings":         accountsettings.Resource(),
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
-			"linode_database_mongodb":         databasemongodb.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
 			"linode_database_postgresql":      databasepostgresql.Resource(),
 			"linode_domain":                   domain.Resource(),

@@ -43,9 +43,6 @@ func listBackups(
 	case "mysql":
 		return helper.ListResultToInterface(
 			client.ListMySQLDatabaseBackups(ctx, dbID, nil))
-	case "mongodb":
-		return helper.ListResultToInterface(
-			client.ListMongoDatabaseBackups(ctx, dbID, nil))
 	case "postgresql":
 		return helper.ListResultToInterface(
 			client.ListPostgresDatabaseBackups(ctx, dbID, nil))
@@ -55,19 +52,6 @@ func listBackups(
 }
 
 func flattenMySQLBackup(backup linodego.MySQLDatabaseBackup) map[string]interface{} {
-	result := make(map[string]interface{})
-	result["id"] = backup.ID
-	result["label"] = backup.Label
-	result["type"] = backup.Type
-
-	if backup.Created != nil {
-		result["created"] = backup.Created.Format(time.RFC3339)
-	}
-
-	return result
-}
-
-func flattenMongoBackup(backup linodego.MongoDatabaseBackup) map[string]interface{} {
 	result := make(map[string]interface{})
 	result["id"] = backup.ID
 	result["label"] = backup.Label
@@ -97,8 +81,6 @@ func FlattenBackup(data interface{}) map[string]interface{} {
 	switch data.(type) {
 	case linodego.MySQLDatabaseBackup:
 		return flattenMySQLBackup(data.(linodego.MySQLDatabaseBackup))
-	case linodego.MongoDatabaseBackup:
-		return flattenMongoBackup(data.(linodego.MongoDatabaseBackup))
 	case linodego.PostgresDatabaseBackup:
 		return flattenPostgresBackup(data.(linodego.PostgresDatabaseBackup))
 	}
