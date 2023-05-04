@@ -47,5 +47,5 @@ provider "linode" {
   url = "%s"
   api_version = "%s"
 }
-`, url, apiVersion) //lintignore:AT004
+`, url, apiVersion) // lintignore:AT004
 }
