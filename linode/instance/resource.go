@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -65,7 +66,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	for _, ip := range instance.IPv4 {
 		ips = append(ips, ip.String())
 	}
+
 	d.Set("ipv4", ips)
+	d.Set("ipv6_address", strings.Split(instance.IPv6, "/")[0])
 	d.Set("ipv6", instance.IPv6)
 	d.Set("shared_ipv4", instanceIPSliceToString(instanceNetwork.IPv4.Shared))
 
@@ -258,6 +261,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	d.Set("ipv4", ips)
+	d.Set("ipv6_address", strings.Split(instance.IPv6, "/")[0])
 	d.Set("ipv6", instance.IPv6)
 
 	for _, address := range instance.IPv4 {

@@ -22,7 +22,7 @@ Take a look at the example here:
 https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
 
 const invalidImplicitDiskConfigMessage = `
-Did you try to resize a Linode's implicit disks with more than two disks? 
+Did you try to resize a Linode's implicit disks with more than two disks?
 When resize_disk is true, your linode must have a single ext disk as well as an optional swap disk.
 
 You may need to switch to an explicit disk configuration.
@@ -170,12 +170,16 @@ var resourceSchema = map[string]*schema.Schema{
 			"Instance, an arbitrary address will be used for this field.",
 		Computed: true,
 	},
+	"ipv6_address": {
+		Type:        schema.TypeString,
+		Description: "This Linode's Public IPv6 Address without the prefix.",
+		Computed:    true,
+	},
 	"ipv6": {
 		Type:        schema.TypeString,
 		Description: "This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.",
 		Computed:    true,
 	},
-
 	"ipv4": {
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{Type: schema.TypeString},
@@ -184,7 +188,6 @@ var resourceSchema = map[string]*schema.Schema{
 			"to get additional IPv4 addresses.",
 		Computed: true,
 	},
-
 	"private_ip": {
 		Type: schema.TypeBool,
 		Description: "If true, the created Linode will have private networking enabled, allowing use of the " +
