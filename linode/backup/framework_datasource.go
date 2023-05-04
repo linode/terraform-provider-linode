@@ -4,7 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -35,7 +37,7 @@ func (d *DataSource) Configure(
 		return
 	}
 
-	meta := helper.GetMetaFromProviderDataDatasource(req, resp)
+	meta := helper.GetDataSourceMeta(req, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -68,6 +70,7 @@ func (d *DataSource) Read(
 	client := d.client
 
 	linodeId := data.ID.ValueInt64()
+	print("here", linodeId)
 	backups, err := client.GetInstanceBackups(ctx, int(linodeId))
 
 	if err != nil {
@@ -78,60 +81,81 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.parseBackups(ctx, backups, linodeId)
+	resp.Diagnostics.Append(data.parseBackups(ctx, backups, linodeId)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (data *DataSourceModel) parseBackups(ctx context.Context, backups *linodego.InstanceBackupsResponse, linodeId int64) {
-	flattenedAutoSnapshots := make([]map[string]interface{}, len(backups.Automatic))
+func (data *DataSourceModel) parseBackups(ctx context.Context, backups *linodego.InstanceBackupsResponse, linodeId int64) diag.Diagnostics {
+	flattenedAutoSnapshots := make([]map[string]attr.Value, len(backups.Automatic))
 	for i, snapshot := range backups.Automatic {
-		flattenedAutoSnapshots[i] = flattenInstanceSnapshot(snapshot)
+		flattenedAutoSnapshots[i] = flattenInstanceSnapshot(ctx, snapshot)
+	}
+
+	automatic, err := types.ListValueFrom(ctx, backupObjectType, flattenedAutoSnapshots)
+	if err != nil {
+		return err
+	}
+
+	current, err := types.ListValueFrom(ctx, backupObjectType, []interface{}{flattenInstanceSnapshot(ctx, backups.Snapshot.Current)})
+	if err != nil {
+		return err
+	}
+
+	in_progress, err := types.ListValueFrom(ctx, backupObjectType, []interface{}{flattenInstanceSnapshot(ctx, backups.Snapshot.InProgress)})
+	if err != nil {
+		return err
 	}
 
 	data.ID = types.Int64Value(linodeId)
-	data.Automatic, _ = types.ListValueFrom(ctx, backupObjectType, flattenedAutoSnapshots)
-	data.Current, _ = types.ListValueFrom(ctx, backupObjectType, flattenInstanceSnapshot(backups.Snapshot.Current))
-	data.InProgress, _ = types.ListValueFrom(ctx, backupObjectType, flattenInstanceSnapshot(backups.Snapshot.InProgress))
+	data.Automatic = automatic
+	data.Current = current
+	data.InProgress = in_progress
+
+	return nil
 }
 
-func flattenInstanceSnapshot(snapshot *linodego.InstanceSnapshot) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenInstanceSnapshot(ctx context.Context, snapshot *linodego.InstanceSnapshot) map[string]attr.Value {
+	result := make(map[string]attr.Value)
 
-	result["id"] = snapshot.ID
-	result["label"] = snapshot.Label
-	result["status"] = snapshot.Status
-	result["type"] = snapshot.Type
-	result["configs"] = snapshot.Configs
-	result["available"] = snapshot.Available
+	result["id"] = types.Int64Value(int64(snapshot.ID))
+	result["label"] = types.StringValue(snapshot.Label)
+	result["status"] = types.StringValue(string(snapshot.Status))
+	result["type"] = types.StringValue(snapshot.Type)
+	result["configs"], _ = types.ListValueFrom(ctx, types.StringType, snapshot.Configs)
+	result["available"] = types.BoolValue(snapshot.Available)
 
 	if snapshot.Created != nil {
-		result["created"] = snapshot.Created.Format(time.RFC3339)
+		result["created"] = types.StringValue(snapshot.Created.Format(time.RFC3339))
 	}
 
 	if snapshot.Updated != nil {
-		result["updated"] = snapshot.Updated.Format(time.RFC3339)
+		result["updated"] = types.StringValue(snapshot.Updated.Format(time.RFC3339))
 	}
 
 	if snapshot.Finished != nil {
-		result["finished"] = snapshot.Finished.Format(time.RFC3339)
+		result["finished"] = types.StringValue(snapshot.Finished.Format(time.RFC3339))
 	}
 
-	flattenedDisks := make([]map[string]interface{}, len(snapshot.Disks))
+	flattenedDisks := make([]map[string]attr.Value, len(snapshot.Disks))
 	for i, disk := range snapshot.Disks {
 		flattenedDisks[i] = flattenSnapshotDisk(disk)
 	}
 
-	result["disks"] = flattenedDisks
+	result["disks"], _ = types.ListValueFrom(ctx, diskObjectType, flattenedDisks)
 
 	return result
 }
 
-func flattenSnapshotDisk(disk *linodego.InstanceSnapshotDisk) map[string]interface{} {
-	result := make(map[string]interface{})
+func flattenSnapshotDisk(disk *linodego.InstanceSnapshotDisk) map[string]attr.Value {
+	result := make(map[string]attr.Value)
 
-	result["label"] = disk.Label
-	result["size"] = disk.Size
-	result["filesystem"] = disk.Filesystem
+	result["label"] = types.StringValue(disk.Label)
+	result["size"] = types.Int64Value(int64(disk.Size))
+	result["filesystem"] = types.StringValue(disk.Filesystem)
 
 	return result
 }
