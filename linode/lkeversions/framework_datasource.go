@@ -22,7 +22,6 @@ type DataSource struct {
 }
 
 func (data *DataSourceModel) parseVersions(ctx context.Context, lkeVersions []linodego.LKEVersion) diag.Diagnostics {
-
 	versions, err := flattenVersions(lkeVersions)
 	if err != nil {
 		return err
