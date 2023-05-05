@@ -107,7 +107,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-    account.NewDataSource,
+		account.NewDataSource,
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
 	}
