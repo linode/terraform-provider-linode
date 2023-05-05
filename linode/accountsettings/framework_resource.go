@@ -180,7 +180,7 @@ func (r *Resource) updateAccountSettings(
 				"Failed to update Linode Longview Plan",
 				err.Error(),
 			)
-			return
+			return plan, diagnostics
 		}
 	}
 
