@@ -170,10 +170,23 @@ func (r *Resource) updateAccountSettings(
 	client := r.client
 	var diagnostics diag.Diagnostics
 
+	// Longview Plan update functionality has been moved
+	if !plan.LongviewSubscription.IsNull() {
+		_, err := client.UpdateLongviewPlan(ctx, linodego.LongviewPlanUpdateOptions{
+			LongviewSubscription: plan.LongviewSubscription.ValueString(),
+		})
+		if err != nil {
+			diagnostics.AddError(
+				"Failed to update Linode Longview Plan",
+				err.Error(),
+			)
+			return
+		}
+	}
+
 	updateOpts := linodego.AccountSettingsUpdateOptions{
-		BackupsEnabled:       plan.BackupsEnabed.ValueBoolPointer(),
-		NetworkHelper:        plan.NetworkHelper.ValueBoolPointer(),
-		LongviewSubscription: plan.LongviewSubscription.ValueStringPointer(),
+		BackupsEnabled: plan.BackupsEnabed.ValueBoolPointer(),
+		NetworkHelper:  plan.NetworkHelper.ValueBoolPointer(),
 	}
 
 	settings, err := client.UpdateAccountSettings(ctx, updateOpts)
