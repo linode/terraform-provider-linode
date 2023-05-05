@@ -69,7 +69,6 @@ func (d *DataSource) Read(
 	}
 
 	backups, err := client.GetInstanceBackups(ctx, int(linodeId.ValueInt64()))
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get backups",

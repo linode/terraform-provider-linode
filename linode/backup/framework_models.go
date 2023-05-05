@@ -19,7 +19,11 @@ type DataSourceModel struct {
 	ID         types.Int64 `tfsdk:"id"`
 }
 
-func (data *DataSourceModel) parseBackups(ctx context.Context, backups *linodego.InstanceBackupsResponse, linodeId types.Int64) diag.Diagnostics {
+func (data *DataSourceModel) parseBackups(
+	ctx context.Context,
+	backups *linodego.InstanceBackupsResponse,
+	linodeId types.Int64,
+) diag.Diagnostics {
 	automatic, diag := flattenAutoSnapshots(ctx, backups.Automatic)
 	if diag.HasError() {
 		return diag
@@ -69,7 +73,10 @@ func (data *DataSourceModel) parseBackups(ctx context.Context, backups *linodego
 	return nil
 }
 
-func flattenAutoSnapshots(ctx context.Context, snapshots []*linodego.InstanceSnapshot) (*basetypes.ListValue, diag.Diagnostics) {
+func flattenAutoSnapshots(
+	ctx context.Context,
+	snapshots []*linodego.InstanceSnapshot,
+) (*basetypes.ListValue, diag.Diagnostics) {
 	resultList := make([]attr.Value, len(snapshots))
 	for i, snapshot := range snapshots {
 		result, diag := flattenInstanceSnapshot(ctx, snapshot)
@@ -90,7 +97,9 @@ func flattenAutoSnapshots(ctx context.Context, snapshots []*linodego.InstanceSna
 	return &result, nil
 }
 
-func flattenInstanceSnapshot(ctx context.Context, snapshot *linodego.InstanceSnapshot) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInstanceSnapshot(ctx context.Context,
+	snapshot *linodego.InstanceSnapshot,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
 
 	result["id"] = types.Int64Value(int64(snapshot.ID))
@@ -135,7 +144,9 @@ func flattenInstanceSnapshot(ctx context.Context, snapshot *linodego.InstanceSna
 	return &obj, nil
 }
 
-func flattenSnapshotDisk(disks []*linodego.InstanceSnapshotDisk) (*basetypes.ListValue, diag.Diagnostics) {
+func flattenSnapshotDisk(
+	disks []*linodego.InstanceSnapshotDisk,
+) (*basetypes.ListValue, diag.Diagnostics) {
 	resultList := make([]attr.Value, len(disks))
 
 	for i, field := range disks {
