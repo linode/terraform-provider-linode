@@ -32,7 +32,6 @@ func (data *DataSourceModel) parseIP(ip *linodego.InstanceIP) {
 	id, _ := json.Marshal(ip)
 
 	data.ID = types.StringValue(string(id))
-
 }
 
 func (d *DataSource) Configure(
