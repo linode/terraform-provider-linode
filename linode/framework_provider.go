@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/linode/accountsettings"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -100,6 +102,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		token.NewResource,
 		stackscript.NewResource,
+		accountsettings.NewResource,
 	}
 }
 
@@ -107,5 +110,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 	// return nil
 	return []func() datasource.DataSource{
 		stackscript.NewDataSource,
+		accountsettings.NewDataSource,
 	}
 }
