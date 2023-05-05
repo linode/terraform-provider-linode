@@ -31,7 +31,7 @@ var backupObjectType = types.ObjectType{
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"linode_id": schema.Int64Attribute{
 			Description: "The ID of the Linode to get backups for.",
 			Required:    true,
 		},
@@ -49,6 +49,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The in-progress Backup for a Linode",
 			Computed:    true,
 			ElementType: backupObjectType,
+		},
+		"id": schema.Int64Attribute{
+			Description: "The ID of the Backup",
+			Computed:    true,
 		},
 	},
 }
