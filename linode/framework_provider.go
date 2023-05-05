@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
@@ -104,8 +105,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 }
 
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	// return nil
 	return []func() datasource.DataSource{
+		account.NewDataSource,
 		stackscript.NewDataSource,
 	}
 }
