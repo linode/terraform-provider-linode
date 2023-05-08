@@ -22,9 +22,9 @@ type DataSource struct {
 }
 
 func (data *DataSourceModel) parseVersions(ctx context.Context, lkeVersions []linodego.LKEVersion) diag.Diagnostics {
-	versions, err := flattenVersions(lkeVersions)
-	if err != nil {
-		return err
+	versions, diag := flattenVersions(lkeVersions)
+	if diag.HasError() {
+		return diag
 	}
 
 	data.Versions = *versions
@@ -97,7 +97,11 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.parseVersions(ctx, versions)
+	resp.Diagnostics.Append(data.parseVersions(ctx, versions)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -108,21 +112,20 @@ func flattenVersions(versions []linodego.LKEVersion) (*basetypes.ListValue, diag
 		valueMap := make(map[string]attr.Value)
 		valueMap["id"] = types.StringValue(field.ID)
 
-		obj, err := types.ObjectValue(lkeVersionObjectType.AttrTypes, valueMap)
-		if err != nil {
-			return nil, err
+		obj, diag := types.ObjectValue(lkeVersionObjectType.AttrTypes, valueMap)
+		if diag.HasError() {
+			return nil, diag
 		}
 
 		resultList[i] = obj
 	}
 
-	result, err := basetypes.NewListValue(
+	result, diag := basetypes.NewListValue(
 		lkeVersionObjectType,
 		resultList,
 	)
-	if err != nil {
-		return nil, err
+	if diag.HasError() {
+		return nil, diag
 	}
-
 	return &result, nil
 }
