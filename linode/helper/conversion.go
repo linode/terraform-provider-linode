@@ -34,16 +34,6 @@ func StringToInt64(s string, diags diag.Diagnostics) int64 {
 	return num
 }
 
-//func SliceToFrameworkSet(data []string) (basetypes.SetValue, diag.Diagnostics) {
-//	dataConverted := make([]attr.Value, len(data))
-//
-//	for i, value := range data {
-//		dataConverted[i] = types.StringValue(value)
-//	}
-//
-//	types.SetValue(types.String{}, dataConverted)
-//}
-
 // ExpandFrameworkSet expands a framework types.Set into a primitive Go slice
 func ExpandFrameworkSet[T any](ctx context.Context, set types.Set) ([]T, diag.Diagnostics) {
 	var diagnostics diag.Diagnostics

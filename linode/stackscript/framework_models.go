@@ -16,12 +16,12 @@ import (
 // resource schema.
 type StackScriptModel struct {
 	ID                types.String        `tfsdk:"id"`
-	Label             types.String        `tfsdk:"label"`
-	Script            types.String        `tfsdk:"script"`
-	Description       types.String        `tfsdk:"description"`
-	RevNote           types.String        `tfsdk:"rev_note"`
-	IsPublic          types.Bool          `tfsdk:"is_public"`
-	Images            types.List          `tfsdk:"images"`
+	Label             types.String        `tfsdk:"label" linode_mutable:"true"`
+	Script            types.String        `tfsdk:"script" linode_mutable:"true"`
+	Description       types.String        `tfsdk:"description" linode_mutable:"true"`
+	RevNote           types.String        `tfsdk:"rev_note" linode_mutable:"true"`
+	IsPublic          types.Bool          `tfsdk:"is_public" linode_mutable:"true"`
+	Images            types.List          `tfsdk:"images" linode_mutable:"trueg"`
 	DeploymentsActive types.Int64         `tfsdk:"deployments_active"`
 	UserGravatarID    types.String        `tfsdk:"user_gravatar_id"`
 	DeploymentsTotal  types.Int64         `tfsdk:"deployments_total"`
