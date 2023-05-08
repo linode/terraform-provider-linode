@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var testRegion string
@@ -46,7 +47,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccFrameworkProvider.Meta.Client
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 					newSnapshot, err := client.CreateInstanceSnapshot(context.Background(), instance.ID, snapshotName)
 					if err != nil {
 						t.Fatal(err)
@@ -66,7 +67,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccFrameworkProvider.Meta.Client
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 600); err != nil {
 						t.Fatal(err)
 					}

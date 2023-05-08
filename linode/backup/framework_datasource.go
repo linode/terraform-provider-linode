@@ -61,9 +61,7 @@ func (d *DataSource) Read(
 	client := d.client
 
 	var linodeId types.Int64
-	diag := req.Config.GetAttribute(ctx, path.Root("linode_id"), &linodeId)
-
-	resp.Diagnostics.Append(diag...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("linode_id"), &linodeId)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
