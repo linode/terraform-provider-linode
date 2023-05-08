@@ -1,8 +1,12 @@
 package helper
 
 import (
+	"context"
 	"fmt"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
@@ -28,4 +32,31 @@ func StringToInt64(s string, diags diag.Diagnostics) int64 {
 	}
 
 	return num
+}
+
+//func SliceToFrameworkSet(data []string) (basetypes.SetValue, diag.Diagnostics) {
+//	dataConverted := make([]attr.Value, len(data))
+//
+//	for i, value := range data {
+//		dataConverted[i] = types.StringValue(value)
+//	}
+//
+//	types.SetValue(types.String{}, dataConverted)
+//}
+
+// ExpandFrameworkSet expands a framework types.Set into a primitive Go slice
+func ExpandFrameworkSet[T any](ctx context.Context, set types.Set) ([]T, diag.Diagnostics) {
+	var diagnostics diag.Diagnostics
+	var setValue basetypes.SetValue
+
+	diagnostics.Append(set.ElementsAs(ctx, &setValue, false)...)
+	if diagnostics.HasError() {
+		return nil, diagnostics
+	}
+
+	var result []T
+
+	setValue.ElementsAs(ctx, &result, false)
+
+	return result, diagnostics
 }

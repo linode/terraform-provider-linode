@@ -2,16 +2,17 @@ package helper
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"reflect"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 )
 
-// IsModelUpdated is a helper function that checks whether a model has
+// ShouldModelUpdate is a helper function that checks whether a model has
 // been updated. This is useful for simplifying resource update logic.
 //
 // NOTE: Only fields marked with the `linode_mutable:"true"` tag will be compared.
-func IsModelUpdated[T any](model1, model2 T) (bool, error) {
+func ShouldModelUpdate[T any](model1, model2 T) (bool, error) {
 	reflectModel1 := reflect.ValueOf(model1)
 	reflectModel2 := reflect.ValueOf(model2)
 
@@ -61,9 +62,9 @@ func IsModelUpdated[T any](model1, model2 T) (bool, error) {
 		model2FieldValue := model2Field.Interface().(attr.Value)
 
 		if !model1FieldValue.Equal(model2FieldValue) {
-			return false, nil
+			return true, nil
 		}
 	}
 
-	return true, nil
+	return false, nil
 }

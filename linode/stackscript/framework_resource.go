@@ -178,7 +178,7 @@ func (r *Resource) Update(
 	}
 
 	// Check whether there were any changes
-	shouldUpdate, err := helper.IsModelUpdated(state, plan)
+	shouldUpdate, err := helper.ShouldModelUpdate(state, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to check if resource should be updated",

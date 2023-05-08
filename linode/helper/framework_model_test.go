@@ -1,8 +1,9 @@
 package helper
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func TestCompareModels(t *testing.T) {
@@ -24,7 +25,16 @@ func TestCompareModels(t *testing.T) {
 		Field3: types.BoolValue(false),
 	}
 
-	result, err := IsModelUpdated(&inst1, &inst2)
+	result, err := ShouldModelUpdate(&inst1, &inst2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !result {
+		t.Fatal("Expected result to be true; got false")
+	}
+
+	result, err = ShouldModelUpdate(inst1, inst1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,25 +43,16 @@ func TestCompareModels(t *testing.T) {
 		t.Fatal("Expected result to be false; got true")
 	}
 
-	result, err = IsModelUpdated(inst1, inst1)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !result {
-		t.Fatal("Expected result to be true; got false")
-	}
-
 	// Let's make sure field 3 isn't being used for comparisons
 	inst2.Field1 = inst1.Field1
 	inst2.Field2 = inst1.Field2
 
-	result, err = IsModelUpdated(inst1, inst2)
+	result, err = ShouldModelUpdate(inst1, inst2)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !result {
-		t.Fatal("Expected result to be true; got false")
+	if result {
+		t.Fatal("Expected result to be false; got true")
 	}
 }

@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
@@ -72,19 +73,15 @@ func (r *Resource) Create(
 		return
 	}
 
-	var masterIPs, axfrIPs, tags []string
+	masterIPs, d := helper.ExpandFrameworkSet[string](ctx, data.MasterIPs)
+	resp.Diagnostics.Append(d...)
 
-	resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &tags, false)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	axfrIPs, d := helper.ExpandFrameworkSet[string](ctx, data.AXFRIPs)
+	resp.Diagnostics.Append(d...)
 
-	resp.Diagnostics.Append(data.AXFRIPs.ElementsAs(ctx, &axfrIPs, false)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	tags, d := helper.ExpandFrameworkSet[string](ctx, data.Tags)
+	resp.Diagnostics.Append(d...)
 
-	resp.Diagnostics.Append(data.MasterIPs.ElementsAs(ctx, &masterIPs, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -190,7 +187,7 @@ func (r *Resource) Update(
 	}
 
 	// Check whether there were any changes
-	shouldUpdate, err := helper.IsModelUpdated(state, plan)
+	shouldUpdate, err := helper.ShouldModelUpdate(state, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to check is resource needs to be updated",
@@ -209,6 +206,15 @@ func (r *Resource) Update(
 		return
 	}
 
+	masterIPs, d := helper.ExpandFrameworkSet[string](ctx, plan.MasterIPs)
+	resp.Diagnostics.Append(d...)
+
+	axfrIPs, d := helper.ExpandFrameworkSet[string](ctx, plan.AXFRIPs)
+	resp.Diagnostics.Append(d...)
+
+	tags, d := helper.ExpandFrameworkSet[string](ctx, plan.Tags)
+	resp.Diagnostics.Append(d...)
+
 	updateOpts := linodego.DomainUpdateOptions{
 		Domain:      plan.Domain.ValueString(),
 		Type:        linodego.DomainType(plan.Type.ValueString()),
@@ -220,6 +226,9 @@ func (r *Resource) Update(
 		ExpireSec:   int(plan.ExpireSec.ValueInt64()),
 		RefreshSec:  int(plan.RefreshSec.ValueInt64()),
 		TTLSec:      int(plan.TTLSec.ValueInt64()),
+		Tags:        tags,
+		AXfrIPs:     axfrIPs,
+		MasterIPs:   masterIPs,
 	}
 
 	domain, err := client.UpdateDomain(ctx, domainID, updateOpts)

@@ -2,13 +2,13 @@ package linode
 
 import (
 	"context"
-	"github.com/linode/terraform-provider-linode/linode/domain"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
@@ -110,5 +110,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		account.NewDataSource,
 		stackscript.NewDataSource,
+		domain.NewDataSource,
 	}
 }

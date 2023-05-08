@@ -2,10 +2,11 @@ package domain
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"strconv"
 )
 
 // DomainModel describes the Terraform resource data model to match the
