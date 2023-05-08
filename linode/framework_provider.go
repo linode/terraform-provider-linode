@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
+	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
 )
