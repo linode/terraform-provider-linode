@@ -1,9 +1,8 @@
-package stackscript
+package domain
 
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
@@ -41,7 +40,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_stackscript"
+	resp.TypeName = "linode_domain"
 }
 
 func (r *Resource) Schema(
@@ -65,7 +64,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data StackScriptModel
+	var data DomainModel
 	client := r.client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -73,32 +72,49 @@ func (r *Resource) Create(
 		return
 	}
 
-	var images []string
+	var masterIPs, axfrIPs, tags []string
 
-	resp.Diagnostics.Append(data.Images.ElementsAs(ctx, &images, false)...)
+	resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &tags, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	createOpts := linodego.StackscriptCreateOptions{
-		Label:       data.Label.ValueString(),
-		Script:      data.Script.ValueString(),
-		Description: data.Description.ValueString(),
-		RevNote:     data.RevNote.ValueString(),
-		IsPublic:    data.IsPublic.ValueBool(),
-		Images:      images,
+	resp.Diagnostics.Append(data.AXFRIPs.ElementsAs(ctx, &axfrIPs, false)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	stackscript, err := client.CreateStackscript(ctx, createOpts)
+	resp.Diagnostics.Append(data.MasterIPs.ElementsAs(ctx, &masterIPs, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createOpts := linodego.DomainCreateOptions{
+		Domain:      data.Domain.ValueString(),
+		Type:        linodego.DomainType(data.Type.ValueString()),
+		Group:       data.Group.ValueString(),
+		Status:      linodego.DomainStatus(data.Status.ValueString()),
+		Description: data.Description.ValueString(),
+		TTLSec:      int(data.TTLSec.ValueInt64()),
+		RetrySec:    int(data.RetrySec.ValueInt64()),
+		ExpireSec:   int(data.ExpireSec.ValueInt64()),
+		RefreshSec:  int(data.RefreshSec.ValueInt64()),
+		SOAEmail:    data.SOAEmail.ValueString(),
+		MasterIPs:   masterIPs,
+		AXfrIPs:     axfrIPs,
+		Tags:        tags,
+	}
+
+	domain, err := client.CreateDomain(ctx, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"StackScript creation error",
+			"Failed to create Linode Domain",
 			err.Error(),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.parseDomain(ctx, domain)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -113,7 +129,7 @@ func (r *Resource) Read(
 ) {
 	client := r.client
 
-	var data StackScriptModel
+	var data DomainModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -125,13 +141,13 @@ func (r *Resource) Read(
 		return
 	}
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
+	domain, err := client.GetDomain(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
-				"StackScript no longer exists.",
+				"Domain no longer exists.",
 				fmt.Sprintf(
-					"Removing Linode StackScript with ID %v from state because it no longer exists",
+					"Removing Linode Domain with ID %v from state because it no longer exists",
 					data.ID,
 				),
 			)
@@ -139,16 +155,16 @@ func (r *Resource) Read(
 			return
 		}
 		resp.Diagnostics.AddError(
-			"Unable to refresh the Linode StackScript",
+			"Unable to refresh the Linode Domain",
 			fmt.Sprintf(
-				"Error finding the specified Linode StackScript: %s",
+				"Error finding the specified Linode Domain: %s",
 				err.Error(),
 			),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.parseDomain(ctx, domain)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -161,8 +177,10 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var state StackScriptModel
-	var plan StackScriptModel
+	client := r.client
+
+	var state DomainModel
+	var plan DomainModel
 
 	// Get the state & plan
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -171,25 +189,53 @@ func (r *Resource) Update(
 		return
 	}
 
-	// Get the ID from the plan
-	stackScriptID := int(helper.StringToInt64(state.ID.ValueString(), resp.Diagnostics))
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	// Check whether there were any changes
 	shouldUpdate, err := helper.IsModelUpdated(state, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to check if resource should be updated",
+			"Failed to check is resource needs to be updated",
+			err.Error(),
+		)
+		return
+	}
+
+	if !shouldUpdate {
+		return
+	}
+
+	// Get the ID from the plan
+	domainID := int(helper.StringToInt64(state.ID.ValueString(), resp.Diagnostics))
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateOpts := linodego.DomainUpdateOptions{
+		Domain:      plan.Domain.ValueString(),
+		Type:        linodego.DomainType(plan.Type.ValueString()),
+		Group:       plan.Group.ValueString(),
+		Status:      linodego.DomainStatus(plan.Status.ValueString()),
+		Description: plan.Description.ValueString(),
+		SOAEmail:    plan.SOAEmail.ValueString(),
+		RetrySec:    int(plan.RetrySec.ValueInt64()),
+		ExpireSec:   int(plan.ExpireSec.ValueInt64()),
+		RefreshSec:  int(plan.RefreshSec.ValueInt64()),
+		TTLSec:      int(plan.TTLSec.ValueInt64()),
+	}
+
+	domain, err := client.UpdateDomain(ctx, domainID, updateOpts)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to update domain",
 			err.Error(),
 		)
 	}
 
-	// Apply the change if necessary
-	if shouldUpdate {
-		r.updateStackScript(ctx, resp, plan, stackScriptID)
+	resp.Diagnostics.Append(plan.parseDomain(ctx, domain)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(
@@ -197,64 +243,25 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data StackScriptModel
+	var data DomainModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	stackscriptID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
+	domainID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	client := r.client
-	err := client.DeleteStackscript(ctx, stackscriptID)
+	err := client.DeleteDomain(ctx, domainID)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete the StackScript with id %v", stackscriptID),
+			fmt.Sprintf("Failed to delete the Domain with id %v", domainID),
 			err.Error(),
 		)
 		return
 	}
-}
-
-func (r *Resource) updateStackScript(
-	ctx context.Context,
-	resp *resource.UpdateResponse,
-	plan StackScriptModel,
-	stackScriptID int,
-) {
-	client := r.client
-
-	updateOpts := linodego.StackscriptUpdateOptions{
-		Label:       plan.Label.ValueString(),
-		Script:      plan.Script.ValueString(),
-		Description: plan.Description.ValueString(),
-		RevNote:     plan.RevNote.ValueString(),
-		IsPublic:    plan.IsPublic.ValueBool(),
-	}
-
-	// Special handling for images
-	resp.Diagnostics.Append(plan.Images.ElementsAs(ctx, &updateOpts.Images, false)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	stackScript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to update the StackScript with id %v", stackScriptID),
-			err.Error(),
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(plan.parseStackScript(ctx, stackScript)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

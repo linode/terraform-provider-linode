@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"github.com/linode/terraform-provider-linode/linode/domain"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -101,6 +102,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		token.NewResource,
 		stackscript.NewResource,
+		domain.NewResource,
 	}
 }
 

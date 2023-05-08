@@ -189,7 +189,6 @@ func Provider() *schema.Provider {
 			"linode_database_mongodb":         databasemongodb.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
 			"linode_database_postgresql":      databasepostgresql.Resource(),
-			"linode_domain":                   domain.Resource(),
 			"linode_domain_record":            domainrecord.Resource(),
 			"linode_firewall":                 firewall.Resource(),
 			"linode_firewall_device":          firewalldevice.Resource(),
