@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings"
@@ -55,7 +54,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/region"
 	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
-	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
@@ -143,7 +141,6 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_account":                account.DataSource(),
 			"linode_account_login":          accountlogin.DataSource(),
 			"linode_account_logins":         accountlogins.DataSource(),
 			"linode_account_settings":       accountsettings.DataSource(),
@@ -178,7 +175,6 @@ func Provider() *schema.Provider {
 			"linode_region":                 region.DataSource(),
 			"linode_regions":                regions.DataSource(),
 			"linode_sshkey":                 sshkey.DataSource(),
-			"linode_stackscript":            stackscript.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
 			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  vlan.DataSource(),
@@ -211,7 +207,6 @@ func Provider() *schema.Provider {
 			"linode_object_storage_object":    obj.Resource(),
 			"linode_rdns":                     rdns.Resource(),
 			"linode_sshkey":                   sshkey.Resource(),
-			"linode_stackscript":              stackscript.Resource(),
 			"linode_user":                     user.Resource(),
 			"linode_volume":                   volume.Resource(),
 		},
