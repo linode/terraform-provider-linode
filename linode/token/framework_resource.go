@@ -185,9 +185,7 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
-	resourceUpdated := !state.Label.Equal(plan.Label)
-
-	if resourceUpdated {
+	if !state.Label.Equal(plan.Label) {
 		tokenIDString := state.ID.ValueString()
 		tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
 
