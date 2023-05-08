@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/linode/backup"
@@ -39,7 +38,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
-	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lke"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/nb"
@@ -142,7 +140,6 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_account":                account.DataSource(),
 			"linode_account_login":          accountlogin.DataSource(),
 			"linode_account_logins":         accountlogins.DataSource(),
 			"linode_database_backups":       databasebackups.DataSource(),
@@ -164,7 +161,6 @@ func Provider() *schema.Provider {
 			"linode_instance_types":         instancetypes.DataSource(),
 			"linode_instance_networking":    instancenetworking.DataSource(),
 			"linode_ipv6_range":             ipv6range.DataSource(),
-			"linode_kernel":                 kernel.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_lke_versions":           lkeversions.DataSource(),
 			"linode_networking_ip":          networkingip.DataSource(),
