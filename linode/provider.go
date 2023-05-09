@@ -39,7 +39,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/lke"
-	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
@@ -161,7 +160,6 @@ func Provider() *schema.Provider {
 			"linode_instance_networking":    instancenetworking.DataSource(),
 			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
-			"linode_lke_versions":           lkeversions.DataSource(),
 			"linode_networking_ip":          networkingip.DataSource(),
 			"linode_nodebalancer":           nb.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
