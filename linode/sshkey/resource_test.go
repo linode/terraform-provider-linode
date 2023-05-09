@@ -53,9 +53,9 @@ func TestAccResourceSSHKey_basic(t *testing.T) {
 	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkSSHKeyDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, sshkeyName, acceptance.PublicKeyMaterial),
@@ -82,9 +82,9 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 	sshkeyName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkSSHKeyDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, sshkeyName, acceptance.PublicKeyMaterial),

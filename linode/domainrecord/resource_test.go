@@ -22,9 +22,9 @@ func TestAccResourceDomainRecord_basic(t *testing.T) {
 	domainRecordName := acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, domainRecordName),
@@ -50,9 +50,9 @@ func TestAccResourceDomainRecord_roundedTTLSec(t *testing.T) {
 	domainRecordName := acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.TTL(t, domainRecordName, 299),
@@ -79,9 +79,9 @@ func TestAccResourceDomainRecord_TTLZero(t *testing.T) {
 	domainRecordName := acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.TTL(t, domainRecordName, 0),
@@ -108,9 +108,9 @@ func TestAccResourceDomainRecord_ANoName(t *testing.T) {
 	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ANoName(t, domainName),
@@ -130,9 +130,9 @@ func TestAccResourceDomainRecord_AAAANoName(t *testing.T) {
 	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.AAAANoName(t, domainName),
@@ -152,9 +152,9 @@ func TestAccResourceDomainRecord_CAANoName(t *testing.T) {
 	domainName := acctest.RandomWithPrefix("tf-test-") + ".example"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.CAANoName(t, domainName),
@@ -177,9 +177,9 @@ func TestAccResourceDomainRecord_SRV(t *testing.T) {
 	expectedTargetExternal := "subdomain.example.com"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.SRV(t, domainName, expectedTarget),
@@ -212,9 +212,9 @@ func TestAccResourceDomainRecord_SRVNoFQDN(t *testing.T) {
 	expectedTarget := "mysubdomain." + domainName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.SRV(t, domainName, "mysubdomain"),
@@ -244,9 +244,9 @@ func TestAccResourceDomainRecord_update(t *testing.T) {
 	domainRecordName := acctest.RandomWithPrefix("tf-test-")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDomainRecordDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, domainRecordName),
