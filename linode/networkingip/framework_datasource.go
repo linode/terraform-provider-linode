@@ -86,8 +86,6 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
-
 	var data DataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -95,7 +93,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	ip, err := client.GetIPAddress(ctx, data.Address.ValueString())
+	ip, err := d.client.GetIPAddress(ctx, data.Address.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get IP Address: %s", err.Error(),
