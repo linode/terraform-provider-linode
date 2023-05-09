@@ -31,6 +31,17 @@ type StackScriptModel struct {
 	UserDefinedFields basetypes.ListValue `tfsdk:"user_defined_fields"`
 }
 
+// Assign StringNull() safely without throwing error. e.g. new value: .rev_note: was null, but now cty.StringVal("")
+func getValueIfNotNull(val string) basetypes.StringValue {
+	res := types.StringValue(val)
+
+	if res == types.StringValue("") {
+		res = types.StringNull()
+	}
+
+	return res
+}
+
 func (data *StackScriptModel) parseStackScript(
 	ctx context.Context,
 	stackscript *linodego.Stackscript,
@@ -39,7 +50,7 @@ func (data *StackScriptModel) parseStackScript(
 	data.Label = types.StringValue(stackscript.Label)
 	data.Script = types.StringValue(stackscript.Script)
 	data.Description = types.StringValue(stackscript.Description)
-	data.RevNote = types.StringValue(stackscript.RevNote)
+	data.RevNote = getValueIfNotNull(stackscript.RevNote)
 	data.IsPublic = types.BoolValue(stackscript.IsPublic)
 
 	images, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
