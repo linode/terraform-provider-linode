@@ -248,7 +248,7 @@ func checkDestroy(s *terraform.State) error {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
 		}
 
-		_, err = client.GetMongoDatabase(context.Background(), id)
+		_, err = client.GetPostgresDatabase(context.Background(), id)
 
 		if err == nil {
 			return fmt.Errorf("postgres database with id %d still exists", id)

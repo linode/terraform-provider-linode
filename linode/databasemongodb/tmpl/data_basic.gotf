@@ -1,9 +1,0 @@
-{{ define "database_mongodb_data_basic" }}
-
-{{ template "database_mongodb_complex" . }}
-
-data "linode_database_mongodb" "foobar" {
-    database_id = linode_database_mongodb.foobar.id
-}
-
-{{ end }}
