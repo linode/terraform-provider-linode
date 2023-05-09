@@ -1,7 +1,6 @@
 package networkingip_test
 
 import (
-	"context"
 	"log"
 	"regexp"
 	"testing"
@@ -9,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/networkingip/tmpl"
 )
 
@@ -32,16 +30,9 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 
 	label := acctest.RandomWithPrefix("tf-test")
 
-	provider, providerMap := acceptance.CreateTestProvider()
-	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
-		config.Config.SkipInstanceReadyPoll = true
-		config.Config.SkipInstanceDeletePoll = true
-		return nil
-	})
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: providerMap,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, label, testRegion),
