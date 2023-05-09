@@ -57,9 +57,9 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.MySQL(t, dbName, mysqlEngineVersion, "0.0.0.0/0", testRegion),
@@ -93,9 +93,9 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PostgreSQL(t, dbName, postgresEngineVersion, "0.0.0.0/0", testRegion),

@@ -63,9 +63,9 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 	linodeLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkRDNSDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, linodeLabel, testRegion, false),
@@ -91,9 +91,9 @@ func TestAccResourceRDNS_update(t *testing.T) {
 	resName := "linode_rdns.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkRDNSDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, false),
@@ -131,9 +131,9 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 	resName := "linode_rdns.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkRDNSDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkRDNSDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, true),

@@ -22,9 +22,9 @@ func TestAccResourceUser_basic(t *testing.T) {
 	username := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkUserDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, username, email, true),
@@ -47,9 +47,9 @@ func TestAccResourceUser_updates(t *testing.T) {
 	updatedUsername := acctest.RandomWithPrefix("tf-test")
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkUserDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, username, email, false),
@@ -83,9 +83,9 @@ func TestAccResourceUser_grants(t *testing.T) {
 
 	email := username + "@example.com"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkUserDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkUserDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Grants(t, username, email),

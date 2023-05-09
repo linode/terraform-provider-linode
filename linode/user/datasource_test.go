@@ -16,8 +16,8 @@ func TestAccDataSourceUser_basic(t *testing.T) {
 	resourceName := "data.linode_user.user"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t),
@@ -43,8 +43,8 @@ func TestAccDataSourceUser_grants(t *testing.T) {
 	email := username + "@example.com"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataGrants(t, username, email),
