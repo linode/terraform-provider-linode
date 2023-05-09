@@ -113,17 +113,6 @@ func updateDBAllowListByEngine(ctx context.Context, client linodego.Client, d *s
 		}
 
 		createdDate = db.Created
-
-	case "mongodb":
-		db, err := client.UpdateMongoDatabase(ctx, id, linodego.MongoUpdateOptions{
-			AllowList: &allowList,
-		})
-		if err != nil {
-			return err
-		}
-
-		createdDate = db.Created
-
 	case "postgresql":
 		db, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
 			AllowList: &allowList,
@@ -146,13 +135,6 @@ func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine 
 	switch engine {
 	case "mysql":
 		db, err := client.GetMySQLDatabase(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		return db.AllowList, nil
-	case "mongodb":
-		db, err := client.GetMongoDatabase(ctx, id)
 		if err != nil {
 			return nil, err
 		}

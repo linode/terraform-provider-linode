@@ -12,7 +12,7 @@ var resourceSchema = map[string]*schema.Schema{
 	// Required fields
 	"engine_id": {
 		Type:        schema.TypeString,
-		Description: "The Managed Database engine in engine/version format. (e.g. mongodb/4.4.10)",
+		Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.30)",
 		Required:    true,
 		ForceNew:    true,
 	},

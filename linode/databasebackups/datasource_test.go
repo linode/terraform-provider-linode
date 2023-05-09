@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/linode/terraform-provider-linode/linode/databasebackups/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+
+	"github.com/google/go-cmp/cmp"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
-	"github.com/linode/terraform-provider-linode/linode/databasebackups/tmpl"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var (
@@ -22,19 +23,6 @@ var (
 )
 
 func init() {
-	//client, err := acceptance.GetClientForSweepers()
-	//if err != nil {
-	//	log.Fatalf("failed to get client: %s", err)
-	//}
-
-	// TODO: Uncomment when Mongo support is active again
-	//v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
-	//if err != nil {
-	//	log.Fatalf("failde to get db engine version: %s", err)
-	//}
-	//
-	//engineVersion = v.ID
-
 	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
 	if err != nil {
 		log.Fatal(err)
@@ -47,30 +35,6 @@ func TestFlattenBackup_MySQL(t *testing.T) {
 	currentTime := time.Now()
 
 	backup := linodego.MySQLDatabaseBackup{
-		ID:      123,
-		Label:   "cool",
-		Type:    "auto",
-		Created: &currentTime,
-	}
-
-	result := databasebackups.FlattenBackup(backup)
-	if result["id"] != backup.ID {
-		t.Fatal(cmp.Diff(result["id"], backup.ID))
-	}
-
-	if result["label"] != backup.Label {
-		t.Fatal(cmp.Diff(result["label"], backup.Label))
-	}
-
-	if result["type"] != backup.Type {
-		t.Fatal(cmp.Diff(result["type"], backup.Type))
-	}
-}
-
-func TestFlattenBackup_MongoDB(t *testing.T) {
-	currentTime := time.Now()
-
-	backup := linodego.MongoDatabaseBackup{
 		ID:      123,
 		Label:   "cool",
 		Type:    "auto",
@@ -115,16 +79,16 @@ func TestFlattenBackup_PostgreSQL(t *testing.T) {
 	}
 }
 
-func TestAccDataSourceMongoBackups_basic(t *testing.T) {
+func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
 	t.Parallel()
 	t.Skip()
 
-	var db linodego.MongoDatabase
+	var db linodego.PostgresDatabase
 
 	const backupLabel = "coolbackup42"
 	dbLabel := acctest.RandomWithPrefix("tf_test")
 
-	resourceName := "linode_database_mongodb.foobar"
+	resourceName := "linode_database_postgresql.foobar"
 	dataSourceName := "data.linode_database_backups.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -138,7 +102,7 @@ func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 					BackupLabel: backupLabel,
 				}),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckMongoDatabaseExists(resourceName, &db),
+					acceptance.CheckPostgresDatabaseExists(resourceName, &db),
 					resource.TestCheckResourceAttr(dataSourceName, "backups.#", "0"),
 				),
 			},
@@ -146,7 +110,7 @@ func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 				PreConfig: func() {
 					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
-					if err := client.CreateMongoDatabaseBackup(context.Background(), db.ID, linodego.MongoBackupCreateOptions{
+					if err := client.CreatePostgresDatabaseBackup(context.Background(), db.ID, linodego.PostgresBackupCreateOptions{
 						Label:  backupLabel,
 						Target: "primary",
 					}); err != nil {
@@ -154,13 +118,13 @@ func TestAccDataSourceMongoBackups_basic(t *testing.T) {
 					}
 
 					err := client.WaitForDatabaseStatus(context.Background(), db.ID,
-						linodego.DatabaseEngineTypeMongo, "backing_up", 120)
+						linodego.DatabaseEngineTypePostgres, "backing_up", 120)
 					if err != nil {
 						t.Fatalf("failed to wait for database backing_up: %s", err)
 					}
 
 					err = client.WaitForDatabaseStatus(context.Background(), db.ID,
-						linodego.DatabaseEngineTypeMongo, linodego.DatabaseStatusActive, 1200)
+						linodego.DatabaseEngineTypePostgres, linodego.DatabaseStatusActive, 1200)
 					if err != nil {
 						t.Fatalf("failed to wait for database active: %s", err)
 					}

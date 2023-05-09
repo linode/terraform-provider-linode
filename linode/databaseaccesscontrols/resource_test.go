@@ -18,7 +18,6 @@ import (
 
 var (
 	mysqlEngineVersion    string
-	mongoEngineVersion    string
 	postgresEngineVersion string
 	testRegion            string
 )
@@ -35,14 +34,6 @@ func init() {
 	}
 
 	mysqlEngineVersion = v.ID
-
-	// TODO: Uncomment once Mongo support is re-enabled
-	//v, err = helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
-	//if err != nil {
-	//	log.Fatalf("failed to get db engine version: %s", err)
-	//}
-	//
-	//mongoEngineVersion = v.ID
 
 	v, err = helper.ResolveValidDBEngine(context.Background(), *client, "postgresql")
 	if err != nil {
@@ -82,41 +73,6 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 				Config: tmpl.MySQL(t, dbName, mysqlEngineVersion, "192.168.0.25/32", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkMySQLDatabaseExists,
-					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),
-				),
-			},
-			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccResourceDatabaseAccessControls_MongoDB(t *testing.T) {
-	t.Parallel()
-	t.Skip()
-
-	resName := "linode_database_access_controls.foobar"
-	dbName := acctest.RandomWithPrefix("tf_test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "0.0.0.0/0", testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(resName, "allow_list.0", "0.0.0.0/0"),
-				),
-			},
-			{
-				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "192.168.0.25/32", testRegion),
-				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
 					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),
 				),
