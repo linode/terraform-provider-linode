@@ -63,9 +63,9 @@ func TestAccResourceObjectKey_basic(t *testing.T) {
 	objectStorageKeyLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectKeyDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, objectStorageKeyLabel),
@@ -89,9 +89,9 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 	objectStorageKeyLabel := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectKeyDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Limited(t, objectStorageKeyLabel, testCluster),
@@ -121,9 +121,9 @@ func TestAccResourceObjectKey_update(t *testing.T) {
 	objectStorageKeyLabel := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkObjectKeyDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, objectStorageKeyLabel),
