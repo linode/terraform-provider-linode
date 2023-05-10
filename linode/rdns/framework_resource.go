@@ -2,7 +2,6 @@ package rdns
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -23,10 +22,9 @@ type Resource struct {
 func (data *ResourceModel) parseIP(ip *linodego.InstanceIP) {
 	data.Address = types.StringValue(ip.Address)
 	data.RDNS = types.StringValue(ip.RDNS)
+	data.ID = types.StringValue(ip.Address)
 
-	id, _ := json.Marshal(ip)
-
-	data.ID = types.StringValue(string(id))
+	fmt.Println("The ID is: ", data.ID)
 }
 
 func (r *Resource) Configure(
@@ -75,7 +73,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	resource.ImportStatePassthroughID(ctx, path.Root("address"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(
@@ -121,8 +119,6 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	fmt.Println(data.Address.ValueString())
 
 	ip, err := client.GetIPAddress(ctx, data.Address.ValueString())
 	if err != nil {
