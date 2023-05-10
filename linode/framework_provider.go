@@ -12,6 +12,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
 )
@@ -104,6 +105,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		token.NewResource,
 		stackscript.NewResource,
+		rdns.NewResource,
 	}
 }
 

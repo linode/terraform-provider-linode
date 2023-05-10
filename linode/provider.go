@@ -47,7 +47,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/profile"
-	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
 	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
@@ -198,7 +197,6 @@ func Provider() *schema.Provider {
 			"linode_object_storage_key":       objkey.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
-			"linode_rdns":                     rdns.Resource(),
 			"linode_sshkey":                   sshkey.Resource(),
 			"linode_user":                     user.Resource(),
 			"linode_volume":                   volume.Resource(),

@@ -2,6 +2,8 @@ package rdns
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -21,6 +23,10 @@ type Resource struct {
 func (data *ResourceModel) parseIP(ip *linodego.InstanceIP) {
 	data.Address = types.StringValue(ip.Address)
 	data.RDNS = types.StringValue(ip.RDNS)
+
+	id, _ := json.Marshal(ip)
+
+	data.ID = types.StringValue(string(id))
 }
 
 func (r *Resource) Configure(
@@ -45,6 +51,7 @@ type ResourceModel struct {
 	Address          types.String `tfsdk:"address"`
 	RDNS             types.String `tfsdk:"rdns"`
 	WaitForAvailable types.Bool   `tfsdk:"wait_for_available"`
+	ID               types.String `tfsdk:"id"`
 }
 
 func (r *Resource) Metadata(
@@ -115,10 +122,12 @@ func (r *Resource) Read(
 		return
 	}
 
+	fmt.Println(data.Address.ValueString())
+
 	ip, err := client.GetIPAddress(ctx, data.Address.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get IP Address: %s", err.Error(),
+			"Failed to read the Linode RDNS", err.Error(),
 		)
 		return
 	}
