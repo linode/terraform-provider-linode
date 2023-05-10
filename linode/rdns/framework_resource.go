@@ -2,8 +2,6 @@ package rdns
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -23,10 +21,7 @@ type Resource struct {
 func (data *ResourceModel) parseIP(ip *linodego.InstanceIP) {
 	data.Address = types.StringValue(ip.Address)
 	data.RDNS = types.StringValue(ip.RDNS)
-
-	id, _ := json.Marshal(ip)
-
-	data.ID = types.StringValue(string(id))
+	data.ID = types.StringValue(ip.Address)
 }
 
 func (r *Resource) Configure(
@@ -75,7 +70,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	resource.ImportStatePassthroughID(ctx, path.Root("address"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(
@@ -122,9 +117,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	fmt.Println(data.Address.ValueString())
-
-	ip, err := client.GetIPAddress(ctx, data.Address.ValueString())
+	ip, err := client.GetIPAddress(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to read the Linode RDNS", err.Error(),
@@ -149,7 +142,7 @@ func (r *Resource) Update(
 	}
 
 	client := r.client
-	ip, err := client.GetIPAddress(ctx, data.Address.ValueString())
+	ip, err := client.GetIPAddress(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get IP Address: %s", err.Error(),
