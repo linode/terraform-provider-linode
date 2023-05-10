@@ -35,17 +35,9 @@ func alternativeAPIURLTemplate(
 	apiVersion string,
 ) string {
 	return fmt.Sprintf(`
-terraform {
-  required_providers {
-    linode = {
-      source  = "linode/linode"
-    }
-  }
-}
-
 provider "linode" {
   url = "%s"
   api_version = "%s"
 }
-`, url, apiVersion) //lintignore:AT004
+`, url, apiVersion) // lintignore:AT004
 }

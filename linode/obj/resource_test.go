@@ -69,9 +69,9 @@ func TestAccResourceObject_basic(t *testing.T) {
 		keyName := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(tRetry, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkObjectDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Basic(t, bucketName, testCluster, keyName, content, contentSource.Name()),

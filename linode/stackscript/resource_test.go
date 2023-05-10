@@ -53,9 +53,9 @@ func TestAccResourceStackscript_basic(t *testing.T) {
 	stackscriptName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkStackscriptDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, stackscriptName),
@@ -83,9 +83,9 @@ func TestAccResourceStackscript_update(t *testing.T) {
 	stackscriptName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkStackscriptDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, stackscriptName),
@@ -122,9 +122,9 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 	stackscriptName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_stackscript.foobar"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkStackscriptDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkStackscriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, stackscriptName),

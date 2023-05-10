@@ -37,7 +37,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -83,7 +83,7 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -114,9 +114,9 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkNodeBalancerConfigDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodebalancerName, testRegion),
@@ -160,9 +160,9 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkNodeBalancerConfigDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodeBalancerConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ProxyProtocol(t, nodebalancerName, testRegion),
