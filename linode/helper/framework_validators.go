@@ -2,7 +2,6 @@ package helper
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/helpers/validatordiag"
@@ -18,7 +17,7 @@ func (dtv DateTimeStringValidator) Description(ctx context.Context) string {
 }
 
 func (dtv DateTimeStringValidator) MarkdownDescription(ctx context.Context) string {
-	return fmt.Sprintf("value must meet ISO 8601 standard format, e.g., '%s'.", time.RFC3339)
+	return "value must meet RFC3339 standard and in format of '2023-01-02T03:04:05Z'."
 }
 
 func (dtv DateTimeStringValidator) ValidateString(
