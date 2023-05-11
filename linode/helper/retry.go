@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"regexp"
@@ -11,6 +12,10 @@ import (
 
 func RetryDeadlineExceed() func(response *resty.Response, err error) bool {
 	return func(response *resty.Response, err error) bool {
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+			fmt.Println("CONTEXT DEADLINE EXCEEDED ERROR - RETRYING...")
+		}
+
 		return strings.Contains(err.Error(), "context deadline exceeded")
 	}
 }
