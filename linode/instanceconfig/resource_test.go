@@ -34,9 +34,9 @@ func TestAccResourceInstanceConfig_basic(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, instanceName, testRegion),
@@ -62,9 +62,9 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(t, instanceName, testRegion),
@@ -137,9 +137,9 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Booted(t, instanceName, testRegion, false),
@@ -195,9 +195,9 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 		instanceName := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.BootedSwap(t, instanceName, testRegion, false),
@@ -248,9 +248,9 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Provisioner(t, instanceName, testRegion),

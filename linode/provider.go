@@ -13,7 +13,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings"
-	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
@@ -153,7 +152,6 @@ func Provider() *schema.Provider {
 			"linode_image":                  image.DataSource(),
 			"linode_images":                 images.DataSource(),
 			"linode_instances":              instance.DataSource(),
-			"linode_instance_backups":       backup.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),
 			"linode_instance_networking":    instancenetworking.DataSource(),

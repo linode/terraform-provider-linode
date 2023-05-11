@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
@@ -111,6 +112,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		account.NewDataSource,
+		backup.NewDataSource,
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
 		profile.NewDataSource,
