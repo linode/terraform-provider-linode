@@ -4,9 +4,16 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"strings"
 
 	"github.com/go-resty/resty/v2"
 )
+
+func RetryDeadlineExceed() func(response *resty.Response, err error) bool {
+	return func(response *resty.Response, err error) bool {
+		return strings.Contains(err.Error(), "context deadline exceeded")
+	}
+}
 
 // Workaround for intermittent 5xx errors when retrieving a database from the API
 func Database502Retry() func(response *resty.Response, err error) bool {
@@ -14,7 +21,7 @@ func Database502Retry() func(response *resty.Response, err error) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return func(response *resty.Response, err error) bool {
+	return func(response *resty.Response, _ error) bool {
 		if response.StatusCode() != 502 || response.Request == nil {
 			return false
 		}

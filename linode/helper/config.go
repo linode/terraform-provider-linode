@@ -109,12 +109,7 @@ func (c *Config) Client() (*linodego.Client, error) {
 	}
 	client.SetUserAgent(userAgent)
 	client.AddRetryCondition(Database502Retry())
-	client.AddRetryCondition(func(response *resty.Response, err error) bool {
-		if strings.Contains(err.Error(), "context deadline exceeded") {
-			return true
-		}
-		return false
-	})
+	client.AddRetryCondition(RetryDeadlineExceed())
 
 	return &client, nil
 }
