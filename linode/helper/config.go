@@ -133,6 +133,13 @@ func (c *Config) Client() (*linodego.Client, error) {
 		return databaseGetRegex.MatchString(requestURL.Path)
 	})
 
+	client.AddRetryCondition(func(response *resty.Response, err error) bool {
+		if strings.Contains(err.Error(), "context deadline exceeded") {
+			return true
+		}
+		return false
+	})
+
 	return &client, nil
 }
 
