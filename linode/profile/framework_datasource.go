@@ -29,9 +29,9 @@ func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego
 	data.IPWhitelistEnabled = types.BoolValue(profile.IPWhitelistEnabled)
 	data.LishAuthMethod = types.StringValue(string(profile.LishAuthMethod))
 
-	authorized_keys, diag := types.ListValueFrom(ctx, types.StringType, profile.AuthorizedKeys)
-	if diag.HasError() {
-		return diag
+	authorized_keys, diags := types.ListValueFrom(ctx, types.StringType, profile.AuthorizedKeys)
+	if diags.HasError() {
+		return diags
 	}
 
 	data.AuthorizedKeys = authorized_keys
@@ -39,14 +39,18 @@ func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego
 	data.TwoFactorAuth = types.BoolValue(profile.TwoFactorAuth)
 	data.Restricted = types.BoolValue(profile.Restricted)
 
-	referrals, diag := flattenReferral(ctx, profile.Referrals)
-	if diag.HasError() {
-		return diag
+	referrals, diags := flattenReferral(ctx, profile.Referrals)
+	if diags.HasError() {
+		return diags
 	}
 
 	data.Referrals = *referrals
 
-	id, _ := json.Marshal(profile)
+	id, err := json.Marshal(profile)
+	if err != nil {
+		diags.AddError("Error marshalling json: %s", err.Error())
+		return diags
+	}
 
 	data.ID = types.StringValue(string(id))
 
@@ -144,9 +148,9 @@ func flattenReferral(ctx context.Context,
 	result["code"] = types.StringValue(referral.Code)
 	result["url"] = types.StringValue(referral.URL)
 
-	obj, diag := types.ObjectValue(referralObjectType.AttrTypes, result)
-	if diag.HasError() {
-		return nil, diag
+	obj, diags := types.ObjectValue(referralObjectType.AttrTypes, result)
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return &obj, nil
