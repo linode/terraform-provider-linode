@@ -83,9 +83,9 @@ func TestAccResourceVolume_basic(t *testing.T) {
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	volume := linodego.Volume{}
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, volumeName, testRegion),
@@ -118,9 +118,9 @@ func TestAccResourceVolume_update(t *testing.T) {
 	resName := "linode_volume.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, volumeName, testRegion),
@@ -150,9 +150,9 @@ func TestAccResourceVolume_resized(t *testing.T) {
 	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, volumeName, testRegion),
@@ -180,9 +180,9 @@ func TestAccResourceVolume_attached(t *testing.T) {
 	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, volumeName, testRegion),
@@ -217,9 +217,9 @@ func TestAccResourceVolume_detached(t *testing.T) {
 	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Attached(t, volumeName, testRegion),
@@ -253,9 +253,9 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 	volume := linodego.Volume{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Attached(t, volumeName, testRegion),
@@ -301,9 +301,9 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 	var volume2 linodego.Volume
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckVolumeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ClonedStep1(t, volumeName, testRegion, acceptance.PublicKeyMaterial),

@@ -164,9 +164,9 @@ func TestAccResourceBucket_basic(t *testing.T) {
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkBucketDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
@@ -194,9 +194,9 @@ func TestAccResourceBucket_access(t *testing.T) {
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkBucketDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Access(t, objectStorageBucketName, testCluster, "public-read", true),
@@ -230,9 +230,9 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkBucketDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Versioning(t, objectStorageBucketName, testCluster, objectStorageKeyName, true),
@@ -264,9 +264,9 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkBucketDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.LifeCycle(t, objectStorageBucketName, testCluster, objectStorageKeyName),
@@ -309,9 +309,9 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, testCluster, objectStorageKeyName),
@@ -352,9 +352,9 @@ func TestAccResourceBucket_cert(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Cert(t, objectStorageBucketName, testCluster, cert, key),
@@ -395,9 +395,9 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ClusterDataBasic(t, objectStorageBucketName, testCluster),
@@ -422,9 +422,9 @@ func TestAccResourceBucket_update(t *testing.T) {
 	resName := "linode_object_storage_bucket.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkBucketDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkBucketDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, objectStorageBucketName, testCluster),

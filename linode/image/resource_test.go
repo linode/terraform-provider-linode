@@ -78,9 +78,9 @@ func TestAccImage_basic(t *testing.T) {
 	imageName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkImageDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, imageName, testRegion),
@@ -113,9 +113,9 @@ func TestAccImage_update(t *testing.T) {
 	resName := "linode_image.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkImageDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, imageName, testRegion),
@@ -164,9 +164,9 @@ func TestAccImage_uploadFile(t *testing.T) {
 	var image linodego.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkImageDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Upload(t, imageName, file.Name(), testRegion),

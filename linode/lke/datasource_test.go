@@ -16,9 +16,9 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion),
@@ -48,9 +48,9 @@ func TestAccDataSourceLKECluster_autoscaler(t *testing.T) {
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataAutoscaler(t, clusterName, k8sVersionLatest, testRegion),
@@ -81,9 +81,9 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataControlPlane(t, clusterName, k8sVersionLatest, testRegion, true),

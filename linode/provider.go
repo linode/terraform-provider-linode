@@ -13,7 +13,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings"
-	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
@@ -42,7 +41,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
-	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/obj"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
@@ -155,13 +153,11 @@ func Provider() *schema.Provider {
 			"linode_image":                  image.DataSource(),
 			"linode_images":                 images.DataSource(),
 			"linode_instances":              instance.DataSource(),
-			"linode_instance_backups":       backup.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),
 			"linode_instance_networking":    instancenetworking.DataSource(),
 			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
-			"linode_networking_ip":          networkingip.DataSource(),
 			"linode_nodebalancer":           nb.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_nodebalancer_config":    nbconfig.DataSource(),
