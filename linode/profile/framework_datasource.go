@@ -29,9 +29,9 @@ func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego
 	data.IPWhitelistEnabled = types.BoolValue(profile.IPWhitelistEnabled)
 	data.LishAuthMethod = types.StringValue(string(profile.LishAuthMethod))
 
-	authorized_keys, err := types.ListValueFrom(ctx, types.StringType, profile.AuthorizedKeys)
-	if err != nil {
-		return err
+	authorized_keys, diag := types.ListValueFrom(ctx, types.StringType, profile.AuthorizedKeys)
+	if diag.HasError() {
+		return diag
 	}
 
 	data.AuthorizedKeys = authorized_keys
@@ -39,9 +39,9 @@ func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego
 	data.TwoFactorAuth = types.BoolValue(profile.TwoFactorAuth)
 	data.Restricted = types.BoolValue(profile.Restricted)
 
-	referrals, err := flattenReferral(ctx, profile.Referrals)
-	if err != nil {
-		return err
+	referrals, diag := flattenReferral(ctx, profile.Referrals)
+	if diag.HasError() {
+		return diag
 	}
 
 	data.Referrals = *referrals
@@ -124,6 +124,11 @@ func (d *DataSource) Read(
 	}
 
 	data.parseProfile(ctx, profile)
+
+	resp.Diagnostics.Append(data.parseProfile(ctx, profile)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

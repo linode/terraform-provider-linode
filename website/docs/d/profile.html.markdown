@@ -46,14 +46,14 @@ The Linode Profile resource exports the following attributes:
 
 * `referrals` - Credit Card information associated with this Account.
 
-* `referrals.0.total` - The number of users who have signed up with the referral code.
+* `referrals.total` - The number of users who have signed up with the referral code.
 
-* `referrals.0.credit` - The amount of account credit in US Dollars issued to the account through the referral program.
+* `referrals.credit` - The amount of account credit in US Dollars issued to the account through the referral program.
 
-* `referrals.0.completed` - The number of completed signups with the referral code.
+* `referrals.completed` - The number of completed signups with the referral code.
 
-* `referrals.0.pending` - The number of pending signups for the referral code. To receive credit the signups must be completed.
+* `referrals.pending` - The number of pending signups for the referral code. To receive credit the signups must be completed.
 
-* `referrals.0.code` - The Profile referral code.  If new accounts use this when signing up for Linode, referring account will receive credit.
+* `referrals.code` - The Profile referral code.  If new accounts use this when signing up for Linode, referring account will receive credit.
 
-* `referrals.0.url` - The referral URL.
+* `referrals.url` - The referral URL.
