@@ -31,7 +31,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "When this token will expire. Personal Access Tokens cannot be renewed, so after " +
 				"this time the token will be completely unusable and a new token will need to be generated. Tokens " +
 				"may be created with 'null' as their expiry and will never expire unless revoked. Format: " +
-				time.RFC3339,
+				helper.TIME_FORMAT,
 			Optional: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),

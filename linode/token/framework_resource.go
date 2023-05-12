@@ -202,7 +202,7 @@ func (r *Resource) Update(
 		updateOpts := token.GetUpdateOptions()
 		updateOpts.Label = plan.Label.ValueString()
 
-		token, err = client.UpdateToken(ctx, token.ID, updateOpts)
+		_, err = client.UpdateToken(ctx, token.ID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update the token with id %v", tokenID),
@@ -211,8 +211,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		state.parseToken(token)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
 }
 
@@ -236,10 +235,12 @@ func (r *Resource) Delete(
 	client := r.client
 	err := client.DeleteToken(ctx, tokenID)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete the token with id %v", tokenID),
-			err.Error(),
-		)
+		if err.(linodego.Error).Code != 404 {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete the token with id %v", tokenID),
+				err.Error(),
+			)
+		}
 		return
 	}
 
