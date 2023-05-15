@@ -182,14 +182,14 @@ func (r *Resource) Read(
 		data.Expiry.ValueString(),
 		time.RFC3339,
 	) {
-		data.Expiry = types.StringValue(token.Label)
+		data.Expiry = types.StringValue(token.Expiry.Format(time.RFC3339))
 	}
 
 	if !helper.CompareScopes(
 		token.Scopes,
 		data.Scopes.ValueString(),
 	) {
-		data.Scopes = types.StringValue(token.Label)
+		data.Scopes = types.StringValue(token.Scopes)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
