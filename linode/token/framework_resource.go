@@ -254,7 +254,7 @@ func (r *Resource) Delete(
 	client := r.client
 	err := client.DeleteToken(ctx, tokenID)
 	if err != nil {
-		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok  {
+		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to delete the token with id %v", tokenID),
 				err.Error(),
