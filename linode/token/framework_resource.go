@@ -21,12 +21,14 @@ type Resource struct {
 	client *linodego.Client
 }
 
-func (data *ResourceModel) parseToken(token *linodego.Token) {
+func (data *ResourceModel) getTokenComputedAttrs(token *linodego.Token, refresh bool) {
 	data.Created = types.StringValue(token.Created.Format(time.RFC3339))
-	data.Expiry = types.StringValue(token.Expiry.Format(time.RFC3339))
-	data.Label = types.StringValue(token.Label)
-	data.Scopes = types.StringValue(token.Scopes)
-	data.Token = types.StringValue(token.Token)
+
+	// token is too sensitive and won't appear in the
+	// get method during a refresh of this resource.
+	if !refresh {
+		data.Token = types.StringValue(token.Token)
+	}
 	data.ID = types.StringValue(strconv.Itoa(token.ID))
 }
 
@@ -125,7 +127,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseToken(token)
+	data.getTokenComputedAttrs(token, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -171,7 +173,25 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseToken(token)
+	data.getTokenComputedAttrs(token, true)
+
+	// only update non-computed state values if not semantically equivalent
+	data.Label = types.StringValue(token.Label)
+	if !helper.CompareTimeWithTimeString(
+		token.Expiry,
+		data.Expiry.ValueString(),
+		time.RFC3339,
+	) {
+		data.Expiry = types.StringValue(token.Label)
+	}
+
+	if !helper.CompareScopes(
+		token.Scopes,
+		data.Scopes.ValueString(),
+	) {
+		data.Scopes = types.StringValue(token.Label)
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -210,9 +230,8 @@ func (r *Resource) Update(
 			)
 			return
 		}
-
-		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(

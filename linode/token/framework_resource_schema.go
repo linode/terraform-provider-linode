@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -8,6 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+)
+
+const (
+	RequireReplacementWhenExpiryChangedDescription = "Requiring token recreation if the " +
+		"Expiry time semantically changed."
+	RequireReplacementWhenScopesChangedDescription = "Requiring token recreation if the " +
+		"OAuth 2.0 scopes changed semantically. For example, from 'linodes:read_only lke:read_only' " +
+		"to 'linodes:read_write lke:read_only' is a semantically change, but from " +
+		"'linodes:read_only lke:read_only' to 'lke:read_only linodes:read_only' isn't."
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -24,7 +34,20 @@ var frameworkResourceSchema = schema.Schema{
 				"list of available scopes on Linode API docs site, https://www.linode.com/docs/api#oauth-reference",
 			Required: true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						sr planmodifier.StringRequest,
+						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						rrifr.RequiresReplace = !helper.CompareScopes(
+							sr.PlanValue.ValueString(),
+							sr.StateValue.ValueString(),
+						)
+					},
+					RequireReplacementWhenExpiryChangedDescription,
+					RequireReplacementWhenExpiryChangedDescription,
+				),
 			},
 		},
 		"expiry": schema.StringAttribute{
@@ -34,7 +57,21 @@ var frameworkResourceSchema = schema.Schema{
 				helper.TIME_FORMAT,
 			Optional: true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						sr planmodifier.StringRequest,
+						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						rrifr.RequiresReplace = !helper.CompareTimeStrings(
+							sr.PlanValue.ValueString(),
+							sr.StateValue.ValueString(),
+							time.RFC3339,
+						)
+					},
+					RequireReplacementWhenScopesChangedDescription,
+					RequireReplacementWhenScopesChangedDescription,
+				),
 			},
 			Validators: []validator.String{
 				helper.NewDateTimeStringValidator(time.RFC3339),
@@ -43,15 +80,24 @@ var frameworkResourceSchema = schema.Schema{
 		"created": schema.StringAttribute{
 			Description: "The date and time this token was created.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"token": schema.StringAttribute{
 			Sensitive:   true,
 			Description: "The token used to access the API.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"id": schema.StringAttribute{
 			Description: "The ID of the token.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 	},
 }

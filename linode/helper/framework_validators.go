@@ -29,10 +29,10 @@ func (dtv DateTimeStringValidator) ValidateString(
 		return
 	}
 	if dtv.Format == "" {
-		dtv.Format = TIME_FORMAT
+		dtv.Format = time.RFC3339
 	}
 	v := request.ConfigValue.ValueString()
-	if _, err := time.Parse(TIME_FORMAT, v); err != nil {
+	if _, err := time.Parse(time.RFC3339, v); err != nil {
 		response.Diagnostics.Append(validatordiag.InvalidAttributeValueDiagnostic(
 			request.Path,
 			dtv.Description(ctx),
