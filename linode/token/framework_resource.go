@@ -24,8 +24,8 @@ type Resource struct {
 func (data *ResourceModel) getTokenComputedAttrs(token *linodego.Token, refresh bool) {
 	data.Created = types.StringValue(token.Created.Format(time.RFC3339))
 
-	// token is too sensitive and won't appear in the
-	// get method during a refresh of this resource.
+	// token is too sensitive and won't appear in a GET
+	// method response during a refresh of this resource.
 	if !refresh {
 		data.Token = types.StringValue(token.Token)
 	}
