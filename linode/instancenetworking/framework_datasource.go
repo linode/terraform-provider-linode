@@ -19,7 +19,9 @@ type DataSource struct {
 	client *linodego.Client
 }
 
-func (data *DataSourceModel) parseInstanceIPAddressResponse(ctx context.Context, ip *linodego.InstanceIPAddressResponse) diag.Diagnostics {
+func (data *DataSourceModel) parseInstanceIPAddressResponse(
+	ctx context.Context, ip *linodego.InstanceIPAddressResponse,
+) diag.Diagnostics {
 	ipv4, diags := flattenIPv4(ctx, ip.IPv4)
 	if diags.HasError() {
 		return diags

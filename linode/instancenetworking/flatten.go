@@ -10,7 +10,9 @@ import (
 	"github.com/linode/linodego"
 )
 
-func flattenIPv4(ctx context.Context, network *linodego.InstanceIPv4Response) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenIPv4(ctx context.Context, network *linodego.InstanceIPv4Response) (
+	*basetypes.ObjectValue, diag.Diagnostics,
+) {
 	result := make(map[string]attr.Value)
 
 	private, diag := flattenIPs(ctx, network.Private)
@@ -46,7 +48,9 @@ func flattenIPv4(ctx context.Context, network *linodego.InstanceIPv4Response) (*
 	return &obj, nil
 }
 
-func flattenIPv6(ctx context.Context, network *linodego.InstanceIPv6Response) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenIPv6(ctx context.Context, network *linodego.InstanceIPv6Response) (
+	*basetypes.ObjectValue, diag.Diagnostics,
+) {
 	result := make(map[string]attr.Value)
 
 	global, diag := flattenGlobal(ctx, network.Global)
@@ -76,7 +80,9 @@ func flattenIPv6(ctx context.Context, network *linodego.InstanceIPv6Response) (*
 	return &obj, nil
 }
 
-func flattenIP(ctx context.Context, network *linodego.InstanceIP) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenIP(ctx context.Context, network *linodego.InstanceIP) (
+	*basetypes.ObjectValue, diag.Diagnostics,
+) {
 	result := make(map[string]attr.Value)
 
 	result["address"] = types.StringValue(network.Address)
@@ -95,7 +101,9 @@ func flattenIP(ctx context.Context, network *linodego.InstanceIP) (*basetypes.Ob
 	return &obj, nil
 }
 
-func flattenIPs(ctx context.Context, network []*linodego.InstanceIP) (*basetypes.ListValue, diag.Diagnostics) {
+func flattenIPs(ctx context.Context, network []*linodego.InstanceIP) (
+	*basetypes.ListValue, diag.Diagnostics,
+) {
 	resultList := make([]attr.Value, len(network))
 
 	for i, network := range network {
@@ -118,7 +126,9 @@ func flattenIPs(ctx context.Context, network []*linodego.InstanceIP) (*basetypes
 	return &result, nil
 }
 
-func flattenIPV6Range(ctx context.Context, network *linodego.IPv6Range) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenIPV6Range(ctx context.Context, network linodego.IPv6Range) (
+	*basetypes.ObjectValue, diag.Diagnostics,
+) {
 	result := make(map[string]attr.Value)
 
 	result["prefix"] = types.Int64Value(int64(network.Prefix))
@@ -134,11 +144,13 @@ func flattenIPV6Range(ctx context.Context, network *linodego.IPv6Range) (*basety
 	return &obj, nil
 }
 
-func flattenGlobal(ctx context.Context, network []linodego.IPv6Range) (*basetypes.ListValue, diag.Diagnostics) {
+func flattenGlobal(ctx context.Context, network []linodego.IPv6Range) (
+	*basetypes.ListValue, diag.Diagnostics,
+) {
 	resultList := make([]attr.Value, len(network))
 
 	for i, network := range network {
-		result, diag := flattenIPV6Range(ctx, &network)
+		result, diag := flattenIPV6Range(ctx, network)
 		if diag.HasError() {
 			return nil, diag
 		}
