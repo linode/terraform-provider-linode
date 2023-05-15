@@ -3,12 +3,10 @@ package token
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -19,17 +17,6 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	client *linodego.Client
-}
-
-func (data *ResourceModel) getTokenComputedAttrs(token *linodego.Token, refresh bool) {
-	data.Created = types.StringValue(token.Created.Format(time.RFC3339))
-
-	// token is too sensitive and won't appear in a GET
-	// method response during a refresh of this resource.
-	if !refresh {
-		data.Token = types.StringValue(token.Token)
-	}
-	data.ID = types.StringValue(strconv.Itoa(token.ID))
 }
 
 func (r *Resource) Configure(
@@ -48,17 +35,6 @@ func (r *Resource) Configure(
 	}
 
 	r.client = meta.Client
-}
-
-// ResourceModel describes the Terraform resource data model to match the
-// resource schema.
-type ResourceModel struct {
-	Label   types.String `tfsdk:"label"`
-	Scopes  types.String `tfsdk:"scopes"`
-	Expiry  types.String `tfsdk:"expiry"`
-	Created types.String `tfsdk:"created"`
-	Token   types.String `tfsdk:"token"`
-	ID      types.String `tfsdk:"id"`
 }
 
 func (r *Resource) Metadata(
@@ -127,7 +103,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.getTokenComputedAttrs(token, false)
+	data.parseComputedAttributes(token, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -173,24 +149,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.getTokenComputedAttrs(token, true)
-
-	// only update non-computed state values if not semantically equivalent
-	data.Label = types.StringValue(token.Label)
-	if !helper.CompareTimeWithTimeString(
-		token.Expiry,
-		data.Expiry.ValueString(),
-		time.RFC3339,
-	) {
-		data.Expiry = types.StringValue(token.Expiry.Format(time.RFC3339))
-	}
-
-	if !helper.CompareScopes(
-		token.Scopes,
-		data.Scopes.ValueString(),
-	) {
-		data.Scopes = types.StringValue(token.Scopes)
-	}
+	data.parseComputedAttributes(token, true)
+	data.parseNonComputedAttributes(token)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
