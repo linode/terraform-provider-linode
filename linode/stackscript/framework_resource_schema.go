@@ -78,7 +78,7 @@ var frameworkResourceSchema = schema.Schema{
 				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"images": schema.ListAttribute{
+		"images": schema.SetAttribute{
 			Description: "An array of Image IDs representing the Images that this StackScript is compatible for " +
 				"deploying with.",
 			ElementType: types.StringType,

@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // StackScriptModel describes the Terraform resource data model to match the
@@ -22,7 +21,7 @@ type StackScriptModel struct {
 	Description       types.String        `tfsdk:"description"`
 	RevNote           types.String        `tfsdk:"rev_note"`
 	IsPublic          types.Bool          `tfsdk:"is_public"`
-	Images            types.List          `tfsdk:"images"`
+	Images            types.Set           `tfsdk:"images"`
 	DeploymentsActive types.Int64         `tfsdk:"deployments_active"`
 	UserGravatarID    types.String        `tfsdk:"user_gravatar_id"`
 	DeploymentsTotal  types.Int64         `tfsdk:"deployments_total"`
@@ -48,21 +47,13 @@ func (data *StackScriptModel) parseNonComputedAttributes(
 	data.IsPublic = types.BoolValue(stackscript.IsPublic)
 
 	// Only update the images return if there is a change
-	var plannedImages []string
-	diagnostics.Append(data.Images.ElementsAs(ctx, &plannedImages, false)...)
+	remoteImages, err := types.SetValueFrom(ctx, types.StringType, stackscript.Images)
+	diagnostics.Append(err...)
 	if diagnostics.HasError() {
 		return diagnostics
 	}
 
-	if !helper.StringListElementsEqual(plannedImages, stackscript.Images) {
-		remoteImages, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
-		diagnostics.Append(err...)
-		if diagnostics.HasError() {
-			return diagnostics
-		}
-
-		data.Images = remoteImages
-	}
+	data.Images = remoteImages
 
 	return diagnostics
 }

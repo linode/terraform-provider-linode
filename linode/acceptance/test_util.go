@@ -313,6 +313,34 @@ func LoopThroughStringList(resName, path string, listValidateFunc ListAttrValida
 	}
 }
 
+// CheckListContains checks whether a state list or set contains a given value
+func CheckListContains(resName, path, value string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resName)
+		}
+
+		length, err := strconv.Atoi(rs.Primary.Attributes[path+".#"])
+		if err != nil {
+			return fmt.Errorf("attribute %s does not exist", path)
+		}
+
+		for i := 0; i < length; i++ {
+			foundValue, ok := rs.Primary.Attributes[path+"."+strconv.Itoa(i)]
+			if !ok {
+				return fmt.Errorf("index %d does not exist in attributes", i)
+			}
+
+			if foundValue == value {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("failed to find value %s in %s", value, path)
+	}
+}
+
 func CheckLKEClusterDestroy(s *terraform.State) error {
 	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
