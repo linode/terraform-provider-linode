@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // StackScriptModel describes the Terraform resource data model to match the
@@ -40,7 +39,7 @@ func (data *StackScriptModel) parseStackScript(
 	data.Label = types.StringValue(stackscript.Label)
 	data.Script = types.StringValue(stackscript.Script)
 	data.Description = types.StringValue(stackscript.Description)
-	data.RevNote = helper.GetValueIfNotNull(stackscript.RevNote)
+	data.RevNote = types.StringValue(stackscript.RevNote)
 	data.IsPublic = types.BoolValue(stackscript.IsPublic)
 
 	images, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)

@@ -5,7 +5,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -25,6 +28,9 @@ var frameworkResourceSchema = schema.Schema{
 		"id": schema.StringAttribute{
 			Description: "The StackScript's unique ID.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 
 		"label": schema.StringAttribute{
@@ -42,6 +48,11 @@ var frameworkResourceSchema = schema.Schema{
 		"rev_note": schema.StringAttribute{
 			Description: "This field allows you to add notes for the set of revisions made to this StackScript.",
 			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString(""),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"is_public": schema.BoolAttribute{
 			Description: "This determines whether other users can use your StackScript. Once a StackScript is " +
@@ -51,6 +62,7 @@ var frameworkResourceSchema = schema.Schema{
 			Computed: true,
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
+				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"images": schema.ListAttribute{
@@ -63,22 +75,37 @@ var frameworkResourceSchema = schema.Schema{
 		"deployments_active": schema.Int64Attribute{
 			Description: "Count of currently active, deployed Linodes created from this StackScript.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"user_gravatar_id": schema.StringAttribute{
 			Description: "The Gravatar ID for the User who created the StackScript.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"deployments_total": schema.Int64Attribute{
 			Description: "The total number of times this StackScript has been deployed.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"username": schema.StringAttribute{
 			Description: "The User who created the StackScript.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"created": schema.StringAttribute{
 			Description: "The date this StackScript was created.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"updated": schema.StringAttribute{
 			Description: "The date this StackScript was updated.",
