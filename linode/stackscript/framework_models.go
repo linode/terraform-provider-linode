@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // StackScriptModel describes the Terraform resource data model to match the
@@ -31,16 +32,45 @@ type StackScriptModel struct {
 	UserDefinedFields basetypes.ListValue `tfsdk:"user_defined_fields"`
 }
 
-func (data *StackScriptModel) parseStackScript(
+func (data *StackScriptModel) parseNonComputedAttributes(
+	ctx context.Context,
+	stackscript *linodego.Stackscript,
+) diag.Diagnostics {
+	var diagnostics diag.Diagnostics
+
+	data.Label = types.StringValue(stackscript.Label)
+	data.Script = types.StringValue(stackscript.Script)
+	data.Description = types.StringValue(stackscript.Description)
+
+	// These fields have schema-defined defaults,
+	// so this should not cause comparison issues
+	data.RevNote = types.StringValue(stackscript.RevNote)
+	data.IsPublic = types.BoolValue(stackscript.IsPublic)
+
+	// Only update the images return if there is a change
+	var plannedImages []string
+	diagnostics.Append(data.Images.ElementsAs(ctx, &plannedImages, false)...)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+
+	if !helper.StringListElementsEqual(plannedImages, stackscript.Images) {
+		remoteImages, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
+		if err != nil {
+			return err
+		}
+
+		data.Images = remoteImages
+	}
+
+	return diagnostics
+}
+
+func (data *StackScriptModel) parseComputedAttributes(
 	ctx context.Context,
 	stackscript *linodego.Stackscript,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(strconv.Itoa(stackscript.ID))
-	data.Label = types.StringValue(stackscript.Label)
-	data.Script = types.StringValue(stackscript.Script)
-	data.Description = types.StringValue(stackscript.Description)
-	data.RevNote = types.StringValue(stackscript.RevNote)
-	data.IsPublic = types.BoolValue(stackscript.IsPublic)
 
 	images, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
 	if err != nil {
