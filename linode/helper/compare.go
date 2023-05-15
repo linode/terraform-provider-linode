@@ -28,7 +28,8 @@ func CompareTimeWithTimeString(t1 *time.Time, t2 string, timeFormat string) bool
 	return t1.Equal(parsedT2)
 }
 
-func StringListEqual(a, b []string) bool {
+// Check if two string lists contain the same elements regardless of order
+func StringListElementsEqual(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -57,5 +58,5 @@ func CompareScopes(s1, s2 string) bool {
 
 	s1List := strings.Split(s1, " ")
 	s2List := strings.Split(s2, " ")
-	return StringListEqual(s1List, s2List)
+	return StringListElementsEqual(s1List, s2List)
 }
