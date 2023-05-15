@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -89,9 +88,6 @@ var frameworkResourceSchema = schema.Schema{
 		"deployments_active": schema.Int64Attribute{
 			Description: "Count of currently active, deployed Linodes created from this StackScript.",
 			Computed:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
 		},
 		"user_gravatar_id": schema.StringAttribute{
 			Description: "The Gravatar ID for the User who created the StackScript.",
@@ -103,9 +99,6 @@ var frameworkResourceSchema = schema.Schema{
 		"deployments_total": schema.Int64Attribute{
 			Description: "The total number of times this StackScript has been deployed.",
 			Computed:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
 		},
 		"username": schema.StringAttribute{
 			Description: "The User who created the StackScript.",
