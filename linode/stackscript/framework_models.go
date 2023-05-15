@@ -74,14 +74,6 @@ func (data *StackScriptModel) parseComputedAttributes(
 	var diagnostics diag.Diagnostics
 
 	data.ID = types.StringValue(strconv.Itoa(stackscript.ID))
-
-	images, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
-	diagnostics.Append(err...)
-	if diagnostics.HasError() {
-		return diagnostics
-	}
-
-	data.Images = images
 	data.DeploymentsActive = types.Int64Value(int64(stackscript.DeploymentsActive))
 	data.UserGravatarID = types.StringValue(stackscript.UserGravatarID)
 	data.DeploymentsTotal = types.Int64Value(int64(stackscript.DeploymentsTotal))
