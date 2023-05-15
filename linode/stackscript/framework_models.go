@@ -56,8 +56,9 @@ func (data *StackScriptModel) parseNonComputedAttributes(
 
 	if !helper.StringListElementsEqual(plannedImages, stackscript.Images) {
 		remoteImages, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
-		if err != nil {
-			return err
+		diagnostics.Append(err...)
+		if diagnostics.HasError() {
+			return diagnostics
 		}
 
 		data.Images = remoteImages
@@ -70,11 +71,14 @@ func (data *StackScriptModel) parseComputedAttributes(
 	ctx context.Context,
 	stackscript *linodego.Stackscript,
 ) diag.Diagnostics {
+	var diagnostics diag.Diagnostics
+
 	data.ID = types.StringValue(strconv.Itoa(stackscript.ID))
 
 	images, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
-	if err != nil {
-		return err
+	diagnostics.Append(err...)
+	if diagnostics.HasError() {
+		return diagnostics
 	}
 
 	data.Images = images
@@ -87,18 +91,21 @@ func (data *StackScriptModel) parseComputedAttributes(
 
 	if stackscript.UserDefinedFields != nil {
 		udf, err := flattenUserDefinedFields(*stackscript.UserDefinedFields)
-		if err != nil {
-			return err
+		diagnostics.Append(err...)
+		if diagnostics.HasError() {
+			return diagnostics
 		}
 
 		data.UserDefinedFields = *udf
 	}
 
-	return nil
+	return diagnostics
 }
 
 // flattenUserDefinedFields flattens a list of linodego UDF objects into a basetypes.ListValue
 func flattenUserDefinedFields(udf []linodego.StackscriptUDF) (*basetypes.ListValue, diag.Diagnostics) {
+	var diagnostics diag.Diagnostics
+
 	resultList := make([]attr.Value, len(udf))
 
 	for i, field := range udf {
@@ -111,8 +118,9 @@ func flattenUserDefinedFields(udf []linodego.StackscriptUDF) (*basetypes.ListVal
 		valueMap["default"] = types.StringValue(field.Default)
 
 		obj, err := types.ObjectValue(udfObjectType.AttrTypes, valueMap)
-		if err != nil {
-			return nil, err
+		diagnostics.Append(err...)
+		if diagnostics.HasError() {
+			return nil, diagnostics
 		}
 
 		resultList[i] = obj
@@ -122,8 +130,9 @@ func flattenUserDefinedFields(udf []linodego.StackscriptUDF) (*basetypes.ListVal
 		udfObjectType,
 		resultList,
 	)
-	if err != nil {
-		return nil, err
+	diagnostics.Append(err...)
+	if diagnostics.HasError() {
+		return nil, diagnostics
 	}
 
 	return &result, nil
