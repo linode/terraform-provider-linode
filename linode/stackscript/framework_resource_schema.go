@@ -1,6 +1,8 @@
 package stackscript
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -61,7 +63,19 @@ var frameworkResourceSchema = schema.Schema{
 			Optional: true,
 			Computed: true,
 			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.RequiresReplace(),
+				boolplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						request planmodifier.BoolRequest,
+						response *boolplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						if !request.PlanValue.ValueBool() && request.StateValue.ValueBool() {
+							response.RequiresReplace = true
+						}
+					},
+					"Replaces should only be required when attempting to make a StackScript private.",
+					"Replaces should only be required when attempting to make a StackScript private.",
+				),
 				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
