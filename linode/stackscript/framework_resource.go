@@ -98,7 +98,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -148,7 +148,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.parseNonComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -211,11 +212,12 @@ func (r *Resource) Delete(
 	client := r.client
 	err := client.DeleteStackscript(ctx, stackscriptID)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete the StackScript with id %v", stackscriptID),
-			err.Error(),
-		)
-		return
+		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete the StackScript with id %v", stackscriptID),
+				err.Error(),
+			)
+		}
 	}
 }
 
@@ -241,7 +243,7 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	stackScript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
+	stackscript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to update the StackScript with id %v", stackScriptID),
@@ -250,7 +252,7 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	resp.Diagnostics.Append(plan.parseStackScript(ctx, stackScript)...)
+	resp.Diagnostics.Append(plan.parseComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
