@@ -3,12 +3,10 @@ package token
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -19,15 +17,6 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	client *linodego.Client
-}
-
-func (data *ResourceModel) parseToken(token *linodego.Token) {
-	data.Created = types.StringValue(token.Created.Format(time.RFC3339))
-	data.Expiry = types.StringValue(token.Expiry.Format(time.RFC3339))
-	data.Label = types.StringValue(token.Label)
-	data.Scopes = types.StringValue(token.Scopes)
-	data.Token = types.StringValue(token.Token)
-	data.ID = types.StringValue(strconv.Itoa(token.ID))
 }
 
 func (r *Resource) Configure(
@@ -46,17 +35,6 @@ func (r *Resource) Configure(
 	}
 
 	r.client = meta.Client
-}
-
-// ResourceModel describes the Terraform resource data model to match the
-// resource schema.
-type ResourceModel struct {
-	Label   types.String `tfsdk:"label"`
-	Scopes  types.String `tfsdk:"scopes"`
-	Expiry  types.String `tfsdk:"expiry"`
-	Created types.String `tfsdk:"created"`
-	Token   types.String `tfsdk:"token"`
-	ID      types.String `tfsdk:"id"`
 }
 
 func (r *Resource) Metadata(
@@ -125,7 +103,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseToken(token)
+	data.parseComputedAttributes(token, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -171,7 +149,9 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseToken(token)
+	data.parseComputedAttributes(token, true)
+	data.parseNonComputedAttributes(token)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -202,7 +182,7 @@ func (r *Resource) Update(
 		updateOpts := token.GetUpdateOptions()
 		updateOpts.Label = plan.Label.ValueString()
 
-		token, err = client.UpdateToken(ctx, token.ID, updateOpts)
+		_, err = client.UpdateToken(ctx, token.ID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update the token with id %v", tokenID),
@@ -210,10 +190,8 @@ func (r *Resource) Update(
 			)
 			return
 		}
-
-		state.parseToken(token)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(
@@ -236,10 +214,12 @@ func (r *Resource) Delete(
 	client := r.client
 	err := client.DeleteToken(ctx, tokenID)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete the token with id %v", tokenID),
-			err.Error(),
-		)
+		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete the token with id %v", tokenID),
+				err.Error(),
+			)
+		}
 		return
 	}
 

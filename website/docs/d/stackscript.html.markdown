@@ -40,7 +40,7 @@ This resource exports the following attributes:
 
 * `is_public` - This determines whether other users can use your StackScript. Once a StackScript is made public, it cannot be made private.
 
-* `images` - An array of Image IDs representing the Images that this StackScript is compatible for deploying with. `any/all` indicates that all available image distributions, including private images, are accepted.
+* `images` - A set of Image IDs representing the Images that this StackScript is compatible for deploying with. `any/all` indicates that all available image distributions, including private images, are accepted.
 
 * `deployments_active` - Count of currently active, deployed Linodes created from this StackScript.
 
