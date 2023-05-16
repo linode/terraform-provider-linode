@@ -19,7 +19,10 @@ func (dtv DateTimeStringValidator) Description(ctx context.Context) string {
 }
 
 func (dtv DateTimeStringValidator) MarkdownDescription(ctx context.Context) string {
-	return fmt.Sprintf("value must meet ISO 8601 standard format, e.g., '%s'.", time.RFC3339)
+	return fmt.Sprintf(
+		"value must meet RFC3339 standard and in format of '%s'.",
+		TIME_FORMAT,
+	)
 }
 
 func (dtv DateTimeStringValidator) ValidateString(

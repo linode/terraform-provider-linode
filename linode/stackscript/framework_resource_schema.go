@@ -1,11 +1,15 @@
 package stackscript
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -25,6 +29,9 @@ var frameworkResourceSchema = schema.Schema{
 		"id": schema.StringAttribute{
 			Description: "The StackScript's unique ID.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 
 		"label": schema.StringAttribute{
@@ -42,6 +49,11 @@ var frameworkResourceSchema = schema.Schema{
 		"rev_note": schema.StringAttribute{
 			Description: "This field allows you to add notes for the set of revisions made to this StackScript.",
 			Optional:    true,
+			Computed:    true,
+			Default:     stringdefault.StaticString(""),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"is_public": schema.BoolAttribute{
 			Description: "This determines whether other users can use your StackScript. Once a StackScript is " +
@@ -50,10 +62,23 @@ var frameworkResourceSchema = schema.Schema{
 			Optional: true,
 			Computed: true,
 			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.RequiresReplace(),
+				boolplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						request planmodifier.BoolRequest,
+						response *boolplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						if !request.PlanValue.ValueBool() && request.StateValue.ValueBool() {
+							response.RequiresReplace = true
+						}
+					},
+					"Replaces should only be required when attempting to make a StackScript private.",
+					"Replaces should only be required when attempting to make a StackScript private.",
+				),
+				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"images": schema.ListAttribute{
+		"images": schema.SetAttribute{
 			Description: "An array of Image IDs representing the Images that this StackScript is compatible for " +
 				"deploying with.",
 			ElementType: types.StringType,
@@ -67,6 +92,9 @@ var frameworkResourceSchema = schema.Schema{
 		"user_gravatar_id": schema.StringAttribute{
 			Description: "The Gravatar ID for the User who created the StackScript.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"deployments_total": schema.Int64Attribute{
 			Description: "The total number of times this StackScript has been deployed.",
@@ -75,10 +103,16 @@ var frameworkResourceSchema = schema.Schema{
 		"username": schema.StringAttribute{
 			Description: "The User who created the StackScript.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"created": schema.StringAttribute{
 			Description: "The date this StackScript was created.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"updated": schema.StringAttribute{
 			Description: "The date this StackScript was updated.",

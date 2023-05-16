@@ -33,7 +33,7 @@ var frameworkDataSourceSchema = schema.Schema{
 				"made public, it cannot be made private.",
 			Computed: true,
 		},
-		"images": schema.ListAttribute{
+		"images": schema.SetAttribute{
 			Description: "An array of Image IDs representing the Images that this StackScript is compatible for " +
 				"deploying with.",
 			ElementType: types.StringType,
