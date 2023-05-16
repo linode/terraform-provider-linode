@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	LinodeImageCreateTimeout = 20 * time.Minute
+	LinodeImageCreateTimeout = 25 * time.Minute
 )
 
 func Resource() *schema.Resource {
