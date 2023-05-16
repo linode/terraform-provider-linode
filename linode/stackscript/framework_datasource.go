@@ -82,7 +82,8 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.parseNonComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
