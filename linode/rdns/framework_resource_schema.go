@@ -28,6 +28,9 @@ var frameworkResourceSchema = schema.Schema{
 			Validators: []validator.String{
 				helper.NewStringLengthValidator(3, 254),
 			},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"wait_for_available": schema.BoolAttribute{
 			Description: "If true, the RDNS assignment will be retried within the operation timeout period.",

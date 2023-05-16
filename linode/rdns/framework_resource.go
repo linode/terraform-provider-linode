@@ -20,7 +20,11 @@ type Resource struct {
 
 func (data *ResourceModel) parseIP(ip *linodego.InstanceIP) {
 	data.Address = types.StringValue(ip.Address)
-	data.RDNS = types.StringValue(ip.RDNS)
+
+	if data.RDNS != types.StringValue(ip.RDNS) {
+		data.RDNS = types.StringValue(ip.RDNS)
+	}
+
 	data.ID = types.StringValue(ip.Address)
 }
 
