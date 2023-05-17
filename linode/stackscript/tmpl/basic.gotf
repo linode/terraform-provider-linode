@@ -6,7 +6,7 @@ resource "linode_stackscript" "foobar" {
 #!/bin/bash
 echo hello
 EOF
-    images = ["linode/ubuntu18.04"]
+    images = ["linode/ubuntu22.04"]
     description = "tf_test stackscript"
     rev_note = "initial"
 }
