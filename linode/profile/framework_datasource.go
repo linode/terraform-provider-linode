@@ -127,8 +127,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.parseProfile(ctx, profile)
-
 	resp.Diagnostics.Append(data.parseProfile(ctx, profile)...)
 	if resp.Diagnostics.HasError() {
 		return
