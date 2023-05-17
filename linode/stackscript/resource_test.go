@@ -152,7 +152,7 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.label", "a label"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.default", "a default"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.example", "an example"),
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s", stackscriptName)),
+					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
 			{
