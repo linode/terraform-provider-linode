@@ -38,7 +38,8 @@ func TestAccDataSourceStackscript_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rev_note", "initial"),
 					resource.TestCheckResourceAttr(resourceName, "script", basicStackScript),
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
-					acceptance.CheckListContains(resourceName, "images", "linode/ubuntu18.04"),
+					// commented as some test accounts does not have..
+					// acceptance.CheckListContains(resourceName, "images", "linode/ubuntu18.04"),
 					acceptance.CheckListContains(resourceName, "images", "linode/ubuntu16.04lts"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.0.name", "name"),
