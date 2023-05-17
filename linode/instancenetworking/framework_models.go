@@ -2,6 +2,7 @@ package instancenetworking
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -9,6 +10,41 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 )
+
+type DataSourceModel struct {
+	LinodeID types.Int64  `tfsdk:"linode_id"`
+	IPV4     types.Object `tfsdk:"ipv4"`
+	IPV6     types.Object `tfsdk:"ipv6"`
+	ID       types.String `tfsdk:"id"`
+}
+
+func (data *DataSourceModel) parseInstanceIPAddressResponse(
+	ctx context.Context, ip *linodego.InstanceIPAddressResponse,
+) diag.Diagnostics {
+	ipv4, diags := flattenIPv4(ctx, ip.IPv4)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.IPV4 = *ipv4
+
+	ipv6, diags := flattenIPv6(ctx, ip.IPv6)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.IPV6 = *ipv6
+
+	id, err := json.Marshal(ip)
+	if err != nil {
+		diags.AddError("Error marshalling json: %s", err.Error())
+		return diags
+	}
+
+	data.ID = types.StringValue(string(id))
+
+	return nil
+}
 
 func flattenIPv4(ctx context.Context, network *linodego.InstanceIPv4Response) (
 	*basetypes.ObjectValue, diag.Diagnostics,
