@@ -1,10 +1,11 @@
 package helper
 
 import (
-	"github.com/go-resty/resty/v2"
 	"log"
 	"net/url"
 	"regexp"
+
+	"github.com/go-resty/resty/v2"
 )
 
 // Workaround for intermittent 5xx errors when retrieving a database from the API
