@@ -109,7 +109,7 @@ func (c *Config) Client() (*linodego.Client, error) {
 	}
 	client.SetUserAgent(userAgent)
 	client.AddRetryCondition(Database502Retry())
-	client.AddRetryCondition(RetryDeadlineExceed())
+	client.AddRetryCondition(LinodeInstance500Retry())
 
 	return &client, nil
 }
