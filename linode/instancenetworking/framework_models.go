@@ -13,8 +13,8 @@ import (
 
 type DataSourceModel struct {
 	LinodeID types.Int64  `tfsdk:"linode_id"`
-	IPV4     types.Object `tfsdk:"ipv4"`
-	IPV6     types.Object `tfsdk:"ipv6"`
+	IPV4     types.List   `tfsdk:"ipv4"`
+	IPV6     types.List   `tfsdk:"ipv6"`
 	ID       types.String `tfsdk:"id"`
 }
 
@@ -47,7 +47,7 @@ func (data *DataSourceModel) parseInstanceIPAddressResponse(
 }
 
 func flattenIPv4(ctx context.Context, network *linodego.InstanceIPv4Response) (
-	*basetypes.ObjectValue, diag.Diagnostics,
+	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
 
@@ -81,11 +81,21 @@ func flattenIPv4(ctx context.Context, network *linodego.InstanceIPv4Response) (
 		return nil, diag
 	}
 
-	return &obj, nil
+	objList := []attr.Value{obj}
+
+	resultList, diag := basetypes.NewListValue(
+		ipv4ObjectType,
+		objList,
+	)
+	if diag.HasError() {
+		return nil, diag
+	}
+
+	return &resultList, nil
 }
 
 func flattenIPv6(ctx context.Context, network *linodego.InstanceIPv6Response) (
-	*basetypes.ObjectValue, diag.Diagnostics,
+	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
 
@@ -113,7 +123,17 @@ func flattenIPv6(ctx context.Context, network *linodego.InstanceIPv6Response) (
 		return nil, diag
 	}
 
-	return &obj, nil
+	objList := []attr.Value{obj}
+
+	resultList, diag := basetypes.NewListValue(
+		ipv6ObjectType,
+		objList,
+	)
+	if diag.HasError() {
+		return nil, diag
+	}
+
+	return &resultList, nil
 }
 
 func flattenIP(ctx context.Context, network *linodego.InstanceIP) (

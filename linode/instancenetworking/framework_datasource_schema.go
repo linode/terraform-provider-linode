@@ -50,15 +50,15 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The ID of the Linode for network info.",
 			Required:    true,
 		},
-		"ipv4": schema.ObjectAttribute{
+		"ipv4": schema.ListAttribute{
 			Description: "Information about this Linode’s IPv4 addresses.",
 			Computed:    true,
-			CustomType:  ipv4ObjectType,
+			ElementType: ipv4ObjectType,
 		},
-		"ipv6": schema.ObjectAttribute{
+		"ipv6": schema.ListAttribute{
 			Description: "Information about this Linode’s IPv6 addresses.",
 			Computed:    true,
-			CustomType:  ipv6ObjectType,
+			ElementType: ipv6ObjectType,
 		},
 		"id": schema.StringAttribute{
 			Description: "Unique identifier for this DataSource.",
