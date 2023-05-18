@@ -55,7 +55,6 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	println("read datasource")
 	var data FirewallModel
 	client := d.client
 
