@@ -66,3 +66,23 @@ func (r *DataSource) Read(
 
 	resp.Diagnostics.AddWarning(result, "")
 }
+
+func listRegions(ctx context.Context, client linodego.Client, filter string) ([]map[string]any, error) {
+	regions, err := client.ListRegions(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]map[string]any, len(regions))
+	for i, region := range regions {
+		result[i] = map[string]any{
+			"capabilities": region.Capabilities,
+			"country":      region.Country,
+			"status":       region.Status,
+		}
+	}
+
+	return result, nil
+}
