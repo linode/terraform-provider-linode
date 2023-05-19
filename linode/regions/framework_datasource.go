@@ -61,7 +61,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	result, d := helper.ConstructFilterString(ctx, data.Filters)
+	result, d := filterConfig.ConstructFilterString(ctx, data.Filters)
 	resp.Diagnostics.Append(d...)
 
 	resp.Diagnostics.AddWarning(result, "")

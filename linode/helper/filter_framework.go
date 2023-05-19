@@ -47,7 +47,7 @@ type FrameworkFilterAttribute struct {
 
 type FrameworkFilterConfig map[string]FrameworkFilterAttribute
 
-func ConstructFilterString(ctx context.Context, filterSet types.Set) (string, diag.Diagnostics) {
+func (f FrameworkFilterConfig) ConstructFilterString(ctx context.Context, filterSet types.Set) (string, diag.Diagnostics) {
 	var diagnostics diag.Diagnostics
 	var filterObjects []types.Object
 
@@ -71,6 +71,14 @@ func ConstructFilterString(ctx context.Context, filterSet types.Set) (string, di
 			return "", diagnostics
 		}
 
+		// Get string attributes
+		filterFieldName := filterModel.Name.ValueString()
+
+		// We should only use API filters when matching on exact
+		if !filterModel.MatchBy.IsNull() && filterModel.MatchBy.ValueString() != "exact" {
+			continue
+		}
+
 		// Parse out the accepted values
 		var filterFieldValues []types.String
 
@@ -80,9 +88,6 @@ func ConstructFilterString(ctx context.Context, filterSet types.Set) (string, di
 		if diagnostics.HasError() {
 			return "", diagnostics
 		}
-
-		// Get other attributes
-		filterFieldName := filterModel.Name.ValueString()
 
 		// Build the +or filter
 		currentFilter := make([]map[string]any, len(filterFieldValues))
