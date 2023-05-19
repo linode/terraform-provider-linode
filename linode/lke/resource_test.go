@@ -167,9 +167,9 @@ func TestAccResourceLKECluster_basic(t *testing.T) {
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
@@ -202,9 +202,9 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ManyPools(t, clusterName, k8sVersionPrevious, testRegion),
@@ -297,9 +297,9 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	newClusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
@@ -341,9 +341,9 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
@@ -386,9 +386,9 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	// newClusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
@@ -459,9 +459,9 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	// newClusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckLKEClusterDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),

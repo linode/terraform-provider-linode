@@ -17,8 +17,8 @@ func TestAccDataSourceRegions_basic(t *testing.T) {
 	resourceName := "data.linode_regions.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t),
@@ -64,8 +64,8 @@ func TestAccDataSourceRegions_filterByCountry(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataFilterCountry(t, country, status, randomCapability),
@@ -111,8 +111,8 @@ func TestAccDataSourceRegions_filterByStatus(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataFilterStatus(t, country, status, randomCapability),
@@ -158,8 +158,8 @@ func TestAccDataSourceRegions_filterByCapabilities(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataFilterCapabilities(t, country, status, randomCapability),

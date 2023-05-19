@@ -39,7 +39,7 @@ func TestAccResourceFirewallDevice_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion),

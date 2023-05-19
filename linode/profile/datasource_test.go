@@ -14,8 +14,8 @@ func TestAccDataSourceProfile_basic(t *testing.T) {
 	resourceName := "data.linode_profile.user"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t),
@@ -30,13 +30,12 @@ func TestAccDataSourceProfile_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "authorized_keys.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "restricted"),
 					resource.TestCheckResourceAttrSet(resourceName, "two_factor_auth"),
-					resource.TestCheckResourceAttr(resourceName, "referrals.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.code"),
-					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.url"),
 					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.total"),
 					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.credit"),
 					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.completed"),
 					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.pending"),
+					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.code"),
+					resource.TestCheckResourceAttrSet(resourceName, "referrals.0.url"),
 				),
 			},
 		},

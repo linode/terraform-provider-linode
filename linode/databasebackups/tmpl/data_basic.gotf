@@ -1,6 +1,6 @@
 {{ define "database_backups_data_basic" }}
 
-resource "linode_database_mongodb" "foobar" {
+resource "linode_database_postgresql" "foobar" {
     engine_id = "{{.Engine}}"
     label = "{{.Label}}"
     region = "{{ .Region }}"
@@ -8,8 +8,8 @@ resource "linode_database_mongodb" "foobar" {
 }
 
 data "linode_database_backups" "foobar" {
-    database_id = linode_database_mongodb.foobar.id
-    database_type = "mongodb"
+    database_id = linode_database_postgresql.foobar.id
+    database_type = "postgresql"
 
     filter {
         name = "type"

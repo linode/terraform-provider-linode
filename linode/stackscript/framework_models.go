@@ -21,7 +21,7 @@ type StackScriptModel struct {
 	Description       types.String        `tfsdk:"description"`
 	RevNote           types.String        `tfsdk:"rev_note"`
 	IsPublic          types.Bool          `tfsdk:"is_public"`
-	Images            types.List          `tfsdk:"images"`
+	Images            types.Set           `tfsdk:"images"`
 	DeploymentsActive types.Int64         `tfsdk:"deployments_active"`
 	UserGravatarID    types.String        `tfsdk:"user_gravatar_id"`
 	DeploymentsTotal  types.Int64         `tfsdk:"deployments_total"`
@@ -31,23 +31,40 @@ type StackScriptModel struct {
 	UserDefinedFields basetypes.ListValue `tfsdk:"user_defined_fields"`
 }
 
-func (data *StackScriptModel) parseStackScript(
+func (data *StackScriptModel) parseNonComputedAttributes(
 	ctx context.Context,
 	stackscript *linodego.Stackscript,
 ) diag.Diagnostics {
-	data.ID = types.StringValue(strconv.Itoa(stackscript.ID))
+	var diagnostics diag.Diagnostics
+
 	data.Label = types.StringValue(stackscript.Label)
 	data.Script = types.StringValue(stackscript.Script)
 	data.Description = types.StringValue(stackscript.Description)
+
+	// These fields have schema-defined defaults,
+	// so this should not cause comparison issues
 	data.RevNote = types.StringValue(stackscript.RevNote)
 	data.IsPublic = types.BoolValue(stackscript.IsPublic)
 
-	images, err := types.ListValueFrom(ctx, types.StringType, stackscript.Images)
-	if err != nil {
-		return err
+	// Only update the images return if there is a change
+	remoteImages, err := types.SetValueFrom(ctx, types.StringType, stackscript.Images)
+	diagnostics.Append(err...)
+	if diagnostics.HasError() {
+		return diagnostics
 	}
 
-	data.Images = images
+	data.Images = remoteImages
+
+	return diagnostics
+}
+
+func (data *StackScriptModel) parseComputedAttributes(
+	ctx context.Context,
+	stackscript *linodego.Stackscript,
+) diag.Diagnostics {
+	var diagnostics diag.Diagnostics
+
+	data.ID = types.StringValue(strconv.Itoa(stackscript.ID))
 	data.DeploymentsActive = types.Int64Value(int64(stackscript.DeploymentsActive))
 	data.UserGravatarID = types.StringValue(stackscript.UserGravatarID)
 	data.DeploymentsTotal = types.Int64Value(int64(stackscript.DeploymentsTotal))
@@ -57,18 +74,21 @@ func (data *StackScriptModel) parseStackScript(
 
 	if stackscript.UserDefinedFields != nil {
 		udf, err := flattenUserDefinedFields(*stackscript.UserDefinedFields)
-		if err != nil {
-			return err
+		diagnostics.Append(err...)
+		if diagnostics.HasError() {
+			return diagnostics
 		}
 
 		data.UserDefinedFields = *udf
 	}
 
-	return nil
+	return diagnostics
 }
 
 // flattenUserDefinedFields flattens a list of linodego UDF objects into a basetypes.ListValue
 func flattenUserDefinedFields(udf []linodego.StackscriptUDF) (*basetypes.ListValue, diag.Diagnostics) {
+	var diagnostics diag.Diagnostics
+
 	resultList := make([]attr.Value, len(udf))
 
 	for i, field := range udf {
@@ -81,8 +101,9 @@ func flattenUserDefinedFields(udf []linodego.StackscriptUDF) (*basetypes.ListVal
 		valueMap["default"] = types.StringValue(field.Default)
 
 		obj, err := types.ObjectValue(udfObjectType.AttrTypes, valueMap)
-		if err != nil {
-			return nil, err
+		diagnostics.Append(err...)
+		if diagnostics.HasError() {
+			return nil, diagnostics
 		}
 
 		resultList[i] = obj
@@ -92,8 +113,9 @@ func flattenUserDefinedFields(udf []linodego.StackscriptUDF) (*basetypes.ListVal
 		udfObjectType,
 		resultList,
 	)
-	if err != nil {
-		return nil, err
+	diagnostics.Append(err...)
+	if diagnostics.HasError() {
+		return nil, diagnostics
 	}
 
 	return &result, nil
