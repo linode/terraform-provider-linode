@@ -112,7 +112,8 @@ func (d *DataSource) Read(
 		record = rec
 	} else if data.Name.ValueString() != "" {
 		filter, _ := json.Marshal(map[string]interface{}{"name": data.Name.ValueString()})
-		records, err := client.ListDomainRecords(ctx, int(data.DomainID.ValueInt64()), linodego.NewListOptions(0, string(filter)))
+		records, err := client.ListDomainRecords(ctx, int(data.DomainID.ValueInt64()),
+			linodego.NewListOptions(0, string(filter)))
 		if err != nil {
 			resp.Diagnostics.AddError("Error listing domain records: %v", err.Error())
 			return
@@ -126,7 +127,8 @@ func (d *DataSource) Read(
 		data.parseDomainRecord(record)
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	} else {
-		resp.Diagnostics.AddError(fmt.Sprintf(`Domain record "%s" for domain %s was not found`, data.Name.ValueString(), data.DomainID.String()), "")
+		resp.Diagnostics.AddError(fmt.Sprintf(`Domain record "%s" for domain %s was not found`,
+			data.Name.ValueString(), data.DomainID.String()), "")
 		return
 	}
 }
