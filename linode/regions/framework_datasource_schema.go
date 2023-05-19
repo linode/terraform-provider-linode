@@ -13,6 +13,6 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 	},
 	Blocks: map[string]schema.Block{
-		"filters": helper.FrameworkFilterSchema,
+		"filter": helper.FrameworkFilterSchema,
 	},
 }

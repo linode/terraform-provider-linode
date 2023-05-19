@@ -47,7 +47,7 @@ type FrameworkFilterAttribute struct {
 
 type FrameworkFilterConfig map[string]FrameworkFilterAttribute
 
-func (f FrameworkFilterConfig) ConstructFilterString(ctx context.Context, filterSet types.Set) (string, diag.Diagnostics) {
+func ConstructFilterString(ctx context.Context, filterSet types.Set) (string, diag.Diagnostics) {
 	var diagnostics diag.Diagnostics
 	var filterObjects []types.Object
 
@@ -82,7 +82,7 @@ func (f FrameworkFilterConfig) ConstructFilterString(ctx context.Context, filter
 		}
 
 		// Get other attributes
-		filterFieldName := filterModel.Name.String()
+		filterFieldName := filterModel.Name.ValueString()
 
 		// Build the +or filter
 		currentFilter := make([]map[string]any, len(filterFieldValues))
