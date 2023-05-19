@@ -10,6 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
@@ -118,5 +119,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		profile.NewDataSource,
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
+		ipv6range.NewDataSource,
 	}
 }
