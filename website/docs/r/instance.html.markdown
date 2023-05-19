@@ -262,6 +262,8 @@ This Linode Instance resource exports the following attributes:
 
 * `ip_address` - A string containing the Linode's public IP address.
 
+* `ipv6_address` - A string containing the Linode's public IPv6 address without the prefix.
+
 * `private_ip_address` - This Linode's Private IPv4 Address, if enabled.  The regional private IP address range, 192.168.128.0/17, is shared by all Linode Instances in a region.
 
 * `ipv6` - This Linode's IPv6 SLAAC addresses. This address is specific to a Linode, and may not be shared.  The prefix (`/64`) is included in this attribute.
