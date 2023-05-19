@@ -109,5 +109,5 @@ func (f FrameworkFilterConfig) ConstructFilterString(ctx context.Context, filter
 		)
 	}
 
-	return result, diagnostics
+	return string(result), diagnostics
 }
