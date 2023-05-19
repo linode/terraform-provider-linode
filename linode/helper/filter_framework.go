@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -32,9 +33,9 @@ var FrameworkFilterSchema = schema.SetNestedBlock{
 // FrameworkFilterModel describes the Terraform resource data model to match the
 // resource schema.
 type FrameworkFilterModel struct {
-	Name    types.String       `tfsdk:"name"`
-	Values  basetypes.SetValue `tfsdk:"values"`
-	MatchBy types.String       `tfsdk:"match_by"`
+	Name    types.String `tfsdk:"name"`
+	Values  types.Set    `tfsdk:"values"`
+	MatchBy types.String `tfsdk:"match_by"`
 }
 
 type FrameworkFiltersType types.Set
@@ -50,8 +51,6 @@ func (f FrameworkFilterConfig) ConstructFilterString(ctx context.Context, filter
 	var diagnostics diag.Diagnostics
 	var filterObjects []types.Object
 
-	resultMap := make(map[string]any)
-
 	diagnostics.Append(
 		filterSet.ElementsAs(ctx, &filterObjects, false)...,
 	)
@@ -59,14 +58,56 @@ func (f FrameworkFilterConfig) ConstructFilterString(ctx context.Context, filter
 		return "", diagnostics
 	}
 
-	for _, filter := range filterObjects {
-		filterAttrs := filter.Attributes()
-		filterFieldName := filterAttrs["name"].String()
+	rootFilter := make([]map[string]any, len(filterObjects))
 
-		if _, ok := resultMap[filterFieldName]; !ok {
+	for filterIndex, filter := range filterObjects {
+		// Parse the model
+		var filterModel FrameworkFilterModel
 
+		diagnostics.Append(
+			filter.As(ctx, &filterModel, basetypes.ObjectAsOptions{})...,
+		)
+		if diagnostics.HasError() {
+			return "", diagnostics
+		}
+
+		// Parse out the accepted values
+		var filterFieldValues []types.String
+
+		diagnostics.Append(
+			filterModel.Values.ElementsAs(ctx, &filterFieldValues, false)...,
+		)
+		if diagnostics.HasError() {
+			return "", diagnostics
+		}
+
+		// Get other attributes
+		filterFieldName := filterModel.Name.String()
+
+		// Build the +or filter
+		currentFilter := make([]map[string]any, len(filterFieldValues))
+
+		for i, value := range filterFieldValues {
+			currentFilter[i] = map[string]any{filterFieldName: value.ValueString()}
+		}
+
+		// Append to the root filter
+		rootFilter[filterIndex] = map[string]any{
+			"+or": currentFilter,
 		}
 	}
 
-	return "cool", diagnostics
+	resultFilter := map[string]any{
+		"+and": rootFilter,
+	}
+
+	result, err := json.Marshal(resultFilter)
+	if err != nil {
+		diagnostics.AddError(
+			"failed to marshal api filter",
+			err.Error(),
+		)
+	}
+
+	return result, diagnostics
 }
