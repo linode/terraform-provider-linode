@@ -10,12 +10,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var testFilterConfig = Config{
-	"capabilities": {APIFilterable: false},
-	"country":      {APIFilterable: false},
-	"status":       {APIFilterable: false},
-}
-
 func TestApplyLocalFiltering(t *testing.T) {
 	type FilterableStruct struct {
 		Foo string `json:"foo"`
@@ -35,6 +29,12 @@ func TestApplyLocalFiltering(t *testing.T) {
 			Name: types.StringValue("bar"),
 			Values: []types.String{
 				types.StringValue("test"),
+			},
+		},
+		{
+			Name: types.StringValue("api_foo"),
+			Values: []types.String{
+				types.StringValue("wow"),
 			},
 		},
 	}

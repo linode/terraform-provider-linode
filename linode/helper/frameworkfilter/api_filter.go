@@ -2,8 +2,6 @@ package frameworkfilter
 
 import (
 	"encoding/json"
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -19,17 +17,8 @@ func (f Config) constructFilterString(
 		// Get string attributes
 		filterFieldName := filter.Name.ValueString()
 
-		// Is this field filterable?
-		filterFieldConfig, ok := f[filterFieldName]
-		if !ok {
-			return "", diag.NewErrorDiagnostic(
-				"Attempted to filter on non-filterable field.",
-				fmt.Sprintf("Attempted to filter on non-filterable field %s.", filterFieldName),
-			)
-		}
-
 		// Skip if this field isn't API filterable
-		if !filterFieldConfig.APIFilterable {
+		if !f[filterFieldName].APIFilterable {
 			continue
 		}
 
@@ -54,6 +43,9 @@ func (f Config) constructFilterString(
 	resultFilter := map[string]any{
 		"+and": rootFilter,
 	}
+
+	// "desc" should be the default order
+	resultFilter["+order"] = "desc"
 
 	if !order.IsNull() {
 		resultFilter["+order"] = order.ValueString()
