@@ -1,4 +1,4 @@
-package helper
+package frameworkfilter
 
 import (
 	"context"
@@ -8,11 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 	"reflect"
 	"strconv"
 )
 
-var FrameworkFilterSchema = schema.SetNestedBlock{
+type ListFunc func(ctx context.Context, client linodego.Client, filter string) ([]any, error)
+type FlattenFunc func(value any) types.Object
+
+var Schema = schema.SetNestedBlock{
 	NestedObject: schema.NestedBlockObject{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -32,29 +36,65 @@ var FrameworkFilterSchema = schema.SetNestedBlock{
 	},
 }
 
-// FrameworkFilterModel describes the Terraform resource data model to match the
+// FilterModel describes the Terraform resource data model to match the
 // resource schema.
-type FrameworkFilterModel struct {
+type FilterModel struct {
 	Name    types.String   `tfsdk:"name"`
 	Values  []types.String `tfsdk:"values"`
 	MatchBy types.String   `tfsdk:"match_by"`
 }
 
-type FrameworkFiltersType types.Set
+type FiltersModelType []FilterModel
 
-type FrameworkFilterAttribute struct {
+type FilterAttribute struct {
 	APIFilterable bool
 	Type          attr.Type
 }
 
-type FrameworkFilterConfig map[string]FrameworkFilterAttribute
+type Config map[string]FilterAttribute
 
-func (f FrameworkFilterConfig) ParseFilterSet(
+func (f Config) DataSourceRead(
+	ctx context.Context,
+	client linodego.Client,
+	filters []FilterModel,
+	listFunc ListFunc,
+	flattenFunc FlattenFunc,
+) ([]types.Object, diag.Diagnostic) {
+	// Construct the API filter string
+	filterStr, d := f.constructFilterString(filters)
+	if d != nil {
+		return nil, d
+	}
+
+	// Call the user-defined list function
+	listedElems, err := listFunc(ctx, client, filterStr)
+	if err != nil {
+		return nil, diag.NewErrorDiagnostic(
+			"Failed to list resources",
+			err.Error(),
+		)
+	}
+
+	// Apply local filtering
+	locallyFilteredElements, d := f.applyLocalFiltering(filters, listedElems)
+	if d != nil {
+		return nil, d
+	}
+
+	result := make([]types.Object, len(locallyFilteredElements))
+	for i, elem := range locallyFilteredElements {
+		result[i] = flattenFunc(elem)
+	}
+
+	return result, nil
+}
+
+func (f Config) ParseFilterSet(
 	ctx context.Context,
 	filterSet types.Set,
-) ([]FrameworkFilterModel, diag.Diagnostics) {
+) ([]FilterModel, diag.Diagnostics) {
 	var diagnostics diag.Diagnostics
-	var result []FrameworkFilterModel
+	var result []FilterModel
 
 	// Parse out the set into an object list
 	diagnostics.Append(
@@ -67,12 +107,9 @@ func (f FrameworkFilterConfig) ParseFilterSet(
 	return result, diagnostics
 }
 
-func (f FrameworkFilterConfig) ConstructFilterString(
-	ctx context.Context,
-	filterSet []FrameworkFilterModel,
-) (string, diag.Diagnostics) {
-	var diagnostics diag.Diagnostics
-
+func (f Config) constructFilterString(
+	filterSet []FilterModel,
+) (string, diag.Diagnostic) {
 	rootFilter := make([]map[string]any, 0)
 
 	for _, filter := range filterSet {
@@ -82,11 +119,10 @@ func (f FrameworkFilterConfig) ConstructFilterString(
 		// Is this field filterable?
 		filterFieldConfig, ok := f[filterFieldName]
 		if !ok {
-			diagnostics.AddError(
+			return "", diag.NewErrorDiagnostic(
 				"Attempted to filter on non-filterable field.",
 				fmt.Sprintf("Attempted to filter on non-filterable field %s.", filterFieldName),
 			)
-			return "", diagnostics
 		}
 
 		// Skip if this field isn't API filterable
@@ -118,27 +154,24 @@ func (f FrameworkFilterConfig) ConstructFilterString(
 
 	result, err := json.Marshal(resultFilter)
 	if err != nil {
-		diagnostics.AddError(
-			"failed to marshal api filter",
+		return "", diag.NewErrorDiagnostic(
+			"Failed to marshal api filter",
 			err.Error(),
 		)
 	}
 
-	return string(result), diagnostics
+	return string(result), nil
 }
 
-func (f FrameworkFilterConfig) ApplyLocalFiltering(
-	ctx context.Context, filterSet []FrameworkFilterModel, data []map[string]any,
-) ([]map[string]any, diag.Diagnostics) {
-	var diagnostics diag.Diagnostics
-
-	result := make([]map[string]any, 0)
+func (f Config) applyLocalFiltering(
+	filterSet []FilterModel, data []any,
+) ([]any, diag.Diagnostic) {
+	result := make([]any, 0)
 
 	for _, elem := range data {
-		match, d := f.MatchesFilter(ctx, filterSet, elem)
-		diagnostics.Append(d...)
-		if diagnostics.HasError() {
-			return nil, diagnostics
+		match, d := f.matchesFilter(filterSet, elem)
+		if d != nil {
+			return nil, d
 		}
 
 		// This element was filtered out
@@ -149,16 +182,13 @@ func (f FrameworkFilterConfig) ApplyLocalFiltering(
 		result = append(result, elem)
 	}
 
-	return result, diagnostics
+	return result, nil
 }
 
-func (f FrameworkFilterConfig) MatchesFilter(
-	ctx context.Context,
-	filterSet []FrameworkFilterModel,
-	elem map[string]any,
-) (bool, diag.Diagnostics) {
-	var diagnostics diag.Diagnostics
-
+func (f Config) matchesFilter(
+	filterSet []FilterModel,
+	elem any,
+) (bool, diag.Diagnostic) {
 	for _, filter := range filterSet {
 		filterName := filter.Name.ValueString()
 
@@ -167,73 +197,66 @@ func (f FrameworkFilterConfig) MatchesFilter(
 			continue
 		}
 
-		matchingField, ok := elem[filterName]
-		if !ok {
-			diagnostics.AddError(
-				"Missing key",
-				fmt.Sprintf("Flattened result map does not contain key %s.", filterName),
-			)
+		// Grab the field from the input struct
+		matchingField, d := f.resolveStructFieldByJSON(elem, filterName)
+		if d != nil {
+			return false, d
 		}
 
+		// Check whether the field matches the filter
 		match, d := f.checkFieldMatchesFilter(matchingField, filter)
-		diagnostics.Append(d...)
-		if diagnostics.HasError() {
-			return match, diagnostics
+		if d != nil {
+			return false, d
 		}
 
 		// No match for this filter; return
 		if !match {
-			return false, diagnostics
+			return false, nil
 		}
 	}
 
-	return true, diagnostics
+	return true, nil
 }
 
-func (f FrameworkFilterConfig) checkFieldMatchesFilter(
+func (f Config) checkFieldMatchesFilter(
 	field any,
-	filter FrameworkFilterModel,
-) (bool, diag.Diagnostics) {
-	var diagnostics diag.Diagnostics
-
+	filter FilterModel,
+) (bool, diag.Diagnostic) {
 	rField := reflect.ValueOf(field)
 
 	// Recursively filter on list elements (tags, capabilities, etc.)
 	if rField.Kind() == reflect.Slice {
 		for i := 0; i < rField.Len(); i++ {
 			match, d := f.checkFieldMatchesFilter(rField.Index(i).Interface(), filter)
-			diagnostics.Append(d...)
-			if diagnostics.HasError() {
-				return false, diagnostics
+			if d != nil {
+				return false, d
 			}
 
 			if match {
-				return true, diagnostics
+				return true, nil
 			}
 		}
 
-		return false, diagnostics
+		return false, nil
 	}
 
 	normalizedValue, d := f.normalizeValue(field)
-	diagnostics.Append(d...)
-	if diagnostics.HasError() {
-		return false, diagnostics
+	if d != nil {
+		return false, d
 	}
 
 	for _, value := range filter.Values {
 		// We have a match
+		// TODO: support other types of equality checks
 		if normalizedValue == value.ValueString() {
-			return true, diagnostics
+			return true, nil
 		}
 	}
 
-	return false, diagnostics
+	return false, nil
 }
 
-func (f FrameworkFilterConfig) normalizeValue(field any) (string, diag.Diagnostics) {
-	var diagnostics diag.Diagnostics
-
+func (f Config) normalizeValue(field any) (string, diag.Diagnostic) {
 	rField := reflect.ValueOf(field)
 
 	// Dereference if the value is a pointer
@@ -248,19 +271,39 @@ func (f FrameworkFilterConfig) normalizeValue(field any) (string, diag.Diagnosti
 
 	switch rField.Interface().(type) {
 	case string:
-		return rField.String(), diagnostics
+		return rField.String(), nil
 	case int, int64:
-		return strconv.FormatInt(rField.Int(), 10), diagnostics
+		return strconv.FormatInt(rField.Int(), 10), nil
 	case bool:
-		return strconv.FormatBool(rField.Bool()), diagnostics
+		return strconv.FormatBool(rField.Bool()), nil
 	case float32, float64:
-		return strconv.FormatFloat(rField.Float(), 'f', 0, 64), diagnostics
+		return strconv.FormatFloat(rField.Float(), 'f', 0, 64), nil
 	default:
-		diagnostics.AddError(
+		return "", diag.NewErrorDiagnostic(
 			"Invalid field type",
 			fmt.Sprintf("Invalid type for field: %s", rField.Type().String()),
 		)
 	}
+}
 
-	return "", diagnostics
+func (f Config) resolveStructFieldByJSON(val any, field string) (any, diag.Diagnostic) {
+	rType := reflect.TypeOf(val)
+
+	var targetField reflect.Value
+
+	for i := 0; i < rType.NumField(); i++ {
+		currentField := rType.Field(i)
+		if tag, ok := currentField.Tag.Lookup("json"); ok && tag == field {
+			targetField = reflect.ValueOf(targetField).Field(i)
+		}
+	}
+
+	if !targetField.IsValid() {
+		return nil, diag.NewErrorDiagnostic(
+			"Field not found",
+			fmt.Sprintf("Could not find JSON tag in target struct: %s", field),
+		)
+	}
+
+	return targetField.Interface(), nil
 }
