@@ -11,24 +11,19 @@ import (
 
 // GetLatestCreated is a helper function that returns the latest
 // create entry in the input slice.
-func (f Config) GetLatestCreated(elems []any, field string) (any, diag.Diagnostic) {
+func (f Config) GetLatestCreated(elems []any, structField string) (any, diag.Diagnostic) {
 	if len(elems) < 1 {
 		return nil, nil
 	}
 
-	timeField, d := resolveStructFieldByJSON(elems[0], field)
-	if d != nil {
-		return nil, d
-	}
-
 	newestElem := elems[0]
-	newestCreated, d := getCreatedTime(newestElem, timeField.Name)
+	newestCreated, d := getCreatedTime(newestElem, structField)
 	if d != nil {
 		return nil, d
 	}
 
 	for _, elem := range elems {
-		currentElemCreated, d := getCreatedTime(elem, timeField.Name)
+		currentElemCreated, d := getCreatedTime(elem, structField)
 		if d != nil {
 			return nil, d
 		}
@@ -43,24 +38,19 @@ func (f Config) GetLatestCreated(elems []any, field string) (any, diag.Diagnosti
 }
 
 // GetLatestVersion gets the latest version of the given struct
-func (f Config) GetLatestVersion(elems []any, field string) (any, diag.Diagnostic) {
+func (f Config) GetLatestVersion(elems []any, structField string) (any, diag.Diagnostic) {
 	if len(elems) < 1 {
 		return nil, nil
 	}
 
-	versionField, d := resolveStructFieldByJSON(elems[0], field)
-	if d != nil {
-		return nil, d
-	}
-
 	newestElem := elems[0]
-	newestVersion, d := getVersion(newestElem, versionField.Name)
+	newestVersion, d := getVersion(newestElem, structField)
 	if d != nil {
 		return nil, d
 	}
 
 	for _, elem := range elems {
-		currentVersion, d := getVersion(elem, versionField.Name)
+		currentVersion, d := getVersion(elem, structField)
 		if d != nil {
 			return nil, d
 		}
@@ -77,6 +67,12 @@ func (f Config) GetLatestVersion(elems []any, field string) (any, diag.Diagnosti
 // getCreatedTime parses a time value from the given elem and field.
 func getCreatedTime(elem any, attr string) (time.Time, diag.Diagnostic) {
 	val := reflect.ValueOf(elem).FieldByName(attr)
+	if !val.IsValid() {
+		return time.Time{}, diag.NewErrorDiagnostic(
+			"Field does not exist",
+			fmt.Sprintf("Field %s does not exist in struct", attr),
+		)
+	}
 
 	// Deref any pointers
 	for val.Kind() == reflect.Ptr {
@@ -97,6 +93,12 @@ func getCreatedTime(elem any, attr string) (time.Time, diag.Diagnostic) {
 // getVersion parses a version value from the given elem and field.
 func getVersion(elem any, attr string) (*version.Version, diag.Diagnostic) {
 	val := reflect.ValueOf(elem).FieldByName(attr)
+	if !val.IsValid() {
+		return nil, diag.NewErrorDiagnostic(
+			"Field does not exist",
+			fmt.Sprintf("Field %s does not exist in struct", attr),
+		)
+	}
 
 	// Deref any pointers
 	for val.Kind() == reflect.Ptr {
