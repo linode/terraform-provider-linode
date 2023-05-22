@@ -47,7 +47,7 @@ func (f Config) Schema() schema.SetNestedBlock {
 				"name": schema.StringAttribute{
 					Required: true,
 					Validators: []validator.String{
-						f.validateFilterable(),
+						f.validateFilterable(false),
 					},
 					Description: "The name of the attribute to filter on.",
 				},
@@ -88,7 +88,7 @@ func (f Config) OrderBySchema() schema.StringAttribute {
 	return schema.StringAttribute{
 		Description: "The attribute to order the results by.",
 		Validators: []validator.String{
-			f.validateFilterable(),
+			f.validateFilterable(true),
 		},
 		Optional: true,
 	}

@@ -10,6 +10,7 @@ import (
 
 type filterNameValidator struct {
 	FilterConfig Config
+	IsOrderBy    bool
 }
 
 func (v filterNameValidator) Description(ctx context.Context) string {
@@ -27,29 +28,55 @@ func (v filterNameValidator) ValidateString(
 ) {
 	fieldName := req.ConfigValue.ValueString()
 
-	if _, ok := v.FilterConfig[fieldName]; !ok {
+	config, ok := v.FilterConfig[fieldName]
+
+	if !ok {
 		// Aggregate filterable attributes
-		filterableAttributes := make([]string, len(v.FilterConfig))
-		i := 0
+		var filterableAttributes []string
 
 		for k, _ := range v.FilterConfig {
-			filterableAttributes[i] = k
-			i++
+			filterableAttributes = append(filterableAttributes, k)
 		}
 
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"Non-Filterable Field",
 			fmt.Sprintf(
-				"Field \"%s\" is not filterable.\nFilterable fields: %s",
+				"Field \"%s\" is not filterable.\nFilterable Fields: %s",
 				fieldName,
-				strings.Join(filterableAttributes, ",")),
+				strings.Join(filterableAttributes, ","),
+			),
+		)
+	}
+
+	if v.IsOrderBy && !config.APIFilterable {
+		// Aggregate filterable attributes
+		var filterableAttributes []string
+
+		for k, v := range v.FilterConfig {
+			if !v.APIFilterable {
+				continue
+			}
+
+			filterableAttributes = append(filterableAttributes, k)
+		}
+
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"Unable to order by field",
+			fmt.Sprintf(
+				"Field \"%s\" cannot be used in order_by as it is not API filterable.\n"+
+					"API Filterable Fields: %s",
+				fieldName,
+				strings.Join(filterableAttributes, ","),
+			),
 		)
 	}
 }
 
-func (f Config) validateFilterable() filterNameValidator {
+func (f Config) validateFilterable(IsOrderBy bool) filterNameValidator {
 	return filterNameValidator{
 		FilterConfig: f,
+		IsOrderBy:    IsOrderBy,
 	}
 }
