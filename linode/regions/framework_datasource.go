@@ -61,7 +61,13 @@ func (r *DataSource) Read(
 		return
 	}
 
-	result, d := filterConfig.ConstructFilterString(ctx, data.Filters)
+	filterModels, d := filterConfig.ParseFilterSet(ctx, data.Filters)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	result, d := filterConfig.ConstructFilterString(ctx, filterModels)
 	resp.Diagnostics.Append(d...)
 
 	resp.Diagnostics.AddWarning(result, "")
@@ -75,6 +81,7 @@ func listRegions(ctx context.Context, client linodego.Client, filter string) ([]
 		return nil, err
 	}
 
+	// Translate the results into a filter-friendly map
 	result := make([]map[string]any, len(regions))
 	for i, region := range regions {
 		result[i] = map[string]any{
