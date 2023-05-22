@@ -61,19 +61,21 @@ func (r *DataSource) Read(
 		return
 	}
 
-	filterModels, d := filterConfig.ParseFilterSet(ctx, data.Filters)
-	resp.Diagnostics.Append(d...)
-	if resp.Diagnostics.HasError() {
+	result, d := filterConfig.DataSourceRead(ctx, r.client, data.Filters, listRegions)
+	if d != nil {
+		resp.Diagnostics.Append(d)
 		return
 	}
 
-	result, d := filterConfig.constructFilterString(ctx, filterModels)
-	resp.Diagnostics.Append(d...)
-
-	resp.Diagnostics.AddWarning(result, "")
+	for _, v := range helper.AnySliceToTyped[linodego.Region](result) {
+		resp.Diagnostics.AddWarning(
+			"blah",
+			v.Label,
+		)
+	}
 }
 
-func listRegions(ctx context.Context, client linodego.Client, filter string) ([]map[string]any, error) {
+func listRegions(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
 	regions, err := client.ListRegions(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
@@ -81,15 +83,5 @@ func listRegions(ctx context.Context, client linodego.Client, filter string) ([]
 		return nil, err
 	}
 
-	// Translate the results into a filter-friendly map
-	result := make([]map[string]any, len(regions))
-	for i, region := range regions {
-		result[i] = map[string]any{
-			"capabilities": region.Capabilities,
-			"country":      region.Country,
-			"status":       region.Status,
-		}
-	}
-
-	return result, nil
+	return helper.TypedSliceToAny(regions), nil
 }

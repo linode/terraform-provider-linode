@@ -17,6 +17,16 @@ func TypedSliceToAny[T any](obj []T) []any {
 	return result
 }
 
+func AnySliceToTyped[T any](obj []any) []T {
+	result := make([]T, len(obj))
+
+	for i, v := range obj {
+		result[i] = v.(T)
+	}
+
+	return result
+}
+
 func StringToInt64(s string, diags diag.Diagnostics) int64 {
 	num, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {

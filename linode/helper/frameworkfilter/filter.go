@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-type ListFunc func(ctx context.Context, client linodego.Client, filter string) ([]any, error)
+type ListFunc func(ctx context.Context, client *linodego.Client, filter string) ([]any, error)
 type FlattenFunc func(value any) types.Object
 
 var Schema = schema.SetNestedBlock{
@@ -55,11 +55,10 @@ type Config map[string]FilterAttribute
 
 func (f Config) DataSourceRead(
 	ctx context.Context,
-	client linodego.Client,
+	client *linodego.Client,
 	filters []FilterModel,
 	listFunc ListFunc,
-	flattenFunc FlattenFunc,
-) ([]types.Object, diag.Diagnostic) {
+) ([]any, diag.Diagnostic) {
 	// Construct the API filter string
 	filterStr, d := f.constructFilterString(filters)
 	if d != nil {
@@ -81,30 +80,7 @@ func (f Config) DataSourceRead(
 		return nil, d
 	}
 
-	result := make([]types.Object, len(locallyFilteredElements))
-	for i, elem := range locallyFilteredElements {
-		result[i] = flattenFunc(elem)
-	}
-
-	return result, nil
-}
-
-func (f Config) ParseFilterSet(
-	ctx context.Context,
-	filterSet types.Set,
-) ([]FilterModel, diag.Diagnostics) {
-	var diagnostics diag.Diagnostics
-	var result []FilterModel
-
-	// Parse out the set into an object list
-	diagnostics.Append(
-		filterSet.ElementsAs(ctx, &result, false)...,
-	)
-	if diagnostics.HasError() {
-		return nil, diagnostics
-	}
-
-	return result, diagnostics
+	return locallyFilteredElements, nil
 }
 
 func (f Config) constructFilterString(
@@ -294,7 +270,7 @@ func (f Config) resolveStructFieldByJSON(val any, field string) (any, diag.Diagn
 	for i := 0; i < rType.NumField(); i++ {
 		currentField := rType.Field(i)
 		if tag, ok := currentField.Tag.Lookup("json"); ok && tag == field {
-			targetField = reflect.ValueOf(targetField).Field(i)
+			targetField = reflect.ValueOf(val).FieldByName(currentField.Name)
 		}
 	}
 
