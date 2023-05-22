@@ -3,8 +3,9 @@ package frameworkfilter
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 type filterNameValidator struct {
@@ -47,8 +48,8 @@ func (v filterNameValidator) ValidateString(
 	}
 }
 
-func validateFilterable(config Config) filterNameValidator {
+func (f Config) validateFilterable() filterNameValidator {
 	return filterNameValidator{
-		FilterConfig: config,
+		FilterConfig: f,
 	}
 }

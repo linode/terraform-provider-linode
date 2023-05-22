@@ -3,13 +3,15 @@ package frameworkfilter
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // constructFilterString constructs a filter string intended to be
 // used in ListFunc.
 func (f Config) constructFilterString(
-	filterSet []FilterModel,
+	filterSet []FilterModel, order types.String, orderBy types.String,
 ) (string, diag.Diagnostic) {
 	rootFilter := make([]map[string]any, 0)
 
@@ -51,6 +53,14 @@ func (f Config) constructFilterString(
 
 	resultFilter := map[string]any{
 		"+and": rootFilter,
+	}
+
+	if !order.IsNull() {
+		resultFilter["+order"] = order.ValueString()
+	}
+
+	if !orderBy.IsNull() {
+		resultFilter["+order_by"] = orderBy.ValueString()
 	}
 
 	result, err := json.Marshal(resultFilter)

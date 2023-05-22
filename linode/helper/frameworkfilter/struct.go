@@ -2,8 +2,9 @@ package frameworkfilter
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"reflect"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 // resolveStructFieldByJSON resolves the struct field resolves the StructField

@@ -2,10 +2,11 @@ package frameworkfilter
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-version"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"reflect"
 	"time"
+
+	"github.com/hashicorp/go-version"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 // GetLatestCreated is a helper function that returns the latest

@@ -2,7 +2,9 @@ package regions
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -68,7 +70,11 @@ func (r *DataSource) Read(
 	}
 	data.ID = id
 
-	result, d := filterConfig.GetAndFilter(ctx, r.client, data.Filters, listRegions)
+	result, d := filterConfig.GetAndFilter(
+		ctx, r.client, data.Filters, listRegions,
+		// There are no API filterable fields so we don't need to provide
+		// order and order_by.
+		types.StringNull(), types.StringNull())
 	if d != nil {
 		resp.Diagnostics.Append(d)
 		return

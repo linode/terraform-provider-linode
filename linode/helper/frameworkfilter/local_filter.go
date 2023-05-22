@@ -2,12 +2,13 @@ package frameworkfilter
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // applyLocalFiltering handles filtering for fields that are not

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -46,7 +47,7 @@ func (f Config) Schema() schema.SetNestedBlock {
 				"name": schema.StringAttribute{
 					Required: true,
 					Validators: []validator.String{
-						validateFilterable(f),
+						f.validateFilterable(),
 					},
 					Description: "The name of the attribute to filter on.",
 				},
@@ -66,6 +67,30 @@ func (f Config) Schema() schema.SetNestedBlock {
 				},
 			},
 		},
+	}
+}
+
+// OrderSchema returns the schema for the top-level `order` field.
+func (f Config) OrderSchema() schema.StringAttribute {
+	return schema.StringAttribute{
+		Description: "The order in which results should be returned.",
+		Validators: []validator.String{
+			stringvalidator.OneOfCaseInsensitive(
+				"asc", "desc",
+			),
+		},
+		Optional: true,
+	}
+}
+
+// OrderBySchema returns the schema for the top-level `order_by` field.
+func (f Config) OrderBySchema() schema.StringAttribute {
+	return schema.StringAttribute{
+		Description: "The attribute to order the results by.",
+		Validators: []validator.String{
+			f.validateFilterable(),
+		},
+		Optional: true,
 	}
 }
 
@@ -107,9 +132,11 @@ func (f Config) GetAndFilter(
 	client *linodego.Client,
 	filters []FilterModel,
 	listFunc ListFunc,
+	order types.String,
+	orderBy types.String,
 ) ([]any, diag.Diagnostic) {
 	// Construct the API filter string
-	filterStr, d := f.constructFilterString(filters)
+	filterStr, d := f.constructFilterString(filters, order, orderBy)
 	if d != nil {
 		return nil, d
 	}
