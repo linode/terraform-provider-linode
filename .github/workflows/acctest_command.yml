@@ -9,11 +9,34 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.issue.pull_request }}
     steps:
+      - uses: octokit/graphql-action@v2.x
+        id: get_permission
+        with:
+          query: |
+            query CollaboratorPermission($owner: String!, $repo: String!, $collaborator: String) {
+              repository(owner:$owner, name:$repo) {
+                collaborators(query: $collaborator) {
+                  edges {
+                    permission
+                  }
+                }
+              }
+            }
+          owner: ${{ github.repository_owner }}
+          collaborator: ${{ github.actor }}
+          repo: ${{ github.event.repository.name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}
+        
       - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v1.2.0
+        if: |
+          (fromJson(steps.get_permission.outputs.data).repository.collaborators.edges[0].permission == 'ADMIN') ||
+          (fromJson(steps.get_permission.outputs.data).repository.collaborators.edges[0].permission == 'MAINTAIN') ||
+          (fromJson(steps.get_permission.outputs.data).repository.collaborators.edges[0].permission == 'WRITE')
+        uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-type: pull-request
           commands: acctest
           named-args: true
-          permission: write
+          permission: none
