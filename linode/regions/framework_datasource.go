@@ -61,18 +61,22 @@ func (r *DataSource) Read(
 		return
 	}
 
-	result, d := filterConfig.DataSourceRead(ctx, r.client, data.Filters, listRegions)
+	id, d := filterConfig.GenerateID(data.Filters)
+	if d != nil {
+		resp.Diagnostics.Append(d)
+		return
+	}
+	data.ID = id
+
+	result, d := filterConfig.GetAndFilter(ctx, r.client, data.Filters, listRegions)
 	if d != nil {
 		resp.Diagnostics.Append(d)
 		return
 	}
 
-	for _, v := range helper.AnySliceToTyped[linodego.Region](result) {
-		resp.Diagnostics.AddWarning(
-			"blah",
-			v.Label,
-		)
-	}
+	data.parseRegions(helper.AnySliceToTyped[linodego.Region](result))
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func listRegions(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
