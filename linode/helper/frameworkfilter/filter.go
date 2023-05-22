@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"golang.org/x/crypto/sha3"
@@ -16,28 +17,6 @@ import (
 
 // ListFunc is a wrapper for functions that will list and return values from the API.
 type ListFunc func(ctx context.Context, client *linodego.Client, filter string) ([]any, error)
-
-// Schema is the schema that should be used for the `filter` attribute
-// in list data sources.
-var Schema = schema.SetNestedBlock{
-	NestedObject: schema.NestedBlockObject{
-		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Required:    true,
-				Description: "The name of the attribute to filter on.",
-			},
-			"values": schema.SetAttribute{
-				Required:    true,
-				Description: "The value(s) to be used in the filter.",
-				ElementType: types.StringType,
-			},
-			"match_by": schema.StringAttribute{
-				Optional:    true,
-				Description: "The value(s) to be used in the filter.",
-			},
-		},
-	},
-}
 
 // FilterModel describes the Terraform resource data model to match the
 // resource schema.
@@ -60,9 +39,53 @@ type FilterAttribute struct {
 // Config is the root configuration type for filter data sources.
 type Config map[string]FilterAttribute
 
+// Schema returns the schema that should be used for the `filter` attribute
+// in list data sources.
+func (f Config) Schema() schema.SetNestedBlock {
+	return schema.SetNestedBlock{
+		NestedObject: schema.NestedBlockObject{
+			Attributes: map[string]schema.Attribute{
+				"name": schema.StringAttribute{
+					Required: true,
+					Validators: []validator.String{
+						validateFilterable(f),
+					},
+					Description: "The name of the attribute to filter on.",
+				},
+				"values": schema.SetAttribute{
+					Required:    true,
+					Description: "The value(s) to be used in the filter.",
+					ElementType: types.StringType,
+				},
+				"match_by": schema.StringAttribute{
+					Optional:    true,
+					Description: "The value(s) to be used in the filter.",
+				},
+			},
+		},
+	}
+}
+
 // GenerateID will generate a unique ID from the given filters.
 func (f Config) GenerateID(filters []FilterModel) (types.String, diag.Diagnostic) {
-	filterJSON, err := json.Marshal(filters)
+	jsonMap := make([]map[string]any, len(filters))
+
+	// Terraform types cannot be marshalled directly into JSON,
+	// so we should convert them into their underlying primitives.
+	for i, filter := range filters {
+		values := make([]string, len(filter.Values))
+		for i, v := range filter.Values {
+			values[i] = v.ValueString()
+		}
+
+		jsonMap[i] = map[string]any{
+			"name":     filter.Name.ValueString(),
+			"match_by": filter.MatchBy.ValueString(),
+			"values":   values,
+		}
+	}
+
+	filterJSON, err := json.Marshal(jsonMap)
 	if err != nil {
 		return types.StringNull(), diag.NewErrorDiagnostic(
 			"Failed to marshal JSON.",

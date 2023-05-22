@@ -20,7 +20,7 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 	},
 	Blocks: map[string]schema.Block{
-		"filter": frameworkfilter.Schema,
+		"filter": filterConfig.Schema(),
 		"regions": schema.ListNestedBlock{
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
