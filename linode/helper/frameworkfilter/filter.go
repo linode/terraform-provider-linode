@@ -19,6 +19,8 @@ type ListFunc func(ctx context.Context, client *linodego.Client, filter string) 
 
 // FilterModel describes the Terraform resource data model to match the
 // resource schema.
+//
+//nolint:all
 type FilterModel struct {
 	Name    types.String   `tfsdk:"name" json:"name"`
 	Values  []types.String `tfsdk:"values" json:"values"`

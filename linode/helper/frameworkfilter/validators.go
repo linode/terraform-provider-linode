@@ -3,6 +3,7 @@ package frameworkfilter
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -34,9 +35,11 @@ func (v filterNameValidator) ValidateString(
 		// Aggregate filterable attributes
 		var filterableAttributes []string
 
-		for k, _ := range v.FilterConfig {
+		for k := range v.FilterConfig {
 			filterableAttributes = append(filterableAttributes, k)
 		}
+
+		sort.Strings(filterableAttributes)
 
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
@@ -44,9 +47,11 @@ func (v filterNameValidator) ValidateString(
 			fmt.Sprintf(
 				"Field \"%s\" is not filterable.\nFilterable Fields: %s",
 				fieldName,
-				strings.Join(filterableAttributes, ","),
+				strings.Join(filterableAttributes, ", "),
 			),
 		)
+
+		return
 	}
 
 	if v.IsOrderBy && !config.APIFilterable {
@@ -61,6 +66,8 @@ func (v filterNameValidator) ValidateString(
 			filterableAttributes = append(filterableAttributes, k)
 		}
 
+		sort.Strings(filterableAttributes)
+
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"Unable to order by field",
@@ -68,7 +75,7 @@ func (v filterNameValidator) ValidateString(
 				"Field \"%s\" cannot be used in order_by as it is not API filterable.\n"+
 					"API Filterable Fields: %s",
 				fieldName,
-				strings.Join(filterableAttributes, ","),
+				strings.Join(filterableAttributes, ", "),
 			),
 		)
 	}
