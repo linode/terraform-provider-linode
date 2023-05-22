@@ -202,7 +202,7 @@ func (f Config) matchesFilter(
 		}
 
 		// Grab the field from the input struct
-		matchingField, d := f.resolveStructFieldByJSON(elem, filterName)
+		matchingField, d := resolveStructValueByJSON(elem, filterName)
 		if d != nil {
 			return false, d
 		}
@@ -291,28 +291,4 @@ func (f Config) normalizeValue(field any) (string, diag.Diagnostic) {
 			fmt.Sprintf("Invalid type for field: %s", rField.Type().String()),
 		)
 	}
-}
-
-// resolveStructFieldByJSON resolves the corresponding value of a struct field
-// given a JSON tag.
-func (f Config) resolveStructFieldByJSON(val any, field string) (any, diag.Diagnostic) {
-	rType := reflect.TypeOf(val)
-
-	var targetField reflect.Value
-
-	for i := 0; i < rType.NumField(); i++ {
-		currentField := rType.Field(i)
-		if tag, ok := currentField.Tag.Lookup("json"); ok && tag == field {
-			targetField = reflect.ValueOf(val).FieldByName(currentField.Name)
-		}
-	}
-
-	if !targetField.IsValid() {
-		return nil, diag.NewErrorDiagnostic(
-			"Field not found",
-			fmt.Sprintf("Could not find JSON tag in target struct: %s", field),
-		)
-	}
-
-	return targetField.Interface(), nil
 }
