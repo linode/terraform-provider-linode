@@ -93,7 +93,7 @@ func (f Config) checkFieldMatchesFilter(
 		return false, nil
 	}
 
-	normalizedValue, d := f.normalizeValue(field)
+	normalizedValue, d := normalizeValue(field)
 	if d != nil {
 		return false, d
 	}
@@ -115,7 +115,7 @@ func (f Config) checkFieldMatchesFilter(
 }
 
 // normalizeValue converts the given field into a comparable string.
-func (f Config) normalizeValue(field any) (string, diag.Diagnostic) {
+func normalizeValue(field any) (string, diag.Diagnostic) {
 	rField := reflect.ValueOf(field)
 
 	// Dereference if the value is a pointer
