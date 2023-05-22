@@ -3,6 +3,7 @@ package objbucket
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -20,7 +21,7 @@ type DataSource struct {
 
 func (data *DataSourceModel) parseObjectStorageBucket(bucket *linodego.ObjectStorageBucket) {
 	data.Cluster = types.StringValue(bucket.Cluster)
-	data.Created = types.StringValue(bucket.Created.String())
+	data.Created = types.StringValue(bucket.Created.Format(time.RFC3339))
 	data.Hostname = types.StringValue(bucket.Hostname)
 	data.ID = types.StringValue(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 	data.Label = types.StringValue(bucket.Label)
