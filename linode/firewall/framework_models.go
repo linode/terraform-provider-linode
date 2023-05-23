@@ -36,15 +36,15 @@ func (data *FirewallModel) parseComputedAttributes(
 	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.Status = types.StringValue(string(firewall.Status))
 
-	linodes, diag := types.SetValueFrom(ctx, types.Int64Type, parseFirewallLinodes(devices))
-	if diag.HasError() {
-		return diag
+	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, parseFirewallLinodes(devices))
+	if diags.HasError() {
+		return diags
 	}
 	data.Linodes = linodes
 
-	firewallDevices, diag := parseFirewallDevices(devices)
-	if diag.HasError() {
-		return diag
+	firewallDevices, diags := parseFirewallDevices(devices)
+	if diags.HasError() {
+		return diags
 	}
 	data.Devices = *firewallDevices
 
@@ -57,9 +57,9 @@ func (data *FirewallModel) parseNonComputedAttributes(
 	rules *linodego.FirewallRuleSet,
 	devices []linodego.FirewallDevice,
 ) diag.Diagnostics {
-	tags, diag := types.SetValueFrom(ctx, types.StringType, firewall.Tags)
-	if diag.HasError() {
-		return diag
+	tags, diags := types.SetValueFrom(ctx, types.StringType, firewall.Tags)
+	if diags.HasError() {
+		return diags
 	}
 	data.Tags = tags
 	data.InboundPolicy = types.StringValue(rules.InboundPolicy)
@@ -67,17 +67,17 @@ func (data *FirewallModel) parseNonComputedAttributes(
 	data.Label = types.StringValue(firewall.Label)
 
 	if rules.Inbound != nil {
-		inBound, diag := parseFirewallRules(ctx, rules.Inbound)
-		if diag.HasError() {
-			return diag
+		inBound, diags := parseFirewallRules(ctx, rules.Inbound)
+		if diags.HasError() {
+			return diags
 		}
 		data.Inbound = *inBound
 	}
 
 	if rules.Outbound != nil {
-		outBound, diag := parseFirewallRules(ctx, rules.Outbound)
-		if diag.HasError() {
-			return diag
+		outBound, diags := parseFirewallRules(ctx, rules.Outbound)
+		if diags.HasError() {
+			return diags
 		}
 		data.Outbound = *outBound
 	}
@@ -97,32 +97,32 @@ func parseFirewallRules(
 		spec["label"] = types.StringValue(rule.Label)
 		spec["protocol"] = types.StringValue(string(rule.Protocol))
 		spec["ports"] = types.StringValue(rule.Ports)
-		ipv4, diag := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv4)
-		if diag.HasError() {
-			return nil, diag
+		ipv4, diags := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv4)
+		if diags.HasError() {
+			return nil, diags
 		}
 		spec["ipv4"] = ipv4
 
-		ipv6, diag := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv6)
-		if diag.HasError() {
-			return nil, diag
+		ipv6, diags := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv6)
+		if diags.HasError() {
+			return nil, diags
 		}
 		spec["ipv6"] = ipv6
 
-		obj, diag := types.ObjectValue(datasourceRuleObjectType.AttrTypes, spec)
-		if diag.HasError() {
-			return nil, diag
+		obj, diags := types.ObjectValue(datasourceRuleObjectType.AttrTypes, spec)
+		if diags.HasError() {
+			return nil, diags
 		}
 
 		specs[i] = obj
 	}
 
-	result, diag := basetypes.NewListValue(
+	result, diags := basetypes.NewListValue(
 		datasourceRuleObjectType,
 		specs,
 	)
-	if diag.HasError() {
-		return nil, diag
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return &result, nil
@@ -148,20 +148,20 @@ func parseFirewallDevices(devices []linodego.FirewallDevice) (*basetypes.ListVal
 		governedDevice["label"] = types.StringValue(device.Entity.Label)
 		governedDevice["url"] = types.StringValue(device.Entity.URL)
 
-		obj, diag := types.ObjectValue(deviceObjectType.AttrTypes, governedDevice)
-		if diag.HasError() {
-			return nil, diag
+		obj, diags := types.ObjectValue(deviceObjectType.AttrTypes, governedDevice)
+		if diags.HasError() {
+			return nil, diags
 		}
 
 		governedDevices[i] = obj
 	}
 
-	result, diag := basetypes.NewListValue(
+	result, diags := basetypes.NewListValue(
 		deviceObjectType,
 		governedDevices,
 	)
-	if diag.HasError() {
-		return nil, diag
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return &result, nil
