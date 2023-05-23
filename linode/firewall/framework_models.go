@@ -33,7 +33,6 @@ func (data *FirewallModel) parseComputedAttributes(
 	devices []linodego.FirewallDevice,
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(firewall.ID))
-	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.Status = types.StringValue(string(firewall.Status))
 
 	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, parseFirewallLinodes(devices))
@@ -62,6 +61,7 @@ func (data *FirewallModel) parseNonComputedAttributes(
 		return diags
 	}
 	data.Tags = tags
+	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.InboundPolicy = types.StringValue(rules.InboundPolicy)
 	data.OutboundPolicy = types.StringValue(rules.OutboundPolicy)
 	data.Label = types.StringValue(firewall.Label)
