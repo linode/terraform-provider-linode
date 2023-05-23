@@ -129,6 +129,5 @@ func (d *DataSource) Read(
 	} else {
 		resp.Diagnostics.AddError(fmt.Sprintf(`Domain record "%s" for domain %s was not found`,
 			data.Name.ValueString(), data.DomainID.String()), "")
-		return
 	}
 }
