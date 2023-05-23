@@ -15,6 +15,8 @@ var networkObjectType = types.ObjectType{
 		"region":      types.StringType,
 		"subnet_mask": types.StringType,
 		"type":        types.StringType,
+		"public":      types.BoolType,
+		"linode_id":   types.Int64Type,
 	},
 }
 

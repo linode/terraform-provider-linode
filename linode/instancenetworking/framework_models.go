@@ -148,6 +148,8 @@ func flattenIP(ctx context.Context, network *linodego.InstanceIP) (
 	result["region"] = types.StringValue(network.Region)
 	result["subnet_mask"] = types.StringValue(network.SubnetMask)
 	result["type"] = types.StringValue(string(network.Type))
+	result["public"] = types.BoolValue(network.Public)
+	result["linode_id"] = types.Int64Value(int64(network.LinodeID))
 
 	obj, diag := types.ObjectValue(networkObjectType.AttrTypes, result)
 	if diag.HasError() {
