@@ -156,7 +156,6 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer":           nb.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_nodebalancer_config":    nbconfig.DataSource(),
-			"linode_object_storage_bucket":  objbucket.DataSource(),
 			"linode_region":                 region.DataSource(),
 			"linode_regions":                regions.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
