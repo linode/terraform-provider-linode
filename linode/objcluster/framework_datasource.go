@@ -1,4 +1,4 @@
-package kernel
+package objcluster
 
 import (
 	"context"
@@ -17,15 +17,12 @@ type DataSource struct {
 	client *linodego.Client
 }
 
-func (data *DataSourceModel) parseKernel(kernel *linodego.LinodeKernel) {
-	data.ID = types.StringValue(kernel.ID)
-	data.Architecture = types.StringValue(kernel.Architecture)
-	data.Deprecated = types.BoolValue(kernel.Deprecated)
-	data.KVM = types.BoolValue(kernel.KVM)
-	data.Label = types.StringValue(kernel.Label)
-	data.PVOPS = types.BoolValue(kernel.PVOPS)
-	data.Version = types.StringValue(kernel.Version)
-	data.XEN = types.BoolValue(kernel.XEN)
+func (data *DataSourceModel) parseCluster(cluster *linodego.ObjectStorageCluster) {
+	data.ID = types.StringValue(cluster.ID)
+	data.Domain = types.StringValue(cluster.Domain)
+	data.Status = types.StringValue(cluster.Status)
+	data.Region = types.StringValue(cluster.Region)
+	data.StaticSiteDomain = types.StringValue(cluster.StaticSiteDomain)
 }
 
 func (d *DataSource) Configure(
@@ -47,14 +44,11 @@ func (d *DataSource) Configure(
 }
 
 type DataSourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Architecture types.String `tfsdk:"architecture"`
-	Deprecated   types.Bool   `tfsdk:"deprecated"`
-	KVM          types.Bool   `tfsdk:"kvm"`
-	Label        types.String `tfsdk:"label"`
-	PVOPS        types.Bool   `tfsdk:"pvops"`
-	Version      types.String `tfsdk:"version"`
-	XEN          types.Bool   `tfsdk:"xen"`
+	ID               types.String `tfsdk:"id"`
+	Domain           types.String `tfsdk:"domain"`
+	Status           types.String `tfsdk:"status"`
+	Region           types.String `tfsdk:"region"`
+	StaticSiteDomain types.String `tfsdk:"static_site_domain"`
 }
 
 func (d *DataSource) Metadata(
@@ -62,7 +56,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_kernel"
+	resp.TypeName = "linode_object_storage_cluster"
 }
 
 func (d *DataSource) Schema(
@@ -87,14 +81,14 @@ func (d *DataSource) Read(
 		return
 	}
 
-	kernel, err := client.GetKernel(ctx, data.ID.ValueString())
+	cluster, err := client.GetObjectStorageCluster(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get Kernel: %s", err.Error(),
+			"Unable to get LKE Versions: %s", err.Error(),
 		)
 		return
 	}
 
-	data.parseKernel(kernel)
+	data.parseCluster(cluster)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

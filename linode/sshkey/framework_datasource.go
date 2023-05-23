@@ -1,9 +1,13 @@
-package kernel
+package sshkey
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -17,15 +21,29 @@ type DataSource struct {
 	client *linodego.Client
 }
 
-func (data *DataSourceModel) parseKernel(kernel *linodego.LinodeKernel) {
-	data.ID = types.StringValue(kernel.ID)
-	data.Architecture = types.StringValue(kernel.Architecture)
-	data.Deprecated = types.BoolValue(kernel.Deprecated)
-	data.KVM = types.BoolValue(kernel.KVM)
-	data.Label = types.StringValue(kernel.Label)
-	data.PVOPS = types.BoolValue(kernel.PVOPS)
-	data.Version = types.StringValue(kernel.Version)
-	data.XEN = types.BoolValue(kernel.XEN)
+func (data *DataSourceModel) parseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	if ssh.ID == 0 {
+		diags.AddError(
+			fmt.Sprintf("Linode SSH Key with label %s was not found", data.Label.ValueString()), "",
+		)
+		return diags
+	}
+
+	data.Label = types.StringValue(ssh.Label)
+	data.SSHKey = types.StringValue(ssh.SSHKey)
+	data.Created = types.StringValue(ssh.Created.Format(time.RFC3339))
+
+	id, err := json.Marshal(ssh)
+	if err != nil {
+		diags.AddError("Error marshalling json: %s", err.Error())
+		return diags
+	}
+
+	data.ID = types.StringValue(string(id))
+
+	return nil
 }
 
 func (d *DataSource) Configure(
@@ -47,14 +65,10 @@ func (d *DataSource) Configure(
 }
 
 type DataSourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Architecture types.String `tfsdk:"architecture"`
-	Deprecated   types.Bool   `tfsdk:"deprecated"`
-	KVM          types.Bool   `tfsdk:"kvm"`
-	Label        types.String `tfsdk:"label"`
-	PVOPS        types.Bool   `tfsdk:"pvops"`
-	Version      types.String `tfsdk:"version"`
-	XEN          types.Bool   `tfsdk:"xen"`
+	Label   types.String `tfsdk:"label"`
+	SSHKey  types.String `tfsdk:"ssh_key"`
+	Created types.String `tfsdk:"created"`
+	ID      types.String `tfsdk:"id"`
 }
 
 func (d *DataSource) Metadata(
@@ -62,7 +76,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_kernel"
+	resp.TypeName = "linode_sshkey"
 }
 
 func (d *DataSource) Schema(
@@ -87,14 +101,26 @@ func (d *DataSource) Read(
 		return
 	}
 
-	kernel, err := client.GetKernel(ctx, data.ID.ValueString())
+	keys, err := client.ListSSHKeys(ctx, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get Kernel: %s", err.Error(),
+			"Error listing SSH keys: %s", err.Error(),
 		)
 		return
 	}
 
-	data.parseKernel(kernel)
+	var sshkey linodego.SSHKey
+
+	for _, testkey := range keys {
+		if testkey.Label == data.Label.ValueString() {
+			sshkey = testkey
+			break
+		}
+	}
+
+	resp.Diagnostics.Append(data.parseSSHKey(&sshkey)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
