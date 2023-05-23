@@ -17,6 +17,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/linode/profile"
+	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
 )
@@ -121,6 +122,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		profile.NewDataSource,
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
+		sshkey.NewDataSource,
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,

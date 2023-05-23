@@ -159,7 +159,6 @@ func Provider() *schema.Provider {
 			"linode_object_storage_bucket":  objbucket.DataSource(),
 			"linode_region":                 region.DataSource(),
 			"linode_regions":                regions.DataSource(),
-			"linode_sshkey":                 sshkey.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
 			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  vlan.DataSource(),
