@@ -43,7 +43,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/linode/obj"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
@@ -160,7 +159,6 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_nodebalancer_config":    nbconfig.DataSource(),
 			"linode_object_storage_bucket":  objbucket.DataSource(),
-			"linode_object_storage_cluster": objcluster.DataSource(),
 			"linode_region":                 region.DataSource(),
 			"linode_regions":                regions.DataSource(),
 			"linode_sshkey":                 sshkey.DataSource(),
