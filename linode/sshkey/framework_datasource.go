@@ -22,11 +22,18 @@ type DataSource struct {
 }
 
 func (data *DataSourceModel) parseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	if ssh.ID == 0 {
+		diags.AddError(
+			fmt.Sprintf("Linode SSH Key with label %s was not found", data.Label.ValueString()), "",
+		)
+		return diags
+	}
+
 	data.Label = types.StringValue(ssh.Label)
 	data.SSHKey = types.StringValue(ssh.SSHKey)
 	data.Created = types.StringValue(ssh.Created.Format(time.RFC3339))
-
-	diags := diag.Diagnostics{}
 
 	id, err := json.Marshal(ssh)
 	if err != nil {
@@ -109,13 +116,6 @@ func (d *DataSource) Read(
 			sshkey = testkey
 			break
 		}
-	}
-
-	if sshkey.ID == 0 {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Linode SSH Key with label %s was not found", data.Label.ValueString()), "",
-		)
-		return
 	}
 
 	resp.Diagnostics.Append(data.parseSSHKey(&sshkey)...)
