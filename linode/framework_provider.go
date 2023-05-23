@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
@@ -120,5 +121,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
 		objcluster.NewDataSource,
+		domainrecord.NewDataSource,
 	}
 }
