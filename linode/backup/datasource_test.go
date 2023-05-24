@@ -68,7 +68,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 600); err != nil {
+					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 1800); err != nil {
 						t.Fatal(err)
 					}
 				},
