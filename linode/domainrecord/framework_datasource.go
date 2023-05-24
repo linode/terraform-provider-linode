@@ -96,14 +96,14 @@ func (d *DataSource) Read(
 		return
 	}
 
-	if data.Name.ValueString() == "" && data.ID.ValueInt64() == 0 {
+	if data.Name.ValueString() == "" && (data.ID.IsNull() || data.ID.IsUnknown()) {
 		resp.Diagnostics.AddError("Record name or ID is required", "")
 		return
 	}
 
 	var record *linodego.DomainRecord
 
-	if data.ID.ValueInt64() != 0 {
+	if !(data.ID.IsNull() || data.ID.IsUnknown()) {
 		rec, err := client.GetDomainRecord(ctx, int(data.DomainID.ValueInt64()), int(data.ID.ValueInt64()))
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching domain record: %v", err.Error())
