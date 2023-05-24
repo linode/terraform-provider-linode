@@ -12,7 +12,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
-  "github.com/linode/terraform-provider-linode/linode/ipv6range"
+	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
