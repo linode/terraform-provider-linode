@@ -32,7 +32,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
-	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/linode/instancetypes"
@@ -43,7 +42,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/linode/obj"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
@@ -146,24 +144,18 @@ func Provider() *schema.Provider {
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_databases":              databases.DataSource(),
 			"linode_domain":                 domain.DataSource(),
-			"linode_domain_record":          domainrecord.DataSource(),
 			"linode_domain_zonefile":        domainzonefile.DataSource(),
 			"linode_image":                  image.DataSource(),
 			"linode_images":                 images.DataSource(),
 			"linode_instances":              instance.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),
-			"linode_instance_networking":    instancenetworking.DataSource(),
 			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
-			"linode_nodebalancer":           nb.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_nodebalancer_config":    nbconfig.DataSource(),
-			"linode_object_storage_bucket":  objbucket.DataSource(),
-			"linode_object_storage_cluster": objcluster.DataSource(),
 			"linode_region":                 region.DataSource(),
 			"linode_regions":                regions.DataSource(),
-			"linode_sshkey":                 sshkey.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
 			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  vlan.DataSource(),

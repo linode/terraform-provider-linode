@@ -1,7 +1,9 @@
-package kernel
+package objbucket
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -17,15 +19,14 @@ type DataSource struct {
 	client *linodego.Client
 }
 
-func (data *DataSourceModel) parseKernel(kernel *linodego.LinodeKernel) {
-	data.ID = types.StringValue(kernel.ID)
-	data.Architecture = types.StringValue(kernel.Architecture)
-	data.Deprecated = types.BoolValue(kernel.Deprecated)
-	data.KVM = types.BoolValue(kernel.KVM)
-	data.Label = types.StringValue(kernel.Label)
-	data.PVOPS = types.BoolValue(kernel.PVOPS)
-	data.Version = types.StringValue(kernel.Version)
-	data.XEN = types.BoolValue(kernel.XEN)
+func (data *DataSourceModel) parseObjectStorageBucket(bucket *linodego.ObjectStorageBucket) {
+	data.Cluster = types.StringValue(bucket.Cluster)
+	data.Created = types.StringValue(bucket.Created.Format(time.RFC3339))
+	data.Hostname = types.StringValue(bucket.Hostname)
+	data.ID = types.StringValue(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
+	data.Label = types.StringValue(bucket.Label)
+	data.Objects = types.Int64Value(int64(bucket.Objects))
+	data.Size = types.Int64Value(int64(bucket.Size))
 }
 
 func (d *DataSource) Configure(
@@ -47,14 +48,13 @@ func (d *DataSource) Configure(
 }
 
 type DataSourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Architecture types.String `tfsdk:"architecture"`
-	Deprecated   types.Bool   `tfsdk:"deprecated"`
-	KVM          types.Bool   `tfsdk:"kvm"`
-	Label        types.String `tfsdk:"label"`
-	PVOPS        types.Bool   `tfsdk:"pvops"`
-	Version      types.String `tfsdk:"version"`
-	XEN          types.Bool   `tfsdk:"xen"`
+	Cluster  types.String `tfsdk:"cluster"`
+	Created  types.String `tfsdk:"created"`
+	Hostname types.String `tfsdk:"hostname"`
+	ID       types.String `tfsdk:"id"`
+	Label    types.String `tfsdk:"label"`
+	Objects  types.Int64  `tfsdk:"objects"`
+	Size     types.Int64  `tfsdk:"size"`
 }
 
 func (d *DataSource) Metadata(
@@ -62,7 +62,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_kernel"
+	resp.TypeName = "linode_object_storage_bucket"
 }
 
 func (d *DataSource) Schema(
@@ -87,14 +87,14 @@ func (d *DataSource) Read(
 		return
 	}
 
-	kernel, err := client.GetKernel(ctx, data.ID.ValueString())
+	bucket, err := client.GetObjectStorageBucket(ctx, data.Cluster.ValueString(), data.Label.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get Kernel: %s", err.Error(),
+			"Failed to find the specified Linode ObjectStorageBucket: %s", err.Error(),
 		)
 		return
 	}
 
-	data.parseKernel(kernel)
+	data.parseObjectStorageBucket(bucket)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
