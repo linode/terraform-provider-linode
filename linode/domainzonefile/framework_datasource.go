@@ -23,7 +23,6 @@ type DataSource struct {
 func (data *DataSourceModel) parseDomainZoneFile(
 	ctx context.Context, zone *linodego.DomainZoneFile,
 ) diag.Diagnostics {
-
 	file, diags := types.ListValueFrom(ctx, types.StringType, zone.ZoneFile)
 	if diags.HasError() {
 		return diags
