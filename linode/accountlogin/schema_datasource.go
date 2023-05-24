@@ -20,7 +20,7 @@ var dataSourceSchema = map[string]*schema.Schema{
 	},
 	"restricted": {
 		Type:        schema.TypeBool,
-		Description: "TTrue if the User that was logged into was a restricted User, false otherwise.",
+		Description: "True if the User that was logged into was a restricted User, false otherwise.",
 		Computed:    true,
 	},
 	"username": {
