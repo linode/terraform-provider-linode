@@ -66,19 +66,13 @@ func (f Config) GetLatestVersion(elems []any, structField string) (any, diag.Dia
 
 // getCreatedTime parses a time value from the given elem and field.
 func getCreatedTime(elem any, attr string) (time.Time, diag.Diagnostic) {
-	val := reflect.ValueOf(elem).FieldByName(attr)
-	if !val.IsValid() {
-		return time.Time{}, diag.NewErrorDiagnostic(
-			"Field does not exist",
-			fmt.Sprintf("Field %s does not exist in struct", attr),
-		)
+	// Resolve the struct field
+	val, d := getAndValidateFieldByName(elem, attr)
+	if d != nil {
+		return time.Time{}, d
 	}
 
-	// Deref any pointers
-	for val.Kind() == reflect.Ptr {
-		val = reflect.Indirect(val)
-	}
-
+	// Parse the field into a time with validation
 	result, ok := val.Interface().(time.Time)
 	if !ok {
 		return time.Time{}, diag.NewErrorDiagnostic(
@@ -92,17 +86,10 @@ func getCreatedTime(elem any, attr string) (time.Time, diag.Diagnostic) {
 
 // getVersion parses a version value from the given elem and field.
 func getVersion(elem any, attr string) (*version.Version, diag.Diagnostic) {
-	val := reflect.ValueOf(elem).FieldByName(attr)
-	if !val.IsValid() {
-		return nil, diag.NewErrorDiagnostic(
-			"Field does not exist",
-			fmt.Sprintf("Field %s does not exist in struct", attr),
-		)
-	}
-
-	// Deref any pointers
-	for val.Kind() == reflect.Ptr {
-		val = reflect.Indirect(val)
+	// Resolve the struct field
+	val, d := getAndValidateFieldByName(elem, attr)
+	if d != nil {
+		return nil, d
 	}
 
 	// Check the type
@@ -123,4 +110,24 @@ func getVersion(elem any, attr string) (*version.Version, diag.Diagnostic) {
 	}
 
 	return result, nil
+}
+
+// getAndValidateFieldByName gets the corresponding field of the given elem,
+// validates that the field exists, dereferences and pointers, and returns
+// the result.
+func getAndValidateFieldByName(elem any, attr string) (reflect.Value, diag.Diagnostic) {
+	val := reflect.ValueOf(elem).FieldByName(attr)
+	if !val.IsValid() {
+		return reflect.Value{}, diag.NewErrorDiagnostic(
+			"Field does not exist",
+			fmt.Sprintf("Field %s does not exist in struct", attr),
+		)
+	}
+
+	// Deref any pointers
+	for val.Kind() == reflect.Ptr {
+		val = reflect.Indirect(val)
+	}
+
+	return val, nil
 }
