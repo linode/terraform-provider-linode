@@ -10,6 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
@@ -120,6 +121,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		account.NewDataSource,
 		backup.NewDataSource,
+		firewall.NewDataSource,
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
 		profile.NewDataSource,
