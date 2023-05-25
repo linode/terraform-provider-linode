@@ -14,6 +14,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
+	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
@@ -122,6 +123,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
 		profile.NewDataSource,
+		nb.NewDataSource,
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
 		objbucket.NewDataSource,

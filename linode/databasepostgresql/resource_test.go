@@ -138,7 +138,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 					AllowedIP:             "0.0.0.0/0",
 					ClusterSize:           3,
 					Encrypted:             true,
-					ReplicationType:       "semi_synch",
+					ReplicationType:       "asynch",
 					ReplicationCommitType: "on",
 					SSLConnection:         true,
 					Region:                testRegion,
@@ -155,7 +155,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "cluster_size", "3"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "semi_synch"),
+					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
 					resource.TestCheckResourceAttr(resName, "replication_commit_type", "on"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 
@@ -185,7 +185,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 					AllowedIP:             "192.0.2.1/32",
 					ClusterSize:           3,
 					Encrypted:             true,
-					ReplicationType:       "semi_synch",
+					ReplicationType:       "asynch",
 					ReplicationCommitType: "on",
 					SSLConnection:         true,
 					Region:                testRegion,
@@ -202,7 +202,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "cluster_size", "3"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "semi_synch"),
+					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
 					resource.TestCheckResourceAttr(resName, "replication_commit_type", "on"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 

@@ -85,7 +85,7 @@ type DataSourceModel struct {
 	AuthorizedKeys     types.List   `tfsdk:"authorized_keys"`
 	TwoFactorAuth      types.Bool   `tfsdk:"two_factor_auth"`
 	Restricted         types.Bool   `tfsdk:"restricted"`
-	Referrals          types.Object `tfsdk:"referrals"`
+	Referrals          types.List   `tfsdk:"referrals"`
 	ID                 types.String `tfsdk:"id"`
 }
 
@@ -136,7 +136,7 @@ func (d *DataSource) Read(
 
 func flattenReferral(ctx context.Context,
 	referral linodego.ProfileReferrals,
-) (*basetypes.ObjectValue, diag.Diagnostics) {
+) (*basetypes.ListValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
 
 	result["total"] = types.Int64Value(int64(referral.Total))
@@ -151,5 +151,15 @@ func flattenReferral(ctx context.Context,
 		return nil, diags
 	}
 
-	return &obj, nil
+	objList := []attr.Value{obj}
+
+	resultList, diag := basetypes.NewListValue(
+		referralObjectType,
+		objList,
+	)
+	if diag.HasError() {
+		return nil, diag
+	}
+
+	return &resultList, nil
 }
