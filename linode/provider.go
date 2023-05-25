@@ -151,7 +151,6 @@ func Provider() *schema.Provider {
 			"linode_instances":              instance.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),
-			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_nodebalancer_config":    nbconfig.DataSource(),

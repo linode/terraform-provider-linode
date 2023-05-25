@@ -12,6 +12,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/nb"
@@ -125,6 +126,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nb.NewDataSource,
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
+		ipv6range.NewDataSource,
 		objbucket.NewDataSource,
 		sshkey.NewDataSource,
 		instancenetworking.NewDataSource,
