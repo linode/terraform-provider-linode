@@ -21,6 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
+	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
 type FrameworkProvider struct {
@@ -128,5 +129,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
+		volume.NewDataSource,
 	}
 }
