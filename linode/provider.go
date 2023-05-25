@@ -143,7 +143,6 @@ func Provider() *schema.Provider {
 			"linode_database_postgresql":    databasepostgresql.DataSource(),
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_databases":              databases.DataSource(),
-			"linode_domain":                 domain.DataSource(),
 			"linode_domain_zonefile":        domainzonefile.DataSource(),
 			"linode_firewall":               firewall.DataSource(),
 			"linode_image":                  image.DataSource(),
