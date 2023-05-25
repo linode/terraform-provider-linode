@@ -26,7 +26,7 @@ func TestAccDataSourceVolume_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "size", "20"),
 					resource.TestCheckResourceAttr(resourceName, "label", volumeName),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tf_test"),
-					resource.TestCheckNoResourceAttr(resourceName, "linode_id"),
+					resource.TestCheckResourceAttr(resourceName, "linode_id", "0"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
 				),
