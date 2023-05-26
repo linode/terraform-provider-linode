@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 type VolumeModel struct {
@@ -39,10 +40,7 @@ func (data *VolumeModel) parseComputedAttributes(
 	// } else {
 	// 	data.LinodeID = types.Int64Null()
 	// }
-	data.LinodeID = types.Int64Value(0)
-	if volume.LinodeID != nil {
-		data.LinodeID = types.Int64Value(int64(*volume.LinodeID))
-	}
+	data.LinodeID = helper.IntPointerValueWithDefault(volume.LinodeID)
 
 	data.FilesystemPath = types.StringValue(volume.FilesystemPath)
 	data.Created = types.StringValue(volume.Created.Format(time.RFC3339))
