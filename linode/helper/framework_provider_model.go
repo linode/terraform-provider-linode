@@ -1,12 +1,9 @@
-package linode
+package helper
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 )
-
-const uaEnvVar = "TF_APPEND_USER_AGENT"
-
-const DefaultLinodeURL = "https://api.linode.com"
 
 type FrameworkProviderModel struct {
 	AccessToken types.String `tfsdk:"token"`
@@ -29,4 +26,9 @@ type FrameworkProviderModel struct {
 	LKEEventPollMilliseconds types.Int64 `tfsdk:"lke_event_poll_ms"`
 
 	LKENodeReadyPollMilliseconds types.Int64 `tfsdk:"lke_node_ready_poll_ms"`
+}
+
+type FrameworkProviderMeta struct {
+	Client *linodego.Client
+	Config *FrameworkProviderModel
 }
