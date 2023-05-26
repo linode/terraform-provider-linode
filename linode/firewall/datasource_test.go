@@ -17,8 +17,8 @@ func TestAccDataSourceFirewall_basic(t *testing.T) {
 	firewallName := acctest.RandomWithPrefix("tf_test")
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, firewallName, devicePrefix, testRegion),
