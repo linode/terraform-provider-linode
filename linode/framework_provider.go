@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
@@ -136,6 +137,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
+		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
 	}
