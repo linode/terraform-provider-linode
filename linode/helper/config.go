@@ -14,14 +14,10 @@ import (
 	"github.com/linode/terraform-provider-linode/version"
 )
 
-const uaEnvVar = "TF_APPEND_USER_AGENT"
+const UAEnvVar = "TF_APPEND_USER_AGENT"
 
 // DefaultLinodeURL is the Linode APIv4 URL to use.
 const DefaultLinodeURL = "https://api.linode.com"
-
-type FrameworkProviderMeta struct {
-	Client *linodego.Client
-}
 
 type ProviderMeta struct {
 	Client linodego.Client
@@ -118,7 +114,7 @@ func terraformUserAgent(version string) string {
 	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
 		version, meta.SDKVersionString())
 
-	if add := os.Getenv(uaEnvVar); add != "" {
+	if add := os.Getenv(UAEnvVar); add != "" {
 		add = strings.TrimSpace(add)
 		if len(add) > 0 {
 			ua += " " + add

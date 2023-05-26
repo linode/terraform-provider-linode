@@ -25,7 +25,7 @@ func (fp *FrameworkProvider) Configure(
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
 ) {
-	var data FrameworkProviderModel
+	var data helper.FrameworkProviderModel
 	var meta helper.FrameworkProviderMeta
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -45,6 +45,7 @@ func (fp *FrameworkProvider) Configure(
 
 	resp.ResourceData = &meta
 	resp.DataSourceData = &meta
+
 	fp.Meta = &meta
 }
 
@@ -57,7 +58,7 @@ func (fp *FrameworkProvider) ValidateConfig(
 	req provider.ValidateConfigRequest,
 	resp *provider.ValidateConfigResponse,
 ) {
-	var data FrameworkProviderModel
+	var data helper.FrameworkProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -113,7 +114,7 @@ func GetStringFromEnv(key string, defaultValue basetypes.StringValue) basetypes.
 }
 
 func (fp *FrameworkProvider) HandleDefaults(
-	lpm *FrameworkProviderModel,
+	lpm *helper.FrameworkProviderModel,
 	diags *diag.Diagnostics,
 ) {
 	if lpm.AccessToken.IsNull() {
@@ -140,7 +141,7 @@ func (fp *FrameworkProvider) HandleDefaults(
 	if lpm.APIURL.IsNull() {
 		lpm.APIURL = GetStringFromEnv(
 			"LINODE_URL",
-			types.StringValue(DefaultLinodeURL),
+			types.StringValue(helper.DefaultLinodeURL),
 		)
 	}
 
@@ -185,7 +186,7 @@ func (fp *FrameworkProvider) HandleDefaults(
 }
 
 func (fp *FrameworkProvider) InitProvider(
-	lpm *FrameworkProviderModel,
+	lpm *helper.FrameworkProviderModel,
 	tfVersion string,
 	diags *diag.Diagnostics,
 	meta *helper.FrameworkProviderMeta,
@@ -264,6 +265,7 @@ func (fp *FrameworkProvider) InitProvider(
 	userAgent := fp.terraformUserAgent(tfVersion, UAPrefix)
 	client.SetUserAgent(userAgent)
 
+	meta.Config = lpm
 	meta.Client = &client
 }
 
@@ -280,7 +282,7 @@ func (fp *FrameworkProvider) terraformUserAgent(
 		),
 	)
 
-	if add := os.Getenv(uaEnvVar); add != "" {
+	if add := os.Getenv(helper.UAEnvVar); add != "" {
 		add = strings.TrimSpace(add)
 		if len(add) > 0 {
 			userAgent += " " + add
