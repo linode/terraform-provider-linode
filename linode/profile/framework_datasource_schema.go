@@ -61,10 +61,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "If true, the user has restrictions on what can be accessed on the Account.",
 			Computed:    true,
 		},
-		"referrals": schema.ObjectAttribute{
+		"referrals": schema.ListAttribute{
 			Description: "Credit Card information associated with this Account.",
 			Computed:    true,
-			CustomType:  referralObjectType,
+			ElementType: referralObjectType,
 		},
 		"id": schema.StringAttribute{
 			Description: "Unique identification field for this datasource.",

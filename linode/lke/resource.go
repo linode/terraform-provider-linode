@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	createLKETimeout = 25 * time.Minute
-	updateLKETimeout = 30 * time.Minute
-	deleteLKETimeout = 10 * time.Minute
+	createLKETimeout = 35 * time.Minute
+	updateLKETimeout = 40 * time.Minute
+	deleteLKETimeout = 15 * time.Minute
 )
 
 func Resource() *schema.Resource {
@@ -135,7 +135,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.SetId(strconv.Itoa(cluster.ID))
 
 	client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
-		TimeoutSeconds: 10 * 60,
+		TimeoutSeconds: 15 * 60,
 	}, k8scondition.ClusterHasReadyNode)
 	return readResource(ctx, d, meta)
 }

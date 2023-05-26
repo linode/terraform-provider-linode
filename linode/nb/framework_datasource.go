@@ -1,7 +1,8 @@
-package kernel
+package nb
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -9,23 +10,26 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func NewDataSource() datasource.DataSource {
-	return &DataSource{}
-}
-
 type DataSource struct {
 	client *linodego.Client
 }
 
-func (data *DataSourceModel) parseKernel(kernel *linodego.LinodeKernel) {
-	data.ID = types.StringValue(kernel.ID)
-	data.Architecture = types.StringValue(kernel.Architecture)
-	data.Deprecated = types.BoolValue(kernel.Deprecated)
-	data.KVM = types.BoolValue(kernel.KVM)
-	data.Label = types.StringValue(kernel.Label)
-	data.PVOPS = types.BoolValue(kernel.PVOPS)
-	data.Version = types.StringValue(kernel.Version)
-	data.XEN = types.BoolValue(kernel.XEN)
+func NewDataSource() datasource.DataSource {
+	return &DataSource{}
+}
+
+type DataSourceModel struct {
+	ID                 types.Int64  `tfsdk:"id"`
+	Label              types.String `tfsdk:"label"`
+	Region             types.String `tfsdk:"region"`
+	ClientConnThrottle types.Int64  `tfsdk:"client_conn_throttle"`
+	Hostname           types.String `tfsdk:"hostname"`
+	Ipv4               types.String `tfsdk:"ipv4"`
+	Ipv6               types.String `tfsdk:"ipv6"`
+	Created            types.String `tfsdk:"created"`
+	Updated            types.String `tfsdk:"updated"`
+	Transfer           types.List   `tfsdk:"transfer"`
+	Tags               types.Set    `tfsdk:"tags"`
 }
 
 func (d *DataSource) Configure(
@@ -46,23 +50,12 @@ func (d *DataSource) Configure(
 	d.client = meta.Client
 }
 
-type DataSourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Architecture types.String `tfsdk:"architecture"`
-	Deprecated   types.Bool   `tfsdk:"deprecated"`
-	KVM          types.Bool   `tfsdk:"kvm"`
-	Label        types.String `tfsdk:"label"`
-	PVOPS        types.Bool   `tfsdk:"pvops"`
-	Version      types.String `tfsdk:"version"`
-	XEN          types.Bool   `tfsdk:"xen"`
-}
-
 func (d *DataSource) Metadata(
 	ctx context.Context,
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_kernel"
+	resp.TypeName = "linode_nodebalancer"
 }
 
 func (d *DataSource) Schema(
@@ -78,23 +71,26 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
-
 	var data DataSourceModel
+	client := d.client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	kernel, err := client.GetKernel(ctx, data.ID.ValueString())
+	nodebalancer, err := client.GetNodeBalancer(ctx, int(data.ID.ValueInt64()))
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get Kernel: %s", err.Error(),
+			fmt.Sprintf("Failed to get nodebalancer %d", int(data.ID.ValueInt64())),
+			err.Error(),
 		)
+	}
+
+	resp.Diagnostics.Append(data.parseNodeBalancer(ctx, nodebalancer)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.parseKernel(kernel)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

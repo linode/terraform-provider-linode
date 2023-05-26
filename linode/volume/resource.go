@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	LinodeVolumeCreateTimeout = 10 * time.Minute
+	LinodeVolumeCreateTimeout = 15 * time.Minute
 	LinodeVolumeUpdateTimeout = 20 * time.Minute
 	LinodeVolumeDeleteTimeout = 10 * time.Minute
 )
