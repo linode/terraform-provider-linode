@@ -13,7 +13,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"zone_file": schema.ListAttribute{
 			Description: "Lines of the zone file for the last rendered zone for this domain.",
-			Optional:    true,
+			Computed:    true,
 			ElementType: types.StringType,
 		},
 		"id": schema.StringAttribute{
