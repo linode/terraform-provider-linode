@@ -9,11 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
+	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
+	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
@@ -119,16 +124,21 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		account.NewDataSource,
 		backup.NewDataSource,
+		firewall.NewDataSource,
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
 		profile.NewDataSource,
+		nb.NewDataSource,
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
 		regions.NewDataSource,
+		ipv6range.NewDataSource,
 		objbucket.NewDataSource,
 		sshkey.NewDataSource,
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
+		domainzonefile.NewDataSource,
+		domain.NewDataSource,
 	}
 }

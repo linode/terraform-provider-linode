@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	createDBTimeout = 75 * time.Minute
+	createDBTimeout = 90 * time.Minute
 	updateDBTimeout = 5 * time.Minute
 	deleteDBTimeout = 5 * time.Minute
 )
