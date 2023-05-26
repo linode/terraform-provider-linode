@@ -39,7 +39,10 @@ func (data *VolumeModel) parseComputedAttributes(
 	// } else {
 	// 	data.LinodeID = types.Int64Null()
 	// }
-	data.LinodeID = types.Int64Value(int64(*volume.LinodeID))
+	data.LinodeID = types.Int64Value(0)
+	if volume.LinodeID != nil {
+		 data.LinodeID = types.Int64Value(int64(*volume.LinodeID))
+	}
 
 	data.FilesystemPath = types.StringValue(volume.FilesystemPath)
 	data.Created = types.StringValue(volume.Created.Format(time.RFC3339))
