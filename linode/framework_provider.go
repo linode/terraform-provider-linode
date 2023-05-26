@@ -10,7 +10,9 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
@@ -136,5 +138,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
 		databasemysql.NewDataSource,
+		domainzonefile.NewDataSource,
+		domain.NewDataSource,
 	}
 }
