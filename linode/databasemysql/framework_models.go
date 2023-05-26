@@ -40,7 +40,6 @@ type DataSourceModel struct {
 func (data *DataSourceModel) parseMySQLDatabase(
 	ctx context.Context, db *linodego.MySQLDatabase,
 ) diag.Diagnostics {
-
 	data.DatabaseID = types.Int64Value(int64(db.ID))
 	data.Status = types.StringValue(string(db.Status))
 	data.Label = types.StringValue(string(db.Label))

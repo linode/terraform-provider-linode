@@ -64,7 +64,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	var id = 0
+	id := 0
 
 	if data.ID.IsNull() || data.ID.IsUnknown() {
 		id = int(data.DatabaseID.ValueInt64())
