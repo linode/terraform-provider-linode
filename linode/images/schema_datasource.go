@@ -3,7 +3,6 @@ package images
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/image"
 )
 
 var filterConfig = helper.FilterConfig{
@@ -30,10 +29,10 @@ var dataSourceSchema = map[string]*schema.Schema{
 	"order_by": filterConfig.OrderBySchema(),
 	"order":    filterConfig.OrderSchema(),
 	"filter":   filterConfig.FilterSchema(),
-	"images": {
-		Type:        schema.TypeList,
-		Description: "The returned list of Images.",
-		Computed:    true,
-		Elem:        image.DataSource(),
-	},
+	// "images": {
+	// 	Type:        schema.TypeList,
+	// 	Description: "The returned list of Images.",
+	// 	Computed:    true,
+	// 	Elem:        image.DataSource(),
+	// },
 }
