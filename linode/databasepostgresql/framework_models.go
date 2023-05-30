@@ -99,7 +99,7 @@ func flattenDatabaseMaintenanceWindow(ctx context.Context, maintenance linodego.
 	result["duration"] = types.Int64Value(int64(maintenance.Duration))
 	result["frequency"] = types.StringValue(string(maintenance.Frequency))
 	result["hour_of_day"] = types.Int64Value(int64(maintenance.HourOfDay))
-	result["week_of_month"] = types.Int64Value(int64(*maintenance.WeekOfMonth))
+	result["week_of_month"] = helper.IntPointerValueWithDefault(maintenance.WeekOfMonth)
 
 	obj, diag := types.ObjectValue(updateObjectType.AttrTypes, result)
 	if diag.HasError() {
