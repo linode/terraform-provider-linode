@@ -2,6 +2,7 @@ package databasepostgresql
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
@@ -66,10 +67,10 @@ func (d *DataSource) Read(
 
 	id := 0
 
-	if data.ID.IsNull() || data.ID.IsUnknown() {
-		id = int(data.DatabaseID.ValueInt64())
-	} else if data.DatabaseID.IsNull() || data.DatabaseID.IsUnknown() {
+	if !data.ID.IsNull() && !data.ID.IsUnknown() {
 		id = int(data.ID.ValueInt64())
+	} else {
+		id = int(data.DatabaseID.ValueInt64())
 	}
 
 	if id == 0 {
@@ -82,7 +83,7 @@ func (d *DataSource) Read(
 	db, err := client.GetPostgresDatabase(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to get PostgreSQL database: ", err.Error(),
+			fmt.Sprintf("Failed to get PostgreSQL database with ID %d: ", id), err.Error(),
 		)
 		return
 	}
@@ -90,7 +91,7 @@ func (d *DataSource) Read(
 	cert, err := client.GetPostgresDatabaseSSL(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to get cert for the specified PostgreSQL database: ", err.Error(),
+			fmt.Sprintf("Failed to get cert for the specified PostgreSQL database with ID %d: ", id), err.Error(),
 		)
 		return
 	}
@@ -98,7 +99,7 @@ func (d *DataSource) Read(
 	cred, err := client.GetPostgresDatabaseCredentials(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to get credentials for PostgreSQL database: ", err.Error(),
+			fmt.Sprintf("Failed to get credentials for PostgreSQL database with ID %d: ", id), err.Error(),
 		)
 		return
 	}
