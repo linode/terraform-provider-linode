@@ -1,4 +1,4 @@
-package databasemysql
+package databasepostgresql
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -12,11 +12,11 @@ import (
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"database_id": schema.Int64Attribute{
-			Description: "The ID of the MySQL database.",
+			Description: "The ID of the PostgreSQL database.",
 			Optional:    true,
 		},
 		"engine_id": schema.StringAttribute{
-			Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.26)",
+			Description: "The Managed Database engine in engine/version format. (e.g. postgresql/12.6)",
 			Computed:    true,
 		},
 		"label": schema.StringAttribute{
@@ -49,9 +49,18 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The replication method used for the Managed Database.",
 			Computed:    true,
 		},
+		"replication_commit_type": schema.StringAttribute{
+			Description: "The synchronization level of the replicating server.",
+			Computed:    true,
+		},
 		"ssl_connection": schema.BoolAttribute{
 			Description: "Whether to require SSL credentials to establish a connection to the Managed Database.",
 			Computed:    true,
+		},
+		"updates": schema.ListAttribute{
+			Description: "Configuration settings for automated patch update maintenance for the Managed Database.",
+			Computed:    true,
+			ElementType: helper.UpdateObjectType,
 		},
 		"ca_cert": schema.StringAttribute{
 			Description: "The base64-encoded SSL CA certificate for the Managed Database instance.",
@@ -74,6 +83,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The secondary host for the Managed Database.",
 			Computed:    true,
 		},
+		"port": schema.Int64Attribute{
+			Description: "The access port for this Managed Database.",
+			Computed:    true,
+		},
 		"root_password": schema.StringAttribute{
 			Description: "The randomly-generated root password for the Managed Database instance.",
 			Computed:    true,
@@ -87,11 +100,6 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "When this Managed Database was last updated.",
 			Computed:    true,
 		},
-		"updates": schema.ListAttribute{
-			Description: "Configuration settings for automated patch update maintenance for the Managed Database.",
-			Computed:    true,
-			ElementType: helper.UpdateObjectType,
-		},
 		"root_username": schema.StringAttribute{
 			Description: "The root username for the Managed Database instance.",
 			Computed:    true,
@@ -102,7 +110,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"id": schema.Int64Attribute{
-			Description: "Unique identifier for this DataSource. The ID of the MySQL database.",
+			Description: "Unique identifier for this DataSource. The ID of the PostgreSQL database.",
 			Optional:    true,
 			Validators: []validator.Int64{
 				int64validator.ExactlyOneOf(path.Expressions{
