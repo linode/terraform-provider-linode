@@ -24,7 +24,7 @@ data "linode_database_mysql" "my-db" {
 
 The following arguments are supported:
 
-* `database_id` - The ID of the MySQL database.
+* `database_id` - The ID of the MySQL database. Deprecated: Use id instead.
 
 ## Attributes Reference
 
@@ -69,6 +69,8 @@ The `linode_database_mysql` data source exports the following attributes:
 * [`updates`](#updates) - (Optional) Configuration settings for automated patch update maintenance for the Managed Database.
 
 * `version` - The Managed Database engine version. (e.g. `v8.0.26`)
+
+* `id` - The ID of the MySQL database.
 
 ## updates
 
