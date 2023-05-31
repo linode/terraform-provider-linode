@@ -2,22 +2,12 @@ package databasepostgresql
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
-
-var updateObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"day_of_week":   types.StringType,
-		"duration":      types.Int64Type,
-		"frequency":     types.StringType,
-		"hour_of_day":   types.Int64Type,
-		"week_of_month": types.Int64Type,
-	},
-}
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -70,7 +60,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		"updates": schema.ListAttribute{
 			Description: "Configuration settings for automated patch update maintenance for the Managed Database.",
 			Computed:    true,
-			ElementType: updateObjectType,
+			ElementType: helper.UpdateObjectType,
 		},
 		"ca_cert": schema.StringAttribute{
 			Description: "The base64-encoded SSL CA certificate for the Managed Database instance.",
