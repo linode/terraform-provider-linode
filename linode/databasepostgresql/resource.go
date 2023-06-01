@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -221,14 +221,14 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	// We should retry on intermittent deletion errors
-	return diag.FromErr(resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	return diag.FromErr(retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		err := client.DeletePostgresDatabase(ctx, int(id))
 		if err != nil {
 			if lerr, ok := err.(*linodego.Error); ok &&
 				lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to delete instance") {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(fmt.Errorf("failed to delete postgresql database %d: %s", id, err))
+			return retry.NonRetryableError(fmt.Errorf("failed to delete postgresql database %d: %s", id, err))
 		}
 
 		return nil
