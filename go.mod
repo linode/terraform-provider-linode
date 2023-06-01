@@ -5,15 +5,12 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
+	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
+	github.com/hashicorp/terraform-plugin-testing v1.2.0
 	github.com/linode/linodego v1.16.2
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
 	golang.org/x/crypto v0.9.0
-)
-
-require (
-	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
-	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 )
 
 require (
@@ -33,7 +30,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.4.9 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
-	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hc-install v0.5.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.16.2 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
@@ -62,6 +58,8 @@ require (
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.13.1 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.10.0 // indirect

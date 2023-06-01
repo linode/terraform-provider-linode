@@ -18,7 +18,7 @@ type DataSource struct {
 }
 
 func (data *DataSourceModel) parseKernel(kernel *linodego.LinodeKernel) {
-	// data.ID = types.StringValue(kernel.ID)
+	data.ID = types.StringValue(kernel.ID)
 	data.Architecture = types.StringValue(kernel.Architecture)
 	data.Deprecated = types.BoolValue(kernel.Deprecated)
 	data.KVM = types.BoolValue(kernel.KVM)

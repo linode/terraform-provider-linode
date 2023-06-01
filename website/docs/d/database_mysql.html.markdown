@@ -16,7 +16,7 @@ Get information about a MySQL database:
 
 ```hcl
 data "linode_database_mysql" "my-db" {
-  database_id = 12345
+  id = 12345
 }
 ```
 
@@ -24,7 +24,9 @@ data "linode_database_mysql" "my-db" {
 
 The following arguments are supported:
 
-* `database_id` - The ID of the MySQL database.
+* `database_id` - The ID of the MySQL database. Deprecated: Use id instead.
+
+* `id` - The ID of the MySQL database. Mutually exclusive with `database_id`.
 
 ## Attributes Reference
 
