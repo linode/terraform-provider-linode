@@ -26,6 +26,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/linode/profile"
+	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
@@ -134,6 +135,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nb.NewDataSource,
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
+		regions.NewDataSource,
 		ipv6range.NewDataSource,
 		objbucket.NewDataSource,
 		sshkey.NewDataSource,
