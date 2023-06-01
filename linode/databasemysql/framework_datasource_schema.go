@@ -11,9 +11,8 @@ import (
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		// DEPRECATED: Use ID instead
 		"database_id": schema.Int64Attribute{
-			Description: "The ID of the MySQL database.",
+			Description: "The ID of the MySQL database. DEPRECATED: Use ID instead",
 			Optional:    true,
 		},
 		"engine_id": schema.StringAttribute{

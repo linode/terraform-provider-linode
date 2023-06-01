@@ -26,6 +26,8 @@ The following arguments are supported:
 
 * `database_id` - The ID of the PostgreSQL database. Deprecated: Use id instead.
 
+* `id` - The ID of the PostgreSQL database. Mutually exclusive with `database_id`.
+
 ## Attributes Reference
 
 The `linode_database_postgresql` data source exports the following attributes:
@@ -71,8 +73,6 @@ The `linode_database_postgresql` data source exports the following attributes:
 * [`updates`](#updates) - (Optional) Configuration settings for automated patch update maintenance for the Managed Database.
 
 * `version` - The Managed Database engine version. (e.g. `v8.0.26`)
-
-* `id` - The ID of the PostgreSQL database.
 
 ## updates
 
