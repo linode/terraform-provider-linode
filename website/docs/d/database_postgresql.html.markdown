@@ -16,7 +16,7 @@ Get information about a PostgreSQL database:
 
 ```hcl
 data "linode_database_postgresql" "my-db" {
-  database_id = 12345
+  id = 12345
 }
 ```
 

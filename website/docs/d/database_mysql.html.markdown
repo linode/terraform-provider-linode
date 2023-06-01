@@ -16,7 +16,7 @@ Get information about a MySQL database:
 
 ```hcl
 data "linode_database_mysql" "my-db" {
-  database_id = 12345
+  id = 12345
 }
 ```
 
