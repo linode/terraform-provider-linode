@@ -12,7 +12,7 @@ import (
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"database_id": schema.Int64Attribute{
-			Description: "The ID of the PostgreSQL database.",
+			Description: "The ID of the PostgreSQL database. DEPRECATED: Use ID instead",
 			Optional:    true,
 		},
 		"engine_id": schema.StringAttribute{
