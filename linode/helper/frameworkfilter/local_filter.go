@@ -1,7 +1,6 @@
 package frameworkfilter
 
 import (
-	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -129,8 +128,6 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 	}
 
 	switch rField.Interface().(type) {
-	case string:
-		return rField.String(), nil
 	case int, int64:
 		return strconv.FormatInt(rField.Int(), 10), nil
 	case bool:
@@ -138,10 +135,7 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 	case float32, float64:
 		return strconv.FormatFloat(rField.Float(), 'f', 0, 64), nil
 	default:
-		return "", diag.NewErrorDiagnostic(
-			"Invalid field type",
-			fmt.Sprintf("Invalid type for field: %s", rField.Type().String()),
-		)
+		return rField.String(), nil
 	}
 }
 

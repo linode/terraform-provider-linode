@@ -1,8 +1,7 @@
-package image
+package images
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
@@ -40,7 +39,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_image"
+	resp.TypeName = "linode_images"
 }
 
 func (d *DataSource) Schema(
@@ -56,39 +55,48 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
-	var data ImageModel
+	var data ImageFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if data.ID.ValueString() == "" {
-		resp.Diagnostics.AddError(
-			"Image ID is required.",
-			"Image ID can't be empty.",
-		)
+	id, diag := filterConfig.GenerateID(data.Filters)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+		return
+	}
+	data.ID = id
+
+	result, diag := filterConfig.GetAndFilter(
+		ctx, d.client, data.Filters, listImages,
+		data.Order, data.OrderBy)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	image, err := client.GetImage(ctx, data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Error listing images: %s", data.ID.ValueString()),
-			err.Error(),
-		)
-		return
+	if data.Latest.ValueBool() {
+		result, diag = filterConfig.GetLatestCreated(result, "Created")
+		if diag != nil {
+			resp.Diagnostics.Append(diag)
+			return
+		}
 	}
 
-	if image == nil {
-		resp.Diagnostics.AddError(
-			"Image not found.",
-			fmt.Sprintf("Image %s was not found", data.ID.ValueString()),
-		)
-		return
-	}
-
-	data.ParseImage(image)
+	data.parseImages(helper.AnySliceToTyped[linodego.Image](result))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func listImages(
+	ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	images, err := client.ListImages(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return helper.TypedSliceToAny(images), nil
 }

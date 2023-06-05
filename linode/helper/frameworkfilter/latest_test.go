@@ -32,10 +32,10 @@ func TestGetLatestCreated(t *testing.T) {
 		t.Fatal(d.Detail())
 	}
 
-	if !result.(ElemType).Created.Equal(*elems[1].Created) {
+	if !result[0].(ElemType).Created.Equal(*elems[1].Created) {
 		t.Fatalf("Expected %s, got %s",
 			*elems[1].Created,
-			result.(ElemType).Created)
+			result[0].(ElemType).Created)
 	}
 }
 

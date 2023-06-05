@@ -11,7 +11,7 @@ import (
 
 // GetLatestCreated is a helper function that returns the latest
 // create entry in the input slice.
-func (f Config) GetLatestCreated(elems []any, structField string) (any, diag.Diagnostic) {
+func (f Config) GetLatestCreated(elems []any, structField string) ([]any, diag.Diagnostic) {
 	if len(elems) < 1 {
 		return nil, nil
 	}
@@ -34,7 +34,7 @@ func (f Config) GetLatestCreated(elems []any, structField string) (any, diag.Dia
 		}
 	}
 
-	return newestElem, nil
+	return []any{newestElem}, nil
 }
 
 // GetLatestVersion gets the latest version of the given struct
