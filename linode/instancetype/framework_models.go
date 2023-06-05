@@ -62,7 +62,7 @@ func FlattenAddons(ctx context.Context, backup linodego.LinodeAddons) (
 		return nil, diag
 	}
 
-	result["price"] = backups
+	result["backups"] = backups
 
 	obj, diag := types.ObjectValue(addonsObjectType.AttrTypes, result)
 	if diag.HasError() {

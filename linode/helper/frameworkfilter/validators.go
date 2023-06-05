@@ -27,6 +27,11 @@ func (v filterNameValidator) ValidateString(
 	req validator.StringRequest,
 	resp *validator.StringResponse,
 ) {
+
+	if req.ConfigValue.IsNull() {
+		return
+	}
+
 	fieldName := req.ConfigValue.ValueString()
 
 	config, ok := v.FilterConfig[fieldName]
