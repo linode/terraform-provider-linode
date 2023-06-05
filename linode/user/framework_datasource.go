@@ -82,29 +82,25 @@ func (d *DataSource) Read(
 		}
 	}
 
-	if user.Username != "" {
-		resp.Diagnostics.Append(data.parseUser(ctx, &user)...)
-
-		if user.Restricted {
-			grants, err := client.GetUserGrants(ctx, data.Username.ValueString())
-			if err != nil {
-				resp.Diagnostics.AddError(
-					fmt.Sprintf("Failed to get User Grants (%s): ", data.Username.ValueString()), err.Error(),
-				)
-				return
-			}
-
-			resp.Diagnostics.Append(data.parseUserGrants(ctx, grants)...)
-		}
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	} else {
+	if user.Username == "" {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Linode User with username %s was not found", data.Username.ValueString()), "",
 		)
 		return
 	}
+	resp.Diagnostics.Append(data.parseUser(ctx, &user)...)
+	if user.Restricted {
+		grants, err := client.GetUserGrants(ctx, data.Username.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to get User Grants (%s): ", data.Username.ValueString()), err.Error(),
+			)
+			return
+		}
+		resp.Diagnostics.Append(data.parseUserGrants(ctx, grants)...)
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
