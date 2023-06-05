@@ -27,11 +27,11 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"filter":   filterConfig.Schema(),
 		"order_by": filterConfig.OrderBySchema(),
 		"order":    filterConfig.OrderSchema(),
+	},
+	Blocks: map[string]schema.Block{
+		"filter": filterConfig.Schema(),
 		"types": schema.ListNestedBlock{
 			Description:  "The returned list of instance types.",
 			NestedObject: instanceTypeSchema,

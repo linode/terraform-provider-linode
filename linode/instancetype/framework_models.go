@@ -18,7 +18,7 @@ type DataSourceModel struct {
 	Price      types.List   `tfsdk:"price"`
 	Addons     types.List   `tfsdk:"addons"`
 	NetworkOut types.Int64  `tfsdk:"network_out"`
-	Memory     types.Int64  `tfsdk:"mempry"`
+	Memory     types.Int64  `tfsdk:"memory"`
 	Transfer   types.Int64  `tfsdk:"transfer"`
 	VCPUs      types.Int64  `tfsdk:"vcpus"`
 }
@@ -30,7 +30,7 @@ func (data *DataSourceModel) parseLinodeType(
 	data.Disk = types.Int64Value(int64(linodeType.Disk))
 	data.Class = types.StringValue(string(linodeType.Class))
 
-	price, diags := flattenPrice(ctx, *linodeType.Price)
+	price, diags := FlattenPrice(ctx, *linodeType.Price)
 	if diags.HasError() {
 		return diags
 	}
@@ -38,7 +38,7 @@ func (data *DataSourceModel) parseLinodeType(
 
 	data.Label = types.StringValue(linodeType.Label)
 
-	addons, diags := flattenAddons(ctx, *linodeType.Addons)
+	addons, diags := FlattenAddons(ctx, *linodeType.Addons)
 	if diags.HasError() {
 		return diags
 	}
@@ -52,12 +52,12 @@ func (data *DataSourceModel) parseLinodeType(
 	return nil
 }
 
-func flattenAddons(ctx context.Context, backup linodego.LinodeAddons) (
+func FlattenAddons(ctx context.Context, backup linodego.LinodeAddons) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
 
-	backups, diag := flattenBackups(ctx, *backup.Backups)
+	backups, diag := FlattenBackups(ctx, *backup.Backups)
 	if diag.HasError() {
 		return nil, diag
 	}
@@ -82,12 +82,12 @@ func flattenAddons(ctx context.Context, backup linodego.LinodeAddons) (
 	return &resultList, nil
 }
 
-func flattenBackups(ctx context.Context, backup linodego.LinodeBackupsAddon) (
+func FlattenBackups(ctx context.Context, backup linodego.LinodeBackupsAddon) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
 
-	price, diag := flattenPrice(ctx, *backup.Price)
+	price, diag := FlattenPrice(ctx, *backup.Price)
 	if diag.HasError() {
 		return nil, diag
 	}
@@ -112,7 +112,7 @@ func flattenBackups(ctx context.Context, backup linodego.LinodeBackupsAddon) (
 	return &resultList, nil
 }
 
-func flattenPrice(ctx context.Context, price linodego.LinodePrice) (
+func FlattenPrice(ctx context.Context, price linodego.LinodePrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)

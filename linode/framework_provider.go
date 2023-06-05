@@ -18,6 +18,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/linode/instancetype"
+	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
@@ -150,5 +151,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domain.NewDataSource,
 		nbconfig.NewDataSource,
 		instancetype.NewDataSource,
+		instancetypes.NewDataSource,
 	}
 }
