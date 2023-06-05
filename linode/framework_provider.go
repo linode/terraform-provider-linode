@@ -10,6 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
@@ -21,13 +22,16 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/nb"
+	"github.com/linode/terraform-provider-linode/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/linode/profile"
+	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
+	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
 type FrameworkProvider struct {
@@ -132,15 +136,19 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nb.NewDataSource,
 		networkingip.NewDataSource,
 		lkeversions.NewDataSource,
+		regions.NewDataSource,
 		ipv6range.NewDataSource,
 		objbucket.NewDataSource,
 		sshkey.NewDataSource,
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
+		databasepostgresql.NewDataSource,
+		volume.NewDataSource,
 		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
+		nbconfig.NewDataSource,
 		instancetype.NewDataSource,
 	}
 }

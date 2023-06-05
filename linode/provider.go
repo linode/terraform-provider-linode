@@ -43,7 +43,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
-	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/user"
@@ -137,7 +136,6 @@ func Provider() *schema.Provider {
 			"linode_account_settings":       accountsettings.DataSource(),
 			"linode_database_backups":       databasebackups.DataSource(),
 			"linode_database_engines":       databaseengines.DataSource(),
-			"linode_database_postgresql":    databasepostgresql.DataSource(),
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_databases":              databases.DataSource(),
 			"linode_image":                  image.DataSource(),
@@ -146,13 +144,10 @@ func Provider() *schema.Provider {
 			"linode_instance_types":         instancetypes.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
-			"linode_nodebalancer_config":    nbconfig.DataSource(),
 			"linode_region":                 region.DataSource(),
-			"linode_regions":                regions.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
 			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  vlan.DataSource(),
-			"linode_volume":                 volume.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

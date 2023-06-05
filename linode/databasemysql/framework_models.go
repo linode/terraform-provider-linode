@@ -4,10 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -65,7 +63,7 @@ func (data *DataSourceModel) parseMySQLDatabase(
 
 	data.EngineID = types.StringValue(helper.CreateDatabaseEngineSlug(db.Engine, db.Version))
 
-	updates, diags := flattenDatabaseMaintenanceWindow(ctx, db.Updates)
+	updates, diags := helper.FlattenDatabaseMaintenanceWindow(ctx, db.Updates)
 	if diags.HasError() {
 		return diags
 	}
@@ -84,33 +82,4 @@ func (data *DataSourceModel) parseMySQLDatabaseSSL(db *linodego.MySQLDatabaseSSL
 func (data *DataSourceModel) parseMySQLDatabaseCredentials(db *linodego.MySQLDatabaseCredential) {
 	data.RootUsername = types.StringValue(db.Username)
 	data.RootPassword = types.StringValue(db.Password)
-}
-
-func flattenDatabaseMaintenanceWindow(ctx context.Context, maintenance linodego.DatabaseMaintenanceWindow) (
-	*basetypes.ListValue, diag.Diagnostics,
-) {
-	result := make(map[string]attr.Value)
-
-	result["day_of_week"] = types.StringValue(helper.FlattenDayOfWeek(maintenance.DayOfWeek))
-	result["duration"] = types.Int64Value(int64(maintenance.Duration))
-	result["frequency"] = types.StringValue(string(maintenance.Frequency))
-	result["hour_of_day"] = types.Int64Value(int64(maintenance.HourOfDay))
-	result["week_of_month"] = types.Int64Value(int64(*maintenance.WeekOfMonth))
-
-	obj, diag := types.ObjectValue(updateObjectType.AttrTypes, result)
-	if diag.HasError() {
-		return nil, diag
-	}
-
-	objList := []attr.Value{obj}
-
-	resultList, diag := basetypes.NewListValue(
-		updateObjectType,
-		objList,
-	)
-	if diag.HasError() {
-		return nil, diag
-	}
-
-	return &resultList, nil
 }
