@@ -27,7 +27,6 @@ func (v filterNameValidator) ValidateString(
 	req validator.StringRequest,
 	resp *validator.StringResponse,
 ) {
-
 	if req.ConfigValue.IsNull() {
 		return
 	}

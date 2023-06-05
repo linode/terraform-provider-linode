@@ -31,7 +31,9 @@ type InstanceTypeFilterModel struct {
 	Types   []InstanceTypeModel              `tfsdk:"types"`
 }
 
-func (model *InstanceTypeFilterModel) parseInstanceTypes(ctx context.Context, instanceTypes []linodego.LinodeType) diag.Diagnostics {
+func (model *InstanceTypeFilterModel) parseInstanceTypes(ctx context.Context,
+	instanceTypes []linodego.LinodeType,
+) diag.Diagnostics {
 	parseInstanceType := func(instanceType linodego.LinodeType) (InstanceTypeModel, diag.Diagnostics) {
 		var m InstanceTypeModel
 

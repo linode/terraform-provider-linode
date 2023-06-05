@@ -24,7 +24,7 @@ func (f Config) constructFilterString(
 		}
 
 		// We should only use API filters when matching on exact
-		if !filter.MatchBy.IsNull() && filter.MatchBy.ValueString() != "exact" {
+		if !filter.MatchBy.IsNull() && filter.MatchBy.ValueString() != EXACT {
 			continue
 		}
 

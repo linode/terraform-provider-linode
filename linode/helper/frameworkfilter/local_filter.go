@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const EXACT = "exact"
+
 // applyLocalFiltering handles filtering for fields that are not
 // API-filterable.
 func (f Config) applyLocalFiltering(
@@ -103,7 +105,7 @@ func (f Config) checkFieldMatchesFilter(
 	d = nil
 
 	switch strings.ToLower(filter.MatchBy.ValueString()) {
-	case "exact", "":
+	case EXACT, "":
 		result = checkFilterExact(filter.Values, normalizedValue)
 	case "substring", "sub":
 		result, d = checkFilterSubString(filter.Values, normalizedValue)
@@ -184,5 +186,5 @@ func checkFilterRegex(values []types.String, actualValue string) (bool, diag.Dia
 }
 
 func checkFilterSkip(filter FilterModel) bool {
-	return filter.MatchBy.ValueString() == "exact" || filter.MatchBy.IsNull()
+	return filter.MatchBy.ValueString() == EXACT || filter.MatchBy.IsNull()
 }
