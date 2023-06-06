@@ -22,9 +22,9 @@ func (data *ImageFilterModel) parseImages(
 	images []linodego.Image,
 ) {
 	result := make([]image.ImageModel, len(images))
-	for i, img := range images {
+	for i := range images {
 		var imgData image.ImageModel
-		imgData.ParseImage(&img)
+		imgData.ParseImage(&images[i])
 		result[i] = imgData
 	}
 

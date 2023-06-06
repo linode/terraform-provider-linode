@@ -90,7 +90,10 @@ func (d *DataSource) Read(
 }
 
 func listImages(
-	ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
 	images, err := client.ListImages(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
