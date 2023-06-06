@@ -27,6 +27,7 @@ var linodeUserGrantsEntityObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"id":          types.Int64Type,
 		"permissions": types.StringType,
+		"label":       types.StringType,
 	},
 }
 

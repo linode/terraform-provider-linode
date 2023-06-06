@@ -178,6 +178,7 @@ func flattenGrantEntity(ctx context.Context, entity linodego.GrantedEntity) (
 
 	result["id"] = types.Int64Value(int64(entity.ID))
 	result["permissions"] = types.StringValue(string(entity.Permissions))
+	result["label"] = types.StringValue(entity.Label)
 
 	obj, diag := types.ObjectValue(linodeUserGrantsEntityObjectType.AttrTypes, result)
 	if diag.HasError() {
