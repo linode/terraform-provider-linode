@@ -50,3 +50,25 @@ func LinodeInstance500Retry() func(response *resty.Response, err error) bool {
 		return linodeGetRegex.MatchString(requestURL.Path)
 	}
 }
+
+// ImageUpload500Retry for [500] error when uploading an image
+func ImageUpload500Retry() func(response *resty.Response, err error) bool {
+	ImageUpload, err := regexp.Compile("images/upload")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return func(response *resty.Response, _ error) bool {
+		if response.StatusCode() != 500 || response.Request == nil {
+			return false
+		}
+
+		requestURL, err := url.ParseRequestURI(response.Request.URL)
+		if err != nil {
+			log.Printf("[WARN] failed to parse request URL: %s", err)
+			return false
+		}
+
+		// Check whether the string matches
+		return ImageUpload.MatchString(requestURL.Path)
+	}
+}
