@@ -65,31 +65,15 @@ func (d *DataSource) Read(
 		return
 	}
 
-	users, err := client.ListUsers(ctx, nil)
+	user, err := client.GetUser(ctx, data.Username.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error listing Users: %s", err.Error(),
+			fmt.Sprintf("Linode User with username %s was not found", data.Username.ValueString()), err.Error(),
 		)
 		return
 	}
 
-	var user linodego.User
-
-	for _, testUser := range users {
-		if testUser.Username == data.Username.ValueString() {
-			user = testUser
-			break
-		}
-	}
-
-	if user.Username == "" {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Linode User with username %s was not found", data.Username.ValueString()), "",
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(data.parseUser(ctx, &user)...)
+	resp.Diagnostics.Append(data.parseUser(ctx, user)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
