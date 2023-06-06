@@ -85,7 +85,6 @@ func (d *DataSource) Read(
 		}
 	}
 
-	//fmt.Printf("result: %v\n", result)
 	data.parseImages(helper.AnySliceToTyped[linodego.Image](result))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

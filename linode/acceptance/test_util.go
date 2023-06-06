@@ -208,7 +208,7 @@ func CheckResourceAttrContains(resName string, path, desiredValue string) resour
 		}
 
 		if !strings.Contains(value, desiredValue) {
-			return fmt.Errorf("from '%s' value '%s' was not found", value, desiredValue)
+			return fmt.Errorf("value '%s' was not found", desiredValue)
 		}
 
 		return nil
