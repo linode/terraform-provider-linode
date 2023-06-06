@@ -37,14 +37,6 @@ func (model *InstanceTypeFilterModel) parseInstanceTypes(ctx context.Context,
 	parseInstanceType := func(instanceType linodego.LinodeType) (InstanceTypeModel, diag.Diagnostics) {
 		var m InstanceTypeModel
 
-		// Gonna need to add more parse functions for the object types
-
-		// m.Datetime = types.StringValue(login.Datetime.Format(time.RFC3339))
-		// m.ID = types.Int64Value(int64(login.ID))
-		// m.IP = types.StringValue(login.IP)
-		// m.Restricted = types.BoolValue(login.Restricted)
-		// m.Username = types.StringValue(login.Username)
-		// m.Status = types.StringValue(login.Status)
 		m.ID = types.StringValue(instanceType.ID)
 		m.Disk = types.Int64Value(int64(instanceType.Disk))
 		m.Class = types.StringValue(string(instanceType.Class))
