@@ -152,9 +152,9 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
 		nbconfig.NewDataSource,
-    image.NewDataSource,
-    images.NewDataSource,
-    accountlogin.NewDataSource,
-    accountlogins.NewDataSource,
+		image.NewDataSource,
+		images.NewDataSource,
+		accountlogin.NewDataSource,
+		accountlogins.NewDataSource,
 	}
 }
