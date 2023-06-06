@@ -4,14 +4,14 @@
 
 data "linode_images" "foobar" {
     filter {
-        name = "vendor"
+        name = "label"
         values = ["Alpine"]
         match_by = "substring"
     }
 
     filter {
         name = "is_public"
-        values = [true]
+        values = [false]
     }
 }
 

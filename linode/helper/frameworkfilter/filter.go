@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -142,7 +143,7 @@ func (f Config) GetAndFilter(
 	if d != nil {
 		return nil, d
 	}
-
+	fmt.Printf("filterStr: %v\n", filterStr)
 	// Call the user-defined list function
 	listedElems, err := listFunc(ctx, client, filterStr)
 	if err != nil {
@@ -157,6 +158,5 @@ func (f Config) GetAndFilter(
 	if d != nil {
 		return nil, d
 	}
-
 	return locallyFilteredElements, nil
 }

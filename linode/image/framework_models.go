@@ -1,7 +1,6 @@
 package image
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,6 +29,7 @@ func (data *ImageModel) ParseImage(
 ) {
 	data.ID = types.StringValue(image.ID)
 	data.Label = types.StringValue(image.Label)
+
 	data.Description = types.StringValue(image.Description)
 	if image.Created != nil {
 		data.Created = types.StringValue(image.Created.Format(time.RFC3339))
@@ -44,6 +44,4 @@ func (data *ImageModel) ParseImage(
 	data.Status = types.StringValue(string(image.Status))
 	data.Type = types.StringValue(image.Type)
 	data.Vendor = types.StringValue(image.Vendor)
-
-	fmt.Printf("data: %v\n", data)
 }

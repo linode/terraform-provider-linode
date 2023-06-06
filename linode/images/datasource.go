@@ -29,23 +29,23 @@ package images
 // 	return nil
 // }
 
-// // func listImages(
-// // 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
-// // 	options *linodego.ListOptions,
-// // ) ([]interface{}, error) {
-// // 	images, err := client.ListImages(ctx, options)
-// // 	if err != nil {
-// // 		return nil, err
-// // 	}
+// func listImages(
+// 	ctx context.Context, d *schema.ResourceData, client *linodego.Client,
+// 	options *linodego.ListOptions,
+// ) ([]interface{}, error) {
+// 	images, err := client.ListImages(ctx, options)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-// // 	result := make([]interface{}, len(images))
+// 	result := make([]interface{}, len(images))
 
-// // 	for i, v := range images {
-// // 		result[i] = v
-// // 	}
+// 	for i, v := range images {
+// 		result[i] = v
+// 	}
 
-// // 	return result, nil
-// // }
+// 	return result, nil
+// }
 
 // func flattenImage(data interface{}) map[string]interface{} {
 // 	image := data.(linodego.Image)
@@ -71,5 +71,5 @@ package images
 // 		result["expiry"] = image.Expiry.Format(time.RFC3339)
 // 	}
 
-// 	return result
-// }
+//  	return result
+//  }
