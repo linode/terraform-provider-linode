@@ -32,7 +32,14 @@ func (f Config) constructFilterString(
 		currentFilter := make([]map[string]any, len(filter.Values))
 
 		for i, value := range filter.Values {
-			currentFilter[i] = map[string]any{filterFieldName: value.ValueString()}
+			value, err := f[filterFieldName].TypeFunc(value.ValueString())
+			if err != nil {
+				return "", diag.NewErrorDiagnostic(
+					"Failed to convert filter field to correct type.",
+					err.Error(),
+				)
+			}
+			currentFilter[i] = map[string]any{filterFieldName: value}
 		}
 
 		// Append to the root filter

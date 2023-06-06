@@ -7,16 +7,17 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"deprecated":  {APIFilterable: true},
-	"is_public":   {APIFilterable: true},
-	"label":       {APIFilterable: true},
-	"size":        {APIFilterable: true},
-	"type":        {APIFilterable: true},
-	"vendor":      {APIFilterable: true},
-	"created_by":  {APIFilterable: false},
-	"id":          {APIFilterable: false},
-	"status":      {APIFilterable: false},
-	"description": {APIFilterable: false},
+	"deprecated": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"is_public":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"label":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"size":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"type":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"vendor":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+
+	"created_by":  {TypeFunc: frameworkfilter.FilterTypeString},
+	"id":          {TypeFunc: frameworkfilter.FilterTypeString},
+	"status":      {TypeFunc: frameworkfilter.FilterTypeString},
+	"description": {TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

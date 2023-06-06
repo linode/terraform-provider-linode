@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -32,10 +32,19 @@ type FilterModel struct {
 // data sources.
 type FiltersModelType []FilterModel
 
+// FilterTypeFunc is a function that takes in a filter name and value,
+// and returns the value converted to the correct filter type.
+type FilterTypeFunc func(value string) (interface{}, error)
+
 // FilterAttribute is used to configure filtering for an individual
 // response field.
 type FilterAttribute struct {
+	// Whether this field can be filtered on at an API level.
+	// If false, this filter will be handled on the client.
 	APIFilterable bool
+
+	// Converts the filter string to the correct type.
+	TypeFunc FilterTypeFunc
 }
 
 // Config is the root configuration type for filter data sources.
@@ -143,7 +152,7 @@ func (f Config) GetAndFilter(
 	if d != nil {
 		return nil, d
 	}
-	fmt.Printf("filterStr: %v\n", filterStr)
+
 	// Call the user-defined list function
 	listedElems, err := listFunc(ctx, client, filterStr)
 	if err != nil {
@@ -159,4 +168,16 @@ func (f Config) GetAndFilter(
 		return nil, d
 	}
 	return locallyFilteredElements, nil
+}
+
+func FilterTypeString(value string) (interface{}, error) {
+	return value, nil
+}
+
+func FilterTypeInt(value string) (interface{}, error) {
+	return strconv.Atoi(value)
+}
+
+func FilterTypeBool(value string) (interface{}, error) {
+	return strconv.ParseBool(value)
 }

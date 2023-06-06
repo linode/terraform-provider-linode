@@ -2,7 +2,6 @@ package images
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
@@ -94,13 +93,11 @@ func (d *DataSource) Read(
 func listImages(
 	ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
 	images, err := client.ListImages(ctx, &linodego.ListOptions{
-		//Filter: filter,
+		Filter: filter,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("images: %v\n", images)
 
 	return helper.TypedSliceToAny(images), nil
 }
