@@ -38,6 +38,8 @@ The Linode User resource exports the following attributes:
 
 * `global_grants` - The Account-level grants a User has.
 
+* `database_grant` - The grants this User has pertaining to Databases on this Account.
+
 * `domain_grant` - The grants this User has pertaining to Domains on this Account.
 
 * `firewall_grant` - The grants this User has pertaining to Firewalls on this Account.
@@ -53,3 +55,5 @@ The Linode User resource exports the following attributes:
 * `stackscript_grant` - The grants this User has pertaining to StackScripts on this Account.
 
 * `volume_grant` - The grants this User has pertaining to Volumes on this Account.
+
+* `id` - The unique username of this User.
