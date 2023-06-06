@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/linode/domain"
@@ -148,5 +149,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
 		nbconfig.NewDataSource,
+		databaseengines.NewDataSource,
 	}
 }
