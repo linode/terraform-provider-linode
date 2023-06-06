@@ -88,7 +88,12 @@ func (d *DataSource) Read(
 		)
 		return
 	}
+
 	resp.Diagnostics.Append(data.parseUser(ctx, &user)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if user.Restricted {
 		grants, err := client.GetUserGrants(ctx, data.Username.ValueString())
 		if err != nil {

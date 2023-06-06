@@ -55,5 +55,3 @@ The Linode User resource exports the following attributes:
 * `stackscript_grant` - The grants this User has pertaining to StackScripts on this Account.
 
 * `volume_grant` - The grants this User has pertaining to Volumes on this Account.
-
-* `id` - The unique username of this User.
