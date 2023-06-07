@@ -46,7 +46,7 @@ func (f Config) matchesFilter(
 		filterName := filter.Name.ValueString()
 
 		// Skip if this field should be filtered at an API level
-		if f[filterName].APIFilterable && checkFilterSkip(filter) {
+		if f[filterName].APIFilterable && isExactMatchFilter(filter) {
 			continue
 		}
 
@@ -185,6 +185,6 @@ func checkFilterRegex(values []types.String, actualValue string) (bool, diag.Dia
 	return false, nil
 }
 
-func checkFilterSkip(filter FilterModel) bool {
+func isExactMatchFilter(filter FilterModel) bool {
 	return filter.MatchBy.ValueString() == EXACT || filter.MatchBy.IsNull()
 }
