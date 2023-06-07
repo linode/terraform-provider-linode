@@ -12,6 +12,8 @@ import (
 )
 
 const EXACT = "exact"
+const SUBSTRING = "substring"
+const REGEX = "regex"
 
 // applyLocalFiltering handles filtering for fields that are not
 // API-filterable.
@@ -107,9 +109,9 @@ func (f Config) checkFieldMatchesFilter(
 	switch strings.ToLower(filter.MatchBy.ValueString()) {
 	case EXACT, "":
 		result = checkFilterExact(filter.Values, normalizedValue)
-	case "substring", "sub":
+	case SUBSTRING, "sub":
 		result, d = checkFilterSubString(filter.Values, normalizedValue)
-	case "regex", "re":
+	case REGEX, "re":
 		result, d = checkFilterRegex(filter.Values, normalizedValue)
 	}
 
