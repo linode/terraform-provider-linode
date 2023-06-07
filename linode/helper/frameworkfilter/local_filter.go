@@ -1,6 +1,7 @@
 package frameworkfilter
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -120,7 +121,7 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 	rField := reflect.ValueOf(field)
 
 	// Dereference if the value is a pointer
-	for rField.Kind() == reflect.Ptr {
+	for rField.Kind() == reflect.Pointer {
 		// Null pointer; assume empty
 		if rField.IsNil() {
 			return "", nil
@@ -128,16 +129,20 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 
 		rField = reflect.Indirect(rField)
 	}
-
-	switch rField.Interface().(type) {
-	case int, int64:
+	switch rField.Kind() {
+	case reflect.String:
+		return rField.String(), nil
+	case reflect.Int, reflect.Int64:
 		return strconv.FormatInt(rField.Int(), 10), nil
-	case bool:
+	case reflect.Bool:
 		return strconv.FormatBool(rField.Bool()), nil
-	case float32, float64:
+	case reflect.Float32, reflect.Float64:
 		return strconv.FormatFloat(rField.Float(), 'f', 0, 64), nil
 	default:
-		return rField.String(), nil
+		return "", diag.NewErrorDiagnostic(
+			"Invalid field type",
+			fmt.Sprintf("Invalid type for field: %s", rField.Type().String()),
+		)
 	}
 }
 
