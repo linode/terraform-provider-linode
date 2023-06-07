@@ -73,7 +73,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseLinodeType(ctx, typeInfo)...)
+	resp.Diagnostics.Append(data.ParseLinodeType(ctx, typeInfo)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -23,7 +23,7 @@ type DataSourceModel struct {
 	VCPUs      types.Int64  `tfsdk:"vcpus"`
 }
 
-func (data *DataSourceModel) parseLinodeType(
+func (data *DataSourceModel) ParseLinodeType(
 	ctx context.Context, linodeType *linodego.LinodeType,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(linodeType.ID)
