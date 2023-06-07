@@ -141,7 +141,6 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_region":                 region.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
-			"linode_user":                   user.DataSource(),
 			"linode_vlans":                  vlan.DataSource(),
 		},
 

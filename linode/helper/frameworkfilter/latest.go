@@ -125,7 +125,7 @@ func getAndValidateFieldByName(elem any, attr string) (reflect.Value, diag.Diagn
 	}
 
 	// Deref any pointers
-	for val.Kind() == reflect.Ptr {
+	for val.Kind() == reflect.Pointer {
 		val = reflect.Indirect(val)
 	}
 
