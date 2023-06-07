@@ -11,9 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const EXACT = "exact"
-const SUBSTRING = "substring"
-const REGEX = "regex"
+const (
+	EXACT     = "exact"
+	SUBSTRING = "substring"
+	REGEX     = "regex"
+)
 
 // applyLocalFiltering handles filtering for fields that are not
 // API-filterable.
