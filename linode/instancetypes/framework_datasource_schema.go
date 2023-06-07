@@ -7,14 +7,14 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"class":       {APIFilterable: true},
-	"disk":        {APIFilterable: true},
-	"gpus":        {APIFilterable: true},
-	"label":       {APIFilterable: true},
-	"memory":      {APIFilterable: true},
-	"network_out": {APIFilterable: true},
-	"transfer":    {APIFilterable: true},
-	"vcpus":       {APIFilterable: true},
+	"class":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"disk":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"gpus":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"label":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"memory":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"network_out": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"transfer":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
+	"vcpus":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
 var instanceTypeSchema = schema.NestedBlockObject{
