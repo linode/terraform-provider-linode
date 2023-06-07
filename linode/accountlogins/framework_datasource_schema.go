@@ -7,10 +7,10 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"ip":         {APIFilterable: false},
-	"restricted": {APIFilterable: false},
-	"username":   {APIFilterable: false},
-	"status":     {APIFilterable: false},
+	"ip":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"restricted": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
+	"username":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var accountLoginSchema = schema.NestedBlockObject{

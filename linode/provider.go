@@ -24,7 +24,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
-	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instance"
 	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
@@ -135,8 +134,6 @@ func Provider() *schema.Provider {
 			"linode_database_engines":       databaseengines.DataSource(),
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_databases":              databases.DataSource(),
-			"linode_image":                  image.DataSource(),
-			"linode_images":                 images.DataSource(),
 			"linode_instances":              instance.DataSource(),
 			"linode_instance_type":          instancetype.DataSource(),
 			"linode_instance_types":         instancetypes.DataSource(),

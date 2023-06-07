@@ -24,7 +24,7 @@ func (f Config) constructFilterString(
 		}
 
 		// We should only use API filters when matching on exact
-		if !filter.MatchBy.IsNull() && filter.MatchBy.ValueString() != "exact" {
+		if !filter.MatchBy.IsNull() && filter.MatchBy.ValueString() != EXACT {
 			continue
 		}
 
@@ -32,7 +32,14 @@ func (f Config) constructFilterString(
 		currentFilter := make([]map[string]any, len(filter.Values))
 
 		for i, value := range filter.Values {
-			currentFilter[i] = map[string]any{filterFieldName: value.ValueString()}
+			value, err := f[filterFieldName].TypeFunc(value.ValueString())
+			if err != nil {
+				return "", diag.NewErrorDiagnostic(
+					"Failed to convert filter field to correct type.",
+					err.Error(),
+				)
+			}
+			currentFilter[i] = map[string]any{filterFieldName: value}
 		}
 
 		// Append to the root filter

@@ -18,6 +18,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/image"
+	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
@@ -152,6 +154,8 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domain.NewDataSource,
 		user.NewDataSource,
 		nbconfig.NewDataSource,
+		image.NewDataSource,
+		images.NewDataSource,
 		accountlogin.NewDataSource,
 		accountlogins.NewDataSource,
 	}
