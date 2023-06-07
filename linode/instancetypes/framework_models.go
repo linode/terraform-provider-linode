@@ -26,7 +26,7 @@ func (model *InstanceTypeFilterModel) parseInstanceTypes(ctx context.Context,
 	for i, instanceType := range instanceTypes {
 		var m instancetype.DataSourceModel
 
-		var diags = m.ParseLinodeType(ctx, &instanceType)
+		diags := m.ParseLinodeType(ctx, &instanceType)
 		if diags.HasError() {
 			return diags
 		}
