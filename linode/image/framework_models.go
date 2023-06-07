@@ -33,9 +33,13 @@ func (data *ImageModel) ParseImage(
 	data.Description = types.StringValue(image.Description)
 	if image.Created != nil {
 		data.Created = types.StringValue(image.Created.Format(time.RFC3339))
+	} else {
+		data.Created = types.StringNull()
 	}
 	if image.Expiry != nil {
 		data.Expiry = types.StringValue(image.Expiry.Format(time.RFC3339))
+	} else {
+		data.Expiry = types.StringNull()
 	}
 	data.CreatedBy = types.StringValue(image.CreatedBy)
 	data.Deprecated = types.BoolValue(image.Deprecated)

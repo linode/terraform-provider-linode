@@ -170,14 +170,14 @@ func (f Config) GetAndFilter(
 	return locallyFilteredElements, nil
 }
 
-func FilterTypeString(value string) (interface{}, error) {
+func FilterTypeString(value string) (any, error) {
 	return value, nil
 }
 
-func FilterTypeInt(value string) (interface{}, error) {
+func FilterTypeInt(value string) (any, error) {
 	return strconv.Atoi(value)
 }
 
-func FilterTypeBool(value string) (interface{}, error) {
+func FilterTypeBool(value string) (any, error) {
 	return strconv.ParseBool(value)
 }
