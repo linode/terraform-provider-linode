@@ -20,6 +20,18 @@ data "linode_user" "foo" {
 }
 ```
 
+The following example shows a sample grant.
+
+```hcl
+"domain": [
+  {
+    "id": 123,
+    "label": "example-entity",
+    "permissions": "read_only"
+  }
+]
+```
+
 ## Argument Reference
 
 The following arguments are supported:
