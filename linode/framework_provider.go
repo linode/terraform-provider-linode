@@ -32,6 +32,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
+	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
@@ -149,6 +150,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
+		user.NewDataSource,
 		nbconfig.NewDataSource,
 		accountlogin.NewDataSource,
 		accountlogins.NewDataSource,
