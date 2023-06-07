@@ -133,6 +133,7 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 
 		rField = reflect.Indirect(rField)
 	}
+
 	switch rField.Kind() {
 	case reflect.String:
 		return rField.String(), nil
