@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"github.com/linode/terraform-provider-linode/linode/databases"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -158,5 +159,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		images.NewDataSource,
 		accountlogin.NewDataSource,
 		accountlogins.NewDataSource,
+		databases.NewDataSource,
 	}
 }
