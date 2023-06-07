@@ -119,7 +119,7 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 	rField := reflect.ValueOf(field)
 
 	// Dereference if the value is a pointer
-	for rField.Kind() == reflect.Ptr {
+	for rField.Kind() == reflect.Pointer {
 		// Null pointer; assume empty
 		if rField.IsNil() {
 			return "", nil
