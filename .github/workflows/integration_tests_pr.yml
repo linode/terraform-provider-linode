@@ -19,6 +19,8 @@ jobs:
   # Maintainer has commented /acctest on a pull request
   integration-fork:
     runs-on: ubuntu-latest
+    if:
+      github.event_name == 'workflow_dispatch' && inputs.sha != ''
 
     steps:
       - uses: actions/setup-go@v4
@@ -45,7 +47,7 @@ jobs:
 
       - uses: actions/github-script@v6
         id: update-check-run
-        if: ${{ always() }}
+        if: ${{ inputs.pull_request_number != '' }}
         env:
           number: ${{ inputs.pull_request_number }}
           job: ${{ github.job }}
