@@ -23,10 +23,10 @@ func (model *InstanceTypeFilterModel) parseInstanceTypes(ctx context.Context,
 ) diag.Diagnostics {
 	result := make([]instancetype.DataSourceModel, len(instanceTypes))
 
-	for i, instanceType := range instanceTypes {
+	for i := range instanceTypes {
 		var m instancetype.DataSourceModel
 
-		diags := m.ParseLinodeType(ctx, &instanceType)
+		diags := m.ParseLinodeType(ctx, &instanceTypes[i])
 		if diags.HasError() {
 			return diags
 		}
