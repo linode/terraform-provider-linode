@@ -7,9 +7,9 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"capabilities": {APIFilterable: false},
-	"country":      {APIFilterable: false},
-	"status":       {APIFilterable: false},
+	"capabilities": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"country":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDataSourceSchema = schema.Schema{

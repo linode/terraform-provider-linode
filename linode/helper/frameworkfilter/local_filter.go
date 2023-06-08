@@ -11,6 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const (
+	EXACT     = "exact"
+	SUBSTRING = "substring"
+	REGEX     = "regex"
+)
+
 // applyLocalFiltering handles filtering for fields that are not
 // API-filterable.
 func (f Config) applyLocalFiltering(
@@ -44,7 +50,7 @@ func (f Config) matchesFilter(
 		filterName := filter.Name.ValueString()
 
 		// Skip if this field should be filtered at an API level
-		if f[filterName].APIFilterable {
+		if f[filterName].APIFilterable && isExactMatchFilter(filter) {
 			continue
 		}
 
@@ -103,11 +109,11 @@ func (f Config) checkFieldMatchesFilter(
 	d = nil
 
 	switch strings.ToLower(filter.MatchBy.ValueString()) {
-	case "exact", "":
+	case EXACT, "":
 		result = checkFilterExact(filter.Values, normalizedValue)
-	case "substring", "sub":
+	case SUBSTRING, "sub":
 		result, d = checkFilterSubString(filter.Values, normalizedValue)
-	case "regex", "re":
+	case REGEX, "re":
 		result, d = checkFilterRegex(filter.Values, normalizedValue)
 	}
 
@@ -127,6 +133,7 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 
 		rField = reflect.Indirect(rField)
 	}
+
 	switch rField.Kind() {
 	case reflect.String:
 		return rField.String(), nil
@@ -180,4 +187,8 @@ func checkFilterRegex(values []types.String, actualValue string) (bool, diag.Dia
 	}
 
 	return false, nil
+}
+
+func isExactMatchFilter(filter FilterModel) bool {
+	return filter.MatchBy.ValueString() == EXACT || filter.MatchBy.IsNull()
 }

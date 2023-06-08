@@ -2,10 +2,11 @@ package frameworkfilter
 
 import (
 	"encoding/json"
-	"github.com/google/go-cmp/cmp"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func TestConstructFilterString(t *testing.T) {
