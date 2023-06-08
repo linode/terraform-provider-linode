@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/accountlogin"
+	"github.com/linode/terraform-provider-linode/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
@@ -17,7 +19,11 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/image"
+	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/linode/instancetype"
+	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
@@ -31,6 +37,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/token"
+	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
@@ -148,7 +155,14 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		databasemysql.NewDataSource,
 		domainzonefile.NewDataSource,
 		domain.NewDataSource,
+		user.NewDataSource,
 		nbconfig.NewDataSource,
+		instancetype.NewDataSource,
+		instancetypes.NewDataSource,
+		image.NewDataSource,
+		images.NewDataSource,
+		accountlogin.NewDataSource,
+		accountlogins.NewDataSource,
 		databaseengines.NewDataSource,
 	}
 }

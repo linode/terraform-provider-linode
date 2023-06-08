@@ -11,6 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const (
+	EXACT     = "exact"
+	SUBSTRING = "substring"
+	REGEX     = "regex"
+)
+
 // applyLocalFiltering handles filtering for fields that are not
 // API-filterable.
 func (f Config) applyLocalFiltering(
@@ -44,7 +50,7 @@ func (f Config) matchesFilter(
 		filterName := filter.Name.ValueString()
 
 		// Skip if this field should be filtered at an API level
-		if f[filterName].APIFilterable {
+		if f[filterName].APIFilterable && isExactMatchFilter(filter) {
 			continue
 		}
 
@@ -103,11 +109,11 @@ func (f Config) checkFieldMatchesFilter(
 	d = nil
 
 	switch strings.ToLower(filter.MatchBy.ValueString()) {
-	case "exact", "":
+	case EXACT, "":
 		result = checkFilterExact(filter.Values, normalizedValue)
-	case "substring", "sub":
+	case SUBSTRING, "sub":
 		result, d = checkFilterSubString(filter.Values, normalizedValue)
-	case "regex", "re":
+	case REGEX, "re":
 		result, d = checkFilterRegex(filter.Values, normalizedValue)
 	}
 
@@ -119,7 +125,7 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 	rField := reflect.ValueOf(field)
 
 	// Dereference if the value is a pointer
-	for rField.Kind() == reflect.Ptr {
+	for rField.Kind() == reflect.Pointer {
 		// Null pointer; assume empty
 		if rField.IsNil() {
 			return "", nil
@@ -128,14 +134,14 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 		rField = reflect.Indirect(rField)
 	}
 
-	switch rField.Interface().(type) {
-	case string:
+	switch rField.Kind() {
+	case reflect.String:
 		return rField.String(), nil
-	case int, int64:
+	case reflect.Int, reflect.Int64:
 		return strconv.FormatInt(rField.Int(), 10), nil
-	case bool:
+	case reflect.Bool:
 		return strconv.FormatBool(rField.Bool()), nil
-	case float32, float64:
+	case reflect.Float32, reflect.Float64:
 		return strconv.FormatFloat(rField.Float(), 'f', 0, 64), nil
 	default:
 		return "", diag.NewErrorDiagnostic(
@@ -181,4 +187,8 @@ func checkFilterRegex(values []types.String, actualValue string) (bool, diag.Dia
 	}
 
 	return false, nil
+}
+
+func isExactMatchFilter(filter FilterModel) bool {
+	return filter.MatchBy.ValueString() == EXACT || filter.MatchBy.IsNull()
 }
