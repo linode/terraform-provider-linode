@@ -29,8 +29,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
-	"github.com/linode/terraform-provider-linode/linode/instancetype"
-	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/lke"
 	"github.com/linode/terraform-provider-linode/linode/nb"
@@ -135,8 +133,6 @@ func Provider() *schema.Provider {
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_databases":              databases.DataSource(),
 			"linode_instances":              instance.DataSource(),
-			"linode_instance_type":          instancetype.DataSource(),
-			"linode_instance_types":         instancetypes.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_region":                 region.DataSource(),
