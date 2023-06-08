@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/hashicorp/terraform-plugin-testing v1.2.0
-	github.com/linode/linodego v1.16.2
+	github.com/linode/linodego v1.17.0
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
 	golang.org/x/crypto v0.9.0
 )
