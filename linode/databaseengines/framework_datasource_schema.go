@@ -6,9 +6,9 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"engine":  {APIFilterable: true},
-	"version": {APIFilterable: true},
-	"id":      {APIFilterable: false},
+	"engine":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"version": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var engineSchema = schema.NestedBlockObject{
