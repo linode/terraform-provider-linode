@@ -16,12 +16,9 @@ on:
 name: Integration tests on PR
 
 jobs:
-  # Maintainer has commented /acctest on a pull request
   integration-fork:
     runs-on: ubuntu-latest
-    if:
-      github.event_name == 'workflow_dispatch' && inputs.sha != ''
-
+    if: github.event_name == 'workflow_dispatch' && inputs.sha != ''
     steps:
       - uses: actions/setup-go@v4
         with:
@@ -44,10 +41,35 @@ jobs:
         if: ${{ steps.validate-pkg.outputs.match == '' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
+      
+      - name: Get the hash value of the latest commit from the PR branch
+        uses: octokit/graphql-action@v2.x
+        id: commit-hash
+        if: ${{ inputs.pull_request_number != '' }}
+        with:
+          query: |
+            query PRHeadCommitHash($owner: String!, $repo: String!, $pr_num: Int!) {
+              repository(owner:$owner, name:$repo) {
+                pullRequest(number: $pr_num) {
+                  headRef {
+                    target {
+                      ... on Commit {
+                        oid
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          owner: ${{ github.event.repository.owner.login }}
+          repo: ${{ github.event.repository.name }}
+          pr_num: ${{ fromJSON(inputs.pull_request_number) }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/github-script@v6
         id: update-check-run
-        if: ${{ inputs.pull_request_number != '' }}
+        if: ${{ inputs.pull_request_number != '' && inputs.pull_request_number == '' || fromJson(steps.commit-hash.outputs.data).repository.pullRequest.headRef.target.oid == inputs.sha}}
         env:
           number: ${{ inputs.pull_request_number }}
           job: ${{ github.job }}
