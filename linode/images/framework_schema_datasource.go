@@ -36,6 +36,7 @@ var frameworkDatasourceSchema = schema.Schema{
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
 		"images": schema.ListNestedBlock{
+			Description: "The returned list of Images.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: image.ImageAttributes,
 			},
