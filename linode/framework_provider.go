@@ -2,7 +2,6 @@ package linode
 
 import (
 	"context"
-	"github.com/linode/terraform-provider-linode/linode/region"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -34,6 +33,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/linode/profile"
+	"github.com/linode/terraform-provider-linode/linode/region"
 	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
