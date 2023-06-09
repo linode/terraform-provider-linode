@@ -7,22 +7,22 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"engine":  {TypeFunc: frameworkfilter.FilterTypeString},
-	"region":  {TypeFunc: frameworkfilter.FilterTypeString},
-	"status":  {TypeFunc: frameworkfilter.FilterTypeString},
-	"type":    {TypeFunc: frameworkfilter.FilterTypeString},
-	"version": {TypeFunc: frameworkfilter.FilterTypeString},
+	"label":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"region":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"status":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"type":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"version": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 
-	"allow_list":     {TypeFunc: frameworkfilter.FilterTypeString},
-	"cluster_size":   {TypeFunc: frameworkfilter.FilterTypeInt},
-	"created":        {TypeFunc: frameworkfilter.FilterTypeString},
-	"encrypted":      {TypeFunc: frameworkfilter.FilterTypeBool},
-	"host_primary":   {TypeFunc: frameworkfilter.FilterTypeString},
-	"host_secondary": {TypeFunc: frameworkfilter.FilterTypeString},
-	"id":             {TypeFunc: frameworkfilter.FilterTypeInt},
-	"instance_uri":   {TypeFunc: frameworkfilter.FilterTypeString},
-	"updated":        {TypeFunc: frameworkfilter.FilterTypeString},
-	"label":          {TypeFunc: frameworkfilter.FilterTypeString},
+	"engine":         {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"allow_list":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"cluster_size":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"created":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"encrypted":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
+	"host_primary":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"host_secondary": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"instance_uri":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"updated":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
