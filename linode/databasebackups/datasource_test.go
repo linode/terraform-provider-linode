@@ -69,7 +69,7 @@ func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccFrameworkProvider.Meta.Client
 
 					if err := client.CreatePostgresDatabaseBackup(context.Background(), db.ID, linodego.PostgresBackupCreateOptions{
 						Label:  backupLabel,
