@@ -1,14 +1,17 @@
 package databasebackups
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 )
 
 type DatabaseBackupModel struct {
 	Created types.String `tfsdk:"created"`
 	Label   types.String `tfsdk:"engine"`
-	ID      types.String `tfsdk:"id"`
+	ID      types.Int64  `tfsdk:"id"`
 	Type    types.String `tfsdk:"version"`
 }
 
@@ -23,22 +26,44 @@ type DatabaseBackupFilterModel struct {
 	Backups      []DatabaseBackupModel            `tfsdk:"backups"`
 }
 
-// func (model *DatabaseBackupFilterModel) parseBackups(backups []linodego.Database) {
-// 	parseEngine := func(engine linodego.DatabaseEngine) DatabaseEngineModel {
-// 		var m DatabaseEngineModel
+func (model *DatabaseBackupFilterModel) parseMySQLBackups(backups []linodego.MySQLDatabaseBackup) {
+	parseBackup := func(backup linodego.MySQLDatabaseBackup) DatabaseBackupModel {
+		var m DatabaseBackupModel
 
-// 		m.ID = types.StringValue(engine.ID)
-// 		m.Engine = types.StringValue(engine.Engine)
-// 		m.Version = types.StringValue(engine.Version)
+		m.ID = types.Int64Value(int64(backup.ID))
+		m.Label = types.StringValue(backup.Label)
+		m.Type = types.StringValue(backup.Type)
+		m.Created = types.StringValue(backup.Created.Format(time.RFC3339))
 
-// 		return m
-// 	}
+		return m
+	}
 
-// 	result := make([]DatabaseEngineModel, len(engines))
+	result := make([]DatabaseBackupModel, len(backups))
 
-// 	for i, engine := range engines {
-// 		result[i] = parseEngine(engine)
-// 	}
+	for i, backup := range backups {
+		result[i] = parseBackup(backup)
+	}
 
-// 	model.Engines = result
-// }
+	model.Backups = result
+}
+
+func (model *DatabaseBackupFilterModel) parsePostgresSQLBackups(backups []linodego.PostgresDatabaseBackup) {
+	parseBackup := func(backup linodego.PostgresDatabaseBackup) DatabaseBackupModel {
+		var m DatabaseBackupModel
+
+		m.ID = types.Int64Value(int64(backup.ID))
+		m.Label = types.StringValue(backup.Label)
+		m.Type = types.StringValue(backup.Type)
+		m.Created = types.StringValue(backup.Created.Format(time.RFC3339))
+
+		return m
+	}
+
+	result := make([]DatabaseBackupModel, len(backups))
+
+	for i, backup := range backups {
+		result[i] = parseBackup(backup)
+	}
+
+	model.Backups = result
+}

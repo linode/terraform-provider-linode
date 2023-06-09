@@ -9,10 +9,10 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"created": {APIFilterable: true},
-	"type":    {APIFilterable: true},
-	"label":   {APIFilterable: false},
-	"id":      {APIFilterable: false},
+	"created": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"type":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"label":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"id":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
 var backupSchema = schema.NestedBlockObject{
@@ -44,7 +44,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			Required:    true,
 		},
 		"id": schema.Int64Attribute{
-			Description: "A unique identifier for this Datasource",
+			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
 		"database_type": schema.StringAttribute{
