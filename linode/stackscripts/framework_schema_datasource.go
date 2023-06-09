@@ -11,12 +11,12 @@ var filterConfig = frameworkfilter.Config{
 	"description":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"is_public":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
 	"label":             {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"rev_note":          {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"mine":              {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
 
-	"rev_note":           {TypeFunc: frameworkfilter.FilterTypeString},
-	"mine":               {TypeFunc: frameworkfilter.FilterTypeBool},
-	"deployments_active": {TypeFunc: frameworkfilter.FilterTypeInt},
-	"images":             {TypeFunc: frameworkfilter.FilterTypeString},
-	"username":           {TypeFunc: frameworkfilter.FilterTypeString},
+	"deployments_active": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"images":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"username":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
