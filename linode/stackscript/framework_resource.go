@@ -98,7 +98,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -148,8 +148,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, stackscript)...)
-	resp.Diagnostics.Append(data.parseNonComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.ParseNonComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -252,7 +252,7 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	resp.Diagnostics.Append(plan.parseComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(plan.ParseComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

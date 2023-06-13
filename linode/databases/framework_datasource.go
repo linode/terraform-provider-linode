@@ -1,8 +1,7 @@
-package stackscript
+package databases
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
@@ -40,7 +39,7 @@ func (r *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_stackscript"
+	resp.TypeName = "linode_databases"
 }
 
 func (r *DataSource) Schema(
@@ -56,37 +55,39 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := r.client
-
-	var data StackScriptModel
+	var data DatabaseFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	id, d := filterConfig.GenerateID(data.Filters)
+	if d != nil {
+		resp.Diagnostics.Append(d)
+		return
+	}
+	data.ID = id
+
+	result, d := filterConfig.GetAndFilter(
+		ctx, r.client, data.Filters, listDatabases, data.Order, data.OrderBy)
+	if d != nil {
+		resp.Diagnostics.Append(d)
 		return
 	}
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to find the Linode StackScript",
-			fmt.Sprintf(
-				"Error finding the specified Linode StackScript: %s",
-				err.Error(),
-			),
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
-	resp.Diagnostics.Append(data.ParseNonComputedAttributes(ctx, stackscript)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	data.parseDatabases(helper.AnySliceToTyped[linodego.Database](result))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func listDatabases(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	databases, err := client.ListDatabases(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return helper.TypedSliceToAny(databases), nil
 }

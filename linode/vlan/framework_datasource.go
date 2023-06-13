@@ -1,23 +1,22 @@
-package stackscript
+package vlan
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func NewDataSource() datasource.DataSource {
-	return &DataSource{}
-}
-
 type DataSource struct {
 	client *linodego.Client
 }
 
-func (r *DataSource) Configure(
+func NewDataSource() datasource.DataSource {
+	return &DataSource{}
+}
+
+func (d *DataSource) Configure(
 	ctx context.Context,
 	req datasource.ConfigureRequest,
 	resp *datasource.ConfigureResponse,
@@ -32,61 +31,72 @@ func (r *DataSource) Configure(
 		return
 	}
 
-	r.client = meta.Client
+	d.client = meta.Client
 }
 
-func (r *DataSource) Metadata(
+func (d *DataSource) Metadata(
 	ctx context.Context,
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_stackscript"
+	resp.TypeName = "linode_vlans"
 }
 
-func (r *DataSource) Schema(
+func (d *DataSource) Schema(
 	ctx context.Context,
 	req datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = frameworkDataSourceSchema
+	resp.Schema = frameworkDatasourceSchema
 }
 
-func (r *DataSource) Read(
+func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := r.client
-
-	var data StackScriptModel
+	var data VLANsFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	id, diag := filterConfig.GenerateID(data.Filters)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+		return
+	}
+	data.ID = id
+
+	results, diag := filterConfig.GetAndFilter(
+		ctx, d.client,
+		data.Filters,
+		listVLANs,
+		data.Order,
+		data.OrderBy,
+	)
+
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to find the Linode StackScript",
-			fmt.Sprintf(
-				"Error finding the specified Linode StackScript: %s",
-				err.Error(),
-			),
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
-	resp.Diagnostics.Append(data.ParseNonComputedAttributes(ctx, stackscript)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	data.parseVLANs(ctx, helper.AnySliceToTyped[linodego.VLAN](results))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func listVLANs(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
+	vlans, err := client.ListVLANs(
+		ctx,
+		&linodego.ListOptions{Filter: filter},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return helper.TypedSliceToAny(vlans), nil
 }

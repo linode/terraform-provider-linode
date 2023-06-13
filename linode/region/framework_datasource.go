@@ -1,4 +1,4 @@
-package stackscript
+package region
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func (r *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = "linode_stackscript"
+	resp.TypeName = "linode_region"
 }
 
 func (r *DataSource) Schema(
@@ -58,32 +58,29 @@ func (r *DataSource) Read(
 ) {
 	client := r.client
 
-	var data StackScriptModel
+	var data RegionModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	id := data.ID.ValueString()
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
+	region, err := client.GetRegion(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to find the Linode StackScript",
+			"Unable to find the Linode Region",
 			fmt.Sprintf(
-				"Error finding the specified Linode StackScript: %s",
+				"Error finding the specified Linode Region %s: %s",
+				id,
 				err.Error(),
 			),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
-	resp.Diagnostics.Append(data.ParseNonComputedAttributes(ctx, stackscript)...)
+	data.parseRegion(region)
 	if resp.Diagnostics.HasError() {
 		return
 	}
