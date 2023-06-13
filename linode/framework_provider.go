@@ -38,6 +38,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
+	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
@@ -142,6 +143,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		firewall.NewDataSource,
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
+		stackscripts.NewDataSource,
 		profile.NewDataSource,
 		nb.NewDataSource,
 		networkingip.NewDataSource,
