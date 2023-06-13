@@ -10,9 +10,9 @@ import (
 
 type DatabaseBackupModel struct {
 	Created types.String `tfsdk:"created"`
-	Label   types.String `tfsdk:"engine"`
+	Label   types.String `tfsdk:"label"`
 	ID      types.Int64  `tfsdk:"id"`
-	Type    types.String `tfsdk:"version"`
+	Type    types.String `tfsdk:"type"`
 }
 
 type DatabaseBackupFilterModel struct {

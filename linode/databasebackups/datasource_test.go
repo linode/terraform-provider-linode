@@ -69,7 +69,10 @@ func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccFrameworkProvider.Meta.Client
+					client, err := acceptance.GetClientForSweepers()
+					if err != nil {
+						log.Fatalf("failed to get client: %s", err)
+					}
 
 					if err := client.CreatePostgresDatabaseBackup(context.Background(), db.ID, linodego.PostgresBackupCreateOptions{
 						Label:  backupLabel,
@@ -78,7 +81,7 @@ func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
 						t.Errorf("failed to create db backup: %v", err)
 					}
 
-					err := client.WaitForDatabaseStatus(context.Background(), db.ID,
+					err = client.WaitForDatabaseStatus(context.Background(), db.ID,
 						linodego.DatabaseEngineTypePostgres, "backing_up", 120)
 					if err != nil {
 						t.Fatalf("failed to wait for database backing_up: %s", err)
@@ -88,6 +91,17 @@ func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
 						linodego.DatabaseEngineTypePostgres, linodego.DatabaseStatusActive, 1200)
 					if err != nil {
 						t.Fatalf("failed to wait for database active: %s", err)
+					}
+
+					for {
+						list, err := client.ListPostgresDatabaseBackups(context.Background(), db.ID, nil)
+						if err != nil {
+							t.Fatalf("failed to list database backups: %s", err)
+						}
+
+						if len(list) > 0 {
+							break
+						}
 					}
 				},
 				Config: tmpl.DataBasic(t, tmpl.TemplateData{
