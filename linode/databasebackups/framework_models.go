@@ -26,43 +26,35 @@ type DatabaseBackupFilterModel struct {
 	Backups      []DatabaseBackupModel            `tfsdk:"backups"`
 }
 
+func (m *DatabaseBackupModel) ParseMySQLBackup(backup linodego.MySQLDatabaseBackup) {
+	m.ID = types.Int64Value(int64(backup.ID))
+	m.Label = types.StringValue(backup.Label)
+	m.Type = types.StringValue(backup.Type)
+	m.Created = types.StringValue(backup.Created.Format(time.RFC3339))
+}
+
 func (model *DatabaseBackupFilterModel) parseMySQLBackups(backups []linodego.MySQLDatabaseBackup) {
-	parseBackup := func(backup linodego.MySQLDatabaseBackup) DatabaseBackupModel {
-		var m DatabaseBackupModel
-
-		m.ID = types.Int64Value(int64(backup.ID))
-		m.Label = types.StringValue(backup.Label)
-		m.Type = types.StringValue(backup.Type)
-		m.Created = types.StringValue(backup.Created.Format(time.RFC3339))
-
-		return m
-	}
-
 	result := make([]DatabaseBackupModel, len(backups))
 
 	for i, backup := range backups {
-		result[i] = parseBackup(backup)
+		result[i].ParseMySQLBackup(backup)
 	}
 
 	model.Backups = result
 }
 
+func (m *DatabaseBackupModel) ParsePostgresSQLBackup(backup linodego.PostgresDatabaseBackup) {
+	m.ID = types.Int64Value(int64(backup.ID))
+	m.Label = types.StringValue(backup.Label)
+	m.Type = types.StringValue(backup.Type)
+	m.Created = types.StringValue(backup.Created.Format(time.RFC3339))
+}
+
 func (model *DatabaseBackupFilterModel) parsePostgresSQLBackups(backups []linodego.PostgresDatabaseBackup) {
-	parseBackup := func(backup linodego.PostgresDatabaseBackup) DatabaseBackupModel {
-		var m DatabaseBackupModel
-
-		m.ID = types.Int64Value(int64(backup.ID))
-		m.Label = types.StringValue(backup.Label)
-		m.Type = types.StringValue(backup.Type)
-		m.Created = types.StringValue(backup.Created.Format(time.RFC3339))
-
-		return m
-	}
-
 	result := make([]DatabaseBackupModel, len(backups))
 
 	for i, backup := range backups {
-		result[i] = parseBackup(backup)
+		result[i].ParsePostgresSQLBackup(backup)
 	}
 
 	model.Backups = result

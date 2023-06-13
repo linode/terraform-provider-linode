@@ -64,29 +64,18 @@ func (r *DataSource) Read(
 
 	data.ID = data.DatabaseID
 
-	listMySQLBackups := func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-		backups, err := client.ListMySQLDatabaseBackups(ctx, int(data.DatabaseID.ValueInt64()), &linodego.ListOptions{
-			Filter: filter,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return helper.TypedSliceToAny(backups), nil
-	}
-
-	listPostgresSQLBackups := func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-		backups, err := client.ListPostgresDatabaseBackups(ctx, int(data.DatabaseID.ValueInt64()), &linodego.ListOptions{
-			Filter: filter,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return helper.TypedSliceToAny(backups), nil
-	}
-
 	if data.DatabaseType.ValueString() == "mysql" {
+		listMySQLBackups := func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+			backups, err := client.ListMySQLDatabaseBackups(ctx, int(data.DatabaseID.ValueInt64()), &linodego.ListOptions{
+				Filter: filter,
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			return helper.TypedSliceToAny(backups), nil
+		}
+
 		result, d := filterConfig.GetAndFilter(
 			ctx, r.client, data.Filters, listMySQLBackups, data.Order, data.OrderBy)
 		if d != nil {
@@ -95,9 +84,18 @@ func (r *DataSource) Read(
 		}
 
 		data.parseMySQLBackups(helper.AnySliceToTyped[linodego.MySQLDatabaseBackup](result))
-	}
+	} else if data.DatabaseType.ValueString() == "postgres" {
+		listPostgresSQLBackups := func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+			backups, err := client.ListPostgresDatabaseBackups(ctx, int(data.DatabaseID.ValueInt64()), &linodego.ListOptions{
+				Filter: filter,
+			})
+			if err != nil {
+				return nil, err
+			}
 
-	if data.DatabaseType.ValueString() == "postgres" {
+			return helper.TypedSliceToAny(backups), nil
+		}
+
 		result, d := filterConfig.GetAndFilter(
 			ctx, r.client, data.Filters, listPostgresSQLBackups, data.Order, data.OrderBy)
 		if d != nil {
