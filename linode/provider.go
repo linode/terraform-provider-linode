@@ -128,9 +128,6 @@ func Provider() *schema.Provider {
 			"linode_instances":              instance.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
-			"linode_region":                 region.DataSource(),
-			"linode_vlans":                  vlan.DataSource(),
-			"linode_stackscripts":           stackscripts.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
