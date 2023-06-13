@@ -14,6 +14,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/linode/databases"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
@@ -165,6 +166,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		images.NewDataSource,
 		accountlogin.NewDataSource,
 		accountlogins.NewDataSource,
+		databases.NewDataSource,
 		databaseengines.NewDataSource,
 		region.NewDataSource,
 		vlan.NewDataSource,
