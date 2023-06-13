@@ -40,7 +40,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/user"
-	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
@@ -133,7 +132,6 @@ func Provider() *schema.Provider {
 			"linode_lke_cluster":            lke.DataSource(),
 			"linode_nodebalancer_node":      nbnode.DataSource(),
 			"linode_stackscripts":           stackscripts.DataSource(),
-			"linode_vlans":                  vlan.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
