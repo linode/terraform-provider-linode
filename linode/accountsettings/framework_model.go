@@ -32,7 +32,6 @@ func (data *AccountSettingsModel) parseAccountSettings(
 	data.LongviewSubscription = helper.GetStringPtrWithDefault(settings.LongviewSubscription, "")
 	data.ObjectStorage = helper.GetStringPtrWithDefault(settings.ObjectStorage, "")
 
-	data.ObjectStorage = types.StringPointerValue(settings.ObjectStorage)
 	data.BackupsEnabed = types.BoolValue(settings.BackupsEnabled)
 	data.Managed = types.BoolValue(settings.Managed)
 	data.NetworkHelper = types.BoolValue(settings.NetworkHelper)
