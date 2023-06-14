@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -69,7 +69,7 @@ func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client, err := acceptance.GetClientForSweepers()
+					client, err := acceptance.GetTestClient()
 					if err != nil {
 						log.Fatalf("failed to get client: %s", err)
 					}

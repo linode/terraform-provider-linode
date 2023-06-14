@@ -36,7 +36,7 @@ func init() {
 	})
 
 	// Get valid K8s versions for testing
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -75,7 +75,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
