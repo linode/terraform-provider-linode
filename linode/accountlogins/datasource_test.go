@@ -43,7 +43,7 @@ func TestAccDataSourceAccountLogins_filterByRestricted(t *testing.T) {
 
 	resourceName := "data.linode_account_logins.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
@@ -93,7 +93,7 @@ func TestAccDataSourceAccountLogins_filterByUsername(t *testing.T) {
 
 	resourceName := "data.linode_account_logins.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
@@ -143,7 +143,7 @@ func TestAccDataSourceAccountLogins_filterByIP(t *testing.T) {
 
 	resourceName := "data.linode_account_logins.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
@@ -193,7 +193,7 @@ func TestAccDataSourceAccountLogins_filterByStatus(t *testing.T) {
 
 	resourceName := "data.linode_account_logins.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")

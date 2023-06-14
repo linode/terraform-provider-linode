@@ -15,7 +15,7 @@ func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
 
 	resourceName := "data.linode_account_settings.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fatalf("failed to get test client: %s", err)
 	}

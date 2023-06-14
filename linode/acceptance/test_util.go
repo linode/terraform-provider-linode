@@ -64,7 +64,7 @@ func initOptInTests() {
 
 // initTestImages grabs the latest Linode Alpine images for acceptance test configurations
 func initTestImages() {
-	client, err := GetClientForSweepers()
+	client, err := GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -551,7 +551,7 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 func GetRegionsWithCaps(capabilities []string) ([]string, error) {
 	result := make([]string, 0)
 
-	client, err := GetClientForSweepers()
+	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
 	}
@@ -609,7 +609,7 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 func GetRandomOBJCluster() (string, error) {
 	rand.Seed(time.Now().UnixNano())
 
-	client, err := GetClientForSweepers()
+	client, err := GetTestClient()
 	if err != nil {
 		return "", err
 	}

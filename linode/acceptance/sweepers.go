@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func GetClientForSweepers() (*linodego.Client, error) {
+func GetTestClient() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")
 	if token == "" {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
