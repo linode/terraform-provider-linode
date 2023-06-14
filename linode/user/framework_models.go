@@ -12,21 +12,24 @@ import (
 )
 
 type DataSourceModel struct {
-	Username          types.String `tfsdk:"username"`
-	SSHKeys           types.List   `tfsdk:"ssh_keys"`
-	Email             types.String `tfsdk:"email"`
-	Restricted        types.Bool   `tfsdk:"restricted"`
-	GlobalGrants      types.List   `tfsdk:"global_grants"`
-	DomainGrant       types.Set    `tfsdk:"domain_grant"`
-	FirewallGrant     types.Set    `tfsdk:"firewall_grant"`
-	ImageGrant        types.Set    `tfsdk:"image_grant"`
-	LinodeGrant       types.Set    `tfsdk:"linode_grant"`
-	LongviewGrant     types.Set    `tfsdk:"longview_grant"`
-	NodebalancerGrant types.Set    `tfsdk:"nodebalancer_grant"`
-	StackscriptGrant  types.Set    `tfsdk:"stackscript_grant"`
-	VolumeGrant       types.Set    `tfsdk:"volume_grant"`
-	DatabaseGrant     types.Set    `tfsdk:"database_grant"`
-	ID                types.String `tfsdk:"id"`
+	Username            types.String `tfsdk:"username"`
+	SSHKeys             types.List   `tfsdk:"ssh_keys"`
+	Email               types.String `tfsdk:"email"`
+	Restricted          types.Bool   `tfsdk:"restricted"`
+	GlobalGrants        types.List   `tfsdk:"global_grants"`
+	DomainGrant         types.Set    `tfsdk:"domain_grant"`
+	FirewallGrant       types.Set    `tfsdk:"firewall_grant"`
+	ImageGrant          types.Set    `tfsdk:"image_grant"`
+	LinodeGrant         types.Set    `tfsdk:"linode_grant"`
+	LongviewGrant       types.Set    `tfsdk:"longview_grant"`
+	NodebalancerGrant   types.Set    `tfsdk:"nodebalancer_grant"`
+	StackscriptGrant    types.Set    `tfsdk:"stackscript_grant"`
+	VolumeGrant         types.Set    `tfsdk:"volume_grant"`
+	DatabaseGrant       types.Set    `tfsdk:"database_grant"`
+	ID                  types.String `tfsdk:"id"`
+	PasswordCreated     types.String `tfsdk:"password_created"`
+	TFAEnabled          types.Bool   `tfsdk:"tfa_enabled"`
+	VerifiedPhoneNumber types.String `tfsdk:"verified_phone_number"`
 }
 
 func (data *DataSourceModel) parseUser(
