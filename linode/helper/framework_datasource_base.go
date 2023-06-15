@@ -6,6 +6,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
+// NewBaseDataSource returns a new instance of the BaseDataSource
+// struct for cleaner initialization.
+func NewBaseDataSource(name string, schemaObject schema.Schema) BaseDataSource {
+	return BaseDataSource{
+		TypeName:     name,
+		SchemaObject: schemaObject,
+	}
+}
+
 // BaseDataSource contains various re-usable fields and methods
 // intended for use in data source implementations by composition.
 type BaseDataSource struct {
@@ -45,8 +54,4 @@ func (r *BaseDataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = r.SchemaObject
-}
-
-func (r *BaseDataSource) GetMeta() *FrameworkProviderMeta {
-	return r.Meta
 }

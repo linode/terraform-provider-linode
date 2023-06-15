@@ -9,10 +9,10 @@ import (
 
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
-		BaseDataSource: helper.BaseDataSource{
-			TypeName:     "linode_account_settings",
-			SchemaObject: frameworkDataSourceSchema,
-		},
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_account_settings",
+			frameworkDataSourceSchema,
+		),
 	}
 }
 
@@ -25,7 +25,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := r.GetMeta().Client
+	client := r.Meta.Client
 
 	var data AccountSettingsModel
 
