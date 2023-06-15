@@ -16,7 +16,7 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 	instanceTypeID := "g6-standard-2"
 	resourceName := "data.linode_instance_type.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
+	"github.com/linode/terraform-provider-linode/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
@@ -176,5 +177,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		region.NewDataSource,
 		vlan.NewDataSource,
 		nbnode.NewDataSource,
+		accountsettings.NewDataSource,
 	}
 }

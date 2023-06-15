@@ -23,7 +23,7 @@ func init() {
 
 	testRegion = region
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatal(err)
 	}
