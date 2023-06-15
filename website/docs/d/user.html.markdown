@@ -20,6 +20,18 @@ data "linode_user" "foo" {
 }
 ```
 
+The following example shows a sample grant.
+
+```hcl
+"domain": [
+  {
+    "id": 123,
+    "label": "example-entity",
+    "permissions": "read_only"
+  }
+]
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -37,6 +49,8 @@ The Linode User resource exports the following attributes:
 * `restricted` - If true, this User must be granted access to perform actions or access entities on this Account.
 
 * `global_grants` - The Account-level grants a User has.
+
+* `database_grant` - The grants this User has pertaining to Databases on this Account.
 
 * `domain_grant` - The grants this User has pertaining to Domains on this Account.
 
