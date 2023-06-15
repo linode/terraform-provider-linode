@@ -124,7 +124,6 @@ func Provider() *schema.Provider {
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_instances":              instance.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
-			"linode_nodebalancer_node":      nbnode.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
