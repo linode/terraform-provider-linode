@@ -16,9 +16,9 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    testProviders,
-		CheckDestroy: checkNodeBalancerNodeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),
