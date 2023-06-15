@@ -5,60 +5,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func NewResource() resource.Resource {
-	return &Resource{}
+	return &Resource{
+		BaseResource: helper.NewBaseResource(
+			"linode_token",
+			frameworkResourceSchema,
+		),
+	}
 }
 
 type Resource struct {
-	client *linodego.Client
-}
-
-func (r *Resource) Configure(
-	ctx context.Context,
-	req resource.ConfigureRequest,
-	resp *resource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetResourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	r.client = meta.Client
-}
-
-func (r *Resource) Metadata(
-	ctx context.Context,
-	req resource.MetadataRequest,
-	resp *resource.MetadataResponse,
-) {
-	resp.TypeName = "linode_token"
-}
-
-func (r *Resource) Schema(
-	ctx context.Context,
-	req resource.SchemaRequest,
-	resp *resource.SchemaResponse,
-) {
-	resp.Schema = frameworkResourceSchema
-}
-
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	helper.BaseResource
 }
 
 func (r *Resource) Create(
@@ -67,7 +29,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 	var data ResourceModel
-	client := r.client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -112,7 +74,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	var data ResourceModel
 
@@ -169,7 +131,7 @@ func (r *Resource) Update(
 		tokenIDString := state.ID.ValueString()
 		tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
 
-		client := r.client
+		client := r.Meta.Client
 		token, err := client.GetToken(ctx, tokenID)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -211,7 +173,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.client
+	client := r.Meta.Client
 	err := client.DeleteToken(ctx, tokenID)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {

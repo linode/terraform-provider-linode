@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -54,4 +55,14 @@ func (r *BaseResource) Schema(
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = r.SchemaObject
+}
+
+// ImportState should be overridden for resources with
+// complex read logic (e.g. parent ID).
+func (r *BaseResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

@@ -12,11 +12,16 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
+	return &DataSource{
+		helper.NewBaseDataSource(
+			"linode_object_storage_bucket",
+			frameworkDatasourceSchema,
+		),
+	}
 }
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func (data *DataSourceModel) parseObjectStorageBucket(bucket *linodego.ObjectStorageBucket) {
@@ -29,24 +34,6 @@ func (data *DataSourceModel) parseObjectStorageBucket(bucket *linodego.ObjectSto
 	data.Size = types.Int64Value(int64(bucket.Size))
 }
 
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
-}
-
 type DataSourceModel struct {
 	Cluster  types.String `tfsdk:"cluster"`
 	Created  types.String `tfsdk:"created"`
@@ -57,28 +44,12 @@ type DataSourceModel struct {
 	Size     types.Int64  `tfsdk:"size"`
 }
 
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_object_storage_bucket"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDatasourceSchema
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
+	client := d.Meta.Client
 
 	var data DataSourceModel
 
