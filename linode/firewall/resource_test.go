@@ -6,9 +6,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/firewall/tmpl"
@@ -48,7 +48,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("failed to get client: %s", err)
 	}

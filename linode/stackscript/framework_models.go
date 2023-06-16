@@ -31,7 +31,7 @@ type StackScriptModel struct {
 	UserDefinedFields basetypes.ListValue `tfsdk:"user_defined_fields"`
 }
 
-func (data *StackScriptModel) parseNonComputedAttributes(
+func (data *StackScriptModel) ParseNonComputedAttributes(
 	ctx context.Context,
 	stackscript *linodego.Stackscript,
 ) diag.Diagnostics {
@@ -58,7 +58,7 @@ func (data *StackScriptModel) parseNonComputedAttributes(
 	return diagnostics
 }
 
-func (data *StackScriptModel) parseComputedAttributes(
+func (data *StackScriptModel) ParseComputedAttributes(
 	ctx context.Context,
 	stackscript *linodego.Stackscript,
 ) diag.Diagnostics {

@@ -4,8 +4,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/images/tmpl"
 )
@@ -43,7 +43,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.deprecated"),
-					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities.#"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.label", imageName),
 					resource.TestCheckResourceAttr(resourceName, "images.1.description", "descriptive text"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.is_public", "false"),
@@ -52,7 +52,7 @@ func TestAccDataSourceImages_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.deprecated"),
-					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities.#"),
 				),
 			},
 

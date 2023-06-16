@@ -1,14 +1,18 @@
 version: 2
 updates:
-  - package-ecosystem: gomod
+  - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "daily"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "github.com/linode/terraform-provider-linode/linode"
-  - package-ecosystem: gomod
+  - package-ecosystem: "gomod"
     directory: "/tools"
     schedule:
-      interval: daily
+      interval: "daily"
     open-pull-requests-limit: 10
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"

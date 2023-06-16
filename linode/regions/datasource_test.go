@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/regions/tmpl"
 )
@@ -42,7 +42,7 @@ func TestAccDataSourceRegions_filterByCountry(t *testing.T) {
 
 	resourceName := "data.linode_regions.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
@@ -89,7 +89,7 @@ func TestAccDataSourceRegions_filterByStatus(t *testing.T) {
 
 	resourceName := "data.linode_regions.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
@@ -136,7 +136,7 @@ func TestAccDataSourceRegions_filterByCapabilities(t *testing.T) {
 
 	resourceName := "data.linode_regions.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")

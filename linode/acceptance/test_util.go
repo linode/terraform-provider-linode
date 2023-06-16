@@ -17,10 +17,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -64,7 +64,7 @@ func initOptInTests() {
 
 // initTestImages grabs the latest Linode Alpine images for acceptance test configurations
 func initTestImages() {
-	client, err := GetClientForSweepers()
+	client, err := GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -551,7 +551,7 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 func GetRegionsWithCaps(capabilities []string) ([]string, error) {
 	result := make([]string, 0)
 
-	client, err := GetClientForSweepers()
+	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
 	}
@@ -609,7 +609,7 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 func GetRandomOBJCluster() (string, error) {
 	rand.Seed(time.Now().UnixNano())
 
-	client, err := GetClientForSweepers()
+	client, err := GetTestClient()
 	if err != nil {
 		return "", err
 	}

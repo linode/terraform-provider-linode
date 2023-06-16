@@ -16,3 +16,29 @@ func GetValueIfNotNull(val string) basetypes.StringValue {
 
 	return res
 }
+
+// GetStringPtrWithDefault returns a types.StringValue if the given pointer is
+// not null, else it returns the provided default value.
+func GetStringPtrWithDefault(val *string, def string) types.String {
+	if val != nil {
+		return types.StringValue(*val)
+	}
+
+	return types.StringValue(def)
+}
+
+// StringSliceToFramework converts the given string slice
+// into a framework-compatible slice of types.String.
+func StringSliceToFramework(val []string) []types.String {
+	if val == nil {
+		return nil
+	}
+
+	result := make([]types.String, len(val))
+
+	for i, v := range val {
+		result[i] = types.StringValue(v)
+	}
+
+	return result
+}

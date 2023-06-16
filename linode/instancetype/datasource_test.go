@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/instancetype/tmpl"
 )
@@ -16,7 +16,7 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 	instanceTypeID := "g6-standard-2"
 	resourceName := "data.linode_instance_type.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fatal(err)
 	}

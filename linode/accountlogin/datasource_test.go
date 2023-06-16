@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/accountlogin/tmpl"
 )
@@ -17,7 +17,7 @@ func TestAccDataSourceLinodeAccountLogin_basic(t *testing.T) {
 
 	resourceName := "data.linode_account_login.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings/tmpl"
 )
@@ -37,7 +37,7 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 
 	resourceName := "linode_account_settings.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
