@@ -73,7 +73,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseUser(ctx, user)...)
+	resp.Diagnostics.Append(data.ParseUser(ctx, user)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -86,7 +86,7 @@ func (d *DataSource) Read(
 			)
 			return
 		}
-		resp.Diagnostics.Append(data.parseUserGrants(ctx, grants)...)
+		resp.Diagnostics.Append(data.ParseUserGrants(ctx, grants)...)
 	}
 	if resp.Diagnostics.HasError() {
 		return

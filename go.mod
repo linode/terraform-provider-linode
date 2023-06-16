@@ -13,6 +13,8 @@ require (
 	golang.org/x/crypto v0.9.0
 )
 
+replace github.com/linode/linodego v1.17.0 => /Users/yechen/linode/linodego
+
 require (
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect

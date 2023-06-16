@@ -32,12 +32,15 @@ type DataSourceModel struct {
 	VerifiedPhoneNumber types.String `tfsdk:"verified_phone_number"`
 }
 
-func (data *DataSourceModel) parseUser(
+func (data *DataSourceModel) ParseUser(
 	ctx context.Context, user *linodego.User,
 ) diag.Diagnostics {
 	data.Username = types.StringValue(user.Username)
 	data.Email = types.StringValue(user.Email)
 	data.Restricted = types.BoolValue(user.Restricted)
+	data.PasswordCreated = types.StringValue(user.PasswordCreated)
+	data.TFAEnabled = types.BoolValue(user.TFAEnabled)
+	data.VerifiedPhoneNumber = types.StringValue(user.VerifiedPhoneNumber)
 
 	sshKeys, diags := types.ListValueFrom(ctx, types.StringType, user.SSHKeys)
 	if diags.HasError() {
@@ -56,7 +59,7 @@ func (data *DataSourceModel) parseUser(
 	return nil
 }
 
-func (data *DataSourceModel) parseUserGrants(
+func (data *DataSourceModel) ParseUserGrants(
 	ctx context.Context, userGrants *linodego.UserGrants,
 ) diag.Diagnostics {
 	// Domain
@@ -131,6 +134,19 @@ func (data *DataSourceModel) parseUserGrants(
 	data.GlobalGrants = *globalGrants
 
 	return nil
+}
+
+func (data *DataSourceModel) ParseNonUserGrants() {
+	data.DatabaseGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.DomainGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.FirewallGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.GlobalGrants = types.ListNull(linodeUserGrantsGlobalObjectType)
+	data.ImageGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.LinodeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.LongviewGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.NodebalancerGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.StackscriptGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.VolumeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 }
 
 func flattenGlobalGrants(ctx context.Context, grants linodego.GlobalUserGrants) (
