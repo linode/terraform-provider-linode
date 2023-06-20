@@ -14,7 +14,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-// Ensure the implementation satifies the expected interfaces
+// Ensure the implementation satisfies the expected interfaces
 var _ basetypes.StringValuableWithSemanticEquals = RFC3339TimeStringValue{}
 var _ basetypes.StringTypable = RFC3339TimeStringType{}
 var _ xattr.TypeWithValidate = RFC3339TimeStringType{}
