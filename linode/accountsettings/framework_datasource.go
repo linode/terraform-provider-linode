@@ -1,8 +1,7 @@
-package instancetype
+package accountsettings
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -11,8 +10,8 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_instance_type",
-			frameworkDatasourceSchema,
+			"linode_account_settings",
+			frameworkDataSourceSchema,
 		),
 	}
 }
@@ -21,31 +20,46 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (d *DataSource) Read(
+func (r *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.Meta.Client
+	client := r.Meta.Client
 
-	var data DataSourceModel
+	var data AccountSettingsModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	typeInfo, err := client.GetType(ctx, data.ID.ValueString())
+	account, err := client.GetAccount(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Error getting type %s: ", data.ID.ValueString()), err.Error(),
+			"Failed to get Linode Account",
+			err.Error(),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseLinodeType(ctx, typeInfo)...)
+	settings, err := client.GetAccountSettings(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to get Linode Account Settings",
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(data.parseAccountSettings(
+		ctx,
+		account.Email,
+		settings,
+	)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

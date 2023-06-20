@@ -1,4 +1,4 @@
-package user
+package nbnode
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_user",
+			"linode_nodebalancer_node",
 			frameworkDatasourceSchema,
 		),
 	}
@@ -35,33 +35,18 @@ func (d *DataSource) Read(
 		return
 	}
 
-	user, err := client.GetUser(ctx, data.Username.ValueString())
+	id := int(data.ID.ValueInt64())
+	nodebalancerID := int(data.NodeBalancerID.ValueInt64())
+	configID := int(data.ConfigID.ValueInt64())
+
+	node, err := client.GetNodeBalancerNode(ctx, nodebalancerID, configID, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Linode User with username %s was not found", data.Username.ValueString()), err.Error(),
+			fmt.Sprintf("Failed to get nodebalancer node with id %d:", id), err.Error(),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseUser(ctx, user)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	if user.Restricted {
-		grants, err := client.GetUserGrants(ctx, data.Username.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to get User Grants (%s): ", data.Username.ValueString()), err.Error(),
-			)
-			return
-		}
-		resp.Diagnostics.Append(data.ParseUserGrants(ctx, grants)...)
-	} else {
-		data.ParseNonUserGrants()
-	}
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	data.ParseNodeBalancerNode(node)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

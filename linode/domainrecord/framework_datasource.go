@@ -12,11 +12,16 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_domain_record",
+			frameworkDatasourceSchema,
+		),
+	}
 }
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func (data *DataSourceModel) parseDomainRecord(domainRecord *linodego.DomainRecord) {
@@ -31,24 +36,6 @@ func (data *DataSourceModel) parseDomainRecord(domainRecord *linodego.DomainReco
 	data.Protocol = types.StringPointerValue(domainRecord.Protocol)
 	data.Service = types.StringPointerValue(domainRecord.Service)
 	data.Tag = types.StringPointerValue(domainRecord.Tag)
-}
-
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
 }
 
 type DataSourceModel struct {
@@ -66,28 +53,12 @@ type DataSourceModel struct {
 	Tag      types.String `tfsdk:"tag"`
 }
 
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_domain_record"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDatasourceSchema
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
+	client := d.Meta.Client
 
 	var data DataSourceModel
 

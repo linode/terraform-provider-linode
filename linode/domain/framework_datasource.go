@@ -12,45 +12,16 @@ import (
 )
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
-}
-
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_domain",
+			frameworkDataSourceSchema,
+		),
 	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
-}
-
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_domain"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDataSourceSchema
 }
 
 func (d *DataSource) Read(
@@ -86,7 +57,7 @@ func (d *DataSource) Read(
 }
 
 func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domain, diag.Diagnostic) {
-	domain, err := d.client.GetDomain(ctx, id)
+	domain, err := d.Meta.Client.GetDomain(ctx, id)
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(
 			fmt.Sprintf("Failed to get Domain with id %d", id),
@@ -99,7 +70,7 @@ func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domai
 
 func (d *DataSource) getDomainByDomain(ctx context.Context, domain string) (*linodego.Domain, diag.Diagnostic) {
 	filter, _ := json.Marshal(map[string]interface{}{"domain": domain})
-	domains, err := d.client.ListDomains(ctx, linodego.NewListOptions(0, string(filter)))
+	domains, err := d.Meta.Client.ListDomains(ctx, linodego.NewListOptions(0, string(filter)))
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(
 			"Failed to list matching domains",

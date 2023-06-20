@@ -42,7 +42,7 @@ func TestAccDataSourceRegions_filterByCountry(t *testing.T) {
 
 	resourceName := "data.linode_regions.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
@@ -89,7 +89,7 @@ func TestAccDataSourceRegions_filterByStatus(t *testing.T) {
 
 	resourceName := "data.linode_regions.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
@@ -136,7 +136,7 @@ func TestAccDataSourceRegions_filterByCapabilities(t *testing.T) {
 
 	resourceName := "data.linode_regions.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")

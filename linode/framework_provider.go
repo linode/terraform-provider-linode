@@ -10,7 +10,9 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account"
 	"github.com/linode/terraform-provider-linode/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
+	"github.com/linode/terraform-provider-linode/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
@@ -30,6 +32,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
@@ -169,10 +172,13 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		images.NewDataSource,
 		accountlogin.NewDataSource,
 		accountlogins.NewDataSource,
+		databasebackups.NewDataSource,
 		databases.NewDataSource,
 		databaseengines.NewDataSource,
 		region.NewDataSource,
 		vlan.NewDataSource,
 		users.NewDataSource,
+		nbnode.NewDataSource,
+		accountsettings.NewDataSource,
 	}
 }
