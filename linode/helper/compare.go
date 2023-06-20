@@ -19,6 +19,10 @@ func CompareTimeStrings(t1, t2, timeFormat string) bool {
 	return parsedT1.Equal(parsedT2)
 }
 
+func CompareRFC3339TimeStrings(t1, t2 string) bool {
+	return CompareTimeStrings(t1, t2, time.RFC3339)
+}
+
 func CompareTimeWithTimeString(t1 *time.Time, t2 string, timeFormat string) bool {
 	parsedT2, err := time.Parse(timeFormat, t2)
 	if err != nil {
