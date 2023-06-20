@@ -80,7 +80,8 @@ var UserAttributes = map[string]schema.Attribute{
 	},
 	"password_created": schema.StringAttribute{
 		Description: "The date and time when this User’s current password was created." +
-			"User passwords are first created during the Account sign-up process, and updated using the Reset Password webpage." +
+			"User passwords are first created during the Account sign-up process, " +
+			"and updated using the Reset Password webpage." +
 			"null if this User has not created a password yet.",
 		Computed: true,
 	},
