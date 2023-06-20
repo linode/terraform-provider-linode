@@ -101,7 +101,6 @@ func TestNormalizeValue(t *testing.T) {
 			t.Fatalf("%s != %s", result, entry.ExpectedOutput)
 		}
 	}
-
 }
 
 func TestCheckFilterRegex(t *testing.T) {

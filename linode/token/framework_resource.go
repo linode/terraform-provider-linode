@@ -65,7 +65,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseComputedAttributes(token, false)
+	data.parseToken(token, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -111,8 +111,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseComputedAttributes(token, true)
-	data.parseNonComputedAttributes(token)
+	data.parseToken(token, true)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
