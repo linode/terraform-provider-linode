@@ -5,7 +5,7 @@
 data "linode_users" "user" {
     filter {
         name = "username"
-        values = [linode_user.test.username]
+        values = [data.linode_user.test.username]
     }
 }
 

@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -38,9 +39,14 @@ func (data *DataSourceModel) ParseUser(
 	data.Username = types.StringValue(user.Username)
 	data.Email = types.StringValue(user.Email)
 	data.Restricted = types.BoolValue(user.Restricted)
-	data.PasswordCreated = types.StringValue(user.PasswordCreated)
 	data.TFAEnabled = types.BoolValue(user.TFAEnabled)
 	data.VerifiedPhoneNumber = types.StringValue(user.VerifiedPhoneNumber)
+
+	if user.PasswordCreated != nil {
+		data.PasswordCreated = types.StringValue(user.PasswordCreated.Format(time.RFC3339))
+	} else {
+		data.PasswordCreated = types.StringNull()
+	}
 
 	sshKeys, diags := types.ListValueFrom(ctx, types.StringType, user.SSHKeys)
 	if diags.HasError() {

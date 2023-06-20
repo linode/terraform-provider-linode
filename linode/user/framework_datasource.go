@@ -87,6 +87,8 @@ func (d *DataSource) Read(
 			return
 		}
 		resp.Diagnostics.Append(data.ParseUserGrants(ctx, grants)...)
+	} else {
+		data.ParseNonUserGrants()
 	}
 	if resp.Diagnostics.HasError() {
 		return
