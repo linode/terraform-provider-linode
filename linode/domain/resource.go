@@ -3,11 +3,9 @@ package domain
 import (
 	"context"
 	"fmt"
-	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -18,6 +16,47 @@ type Resource struct {
 
 func NewResource() resource.Resource {
 	return &Resource{}
+}
+
+func (r *Resource) Configure(
+	ctx context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	meta := helper.GetResourceMeta(req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	r.client = meta.Client
+}
+
+func (r *Resource) Metadata(
+	ctx context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
+	resp.TypeName = "linode_domain"
+}
+
+func (r *Resource) Schema(
+	ctx context.Context,
+	req resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
+	resp.Schema = frameworkResourceSchema
+}
+
+func (r *Resource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Read(
@@ -104,61 +143,58 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan, state DomainModel
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	var masterIPs []string
+	if !state.MasterIPs.Equal(plan.MasterIPs) {
+		masterIPs = helper.FrameworkToStringSlice(plan.MasterIPs)
+	}
+	var axfrIPs []string
+	if !state.AXFRIPs.Equal(plan.AXFRIPs) {
+		axfrIPs = helper.FrameworkToStringSlice(plan.AXFRIPs)
+	}
+	var tags []string
+	if !state.Tags.Equal(plan.Tags) {
+		tags = helper.FrameworkToStringSlice(plan.Tags)
+	}
+
+	ops := linodego.DomainUpdateOptions{
+		Domain:      plan.Domain.ValueString(),
+		Type:        linodego.DomainType(plan.Type.ValueString()),
+		Group:       plan.Group.ValueString(),
+		Description: plan.Description.ValueString(),
+		SOAEmail:    plan.SOAEmail.ValueString(),
+		RetrySec:    int(plan.RetrySec.ValueInt64()),
+		ExpireSec:   int(plan.ExpireSec.ValueInt64()),
+		RefreshSec:  int(plan.RefreshSec.ValueInt64()),
+		TTLSec:      int(plan.TTLSec.ValueInt64()),
+		MasterIPs:   masterIPs,
+		AXfrIPs:     axfrIPs,
+		Tags:        tags,
+	}
+	id := plan.ID.ValueInt64()
+	client := r.client
+
+	_, err := client.UpdateDomain(ctx, int(id), ops)
 	if err != nil {
-		return diag.Errorf("Error parsing Linode Domain id %s as int: %s", d.Id(), err)
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to update domain: %v", id),
+			err.Error(),
+		)
+		return
 	}
-
-	updateOpts := linodego.DomainUpdateOptions{
-		Domain:      d.Get("domain").(string),
-		Status:      linodego.DomainStatus(d.Get("status").(string)),
-		Group:       d.Get("group").(string),
-		Description: d.Get("description").(string),
-		SOAEmail:    d.Get("soa_email").(string),
-		RetrySec:    d.Get("retry_sec").(int),
-		ExpireSec:   d.Get("expire_sec").(int),
-		RefreshSec:  d.Get("refresh_sec").(int),
-		TTLSec:      d.Get("ttl_sec").(int),
-	}
-
-	if d.HasChange("master_ips") {
-		v := d.Get("master_ips").(*schema.Set).List()
-
-		updateOpts.MasterIPs = make([]string, len(v))
-		for i, ip := range v {
-			updateOpts.MasterIPs[i] = ip.(string)
-		}
-	}
-
-	if d.HasChange("axfr_ips") {
-		v := d.Get("axfr_ips").(*schema.Set).List()
-
-		updateOpts.AXfrIPs = make([]string, len(v))
-		for i, ip := range v {
-			updateOpts.AXfrIPs[i] = ip.(string)
-		}
-	}
-
-	if d.HasChange("tags") {
-		tags := []string{}
-		for _, tag := range d.Get("tags").(*schema.Set).List() {
-			tags = append(tags, tag.(string))
-		}
-
-		updateOpts.Tags = tags
-	}
-
-	_, err = client.UpdateDomain(ctx, int(id), updateOpts)
-	if err != nil {
-		return diag.Errorf("Error updating Linode Domain %d: %s", id, err)
-	}
-	return readResource(ctx, d, meta)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func Delete(
+func (r *Resource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
@@ -169,13 +205,13 @@ func Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	id := data.ID.ValueInt64
+	id := data.ID.ValueInt64()
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	client := r.client
-	err := client.DeleteDomain(ctx, id)
+	err := client.DeleteDomain(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
