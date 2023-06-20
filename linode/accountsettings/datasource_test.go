@@ -1,6 +1,8 @@
 package accountsettings_test
 
 import (
+	"context"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -13,6 +15,26 @@ func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
 
 	resourceName := "data.linode_account_settings.foobar"
 
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatalf("failed to get test client: %s", err)
+	}
+
+	settings, err := client.GetAccountSettings(context.Background())
+	if err != nil {
+		t.Fatalf("failed to get account settings: %s", err)
+	}
+
+	objectStorageVal := ""
+	if settings.ObjectStorage != nil {
+		objectStorageVal = *settings.ObjectStorage
+	}
+
+	longviewVal := ""
+	if settings.LongviewSubscription != nil {
+		longviewVal = *settings.LongviewSubscription
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -20,10 +42,11 @@ func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "backups_enabled"),
-					resource.TestCheckResourceAttrSet(resourceName, "managed"),
-					resource.TestCheckResourceAttrSet(resourceName, "network_helper"),
-					resource.TestCheckResourceAttrSet(resourceName, "object_storage"),
+					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(settings.BackupsEnabled)),
+					resource.TestCheckResourceAttr(resourceName, "managed", strconv.FormatBool(settings.Managed)),
+					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(settings.NetworkHelper)),
+					resource.TestCheckResourceAttr(resourceName, "object_storage", objectStorageVal),
+					resource.TestCheckResourceAttr(resourceName, "longview_subscription", longviewVal),
 				),
 			},
 		},

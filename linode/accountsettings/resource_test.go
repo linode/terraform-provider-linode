@@ -37,7 +37,7 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 
 	resourceName := "linode_account_settings.foobar"
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		t.Fail()
 		t.Log("Failed to get testing client.")
