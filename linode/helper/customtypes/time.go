@@ -15,9 +15,11 @@ import (
 )
 
 // Ensure the implementation satisfies the expected interfaces
-var _ basetypes.StringValuableWithSemanticEquals = RFC3339TimeStringValue{}
-var _ basetypes.StringTypable = RFC3339TimeStringType{}
-var _ xattr.TypeWithValidate = RFC3339TimeStringType{}
+var (
+	_ basetypes.StringValuableWithSemanticEquals = RFC3339TimeStringValue{}
+	_ basetypes.StringTypable                    = RFC3339TimeStringType{}
+	_ xattr.TypeWithValidate                     = RFC3339TimeStringType{}
+)
 
 type RFC3339TimeStringValue struct {
 	basetypes.StringValue
@@ -33,7 +35,10 @@ func (v RFC3339TimeStringValue) Equal(o attr.Value) bool {
 	return v.StringValue.Equal(other.StringValue)
 }
 
-func (v RFC3339TimeStringValue) StringSemanticEquals(ctx context.Context, newValuable basetypes.StringValuable) (bool, diag.Diagnostics) {
+func (v RFC3339TimeStringValue) StringSemanticEquals(
+	ctx context.Context,
+	newValuable basetypes.StringValuable,
+) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	newValue, ok := newValuable.(RFC3339TimeStringValue)
@@ -68,7 +73,10 @@ func (t RFC3339TimeStringType) String() string {
 	return "RFC3339TimeStringType"
 }
 
-func (t RFC3339TimeStringType) ValueFromString(ctx context.Context, in basetypes.StringValue) (basetypes.StringValuable, diag.Diagnostics) {
+func (t RFC3339TimeStringType) ValueFromString(
+	ctx context.Context,
+	in basetypes.StringValue,
+) (basetypes.StringValuable, diag.Diagnostics) {
 	// CustomStringValue defined in the value type section
 	value := RFC3339TimeStringValue{
 		StringValue: in,
@@ -76,9 +84,11 @@ func (t RFC3339TimeStringType) ValueFromString(ctx context.Context, in basetypes
 	return value, nil
 }
 
-func (t RFC3339TimeStringType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t RFC3339TimeStringType) ValueFromTerraform(
+	ctx context.Context,
+	in tftypes.Value,
+) (attr.Value, error) {
 	attrValue, err := t.StringType.ValueFromTerraform(ctx, in)
-
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +121,11 @@ func (t RFC3339TimeStringType) Equal(o attr.Type) bool {
 	return t.StringType.Equal(other.StringType)
 }
 
-func (t RFC3339TimeStringType) Validate(ctx context.Context, value tftypes.Value, valuePath path.Path) diag.Diagnostics {
+func (t RFC3339TimeStringType) Validate(
+	ctx context.Context,
+	value tftypes.Value,
+	valuePath path.Path,
+) diag.Diagnostics {
 	if value.IsNull() || !value.IsKnown() {
 		return nil
 	}
@@ -137,8 +151,10 @@ func (t RFC3339TimeStringType) Validate(ctx context.Context, value tftypes.Value
 		diags.AddAttributeError(
 			valuePath,
 			"Invalid RFC 3339 String Value",
-			"An unexpected error occurred while converting a string value that was expected to be RFC 3339 format. "+
-				"The RFC 3339 string format is YYYY-MM-DDTHH:MM:SSZ, such as 2006-01-02T15:04:05Z or 2006-01-02T15:04:05+07:00.\n\n"+
+			"An unexpected error occurred while converting a string "+
+				"value that was expected to be RFC 3339 format. "+
+				"The RFC 3339 string format is YYYY-MM-DDTHH:MM:SSZ, such as "+
+				"2006-01-02T15:04:05Z or 2006-01-02T15:04:05+07:00.\n\n"+
 				"Path: "+valuePath.String()+"\n"+
 				"Given Value: "+valueString+"\n"+
 				"Error: "+err.Error(),
