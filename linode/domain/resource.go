@@ -3,110 +3,105 @@ package domain
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func Resource() *schema.Resource {
-	return &schema.Resource{
-		Schema:        resourceSchema,
-		ReadContext:   readResource,
-		CreateContext: createResource,
-		UpdateContext: updateResource,
-		DeleteContext: deleteResource,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-	}
+type Resource struct {
+	client *linodego.Client
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
+func NewResource() resource.Resource {
+	return &Resource{}
+}
+
+func (r *Resource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
+	client := r.client
+
+	var data DomainModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id := data.ID.ValueInt64()
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	domain, err := client.GetDomain(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Linode Domain ID %q from state because it no longer exists", d.Id())
-			d.SetId("")
-			return nil
+			resp.Diagnostics.AddWarning(
+				"Domain No Longer Exists",
+				fmt.Sprintf(
+					"Removing Domain with ID %v from state because it no longer exists",
+					data.ID,
+				),
+			)
+			resp.State.RemoveResource(ctx)
+			return
 		}
-		return diag.Errorf("Error finding the specified Linode Domain: %s", err)
+		resp.Diagnostics.AddError(
+			"Error finding the specified Domain",
+			err.Error(),
+		)
+		return
 	}
 
-	d.Set("domain", domain.Domain)
-	d.Set("type", domain.Type)
-	d.Set("group", domain.Group)
-	d.Set("status", domain.Status)
-	d.Set("description", domain.Description)
-	d.Set("master_ips", domain.MasterIPs)
-	if len(domain.AXfrIPs) > 0 {
-		d.Set("axfr_ips", domain.AXfrIPs)
-	}
-	d.Set("ttl_sec", domain.TTLSec)
-	d.Set("retry_sec", domain.RetrySec)
-	d.Set("expire_sec", domain.ExpireSec)
-	d.Set("refresh_sec", domain.RefreshSec)
-	d.Set("soa_email", domain.SOAEmail)
-	d.Set("tags", domain.Tags)
-
-	return nil
+	data.parseDomain(domain)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+func (r *Resource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
+	client := r.client
+	var data DomainModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	createOpts := linodego.DomainCreateOptions{
-		Domain:      d.Get("domain").(string),
-		Type:        linodego.DomainType(d.Get("type").(string)),
-		Group:       d.Get("group").(string),
-		Description: d.Get("description").(string),
-		SOAEmail:    d.Get("soa_email").(string),
-		RetrySec:    d.Get("retry_sec").(int),
-		ExpireSec:   d.Get("expire_sec").(int),
-		RefreshSec:  d.Get("refresh_sec").(int),
-		TTLSec:      d.Get("ttl_sec").(int),
-	}
-
-	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
-		for _, tag := range tagsRaw.(*schema.Set).List() {
-			createOpts.Tags = append(createOpts.Tags, tag.(string))
-		}
-	}
-
-	if v, ok := d.GetOk("master_ips"); ok {
-		v := v.(*schema.Set).List()
-
-		createOpts.MasterIPs = make([]string, len(v))
-		for i, ip := range v {
-			createOpts.MasterIPs[i] = ip.(string)
-		}
-	}
-
-	if v, ok := d.GetOk("axfr_ips"); ok {
-		v := v.(*schema.Set).List()
-
-		createOpts.AXfrIPs = make([]string, len(v))
-		for i, ip := range v {
-			createOpts.AXfrIPs[i] = ip.(string)
-		}
+		Domain:      data.Domain.ValueString(),
+		Type:        linodego.DomainType(data.Type.ValueString()),
+		Group:       data.Group.ValueString(),
+		Description: data.Description.ValueString(),
+		SOAEmail:    data.SOAEmail.ValueString(),
+		RetrySec:    int(data.RetrySec.ValueInt64()),
+		ExpireSec:   int(data.ExpireSec.ValueInt64()),
+		RefreshSec:  int(data.RefreshSec.ValueInt64()),
+		TTLSec:      int(data.TTLSec.ValueInt64()),
+		MasterIPs:   helper.FrameworkToStringSlice(data.MasterIPs),
+		AXfrIPs:     helper.FrameworkToStringSlice(data.AXFRIPs),
+		Tags:        helper.FrameworkToStringSlice(data.Tags),
 	}
 
 	domain, err := client.CreateDomain(ctx, createOpts)
 	if err != nil {
-		return diag.Errorf("Error creating a Linode Domain: %s", err)
+		resp.Diagnostics.AddError(
+			"Domain creation error",
+			err.Error(),
+		)
+		return
 	}
-	d.SetId(fmt.Sprintf("%d", domain.ID))
 
-	return readResource(ctx, d, meta)
+	data.parseDomain(domain)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -163,17 +158,31 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return diag.Errorf("Error parsing Linode Domain id %s as int", d.Id())
-	}
-	err = client.DeleteDomain(ctx, int(id))
-	if err != nil {
-		return diag.Errorf("Error deleting Linode Domain %d: %s", id, err)
-	}
-	d.SetId("")
+func Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
+	var data DomainModel
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	id := data.ID.ValueInt64
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client := r.client
+	err := client.DeleteDomain(ctx, id)
+	if err != nil {
+		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete domain with id %v", id),
+				err.Error(),
+			)
+		}
+		return
+	}
 }
