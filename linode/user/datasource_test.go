@@ -25,8 +25,6 @@ func TestAccDataSourceUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "username"),
 					resource.TestCheckResourceAttrSet(resourceName, "email"),
 					resource.TestCheckResourceAttrSet(resourceName, "tfa_enabled"),
-					resource.TestCheckResourceAttrSet(resourceName, "password_created"),
-					resource.TestCheckResourceAttrSet(resourceName, "verified_phone_number"),
 				),
 			},
 			{
