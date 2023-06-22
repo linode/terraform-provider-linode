@@ -40,7 +40,7 @@ func (data *DataSourceModel) ParseUser(
 	data.Email = types.StringValue(user.Email)
 	data.Restricted = types.BoolValue(user.Restricted)
 	data.TFAEnabled = types.BoolValue(user.TFAEnabled)
-	data.VerifiedPhoneNumber = types.StringValue(user.VerifiedPhoneNumber)
+	data.VerifiedPhoneNumber = types.StringPointerValue(user.VerifiedPhoneNumber)
 
 	if user.PasswordCreated != nil {
 		data.PasswordCreated = types.StringValue(user.PasswordCreated.Format(time.RFC3339))

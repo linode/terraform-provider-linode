@@ -30,7 +30,7 @@ func (data *UserFilterModel) parseUsers(
 	for i := range users {
 		var userModel user.DataSourceModel
 		diags := userModel.ParseUser(ctx, &users[i])
-		if diags != nil {
+		if diags.HasError() {
 			return diags
 		}
 
