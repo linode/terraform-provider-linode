@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 const (
@@ -49,6 +49,7 @@ var frameworkResourceSchema = schema.Schema{
 					RequireReplacementWhenExpiryChangedDescription,
 				),
 			},
+			CustomType: customtypes.LinodeScopesStringType{},
 		},
 		"expiry": schema.StringAttribute{
 			Description: "When this token will expire. Personal Access Tokens cannot be renewed, so after " +
@@ -73,9 +74,7 @@ var frameworkResourceSchema = schema.Schema{
 					RequireReplacementWhenScopesChangedDescription,
 				),
 			},
-			Validators: []validator.String{
-				helper.NewDateTimeStringValidator(time.RFC3339),
-			},
+			CustomType: customtypes.RFC3339TimeStringType{},
 		},
 		"created": schema.StringAttribute{
 			Description: "The date and time this token was created.",
@@ -83,6 +82,7 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
+			CustomType: customtypes.RFC3339TimeStringType{},
 		},
 		"token": schema.StringAttribute{
 			Sensitive:   true,
