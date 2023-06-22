@@ -3,7 +3,6 @@ package helper
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -31,26 +30,23 @@ func GetStringPtrWithDefault(val *string, def string) types.String {
 }
 
 // StringSliceToFramework converts the given string slice
-// into a framework-compatible slice of attr.Value.
-// works for List and Set attributes
-func StringSliceToFramework(val []string) []attr.Value {
-	if val == nil {
+// into a framework-compatible slice of types.String.
+func StringSliceToFramework(vals []string) []types.String {
+	if vals == nil {
 		return nil
 	}
 
-	result := make([]attr.Value, len(val))
+	result := make([]types.String, len(vals))
 
-	for i, v := range val {
+	for i, v := range vals {
 		result[i] = types.StringValue(v)
 	}
 
 	return result
 }
 
-func FrameworkSetToStringSlice(
-	ctx context.Context,
-	vals basetypes.SetValue,
-) []string {
+// FrameworkSetToStringSlice converts SetValue to []string
+func FrameworkSetToStringSlice(ctx context.Context, vals basetypes.SetValue) []string {
 	if vals.IsNull() {
 		return nil
 	}
@@ -63,17 +59,8 @@ func FrameworkSetToStringSlice(
 	return result
 }
 
-// FrameworkToStringSlice converts given []types.String to []string
-func FrameworkToStringSlice(vals []types.String) []string {
-	if vals == nil {
-		return nil
-	}
-
-	result := make([]string, len(vals))
-
-	for i, v := range vals {
-		result[i] = v.ValueString()
-	}
-
+// StringSliceToFrameworkSet converts []string to basetypes.SetValue
+func StringSliceToFrameworkSet(vals []string) basetypes.SetValue {
+	result, _ := basetypes.NewSetValueFrom(context.Background(), types.StringType, vals)
 	return result
 }

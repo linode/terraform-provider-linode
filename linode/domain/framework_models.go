@@ -39,7 +39,7 @@ func (m *DomainModel) parseDomain(domain *linodego.Domain) {
 	m.ExpireSec = types.Int64Value(int64(domain.ExpireSec))
 	m.RefreshSec = types.Int64Value(int64(domain.RefreshSec))
 
-	m.MasterIPs = helper.StringSliceToFramework(domain.MasterIPs)
-	m.AXFRIPs = helper.StringSliceToFramework(domain.AXfrIPs)
-	m.Tags = helper.StringSliceToFramework(domain.Tags)
+	m.MasterIPs = helper.StringSliceToFrameworkSet(domain.MasterIPs)
+	m.AXFRIPs = helper.StringSliceToFrameworkSet(domain.AXfrIPs)
+	m.Tags = helper.StringSliceToFrameworkSet(domain.Tags)
 }
