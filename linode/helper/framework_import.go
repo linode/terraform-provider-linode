@@ -3,9 +3,10 @@ package helper
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"strconv"
 )
 
 // ImportStatePassthroughInt64ID allows for the automatic importing of resources
