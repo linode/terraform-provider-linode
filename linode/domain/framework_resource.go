@@ -4,59 +4,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-type Resource struct {
-	client *linodego.Client
-}
-
 func NewResource() resource.Resource {
-	return &Resource{}
-}
-
-func (r *Resource) Configure(
-	ctx context.Context,
-	req resource.ConfigureRequest,
-	resp *resource.ConfigureResponse,
-) {
-	if req.ProviderData == nil {
-		return
+	return &Resource{
+		BaseResource: helper.NewBaseResource(
+			"linode_domain",
+			frameworkResourceSchema,
+		),
 	}
-
-	meta := helper.GetResourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	r.client = meta.Client
 }
 
-func (r *Resource) Metadata(
-	ctx context.Context,
-	req resource.MetadataRequest,
-	resp *resource.MetadataResponse,
-) {
-	resp.TypeName = "linode_domain"
-}
-
-func (r *Resource) Schema(
-	ctx context.Context,
-	req resource.SchemaRequest,
-	resp *resource.SchemaResponse,
-) {
-	resp.Schema = frameworkResourceSchema
-}
-
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+type Resource struct {
+	helper.BaseResource
 }
 
 func (r *Resource) Read(
@@ -64,7 +27,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	var data DomainModel
 
@@ -107,7 +70,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	client := r.client
+	client := r.Meta.Client
 	var data DomainModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -181,7 +144,7 @@ func (r *Resource) Update(
 		Tags:        tags,
 	}
 	id := plan.ID.ValueInt64()
-	client := r.client
+	client := r.Meta.Client
 
 	_, err := client.UpdateDomain(ctx, int(id), ops)
 	if err != nil {
@@ -210,7 +173,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.client
+	client := r.Meta.Client
 	err := client.DeleteDomain(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
