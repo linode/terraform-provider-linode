@@ -135,6 +135,7 @@ func (p *FrameworkProvider) Schema(
 func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		token.NewResource,
+		domain.NewResource,
 		stackscript.NewResource,
 	}
 }
