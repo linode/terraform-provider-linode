@@ -116,7 +116,7 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	var updateOpts linodego.ObjectStorageKeyUpdateOptions
-	shouldUpdate := true
+	shouldUpdate := false
 
 	if !state.Label.Equal(plan.Label) {
 		updateOpts.Label = plan.Label.ValueString()

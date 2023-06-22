@@ -42,10 +42,12 @@ func (rm *ResourceModel) parseKey(key *linodego.ObjectStorageKey) {
 
 	bucketAccess := make([]BucketAccessModelEntry, len(*key.BucketAccess))
 
-	for i, v := range *key.BucketAccess {
+	keyBucketAccess := *key.BucketAccess
+
+	for i := range keyBucketAccess {
 		var entry BucketAccessModelEntry
 
-		entry.parseBucketAccess(key.BucketAccess[i])
+		entry.parseBucketAccess(&keyBucketAccess[i])
 
 		bucketAccess[i] = entry
 	}
