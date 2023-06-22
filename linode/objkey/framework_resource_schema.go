@@ -2,8 +2,8 @@ package objkey
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -32,7 +32,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 	},
 	Blocks: map[string]schema.Block{
-		"bucket_access": schema.ListNestedBlock{
+		"bucket_access": schema.SetNestedBlock{
 			Description: "A list of permissions to grant this limited access key.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
@@ -51,8 +51,8 @@ var frameworkResourceSchema = schema.Schema{
 					},
 				},
 			},
-			PlanModifiers: []planmodifier.List{
-				listplanmodifier.RequiresReplace(),
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.RequiresReplace(),
 			},
 		},
 	},
