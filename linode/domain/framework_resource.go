@@ -125,9 +125,9 @@ func (r *Resource) Create(
 		ExpireSec:   int(data.ExpireSec.ValueInt64()),
 		RefreshSec:  int(data.RefreshSec.ValueInt64()),
 		TTLSec:      int(data.TTLSec.ValueInt64()),
-		MasterIPs:   helper.FrameworkToStringSlice(data.MasterIPs),
-		AXfrIPs:     helper.FrameworkToStringSlice(data.AXFRIPs),
-		Tags:        helper.FrameworkToStringSlice(data.Tags),
+		MasterIPs:   helper.FrameworkSetToStringSlice(ctx, data.MasterIPs),
+		AXfrIPs:     helper.FrameworkSetToStringSlice(ctx, data.AXFRIPs),
+		Tags:        helper.FrameworkSetToStringSlice(ctx, data.Tags),
 	}
 
 	domain, err := client.CreateDomain(ctx, createOpts)
@@ -155,15 +155,15 @@ func (r *Resource) Update(
 
 	var masterIPs []string
 	if !state.MasterIPs.Equal(plan.MasterIPs) {
-		masterIPs = helper.FrameworkToStringSlice(plan.MasterIPs)
+		masterIPs = helper.FrameworkSetToStringSlice(ctx, plan.MasterIPs)
 	}
 	var axfrIPs []string
 	if !state.AXFRIPs.Equal(plan.AXFRIPs) {
-		axfrIPs = helper.FrameworkToStringSlice(plan.AXFRIPs)
+		axfrIPs = helper.FrameworkSetToStringSlice(ctx, plan.AXFRIPs)
 	}
 	var tags []string
 	if !state.Tags.Equal(plan.Tags) {
-		tags = helper.FrameworkToStringSlice(plan.Tags)
+		tags = helper.FrameworkSetToStringSlice(ctx, plan.Tags)
 	}
 
 	ops := linodego.DomainUpdateOptions{

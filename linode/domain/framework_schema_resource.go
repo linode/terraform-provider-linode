@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 const domainSecondsDescription = "Valid values are 0, 30, 120, 300, 3600, 7200, 14400, 28800, " +
@@ -69,26 +69,26 @@ var frameworkResourceSchema = schema.Schema{
 		"ttl_sec": schema.Int64Attribute{
 			Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
 				"cached by resolvers or other domain servers. " + domainSecondsDescription,
-			Optional:         true,
-			DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
+			Optional:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"retry_sec": schema.Int64Attribute{
 			Description: "The interval, in seconds, at which a failed refresh should be retried. " +
 				domainSecondsDescription,
-			Optional:         true,
-			DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
+			Optional:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"expire_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds that may pass before this Domain is no longer " +
 				domainSecondsDescription,
-			Optional:         true,
-			DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
+			Optional:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"refresh_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds before this Domain should be refreshed. " +
 				domainSecondsDescription,
-			Optional:         true,
-			DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
+			Optional:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"soa_email": schema.StringAttribute{
 			Description: "Start of Authority email address. This is required for master Domains.",

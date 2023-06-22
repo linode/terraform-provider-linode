@@ -1,6 +1,9 @@
 package helper
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -28,18 +31,35 @@ func GetStringPtrWithDefault(val *string, def string) types.String {
 }
 
 // StringSliceToFramework converts the given string slice
-// into a framework-compatible slice of types.String.
-func StringSliceToFramework(val []string) []types.String {
+// into a framework-compatible slice of attr.Value.
+// works for List and Set attributes
+func StringSliceToFramework(val []string) []attr.Value {
 	if val == nil {
 		return nil
 	}
 
-	result := make([]types.String, len(val))
+	result := make([]attr.Value, len(val))
 
 	for i, v := range val {
 		result[i] = types.StringValue(v)
 	}
 
+	return result
+}
+
+func FrameworkSetToStringSlice(
+	ctx context.Context,
+	vals basetypes.SetValue,
+) []string {
+	if vals.IsNull() {
+		return nil
+	}
+
+	result := make([]string, len(vals.Elements()))
+	diag := vals.ElementsAs(ctx, result, false)
+	if diag.HasError() {
+		return nil
+	}
 	return result
 }
 
