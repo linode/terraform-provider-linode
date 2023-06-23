@@ -1,7 +1,6 @@
 package sshkey
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,13 +14,13 @@ type ResourceModel struct {
 	Label   types.String                       `tfsdk:"label"`
 	SSHKey  types.String                       `tfsdk:"ssh_key"`
 	Created customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	ID      types.String                       `tfsdk:"id"`
+	ID      types.Int64                        `tfsdk:"id"`
 }
 
 func (rm *ResourceModel) parseSSHKey(key *linodego.SSHKey) {
 	rm.Label = types.StringValue(key.Label)
 	rm.SSHKey = types.StringValue(key.SSHKey)
-	rm.ID = types.StringValue(strconv.Itoa(key.ID))
+	rm.ID = types.Int64Value(int64(key.ID))
 
 	rm.Created = customtypes.RFC3339TimeStringValue{
 		StringValue: types.StringValue(key.Created.Format(time.RFC3339)),

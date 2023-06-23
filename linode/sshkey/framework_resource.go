@@ -67,12 +67,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	keyID := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	key, err := client.GetSSHKey(ctx, int(keyID))
+	key, err := client.GetSSHKey(ctx, int(data.ID.ValueInt64()))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -107,11 +102,6 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
-	keyID := helper.StringToInt64(state.ID.ValueString(), resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	var updateOpts linodego.SSHKeyUpdateOptions
 	shouldUpdate := false
 
@@ -123,12 +113,12 @@ func (r *Resource) Update(
 	if shouldUpdate {
 		key, err := r.Meta.Client.UpdateSSHKey(
 			ctx,
-			int(keyID),
+			int(state.ID.ValueInt64()),
 			updateOpts,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update SSH Key (%d)", keyID),
+				fmt.Sprintf("Failed to update SSH Key (%d)", state.ID.ValueInt64()),
 				err.Error())
 			return
 		}
@@ -151,17 +141,12 @@ func (r *Resource) Delete(
 		return
 	}
 
-	keyID := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	client := r.Meta.Client
-	err := client.DeleteSSHKey(ctx, int(keyID))
+	err := client.DeleteSSHKey(ctx, int(data.ID.ValueInt64()))
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the SSH Key (%d)", keyID),
+				fmt.Sprintf("Failed to delete the SSH Key (%d)", data.ID.ValueInt64()),
 				err.Error(),
 			)
 		}

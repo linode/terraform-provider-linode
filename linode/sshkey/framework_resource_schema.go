@@ -26,9 +26,7 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 			CustomType:  customtypes.RFC3339TimeStringType{},
 		},
-		// This field must be a string attribute for pass-through
-		// imports to work as expected.
-		"id": schema.StringAttribute{
+		"id": schema.Int64Attribute{
 			Description: "The unique identifier for this SSH key.",
 			Computed:    true,
 		},
