@@ -36,6 +36,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/profile"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/region"
@@ -138,6 +139,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		token.NewResource,
 		stackscript.NewResource,
 		rdns.NewResource,
+		objkey.NewResource,
 	}
 }
 
