@@ -3,6 +3,8 @@ package databaseaccesscontrols
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -20,6 +22,20 @@ func updateDBAllowListByEngine(
 	timeoutSeconds int,
 ) error {
 	var createdDate *time.Time
+
+	currentAllowList, err := getDBAllowListByEngine(ctx, client, engine, id)
+	if err != nil {
+		return err
+	}
+
+	// Sort because order isn't important
+	sort.Strings(allowList)
+	sort.Strings(currentAllowList)
+
+	// Nothing to do here
+	if reflect.DeepEqual(allowList, currentAllowList) {
+		return nil
+	}
 
 	switch engine {
 	case "mysql":
