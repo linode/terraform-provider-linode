@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -17,6 +19,15 @@ const domainSecondsDescription = "Valid values are 0, 30, 120, 300, 3600, 7200, 
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
+		"id": schema.Int64Attribute{
+			Description: "The Domain's unique ID.",
+			Computed:    true,
+			Validators: []validator.Int64{
+				int64validator.ConflictsWith(path.Expressions{
+					path.MatchRoot("domain"),
+				}...),
+			},
+		},
 		"domain": schema.StringAttribute{
 			Description: "The domain this Domain represents. These must be unique in our system; you cannot have " +
 				"two Domains representing the same domain.",
@@ -26,7 +37,6 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "If this Domain represents the authoritative source of information for the domain it " +
 				"describes, or if it is a read-only copy of a master (also called a slave).",
 			Required: true,
-			Default:  stringdefault.StaticString("master"),
 			Validators: []validator.String{
 				stringvalidator.OneOf("master", "slave"),
 			},
@@ -51,7 +61,7 @@ var frameworkResourceSchema = schema.Schema{
 		"description": schema.StringAttribute{
 			Description: "A description for this Domain. This is for display purposes only.",
 			Validators: []validator.String{
-				stringvalidator.LengthBetween(0, 50),
+				stringvalidator.LengthBetween(0, 253),
 			},
 			Optional: true,
 		},
@@ -70,24 +80,28 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
 				"cached by resolvers or other domain servers. " + domainSecondsDescription,
 			Optional:   true,
+			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"retry_sec": schema.Int64Attribute{
 			Description: "The interval, in seconds, at which a failed refresh should be retried. " +
 				domainSecondsDescription,
 			Optional:   true,
+			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"expire_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds that may pass before this Domain is no longer " +
 				domainSecondsDescription,
 			Optional:   true,
+			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"refresh_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds before this Domain should be refreshed. " +
 				domainSecondsDescription,
 			Optional:   true,
+			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"soa_email": schema.StringAttribute{

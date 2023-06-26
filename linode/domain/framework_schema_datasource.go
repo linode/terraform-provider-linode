@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var frameworkDataSourceSchema = schema.Schema{
@@ -59,22 +60,26 @@ var frameworkDataSourceSchema = schema.Schema{
 		"ttl_sec": schema.Int64Attribute{
 			Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
 				"cached by resolvers or other domain servers. " + domainSecondsDescription,
-			Computed: true,
+			Computed:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"retry_sec": schema.Int64Attribute{
 			Description: "The interval, in seconds, at which a failed refresh should be retried. " +
 				domainSecondsDescription,
-			Computed: true,
+			Computed:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"expire_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds that may pass before this Domain is no longer " +
 				domainSecondsDescription,
-			Computed: true,
+			Computed:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"refresh_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds before this Domain should be refreshed. " +
 				domainSecondsDescription,
-			Computed: true,
+			Computed:   true,
+			CustomType: customtypes.LinodeDomainSecondsType{},
 		},
 		"soa_email": schema.StringAttribute{
 			Description: "Start of Authority email address. This is required for master Domains.",
