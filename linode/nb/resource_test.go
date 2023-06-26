@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"testing"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nb/tmpl"
 )
 
@@ -128,68 +126,6 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 			},
 		},
 	})
-}
-
-func TestLinodeNodeBalancer_UpgradeV0(t *testing.T) {
-	t.Parallel()
-
-	oldState := map[string]interface{}{
-		"transfer": map[string]interface{}{
-			"in":    "1337",
-			"out":   "1338",
-			"total": "1339",
-		},
-	}
-
-	desiredState := map[string]interface{}{
-		"transfer": []map[string]interface{}{
-			{
-				"in":    1337.0,
-				"out":   1338.0,
-				"total": 1339.0,
-			},
-		},
-	}
-
-	newState, err := nb.ResourceNodeBalancerV0Upgrade(context.Background(), oldState, nil)
-	if err != nil {
-		t.Fatalf("error migrating state: %v", err)
-	}
-
-	if !reflect.DeepEqual(desiredState, newState) {
-		t.Fatalf("expected %v, got %v", desiredState, newState)
-	}
-}
-
-func TestLinodeNodeBalancer_UpgradeV0Empty(t *testing.T) {
-	t.Parallel()
-
-	oldState := map[string]interface{}{
-		"transfer": map[string]interface{}{
-			"in":    "",
-			"out":   "",
-			"total": "",
-		},
-	}
-
-	desiredState := map[string]interface{}{
-		"transfer": []map[string]interface{}{
-			{
-				"in":    0.0,
-				"out":   0.0,
-				"total": 0.0,
-			},
-		},
-	}
-
-	newState, err := nb.ResourceNodeBalancerV0Upgrade(context.Background(), oldState, nil)
-	if err != nil {
-		t.Fatalf("error migrating state: %v", err)
-	}
-
-	if !reflect.DeepEqual(desiredState, newState) {
-		t.Fatalf("expected %v, got %v", desiredState, newState)
-	}
 }
 
 func checkNodeBalancerExists(s *terraform.State) error {

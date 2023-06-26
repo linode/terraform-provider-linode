@@ -5,6 +5,7 @@ resource "linode_nodebalancer" "foobar" {
     region = "{{ .Region }}"
     client_conn_throttle = 20
     tags = ["tf_test"]
+    transfer {}
 }
 
 {{ end }}

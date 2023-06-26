@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -22,26 +21,12 @@ func NewDataSource() datasource.DataSource {
 	}
 }
 
-type DataSourceModel struct {
-	ID                 types.Int64  `tfsdk:"id"`
-	Label              types.String `tfsdk:"label"`
-	Region             types.String `tfsdk:"region"`
-	ClientConnThrottle types.Int64  `tfsdk:"client_conn_throttle"`
-	Hostname           types.String `tfsdk:"hostname"`
-	Ipv4               types.String `tfsdk:"ipv4"`
-	Ipv6               types.String `tfsdk:"ipv6"`
-	Created            types.String `tfsdk:"created"`
-	Updated            types.String `tfsdk:"updated"`
-	Transfer           types.List   `tfsdk:"transfer"`
-	Tags               types.Set    `tfsdk:"tags"`
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data DataSourceModel
+	var data NodebalancerModel
 	client := d.Meta.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
