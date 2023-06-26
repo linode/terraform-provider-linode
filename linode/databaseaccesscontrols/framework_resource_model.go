@@ -1,6 +1,7 @@
 package databaseaccesscontrols
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -12,4 +13,6 @@ type ResourceModel struct {
 	AllowList    []types.String `tfsdk:"allow_list"`
 
 	ID types.String `tfsdk:"id"`
+
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }

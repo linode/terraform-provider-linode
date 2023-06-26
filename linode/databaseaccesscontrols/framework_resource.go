@@ -3,17 +3,23 @@ package databaseaccesscontrols
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+const defaultUpdateTimeout = 600 * time.Second
+
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			"linode_database_access_controls",
-			frameworkResourceSchema,
+			// We need access to the context in the schema for timeout support
+			schema.Schema{},
 		),
 	}
 }
@@ -35,6 +41,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	updateTimeout, d := data.Timeouts.Update(ctx, defaultUpdateTimeout)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	dbID := int(data.DatabaseID.ValueInt64())
 	dbType := data.DatabaseType.ValueString()
 
@@ -44,6 +56,7 @@ func (r *Resource) Create(
 		dbType,
 		dbID,
 		helper.FrameworkSliceToString(data.AllowList),
+		int(updateTimeout.Seconds()),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to set DB allow list",
@@ -115,12 +128,19 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
+	updateTimeout, d := plan.Timeouts.Update(ctx, defaultUpdateTimeout)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if err := updateDBAllowListByEngine(
 		ctx,
 		r.Meta.Client,
 		state.DatabaseType.ValueString(),
 		int(state.DatabaseID.ValueInt64()),
 		helper.FrameworkSliceToString(plan.AllowList),
+		int(updateTimeout.Seconds()),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to set DB allow list",
@@ -146,12 +166,19 @@ func (r *Resource) Delete(
 		return
 	}
 
+	updateTimeout, d := data.Timeouts.Update(ctx, defaultUpdateTimeout)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if err := updateDBAllowListByEngine(
 		ctx,
 		r.Meta.Client,
 		data.DatabaseType.ValueString(),
 		int(data.DatabaseID.ValueInt64()),
 		[]string{},
+		int(updateTimeout.Seconds()),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to set DB allow list",

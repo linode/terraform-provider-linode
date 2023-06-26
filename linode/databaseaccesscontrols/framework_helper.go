@@ -17,6 +17,7 @@ func updateDBAllowListByEngine(
 	engine string,
 	id int,
 	allowList []string,
+	timeoutSeconds int,
 ) error {
 	var createdDate *time.Time
 
@@ -45,7 +46,7 @@ func updateDBAllowListByEngine(
 	}
 
 	return helper.WaitForDatabaseUpdated(ctx, *client, id, linodego.DatabaseEngineType(engine),
-		createdDate, 400)
+		createdDate, timeoutSeconds)
 }
 
 func getDBAllowListByEngine(
