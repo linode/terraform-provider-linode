@@ -13,12 +13,9 @@ import (
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
-			Description: "The implicit ID of this resource. Mirrors the database_id field.",
+		"id": schema.StringAttribute{
+			Description: "The implicit ID of this resource.",
 			Computed:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
 		},
 		"database_id": schema.Int64Attribute{
 			Description: "The ID of the database to manage the allow list for.",

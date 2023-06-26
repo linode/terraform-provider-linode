@@ -12,6 +12,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
@@ -139,6 +140,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		stackscript.NewResource,
 		objkey.NewResource,
 		sshkey.NewResource,
+		databaseaccesscontrols.NewResource,
 	}
 }
 

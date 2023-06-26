@@ -42,3 +42,19 @@ func StringSliceToFramework(val []string) []types.String {
 
 	return result
 }
+
+// FrameworkSliceToString converts the given types.String slice
+// into a primitive string slice.
+func FrameworkSliceToString(val []types.String) []string {
+	if val == nil {
+		return nil
+	}
+
+	result := make([]string, len(val))
+
+	for i, v := range val {
+		result[i] = v.ValueString()
+	}
+
+	return result
+}

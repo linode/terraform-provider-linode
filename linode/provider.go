@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings"
-	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
 	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
@@ -125,30 +124,29 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_account_settings":         accountsettings.Resource(),
-			"linode_database_access_controls": databaseaccesscontrols.Resource(),
-			"linode_database_mysql":           databasemysql.Resource(),
-			"linode_database_postgresql":      databasepostgresql.Resource(),
-			"linode_domain":                   domain.Resource(),
-			"linode_domain_record":            domainrecord.Resource(),
-			"linode_firewall":                 firewall.Resource(),
-			"linode_firewall_device":          firewalldevice.Resource(),
-			"linode_image":                    image.Resource(),
-			"linode_instance":                 instance.Resource(),
-			"linode_instance_config":          instanceconfig.Resource(),
-			"linode_instance_disk":            instancedisk.Resource(),
-			"linode_instance_ip":              instanceip.Resource(),
-			"linode_instance_shared_ips":      instancesharedips.Resource(),
-			"linode_ipv6_range":               ipv6range.Resource(),
-			"linode_lke_cluster":              lke.Resource(),
-			"linode_nodebalancer":             nb.Resource(),
-			"linode_nodebalancer_node":        nbnode.Resource(),
-			"linode_nodebalancer_config":      nbconfig.Resource(),
-			"linode_object_storage_bucket":    objbucket.Resource(),
-			"linode_object_storage_object":    obj.Resource(),
-			"linode_rdns":                     rdns.Resource(),
-			"linode_user":                     user.Resource(),
-			"linode_volume":                   volume.Resource(),
+			"linode_account_settings":      accountsettings.Resource(),
+			"linode_database_mysql":        databasemysql.Resource(),
+			"linode_database_postgresql":   databasepostgresql.Resource(),
+			"linode_domain":                domain.Resource(),
+			"linode_domain_record":         domainrecord.Resource(),
+			"linode_firewall":              firewall.Resource(),
+			"linode_firewall_device":       firewalldevice.Resource(),
+			"linode_image":                 image.Resource(),
+			"linode_instance":              instance.Resource(),
+			"linode_instance_config":       instanceconfig.Resource(),
+			"linode_instance_disk":         instancedisk.Resource(),
+			"linode_instance_ip":           instanceip.Resource(),
+			"linode_instance_shared_ips":   instancesharedips.Resource(),
+			"linode_ipv6_range":            ipv6range.Resource(),
+			"linode_lke_cluster":           lke.Resource(),
+			"linode_nodebalancer":          nb.Resource(),
+			"linode_nodebalancer_node":     nbnode.Resource(),
+			"linode_nodebalancer_config":   nbconfig.Resource(),
+			"linode_object_storage_bucket": objbucket.Resource(),
+			"linode_object_storage_object": obj.Resource(),
+			"linode_rdns":                  rdns.Resource(),
+			"linode_user":                  user.Resource(),
+			"linode_volume":                volume.Resource(),
 		},
 	}
 
