@@ -28,12 +28,12 @@ type DomainModel struct {
 func (m *DomainModel) parseDomain(domain *linodego.Domain) {
 	m.ID = types.Int64Value(int64(domain.ID))
 
-	m.Domain = types.StringValue(domain.Domain)
-	m.Type = types.StringValue(string(domain.Type))
-	m.Group = types.StringValue(domain.Group)
-	m.Status = types.StringValue(string(domain.Status))
-	m.Description = types.StringValue(domain.Description)
-	m.SOAEmail = types.StringValue(domain.SOAEmail)
+	m.Domain = helper.GetValueIfNotNull(domain.Domain)
+	m.Type = helper.GetValueIfNotNull(string(domain.Type))
+	m.Group = helper.GetValueIfNotNull(domain.Group)
+	m.Status = helper.GetValueIfNotNull(string(domain.Status))
+	m.Description = helper.GetValueIfNotNull(domain.Description)
+	m.SOAEmail = helper.GetValueIfNotNull(domain.SOAEmail)
 
 	m.TTLSec = customtypes.LinodeDomainSecondsValue{
 		Int64Value: types.Int64Value(int64(domain.TTLSec)),

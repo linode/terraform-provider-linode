@@ -61,6 +61,13 @@ func FrameworkSetToStringSlice(ctx context.Context, vals basetypes.SetValue) []s
 
 // StringSliceToFrameworkSet converts []string to basetypes.SetValue
 func StringSliceToFrameworkSet(vals []string) basetypes.SetValue {
-	result, _ := basetypes.NewSetValueFrom(context.Background(), types.StringType, vals)
+	if vals == nil {
+		return types.SetNull(types.StringType)
+	}
+	result, _ := basetypes.NewSetValueFrom(
+		context.Background(),
+		types.StringType,
+		vals,
+	)
 	return result
 }

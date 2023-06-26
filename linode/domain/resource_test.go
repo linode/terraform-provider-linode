@@ -12,7 +12,6 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/domain/tmpl"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func init() {
@@ -209,7 +208,7 @@ func TestAccResourceDomain_updateIPs(t *testing.T) {
 }
 
 func checkDomainExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain" {
@@ -231,7 +230,7 @@ func checkDomainExists(s *terraform.State) error {
 }
 
 func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain" {
 			continue
