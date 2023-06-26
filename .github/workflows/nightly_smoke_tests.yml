@@ -1,0 +1,27 @@
+name: Nightly Smoke Tests
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  smoke_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+
+      - name: Checkout code
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.19'
+
+      - run: go version
+
+      - name: Run smoke tests
+        run: make smoketest
+        env:
+          LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}

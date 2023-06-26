@@ -11,7 +11,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/regions/tmpl"
 )
 
-func TestAccDataSourceRegions_basic(t *testing.T) {
+func TestAccDataSourceRegions_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_regions.foobar"
