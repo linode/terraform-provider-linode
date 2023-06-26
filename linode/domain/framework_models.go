@@ -1,7 +1,11 @@
 package domain
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
@@ -25,7 +29,10 @@ type DomainModel struct {
 	Tags        types.Set                            `tfsdk:"tags"`
 }
 
-func (m *DomainModel) parseDomain(domain *linodego.Domain) {
+func (m *DomainModel) parseDomain(
+	ctx context.Context,
+	domain *linodego.Domain,
+) diag.Diagnostics {
 	m.ID = types.Int64Value(int64(domain.ID))
 
 	m.Domain = helper.GetValueIfNotNull(domain.Domain)
@@ -48,7 +55,47 @@ func (m *DomainModel) parseDomain(domain *linodego.Domain) {
 		Int64Value: types.Int64Value(int64(domain.RefreshSec)),
 	}
 
-	m.MasterIPs = helper.StringSliceToFrameworkSet(domain.MasterIPs)
-	m.AXFRIPs = helper.StringSliceToFrameworkSet(domain.AXfrIPs)
-	m.Tags = helper.StringSliceToFrameworkSet(domain.Tags)
+	if domain.MasterIPs == nil {
+		m.MasterIPs = types.SetNull(types.StringType)
+	} else {
+		masterIPs, diags := basetypes.NewSetValueFrom(
+			ctx,
+			types.StringType,
+			domain.MasterIPs,
+		)
+		if diags.HasError() {
+			return diags
+		}
+		m.MasterIPs = masterIPs
+	}
+
+	if domain.AXfrIPs == nil {
+		m.AXFRIPs = types.SetNull(types.StringType)
+	} else {
+		axfrIPs, diags := basetypes.NewSetValueFrom(
+			ctx,
+			types.StringType,
+			domain.AXfrIPs,
+		)
+		if diags.HasError() {
+			return diags
+		}
+		m.AXFRIPs = axfrIPs
+	}
+
+	if domain.Tags == nil {
+		m.Tags = types.SetNull(types.StringType)
+	} else {
+		tags, diags := basetypes.NewSetValueFrom(
+			ctx,
+			types.StringType,
+			domain.Tags,
+		)
+		if diags.HasError() {
+			return diags
+		}
+		m.Tags = tags
+	}
+
+	return nil
 }

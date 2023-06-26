@@ -61,7 +61,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseDomain(domain)
+	data.parseDomain(ctx, domain)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -102,7 +102,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseDomain(domain)
+	data.parseDomain(ctx, domain)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
