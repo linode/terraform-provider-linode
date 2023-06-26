@@ -3,6 +3,7 @@ package databaseaccesscontrols
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -26,6 +27,15 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
+}
+
+// ImportState is required due to this resource using string ID
+func (r *Resource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(
