@@ -3,6 +3,7 @@ package sshkey
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
@@ -12,8 +13,11 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_sshkey",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_sshkey",
+				IDType: types.Int64Type,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }

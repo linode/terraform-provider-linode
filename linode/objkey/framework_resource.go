@@ -3,6 +3,7 @@ package objkey
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -13,8 +14,11 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_object_storage_key",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_object_storage_key",
+				IDType: types.Int64Type,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }
