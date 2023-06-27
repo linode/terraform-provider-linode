@@ -58,7 +58,7 @@ func (r *Resource) Create(
 	}
 
 	dbID := int(data.DatabaseID.ValueInt64())
-	dbType := data.DatabaseType.ValueString()
+	dbType := linodego.DatabaseEngineType(data.DatabaseType.ValueString())
 
 	if err := updateDBAllowListByEngine(
 		ctx,
@@ -122,7 +122,7 @@ func (r *Resource) Read(
 	}
 
 	data.DatabaseID = types.Int64Value(int64(dbID))
-	data.DatabaseType = types.StringValue(dbType)
+	data.DatabaseType = types.StringValue(string(dbType))
 	data.AllowList = helper.StringSliceToFramework(allowList)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -147,7 +147,7 @@ func (r *Resource) Update(
 	if err := updateDBAllowListByEngine(
 		ctx,
 		r.Meta.Client,
-		state.DatabaseType.ValueString(),
+		linodego.DatabaseEngineType(state.DatabaseType.ValueString()),
 		int(state.DatabaseID.ValueInt64()),
 		helper.FrameworkSliceToString(plan.AllowList),
 		int(updateTimeout.Seconds()),
@@ -185,7 +185,7 @@ func (r *Resource) Delete(
 	if err := updateDBAllowListByEngine(
 		ctx,
 		r.Meta.Client,
-		data.DatabaseType.ValueString(),
+		linodego.DatabaseEngineType(data.DatabaseType.ValueString()),
 		int(data.DatabaseID.ValueInt64()),
 		[]string{},
 		int(updateTimeout.Seconds()),

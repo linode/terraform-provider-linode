@@ -92,11 +92,11 @@ func getDBAllowListByEngine(
 	return nil, fmt.Errorf("invalid database type: %s", engine)
 }
 
-func formatID(dbID int, dbType string) string {
+func formatID(dbID int, dbType linodego.DatabaseEngineType) string {
 	return fmt.Sprintf("%d:%s", dbID, dbType)
 }
 
-func parseID(id string) (int, string, error) {
+func parseID(id string) (int, linodego.DatabaseEngineType, error) {
 	split := strings.Split(id, ":")
 	if len(split) != 2 {
 		return 0, "", fmt.Errorf("invalid number of segments")
@@ -107,5 +107,5 @@ func parseID(id string) (int, string, error) {
 		return 0, "", err
 	}
 
-	return dbID, split[1], nil
+	return dbID, linodego.DatabaseEngineType(split[1]), nil
 }
