@@ -1,11 +1,10 @@
-package token
+package objkey
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -14,7 +13,7 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_token",
+			"linode_object_storage_key",
 			frameworkResourceSchema,
 		),
 	}
@@ -22,15 +21,6 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
-}
-
-// TODO: We should use Int64 ID attributes
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(
@@ -46,36 +36,33 @@ func (r *Resource) Create(
 		return
 	}
 
-	expireStr := data.Expiry.ValueString()
-	dt, err := time.Parse(time.RFC3339, expireStr)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid datetime string",
-			fmt.Sprintf(
-				"Expected expiry to be an time.RFC3339 datetime string (e.g., %s), got %s",
-				time.RFC3339,
-				expireStr,
-			),
+	createOpts := linodego.ObjectStorageKeyCreateOptions{
+		Label: data.Label.ValueString(),
+	}
+
+	if data.BucketAccess != nil {
+		accessSlice := make(
+			[]linodego.ObjectStorageKeyBucketAccess,
+			len(data.BucketAccess),
 		)
-		return
+
+		for i, v := range data.BucketAccess {
+			accessSlice[i] = v.toLinodeObject()
+		}
+
+		createOpts.BucketAccess = &accessSlice
 	}
 
-	createOpts := linodego.TokenCreateOptions{
-		Label:  data.Label.ValueString(),
-		Scopes: data.Scopes.ValueString(),
-		Expiry: &dt,
-	}
-
-	token, err := client.CreateToken(ctx, createOpts)
+	key, err := client.CreateObjectStorageKey(ctx, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Token creation error",
+			"Failed to create Object Storage Key",
 			err.Error(),
 		)
 		return
 	}
 
-	data.parseToken(token, false)
+	data.parseKey(key)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -93,18 +80,13 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	token, err := client.GetToken(ctx, int(id))
+	key, err := client.GetObjectStorageKey(ctx, int(data.ID.ValueInt64()))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
-				"Token No Longer Exists",
+				"Object Storage Key",
 				fmt.Sprintf(
-					"Removing Linode Token with ID %v from state because it no longer exists",
+					"Removing Object Storage Key with ID %v from state because it no longer exists",
 					data.ID,
 				),
 			)
@@ -112,16 +94,13 @@ func (r *Resource) Read(
 			return
 		}
 		resp.Diagnostics.AddError(
-			"Unable to Refresh the Token",
-			fmt.Sprintf(
-				"Error finding the specified Linode Token: %s",
-				err.Error(),
-			),
+			"Unable to refresh the Object Storage Key",
+			err.Error(),
 		)
 		return
 	}
 
-	data.parseToken(token, true)
+	data.parseKey(key)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -136,33 +115,31 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
+	var updateOpts linodego.ObjectStorageKeyUpdateOptions
+	shouldUpdate := false
+
 	if !state.Label.Equal(plan.Label) {
-		tokenIDString := state.ID.ValueString()
-		tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
-
-		client := r.Meta.Client
-		token, err := client.GetToken(ctx, tokenID)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to get the token with id %v", tokenID),
-				err.Error(),
-			)
-			return
-		}
-
-		updateOpts := token.GetUpdateOptions()
 		updateOpts.Label = plan.Label.ValueString()
+		shouldUpdate = true
+	}
 
-		_, err = client.UpdateToken(ctx, token.ID, updateOpts)
+	if shouldUpdate {
+		key, err := r.Meta.Client.UpdateObjectStorageKey(
+			ctx,
+			int(state.ID.ValueInt64()),
+			updateOpts,
+		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update the token with id %v", tokenID),
-				err.Error(),
-			)
+				fmt.Sprintf("Failed to update Object Storage Key (%d)", state.ID.ValueInt64()),
+				err.Error())
 			return
 		}
+
+		state.parseKey(key)
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *Resource) Delete(
@@ -177,17 +154,12 @@ func (r *Resource) Delete(
 		return
 	}
 
-	tokenID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	client := r.Meta.Client
-	err := client.DeleteToken(ctx, tokenID)
+	err := client.DeleteObjectStorageKey(ctx, int(data.ID.ValueInt64()))
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the token with id %v", tokenID),
+				fmt.Sprintf("Failed to delete the Object Storage Key (%d)", data.ID.ValueInt64()),
 				err.Error(),
 			)
 		}

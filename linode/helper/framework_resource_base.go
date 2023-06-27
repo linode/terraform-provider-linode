@@ -65,5 +65,5 @@ func (r *BaseResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	ImportStatePassthroughInt64ID(ctx, path.Root("id"), req, resp)
 }
