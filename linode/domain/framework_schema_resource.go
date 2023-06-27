@@ -69,12 +69,14 @@ var frameworkResourceSchema = schema.Schema{
 			ElementType: types.StringType,
 			Description: "The IP addresses representing the master DNS for this Domain.",
 			Optional:    true,
+			Computed:    true,
 		},
 		"axfr_ips": schema.SetAttribute{
 			ElementType: types.StringType,
 			Description: "The list of IPs that may perform a zone transfer for this Domain. This is potentially " +
 				"dangerous, and should be set to an empty list unless you intend to use it.",
 			Optional: true,
+			Computed: true,
 		},
 		"ttl_sec": schema.Int64Attribute{
 			Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +

@@ -55,47 +55,23 @@ func (m *DomainModel) parseDomain(
 		Int64Value: types.Int64Value(int64(domain.RefreshSec)),
 	}
 
-	if domain.MasterIPs == nil {
-		m.MasterIPs = types.SetNull(types.StringType)
-	} else {
-		masterIPs, diags := basetypes.NewSetValueFrom(
-			ctx,
-			types.StringType,
-			domain.MasterIPs,
-		)
-		if diags.HasError() {
-			return diags
-		}
-		m.MasterIPs = masterIPs
+	masterIPs, diags := basetypes.NewSetValueFrom(ctx, types.StringType, domain.MasterIPs)
+	if diags.HasError() {
+		return diags
 	}
+	m.MasterIPs = masterIPs
 
-	if domain.AXfrIPs == nil {
-		m.AXFRIPs = types.SetNull(types.StringType)
-	} else {
-		axfrIPs, diags := basetypes.NewSetValueFrom(
-			ctx,
-			types.StringType,
-			domain.AXfrIPs,
-		)
-		if diags.HasError() {
-			return diags
-		}
-		m.AXFRIPs = axfrIPs
+	axfrIPs, diags := basetypes.NewSetValueFrom(ctx, types.StringType, domain.AXfrIPs)
+	if diags.HasError() {
+		return diags
 	}
+	m.AXFRIPs = axfrIPs
 
-	if domain.Tags == nil {
-		m.Tags = types.SetNull(types.StringType)
-	} else {
-		tags, diags := basetypes.NewSetValueFrom(
-			ctx,
-			types.StringType,
-			domain.Tags,
-		)
-		if diags.HasError() {
-			return diags
-		}
-		m.Tags = tags
+	tags, diags := basetypes.NewSetValueFrom(ctx, types.StringType, domain.Tags)
+	if diags.HasError() {
+		return diags
 	}
+	m.Tags = tags
 
 	return nil
 }

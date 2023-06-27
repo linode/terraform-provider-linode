@@ -90,7 +90,13 @@ func (r *Resource) Create(
 		TTLSec:      int(data.TTLSec.ValueInt64()),
 		MasterIPs:   helper.FrameworkSetToStringSlice(ctx, data.MasterIPs),
 		AXfrIPs:     helper.FrameworkSetToStringSlice(ctx, data.AXFRIPs),
-		Tags:        helper.FrameworkSetToStringSlice(ctx, data.Tags),
+	}
+
+	if !data.Tags.IsNull() {
+		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	domain, err := client.CreateDomain(ctx, createOpts)
