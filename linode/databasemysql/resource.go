@@ -145,7 +145,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to update mysql database maintenance window: %s", err)
 		}
 
-		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
+		err = helper.LegacyWaitForDatabaseUpdated(ctx, client, db.ID,
 			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)
@@ -206,7 +206,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to get update timestamp for db %d", id)
 		}
 
-		err = helper.WaitForDatabaseUpdated(ctx, client, int(id),
+		err = helper.LegacyWaitForDatabaseUpdated(ctx, client, int(id),
 			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)

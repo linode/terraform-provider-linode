@@ -147,7 +147,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to update postgresql database maintenance window: %s", err)
 		}
 
-		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
+		err = helper.LegacyWaitForDatabaseUpdated(ctx, client, db.ID,
 			linodego.DatabaseEngineTypePostgres, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)
@@ -203,7 +203,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to update postgresql database: %s", err)
 		}
 
-		err = helper.WaitForDatabaseUpdated(ctx, client, int(id),
+		err = helper.LegacyWaitForDatabaseUpdated(ctx, client, int(id),
 			linodego.DatabaseEngineTypePostgres, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
 		if err != nil {
 			return diag.FromErr(err)

@@ -124,7 +124,9 @@ func ExpandMaintenanceWindow(window map[string]interface{}) (linodego.DatabaseMa
 	return result, nil
 }
 
-func WaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID int,
+// LegacyWaitForDatabaseUpdated waits for the given database to complete an update operation.
+// This function is deprecated and should be removed in the future.
+func LegacyWaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID int,
 	dbType linodego.DatabaseEngineType, minStart *time.Time, timeoutSeconds int,
 ) error {
 	if minStart == nil {
@@ -135,6 +137,44 @@ func WaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID in
 		linodego.ActionDatabaseUpdate, *minStart, timeoutSeconds)
 	if err != nil {
 		return fmt.Errorf("failed to wait for database update: %s", err)
+	}
+
+	// Sometimes the event has finished but the status hasn't caught up
+	err = client.WaitForDatabaseStatus(ctx, dbID, dbType,
+		linodego.DatabaseStatusActive, timeoutSeconds)
+	if err != nil {
+		return fmt.Errorf("failed to wait for database active: %s", err)
+	}
+
+	return nil
+}
+
+// WaitForDatabaseUpdated uses the new event polling system to reliably poll for database update events.
+// This helper should be used instead of the previous LegacyWaitForDatabaseUpdated function.
+func WaitForDatabaseUpdated(
+	ctx context.Context,
+	client *linodego.Client,
+	dbID int,
+	dbType linodego.DatabaseEngineType,
+	timeoutSeconds int,
+	updateOperation func() error,
+) error {
+	updatePoller, err := client.NewEventPoller(
+		ctx,
+		dbID,
+		linodego.EntityDatabase,
+		linodego.ActionDatabaseUpdate,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create event poller: %w", err)
+	}
+
+	if err := updateOperation(); err != nil {
+		return fmt.Errorf("failed to update database: %w", err)
+	}
+
+	if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+		return fmt.Errorf("failed to wait for database update event to finish: %w", err)
 	}
 
 	// Sometimes the event has finished but the status hasn't caught up

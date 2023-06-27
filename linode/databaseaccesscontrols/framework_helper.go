@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -16,13 +15,11 @@ import (
 func updateDBAllowListByEngine(
 	ctx context.Context,
 	client *linodego.Client,
-	engine string,
+	engine linodego.DatabaseEngineType,
 	id int,
 	allowList []string,
 	timeoutSeconds int,
 ) error {
-	var createdDate *time.Time
-
 	currentAllowList, err := getDBAllowListByEngine(ctx, client, engine, id)
 	if err != nil {
 		return err
@@ -37,49 +34,53 @@ func updateDBAllowListByEngine(
 		return nil
 	}
 
-	switch engine {
-	case "mysql":
-		db, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
-			AllowList: &allowList,
-		})
-		if err != nil {
-			return err
+	updateDatabase := func() error {
+		// Reuse the error handler for these functions
+		switch engine {
+		case linodego.DatabaseEngineTypeMySQL:
+			_, err = client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
+				AllowList: &allowList,
+			})
+		case linodego.DatabaseEngineTypePostgres:
+			_, err = client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
+				AllowList: &allowList,
+			})
+		default:
+			return fmt.Errorf("invalid database engine: %s", engine)
 		}
 
-		createdDate = db.Created
-	case "postgresql":
-		db, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
-			AllowList: &allowList,
-		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to update allow_list for database %d: %w", id, err)
 		}
 
-		createdDate = db.Created
-
-	default:
-		return fmt.Errorf("invalid database engine: %s", engine)
+		return nil
 	}
 
-	return helper.WaitForDatabaseUpdated(ctx, *client, id, linodego.DatabaseEngineType(engine),
-		createdDate, timeoutSeconds)
+	return helper.WaitForDatabaseUpdated(
+		ctx,
+		client,
+		id,
+		engine,
+		timeoutSeconds,
+		updateDatabase,
+	)
 }
 
 func getDBAllowListByEngine(
 	ctx context.Context,
 	client *linodego.Client,
-	engine string,
+	engine linodego.DatabaseEngineType,
 	id int,
 ) ([]string, error) {
 	switch engine {
-	case "mysql":
+	case linodego.DatabaseEngineTypeMySQL:
 		db, err := client.GetMySQLDatabase(ctx, id)
 		if err != nil {
 			return nil, err
 		}
 
 		return db.AllowList, nil
-	case "postgresql":
+	case linodego.DatabaseEngineTypePostgres:
 		db, err := client.GetPostgresDatabase(ctx, id)
 		if err != nil {
 			return nil, err
