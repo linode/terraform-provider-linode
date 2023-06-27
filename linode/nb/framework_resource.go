@@ -10,7 +10,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var _ resource.Resource = &Resource{}
 var _ resource.ResourceWithUpgradeState = &Resource{}
 
 func NewResource() resource.Resource {
