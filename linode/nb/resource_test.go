@@ -4,15 +4,18 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nb/tmpl"
 )
 
@@ -126,6 +129,92 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestLinodeNodeBalancer_UpgradeV0(t *testing.T) {
+	t.Parallel()
+
+	oldState := map[string]interface{}{
+		"transfer": map[string]interface{}{
+			"in":    "1337",
+			"out":   "1338",
+			"total": "1339",
+		},
+	}
+
+	desiredState := nb.TransferModelEntry{
+		In:    types.Float64Value(1337.0),
+		Out:   types.Float64Value(1338.0),
+		Total: types.Float64Value(1339.0),
+	}
+
+	transferMap := oldState["transfer"].(map[string]interface{})
+
+	var newState nb.TransferModelEntry
+	in, diag := nb.UpgradeResourceStateValue(transferMap["in"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState.In = in
+
+	out, diag := nb.UpgradeResourceStateValue(transferMap["out"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState.Out = out
+
+	total, diag := nb.UpgradeResourceStateValue(transferMap["total"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState.Total = total
+
+	if !reflect.DeepEqual(desiredState, newState) {
+		t.Fatalf("expected %v, got %v", desiredState, newState)
+	}
+}
+
+func TestLinodeNodeBalancer_UpgradeV0Empty(t *testing.T) {
+	t.Parallel()
+
+	oldState := map[string]interface{}{
+		"transfer": map[string]interface{}{
+			"in":    "",
+			"out":   "",
+			"total": "",
+		},
+	}
+
+	desiredState := nb.TransferModelEntry{
+		In:    types.Float64Value(0.0),
+		Out:   types.Float64Value(0.0),
+		Total: types.Float64Value(0.0),
+	}
+
+	transferMap := oldState["transfer"].(map[string]interface{})
+
+	var newState nb.TransferModelEntry
+	in, diag := nb.UpgradeResourceStateValue(transferMap["in"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState.In = in
+
+	out, diag := nb.UpgradeResourceStateValue(transferMap["out"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState.Out = out
+
+	total, diag := nb.UpgradeResourceStateValue(transferMap["total"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState.Total = total
+
+	if !reflect.DeepEqual(desiredState, newState) {
+		t.Fatalf("expected %v, got %v", desiredState, newState)
+	}
 }
 
 func checkNodeBalancerExists(s *terraform.State) error {

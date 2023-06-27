@@ -83,7 +83,7 @@ func parseTransfer(
 	return []TransferModelEntry{entry}
 }
 
-func stringToFloat64Value(val string) (basetypes.Float64Value, diag.Diagnostic) {
+func UpgradeResourceStateValue(val string) (basetypes.Float64Value, diag.Diagnostic) {
 	if val == "" {
 		return types.Float64Value(0), nil
 	}

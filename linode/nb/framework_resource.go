@@ -212,21 +212,21 @@ func upgradeNodebalancerResourceStateV0toV1(
 	}
 
 	var entry TransferModelEntry
-	in, diag := stringToFloat64Value(transferMap["in"])
+	in, diag := UpgradeResourceStateValue(transferMap["in"])
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	entry.In = in
 
-	out, diag := stringToFloat64Value(transferMap["out"])
+	out, diag := UpgradeResourceStateValue(transferMap["out"])
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	entry.Out = out
 
-	total, diag := stringToFloat64Value(transferMap["total"])
+	total, diag := UpgradeResourceStateValue(transferMap["total"])
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
