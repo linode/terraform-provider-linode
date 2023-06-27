@@ -13,8 +13,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_networking_ip",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_networking_ip",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

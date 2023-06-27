@@ -15,8 +15,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_domain_zonefile",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_domain_zonefile",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

@@ -16,8 +16,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_ipv6_range",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_ipv6_range",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }
