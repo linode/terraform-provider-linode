@@ -78,7 +78,7 @@ The Linode User resource exports the following attributes:
 
 ### Global Grants
 
-* `account_access` - The level of access this User has to Account-level actions, like billing information. A restricted User will never be able to manage users. Enum value: read_only,read_write
+* `account_access` - The level of access this User has to Account-level actions, like billing information. A restricted User will never be able to manage users. (`read_only`, `read_write`)
 
 * `add_databases` - If true, this User may add Managed Databases.
 
@@ -108,4 +108,4 @@ The Linode User resource exports the following attributes:
 
 * `label` - The current label of the entity this grant applies to, for display purposes.
 
-* `permissions` - The level of access this User has to this entity. If null, this User has no access. Enum value: read_only,read_write
+* `permissions` - The level of access this User has to this entity. If null, this User has no access. (`read_only`, `read_write`)
