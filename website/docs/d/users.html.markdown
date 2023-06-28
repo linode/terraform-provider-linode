@@ -1,46 +1,53 @@
 ---
 layout: "linode"
-page_title: "Linode: linode_user"
-sidebar_current: "docs-linode-datasource-user"
+page_title: "Linode: linode_users"
+sidebar_current: "docs-linode-datasource-users"
 description: |-
-  Provides details about a Linode user.
+Lists Users on your Account.
+
+Users may access all or part of your Account based on their restricted status and grants. An unrestricted User may access everything on the account, whereas restricted User may only access entities or perform actions they’ve been given specific grants to.
 ---
 
-# Data Source: linode\_user
+# linode\_users
 
-Provides information about a Linode user
-
-## Example Usage
-
-The following example shows how one might use this data source to access information about a Linode user.
+Provides information about Linode users that match a set of filters.
 
 ```hcl
-data "linode_user" "foo" {
-    username = "foo"
-}
-```
-
-The following example shows a sample grant.
-
-```hcl
-"domain": [
-  {
-    "id": 123,
-    "label": "example-entity",
-    "permissions": "read_only"
+data "linode_users" "filtered-users" {
+  filter {
+    name = "username"
+    values = ["test-user"]
   }
-]
+}
+
+output "users" {
+  value = data.linode_users.filtered-users.users
+}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `username` - (Required) The unique username of this User.
+* [`filter`](#filter) - (Optional) A set of filters used to select Linode users that meet certain requirements.
+
+* `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
+
+* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
+
+### Filter
+
+* `name` - (Required) The name of the field to filter by. See the [Filterable Fields section](#filterable-fields) for a complete list of filterable fields.
+
+* `values` - (Required) A list of values for the filter to allow. These values should all be in string form.
+
+* `match_by` - (Optional) The method to match the field by. (`exact`, `regex`, `substring`; default `exact`)
 
 ## Attributes Reference
 
-The Linode User resource exports the following attributes:
+Each Linode user will be stored in the `users` attribute and will export the following attributes:
+
+* `username` - This User's username. This is used for logging in, and may also be displayed alongside actions the User performs (for example, in Events or public StackScripts).
 
 * `ssh_keys` - A list of SSH Key labels added by this User. These are the keys that will be deployed if this User is included in the authorized_users field of a create Linode, rebuild Linode, or create Disk request.
 
@@ -109,3 +116,17 @@ The Linode User resource exports the following attributes:
 * `label` - The current label of the entity this grant applies to, for display purposes.
 
 * `permissions` - The level of access this User has to this entity. If null, this User has no access. Enum value: read_only,read_write
+
+## Filterable Fields
+
+* `username`
+
+* `email`
+
+* `restricted`
+
+* `password_created`
+
+* `tfa_enabled`
+
+* `verfied_phone_number`
