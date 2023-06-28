@@ -143,9 +143,11 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		resp.Diagnostics.Append(state.parseNodeBalancer(ctx, nodebalancer)...)
+
+		plan.ID = types.Int64Value(int64(nodebalancer.ID))
+		resp.Diagnostics.Append(plan.parseNodeBalancer(ctx, nodebalancer)...)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *Resource) Delete(
