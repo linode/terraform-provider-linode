@@ -96,7 +96,7 @@ func (r *BaseResource) ImportState(
 		idType = types.Int64Type
 	}
 
-	attrPath := path.Root("id")
+	attrPath := path.Root(idAttr)
 
 	if attrPath.Equal(path.Empty()) {
 		resp.Diagnostics.AddError(
