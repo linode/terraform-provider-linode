@@ -4,14 +4,18 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_ipv6range",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_ipv6range",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }
