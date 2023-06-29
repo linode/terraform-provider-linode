@@ -11,47 +11,19 @@ import (
 )
 
 func NewResource() resource.Resource {
-	return &Resource{}
+	return &Resource{
+		BaseResource: helper.NewBaseResource(
+			"linode_stackscript",
+			frameworkResourceSchema,
+		),
+	}
 }
 
 type Resource struct {
-	client *linodego.Client
+	helper.BaseResource
 }
 
-func (r *Resource) Configure(
-	ctx context.Context,
-	req resource.ConfigureRequest,
-	resp *resource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetResourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	r.client = meta.Client
-}
-
-func (r *Resource) Metadata(
-	ctx context.Context,
-	req resource.MetadataRequest,
-	resp *resource.MetadataResponse,
-) {
-	resp.TypeName = "linode_stackscript"
-}
-
-func (r *Resource) Schema(
-	ctx context.Context,
-	req resource.SchemaRequest,
-	resp *resource.SchemaResponse,
-) {
-	resp.Schema = frameworkResourceSchema
-}
-
+// TODO: We should use Int64 ID attributes
 func (r *Resource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
@@ -66,7 +38,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 	var data StackScriptModel
-	client := r.client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -111,7 +83,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	var data StackScriptModel
 
@@ -209,7 +181,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.client
+	client := r.Meta.Client
 	err := client.DeleteStackscript(ctx, stackscriptID)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
@@ -227,7 +199,7 @@ func (r *Resource) updateStackScript(
 	plan StackScriptModel,
 	stackScriptID int,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	updateOpts := linodego.StackscriptUpdateOptions{
 		Label:       plan.Label.ValueString(),

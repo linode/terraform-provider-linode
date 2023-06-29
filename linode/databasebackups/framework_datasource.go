@@ -9,45 +9,16 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_database_backups",
+			frameworkDataSourceSchema,
+		),
+	}
 }
 
 type DataSource struct {
-	client *linodego.Client
-}
-
-func (r *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	r.client = meta.Client
-}
-
-func (r *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_database_backups"
-}
-
-func (r *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDataSourceSchema
+	helper.BaseDataSource
 }
 
 func (r *DataSource) Read(
@@ -77,7 +48,7 @@ func (r *DataSource) Read(
 		}
 
 		result, d := filterConfig.GetAndFilter(
-			ctx, r.client, data.Filters, listMySQLBackups, data.Order, data.OrderBy)
+			ctx, r.Meta.Client, data.Filters, listMySQLBackups, data.Order, data.OrderBy)
 		if d != nil {
 			resp.Diagnostics.Append(d)
 			return
@@ -97,7 +68,7 @@ func (r *DataSource) Read(
 		}
 
 		result, d := filterConfig.GetAndFilter(
-			ctx, r.client, data.Filters, listPostgresSQLBackups, data.Order, data.OrderBy)
+			ctx, r.Meta.Client, data.Filters, listPostgresSQLBackups, data.Order, data.OrderBy)
 		if d != nil {
 			resp.Diagnostics.Append(d)
 			return

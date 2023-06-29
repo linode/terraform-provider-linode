@@ -1,0 +1,9 @@
+{{ define "token_recreate_new_expiry_date" }}
+
+resource "linode_token" "foobar" {
+    label = "{{.Label}}"
+    scopes = "linodes:read_only"
+    expiry = "{{.Expiry}}"
+}
+
+{{ end }}
