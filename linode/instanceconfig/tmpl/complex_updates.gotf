@@ -25,7 +25,7 @@ resource "linode_instance_config" "foobar" {
 
   interface {
     purpose = "vlan"
-    label = "cool"
+    label = "cooler"
     ipam_address = "10.0.0.3/24"
   }
 
