@@ -12,18 +12,18 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func Resource() *schema.Resource {
-	return &schema.Resource{
-		Schema:        resourceSchema,
-		ReadContext:   readResource,
-		CreateContext: createResource,
-		UpdateContext: updateResource,
-		DeleteContext: deleteResource,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-	}
-}
+// func Resource() *schema.Resource {
+// 	return &schema.Resource{
+// 		Schema:        resourceSchema,
+// 		ReadContext:   readResource,
+// 		CreateContext: createResource,
+// 		UpdateContext: updateResource,
+// 		DeleteContext: deleteResource,
+// 		Importer: &schema.ResourceImporter{
+// 			StateContext: schema.ImportStatePassthroughContext,
+// 		},
+// 	}
+// }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
