@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_users"
 sidebar_current: "docs-linode-datasource-users"
 description: |-
-Lists Users on your Account.
+  Lists Users on your Account.
 
 Users may access all or part of your Account based on their restricted status and grants. An unrestricted User may access everything on the account, whereas restricted User may only access entities or perform actions they’ve been given specific grants to.
 ---
