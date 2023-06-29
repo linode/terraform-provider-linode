@@ -50,7 +50,7 @@ The Linode User resource exports the following attributes:
 
 * [`global_grants`](#global-grants) - The Account-level grants a User has.
 
-* [`database_grant`](#global-grants) - The grants this User has pertaining to Databases on this Account.
+* [`database_grant`](#grant) - The grants this User has pertaining to Databases on this Account.
 
 * [`domain_grant`](#grant) - The grants this User has pertaining to Domains on this Account.
 
