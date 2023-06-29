@@ -14,7 +14,7 @@ Provides details about the networking configuration of an Instance.
 
 ```terraform
 data "linode_instance_networking" "example" {
-    id = 123
+    linode_id = 123
 }
 ```
 

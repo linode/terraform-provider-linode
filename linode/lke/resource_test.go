@@ -162,7 +162,7 @@ func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterv
 	}
 }
 
-func TestAccResourceLKECluster_basic(t *testing.T) {
+func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	clusterName := acctest.RandomWithPrefix("tf_test")
