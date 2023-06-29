@@ -29,6 +29,22 @@ type DomainModel struct {
 	Tags        types.Set                            `tfsdk:"tags"`
 }
 
+func domainDeepEqual(plan, state DomainModel) bool {
+	return state.Domain.Equal(plan.Domain) &&
+		state.Type.Equal(plan.Type) &&
+		state.Group.Equal(plan.Group) &&
+		state.Status.Equal(plan.Status) &&
+		state.Description.Equal(plan.Description) &&
+		state.SOAEmail.Equal(plan.SOAEmail) &&
+		state.TTLSec.Equal(plan.TTLSec) &&
+		state.RetrySec.Equal(plan.RetrySec) &&
+		state.ExpireSec.Equal(plan.ExpireSec) &&
+		state.RefreshSec.Equal(plan.RefreshSec) &&
+		state.MasterIPs.Equal(plan.MasterIPs) &&
+		state.AXFRIPs.Equal(plan.AXFRIPs) &&
+		state.Tags.Equal(plan.Tags)
+}
+
 func (m *DomainModel) parseDomain(
 	ctx context.Context,
 	domain *linodego.Domain,

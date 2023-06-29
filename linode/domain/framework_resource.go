@@ -88,10 +88,20 @@ func (r *Resource) Create(
 		ExpireSec:   int(data.ExpireSec.ValueInt64()),
 		RefreshSec:  int(data.RefreshSec.ValueInt64()),
 		TTLSec:      int(data.TTLSec.ValueInt64()),
-		MasterIPs:   helper.FrameworkSetToStringSlice(ctx, data.MasterIPs),
-		AXfrIPs:     helper.FrameworkSetToStringSlice(ctx, data.AXFRIPs),
 	}
 
+	if !data.MasterIPs.IsNull() {
+		resp.Diagnostics.Append(data.MasterIPs.ElementsAs(ctx, &createOpts.MasterIPs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.AXFRIPs.IsNull() {
+		resp.Diagnostics.Append(data.AXFRIPs.ElementsAs(ctx, &createOpts.AXfrIPs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
 	if !data.Tags.IsNull() {
 		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {
@@ -121,38 +131,48 @@ func (r *Resource) Update(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-
-	var masterIPs []string
-	if !state.MasterIPs.Equal(plan.MasterIPs) {
-		masterIPs = helper.FrameworkSetToStringSlice(ctx, plan.MasterIPs)
-	}
-	var axfrIPs []string
-	if !state.AXFRIPs.Equal(plan.AXFRIPs) {
-		axfrIPs = helper.FrameworkSetToStringSlice(ctx, plan.AXFRIPs)
-	}
-	var tags []string
-	if !state.Tags.Equal(plan.Tags) {
-		tags = helper.FrameworkSetToStringSlice(ctx, plan.Tags)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	ops := linodego.DomainUpdateOptions{
+	if domainDeepEqual(plan, state) {
+		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+		return
+	}
+	updateOpts := linodego.DomainUpdateOptions{
 		Domain:      plan.Domain.ValueString(),
 		Type:        linodego.DomainType(plan.Type.ValueString()),
 		Group:       plan.Group.ValueString(),
+		Status:      linodego.DomainStatus(plan.Status.ValueString()),
 		Description: plan.Description.ValueString(),
 		SOAEmail:    plan.SOAEmail.ValueString(),
 		RetrySec:    int(plan.RetrySec.ValueInt64()),
 		ExpireSec:   int(plan.ExpireSec.ValueInt64()),
 		RefreshSec:  int(plan.RefreshSec.ValueInt64()),
 		TTLSec:      int(plan.TTLSec.ValueInt64()),
-		MasterIPs:   masterIPs,
-		AXfrIPs:     axfrIPs,
-		Tags:        tags,
 	}
-	id := plan.ID.ValueInt64()
-	client := r.Meta.Client
+	if !plan.MasterIPs.IsNull() {
+		resp.Diagnostics.Append(plan.MasterIPs.ElementsAs(ctx, &updateOpts.MasterIPs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !plan.AXFRIPs.IsNull() {
+		resp.Diagnostics.Append(plan.AXFRIPs.ElementsAs(ctx, &updateOpts.AXfrIPs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !plan.Tags.IsNull() {
+		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
 
-	_, err := client.UpdateDomain(ctx, int(id), ops)
+	client := r.Meta.Client
+	id := state.ID.ValueInt64()
+	domain, err := client.UpdateDomain(ctx, int(id), updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to update domain: %v", id),
@@ -160,7 +180,8 @@ func (r *Resource) Update(
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(state.parseDomain(ctx, domain)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *Resource) Delete(
