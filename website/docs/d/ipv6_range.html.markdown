@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_ipv6_range"
 sidebar_current: "docs-linode-datasource-ipv6-range"
 description: |-
-Provides details about a Linode IPv6 Range.
+  Provides details about a Linode IPv6 Range.
 ---
 
 # Data Source: linode\_ipv6\_range

@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_databases"
 sidebar_current: "docs-linode-datasource-databases"
 description: |-
-Provides information about Linode Managed Databases.
+  Provides information about Linode Managed Databases.
 ---
 
 # Data Source: linode\_databases
