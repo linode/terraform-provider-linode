@@ -90,19 +90,19 @@ func (r *Resource) Create(
 		TTLSec:      int(data.TTLSec.ValueInt64()),
 	}
 
-	if !data.MasterIPs.IsNull() {
+	if !data.MasterIPs.IsNull() && !data.MasterIPs.IsUnknown() {
 		resp.Diagnostics.Append(data.MasterIPs.ElementsAs(ctx, &createOpts.MasterIPs, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !data.AXFRIPs.IsNull() {
+	if !data.AXFRIPs.IsNull() && !data.AXFRIPs.IsUnknown() {
 		resp.Diagnostics.Append(data.AXFRIPs.ElementsAs(ctx, &createOpts.AXfrIPs, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !data.Tags.IsNull() {
+	if !data.Tags.IsNull() && !data.Tags.IsUnknown() {
 		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -151,19 +151,19 @@ func (r *Resource) Update(
 		RefreshSec:  int(plan.RefreshSec.ValueInt64()),
 		TTLSec:      int(plan.TTLSec.ValueInt64()),
 	}
-	if !plan.MasterIPs.IsNull() {
+	if !plan.MasterIPs.IsNull() && !plan.MasterIPs.IsUnknown() {
 		resp.Diagnostics.Append(plan.MasterIPs.ElementsAs(ctx, &updateOpts.MasterIPs, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !plan.AXFRIPs.IsNull() {
+	if !plan.AXFRIPs.IsNull() && !plan.AXFRIPs.IsUnknown() {
 		resp.Diagnostics.Append(plan.AXFRIPs.ElementsAs(ctx, &updateOpts.AXfrIPs, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !plan.Tags.IsNull() {
+	if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
 		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {
 			return

@@ -83,9 +83,14 @@ func (m *DomainModel) parseDomain(
 	}
 	m.AXFRIPs = axfrIPs
 
-	tags, diags := basetypes.NewSetValueFrom(ctx, types.StringType, domain.Tags)
-	if diags.HasError() {
-		return diags
+	var tags basetypes.SetValue
+	if len(domain.Tags) == 0 {
+		tags = types.SetNull(types.StringType)
+	} else {
+		tags, diags = basetypes.NewSetValueFrom(ctx, types.StringType, domain.Tags)
+		if diags.HasError() {
+			return diags
+		}
 	}
 	m.Tags = tags
 
