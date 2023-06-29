@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_firewall"
 sidebar_current: "docs-linode-datasource-firewall"
 description: |-
-Provides details about a Firewall.
+  Provides details about a Firewall.
 ---
 
 # Data Source: linode\_firewall
