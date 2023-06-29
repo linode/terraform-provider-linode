@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_account_logins"
 sidebar_current: "docs-linode-datasource-account-logins"
 description: |-
-Provides information about Linode account logins that match a set of filters.
+  Provides information about Linode account logins that match a set of filters.
 ---
 
 # linode\_account\_logins

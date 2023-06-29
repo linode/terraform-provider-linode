@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_account_settings"
 sidebar_current: "docs-linode-datasource-account-settings"
 description: |-
-Provides information about Linode account settings.
+  Provides information about Linode account settings.
 ---
 
 # linode\_account\_settings
