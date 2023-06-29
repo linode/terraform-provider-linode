@@ -27,7 +27,7 @@ func init() {
 	testRegion = region
 }
 
-func TestAccResourceInstanceDisk_basic(t *testing.T) {
+func TestAccResourceInstanceDisk_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance_disk.foobar"

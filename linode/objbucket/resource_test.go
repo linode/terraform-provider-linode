@@ -156,7 +156,7 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceBucket_basic(t *testing.T) {
+func TestAccResourceBucket_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {

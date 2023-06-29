@@ -25,7 +25,7 @@ func init() {
 	testRegion = region
 }
 
-func TestAccResourceFirewallDevice_basic(t *testing.T) {
+func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	var firewall linodego.Firewall
