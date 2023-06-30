@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_database_postgresql"
 sidebar_current: "docs-linode-datasource-database-postgresql"
 description: |-
-Provides information about a Linode PostgreSQL Database.
+  Provides information about a Linode PostgreSQL Database.
 ---
 
 # Data Source: linode\_database\_postgresql

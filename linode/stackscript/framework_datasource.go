@@ -11,8 +11,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_stackscript",
-			frameworkDataSourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_stackscript",
+				Schema: &frameworkDataSourceSchema,
+			},
 		),
 	}
 }

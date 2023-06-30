@@ -15,7 +15,7 @@ var basicStackScript = `#!/bin/bash
 echo "Hello, $NAME!"
 `
 
-func TestAccDataSourceStackscripts_basic(t *testing.T) {
+func TestAccDataSourceStackscripts_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	stackScriptName := acctest.RandomWithPrefix("tf_test")

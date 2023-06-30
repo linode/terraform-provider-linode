@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_images"
 sidebar_current: "docs-linode-datasource-images"
 description: |-
-Provides information about Linode images that match a set of filters.
+  Provides information about Linode images that match a set of filters.
 ---
 
 # Data Source: linode\_images

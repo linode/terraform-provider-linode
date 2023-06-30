@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_instances"
 sidebar_current: "docs-linode-datasource-instances"
 description: |-
-Provides information about Linode instances that match a set of filters.
+  Provides information about Linode instances that match a set of filters.
 ---
 
 # Data Source: linode\_instances

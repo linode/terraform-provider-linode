@@ -76,7 +76,7 @@ func TestDetectVolumeIDChange(t *testing.T) {
 	}
 }
 
-func TestAccResourceVolume_basic(t *testing.T) {
+func TestAccResourceVolume_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_volume.foobar"

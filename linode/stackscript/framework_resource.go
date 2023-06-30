@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -13,23 +13,17 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_stackscript",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_stackscript",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }
 
 type Resource struct {
 	helper.BaseResource
-}
-
-// TODO: We should use Int64 ID attributes
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(

@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_instance_disk"
 sidebar_current: "docs-linode-resource-instance_disk"
 description: |-
-Manages a Linode Instance Disk.
+  Manages a Linode Instance Disk.
 ---
 
 # linode\_instance\_disk

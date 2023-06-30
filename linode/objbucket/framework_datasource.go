@@ -14,8 +14,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		helper.NewBaseDataSource(
-			"linode_object_storage_bucket",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_object_storage_bucket",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }
