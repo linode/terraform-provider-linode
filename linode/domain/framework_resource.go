@@ -135,10 +135,49 @@ func (r *Resource) Update(
 		return
 	}
 
-	if domainDeepEqual(plan, state) {
-		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	domainID := int(state.ID.ValueInt64())
+
+	if !domainDeepEqual(plan, state) {
+		r.updateDomain(ctx, resp, plan, domainID)
+	}
+}
+
+func (r *Resource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
+	var data DomainModel
+
+	resp.Diagnostics.Append(resp.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
+	id := data.ID.ValueInt64()
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client := r.Meta.Client
+	err := client.DeleteDomain(ctx, int(id))
+	if err != nil {
+		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete domain with id %v", id),
+				err.Error(),
+			)
+		}
+		return
+	}
+}
+
+func (r *Resource) updateDomain(
+	ctx context.Context,
+	resp *resource.UpdateResponse,
+	plan DomainModel,
+	domainID int,
+) {
+	client := r.Meta.Client
 	updateOpts := linodego.DomainUpdateOptions{
 		Domain:      plan.Domain.ValueString(),
 		Type:        linodego.DomainType(plan.Type.ValueString()),
@@ -170,45 +209,17 @@ func (r *Resource) Update(
 		}
 	}
 
-	client := r.Meta.Client
-	id := state.ID.ValueInt64()
-	domain, err := client.UpdateDomain(ctx, int(id), updateOpts)
+	domain, err := client.UpdateDomain(ctx, domainID, updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to update domain: %v", id),
+			fmt.Sprintf("Failed to update domain: %v", domainID),
 			err.Error(),
 		)
 		return
 	}
-	resp.Diagnostics.Append(state.parseDomain(ctx, domain)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func (r *Resource) Delete(
-	ctx context.Context,
-	req resource.DeleteRequest,
-	resp *resource.DeleteResponse,
-) {
-	var data DomainModel
-
-	resp.Diagnostics.Append(resp.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(plan.parseDomain(ctx, domain)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	id := data.ID.ValueInt64()
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	client := r.Meta.Client
-	err := client.DeleteDomain(ctx, int(id))
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete domain with id %v", id),
-				err.Error(),
-			)
-		}
-		return
-	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
