@@ -144,7 +144,7 @@ func (r *Resource) Delete(
 		RDNS: nil,
 	}
 
-	ip, err := client.UpdateIPAddress(ctx, data.Address.ValueString(), updateOpts)
+	_, err := client.UpdateIPAddress(ctx, data.Address.ValueString(), updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to delete Linode RDNS",
@@ -152,7 +152,4 @@ func (r *Resource) Delete(
 		)
 		return
 	}
-
-	data.parseIP(ip)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
