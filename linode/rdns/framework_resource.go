@@ -3,8 +3,8 @@ package rdns
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -12,23 +12,17 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_rdns",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_rdns",
+				Schema: &frameworkResourceSchema,
+				IDType: types.StringType,
+			},
 		),
 	}
 }
 
 type Resource struct {
 	helper.BaseResource
-}
-
-// ImportState is necessary because we use a string ID attribute for this resource
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(
