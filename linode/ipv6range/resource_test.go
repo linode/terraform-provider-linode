@@ -36,7 +36,7 @@ func init() {
 		testRegions = append(testRegions, region.ID)
 	}
 
-	if len(testRegions) < 5 {
+	if len(testRegions) < 6 {
 		log.Fatalf("not enough regions for testing.")
 	}
 }

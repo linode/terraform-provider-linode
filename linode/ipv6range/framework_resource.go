@@ -84,19 +84,11 @@ func (r *Resource) Create(
 		)
 	}
 
-	data.PrefixLength = types.Int64Value(int64(ipv6rangeR.Prefix))
 	resp.Diagnostics.Append(data.parseIPv6RangeResourceData(ctx, ipv6rangeR)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-
-	// resp.Diagnostics.Append(data.parseIPv6RangeResourceData(ctx, ipv6range)...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-
-	// resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *Resource) Read(
