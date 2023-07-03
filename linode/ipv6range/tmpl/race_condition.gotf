@@ -1,19 +1,26 @@
 {{ define "ipv6range_race_condition" }}
 
 resource "linode_instance" "foobar" {
-    count = 5
-
-    label = "{{.Label}}-${count.index}"
+    region = "{{.Region}}"
+    label = "{{.Label}}-1"
     type = "g6-nanode-1"
-    region = "{{ .Region }}"
+    booted = false
+}
+
+resource "linode_instance" "foobar2" {
+    region = "{{.Region2}}"
+    label = "{{.Label}}-2"
+    type = "g6-nanode-1"
     booted = false
 }
 
 resource "linode_ipv6_range" "foobar" {
-    count = 5
+    linode_id = linode_instance.foobar.id
+    prefix_length = 64
+}
 
-    linode_id = linode_instance.foobar[count.index].id
-
+resource "linode_ipv6_range" "foobar2" {
+    linode_id = linode_instance.foobar2.id
     prefix_length = 64
 }
 

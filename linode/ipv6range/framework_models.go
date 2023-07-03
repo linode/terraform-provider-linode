@@ -50,3 +50,20 @@ func (data *DataSourceModel) parseIPv6Range(
 
 	return nil
 }
+
+func (rData *ResourceModel) parseIPv6RangeResourceData(
+	ctx context.Context,
+	ipv6Range *linodego.IPv6Range,
+) diag.Diagnostics {
+	linodes, diag := types.SetValueFrom(ctx, types.Int64Type, ipv6Range.Linodes)
+	if diag.HasError() {
+		return diag
+	}
+
+	rData.IsBGP = types.BoolValue(ipv6Range.IsBGP)
+	rData.Linodes = linodes
+	rData.Range = types.StringValue(ipv6Range.Range)
+	rData.Region = types.StringValue(ipv6Range.Region)
+
+	return nil
+}
