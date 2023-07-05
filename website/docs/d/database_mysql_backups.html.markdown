@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_database_mysql_backups"
 sidebar_current: "docs-linode-datasource-database-mysql-backups"
 description: |-
-Provides information about Linode MySQL Database Backups that match a set of filters.
+  Provides information about Linode MySQL Database Backups that match a set of filters.
 ---
 
 # Data Source: linode\_database\_mysql\_backups

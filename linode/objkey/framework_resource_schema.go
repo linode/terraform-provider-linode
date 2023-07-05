@@ -2,8 +2,11 @@ package objkey
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -16,19 +19,31 @@ var frameworkResourceSchema = schema.Schema{
 		"id": schema.Int64Attribute{
 			Description: "The unique ID of this Object Storage key.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"access_key": schema.StringAttribute{
 			Description: "This keypair's access key. This is not secret.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"secret_key": schema.StringAttribute{
 			Description: "This keypair's secret key.",
 			Sensitive:   true,
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"limited": schema.BoolAttribute{
 			Description: "Whether or not this key is a limited access key.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.UseStateForUnknown(),
+			},
 		},
 	},
 	Blocks: map[string]schema.Block{
@@ -53,6 +68,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			PlanModifiers: []planmodifier.Set{
 				setplanmodifier.RequiresReplace(),
+				setplanmodifier.UseStateForUnknown(),
 			},
 		},
 	},

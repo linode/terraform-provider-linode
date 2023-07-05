@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_instance_types"
 sidebar_current: "docs-linode-datasource-instance-types"
 description: |-
-Provides information about Linode Instance types that match a set of filters.
+  Provides information about Linode Instance types that match a set of filters.
 ---
 
 # Data Source: linode\_instance_types

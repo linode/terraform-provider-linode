@@ -11,8 +11,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_user",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_user",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }
@@ -43,7 +45,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseUser(ctx, user)...)
+	resp.Diagnostics.Append(data.ParseUser(ctx, user)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -56,7 +58,9 @@ func (d *DataSource) Read(
 			)
 			return
 		}
-		resp.Diagnostics.Append(data.parseUserGrants(ctx, grants)...)
+		resp.Diagnostics.Append(data.ParseUserGrants(ctx, grants)...)
+	} else {
+		data.ParseNonUserGrants()
 	}
 	if resp.Diagnostics.HasError() {
 		return

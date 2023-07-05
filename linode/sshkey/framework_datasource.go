@@ -16,8 +16,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_sshkey",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_sshkey",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_vlans"
 sidebar_current: "docs-linode-datasource-vlans"
 description: |-
-Provides details about Linode VLANs.
+  Provides details about Linode VLANs.
 ---
 
 # Data Source: linode\_vlans

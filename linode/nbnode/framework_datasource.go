@@ -11,8 +11,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_nodebalancer_node",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_nodebalancer_node",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

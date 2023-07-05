@@ -10,8 +10,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_account_settings",
-			frameworkDataSourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_account_settings",
+				Schema: &frameworkDataSourceSchema,
+			},
 		),
 	}
 }

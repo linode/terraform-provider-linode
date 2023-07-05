@@ -60,7 +60,7 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceNodeBalancer_basic(t *testing.T) {
+func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"

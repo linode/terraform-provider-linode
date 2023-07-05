@@ -45,6 +45,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
+	"github.com/linode/terraform-provider-linode/linode/users"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
@@ -180,6 +181,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		databaseengines.NewDataSource,
 		region.NewDataSource,
 		vlan.NewDataSource,
+		users.NewDataSource,
 		nbnode.NewDataSource,
 		accountsettings.NewDataSource,
 	}
