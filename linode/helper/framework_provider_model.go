@@ -17,6 +17,8 @@ type FrameworkProviderModel struct {
 	SkipInstanceReadyPoll  types.Bool `tfsdk:"skip_instance_ready_poll"`
 	SkipInstanceDeletePoll types.Bool `tfsdk:"skip_instance_delete_poll"`
 
+	SkipImplicitReboots types.Bool `tfsdk:"skip_implicit_reboots"`
+
 	DisableInternalCache types.Bool `tfsdk:"disable_internal_cache"`
 
 	MinRetryDelayMilliseconds types.Int64 `tfsdk:"min_retry_delay_ms"`
