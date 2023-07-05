@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var _ resource.ResourceWithUpgradeState = &Resource{}
@@ -61,8 +64,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
-	resp.Diagnostics.Append(data.parseNodeBalancer(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.parseComputedAttrs(ctx, nodebalancer)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -99,7 +101,8 @@ func (r *Resource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.parseNodeBalancer(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.parseComputedAttrs(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.parseNonComputedAttrs(ctx, nodebalancer)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,17 +138,16 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		nodebalancer, err := client.UpdateNodeBalancer(ctx, int(state.ID.ValueInt64()), updateOpts)
+		nodebalancer, err := client.UpdateNodeBalancer(ctx, int(plan.ID.ValueInt64()), updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update Nodebalancer %v", state.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update Nodebalancer %v", plan.ID.ValueInt64()),
 				err.Error(),
 			)
 			return
 		}
 
-		plan.ID = types.Int64Value(int64(nodebalancer.ID))
-		resp.Diagnostics.Append(plan.parseNodeBalancer(ctx, nodebalancer)...)
+		resp.Diagnostics.Append(plan.parseComputedAttrs(ctx, nodebalancer)...)
 		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
 }
@@ -165,6 +167,14 @@ func (r *Resource) Delete(
 
 	err := client.DeleteNodeBalancer(ctx, int(data.ID.ValueInt64()))
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			resp.Diagnostics.AddWarning(
+				"Nodebalancer does not exist.",
+				fmt.Sprintf("Nodebalancer %v does not exist, removing from state.", data.ID.ValueInt64()),
+			)
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Failed to delete Nodebalancer",
 			err.Error(),
@@ -202,8 +212,8 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Hostname:           nbDataV0.Hostname,
 		Ipv4:               nbDataV0.Ipv4,
 		Ipv6:               nbDataV0.Ipv6,
-		Created:            nbDataV0.Created,
-		Updated:            nbDataV0.Updated,
+		Created:            customtypes.RFC3339TimeStringValue{StringValue: nbDataV0.Created},
+		Updated:            customtypes.RFC3339TimeStringValue{StringValue: nbDataV0.Updated},
 		Tags:               nbDataV0.Tags,
 	}
 
@@ -213,29 +223,44 @@ func upgradeNodebalancerResourceStateV0toV1(
 		return
 	}
 
-	var entry TransferModelEntry
+	result := make(map[string]attr.Value)
 	in, diag := UpgradeResourceStateValue(transferMap["in"])
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	entry.In = in
+	result["in"] = in
 
 	out, diag := UpgradeResourceStateValue(transferMap["out"])
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	entry.Out = out
+	result["out"] = out
 
 	total, diag := UpgradeResourceStateValue(transferMap["total"])
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	entry.Total = total
+	result["total"] = total
 
-	nbDataV1.Transfer = []TransferModelEntry{entry}
+	transferObj, diags := types.ObjectValue(TransferObjectType.AttrTypes, result)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	resultList, diags := basetypes.NewListValue(
+		TransferObjectType,
+		[]attr.Value{transferObj},
+	)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
+	nbDataV1.Transfer = resultList
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &nbDataV1)...)
 }

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -142,32 +143,32 @@ func TestLinodeNodeBalancer_UpgradeV0(t *testing.T) {
 		},
 	}
 
-	desiredState := nb.TransferModelEntry{
-		In:    types.Float64Value(1337.0),
-		Out:   types.Float64Value(1338.0),
-		Total: types.Float64Value(1339.0),
+	desiredState := map[string]attr.Value{
+		"in":    types.Float64Value(1337.0),
+		"out":   types.Float64Value(1338.0),
+		"total": types.Float64Value(1339.0),
 	}
 
 	transferMap := oldState["transfer"].(map[string]interface{})
 
-	var newState nb.TransferModelEntry
+	newState := make(map[string]attr.Value)
 	in, diag := nb.UpgradeResourceStateValue(transferMap["in"].(string))
 	if diag != nil {
 		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
-	newState.In = in
+	newState["in"] = in
 
 	out, diag := nb.UpgradeResourceStateValue(transferMap["out"].(string))
 	if diag != nil {
 		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
-	newState.Out = out
+	newState["out"] = out
 
 	total, diag := nb.UpgradeResourceStateValue(transferMap["total"].(string))
 	if diag != nil {
 		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
-	newState.Total = total
+	newState["total"] = total
 
 	if !reflect.DeepEqual(desiredState, newState) {
 		t.Fatalf("expected %v, got %v", desiredState, newState)
@@ -185,32 +186,32 @@ func TestLinodeNodeBalancer_UpgradeV0Empty(t *testing.T) {
 		},
 	}
 
-	desiredState := nb.TransferModelEntry{
-		In:    types.Float64Value(0.0),
-		Out:   types.Float64Value(0.0),
-		Total: types.Float64Value(0.0),
+	desiredState := map[string]attr.Value{
+		"in":    types.Float64Value(0.0),
+		"out":   types.Float64Value(0.0),
+		"total": types.Float64Value(0.0),
 	}
 
 	transferMap := oldState["transfer"].(map[string]interface{})
 
-	var newState nb.TransferModelEntry
+	newState := make(map[string]attr.Value)
 	in, diag := nb.UpgradeResourceStateValue(transferMap["in"].(string))
 	if diag != nil {
 		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
-	newState.In = in
+	newState["in"] = in
 
 	out, diag := nb.UpgradeResourceStateValue(transferMap["out"].(string))
 	if diag != nil {
 		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
-	newState.Out = out
+	newState["out"] = out
 
 	total, diag := nb.UpgradeResourceStateValue(transferMap["total"].(string))
 	if diag != nil {
 		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
-	newState.Total = total
+	newState["total"] = total
 
 	if !reflect.DeepEqual(desiredState, newState) {
 		t.Fatalf("expected %v, got %v", desiredState, newState)
