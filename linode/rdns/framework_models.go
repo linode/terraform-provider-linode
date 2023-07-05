@@ -15,7 +15,7 @@ type ResourceModel struct {
 func (rm *ResourceModel) parseIP(ip *linodego.InstanceIP) {
 	rm.Address = types.StringValue(ip.Address)
 
-	if rm.RDNS != types.StringValue(ip.RDNS) {
+	if !rm.RDNS.Equal(types.StringValue(ip.RDNS)) {
 		rm.RDNS = types.StringValue(ip.RDNS)
 	}
 

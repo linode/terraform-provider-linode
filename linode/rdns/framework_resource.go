@@ -31,19 +31,21 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data ResourceModel
+	var plan ResourceModel
 	client := r.Meta.Client
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	plan.ID = plan.Address
+
 	updateOpts := linodego.IPAddressUpdateOptions{
-		RDNS: data.RDNS.ValueStringPointer(),
+		RDNS: plan.RDNS.ValueStringPointer(),
 	}
 
-	ip, err := client.UpdateIPAddress(ctx, data.Address.ValueString(), updateOpts)
+	_, err := client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Linode RDNS",
@@ -52,8 +54,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseIP(ip)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Read(
@@ -107,7 +108,7 @@ func (r *Resource) Update(
 	}
 
 	if resourceUpdated {
-		ip, err := client.UpdateIPAddress(ctx, state.Address.ValueString(), updateOpts)
+		_, err := client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to update the Linode RDNS",
@@ -116,8 +117,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		state.parseIP(ip)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
 }
 
