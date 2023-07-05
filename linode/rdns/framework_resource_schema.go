@@ -35,7 +35,6 @@ var frameworkResourceSchema = schema.Schema{
 		"wait_for_available": schema.BoolAttribute{
 			Description: "If true, the RDNS assignment will be retried within the operation timeout period.",
 			Optional:    true,
-			Computed:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"id": schema.StringAttribute{

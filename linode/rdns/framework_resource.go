@@ -2,6 +2,7 @@ package rdns
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -140,10 +141,23 @@ func (r *Resource) Delete(
 
 	_, err := client.UpdateIPAddress(ctx, data.Address.ValueString(), updateOpts)
 	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			resp.Diagnostics.AddWarning(
+				"Target IP no longer exists.",
+				fmt.Sprintf(
+					"The given IP Address (%s) no longer exists.",
+					data.Address,
+				),
+			)
+			return
+		}
+
 		resp.Diagnostics.AddError(
-			"Failed to delete Linode RDNS",
-			err.Error(),
+			"Unable to refresh the Linode StackScript",
+			fmt.Sprintf(
+				"Error finding the specified Linode StackScript: %s",
+				err.Error(),
+			),
 		)
-		return
 	}
 }
