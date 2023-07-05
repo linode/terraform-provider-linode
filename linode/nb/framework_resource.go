@@ -18,8 +18,11 @@ var _ resource.ResourceWithUpgradeState = &Resource{}
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_nodebalancer",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_nodebalancer",
+				IDType: types.Int64Type,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }
