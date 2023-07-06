@@ -3,6 +3,7 @@ package rdns
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -41,11 +42,34 @@ func (r *Resource) Create(
 
 	plan.ID = plan.Address
 
+	ip, err := client.GetIPAddress(ctx, plan.Address.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to get the ip address associated with this RDNS",
+			err.Error(),
+		)
+		return
+	}
+
+	defaultRdns := strings.Replace(
+		plan.Address.ValueString(),
+		".",
+		"-",
+		-1,
+	) + ".ip.linodeusercontent.com"
+
+	if ip.RDNS != defaultRdns {
+		resp.Diagnostics.AddWarning(
+			"Pre-exist RDNS configuration",
+			"RDNS was already configured before the creation of this RDNS resource",
+		)
+	}
+
 	updateOpts := linodego.IPAddressUpdateOptions{
 		RDNS: plan.RDNS.ValueStringPointer(),
 	}
 
-	_, err := client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
+	_, err = client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Linode RDNS",
@@ -73,9 +97,20 @@ func (r *Resource) Read(
 
 	ip, err := client.GetIPAddress(ctx, data.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to read the Linode RDNS", err.Error(),
-		)
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			resp.Diagnostics.AddWarning(
+				"RDNS No Longer Exists",
+				fmt.Sprintf(
+					"Removing Linode RDNS with IP %v from state because it no longer exists",
+					data.ID.ValueString(),
+				),
+			)
+			resp.State.RemoveResource(ctx)
+		} else {
+			resp.Diagnostics.AddError(
+				"Failed to read the Linode RDNS", err.Error(),
+			)
+		}
 		return
 	}
 
