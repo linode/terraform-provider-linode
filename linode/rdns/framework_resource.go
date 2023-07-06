@@ -60,7 +60,7 @@ func (r *Resource) Create(
 
 	if ip.RDNS != defaultRdns {
 		resp.Diagnostics.AddWarning(
-			"Pre-exist RDNS configuration",
+			"Pre-modified RDNS Address",
 			"RDNS was already configured before the creation of this RDNS resource",
 		)
 	}
