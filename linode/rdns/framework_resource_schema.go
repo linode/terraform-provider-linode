@@ -1,6 +1,7 @@
 package rdns
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -26,7 +27,7 @@ var frameworkResourceSchema = schema.Schema{
 				"to a default value provided by Linode if not explicitly set.",
 			Required: true,
 			Validators: []validator.String{
-				helper.NewStringLengthValidator(3, 254),
+				stringvalidator.LengthBetween(3, 254),
 			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
