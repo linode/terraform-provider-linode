@@ -20,14 +20,14 @@ func TestAccDataSourceIPv6Range_basic(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceLabel, testRegions[6]),
+				Config: tmpl.DataBasic(t, instanceLabel, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "range"),
 
 					resource.TestCheckResourceAttr(resourceName, "linodes.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "is_bgp", "false"),
 					resource.TestCheckResourceAttr(resourceName, "prefix", "64"),
-					resource.TestCheckResourceAttr(resourceName, "region", testRegions[6]),
+					resource.TestCheckResourceAttr(resourceName, "region", testRegion),
 				),
 			},
 		},

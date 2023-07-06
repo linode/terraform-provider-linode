@@ -50,16 +50,19 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"range": schema.StringAttribute{
-			Description: "The IPv6 range of addresses in this pool.",
-			Computed:    true,
+			Description:   "The IPv6 range of addresses in this pool.",
+			Computed:      true,
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"region": schema.StringAttribute{
-			Description: "The region for this range of IPv6 addresses.",
-			Computed:    true,
+			Description:   "The region for this range of IPv6 addresses.",
+			Computed:      true,
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"id": schema.StringAttribute{
-			Description: "The unique ID for this Resource.",
-			Computed:    true,
+			Description:   "The unique ID for this Resource.",
+			Computed:      true,
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 	},
 }

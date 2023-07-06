@@ -29,7 +29,7 @@ type ResourceModel struct {
 	ID           types.String `tfsdk:"id"`
 }
 
-func (data *DataSourceModel) parseIPv6Range(
+func (data *DataSourceModel) parseIPv6RangeDataSource(
 	ctx context.Context, ipv6Range *linodego.IPv6Range,
 ) diag.Diagnostics {
 	data.Range = types.StringValue(ipv6Range.Range)
@@ -51,7 +51,7 @@ func (data *DataSourceModel) parseIPv6Range(
 	return nil
 }
 
-func (rData *ResourceModel) parseIPv6RangeResourceData(
+func (rData *ResourceModel) parseIPv6RangeResourceDataComputedAttrs(
 	ctx context.Context,
 	ipv6Range *linodego.IPv6Range,
 ) diag.Diagnostics {
@@ -66,4 +66,10 @@ func (rData *ResourceModel) parseIPv6RangeResourceData(
 	rData.Region = types.StringValue(ipv6Range.Region)
 
 	return nil
+}
+
+func (rData *ResourceModel) parseIPv6RangeResourceDataNonComputedAttrs(
+	ipv6Range *linodego.IPv6Range,
+) {
+	rData.PrefixLength = types.Int64Value(int64(ipv6Range.Prefix))
 }

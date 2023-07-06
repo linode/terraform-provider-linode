@@ -3,7 +3,6 @@ package ipv6range_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"testing"
 	"time"
@@ -17,29 +16,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/ipv6range/tmpl"
 )
 
-var testRegions []string
-
-// Get available regions for different test cases,
-// because an account can only have one IPv6 range in each Region.
-func init() {
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		log.Fatalf("failed to get client: %s", err)
-	}
-
-	regions, err := client.ListRegions(context.TODO(), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, region := range regions {
-		testRegions = append(testRegions, region.ID)
-	}
-
-	if len(testRegions) < 6 {
-		log.Fatalf("not enough regions for testing.")
-	}
-}
+// TODO: don't hardcode this once IPv6 sharing has a proper capability string
+const testRegion = "eu-central"
 
 func TestAccIPv6Range_basic(t *testing.T) {
 	t.Parallel()
@@ -47,7 +25,6 @@ func TestAccIPv6Range_basic(t *testing.T) {
 	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
 		resName := "linode_ipv6_range.foobar"
 		instLabel := acctest.RandomWithPrefix("tf_test")
-		testRegion := testRegions[0]
 
 		resource.Test(retryT, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -84,7 +61,6 @@ func TestAccIPv6Range_routeTarget(t *testing.T) {
 	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
 		resName := "linode_ipv6_range.foobar"
 		instLabel := acctest.RandomWithPrefix("tf_test")
-		testRegion := testRegions[1]
 
 		resource.Test(retryT, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -136,7 +112,6 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 
 	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
 		resName := "linode_ipv6_range.foobar"
-		testRegion := testRegions[2]
 		instance1ResName := "linode_instance.foobar"
 		instance2ResName := "linode_instance.foobar2"
 
@@ -199,8 +174,6 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 	// Occasionally IPv6 range deletions take a bit to replicate
 	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
 		instLabel := acctest.RandomWithPrefix("tf_test")
-		testRegion := testRegions[3]
-		testRegion2 := testRegions[4]
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -208,7 +181,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 			CheckDestroy:             checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.RaceCondition(t, instLabel, testRegion, testRegion2),
+					Config: tmpl.RaceCondition(t, instLabel, testRegion),
 					Check:  checkIPv6RangeNoDuplicates,
 				},
 			},

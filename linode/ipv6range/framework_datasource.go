@@ -49,7 +49,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseIPv6Range(ctx, rangeData)...)
+	resp.Diagnostics.Append(data.parseIPv6RangeDataSource(ctx, rangeData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

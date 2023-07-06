@@ -7,9 +7,8 @@ import (
 )
 
 type TemplateData struct {
-	Label   string
-	Region  string
-	Region2 string
+	Label  string
+	Region string
 }
 
 func Basic(t *testing.T, label, region string) string {
@@ -49,12 +48,11 @@ func ReassignmentStep2(t *testing.T, label, region string) string {
 		})
 }
 
-func RaceCondition(t *testing.T, label, region1, region2 string) string {
+func RaceCondition(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"ipv6range_race_condition", TemplateData{
-			Label:   label,
-			Region:  region1,
-			Region2: region2,
+			Label:  label,
+			Region: region,
 		})
 }
 
