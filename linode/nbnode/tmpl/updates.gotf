@@ -1,5 +1,10 @@
 {{ define "nodebalancer_node_updates" }}
 
+provider "linode" {
+  skip_instance_ready_poll = true
+  skip_instance_delete_poll = true
+}
+
 {{ template "nodebalancer_node_networking" .Instance }}
 
 {{ template "nodebalancer_config_basic" .Config }}
