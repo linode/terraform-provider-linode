@@ -40,8 +40,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	plan.ID = plan.Address
-
 	ip, err := client.GetIPAddress(ctx, plan.Address.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -69,7 +67,7 @@ func (r *Resource) Create(
 		RDNS: plan.RDNS.ValueStringPointer(),
 	}
 
-	_, err = client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
+	ip, err = client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Linode RDNS",
@@ -78,6 +76,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	plan.parseComputedAttributes(ip)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -114,7 +113,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseIP(ip)
+	data.parseComputedAttributes(ip)
+	data.parseConfiguredAttributes(ip)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -143,7 +143,7 @@ func (r *Resource) Update(
 	}
 
 	if resourceUpdated {
-		_, err := client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
+		ip, err := client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to update the Linode RDNS",
@@ -151,6 +151,12 @@ func (r *Resource) Update(
 			)
 			return
 		}
+		plan.parseComputedAttributes(ip)
+	} else {
+		// computed attributes without stringplanmodifier.UseStateForUnknown()
+		// will be an unknown value when during an update operation, and it's
+		// required to be a known or null value in the response.
+		plan.ID = plan.Address
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
