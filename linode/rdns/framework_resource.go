@@ -178,9 +178,9 @@ func (r *Resource) Delete(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
-				"Target IP no longer exists.",
+				"Target IP for RDNS resetting no longer exists.",
 				fmt.Sprintf(
-					"The given IP Address (%s) no longer exists.",
+					"The given IP Address (%s) for RDNS resetting no longer exists.",
 					data.Address,
 				),
 			)
@@ -188,9 +188,9 @@ func (r *Resource) Delete(
 		}
 
 		resp.Diagnostics.AddError(
-			"Unable to refresh the Linode StackScript",
+			"Unable to delete the Linode IP address RDNS",
 			fmt.Sprintf(
-				"Error finding the specified Linode StackScript: %s",
+				"Error deleting the Linode IP address RDNS: %s",
 				err.Error(),
 			),
 		)
