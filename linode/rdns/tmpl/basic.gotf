@@ -3,14 +3,14 @@
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
-    image = "linode/alpine3.16"
+    image = "linode/alpine3.18"
     type = "g6-standard-1"
     region = "{{ .Region }}"
 }
 
 resource "linode_rdns" "foobar" {
     address = "${linode_instance.foobar.ip_address}"
-    rdns = "${linode_instance.foobar.ip_address}.nip.io"
+    rdns    = "${linode_instance.foobar.ip_address}.nip.io"
     wait_for_available = {{.WaitForAvailable}}
 }
 
