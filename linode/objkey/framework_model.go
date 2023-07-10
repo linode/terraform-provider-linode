@@ -22,18 +22,8 @@ type ResourceModel struct {
 	BucketAccess []BucketAccessModelEntry `tfsdk:"bucket_access"`
 }
 
-func (rm *ResourceModel) parseKey(key *linodego.ObjectStorageKey) {
-	rm.ID = types.Int64Value(int64(key.ID))
+func (rm *ResourceModel) parseConfiguredAttributes(key *linodego.ObjectStorageKey) {
 	rm.Label = types.StringValue(key.Label)
-	rm.AccessKey = types.StringValue(key.AccessKey)
-	rm.Limited = types.BoolValue(key.Limited)
-
-	// We only want to populate this field if a key is returned,
-	// else we should preserve the old value.
-	if key.SecretKey != "[REDACTED]" {
-		rm.SecretKey = types.StringValue(key.SecretKey)
-	}
-
 	// No access is configured; we can return here
 	if key.BucketAccess == nil {
 		rm.BucketAccess = nil
@@ -50,6 +40,18 @@ func (rm *ResourceModel) parseKey(key *linodego.ObjectStorageKey) {
 		entry.parseBucketAccess(&keyBucketAccess[i])
 
 		bucketAccess[i] = entry
+	}
+}
+
+func (rm *ResourceModel) parseComputedAttributes(key *linodego.ObjectStorageKey) {
+	rm.ID = types.Int64Value(int64(key.ID))
+	rm.AccessKey = types.StringValue(key.AccessKey)
+	rm.Limited = types.BoolValue(key.Limited)
+
+	// We only want to populate this field if a key is returned,
+	// else we should preserve the old value.
+	if key.SecretKey != "[REDACTED]" {
+		rm.SecretKey = types.StringValue(key.SecretKey)
 	}
 }
 

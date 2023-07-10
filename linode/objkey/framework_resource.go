@@ -62,7 +62,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseKey(key)
+	data.parseComputedAttributes(key)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -100,7 +100,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseKey(key)
+	data.parseComputedAttributes(key)
+	data.parseConfiguredAttributes(key)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -126,20 +127,20 @@ func (r *Resource) Update(
 	if shouldUpdate {
 		key, err := r.Meta.Client.UpdateObjectStorageKey(
 			ctx,
-			int(state.ID.ValueInt64()),
+			int(plan.ID.ValueInt64()),
 			updateOpts,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update Object Storage Key (%d)", state.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update Object Storage Key (%d)", plan.ID.ValueInt64()),
 				err.Error())
 			return
 		}
 
-		state.parseKey(key)
+		plan.parseComputedAttributes(key)
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(
