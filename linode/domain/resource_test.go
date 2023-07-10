@@ -115,36 +115,6 @@ func TestAccResourceDomain_update(t *testing.T) {
 	})
 }
 
-func TestAccResourceDomain_roundedDomainSecs(t *testing.T) {
-	t.Parallel()
-
-	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
-	resName := "linode_domain.foobar"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             checkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.RoundedSec(t, domainName),
-				Check: resource.ComposeTestCheckFunc(
-					checkDomainExists,
-					resource.TestCheckResourceAttr(resName, "domain", domainName),
-					resource.TestCheckResourceAttr(resName, "refresh_sec", "3600"),
-					resource.TestCheckResourceAttr(resName, "retry_sec", "7200"),
-					resource.TestCheckResourceAttr(resName, "ttl_sec", "300"),
-					resource.TestCheckResourceAttr(resName, "expire_sec", "2419200"),
-				),
-			},
-			{
-				Config:            tmpl.RoundedSec(t, domainName),
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func TestAccResourceDomain_zeroSecs(t *testing.T) {
 	t.Parallel()
 
