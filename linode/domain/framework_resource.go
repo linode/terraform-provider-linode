@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -14,8 +15,11 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_domain",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_domain",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }
