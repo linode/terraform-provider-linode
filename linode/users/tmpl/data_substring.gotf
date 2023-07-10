@@ -1,0 +1,13 @@
+{{ define "users_data_substring" }}
+
+{{ template "users_data_base" .}}
+
+data "linode_users" "user" {
+    filter {
+        name = "username"
+        values = [linode_user.test.username]
+        match_by = "substring"
+    }
+}
+
+{{ end }}

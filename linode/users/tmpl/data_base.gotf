@@ -1,0 +1,28 @@
+{{ define "users_data_base"}}
+
+data "linode_profile" "user" {}
+
+data "linode_user" "test" {
+    username = "${data.linode_profile.user.username}"
+}
+
+resource "linode_user" "test" {
+    username = "{{.Username}}"
+    email = "{{.Email}}"
+    restricted = true
+
+    global_grants {
+        add_linodes = true
+        add_nodebalancers = true
+        add_domains = true
+        add_firewalls = true
+    }
+}
+
+resource "linode_user" "test2" {
+    username = "{{.Username}}_2"
+    email = "{{.Email}}"
+    restricted = false
+}
+
+{{ end }}

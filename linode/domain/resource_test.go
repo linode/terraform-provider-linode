@@ -45,7 +45,7 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceDomain_basic(t *testing.T) {
+func TestAccResourceDomain_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_domain.foobar"

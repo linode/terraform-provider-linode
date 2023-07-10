@@ -73,7 +73,7 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceDatabasePostgres_basic(t *testing.T) {
+func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_postgresql.foobar"

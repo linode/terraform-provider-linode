@@ -48,6 +48,11 @@ testacc: fmtcheck
 	LINODE_API_VERSION="v4beta" \
 	go test -v ./$(PKG_NAME) $(TESTARGS) -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
 
+smoketest: fmtcheck
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	go test -v -run smoke ./linode/... -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./...) ; if [ $$? -eq 1 ]; then \
@@ -59,6 +64,7 @@ vet:
 
 fmt:
 	gofmt -w $(GOFMT_FILES)
+	gofumpt -w $(GOFMT_FILES)
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
