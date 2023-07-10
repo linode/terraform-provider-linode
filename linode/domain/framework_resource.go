@@ -10,14 +10,12 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-//var _ resource.ResourceWithModifyPlan = &Resource{}
-
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_domain",
-				IDType: types.StringType,
+				IDType: types.Int64Type,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -230,59 +228,3 @@ func (r *Resource) updateDomain(
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
-
-// func (r *Resource) ModifyPlan(
-// 	ctx context.Context,
-// 	req resource.ModifyPlanRequest,
-// 	resp *resource.ModifyPlanResponse,
-// ) {
-// 	var data DomainModel
-// 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-// 	if resp.Diagnostics.HasError() {
-// 		return
-// 	}
-
-// 	if !data.RetrySec.IsNull() {
-// 		oldRetry := int64(data.RetrySec.ValueInt64())
-// 		data.RetrySec = customtypes.LinodeDomainSecondsValue{
-// 			Int64Value: types.Int64Value(rounder(oldRetry)),
-// 		}
-// 	}
-// 	if !data.ExpireSec.IsNull() {
-// 		oldExpire := int64(data.ExpireSec.ValueInt64())
-// 		data.ExpireSec = customtypes.LinodeDomainSecondsValue{
-// 			Int64Value: types.Int64Value(rounder(oldExpire)),
-// 		}
-// 	}
-// 	if !data.RefreshSec.IsNull() {
-// 		oldRefresh := int64(data.RefreshSec.ValueInt64())
-// 		data.RefreshSec = customtypes.LinodeDomainSecondsValue{
-// 			Int64Value: types.Int64Value(rounder(oldRefresh)),
-// 		}
-// 	}
-// 	if !data.TTLSec.IsNull() {
-// 		oldTTL := int64(data.TTLSec.ValueInt64())
-// 		data.TTLSec = customtypes.LinodeDomainSecondsValue{
-// 			Int64Value: types.Int64Value(rounder(oldTTL)),
-// 		}
-// 	}
-// 	resp.Diagnostics.Append(resp.Plan.Set(ctx, &data)...)
-// }
-
-// func rounder(n int64) int64 {
-// 	accepted := []int64{
-// 		30, 120, 300, 3600, 7200, 14400, 28800, 57600,
-// 		86400, 172800, 345600, 604800, 1209600, 2419200,
-// 	}
-
-// 	if n == 0 {
-// 		return 0
-// 	}
-
-// 	for _, value := range accepted {
-// 		if n <= value {
-// 			return value
-// 		}
-// 	}
-// 	return accepted[len(accepted)-1]
-// }
