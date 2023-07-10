@@ -51,7 +51,8 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.parseDomain(ctx, domain)
+	data.parseComputed(ctx, domain)
+	data.parseNonComputed(ctx, domain)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
