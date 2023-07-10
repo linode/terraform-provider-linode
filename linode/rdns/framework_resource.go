@@ -152,11 +152,6 @@ func (r *Resource) Update(
 			return
 		}
 		plan.parseComputedAttributes(ip)
-	} else {
-		// computed attributes without stringplanmodifier.UseStateForUnknown()
-		// will be an unknown value when during an update operation, and it's
-		// required to be a known or null value in the response.
-		plan.ID = plan.Address
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

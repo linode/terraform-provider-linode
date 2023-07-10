@@ -40,6 +40,9 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Unique identification field for this RDNS Resource. " +
 				"The public Linode IPv4 or IPv6 address to operate on. ",
 			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 	},
 }
