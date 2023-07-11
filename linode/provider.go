@@ -32,7 +32,11 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/linode/obj"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
+<<<<<<< HEAD
 	"github.com/linode/terraform-provider-linode/linode/user"
+=======
+	"github.com/linode/terraform-provider-linode/linode/rdns"
+>>>>>>> 10eff12f (creation)
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
@@ -143,7 +147,7 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer_config":      nbconfig.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
-			"linode_user":                     user.Resource(),
+			"linode_rdns":                     rdns.Resource(),
 			"linode_volume":                   volume.Resource(),
 		},
 	}

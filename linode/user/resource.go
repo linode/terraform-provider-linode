@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,20 +10,20 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-var resourceLinodeUserGrantFields = []string{
-	"global_grants", "domain_grant", "firewall_grant", "image_grant",
-	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant",
-}
+// var resourceLinodeUserGrantFields = []string{
+// 	"global_grants", "domain_grant", "firewall_grant", "image_grant",
+// 	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant",
+// }
 
-func Resource() *schema.Resource {
-	return &schema.Resource{
-		Schema:        resourceSchema,
-		ReadContext:   readResource,
-		CreateContext: createResource,
-		UpdateContext: updateResource,
-		DeleteContext: deleteResource,
-	}
-}
+// func Resource() *schema.Resource {
+// 	return &schema.Resource{
+// 		Schema:        resourceSchema,
+// 		ReadContext:   readResource,
+// 		CreateContext: createResource,
+// 		UpdateContext: updateResource,
+// 		DeleteContext: deleteResource,
+// 	}
+// }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
@@ -125,38 +124,38 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*helper.ProviderMeta).Client
+// func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Get("username").(string)
-	restricted := d.Get("restricted").(bool)
+// 	username := d.Get("username").(string)
+// 	restricted := d.Get("restricted").(bool)
 
-	if !restricted {
-		return fmt.Errorf("user must be restricted in order to update grants")
-	}
+// 	if !restricted {
+// 		return fmt.Errorf("user must be restricted in order to update grants")
+// 	}
 
-	updateOpts := linodego.UserGrantsUpdateOptions{}
+// 	updateOpts := linodego.UserGrantsUpdateOptions{}
 
-	if global, ok := d.GetOk("global_grants"); ok {
-		global := global.([]interface{})[0].(map[string]interface{})
-		updateOpts.Global = expandGrantsGlobal(global)
-	}
+// 	if global, ok := d.GetOk("global_grants"); ok {
+// 		global := global.([]interface{})[0].(map[string]interface{})
+// 		updateOpts.Global = expandGrantsGlobal(global)
+// 	}
 
-	updateOpts.Domain = expandGrantsEntities(d.Get("domain_grant").(*schema.Set).List())
-	updateOpts.Firewall = expandGrantsEntities(d.Get("firewall_grant").(*schema.Set).List())
-	updateOpts.Image = expandGrantsEntities(d.Get("image_grant").(*schema.Set).List())
-	updateOpts.Linode = expandGrantsEntities(d.Get("linode_grant").(*schema.Set).List())
-	updateOpts.Longview = expandGrantsEntities(d.Get("longview_grant").(*schema.Set).List())
-	updateOpts.NodeBalancer = expandGrantsEntities(d.Get("nodebalancer_grant").(*schema.Set).List())
-	updateOpts.StackScript = expandGrantsEntities(d.Get("stackscript_grant").(*schema.Set).List())
-	updateOpts.Volume = expandGrantsEntities(d.Get("volume_grant").(*schema.Set).List())
+// 	updateOpts.Domain = expandGrantsEntities(d.Get("domain_grant").(*schema.Set).List())
+// 	updateOpts.Firewall = expandGrantsEntities(d.Get("firewall_grant").(*schema.Set).List())
+// 	updateOpts.Image = expandGrantsEntities(d.Get("image_grant").(*schema.Set).List())
+// 	updateOpts.Linode = expandGrantsEntities(d.Get("linode_grant").(*schema.Set).List())
+// 	updateOpts.Longview = expandGrantsEntities(d.Get("longview_grant").(*schema.Set).List())
+// 	updateOpts.NodeBalancer = expandGrantsEntities(d.Get("nodebalancer_grant").(*schema.Set).List())
+// 	updateOpts.StackScript = expandGrantsEntities(d.Get("stackscript_grant").(*schema.Set).List())
+// 	updateOpts.Volume = expandGrantsEntities(d.Get("volume_grant").(*schema.Set).List())
 
-	if _, err := client.UpdateUserGrants(ctx, username, updateOpts); err != nil {
-		return err
-	}
+// 	if _, err := client.UpdateUserGrants(ctx, username, updateOpts); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func expandGrantsEntities(entities []interface{}) []linodego.EntityUserGrant {
 	result := make([]linodego.EntityUserGrant, len(entities))
@@ -206,12 +205,12 @@ func expandGrantsGlobal(global map[string]interface{}) linodego.GlobalUserGrants
 	return result
 }
 
-func userHasGrantsConfigured(d *schema.ResourceData) bool {
-	for _, key := range resourceLinodeUserGrantFields {
-		if _, ok := d.GetOk(key); ok {
-			return true
-		}
-	}
+// func userHasGrantsConfigured(d *schema.ResourceData) bool {
+// 	for _, key := range resourceLinodeUserGrantFields {
+// 		if _, ok := d.GetOk(key); ok {
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }

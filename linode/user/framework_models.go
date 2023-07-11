@@ -33,6 +33,48 @@ type DataSourceModel struct {
 	VerifiedPhoneNumber types.String `tfsdk:"verified_phone_number"`
 }
 
+type UserModel struct {
+	Username            types.String       `tfsdk:"username"`
+	SSHKeys             types.List         `tfsdk:"ssh_keys"`
+	Email               types.String       `tfsdk:"email"`
+	Restricted          types.Bool         `tfsdk:"restricted"`
+	GlobalGrants        []GlobalGrantModel `tfsdk:"global_grants"`
+	DomainGrant         []UserGrantModel   `tfsdk:"domain_grant"`
+	FirewallGrant       []UserGrantModel   `tfsdk:"firewall_grant"`
+	ImageGrant          []UserGrantModel   `tfsdk:"image_grant"`
+	LinodeGrant         []UserGrantModel   `tfsdk:"linode_grant"`
+	LongviewGrant       []UserGrantModel   `tfsdk:"longview_grant"`
+	NodebalancerGrant   []UserGrantModel   `tfsdk:"nodebalancer_grant"`
+	StackscriptGrant    []UserGrantModel   `tfsdk:"stackscript_grant"`
+	VolumeGrant         []UserGrantModel   `tfsdk:"volume_grant"`
+	DatabaseGrant       []UserGrantModel   `tfsdk:"database_grant"`
+	ID                  types.String       `tfsdk:"id"`
+	PasswordCreated     types.String       `tfsdk:"password_created"`
+	TFAEnabled          types.Bool         `tfsdk:"tfa_enabled"`
+	VerifiedPhoneNumber types.String       `tfsdk:"verified_phone_number"`
+}
+
+type GlobalGrantModel struct {
+	AccountAccess        types.String `tfsdk:"account_access"`
+	AddDatabases         types.Bool   `tfsdk:"add_databases"`
+	AddDomains           types.Bool   `tfsdk:"add_domains"`
+	AddFirewalls         types.Bool   `tfsdk:"add_firewalls"`
+	AddImages            types.Bool   `tfsdk:"add_images"`
+	AddLinodes           types.Bool   `tfsdk:"add_linodes"`
+	AddLongview          types.Bool   `tfsdk:"add_longview"`
+	AddNodebalancers     types.Bool   `tfsdk:"add_nodebalancers"`
+	AddStackScripts      types.Bool   `tfsdk:"add_stackscripts"`
+	AddVolumes           types.Bool   `tfsdk:"add_volumes"`
+	CancelAccount        types.Bool   `tfsdk:"cancel_account"`
+	LongviewSubscription types.Bool   `tfsdk:"longview_subscription"`
+}
+
+type UserGrantModel struct {
+	ID          types.Int64  `tfsdk:"id"`
+	Permissions types.String `tfsdk:"permissions"`
+	Label       types.String `tfsdk:"label"`
+}
+
 func (data *DataSourceModel) ParseUser(
 	ctx context.Context, user *linodego.User,
 ) diag.Diagnostics {
@@ -236,4 +278,44 @@ func flattenGrantEntities(ctx context.Context, entities []linodego.GrantedEntity
 	}
 
 	return &result, nil
+}
+
+func expandGlobalGrant(global GlobalGrantModel) linodego.GlobalUserGrants {
+	result := linodego.GlobalUserGrants{}
+
+	result.AccountAccess = nil
+
+	if !global.AccountAccess.IsNull() && !global.AccountAccess.IsUnknown() {
+		accountAccess := linodego.GrantPermissionLevel(global.AccountAccess.ValueString())
+		result.AccountAccess = &accountAccess
+	}
+
+	result.AddDomains = global.AddDomains.ValueBool()
+	result.AddDatabases = global.AddDatabases.ValueBool()
+	result.AddFirewalls = global.AddFirewalls.ValueBool()
+	result.AddImages = global.AddImages.ValueBool()
+	result.AddLinodes = global.AddLinodes.ValueBool()
+	result.AddLongview = global.AddLongview.ValueBool()
+	result.AddNodeBalancers = global.AddNodebalancers.ValueBool()
+	result.AddStackScripts = global.AddStackScripts.ValueBool()
+	result.AddVolumes = global.AddVolumes.ValueBool()
+	result.CancelAccount = global.CancelAccount.ValueBool()
+	result.LongviewSubscription = global.LongviewSubscription.ValueBool()
+
+	return result
+}
+
+func expandUserGrantsEntities(entities []UserGrantModel) []linodego.EntityUserGrant {
+	result := make([]linodego.EntityUserGrant, len(entities))
+
+	for i, entity := range entities {
+		userGrant := linodego.EntityUserGrant{}
+
+		permissions := linodego.GrantPermissionLevel(entity.Permissions.ValueString())
+		userGrant.ID = int(entity.ID.ValueInt64())
+		userGrant.Permissions = &permissions
+		result[i] = userGrant
+	}
+
+	return result
 }
