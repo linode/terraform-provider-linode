@@ -644,7 +644,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	// Only reboot the instance if implicit reboots are not skipped
-	rebootInstance = rebootInstance && !meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
+	if !meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
+		rebootInstance = false
+	}
 
 	if rebootInstance && len(diskIDLabelMap) > 0 && len(updatedConfigMap) > 0 && bootConfig > 0 {
 		p, err := client.NewEventPoller(ctx, id, linodego.EntityLinode, linodego.ActionLinodeReboot)
