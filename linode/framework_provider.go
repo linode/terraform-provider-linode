@@ -142,6 +142,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		rdns.NewResource,
 		objkey.NewResource,
 		sshkey.NewResource,
+		nb.NewResource,
 	}
 }
 
