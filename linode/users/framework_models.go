@@ -18,7 +18,7 @@ type UserFilterModel struct {
 	Filters frameworkfilter.FiltersModelType `tfsdk:"filter"`
 	Order   types.String                     `tfsdk:"order"`
 	OrderBy types.String                     `tfsdk:"order_by"`
-	Users   []user.UserModel                 `tfsdk:"users"`
+	Users   []user.DataSourceModel           `tfsdk:"users"`
 }
 
 func (data *UserFilterModel) parseUsers(
@@ -26,9 +26,9 @@ func (data *UserFilterModel) parseUsers(
 	client *linodego.Client,
 	users []linodego.User,
 ) diag.Diagnostics {
-	result := make([]user.UserModel, len(users))
+	result := make([]user.DataSourceModel, len(users))
 	for i := range users {
-		var userModel user.UserModel
+		var userModel user.DataSourceModel
 		diags := userModel.ParseUser(ctx, &users[i])
 		if diags.HasError() {
 			return diags

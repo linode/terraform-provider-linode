@@ -75,6 +75,21 @@ type UserGrantModel struct {
 	Label       types.String `tfsdk:"label"`
 }
 
+func (data *UserModel) parseComputedAttrs(
+	ctx context.Context,
+	user *linodego.User,
+) diag.Diagnostics {
+	sshKeys, diags := types.ListValueFrom(ctx, types.StringType, user.SSHKeys)
+	if diags.HasError() {
+		return diags
+	}
+	data.SSHKeys = sshKeys
+
+	data.TFAEnabled = types.BoolValue(user.TFAEnabled)
+	data.VerifiedPhoneNumber = types.StringPointerValue(user.VerifiedPhoneNumber)
+	return nil
+}
+
 func (data *DataSourceModel) ParseUser(
 	ctx context.Context, user *linodego.User,
 ) diag.Diagnostics {
