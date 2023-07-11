@@ -36,6 +36,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/profile"
 	"github.com/linode/terraform-provider-linode/linode/region"
 	"github.com/linode/terraform-provider-linode/linode/regions"
@@ -44,6 +45,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/token"
 	"github.com/linode/terraform-provider-linode/linode/user"
+	"github.com/linode/terraform-provider-linode/linode/users"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
@@ -136,6 +138,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		token.NewResource,
 		stackscript.NewResource,
+		objkey.NewResource,
+		sshkey.NewResource,
 	}
 }
 
@@ -176,6 +180,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		databaseengines.NewDataSource,
 		region.NewDataSource,
 		vlan.NewDataSource,
+		users.NewDataSource,
 		nbnode.NewDataSource,
 		accountsettings.NewDataSource,
 	}

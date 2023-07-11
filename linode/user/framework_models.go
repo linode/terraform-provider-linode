@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,29 +13,40 @@ import (
 )
 
 type DataSourceModel struct {
-	Username          types.String `tfsdk:"username"`
-	SSHKeys           types.List   `tfsdk:"ssh_keys"`
-	Email             types.String `tfsdk:"email"`
-	Restricted        types.Bool   `tfsdk:"restricted"`
-	GlobalGrants      types.List   `tfsdk:"global_grants"`
-	DomainGrant       types.Set    `tfsdk:"domain_grant"`
-	FirewallGrant     types.Set    `tfsdk:"firewall_grant"`
-	ImageGrant        types.Set    `tfsdk:"image_grant"`
-	LinodeGrant       types.Set    `tfsdk:"linode_grant"`
-	LongviewGrant     types.Set    `tfsdk:"longview_grant"`
-	NodebalancerGrant types.Set    `tfsdk:"nodebalancer_grant"`
-	StackscriptGrant  types.Set    `tfsdk:"stackscript_grant"`
-	VolumeGrant       types.Set    `tfsdk:"volume_grant"`
-	DatabaseGrant     types.Set    `tfsdk:"database_grant"`
-	ID                types.String `tfsdk:"id"`
+	Username            types.String `tfsdk:"username"`
+	SSHKeys             types.List   `tfsdk:"ssh_keys"`
+	Email               types.String `tfsdk:"email"`
+	Restricted          types.Bool   `tfsdk:"restricted"`
+	GlobalGrants        types.List   `tfsdk:"global_grants"`
+	DomainGrant         types.Set    `tfsdk:"domain_grant"`
+	FirewallGrant       types.Set    `tfsdk:"firewall_grant"`
+	ImageGrant          types.Set    `tfsdk:"image_grant"`
+	LinodeGrant         types.Set    `tfsdk:"linode_grant"`
+	LongviewGrant       types.Set    `tfsdk:"longview_grant"`
+	NodebalancerGrant   types.Set    `tfsdk:"nodebalancer_grant"`
+	StackscriptGrant    types.Set    `tfsdk:"stackscript_grant"`
+	VolumeGrant         types.Set    `tfsdk:"volume_grant"`
+	DatabaseGrant       types.Set    `tfsdk:"database_grant"`
+	ID                  types.String `tfsdk:"id"`
+	PasswordCreated     types.String `tfsdk:"password_created"`
+	TFAEnabled          types.Bool   `tfsdk:"tfa_enabled"`
+	VerifiedPhoneNumber types.String `tfsdk:"verified_phone_number"`
 }
 
-func (data *DataSourceModel) parseUser(
+func (data *DataSourceModel) ParseUser(
 	ctx context.Context, user *linodego.User,
 ) diag.Diagnostics {
 	data.Username = types.StringValue(user.Username)
 	data.Email = types.StringValue(user.Email)
 	data.Restricted = types.BoolValue(user.Restricted)
+	data.TFAEnabled = types.BoolValue(user.TFAEnabled)
+	data.VerifiedPhoneNumber = types.StringPointerValue(user.VerifiedPhoneNumber)
+
+	if user.PasswordCreated != nil {
+		data.PasswordCreated = types.StringValue(user.PasswordCreated.Format(time.RFC3339))
+	} else {
+		data.PasswordCreated = types.StringNull()
+	}
 
 	sshKeys, diags := types.ListValueFrom(ctx, types.StringType, user.SSHKeys)
 	if diags.HasError() {
@@ -53,7 +65,7 @@ func (data *DataSourceModel) parseUser(
 	return nil
 }
 
-func (data *DataSourceModel) parseUserGrants(
+func (data *DataSourceModel) ParseUserGrants(
 	ctx context.Context, userGrants *linodego.UserGrants,
 ) diag.Diagnostics {
 	// Domain
@@ -128,6 +140,19 @@ func (data *DataSourceModel) parseUserGrants(
 	data.GlobalGrants = *globalGrants
 
 	return nil
+}
+
+func (data *DataSourceModel) ParseNonUserGrants() {
+	data.DatabaseGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.DomainGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.FirewallGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.GlobalGrants = types.ListNull(linodeUserGrantsGlobalObjectType)
+	data.ImageGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.LinodeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.LongviewGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.NodebalancerGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.StackscriptGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.VolumeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 }
 
 func flattenGlobalGrants(ctx context.Context, grants linodego.GlobalUserGrants) (

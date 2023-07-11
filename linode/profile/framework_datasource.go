@@ -14,11 +14,16 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_profile",
+			frameworkDatasourceSchema,
+		),
+	}
 }
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego.Profile) diag.Diagnostics {
@@ -57,24 +62,6 @@ func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego
 	return nil
 }
 
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
-}
-
 type DataSourceModel struct {
 	Email              types.String `tfsdk:"email"`
 	Timezone           types.String `tfsdk:"timezone"`
@@ -89,28 +76,12 @@ type DataSourceModel struct {
 	ID                 types.String `tfsdk:"id"`
 }
 
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_profile"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDatasourceSchema
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
+	client := d.Meta.Client
 
 	var data DataSourceModel
 

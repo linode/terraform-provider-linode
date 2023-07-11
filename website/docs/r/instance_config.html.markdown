@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_instance_config"
 sidebar_current: "docs-linode-resource-instance_config"
 description: |-
-Manages a Linode Instance Config.
+  Manages a Linode Instance Config.
 ---
 
 # linode\_instance\_config

@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_instance_backups"
 sidebar_current: "docs-linode-datasource-instance-backups"
 description: |-
-Provides details about the backups of an Instance.
+  Provides details about the backups of an Instance.
 ---
 
 # Data Source: linode\_instance_backups

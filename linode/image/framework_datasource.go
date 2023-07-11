@@ -5,50 +5,20 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
-}
-
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_image",
+			frameworkDatasourceSchema,
+		),
 	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
-}
-
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_image"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDatasourceSchema
 }
 
 func (d *DataSource) Read(
@@ -56,7 +26,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
+	client := d.Meta.Client
 	var data ImageModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

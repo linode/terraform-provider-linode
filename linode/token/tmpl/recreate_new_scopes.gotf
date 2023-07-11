@@ -1,0 +1,9 @@
+{{ define "token_recreate_new_scopes" }}
+
+resource "linode_token" "foobar" {
+    label = "{{.Label}}"
+    scopes = "{{.Scopes}}"
+    expiry = "2100-01-02T03:04:05Z"
+}
+
+{{ end }}

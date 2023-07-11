@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_database_mysql"
 sidebar_current: "docs-linode-datasource-database-mysql"
 description: |-
-Provides information about a Linode MySQL Database.
+  Provides information about a Linode MySQL Database.
 ---
 
 # Data Source: linode\_database\_mysql

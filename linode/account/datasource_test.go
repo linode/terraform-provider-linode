@@ -8,7 +8,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/account/tmpl"
 )
 
-func TestAccDataSourceAccount_basic(t *testing.T) {
+func TestAccDataSourceAccount_basic_smoke(t *testing.T) {
 	acceptance.OptInTest(t)
 
 	t.Parallel()

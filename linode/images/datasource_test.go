@@ -21,7 +21,7 @@ func init() {
 	testRegion = region
 }
 
-func TestAccDataSourceImages_basic(t *testing.T) {
+func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	imageName := acctest.RandomWithPrefix("tf_test")

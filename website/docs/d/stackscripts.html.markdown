@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_stackscripts"
 sidebar_current: "docs-linode-datasource-stackscripts"
 description: |-
-Provides information about Linode StackScripts that match a set of filters.
+  Provides information about Linode StackScripts that match a set of filters.
 ---
 
 # linode\_stackscripts

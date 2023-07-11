@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_kernel"
 sidebar_current: "docs-linode-datasource-kernel"
 description: |-
-Provides details about a Linode kernel.
+  Provides details about a Linode kernel.
 ---
 
 # Data Source: linode\_kernel

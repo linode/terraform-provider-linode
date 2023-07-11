@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_nodebalancer"
 sidebar_current: "docs-linode-datasource-nodebalancer"
 description: |-
-Provides details about a NodeBalancer.
+  Provides details about a NodeBalancer.
 ---
 
 # Data Source: linode\_nodebalancer
