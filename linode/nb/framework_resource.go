@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
@@ -253,11 +252,8 @@ func upgradeNodebalancerResourceStateV0toV1(
 		resp.Diagnostics.Append(diags...)
 		return
 	}
+	resultList, diags := types.ListValueFrom(ctx, TransferObjectType, []attr.Value{transferObj})
 
-	resultList, diags := basetypes.NewListValue(
-		TransferObjectType,
-		[]attr.Value{transferObj},
-	)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return

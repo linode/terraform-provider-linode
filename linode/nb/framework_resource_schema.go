@@ -2,6 +2,7 @@ package nb
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -24,6 +25,9 @@ var frameworkResourceSchema = schema.Schema{
 		"label": schema.StringAttribute{
 			Description: "The label of the Linode NodeBalancer.",
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(3, 32),
+			},
 		},
 		"region": schema.StringAttribute{
 			Description: "The region where this NodeBalancer will be deployed.",

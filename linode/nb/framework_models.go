@@ -76,7 +76,7 @@ func (data *NodebalancerModel) parseComputedAttrs(
 		StringValue: types.StringValue(nodebalancer.Updated.Format(time.RFC3339)),
 	}
 
-	transfer, diags := parseTransfer(nodebalancer.Transfer)
+	transfer, diags := parseTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
 		return diags
 	}
@@ -87,6 +87,7 @@ func (data *NodebalancerModel) parseComputedAttrs(
 }
 
 func parseTransfer(
+	ctx context.Context,
 	transfer linodego.NodeBalancerTransfer,
 ) (*basetypes.ListValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
@@ -100,10 +101,8 @@ func parseTransfer(
 		return nil, diags
 	}
 
-	resultList, diags := basetypes.NewListValue(
-		TransferObjectType,
-		[]attr.Value{transferObj},
-	)
+	resultList, diags := types.ListValueFrom(ctx, TransferObjectType, []attr.Value{transferObj})
+
 	if diags.HasError() {
 		return nil, diags
 	}
