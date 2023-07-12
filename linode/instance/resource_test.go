@@ -382,6 +382,58 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ConfigInterfaces(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+
+					resource.TestCheckResourceAttr(resName, "config.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.label", "tf-really-cool-vlan"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
+				),
+			},
+			{
+				Config: tmpl.ConfigInterfacesUpdateNoReboot(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "config.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
+					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
+				),
+			},
+			{
+				PreConfig: testAccAssertReboot(t, false, &instance),
+				Config:    tmpl.ConfigInterfacesUpdateNoReboot(t, instanceName, testRegion),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resize_disk", "boot_config_label"},
+			},
+		},
+	})
+}
+
 func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
 	return func() {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client

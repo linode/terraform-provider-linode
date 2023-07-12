@@ -54,8 +54,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"apply_immediately": {
-		Type:        schema.TypeBool,
-		Description: "If true, the instance will be rebooted to update network interfaces.",
-		Optional:    true,
+		Type: schema.TypeBool,
+		Description: "If true, the instance will be rebooted to update network interfaces. " +
+			"This functionality is not affected by the `skip_implicit_reboots` provider argument.",
+		Optional: true,
 	},
 }
