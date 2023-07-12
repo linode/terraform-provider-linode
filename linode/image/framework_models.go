@@ -1,8 +1,9 @@
 package image
 
 import (
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"time"
+
+	"github.com/linode/terraform-provider-linode/linode/helper"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
