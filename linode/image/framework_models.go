@@ -3,10 +3,9 @@ package image
 import (
 	"time"
 
-	"github.com/linode/terraform-provider-linode/linode/helper"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // ImageModel describes the Terraform resource data model to match the
