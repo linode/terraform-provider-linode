@@ -34,7 +34,7 @@ type FiltersModelType []FilterModel
 
 // FilterTypeFunc is a function that takes in a filter name and value,
 // and returns the value converted to the correct filter type.
-type FilterTypeFunc func(value string) (interface{}, error)
+type FilterTypeFunc func(value string) (any, error)
 
 // FilterAttribute is used to configure filtering for an individual
 // response field.
