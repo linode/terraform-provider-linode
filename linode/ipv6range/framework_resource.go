@@ -62,7 +62,8 @@ func (r *Resource) Create(
 	ipv6range, err := client.CreateIPv6Range(ctx, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to create ipv6 range.",
+			fmt.Sprintf("Failed to create ipv6 range for linode_id: %v, or route_target: %v",
+				createOpts.LinodeID, createOpts.RouteTarget),
 			err.Error(),
 		)
 		return
@@ -79,9 +80,6 @@ func (r *Resource) Create(
 	ipv6rangeR, diag := getIPv6Range(ctx, client, data.ID.ValueString())
 
 	if diag != nil {
-		if diag.Summary() == ipv6rangeNotExist {
-			resp.State.RemoveResource(ctx)
-		}
 		resp.Diagnostics.Append(diag)
 		return
 	}
@@ -106,13 +104,17 @@ func (r *Resource) Read(
 		return
 	}
 
-	ipv6range, diag := getIPv6Range(ctx, client, data.ID.ValueString())
+	ipv6range, d := getIPv6Range(ctx, client, data.ID.ValueString())
 
-	if diag != nil {
-		if diag.Summary() == "IPv6 range does not exist." {
+	if d != nil {
+		if d.Summary() == ipv6rangeNotExist {
+			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
+				"Removing the resource from the state.",
+				fmt.Sprintf("IPv6 range \"%s\" does not exist, removing from state.", data.ID.ValueString()),
+			))
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.Append(diag)
+		resp.Diagnostics.Append(d)
 		return
 	}
 
@@ -212,7 +214,7 @@ func getIPv6Range(
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
 			return nil, diag.NewWarningDiagnostic(
 				ipv6rangeNotExist,
-				fmt.Sprintf("IPv6 range \"%s\" does not exist, removing from state.", id),
+				fmt.Sprintf("IPv6 range \"%s\" does not exist.", id),
 			)
 		}
 		return nil, diag.NewErrorDiagnostic(

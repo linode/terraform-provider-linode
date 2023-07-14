@@ -10,6 +10,7 @@ description: |-
 
 Manages a Linode IPv6 range.
 
+When an IPv6 range initially assigned to a linode by Terraform, then user removes it outside of the Terraform and reassigns it to another linode, there is a chance that same range can be assigned to another linode, although the range is randomly selected. In this case, user should be manually tainting it.
 ## Example Usage
 
 ```terraform
