@@ -12,6 +12,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+const ipv6rangeNotExist string = "IPv6 range does not exist."
+
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
@@ -77,7 +79,7 @@ func (r *Resource) Create(
 	ipv6rangeR, diag := getIPv6Range(ctx, client, data.ID.ValueString())
 
 	if diag != nil {
-		if diag.Summary() == "IPv6 range does not exist." {
+		if diag.Summary() == ipv6rangeNotExist {
 			resp.State.RemoveResource(ctx)
 		}
 		resp.Diagnostics.Append(diag)
@@ -209,7 +211,7 @@ func getIPv6Range(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
 			return nil, diag.NewWarningDiagnostic(
-				"IPv6 range does not exist.",
+				ipv6rangeNotExist,
 				fmt.Sprintf("IPv6 range \"%s\" does not exist, removing from state.", id),
 			)
 		}
