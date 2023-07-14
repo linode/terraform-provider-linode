@@ -534,6 +534,15 @@ func ManyLinodes(t *testing.T, label, pubKey, region string) string {
 		})
 }
 
+func UserData(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_userdata", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
 func DataBasic(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{

@@ -2,6 +2,7 @@ package image
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var ImageAttributes = map[string]schema.Attribute{
@@ -11,6 +12,11 @@ var ImageAttributes = map[string]schema.Attribute{
 	},
 	"label": schema.StringAttribute{
 		Description: "A short description of the Image. Labels cannot contain special characters.",
+		Computed:    true,
+	},
+	"capabilities": schema.SetAttribute{
+		Description: "The capabilities of this Image.",
+		ElementType: types.StringType,
 		Computed:    true,
 	},
 	"description": schema.StringAttribute{
