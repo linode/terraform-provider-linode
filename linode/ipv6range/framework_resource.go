@@ -38,7 +38,7 @@ func (r *Resource) Create(
 	var data ResourceModel
 	client := r.Meta.Client
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
