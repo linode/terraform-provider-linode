@@ -63,13 +63,13 @@ func (m *DomainModel) parseComputed(
 		Int64Value: types.Int64Value(int64(domain.RefreshSec)),
 	}
 
-	masterIPs, diags := basetypes.NewSetValueFrom(ctx, types.StringType, domain.MasterIPs)
+	masterIPs, diags := types.SetValueFrom(ctx, types.StringType, domain.MasterIPs)
 	if diags.HasError() {
 		return diags
 	}
 	m.MasterIPs = masterIPs
 
-	axfrIPs, diags := basetypes.NewSetValueFrom(ctx, types.StringType, domain.AXfrIPs)
+	axfrIPs, diags := types.SetValueFrom(ctx, types.StringType, domain.AXfrIPs)
 	if diags.HasError() {
 		return diags
 	}
@@ -79,7 +79,7 @@ func (m *DomainModel) parseComputed(
 	if len(domain.Tags) == 0 {
 		tags = types.SetNull(types.StringType)
 	} else {
-		tags, diags = basetypes.NewSetValueFrom(ctx, types.StringType, domain.Tags)
+		tags, diags = types.SetValueFrom(ctx, types.StringType, domain.Tags)
 		if diags.HasError() {
 			return diags
 		}
@@ -88,15 +88,11 @@ func (m *DomainModel) parseComputed(
 	return nil
 }
 
-func (m *DomainModel) parseNonComputed(
-	ctx context.Context,
-	domain *linodego.Domain,
-) diag.Diagnostics {
+func (m *DomainModel) parseNonComputed(domain *linodego.Domain) {
 	m.Domain = helper.GetValueIfNotNull(domain.Domain)
 	m.Type = helper.GetValueIfNotNull(string(domain.Type))
 	m.Group = helper.GetValueIfNotNull(domain.Group)
 	m.Status = helper.GetValueIfNotNull(string(domain.Status))
 	m.Description = helper.GetValueIfNotNull(domain.Description)
 	m.SOAEmail = helper.GetValueIfNotNull(domain.SOAEmail)
-	return nil
 }

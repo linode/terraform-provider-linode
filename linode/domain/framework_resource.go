@@ -66,7 +66,7 @@ func (r *Resource) Read(
 	}
 
 	data.parseComputed(ctx, domain)
-	data.parseNonComputed(ctx, domain)
+	data.parseNonComputed(domain)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -166,12 +166,17 @@ func (r *Resource) Delete(
 	client := r.Meta.Client
 	err := client.DeleteDomain(ctx, int(id))
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete domain with id %v", id),
-				err.Error(),
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			resp.Diagnostics.AddWarning(
+				"Domain does not exist.",
+				fmt.Sprintf("Domain %v does not exist, removing from state.", id),
 			)
+			return
 		}
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to delete domain with id %v", id),
+			err.Error(),
+		)
 		return
 	}
 }
