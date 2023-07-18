@@ -49,12 +49,12 @@ func StringToInt(s string, diags *diag.Diagnostics) int {
 	return num
 }
 
-func SafeInt64ToInt(number int64) (int, error) {
+func SafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
 	if number > math.MaxInt32 {
-		return 0, fmt.Errorf(
-			"integer %v exceeds the upper bound of int32",
-			number,
+		diags.AddError(
+			"Failed int64 to int conversion",
+			"Integer %v exceeds the upper bound of int32",
 		)
 	}
-	return int(number), nil
+	return int(number)
 }
