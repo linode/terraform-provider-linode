@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -77,10 +76,12 @@ func (r *Resource) Create(
 	// only returns two fields for the newly created range (range and route_target).
 	// We need to make a second call out to the GET endpoint to populate more
 	// computed fields (region, is_bgp, linodes).
-	ipv6rangeR, diag := getIPv6Range(ctx, client, data.ID.ValueString())
-
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	ipv6rangeR, err := client.GetIPv6Range(ctx, data.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to get ipv6 range when create.",
+			err.Error(),
+		)
 		return
 	}
 
@@ -104,17 +105,20 @@ func (r *Resource) Read(
 		return
 	}
 
-	ipv6range, d := getIPv6Range(ctx, client, data.ID.ValueString())
-
-	if d != nil {
-		if d.Summary() == ipv6rangeNotExist {
-			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
-				"Removing the resource from the state.",
+	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
+	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
+			resp.Diagnostics.AddWarning(
+				"IPv6 range does not exist.",
 				fmt.Sprintf("IPv6 range \"%s\" does not exist, removing from state.", data.ID.ValueString()),
-			))
+			)
 			resp.State.RemoveResource(ctx)
+			return
 		}
-		resp.Diagnostics.Append(d)
+		resp.Diagnostics.AddError(
+			"Failed to get ipv6 range.",
+			err.Error(),
+		)
 		return
 	}
 
@@ -202,25 +206,4 @@ func (r *Resource) Delete(
 		)
 		return
 	}
-}
-
-func getIPv6Range(
-	ctx context.Context,
-	client *linodego.Client,
-	id string,
-) (*linodego.IPv6Range, diag.Diagnostic) {
-	ipv6range, err := client.GetIPv6Range(ctx, id)
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
-			return nil, diag.NewWarningDiagnostic(
-				ipv6rangeNotExist,
-				fmt.Sprintf("IPv6 range \"%s\" does not exist.", id),
-			)
-		}
-		return nil, diag.NewErrorDiagnostic(
-			"Failed to get ipv6 range.",
-			err.Error(),
-		)
-	}
-	return ipv6range, nil
 }
