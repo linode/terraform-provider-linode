@@ -54,7 +54,12 @@ func SafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
 	if number > math.MaxInt32 {
 		diags.AddError(
 			"Failed int64 to int conversion",
-			"Integer %v exceeds the upper bound of int32",
+			"Integer %v is larger than the upper bound of int32",
+		)
+	} else if number < math.MinInt32 {
+		diags.AddError(
+			"Failed int64 to int conversion",
+			"Integer %v is smaller than the lower bound of int32",
 		)
 	}
 	return int(number)
