@@ -6,7 +6,7 @@ description: |-
   Manages the settings of a Linode account.
 ---
 
-# linode\_accout\_settings
+# linode\_account\_settings
 
 Manages the settings of a Linode account.
 
