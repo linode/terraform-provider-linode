@@ -16,9 +16,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/nbnode/tmpl"
 )
 
-var (
-	testRegion string
-)
+var testRegion string
 
 func init() {
 	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})

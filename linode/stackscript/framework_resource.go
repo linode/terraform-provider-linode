@@ -86,12 +86,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
+	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -139,7 +139,7 @@ func (r *Resource) Update(
 	}
 
 	// Get the ID from the plan
-	stackScriptID := int(helper.StringToInt64(state.ID.ValueString(), resp.Diagnostics))
+	stackScriptID := helper.StringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -170,7 +170,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	stackscriptID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
+	stackscriptID := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

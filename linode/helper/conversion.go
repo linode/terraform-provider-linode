@@ -3,7 +3,7 @@ package helper
 import (
 	"fmt"
 	"strconv"
-
+	"math"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
@@ -27,15 +27,34 @@ func AnySliceToTyped[T any](obj []any) []T {
 	return result
 }
 
-func StringToInt64(s string, diags diag.Diagnostics) int64 {
+func StringToInt64(s string, diags *diag.Diagnostics) int64 {
 	num, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		diags.AddError(
 			fmt.Sprintf("Invalid number string: %v", s),
 			err.Error(),
 		)
-		return 0
 	}
-
 	return num
+}
+
+func StringToInt(s string, diags *diag.Diagnostics) int {
+	num, err := strconv.Atoi(s)
+	if err != nil {
+		diags.AddError(
+			fmt.Sprintf("Invalid number string: %v", s),
+			err.Error(),
+		)
+	}
+	return num
+}
+
+func SafeInt64ToInt(number int64) (int, error) {
+	if number > math.MaxInt32 {
+		return 0, fmt.Errorf(
+			"integer %v exceeds the upper bound of int32",
+			number,
+		)
+	}
+	return int(number), nil
 }
