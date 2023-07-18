@@ -33,3 +33,6 @@ website/vendor
 
 # Binary exclusions
 terraform-provider-linode
+
+*.tf
+*.hcl
