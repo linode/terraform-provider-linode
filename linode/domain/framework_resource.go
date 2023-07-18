@@ -144,7 +144,9 @@ func (r *Resource) Update(
 
 	if !domainDeepEqual(plan, state) {
 		r.updateDomain(ctx, resp, plan, domainID)
+		return
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(

@@ -5,7 +5,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -42,15 +44,14 @@ var frameworkResourceSchema = schema.Schema{
 			},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
-				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"group": schema.StringAttribute{
 			Description: "The group this Domain belongs to. This is for display purposes only.",
+			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(0, 50),
 			},
-			Optional: true,
 		},
 		"status": schema.StringAttribute{
 			Description: "Used to control whether this Domain is currently being rendered.",
@@ -60,16 +61,19 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"description": schema.StringAttribute{
 			Description: "A description for this Domain. This is for display purposes only.",
+			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(0, 253),
 			},
-			Optional: true,
 		},
 		"master_ips": schema.SetAttribute{
 			ElementType: types.StringType,
 			Description: "The IP addresses representing the master DNS for this Domain.",
 			Optional:    true,
 			Computed:    true,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"axfr_ips": schema.SetAttribute{
 			ElementType: types.StringType,
@@ -77,6 +81,9 @@ var frameworkResourceSchema = schema.Schema{
 				"dangerous, and should be set to an empty list unless you intend to use it.",
 			Optional: true,
 			Computed: true,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"ttl_sec": schema.Int64Attribute{
 			Description: "'Time to Live' - the amount of time in seconds that this Domain's records may be " +
@@ -84,6 +91,9 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:   true,
 			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"retry_sec": schema.Int64Attribute{
 			Description: "The interval, in seconds, at which a failed refresh should be retried. " +
@@ -91,6 +101,9 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:   true,
 			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"expire_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds that may pass before this Domain is no longer " +
@@ -98,6 +111,9 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:   true,
 			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"refresh_sec": schema.Int64Attribute{
 			Description: "The amount of time in seconds before this Domain should be refreshed. " +
@@ -105,6 +121,9 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:   true,
 			Computed:   true,
 			CustomType: customtypes.LinodeDomainSecondsType{},
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"soa_email": schema.StringAttribute{
 			Description: "Start of Authority email address. This is required for master Domains.",
