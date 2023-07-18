@@ -2,8 +2,9 @@ package helper
 
 import (
 	"fmt"
-	"strconv"
 	"math"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
