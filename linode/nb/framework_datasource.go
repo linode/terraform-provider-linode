@@ -57,7 +57,7 @@ func (d *DataSource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.parseNodeBalancer(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.ParseNodeBalancer(ctx, nodebalancer)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

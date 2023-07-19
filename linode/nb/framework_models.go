@@ -12,10 +12,11 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func (data *DataSourceModel) parseNodeBalancer(
+func (data *DataSourceModel) ParseNodeBalancer(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 ) diag.Diagnostics {
+	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))

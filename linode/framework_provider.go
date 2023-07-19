@@ -33,6 +33,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
+	"github.com/linode/terraform-provider-linode/linode/nbs"
 	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/linode/objcluster"
@@ -186,6 +187,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vlan.NewDataSource,
 		users.NewDataSource,
 		nbnode.NewDataSource,
+		nbs.NewDataSource,
 		accountsettings.NewDataSource,
 	}
 }

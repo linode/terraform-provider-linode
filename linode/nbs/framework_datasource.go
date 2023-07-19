@@ -1,0 +1,73 @@
+package nbs
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+)
+
+type DataSource struct {
+	helper.BaseDataSource
+}
+
+func NewDataSource() datasource.DataSource {
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_nodebalancers",
+			frameworkDatasourceSchema,
+		),
+	}
+}
+
+func (d *DataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
+	var data NodeBalancerFilterModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id, diag := filterConfig.GenerateID(data.Filters)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+		return
+	}
+	data.ID = id
+
+	for _, v := range data.Filters {
+		tflog.Info(ctx, v.Name.String())
+	}
+
+	result, diag := filterConfig.GetAndFilter(
+		ctx, d.Meta.Client, data.Filters, listNodeBalancers,
+		data.Order, data.OrderBy)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+		return
+	}
+
+	data.parseNodeBalancers(ctx, helper.AnySliceToTyped[linodego.NodeBalancer](result))
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func listNodeBalancers(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
+	nbs, err := client.ListNodeBalancers(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return helper.TypedSliceToAny(nbs), nil
+}
