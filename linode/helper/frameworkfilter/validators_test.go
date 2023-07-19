@@ -35,7 +35,7 @@ func TestFilterableValidator_filter(t *testing.T) {
 		t.Fatal("summary mismatch")
 	}
 
-	expectedError := "Field \"fake\" is not filterable.\nFilterable Fields: api_bar, api_foo, bar, foo"
+	expectedError := "Field \"fake\" is not filterable.\nFilterable Fields: api_bar, api_foo, api_foo_bool, api_foo_int, bar, foo"
 	if response.Diagnostics[0].Detail() != expectedError {
 		t.Fatal(cmp.Diff(response.Diagnostics[0].Detail(), expectedError))
 	}
@@ -67,7 +67,7 @@ func TestFilterableValidator_order(t *testing.T) {
 	}
 
 	expectedError := "Field \"foo\" cannot be used in order_by as it is not API filterable.\n" +
-		"API Filterable Fields: api_bar, api_foo"
+		"API Filterable Fields: api_bar, api_foo, api_foo_bool, api_foo_int"
 	if response.Diagnostics[0].Detail() != expectedError {
 		t.Fatal(cmp.Diff(response.Diagnostics[0].Detail(), expectedError))
 	}

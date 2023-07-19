@@ -12,11 +12,13 @@ import (
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"database_id": schema.Int64Attribute{
+			DeprecationMessage: "Configure `id` instead. This attribute will be removed " +
+				"in the next major version of the provider.",
 			Description: "The ID of the MySQL database. DEPRECATED: Use ID instead",
 			Optional:    true,
 		},
 		"engine_id": schema.StringAttribute{
-			Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.26)",
+			Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.30)",
 			Computed:    true,
 		},
 		"label": schema.StringAttribute{

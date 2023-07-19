@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_database_mysql"
 sidebar_current: "docs-linode-datasource-database-mysql"
 description: |-
-Provides information about a Linode MySQL Database.
+  Provides information about a Linode MySQL Database.
 ---
 
 # Data Source: linode\_database\_mysql
@@ -44,7 +44,7 @@ The `linode_database_mysql` data source exports the following attributes:
 
 * `engine` - The Managed Database engine. (e.g. `mysql`)
 
-* `engine_id` - The Managed Database engine in engine/version format. (e.g. `mysql/8.0.26`)
+* `engine_id` - The Managed Database engine in engine/version format. (e.g. `mysql/8.0.30`)
 
 * `host_primary` - The primary host for the Managed Database.
 

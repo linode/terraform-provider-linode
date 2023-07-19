@@ -38,46 +38,64 @@ var linodeUserGrantsEntitySet = schema.SetAttribute{
 	ElementType: linodeUserGrantsEntityObjectType,
 }
 
-var frameworkDatasourceSchema = schema.Schema{
-	Attributes: map[string]schema.Attribute{
-		"username": schema.StringAttribute{
-			Description: "This User's username. This is used for logging in, and may also be displayed alongside " +
-				"actions the User performs (for example, in Events or public StackScripts).",
-			Required: true,
-		},
-		"ssh_keys": schema.ListAttribute{
-			Description: "A list of SSH Key labels added by this User. These are the keys that will be deployed " +
-				"if this User is included in the authorized_users field of a create Linode, rebuild Linode, or " +
-				"create Disk request.",
-			Computed:    true,
-			ElementType: types.StringType,
-		},
-		"email": schema.StringAttribute{
-			Description: "The email address for this User, for account management communications, and may be used " +
-				"for other communications as configured.",
-			Computed: true,
-		},
-		"restricted": schema.BoolAttribute{
-			Description: "If true, this User must be granted access to perform actions or access entities on this Account.",
-			Computed:    true,
-		},
-		"global_grants": schema.ListAttribute{
-			Description: "A structure containing the Account-level grants a User has.",
-			Computed:    true,
-			ElementType: linodeUserGrantsGlobalObjectType,
-		},
-		"database_grant":     linodeUserGrantsEntitySet,
-		"domain_grant":       linodeUserGrantsEntitySet,
-		"firewall_grant":     linodeUserGrantsEntitySet,
-		"image_grant":        linodeUserGrantsEntitySet,
-		"linode_grant":       linodeUserGrantsEntitySet,
-		"longview_grant":     linodeUserGrantsEntitySet,
-		"nodebalancer_grant": linodeUserGrantsEntitySet,
-		"stackscript_grant":  linodeUserGrantsEntitySet,
-		"volume_grant":       linodeUserGrantsEntitySet,
-		"id": schema.StringAttribute{
-			Description: "Unique identifier for this DataSource.",
-			Computed:    true,
-		},
+var UserAttributes = map[string]schema.Attribute{
+	"username": schema.StringAttribute{
+		Description: "This User's username. This is used for logging in, and may also be displayed alongside " +
+			"actions the User performs (for example, in Events or public StackScripts).",
+		Required: true,
 	},
+	"ssh_keys": schema.ListAttribute{
+		Description: "A list of SSH Key labels added by this User. These are the keys that will be deployed " +
+			"if this User is included in the authorized_users field of a create Linode, rebuild Linode, or " +
+			"create Disk request.",
+		Computed:    true,
+		ElementType: types.StringType,
+	},
+	"email": schema.StringAttribute{
+		Description: "The email address for this User, for account management communications, and may be used " +
+			"for other communications as configured.",
+		Computed: true,
+	},
+	"restricted": schema.BoolAttribute{
+		Description: "If true, this User must be granted access to perform actions or access entities on this Account.",
+		Computed:    true,
+	},
+	"global_grants": schema.ListAttribute{
+		Description: "A structure containing the Account-level grants a User has.",
+		Computed:    true,
+		ElementType: linodeUserGrantsGlobalObjectType,
+	},
+	"database_grant":     linodeUserGrantsEntitySet,
+	"domain_grant":       linodeUserGrantsEntitySet,
+	"firewall_grant":     linodeUserGrantsEntitySet,
+	"image_grant":        linodeUserGrantsEntitySet,
+	"linode_grant":       linodeUserGrantsEntitySet,
+	"longview_grant":     linodeUserGrantsEntitySet,
+	"nodebalancer_grant": linodeUserGrantsEntitySet,
+	"stackscript_grant":  linodeUserGrantsEntitySet,
+	"volume_grant":       linodeUserGrantsEntitySet,
+	"id": schema.StringAttribute{
+		Description: "Unique identifier for this DataSource.",
+		Computed:    true,
+	},
+	"password_created": schema.StringAttribute{
+		Description: "The date and time when this User’s current password was created." +
+			"User passwords are first created during the Account sign-up process, " +
+			"and updated using the Reset Password webpage." +
+			"null if this User has not created a password yet.",
+		Computed: true,
+	},
+	"tfa_enabled": schema.BoolAttribute{
+		Description: "A boolean value indicating if the User has Two Factor Authentication (TFA) enabled.",
+		Computed:    true,
+	},
+	"verified_phone_number": schema.StringAttribute{
+		Description: "The phone number verified for this User Profile with the Phone Number Verify command." +
+			"null if this User Profile has no verified phone number.",
+		Computed: true,
+	},
+}
+
+var frameworkDatasourceSchema = schema.Schema{
+	Attributes: UserAttributes,
 }

@@ -47,6 +47,7 @@ func flattenInstance(
 	result["tags"] = instance.Tags
 	result["image"] = instance.Image
 	result["host_uuid"] = instance.HostUUID
+	result["has_user_data"] = instance.HasUserData
 
 	result["backups"] = flattenInstanceBackups(*instance)
 	result["specs"] = flattenInstanceSpecs(*instance)

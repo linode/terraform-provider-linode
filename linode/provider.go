@@ -33,9 +33,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/linode/obj"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/linode/objkey"
 	"github.com/linode/terraform-provider-linode/linode/rdns"
-	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
@@ -84,6 +82,12 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
+			},
+
+			"skip_implicit_reboots": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If true, Linode Instances will not be rebooted on config and interface changes.",
 			},
 
 			"disable_internal_cache": {
@@ -146,11 +150,9 @@ func Provider() *schema.Provider {
 			"linode_nodebalancer":             nb.Resource(),
 			"linode_nodebalancer_node":        nbnode.Resource(),
 			"linode_nodebalancer_config":      nbconfig.Resource(),
-			"linode_object_storage_key":       objkey.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
 			"linode_rdns":                     rdns.Resource(),
-			"linode_sshkey":                   sshkey.Resource(),
 			"linode_user":                     user.Resource(),
 			"linode_volume":                   volume.Resource(),
 		},
@@ -243,6 +245,7 @@ func providerConfigure(
 	config := &helper.Config{
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
+		SkipImplicitReboots:    d.Get("skip_implicit_reboots").(bool),
 
 		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 

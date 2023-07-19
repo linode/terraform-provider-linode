@@ -10,7 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domain/tmpl"
 )
 
-func TestAccDataSourceDomain_basic(t *testing.T) {
+func TestAccDataSourceDomain_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_domain.foobar"

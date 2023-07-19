@@ -9,45 +9,16 @@ import (
 )
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
-}
-
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_stackscripts",
+			frameworkDatasourceSchema,
+		),
 	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
-}
-
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_stackscripts"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDatasourceSchema
 }
 
 func (d *DataSource) Read(
@@ -70,7 +41,7 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.client, data.Filters, listStackscripts,
+		ctx, d.Meta.Client, data.Filters, listStackscripts,
 		data.Order, data.OrderBy)
 	if diag != nil {
 		resp.Diagnostics.Append(diag)

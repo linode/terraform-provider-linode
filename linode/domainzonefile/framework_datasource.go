@@ -13,11 +13,16 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			"linode_domain_zonefile",
+			frameworkDatasourceSchema,
+		),
+	}
 }
 
 type DataSource struct {
-	meta *helper.FrameworkProviderMeta
+	helper.BaseDataSource
 }
 
 func (data *DataSourceModel) parseDomainZoneFile(
@@ -40,42 +45,10 @@ func (data *DataSourceModel) parseDomainZoneFile(
 	return nil
 }
 
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	d.meta = helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-}
-
 type DataSourceModel struct {
 	DomainID types.Int64  `tfsdk:"domain_id"`
 	ZoneFile types.List   `tfsdk:"zone_file"`
 	ID       types.String `tfsdk:"id"`
-}
-
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_domain_zonefile"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDatasourceSchema
 }
 
 func (d *DataSource) Read(
@@ -83,7 +56,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.meta.Client
+	client := d.Meta.Client
 
 	var data DataSourceModel
 
@@ -92,7 +65,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	retry := time.Duration(d.meta.Config.EventPollMilliseconds.ValueInt64())
+	retry := time.Duration(d.Meta.Config.EventPollMilliseconds.ValueInt64())
 
 	zf, diags := getZoneFileRetry(ctx, client, int(data.DomainID.ValueInt64()), retry)
 	if diags.HasError() {

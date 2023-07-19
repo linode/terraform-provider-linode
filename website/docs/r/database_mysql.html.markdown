@@ -20,7 +20,7 @@ Creating a simple MySQL database instance:
 ```hcl
 resource "linode_database_mysql" "foobar" {
   label = "mydatabase"
-  engine_id = "mysql/8.0.26"
+  engine_id = "mysql/8.0.30"
   region = "us-southeast"
   type = "g6-nanode-1"
 }
@@ -31,7 +31,7 @@ Creating a complex MySQL database instance:
 ```hcl
 resource "linode_database_mysql" "foobar" {
   label = "mydatabase"
-  engine_id = "mysql/8.0.26"
+  engine_id = "mysql/8.0.30"
   region = "us-southeast"
   type = "g6-nanode-1"
 
@@ -55,7 +55,7 @@ resource "linode_database_mysql" "foobar" {
 
 The following arguments are supported:
 
-* `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `mysql/8.0.26`)
+* `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `mysql/8.0.30`)
 
 * `label` - (Required) A unique, user-defined string referring to the Managed Database.
 
