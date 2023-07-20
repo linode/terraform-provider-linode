@@ -229,6 +229,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("interface") {
 		putRequest.Interfaces = expandInterfaces(d.Get("interface").([]any))
+		shouldUpdate = true
 	}
 
 	if shouldUpdate {
