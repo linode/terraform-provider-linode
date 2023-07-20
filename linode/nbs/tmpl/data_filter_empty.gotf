@@ -1,0 +1,12 @@
+{{ define "nbs_data_filter_empty" }}
+
+{{ template "nbs_data_base" . }}
+
+data "linode_nodebalancers" "nbs" {
+    filter {
+        name = "region"
+        values = ["not-a-real-region"]
+    }
+}
+
+{{ end }}

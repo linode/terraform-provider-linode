@@ -2,7 +2,6 @@ package nbs
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 	"github.com/linode/terraform-provider-linode/linode/nb"
 )
@@ -20,11 +19,6 @@ var frameworkDatasourceSchema = schema.Schema{
 		"id": schema.StringAttribute{
 			Description: "The data source's unique ID.",
 			Computed:    true,
-		},
-		"tags": schema.SetAttribute{
-			Description: "The data source's tags.",
-			Optional:    true,
-			ElementType: basetypes.SetType{ElemType: basetypes.StringType{}},
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),

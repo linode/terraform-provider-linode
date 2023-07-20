@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -40,10 +39,6 @@ func (d *DataSource) Read(
 		return
 	}
 	data.ID = id
-
-	for _, v := range data.Filters {
-		tflog.Info(ctx, v.Name.String())
-	}
 
 	result, diag := filterConfig.GetAndFilter(
 		ctx, d.Meta.Client, data.Filters, listNodeBalancers,

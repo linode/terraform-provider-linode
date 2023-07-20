@@ -1,0 +1,12 @@
+{{ define "nbs_data_filter" }}
+
+{{ template "nbs_data_base" . }}
+
+data "linode_nodebalancers" "nbs" {
+    filter {
+        name   = "tags" 
+        values = ["tf_test_2"]
+    }
+}
+
+{{ end }}

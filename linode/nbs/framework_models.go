@@ -14,7 +14,6 @@ import (
 type NodeBalancerFilterModel struct {
 	ID            types.String                     `tfsdk:"id"`
 	Filters       frameworkfilter.FiltersModelType `tfsdk:"filter"`
-	Tags          types.Set                        `tfsdk:"tags"`
 	Order         types.String                     `tfsdk:"order"`
 	OrderBy       types.String                     `tfsdk:"order_by"`
 	NodeBalancers []nb.DataSourceModel             `tfsdk:"nodebalancers"`

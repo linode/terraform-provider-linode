@@ -18,3 +18,27 @@ func DataBasic(t *testing.T, label, region string) string {
 			Region: region,
 		})
 }
+
+func DataFilterEmpty(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nbs_data_filter_empty", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
+
+func DataFilter(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nbs_data_filter", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
+
+func DataOrder(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nbs_data_order", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
