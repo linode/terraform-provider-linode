@@ -201,7 +201,7 @@ func (r *Resource) Delete(
 	}
 
 	if err := client.DeleteIPv6Range(ctx, data.ID.ValueString()); err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
 			resp.Diagnostics.AddWarning(
 				"IPv6 range does not exist.",
 				fmt.Sprintf("IPv6 range \"%s\" does not exist, removing from state.", data.ID.ValueString()),
