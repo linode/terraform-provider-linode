@@ -9,6 +9,7 @@ resource "linode_instance" "fooinst" {
     interface {
         label = "{{.VLANLabel}}"
         purpose = "vlan"
+        ipam_address = "10.0.0.1/24"
     }
 }
 

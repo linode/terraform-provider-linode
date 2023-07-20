@@ -12,6 +12,10 @@ on:
       pull_request_number:
         description: 'The number of the PR.'
         required: false
+      run_long_tests:
+        description: 'Setting this value will skip long running tests (e.g. Database related cases): (true|false)'
+        required: false
+
 
 name: Integration tests on PR
 
@@ -50,6 +54,7 @@ jobs:
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
+          RUN_LONG_TESTS: ${{ inputs.run_long_tests }}
       
       - name: Get the hash value of the latest commit from the PR branch
         uses: octokit/graphql-action@v2.x

@@ -23,6 +23,7 @@ resource "linode_instance" "foobar" {
         interface {
             purpose = "vlan"
             label = "tf-really-cool-vlan"
+            ipam_address = "10.0.0.2/24"
         }
         devices {
             sda {
