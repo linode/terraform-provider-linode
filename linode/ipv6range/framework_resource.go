@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
-
-const ipv6rangeNotExist string = "IPv6 range does not exist."
 
 func NewResource() resource.Resource {
 	return &Resource{
@@ -183,6 +182,9 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+	} else {
+		req.State.GetAttribute(ctx, path.Root("is_bgp"), &plan.IsBGP)
+		req.State.GetAttribute(ctx, path.Root("linodes"), &plan.Linodes)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
