@@ -46,8 +46,10 @@ func (r *Resource) Create(
 		PrefixLength: int(data.PrefixLength.ValueInt64()),
 	}
 
+	linodeIdConfigured := false
 	if !data.LinodeId.IsNull() && !data.LinodeId.IsUnknown() {
 		createOpts.LinodeID = int(data.LinodeId.ValueInt64())
+		linodeIdConfigured = true
 	} else if !data.RouteTarget.IsNull() && !data.RouteTarget.IsUnknown() {
 		createOpts.RouteTarget = strings.Split(data.RouteTarget.ValueString(), "/")[0]
 	} else {
@@ -60,11 +62,17 @@ func (r *Resource) Create(
 
 	ipv6range, err := client.CreateIPv6Range(ctx, createOpts)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to create ipv6 range for linode_id: %v, or route_target: %v",
-				createOpts.LinodeID, createOpts.RouteTarget),
-			err.Error(),
-		)
+		if linodeIdConfigured {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to create ipv6 range for linode_id: %v", createOpts.LinodeID),
+				err.Error(),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to create ipv6 range for route_target: %v", createOpts.RouteTarget),
+				err.Error(),
+			)
+		}
 		return
 	}
 
@@ -175,8 +183,8 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(

@@ -5,8 +5,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -40,14 +42,16 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"is_bgp": schema.BoolAttribute{
-			Description: "Whether this IPv6 range is shared.",
-			Computed:    true,
+			Description:   "Whether this IPv6 range is shared.",
+			Computed:      true,
+			PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 		},
 		"linodes": schema.SetAttribute{
 			Description: "A list of Linodes targeted by this IPv6 range." +
 				"Includes Linodes with IP sharing.",
-			ElementType: types.Int64Type,
-			Computed:    true,
+			ElementType:   types.Int64Type,
+			Computed:      true,
+			PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()},
 		},
 		"range": schema.StringAttribute{
 			Description:   "The IPv6 range of addresses in this pool.",
