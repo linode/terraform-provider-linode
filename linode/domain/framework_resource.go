@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -41,9 +42,6 @@ func (r *Resource) Read(
 	}
 
 	id := data.ID.ValueInt64()
-	if resp.Diagnostics.HasError() {
-		return
-	}
 
 	domain, err := client.GetDomain(ctx, int(id))
 	if err != nil {
@@ -142,9 +140,13 @@ func (r *Resource) Update(
 
 	domainID := int(state.ID.ValueInt64())
 
+	client := r.Meta.Client
 	if !domainDeepEqual(plan, state) {
-		r.updateDomain(ctx, resp, plan, domainID)
-		return
+		plan.updateDomain(ctx, resp, client, domainID)
+	} else {
+		req.State.GetAttribute(ctx, path.Root("master_ips"), &plan.MasterIPs)
+		req.State.GetAttribute(ctx, path.Root("axfr_ips"), &plan.AXFRIPs)
+		req.State.GetAttribute(ctx, path.Root("tags"), &plan.Tags)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -161,9 +163,6 @@ func (r *Resource) Delete(
 		return
 	}
 	id := data.ID.ValueInt64()
-	if resp.Diagnostics.HasError() {
-		return
-	}
 
 	client := r.Meta.Client
 	err := client.DeleteDomain(ctx, int(id))
@@ -183,13 +182,12 @@ func (r *Resource) Delete(
 	}
 }
 
-func (r *Resource) updateDomain(
+func (plan *DomainModel) updateDomain(
 	ctx context.Context,
 	resp *resource.UpdateResponse,
-	plan DomainModel,
+	client *linodego.Client,
 	domainID int,
 ) {
-	client := r.Meta.Client
 	updateOpts := linodego.DomainUpdateOptions{
 		Domain:      plan.Domain.ValueString(),
 		Type:        linodego.DomainType(plan.Type.ValueString()),
@@ -233,5 +231,4 @@ func (r *Resource) updateDomain(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
