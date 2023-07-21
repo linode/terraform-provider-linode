@@ -4,9 +4,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
-var transferObjectType = types.ObjectType{
+var TransferObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"in":    types.Float64Type,
 		"out":   types.Float64Type,
@@ -47,15 +48,17 @@ var frameworkDatasourceSchema = schema.Schema{
 		"created": schema.StringAttribute{
 			Description: "When this NodeBalancer was created.",
 			Computed:    true,
+			CustomType:  customtypes.RFC3339TimeStringType{},
 		},
 		"updated": schema.StringAttribute{
 			Description: "When this NodeBalancer was last updated.",
 			Computed:    true,
+			CustomType:  customtypes.RFC3339TimeStringType{},
 		},
 		"transfer": schema.ListAttribute{
 			Description: "Information about the amount of transfer this NodeBalancer has had so far this month.",
 			Computed:    true,
-			ElementType: transferObjectType,
+			ElementType: TransferObjectType,
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
