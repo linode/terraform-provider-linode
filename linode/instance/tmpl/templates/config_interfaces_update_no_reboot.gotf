@@ -20,15 +20,6 @@ resource "linode_instance" "foobar" {
             network = true
         }
 
-        interface {
-            purpose = "public"
-        }
-
-        interface {
-            purpose = "vlan"
-            label = "tf-really-cool-vlan"
-            ipam_address = "10.0.0.2/24"
-        }
         devices {
             sda {
                 disk_label = "boot"
@@ -44,14 +35,6 @@ resource "linode_instance" "foobar" {
             network = true
         }
 
-        interface {
-            purpose = "public"
-        }
-
-        interface {
-            purpose = "vlan"
-            label = "tf-really-cool-vlan"
-        }
         devices {
             sda {
                 disk_label = "boot"

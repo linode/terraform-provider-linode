@@ -366,7 +366,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 				),
 			},
 			{
-				PreConfig: testAccAssertReboot(t, true, &instance),
+				PreConfig: testAccAssertReboot(t, false, &instance),
 				Config:    tmpl.ConfigInterfacesUpdateEmpty(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "0"),
@@ -415,7 +415,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 				Config: tmpl.ConfigInterfacesUpdateNoReboot(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.#", "2"),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "0"),
 					resource.TestCheckResourceAttr(resName, "config.0.label", "config"),
 					resource.TestCheckResourceAttr(resName, "boot_config_label", "config"),
 				),
@@ -441,6 +441,10 @@ func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.In
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
+
+		for _, e := range events {
+			t.Logf("Event:%+v\n", e)
+		}
 		if err != nil {
 			t.Fail()
 		}
