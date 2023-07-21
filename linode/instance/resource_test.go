@@ -356,7 +356,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 				),
 			},
 			{
-				PreConfig: testAccAssertReboot(t, false, &instance),
+				PreConfig: testAccAssertReboot(t, true, &instance),
 				Config:    tmpl.ConfigInterfacesUpdate(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.#", "2"),
@@ -366,7 +366,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 				),
 			},
 			{
-				PreConfig: testAccAssertReboot(t, false, &instance),
+				PreConfig: testAccAssertReboot(t, true, &instance),
 				Config:    tmpl.ConfigInterfacesUpdateEmpty(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "0"),
@@ -442,9 +442,6 @@ func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.In
 
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
 
-		for _, e := range events {
-			t.Logf("Event:%+v\n", e)
-		}
 		if err != nil {
 			t.Fail()
 		}
@@ -2018,6 +2015,7 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 }
 
 func TestAccResourceInstance_userData(t *testing.T) {
+	t.Skip("Skipping this test due to: 'Error creating a Linode Instance: [400] [metadata] The Metadata service is not currently available in this datacenter.'")
 	t.Parallel()
 
 	resName := "linode_instance.foobar"

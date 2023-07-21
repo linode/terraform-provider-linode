@@ -655,7 +655,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	// Only reboot the instance if implicit reboots are not skipped
-	if !meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
+	if meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
 		rebootInstance = false
 	}
 
