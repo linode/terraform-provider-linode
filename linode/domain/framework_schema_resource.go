@@ -29,6 +29,9 @@ var frameworkResourceSchema = schema.Schema{
 					path.MatchRoot("domain"),
 				}...),
 			},
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"domain": schema.StringAttribute{
 			Description: "The domain this Domain represents. These must be unique in our system; you cannot have " +
