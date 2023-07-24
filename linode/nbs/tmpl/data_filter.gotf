@@ -4,8 +4,8 @@
 
 data "linode_nodebalancers" "nbs" {
     filter {
-        name   = "tags" 
-        values = ["tf_test_2"]
+        name   = "label" 
+        values = ["{{.Label}}-0"]
     }
 }
 

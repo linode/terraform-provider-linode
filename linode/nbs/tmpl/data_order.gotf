@@ -7,8 +7,8 @@ data "linode_nodebalancers" "nbs" {
     order = "asc"
 
     filter {
-        name = "tags"
-        values = ["tf_test_1"]
+        name   = "label" 
+        values = ["{{.Label}}-0", "{{.Label}}-1"]
     }
 }
 
