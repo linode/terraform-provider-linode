@@ -12,6 +12,9 @@ var filterConfig = frameworkfilter.Config{
 	"ipv4":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"ipv6":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+
+	"hostname":             {TypeFunc: frameworkfilter.FilterTypeString},
+	"client_conn_throttle": {TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
