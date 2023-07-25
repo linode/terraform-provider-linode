@@ -81,6 +81,12 @@ func Provider() *schema.Provider {
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
 
+			"skip_implicit_reboots": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If true, Linode Instances will not be rebooted on config and interface changes.",
+			},
+
 			"disable_internal_cache": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -233,6 +239,7 @@ func providerConfigure(
 	config := &helper.Config{
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
+		SkipImplicitReboots:    d.Get("skip_implicit_reboots").(bool),
 
 		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 

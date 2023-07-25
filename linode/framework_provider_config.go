@@ -164,6 +164,10 @@ func (fp *FrameworkProvider) HandleDefaults(
 		lpm.SkipInstanceDeletePoll = types.BoolValue(false)
 	}
 
+	if lpm.SkipImplicitReboots.IsNull() {
+		lpm.SkipImplicitReboots = types.BoolValue(false)
+	}
+
 	if lpm.DisableInternalCache.IsNull() {
 		lpm.DisableInternalCache = types.BoolValue(false)
 	}

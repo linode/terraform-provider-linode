@@ -38,6 +38,7 @@ type Config struct {
 
 	SkipInstanceReadyPoll        bool
 	SkipInstanceDeletePoll       bool
+	SkipImplicitReboots          bool
 	DisableInternalCache         bool
 	MinRetryDelayMilliseconds    int
 	MaxRetryDelayMilliseconds    int

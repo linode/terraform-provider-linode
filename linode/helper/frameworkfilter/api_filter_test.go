@@ -38,6 +38,18 @@ func TestConstructFilterString(t *testing.T) {
 				types.StringValue("wow"),
 			},
 		},
+		{
+			Name: types.StringValue("api_foo_int"),
+			Values: []types.String{
+				types.StringValue("123"),
+			},
+		},
+		{
+			Name: types.StringValue("api_foo_bool"),
+			Values: []types.String{
+				types.StringValue("true"),
+			},
+		},
 	}
 
 	expectedJSONData := map[string]any{
@@ -56,6 +68,20 @@ func TestConstructFilterString(t *testing.T) {
 				"+or": []map[string]any{
 					{
 						"api_bar": "test",
+					},
+				},
+			},
+			{
+				"+or": []map[string]any{
+					{
+						"api_foo_int": 123,
+					},
+				},
+			},
+			{
+				"+or": []map[string]any{
+					{
+						"api_foo_bool": true,
 					},
 				},
 			},

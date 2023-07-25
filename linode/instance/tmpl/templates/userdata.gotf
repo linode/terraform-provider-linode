@@ -1,0 +1,16 @@
+{{ define "instance_userdata" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    image = "{{.Image}}"
+    region = "{{ .Region }}"
+    root_pass = "myr00tp@ssw0rd!!!"
+    booted = false
+
+    metadata {
+        user_data = base64encode("myuserdata")
+    }
+}
+
+{{ end }}
