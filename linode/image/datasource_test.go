@@ -28,7 +28,7 @@ func TestAccDataSourceImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "type", "manual"),
 					resource.TestCheckResourceAttr(resourceName, "size", "1300"),
 					resource.TestCheckResourceAttr(resourceName, "vendor", "Debian"),
-					resource.TestCheckResourceAttrSet(resourceName, "capabilities"),
+					resource.TestCheckResourceAttrSet(resourceName, "capabilities.#"),
 				),
 			},
 		},

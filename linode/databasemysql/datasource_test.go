@@ -1,6 +1,7 @@
 package databasemysql_test
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -11,6 +12,9 @@ import (
 )
 
 func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	resName := "data.linode_database_mysql.foobar"

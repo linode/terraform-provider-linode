@@ -2,15 +2,15 @@ package databasemysqlbackups_test
 
 import (
 	"context"
-	"log"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"log"
+	"os"
+	"testing"
 )
 
 var (
@@ -40,6 +40,9 @@ func init() {
 }
 
 func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	var db linodego.MySQLDatabase

@@ -12,4 +12,4 @@ resource "linode_instance_disk" "foobar" {
   size = {{ .Size }}
 }
 
-{{ end }}
+{{ end }}w
