@@ -1537,7 +1537,7 @@ func TestAccResourceInstance_diskSlotReorder(t *testing.T) {
 					resource.TestCheckResourceAttrPair(resName, "config.0.devices.0.sdb.0.disk_id", resName, "disk.0.id"),
 
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					resource.TestCheckResourceAttr(resName, "status", "offline"),
+					resource.TestCheckResourceAttr(resName, "status", "running"),
 				),
 			},
 		},
