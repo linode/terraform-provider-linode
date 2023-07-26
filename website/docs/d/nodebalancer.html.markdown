@@ -36,11 +36,17 @@ In addition to all arguments above, the following attributes are exported:
 
 * `tags` - A list of tags applied to this object. Tags are for organizational purposes only.
 
-* `hostname` - This NodeBalancer's hostname, ending with .nodebalancer.linode.com
+* `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com
 
 * `ipv4` - The Public IPv4 Address of this NodeBalancer
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
+
+* `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
+
+* `created` – When this Linode NodeBalancer was created
+
+* `updated` – When this Linode NodeBalancer was last updated
 
 * [`transfer`](#transfer) - The network transfer stats for the current month
 
