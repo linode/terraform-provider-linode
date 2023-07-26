@@ -10,10 +10,10 @@ var filterConfig = frameworkfilter.Config{
 	"label":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"tags":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"ipv4":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"ipv6":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"region": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
 	"hostname":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"ipv6":                 {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"client_conn_throttle": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
