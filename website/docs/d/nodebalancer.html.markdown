@@ -32,6 +32,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `client_conn_throttle` - Throttle connections per second (0-20).
 
+* `created` – When this Linode NodeBalancer was created
+
 * `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached.
 
 * `tags` - A list of tags applied to this object. Tags are for organizational purposes only.
@@ -44,11 +46,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
-* `created` – When this Linode NodeBalancer was created
+* [`transfer`](#transfer) - The network transfer stats for the current month
 
 * `updated` – When this Linode NodeBalancer was last updated
-
-* [`transfer`](#transfer) - The network transfer stats for the current month
 
 ### transfer
 

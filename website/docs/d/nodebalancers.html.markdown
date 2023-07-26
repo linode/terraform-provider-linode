@@ -54,11 +54,11 @@ The following arguments are supported:
 
 Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and will export the following attributes:
 
-* `id` - The Linode NodeBalancer's unique ID
-
 * `label` - The label of the Linode NodeBalancer
 
 * `client_conn_throttle` - Throttle connections per second (0-20)
+
+* `created` – When this Linode NodeBalancer was created
 
 * `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached
 
@@ -66,17 +66,17 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com
 
+* `id` - The Linode NodeBalancer's unique ID
+
 * `ipv4` - The Public IPv4 Address of this NodeBalancer
 
 * `ipv6` - The Public IPv6 Address of this NodeBalancer
 
 * `region` - The Region where this Linode NodeBalancer is located. NodeBalancers only support backends in the same Region.
 
-* `created` – When this Linode NodeBalancer was created
-
 * `updated` – When this Linode NodeBalancer was last updated
 
-- [`transfer`](#transfer) - The network transfer stats for the current month
+* [`transfer`](#transfer) - The network transfer stats for the current month
 
 ### transfer
 
@@ -103,4 +103,3 @@ The following attributes are available on transfer:
 * `region`
 
 * `client_conn_throttle`
-
