@@ -1,0 +1,11 @@
+{{ define "firewall_no_rules" }}
+
+resource "linode_firewall" "test" {
+    label = "{{.Label}}"
+    tags  = ["test"]
+
+    inbound_policy = "DROP"
+    outbound_policy = "DROP"
+}
+
+{{ end }}
