@@ -18,16 +18,27 @@ var resourceSchema = map[string]*schema.Schema{
 	"label": {
 		Type:        schema.TypeString,
 		Required:    true,
-		Description: "The Config’s label for display purposes only.",
+		Description: "The Config's label for display purposes only.",
+	},
+
+	"device": {
+		Type:          schema.TypeList,
+		Elem:          &schema.Resource{Schema: deviceV2Schema},
+		Optional:      true,
+		Computed:      true,
+		ConflictsWith: []string{"devices"},
+		Description:   "A dictionary of device disks to use as a device map in a Linode's configuration profile.",
 	},
 
 	"devices": {
-		Type:        schema.TypeList,
-		Elem:        &schema.Resource{Schema: devicesSchema},
-		Optional:    true,
-		Computed:    true,
-		MaxItems:    1,
-		Description: "A dictionary of device disks to use as a device map in a Linode’s configuration profile.",
+		Type:          schema.TypeList,
+		Elem:          &schema.Resource{Schema: devicesSchema},
+		Optional:      true,
+		Computed:      true,
+		MaxItems:      1,
+		ConflictsWith: []string{"device"},
+		Deprecated:    "Devices attribute is deprecated in flavor of `devices_map` or `device`.",
+		Description:   "A dictionary of device disks to use as a device map in a Linode's configuration profile.",
 	},
 
 	"booted": {
@@ -53,7 +64,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Elem:        &schema.Resource{Schema: interfaceSchema},
 		Optional:    true,
-		Description: "An array of Network Interfaces to add to this Linode’s Configuration Profile.",
+		Description: "An array of Network Interfaces to add to this Linode's Configuration Profile.",
 	},
 	"kernel": {
 		Type:        schema.TypeString,
@@ -152,6 +163,24 @@ var devicesSchema = map[string]*schema.Schema{
 		MaxItems:    1,
 		Optional:    true,
 		Elem:        &schema.Resource{Schema: deviceSchema},
+	},
+}
+
+var deviceV2Schema = map[string]*schema.Schema{
+	"device_name": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The Disk ID to map to this disk slot",
+	},
+	"disk_id": {
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Description: "The Disk ID to map to this disk slot",
+	},
+	"volume_id": {
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Description: "The Block Storage volume ID to map to this disk slot",
 	},
 }
 

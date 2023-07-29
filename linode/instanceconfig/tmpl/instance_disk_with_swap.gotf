@@ -1,0 +1,19 @@
+{{ define "instance_config_disk_with_swap" }}
+
+resource "linode_instance_disk" "foobar" {
+  label = "boot"
+  linode_id = linode_instance.foobar.id
+  size = linode_instance.foobar.specs.0.disk - linode_instance_disk.foobar_swap.size
+
+  image = "linode/ubuntu22.04"
+  root_pass = "myr00tp@ssw0rd!!!"
+}
+
+resource "linode_instance_disk" "foobar_swap" {
+  label = "swap"
+  linode_id = linode_instance.foobar.id
+  size = 1024
+  filesystem = "swap"
+}
+
+{{ end }}

@@ -10,8 +10,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-func flattenDeviceMap(deviceMap linodego.InstanceConfigDeviceMap) []map[string]any {
-	result := make(map[string]any)
+func getDeviceMapFields(deviceMap linodego.InstanceConfigDeviceMap) [][2]any {
+	result := make([][2]any, 0)
 
 	reflectMap := reflect.ValueOf(deviceMap)
 
@@ -22,6 +22,39 @@ func flattenDeviceMap(deviceMap linodego.InstanceConfigDeviceMap) []map[string]a
 		}
 
 		fieldName := strings.ToLower(reflectMap.Type().Field(i).Name)
+
+		result = append(result, [2]any{fieldName, field})
+	}
+
+	return result
+}
+
+func flattenDeviceMapToBlock(deviceMap linodego.InstanceConfigDeviceMap) []map[string]any {
+	result := make([]map[string]any, 0)
+
+	for _, pair := range getDeviceMapFields(deviceMap) {
+		fieldName := pair[0].(string)
+		field := pair[1].(*linodego.InstanceConfigDevice)
+
+		result = append(
+			result,
+			map[string]any{
+				"device_name": fieldName,
+				"disk_id":     field.DiskID,
+				"volume_id":   field.VolumeID,
+			},
+		)
+	}
+
+	return result
+}
+
+func flattenDeviceMapToNamedBlock(deviceMap linodego.InstanceConfigDeviceMap) []map[string]any {
+	result := make(map[string]any)
+
+	for _, pair := range getDeviceMapFields(deviceMap) {
+		fieldName := pair[0].(string)
+		field := pair[1].(*linodego.InstanceConfigDevice)
 
 		result[fieldName] = []map[string]any{
 			{
@@ -60,10 +93,48 @@ func flattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[stri
 	return result
 }
 
-func expandDeviceMap(deviceMap any) *linodego.InstanceConfigDeviceMap {
+func createDevice(deviceMap map[string]any) linodego.InstanceConfigDevice {
+	device := linodego.InstanceConfigDevice{}
+
+	if diskID, ok := deviceMap["disk_id"]; ok {
+		device.DiskID = diskID.(int)
+	}
+
+	if volumeID, ok := deviceMap["volume_id"]; ok {
+		device.VolumeID = volumeID.(int)
+	}
+
+	return device
+}
+
+func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
 	var result linodego.InstanceConfigDeviceMap
 
-	deviceMapSlice := deviceMap.([]any)
+	devices := devicesBlock.([]any)
+
+	if len(devices) <= 0 {
+		return nil
+	}
+
+	// devices := devicesBlock.([]map[string]any)
+
+	for _, rawDevice := range devices {
+		device := rawDevice.(map[string]any)
+		linodeGoDevice := createDevice(device)
+
+		if deviceName, ok := device["device_name"]; ok {
+			field := reflect.Indirect(reflect.ValueOf(&result)).FieldByName(strings.ToUpper(deviceName.(string)))
+			field.Set(reflect.ValueOf(&linodeGoDevice))
+		}
+	}
+
+	return &result
+}
+
+func expandDevicesNamedBlock(devicesNamedBlock any) *linodego.InstanceConfigDeviceMap {
+	var result linodego.InstanceConfigDeviceMap
+
+	deviceMapSlice := devicesNamedBlock.([]any)
 
 	if len(deviceMapSlice) < 1 {
 		return nil
@@ -78,20 +149,11 @@ func expandDeviceMap(deviceMap any) *linodego.InstanceConfigDeviceMap {
 		}
 
 		currentDevice := currentDeviceSlice[0].(map[string]any)
-
-		device := linodego.InstanceConfigDevice{}
-
-		if diskID, ok := currentDevice["disk_id"]; ok {
-			device.DiskID = diskID.(int)
-		}
-
-		if volumeID, ok := currentDevice["volume_id"]; ok {
-			device.VolumeID = volumeID.(int)
-		}
+		linodeGoDevice := createDevice(currentDevice)
 
 		// Get the corresponding struct field and set it to the correct device
 		field := reflect.Indirect(reflect.ValueOf(&result)).FieldByName(strings.ToUpper(k))
-		field.Set(reflect.ValueOf(&device))
+		field.Set(reflect.ValueOf(&linodeGoDevice))
 	}
 
 	return &result

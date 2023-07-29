@@ -103,7 +103,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("booted", configBooted)
 
 	if cfg.Devices != nil {
-		d.Set("devices", flattenDeviceMap(*cfg.Devices))
+		d.Set("devices", flattenDeviceMapToNamedBlock(*cfg.Devices))
+		d.Set("device", flattenDeviceMapToBlock(*cfg.Devices))
 	}
 
 	if cfg.Helpers != nil {
@@ -144,8 +145,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.RootDevice = &rootDeviceStr
 	}
 
-	if devices, ok := d.GetOk("devices"); ok {
-		createOpts.Devices = *expandDeviceMap(devices)
+	if devicesBlock, ok := d.GetOk("device"); ok {
+		createOpts.Devices = *expandDevicesBlock(devicesBlock)
+	} else if devicesBlock, ok := d.GetOk("devices"); ok {
+		createOpts.Devices = *expandDevicesNamedBlock(devicesBlock)
 	}
 
 	cfg, err := client.CreateInstanceConfig(ctx, linodeID, createOpts)
@@ -187,8 +190,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		shouldUpdate = true
 	}
 
+	if d.HasChange("device") {
+		putRequest.Devices = expandDevicesBlock(d.Get("device"))
+		shouldUpdate = true
+	}
 	if d.HasChange("devices") {
-		putRequest.Devices = expandDeviceMap(d.Get("devices"))
+		putRequest.Devices = expandDevicesNamedBlock(d.Get("devices"))
 		shouldUpdate = true
 	}
 

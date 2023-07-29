@@ -55,6 +55,38 @@ func TestAccResourceInstanceConfig_basic(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_config.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DeviceBlock(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					resource.TestCheckResourceAttrSet(resName, "device.0.disk_id"),
+					resource.TestCheckResourceAttrSet(resName, "device.1.disk_id"),
+					resource.TestCheckResourceAttr(resName, "device.0.device_name", "sda"),
+					resource.TestCheckResourceAttr(resName, "device.1.device_name", "sdb"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
 func TestAccResourceInstanceConfig_complex(t *testing.T) {
 	t.Parallel()
 

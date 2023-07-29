@@ -100,7 +100,7 @@ func TestAccImage_basic(t *testing.T) {
 			{
 				ResourceName: resName,
 				ImportState:  true,
-				//ImportStateVerify:       true,
+				// ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"linode_id", "disk_id"},
 			},
 		},
@@ -144,7 +144,7 @@ func TestAccImage_update(t *testing.T) {
 			{
 				ResourceName: resName,
 				ImportState:  true,
-				//ImportStateVerify:       true,
+				// ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"linode_id", "disk_id"},
 			},
 		},
