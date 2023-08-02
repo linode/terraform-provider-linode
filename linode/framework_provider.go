@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/linode/firewalls"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -187,5 +189,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		users.NewDataSource,
 		nbnode.NewDataSource,
 		accountsettings.NewDataSource,
+		firewalls.NewDataSource,
 	}
 }

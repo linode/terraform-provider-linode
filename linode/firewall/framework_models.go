@@ -35,7 +35,7 @@ func (data *FirewallModel) parseComputedAttributes(
 	data.ID = types.Int64Value(int64(firewall.ID))
 	data.Status = types.StringValue(string(firewall.Status))
 
-	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, parseFirewallLinodes(devices))
+	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, AggregateLinodeIDs(devices))
 	if diags.HasError() {
 		return diags
 	}
@@ -128,7 +128,7 @@ func parseFirewallRules(
 	return &result, nil
 }
 
-func parseFirewallLinodes(devices []linodego.FirewallDevice) []int {
+func AggregateLinodeIDs(devices []linodego.FirewallDevice) []int {
 	linodes := make([]int, 0, len(devices))
 	for _, device := range devices {
 		if device.Entity.Type == linodego.FirewallDeviceLinode {
