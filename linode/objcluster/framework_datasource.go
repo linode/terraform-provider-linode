@@ -12,8 +12,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_object_storage_cluster",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_object_storage_cluster",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }
