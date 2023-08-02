@@ -91,6 +91,13 @@ func NoIPv6(t *testing.T, label string) string {
 		})
 }
 
+func NoRules(t *testing.T, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"firewall_no_rules", TemplateData{
+			Label: label,
+		})
+}
+
 func DataBasic(t *testing.T, label, devicePrefix, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_data_basic", TemplateData{
