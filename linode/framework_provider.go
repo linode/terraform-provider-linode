@@ -3,8 +3,6 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/linode/firewalls"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -23,6 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
+	"github.com/linode/terraform-provider-linode/linode/firewalls"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"

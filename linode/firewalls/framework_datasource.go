@@ -15,8 +15,10 @@ type DataSource struct {
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_firewalls",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_firewalls",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }
