@@ -1,0 +1,22 @@
+{{ define "data_linode_firewalls_filter" }}
+
+{{ template "data_linode_firewalls_base" . }}
+
+data "linode_firewalls" "test" {
+    filter {
+        name = "label"
+        values = ["{{ .Label }}"]
+    }
+
+    filter {
+        name = "tags"
+        values = ["foo", "bar"]
+    }
+
+    filter {
+        name = "status"
+        values = ["enabled"]
+    }
+}
+
+{{ end }}

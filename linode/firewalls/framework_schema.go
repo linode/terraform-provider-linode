@@ -42,6 +42,10 @@ var firewallDeviceObject = schema.NestedBlockObject{
 
 var firewallRuleObject = schema.NestedBlockObject{
 	Attributes: map[string]schema.Attribute{
+		"label": schema.StringAttribute{
+			Description: "The label of this rule for display purposes only.",
+			Computed:    true,
+		},
 		"action": schema.StringAttribute{
 			Description: "Controls whether traffic is accepted or dropped by this rule (ACCEPT, DROP).",
 			Computed:    true,

@@ -13,6 +13,7 @@ import (
 )
 
 type FirewallRuleModel struct {
+	Label    types.String   `tfsdk:"label"`
 	Action   types.String   `tfsdk:"action"`
 	Protocol types.String   `tfsdk:"protocol"`
 	Ports    types.String   `tfsdk:"ports"`
@@ -21,6 +22,7 @@ type FirewallRuleModel struct {
 }
 
 func (data *FirewallRuleModel) parseRule(rule linodego.FirewallRule) {
+	data.Label = types.StringValue(rule.Label)
 	data.Action = types.StringValue(rule.Action)
 	data.Protocol = types.StringValue(string(rule.Protocol))
 	data.Ports = types.StringValue(rule.Ports)
