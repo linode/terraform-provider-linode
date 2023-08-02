@@ -4,8 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-var frameworkDatasourceSchema = schema.Schema{
-	Attributes: map[string]schema.Attribute{
+var KernelAttributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Description: "The unique ID of this Kernel.",
 			Required:    true,
@@ -38,5 +37,8 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "If this Kernel is suitable for Xen Linodes.",
 			Computed:    true,
 		},
-	},
+	}
+
+var frameworkDatasourceSchema = schema.Schema{
+	Attributes: KernelAttributes,
 }
