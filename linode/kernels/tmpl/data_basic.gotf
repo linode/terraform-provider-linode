@@ -5,7 +5,7 @@
 data "linode_kernels" "kernels" {
     filter {
         name = "id"
-        values = [linode_kernel.kernel.0.id]
+        values = [data.linode_kernel.kernel.0.id]
     }
 }
 

@@ -3,7 +3,6 @@ package kernels_test
 import (
 	"testing"
 
-	//	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/kernels/tmpl"
@@ -23,7 +22,7 @@ func TestAccDataSourceKernels_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, kernelID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "kernels.0.id", kernelID+"-0"),
+					resource.TestCheckResourceAttr(resourceName, "kernels.0.id", kernelID),
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.architecture"),
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.deprecated"),
 					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.kvm"),

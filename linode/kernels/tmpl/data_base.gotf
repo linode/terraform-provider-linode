@@ -1,8 +1,8 @@
 {{ define "kernels_data_base" }}
 
-resource "linode_kernel" "kernel" {
-    count = 2
-    id = "{{.Id}}-${count.index}"
+data "linode_kernel" "kernel" {
+    count = 1
+    id = "{{.Id}}"
 }
 
 {{ end }}
