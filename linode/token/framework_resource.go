@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -14,23 +14,17 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_token",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_token",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }
 
 type Resource struct {
 	helper.BaseResource
-}
-
-// TODO: We should use Int64 ID attributes
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(
@@ -93,12 +87,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	token, err := client.GetToken(ctx, int(id))
+	token, err := client.GetToken(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -138,7 +132,10 @@ func (r *Resource) Update(
 
 	if !state.Label.Equal(plan.Label) {
 		tokenIDString := state.ID.ValueString()
-		tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
+		tokenID := helper.StringToInt(tokenIDString, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
 		client := r.Meta.Client
 		token, err := client.GetToken(ctx, tokenID)
@@ -177,7 +174,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	tokenID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
+	tokenID := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

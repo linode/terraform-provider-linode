@@ -16,8 +16,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_lke_versions",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_lke_versions",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }
