@@ -3,16 +3,18 @@ package kernels_test
 import (
 	"testing"
 
+	//	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/kernel/tmpl"
+	"github.com/linode/terraform-provider-linode/linode/kernels/tmpl"
 )
 
-func TestAccDataSourceKernel_basic(t *testing.T) {
+func TestAccDataSourceKernels_basic(t *testing.T) {
 	t.Parallel()
 
+	resourceName := "data.linode_kernels.kernels"
+
 	kernelID := "linode/latest-64bit"
-	resourceName := "data.linode_kernel.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -21,15 +23,26 @@ func TestAccDataSourceKernel_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, kernelID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", kernelID),
-					resource.TestCheckResourceAttrSet(resourceName, "label"),
-					resource.TestCheckResourceAttrSet(resourceName, "architecture"),
-					resource.TestCheckResourceAttrSet(resourceName, "deprecated"),
-					resource.TestCheckResourceAttrSet(resourceName, "kvm"),
-					resource.TestCheckResourceAttrSet(resourceName, "label"),
-					resource.TestCheckResourceAttrSet(resourceName, "pvops"),
-					resource.TestCheckResourceAttrSet(resourceName, "version"),
-					resource.TestCheckResourceAttrSet(resourceName, "xen"),
+					resource.TestCheckResourceAttr(resourceName, "kernels.0.id", kernelID+"-0"),
+					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.architecture"),
+					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.deprecated"),
+					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.kvm"),
+					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.label"),
+					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.pvops"),
+					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.version"),
+					resource.TestCheckResourceAttrSet(resourceName, "kernels.0.xen"),
+				),
+			},
+			{
+				Config: tmpl.DataFilter(t, kernelID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "kernels.#", "1"),
+				),
+			},
+			{
+				Config: tmpl.DataFilterEmpty(t, kernelID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "kernels.#", "0"),
 				),
 			},
 		},

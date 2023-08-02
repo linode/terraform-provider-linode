@@ -1,0 +1,12 @@
+{{ define "kernels_data_filter" }}
+
+{{ template "kernels_data_base" . }}
+
+data "linode_kernels" "kernels" {
+    filter {
+        name   = "id" 
+        values = ["{{.Id}}"]
+    }
+}
+
+{{ end }}

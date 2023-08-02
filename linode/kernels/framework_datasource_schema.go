@@ -7,6 +7,7 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
+	"id":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"architecture": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"deprecated":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
 	"kvm":          {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
@@ -27,7 +28,7 @@ var frameworkDatasourceSchema = schema.Schema{
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
-		"users": schema.ListNestedBlock{
+		"kernels": schema.ListNestedBlock{
 			Description: "The returned list of Kernels.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: kernel.KernelAttributes,
