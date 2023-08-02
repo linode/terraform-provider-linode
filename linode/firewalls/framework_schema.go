@@ -3,10 +3,17 @@ package firewalls
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 )
 
-var filterConfig = frameworkfilter.Config{}
+var filterConfig = frameworkfilter.Config{
+	"id":    {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"label": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"tags":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+
+	"status": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+}
 
 var firewallDeviceObject = schema.NestedBlockObject{
 	Attributes: map[string]schema.Attribute{
@@ -97,6 +104,15 @@ var firewallObject = schema.NestedBlockObject{
 		},
 		"status": schema.StringAttribute{
 			Description: "The status of the firewall.",
+			Computed:    true,
+		},
+
+		"created": schema.StringAttribute{
+			Description: "When this Firewall was created.",
+			Computed:    true,
+		},
+		"updated": schema.StringAttribute{
+			Description: "When this Firewall was last updated.",
 			Computed:    true,
 		},
 	},

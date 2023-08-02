@@ -2,6 +2,7 @@ package firewalls
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -63,6 +64,8 @@ type FirewallModel struct {
 	OutboundPolicy types.String   `tfsdk:"outbound_policy"`
 	Linodes        []types.Int64  `tfsdk:"linodes"`
 	Status         types.String   `tfsdk:"status"`
+	Created        types.String   `tfsdk:"created"`
+	Updated        types.String   `tfsdk:"updated"`
 
 	Inbound  []FirewallRuleModel   `tfsdk:"inbound"`
 	Outbound []FirewallRuleModel   `tfsdk:"outbound"`
@@ -82,6 +85,9 @@ func (data *FirewallModel) parseFirewall(
 	data.OutboundPolicy = types.StringValue(rules.OutboundPolicy)
 	data.Linodes = helper.IntSliceToFramework(firewallresource.AggregateLinodeIDs(devices))
 	data.Status = types.StringValue(string(firewall.Status))
+
+	data.Created = types.StringValue(firewall.Created.Format(time.RFC3339))
+	data.Updated = types.StringValue(firewall.Updated.Format(time.RFC3339))
 
 	data.Inbound = make([]FirewallRuleModel, len(rules.Inbound))
 	for i, v := range rules.Inbound {
