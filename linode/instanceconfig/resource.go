@@ -191,11 +191,16 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if d.HasChange("device") {
-		putRequest.Devices = expandDevicesBlock(d.Get("device"))
+		if devices, ok := d.GetOk("device"); ok {
+			putRequest.Devices = expandDevicesBlock(devices)
+		}
 		shouldUpdate = true
 	}
+
 	if d.HasChange("devices") {
-		putRequest.Devices = expandDevicesNamedBlock(d.Get("devices"))
+		if devices, ok := d.GetOk("devices"); ok {
+			putRequest.Devices = expandDevicesNamedBlock(devices)
+		}
 		shouldUpdate = true
 	}
 
