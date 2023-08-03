@@ -8,10 +8,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
-type DataSource struct {
-	helper.BaseDataSource
-}
-
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
@@ -19,6 +15,10 @@ func NewDataSource() datasource.DataSource {
 			frameworkDatasourceSchema,
 		),
 	}
+}
+
+type DataSource struct {
+	helper.BaseDataSource
 }
 
 func (d *DataSource) Read(
