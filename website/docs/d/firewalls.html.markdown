@@ -104,7 +104,7 @@ Each Linode image will be stored in the `firewalls` attribute and will export th
 
 * `ipv6` - A list of IPv6 addresses or networks in IP/mask format.
 
-# Firewall Device
+## Firewall Device
 
 * `id` - The unique ID of this Firewall Device assignment.
 
@@ -115,7 +115,6 @@ Each Linode image will be stored in the `firewalls` attribute and will export th
 * `label` - The label of the assigned entity.
 
 * `url` - The URL of the assigned entity.
-
 
 ## Filterable Fields
 
