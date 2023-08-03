@@ -101,7 +101,7 @@ func TestAccIPv6Range_noID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.NoID(t),
-				ExpectError: regexp.MustCompile("either linode_id or route_target must be specified"),
+				ExpectError: regexp.MustCompile("Either linode_id or route_target must be specified."),
 			},
 		},
 	})

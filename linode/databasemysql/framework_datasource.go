@@ -10,8 +10,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_database_mysql",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_database_mysql",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

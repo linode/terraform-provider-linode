@@ -10,8 +10,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_instance_networking",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_instance_networking",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

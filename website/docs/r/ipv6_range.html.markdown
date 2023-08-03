@@ -10,6 +10,8 @@ description: |-
 
 Manages a Linode IPv6 range.
 
+We highly recommend that users do not remove an IPv6 range created by this Terraform resource outside of Terraform. This is because if a user manually removes an IPv6 range created by Terraform, and then assigns some IPv6 ranges to other linodes outside of Terraform, there is a chance that the same IPv6 range can be assigned to another linode, even though the new range is randomly selected. This will result in the newly assigned IPv6 range being managed by this Terraform resource. In this case, the user should manually taint this resource.
+
 ## Example Usage
 
 ```terraform
