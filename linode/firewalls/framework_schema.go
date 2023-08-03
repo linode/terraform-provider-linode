@@ -92,14 +92,12 @@ var firewallObject = schema.NestedBlockObject{
 			Computed:    true,
 		},
 		"inbound_policy": schema.StringAttribute{
-			Description: "The default behavior for inbound traffic. This setting can be overridden by updating " +
-				"the inbound.action property for an individual Firewall Rule.",
-			Computed: true,
+			Description: "The default behavior for inbound traffic.",
+			Computed:    true,
 		},
 		"outbound_policy": schema.StringAttribute{
-			Description: "The default behavior for outbound traffic. This setting can be overridden by updating " +
-				"the outbound.action property for an individual Firewall Rule.",
-			Computed: true,
+			Description: "The default behavior for outbound traffic.",
+			Computed:    true,
 		},
 		"linodes": schema.SetAttribute{
 			ElementType: types.Int64Type,
@@ -122,11 +120,11 @@ var firewallObject = schema.NestedBlockObject{
 	},
 	Blocks: map[string]schema.Block{
 		"inbound": schema.ListNestedBlock{
-			Description:  "A firewall rule that specifies what inbound network traffic is allowed.",
+			Description:  "A set of firewall rules that specify what inbound network traffic is allowed.",
 			NestedObject: firewallRuleObject,
 		},
 		"outbound": schema.ListNestedBlock{
-			Description:  "A firewall rule that specifies what outbound network traffic is allowed.",
+			Description:  "A set of firewall rules that specify what outbound network traffic is allowed.",
 			NestedObject: firewallRuleObject,
 		},
 		"devices": schema.ListNestedBlock{
