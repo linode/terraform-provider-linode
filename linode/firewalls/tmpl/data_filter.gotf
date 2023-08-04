@@ -3,6 +3,14 @@
 {{ template "data_linode_firewalls_base" . }}
 
 data "linode_firewalls" "test" {
+    order_by = "created"
+    order = "desc"
+
+    filter {
+        name = "created"
+        values = [linode_firewall.foobar.created]
+    }
+
     filter {
         name = "label"
         values = ["{{ .Label }}"]

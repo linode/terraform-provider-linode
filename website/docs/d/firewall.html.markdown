@@ -46,6 +46,10 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`)
 
+* `created` - When this firewall was created.
+
+* `updated` - When this firewall was last updated.
+
 * [`devices`](#devices) - The devices governed by the Firewall.
 
 ### inbound and outbound

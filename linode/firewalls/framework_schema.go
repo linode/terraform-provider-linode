@@ -12,7 +12,9 @@ var filterConfig = frameworkfilter.Config{
 	"label": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 	"tags":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 
-	"status": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"status":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"created": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrder: true},
+	"updated": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrder: true},
 }
 
 var firewallDeviceObject = schema.NestedBlockObject{
@@ -108,7 +110,6 @@ var firewallObject = schema.NestedBlockObject{
 			Description: "The status of the firewall.",
 			Computed:    true,
 		},
-
 		"created": schema.StringAttribute{
 			Description: "When this Firewall was created.",
 			Computed:    true,

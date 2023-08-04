@@ -81,5 +81,13 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The status of the firewall.",
 			Computed:    true,
 		},
+		"created": schema.StringAttribute{
+			Description: "When this Firewall was created.",
+			Computed:    true,
+		},
+		"updated": schema.StringAttribute{
+			Description: "When this Firewall was last updated.",
+			Computed:    true,
+		},
 	},
 }

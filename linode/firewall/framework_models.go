@@ -3,6 +3,8 @@ package firewall
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/linode/helper"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -24,6 +26,8 @@ type FirewallModel struct {
 	Linodes        types.Set    `tfsdk:"linodes"`
 	Devices        types.List   `tfsdk:"devices"`
 	Status         types.String `tfsdk:"status"`
+	Created        types.String `tfsdk:"created"`
+	Updated        types.String `tfsdk:"updated"`
 }
 
 func (data *FirewallModel) parseComputedAttributes(
@@ -34,6 +38,8 @@ func (data *FirewallModel) parseComputedAttributes(
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(firewall.ID))
 	data.Status = types.StringValue(string(firewall.Status))
+	data.Created = types.StringValue(firewall.Created.Format(helper.TIME_FORMAT))
+	data.Updated = types.StringValue(firewall.Updated.Format(helper.TIME_FORMAT))
 
 	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, AggregateLinodeIDs(devices))
 	if diags.HasError() {
