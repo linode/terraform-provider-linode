@@ -2,6 +2,7 @@ package kernel
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var KernelAttributes = map[string]schema.Attribute{
@@ -12,6 +13,11 @@ var KernelAttributes = map[string]schema.Attribute{
 	"architecture": schema.StringAttribute{
 		Description: "The architecture of this Kernel.",
 		Computed:    true,
+	},
+	"built": schema.StringAttribute{
+		Description: "The date on which this Kernel was built.",
+		Computed:    true,
+		CustomType:  customtypes.RFC3339TimeStringType{},
 	},
 	"deprecated": schema.BoolAttribute{
 		Description: "Whether or not this Kernel is deprecated.",

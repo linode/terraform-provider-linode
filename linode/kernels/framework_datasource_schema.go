@@ -14,7 +14,7 @@ var filterConfig = frameworkfilter.Config{
 	"label":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"pvops":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
 	"version":      {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"xen":          {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"xen":          {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
