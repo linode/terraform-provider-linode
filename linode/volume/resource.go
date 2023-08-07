@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const (
-	LinodeVolumeCreateTimeout = 10 * time.Minute
+	LinodeVolumeCreateTimeout = 15 * time.Minute
 	LinodeVolumeUpdateTimeout = 20 * time.Minute
 	LinodeVolumeDeleteTimeout = 10 * time.Minute
 )
@@ -220,10 +220,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	id := int(id64)
 
 	// We should retry on intermittent deletion errors
-	return diag.FromErr(resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	return diag.FromErr(retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		vol, err := client.GetVolume(ctx, id)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		// We only want to detach if the volume is already attached to an instance,
@@ -231,19 +231,19 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if vol.LinodeID != nil && *vol.LinodeID != 0 {
 			p, err := client.NewEventPoller(ctx, int(id64), "volume", linodego.ActionVolumeDetach)
 			if err != nil {
-				return resource.NonRetryableError(fmt.Errorf("failed to initialize event poller: %s", err))
+				return retry.NonRetryableError(fmt.Errorf("failed to initialize event poller: %s", err))
 			}
 
 			log.Printf("[INFO] Detaching Linode Volume %d for deletion\n", id)
 
 			if err := client.DetachVolume(ctx, id); err != nil {
-				return resource.RetryableError(fmt.Errorf("error detaching Linode Volume %d: %s", id, err))
+				return retry.RetryableError(fmt.Errorf("error detaching Linode Volume %d: %s", id, err))
 			}
 
 			log.Printf("[INFO] Waiting for Linode Volume %d to detach...\n", id)
 
 			if _, err := p.WaitForFinished(ctx, 5); err != nil {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
 		}
 
@@ -251,12 +251,12 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if _, err := client.WaitForVolumeLinodeID(
 			ctx, id, nil, int(d.Timeout(schema.TimeoutDelete).Seconds()),
 		); err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		err = client.DeleteVolume(ctx, id)
 		if err != nil {
-			return resource.RetryableError(fmt.Errorf("error deleting Linode Volume %d: %s", id, err))
+			return retry.RetryableError(fmt.Errorf("error deleting Linode Volume %d: %s", id, err))
 		}
 		d.SetId("")
 		return nil

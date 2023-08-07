@@ -4,60 +4,26 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func NewResource() resource.Resource {
-	return &Resource{}
+	return &Resource{
+		BaseResource: helper.NewBaseResource(
+			helper.BaseResourceConfig{
+				Name:   "linode_stackscript",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
+		),
+	}
 }
 
 type Resource struct {
-	client *linodego.Client
-}
-
-func (r *Resource) Configure(
-	ctx context.Context,
-	req resource.ConfigureRequest,
-	resp *resource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetResourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	r.client = meta.Client
-}
-
-func (r *Resource) Metadata(
-	ctx context.Context,
-	req resource.MetadataRequest,
-	resp *resource.MetadataResponse,
-) {
-	resp.TypeName = "linode_stackscript"
-}
-
-func (r *Resource) Schema(
-	ctx context.Context,
-	req resource.SchemaRequest,
-	resp *resource.SchemaResponse,
-) {
-	resp.Schema = frameworkResourceSchema
-}
-
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	helper.BaseResource
 }
 
 func (r *Resource) Create(
@@ -66,7 +32,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 	var data StackScriptModel
-	client := r.client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -98,7 +64,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -111,7 +77,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	var data StackScriptModel
 
@@ -120,12 +86,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
+	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -148,7 +114,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseStackScript(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.ParseNonComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -172,7 +139,7 @@ func (r *Resource) Update(
 	}
 
 	// Get the ID from the plan
-	stackScriptID := int(helper.StringToInt64(state.ID.ValueString(), resp.Diagnostics))
+	stackScriptID := helper.StringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -203,19 +170,20 @@ func (r *Resource) Delete(
 		return
 	}
 
-	stackscriptID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
+	stackscriptID := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	client := r.client
+	client := r.Meta.Client
 	err := client.DeleteStackscript(ctx, stackscriptID)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete the StackScript with id %v", stackscriptID),
-			err.Error(),
-		)
-		return
+		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete the StackScript with id %v", stackscriptID),
+				err.Error(),
+			)
+		}
 	}
 }
 
@@ -225,7 +193,7 @@ func (r *Resource) updateStackScript(
 	plan StackScriptModel,
 	stackScriptID int,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	updateOpts := linodego.StackscriptUpdateOptions{
 		Label:       plan.Label.ValueString(),
@@ -241,7 +209,7 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	stackScript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
+	stackscript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to update the StackScript with id %v", stackScriptID),
@@ -250,7 +218,7 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	resp.Diagnostics.Append(plan.parseStackScript(ctx, stackScript)...)
+	resp.Diagnostics.Append(plan.ParseComputedAttributes(ctx, stackscript)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

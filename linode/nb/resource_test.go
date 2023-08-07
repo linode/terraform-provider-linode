@@ -8,9 +8,11 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -35,7 +37,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
@@ -58,16 +60,16 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceNodeBalancer_basic(t *testing.T) {
+func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_nodebalancer.foobar"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkNodeBalancerDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodebalancerName, testRegion),
@@ -103,9 +105,9 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkNodeBalancerDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodebalancerName, testRegion),
@@ -141,20 +143,32 @@ func TestLinodeNodeBalancer_UpgradeV0(t *testing.T) {
 		},
 	}
 
-	desiredState := map[string]interface{}{
-		"transfer": []map[string]interface{}{
-			{
-				"in":    1337.0,
-				"out":   1338.0,
-				"total": 1339.0,
-			},
-		},
+	desiredState := map[string]attr.Value{
+		"in":    types.Float64Value(1337.0),
+		"out":   types.Float64Value(1338.0),
+		"total": types.Float64Value(1339.0),
 	}
 
-	newState, err := nb.ResourceNodeBalancerV0Upgrade(context.Background(), oldState, nil)
-	if err != nil {
-		t.Fatalf("error migrating state: %v", err)
+	transferMap := oldState["transfer"].(map[string]interface{})
+
+	newState := make(map[string]attr.Value)
+	in, diag := nb.UpgradeResourceStateValue(transferMap["in"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
+	newState["in"] = in
+
+	out, diag := nb.UpgradeResourceStateValue(transferMap["out"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState["out"] = out
+
+	total, diag := nb.UpgradeResourceStateValue(transferMap["total"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState["total"] = total
 
 	if !reflect.DeepEqual(desiredState, newState) {
 		t.Fatalf("expected %v, got %v", desiredState, newState)
@@ -172,20 +186,32 @@ func TestLinodeNodeBalancer_UpgradeV0Empty(t *testing.T) {
 		},
 	}
 
-	desiredState := map[string]interface{}{
-		"transfer": []map[string]interface{}{
-			{
-				"in":    0.0,
-				"out":   0.0,
-				"total": 0.0,
-			},
-		},
+	desiredState := map[string]attr.Value{
+		"in":    types.Float64Value(0.0),
+		"out":   types.Float64Value(0.0),
+		"total": types.Float64Value(0.0),
 	}
 
-	newState, err := nb.ResourceNodeBalancerV0Upgrade(context.Background(), oldState, nil)
-	if err != nil {
-		t.Fatalf("error migrating state: %v", err)
+	transferMap := oldState["transfer"].(map[string]interface{})
+
+	newState := make(map[string]attr.Value)
+	in, diag := nb.UpgradeResourceStateValue(transferMap["in"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
 	}
+	newState["in"] = in
+
+	out, diag := nb.UpgradeResourceStateValue(transferMap["out"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState["out"] = out
+
+	total, diag := nb.UpgradeResourceStateValue(transferMap["total"].(string))
+	if diag != nil {
+		t.Fatalf("error upgrading state: %v", diag.Detail())
+	}
+	newState["total"] = total
 
 	if !reflect.DeepEqual(desiredState, newState) {
 		t.Fatalf("expected %v, got %v", desiredState, newState)

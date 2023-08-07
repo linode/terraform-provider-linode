@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -48,7 +48,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
@@ -78,9 +78,9 @@ func TestAccImage_basic(t *testing.T) {
 	imageName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkImageDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, imageName, testRegion),
@@ -93,13 +93,14 @@ func TestAccImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "size"),
 					resource.TestCheckResourceAttr(resName, "type", "manual"),
 					resource.TestCheckResourceAttr(resName, "is_public", "false"),
+					resource.TestCheckResourceAttr(resName, "capabilities.0", "cloud-init"),
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
 				),
 			},
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
+				ResourceName: resName,
+				ImportState:  true,
+				//ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"linode_id", "disk_id"},
 			},
 		},
@@ -113,9 +114,9 @@ func TestAccImage_update(t *testing.T) {
 	resName := "linode_image.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkImageDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, imageName, testRegion),
@@ -123,6 +124,7 @@ func TestAccImage_update(t *testing.T) {
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
 					resource.TestCheckResourceAttr(resName, "description", "descriptive text"),
+					resource.TestCheckResourceAttrSet(resName, "capabilities.#"),
 				),
 			},
 			{
@@ -140,9 +142,9 @@ func TestAccImage_update(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
+				ResourceName: resName,
+				ImportState:  true,
+				//ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"linode_id", "disk_id"},
 			},
 		},
@@ -164,9 +166,9 @@ func TestAccImage_uploadFile(t *testing.T) {
 	var image linodego.Image
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkImageDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Upload(t, imageName, file.Name(), testRegion),

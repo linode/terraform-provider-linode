@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	LinodeImageCreateTimeout = 20 * time.Minute
+	LinodeImageCreateTimeout = 30 * time.Minute
 )
 
 func Resource() *schema.Resource {
@@ -50,6 +50,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error getting Linode image %s: %s", d.Id(), err)
 	}
 
+	d.Set("capabilities", image.Capabilities)
 	d.Set("label", image.Label)
 	d.Set("description", image.Description)
 	d.Set("type", image.Type)
@@ -101,6 +102,7 @@ func createResourceFromLinode(
 		DiskID:      diskID,
 		Label:       d.Get("label").(string),
 		Description: d.Get("description").(string),
+		CloudInit:   d.Get("cloud_init").(bool),
 	}
 
 	image, err := client.CreateImage(ctx, createOpts)
@@ -128,6 +130,7 @@ func createResourceFromUpload(
 	region := d.Get("region").(string)
 	label := d.Get("label").(string)
 	description := d.Get("description").(string)
+	cloudInit := d.Get("cloud_init").(bool)
 
 	imageReader, err := imageFromResourceData(d)
 	if err != nil {
@@ -144,6 +147,7 @@ func createResourceFromUpload(
 		Region:      region,
 		Label:       label,
 		Description: description,
+		CloudInit:   cloudInit,
 	}
 
 	image, uploadURL, err := client.CreateImageUpload(ctx, createOpts)

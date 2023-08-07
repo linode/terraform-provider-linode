@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -36,8 +36,8 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 	var snapshot *linodego.InstanceSnapshot
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: resourceInstanceBasic(instanceName, testRegion),
@@ -68,7 +68,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 600); err != nil {
+					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 1800); err != nil {
 						t.Fatal(err)
 					}
 				},

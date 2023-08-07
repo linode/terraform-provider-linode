@@ -8,11 +8,47 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/linode/account"
+	"github.com/linode/terraform-provider-linode/linode/accountlogin"
+	"github.com/linode/terraform-provider-linode/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/linode/accountsettings"
+	"github.com/linode/terraform-provider-linode/linode/backup"
+	"github.com/linode/terraform-provider-linode/linode/databasebackups"
+	"github.com/linode/terraform-provider-linode/linode/databaseengines"
+	"github.com/linode/terraform-provider-linode/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/linode/databases"
+	"github.com/linode/terraform-provider-linode/linode/domain"
+	"github.com/linode/terraform-provider-linode/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
+	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/image"
+	"github.com/linode/terraform-provider-linode/linode/images"
+	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/linode/instancetype"
+	"github.com/linode/terraform-provider-linode/linode/instancetypes"
+	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
+	"github.com/linode/terraform-provider-linode/linode/lkeversions"
+	"github.com/linode/terraform-provider-linode/linode/nb"
+	"github.com/linode/terraform-provider-linode/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/linode/nbnode"
+	"github.com/linode/terraform-provider-linode/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/linode/objbucket"
+	"github.com/linode/terraform-provider-linode/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/linode/objkey"
+	"github.com/linode/terraform-provider-linode/linode/profile"
+	"github.com/linode/terraform-provider-linode/linode/rdns"
+	"github.com/linode/terraform-provider-linode/linode/region"
+	"github.com/linode/terraform-provider-linode/linode/regions"
+	"github.com/linode/terraform-provider-linode/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
+	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/token"
+	"github.com/linode/terraform-provider-linode/linode/user"
+	"github.com/linode/terraform-provider-linode/linode/users"
+	"github.com/linode/terraform-provider-linode/linode/vlan"
+	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
 type FrameworkProvider struct {
@@ -71,6 +107,10 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
+			"skip_implicit_reboots": schema.BoolAttribute{
+				Optional:    true,
+				Description: "If true, Linode Instances will not be rebooted on config and interface changes.",
+			},
 			"disable_internal_cache": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Disable the internal caching system that backs certain Linode API requests.",
@@ -103,6 +143,11 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 	return []func() resource.Resource{
 		token.NewResource,
 		stackscript.NewResource,
+		rdns.NewResource,
+		objkey.NewResource,
+		sshkey.NewResource,
+		ipv6range.NewResource,
+		nb.NewResource,
 		accountsettings.NewResource,
 	}
 }
@@ -110,8 +155,42 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		account.NewDataSource,
+		backup.NewDataSource,
+		firewall.NewDataSource,
 		kernel.NewDataSource,
 		stackscript.NewDataSource,
+		stackscripts.NewDataSource,
+		profile.NewDataSource,
+		nb.NewDataSource,
+		networkingip.NewDataSource,
+		lkeversions.NewDataSource,
+		regions.NewDataSource,
+		ipv6range.NewDataSource,
+		objbucket.NewDataSource,
+		sshkey.NewDataSource,
+		instancenetworking.NewDataSource,
+		objcluster.NewDataSource,
+		domainrecord.NewDataSource,
+		databasepostgresql.NewDataSource,
+		volume.NewDataSource,
+		databasemysql.NewDataSource,
+		domainzonefile.NewDataSource,
+		domain.NewDataSource,
+		user.NewDataSource,
+		nbconfig.NewDataSource,
+		instancetype.NewDataSource,
+		instancetypes.NewDataSource,
+		image.NewDataSource,
+		images.NewDataSource,
+		accountlogin.NewDataSource,
+		accountlogins.NewDataSource,
+		databasebackups.NewDataSource,
+		databases.NewDataSource,
+		databaseengines.NewDataSource,
+		region.NewDataSource,
+		vlan.NewDataSource,
+		users.NewDataSource,
+		nbnode.NewDataSource,
 		accountsettings.NewDataSource,
 	}
 }

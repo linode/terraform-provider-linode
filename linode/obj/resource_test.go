@@ -10,9 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/obj/tmpl"
@@ -69,9 +69,9 @@ func TestAccResourceObject_basic(t *testing.T) {
 		keyName := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(tRetry, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkObjectDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Basic(t, bucketName, testCluster, keyName, content, contentSource.Name()),

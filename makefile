@@ -9,6 +9,7 @@ MARKDOWNLINT_TAG := 0.19.0
 ACCTEST_COUNT?=1
 ACCTEST_PARALLELISM?=20
 ACCTEST_TIMEOUT?=240m
+RUN_LONG_TESTS?="false"
 
 tooldeps:
 	go generate -tags tools tools/tools.go
@@ -46,7 +47,14 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
+	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	go test -v ./$(PKG_NAME) $(TESTARGS) -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
+
+smoketest: fmtcheck
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
+	go test -v -run smoke ./linode/... -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
 
 vet:
 	@echo "go vet ."
@@ -59,6 +67,7 @@ vet:
 
 fmt:
 	gofmt -w $(GOFMT_FILES)
+	gofumpt -w $(GOFMT_FILES)
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"

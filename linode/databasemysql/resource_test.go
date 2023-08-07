@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -11,8 +12,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql/tmpl"
@@ -30,7 +31,7 @@ func init() {
 		F:    sweep,
 	})
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -51,7 +52,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
@@ -96,15 +97,18 @@ func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
 }
 
 func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	resName := "linode_database_mysql.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, dbName, engineVersion, testRegion),
@@ -143,15 +147,18 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 }
 
 func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	resName := "linode_database_mysql.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(t, tmpl.TemplateData{

@@ -3,7 +3,7 @@ package stackscript_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/stackscript/tmpl"
 )
@@ -38,8 +38,8 @@ func TestAccDataSourceStackscript_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rev_note", "initial"),
 					resource.TestCheckResourceAttr(resourceName, "script", basicStackScript),
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "images.0", "linode/ubuntu18.04"),
-					resource.TestCheckResourceAttr(resourceName, "images.1", "linode/ubuntu16.04lts"),
+					acceptance.CheckListContains(resourceName, "images", "linode/ubuntu18.04"),
+					acceptance.CheckListContains(resourceName, "images", "linode/ubuntu16.04lts"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.0.name", "name"),
 					resource.TestCheckResourceAttr(resourceName, "user_defined_fields.0.label", "Your name"),

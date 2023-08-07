@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -23,7 +23,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
@@ -46,7 +46,7 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceStackscript_basic(t *testing.T) {
+func TestAccResourceStackscript_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_stackscript.foobar"
@@ -63,7 +63,7 @@ func TestAccResourceStackscript_basic(t *testing.T) {
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
-					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
+					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
@@ -93,7 +93,7 @@ func TestAccResourceStackscript_update(t *testing.T) {
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
-					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
+					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
@@ -103,7 +103,7 @@ func TestAccResourceStackscript_update(t *testing.T) {
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
-					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
+					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", stackscriptName)),
 				),
 			},
@@ -132,7 +132,7 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 					checkStackscriptExists,
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "initial"),
-					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
+					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
 					resource.TestCheckResourceAttr(resName, "script", "#!/bin/bash\necho hello\n"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.#", "0"),
 					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
@@ -145,14 +145,14 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "description", "tf_test stackscript"),
 					resource.TestCheckResourceAttr(resName, "rev_note", "second"),
 					resource.TestCheckResourceAttr(resName, "script", "#!/bin/bash\n# <UDF name=\"hasudf\" label=\"a label\" example=\"an example\" default=\"a default\">\necho bye\n"),
-					resource.TestCheckResourceAttr(resName, "images.0", "linode/ubuntu18.04"),
-					resource.TestCheckResourceAttr(resName, "images.1", "linode/ubuntu16.04lts"),
+					acceptance.CheckListContains(resName, "images", "linode/ubuntu18.04"),
+					acceptance.CheckListContains(resName, "images", "linode/ubuntu16.04lts"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.#", "1"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.name", "hasudf"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.label", "a label"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.default", "a default"),
 					resource.TestCheckResourceAttr(resName, "user_defined_fields.0.example", "an example"),
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s", stackscriptName)),
+					resource.TestCheckResourceAttr(resName, "label", stackscriptName),
 				),
 			},
 			{

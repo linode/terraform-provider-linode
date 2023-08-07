@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -32,37 +32,6 @@ func CheckMySQLDatabaseExists(name string, db *linodego.MySQLDatabase) resource.
 		found, err := client.GetMySQLDatabase(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("error retrieving state of mysql database %s: %s", rs.Primary.Attributes["label"], err)
-		}
-
-		if db != nil {
-			*db = *found
-		}
-
-		return nil
-	}
-}
-
-func CheckMongoDatabaseExists(name string, db *linodego.MongoDatabase) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
-
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("Not found: %s", name)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-
-		id, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		found, err := client.GetMongoDatabase(context.Background(), id)
-		if err != nil {
-			return fmt.Errorf("error retrieving state of mongo database %s: %s", rs.Primary.Attributes["label"], err)
 		}
 
 		if db != nil {

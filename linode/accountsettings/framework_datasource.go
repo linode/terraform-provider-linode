@@ -4,11 +4,15 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+<<<<<<< HEAD
 	"github.com/linode/linodego"
+=======
+>>>>>>> 953248a85dd3a5b6c5dde77146267067f81c9ec3
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
+<<<<<<< HEAD
 	return &DataSource{}
 }
 
@@ -48,6 +52,20 @@ func (r *DataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = frameworkDataSourceSchema
+=======
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			helper.BaseDataSourceConfig{
+				Name:   "linode_account_settings",
+				Schema: &frameworkDataSourceSchema,
+			},
+		),
+	}
+}
+
+type DataSource struct {
+	helper.BaseDataSource
+>>>>>>> 953248a85dd3a5b6c5dde77146267067f81c9ec3
 }
 
 func (r *DataSource) Read(
@@ -55,7 +73,11 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+<<<<<<< HEAD
 	client := r.client
+=======
+	client := r.Meta.Client
+>>>>>>> 953248a85dd3a5b6c5dde77146267067f81c9ec3
 
 	var data AccountSettingsModel
 

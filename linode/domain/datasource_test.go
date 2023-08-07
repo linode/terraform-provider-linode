@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/domain/tmpl"
 )
 
-func TestAccDataSourceDomain_basic(t *testing.T) {
+func TestAccDataSourceDomain_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_domain.foobar"
@@ -19,8 +19,8 @@ func TestAccDataSourceDomain_basic(t *testing.T) {
 	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, domainName),

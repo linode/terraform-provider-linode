@@ -5,10 +5,24 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 )
 
-var ValidDatabaseTypes = []string{"mongodb", "postgresql", "mysql"}
+var ValidDatabaseTypes = []string{"postgresql", "mysql"}
+
+var UpdateObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"day_of_week":   types.StringType,
+		"duration":      types.Int64Type,
+		"frequency":     types.StringType,
+		"hour_of_day":   types.Int64Type,
+		"week_of_month": types.Int64Type,
+	},
+}
 
 func ResolveValidDBEngine(
 	ctx context.Context, client linodego.Client, engine string,
@@ -131,4 +145,33 @@ func WaitForDatabaseUpdated(ctx context.Context, client linodego.Client, dbID in
 	}
 
 	return nil
+}
+
+func FlattenDatabaseMaintenanceWindow(ctx context.Context, maintenance linodego.DatabaseMaintenanceWindow) (
+	*basetypes.ListValue, diag.Diagnostics,
+) {
+	result := make(map[string]attr.Value)
+
+	result["day_of_week"] = types.StringValue(FlattenDayOfWeek(maintenance.DayOfWeek))
+	result["duration"] = types.Int64Value(int64(maintenance.Duration))
+	result["frequency"] = types.StringValue(string(maintenance.Frequency))
+	result["hour_of_day"] = types.Int64Value(int64(maintenance.HourOfDay))
+	result["week_of_month"] = IntPointerValueWithDefault(maintenance.WeekOfMonth)
+
+	obj, diag := types.ObjectValue(UpdateObjectType.AttrTypes, result)
+	if diag.HasError() {
+		return nil, diag
+	}
+
+	objList := []attr.Value{obj}
+
+	resultList, diag := basetypes.NewListValue(
+		UpdateObjectType,
+		objList,
+	)
+	if diag.HasError() {
+		return nil, diag
+	}
+
+	return &resultList, nil
 }

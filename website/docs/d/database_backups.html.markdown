@@ -3,7 +3,7 @@ layout: "linode"
 page_title: "Linode: linode_database_backups"
 sidebar_current: "docs-linode-datasource-database-backups"
 description: |-
-Provides information about Linode Database Backups that match a set of filters.
+  Provides information about Linode Database Backups that match a set of filters.
 ---
 
 # Data Source: linode\_database\_backups
@@ -21,12 +21,12 @@ data "linode_database_backups" "all-backups" {
 }
 ```
 
-Get information about all automatic MongoDB Database Backups:
+Get information about all automatic PostgreSQL Database Backups:
 
 ```hcl
 data "linode_database_backups" "auto-backups" {
   database_id = 12345
-  database_type = "mongodb"
+  database_type = "postgresql"
   
   filter {
     name = "type"
@@ -41,7 +41,7 @@ The following arguments are supported:
 
 * `database_id` - (Required) The ID of the database to retrieve backups for.
 
-* `database_type` - (Required) The type of the database to retrieve backups for. (`mysql`, `mongodb`, `postgresql`)
+* `database_type` - (Required) The type of the database to retrieve backups for. (`mysql`, `postgresql`)
 
 * `latest` - (Optional) If true, only the latest backup will be returned.
 

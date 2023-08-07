@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
 )
@@ -16,9 +16,9 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, instanceName, testRegion),
@@ -34,6 +34,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.ipv4.#", "2"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.ipv6"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.host_uuid"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.has_user_data"),
 					resource.TestCheckResourceAttr(resName, "instances.0.disk.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.config.#", "1"),
 				),
@@ -51,9 +52,9 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 	tagName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataMultiple(t, instanceName, tagName, testRegion),

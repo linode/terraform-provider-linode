@@ -10,52 +10,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/accountlogin"
-	"github.com/linode/terraform-provider-linode/linode/accountlogins"
-	"github.com/linode/terraform-provider-linode/linode/backup"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
-	"github.com/linode/terraform-provider-linode/linode/databasebackups"
-	"github.com/linode/terraform-provider-linode/linode/databaseengines"
-	"github.com/linode/terraform-provider-linode/linode/databasemongodb"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
 	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
-	"github.com/linode/terraform-provider-linode/linode/databases"
 	"github.com/linode/terraform-provider-linode/linode/domain"
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
-	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
-	"github.com/linode/terraform-provider-linode/linode/images"
 	"github.com/linode/terraform-provider-linode/linode/instance"
 	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
-	"github.com/linode/terraform-provider-linode/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
-	"github.com/linode/terraform-provider-linode/linode/instancetype"
-	"github.com/linode/terraform-provider-linode/linode/instancetypes"
-	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/lke"
-	"github.com/linode/terraform-provider-linode/linode/lkeversions"
-	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
-	"github.com/linode/terraform-provider-linode/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/linode/obj"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/linode/objcluster"
-	"github.com/linode/terraform-provider-linode/linode/objkey"
-	"github.com/linode/terraform-provider-linode/linode/profile"
-	"github.com/linode/terraform-provider-linode/linode/rdns"
-	"github.com/linode/terraform-provider-linode/linode/region"
-	"github.com/linode/terraform-provider-linode/linode/regions"
-	"github.com/linode/terraform-provider-linode/linode/sshkey"
-	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/user"
-	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
@@ -105,6 +80,12 @@ func Provider() *schema.Provider {
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
 
+			"skip_implicit_reboots": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If true, Linode Instances will not be rebooted on config and interface changes.",
+			},
+
 			"disable_internal_cache": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -140,48 +121,13 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"linode_account_login":          accountlogin.DataSource(),
-			"linode_account_logins":         accountlogins.DataSource(),
-			"linode_database_backups":       databasebackups.DataSource(),
-			"linode_database_engines":       databaseengines.DataSource(),
-			"linode_database_mongodb":       databasemongodb.DataSource(),
-			"linode_database_mysql":         databasemysql.DataSource(),
-			"linode_database_postgresql":    databasepostgresql.DataSource(),
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
-			"linode_databases":              databases.DataSource(),
-			"linode_domain":                 domain.DataSource(),
-			"linode_domain_record":          domainrecord.DataSource(),
-			"linode_domain_zonefile":        domainzonefile.DataSource(),
-			"linode_firewall":               firewall.DataSource(),
-			"linode_image":                  image.DataSource(),
-			"linode_images":                 images.DataSource(),
 			"linode_instances":              instance.DataSource(),
-			"linode_instance_backups":       backup.DataSource(),
-			"linode_instance_type":          instancetype.DataSource(),
-			"linode_instance_types":         instancetypes.DataSource(),
-			"linode_instance_networking":    instancenetworking.DataSource(),
-			"linode_ipv6_range":             ipv6range.DataSource(),
 			"linode_lke_cluster":            lke.DataSource(),
-			"linode_lke_versions":           lkeversions.DataSource(),
-			"linode_networking_ip":          networkingip.DataSource(),
-			"linode_nodebalancer":           nb.DataSource(),
-			"linode_nodebalancer_node":      nbnode.DataSource(),
-			"linode_nodebalancer_config":    nbconfig.DataSource(),
-			"linode_object_storage_bucket":  objbucket.DataSource(),
-			"linode_object_storage_cluster": objcluster.DataSource(),
-			"linode_profile":                profile.DataSource(),
-			"linode_region":                 region.DataSource(),
-			"linode_regions":                regions.DataSource(),
-			"linode_sshkey":                 sshkey.DataSource(),
-			"linode_stackscripts":           stackscripts.DataSource(),
-			"linode_user":                   user.DataSource(),
-			"linode_vlans":                  vlan.DataSource(),
-			"linode_volume":                 volume.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
-			"linode_database_mongodb":         databasemongodb.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
 			"linode_database_postgresql":      databasepostgresql.Resource(),
 			"linode_domain":                   domain.Resource(),
@@ -194,16 +140,11 @@ func Provider() *schema.Provider {
 			"linode_instance_disk":            instancedisk.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),
 			"linode_instance_shared_ips":      instancesharedips.Resource(),
-			"linode_ipv6_range":               ipv6range.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
-			"linode_nodebalancer":             nb.Resource(),
 			"linode_nodebalancer_node":        nbnode.Resource(),
 			"linode_nodebalancer_config":      nbconfig.Resource(),
-			"linode_object_storage_key":       objkey.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
-			"linode_rdns":                     rdns.Resource(),
-			"linode_sshkey":                   sshkey.Resource(),
 			"linode_user":                     user.Resource(),
 			"linode_volume":                   volume.Resource(),
 		},
@@ -296,6 +237,7 @@ func providerConfigure(
 	config := &helper.Config{
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
+		SkipImplicitReboots:    d.Get("skip_implicit_reboots").(bool),
 
 		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 

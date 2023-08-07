@@ -6,9 +6,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/firewall/tmpl"
@@ -48,7 +48,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("failed to get client: %s", err)
 	}
@@ -449,6 +449,37 @@ func TestAccLinodeFirewall_emptyIPv6(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+				),
+			},
+			{
+				ResourceName:      testFirewallResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccLinodeFirewall_noRules(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: testProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.NoRules(t, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "0"),

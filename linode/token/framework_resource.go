@@ -3,10 +3,8 @@ package token
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -14,73 +12,19 @@ import (
 )
 
 func NewResource() resource.Resource {
-	return &Resource{}
+	return &Resource{
+		BaseResource: helper.NewBaseResource(
+			helper.BaseResourceConfig{
+				Name:   "linode_token",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
+		),
+	}
 }
 
 type Resource struct {
-	client *linodego.Client
-}
-
-func (data *ResourceModel) parseToken(token *linodego.Token) {
-	data.Created = types.StringValue(token.Created.Format(time.RFC3339))
-	data.Expiry = types.StringValue(token.Expiry.Format(time.RFC3339))
-	data.Label = types.StringValue(token.Label)
-	data.Scopes = types.StringValue(token.Scopes)
-	data.Token = types.StringValue(token.Token)
-	data.ID = types.StringValue(strconv.Itoa(token.ID))
-}
-
-func (r *Resource) Configure(
-	ctx context.Context,
-	req resource.ConfigureRequest,
-	resp *resource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetResourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	r.client = meta.Client
-}
-
-// ResourceModel describes the Terraform resource data model to match the
-// resource schema.
-type ResourceModel struct {
-	Label   types.String `tfsdk:"label"`
-	Scopes  types.String `tfsdk:"scopes"`
-	Expiry  types.String `tfsdk:"expiry"`
-	Created types.String `tfsdk:"created"`
-	Token   types.String `tfsdk:"token"`
-	ID      types.String `tfsdk:"id"`
-}
-
-func (r *Resource) Metadata(
-	ctx context.Context,
-	req resource.MetadataRequest,
-	resp *resource.MetadataResponse,
-) {
-	resp.TypeName = "linode_token"
-}
-
-func (r *Resource) Schema(
-	ctx context.Context,
-	req resource.SchemaRequest,
-	resp *resource.SchemaResponse,
-) {
-	resp.Schema = frameworkResourceSchema
-}
-
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	helper.BaseResource
 }
 
 func (r *Resource) Create(
@@ -89,7 +33,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 	var data ResourceModel
-	client := r.client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -125,7 +69,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseToken(token)
+	data.parseToken(token, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -134,7 +78,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	var data ResourceModel
 
@@ -143,12 +87,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	token, err := client.GetToken(ctx, int(id))
+	token, err := client.GetToken(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -171,7 +115,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseToken(token)
+	data.parseToken(token, true)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -180,48 +125,32 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var data ResourceModel
-	var tokenIDString string
-	resp.Diagnostics.Append(
-		req.State.GetAttribute(ctx, path.Root("id"), &tokenIDString)...,
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	var plan, state ResourceModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
-	tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	if !state.Label.Equal(plan.Label) {
+		tokenIDString := state.ID.ValueString()
+		tokenID := helper.StringToInt(tokenIDString, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
-	client := r.client
-	token, err := client.GetToken(ctx, tokenID)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get the token with id %v", tokenID),
-			err.Error(),
-		)
-		return
-	}
+		client := r.Meta.Client
+		token, err := client.GetToken(ctx, tokenID)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to get the token with id %v", tokenID),
+				err.Error(),
+			)
+			return
+		}
 
-	updateOpts := token.GetUpdateOptions()
-	plannedTokenLabel := data.Label.ValueString()
+		updateOpts := token.GetUpdateOptions()
+		updateOpts.Label = plan.Label.ValueString()
 
-	resourceUpdated := false
-
-	if updateOpts.Label != plannedTokenLabel {
-		updateOpts.Label = plannedTokenLabel
-		resourceUpdated = true
-	}
-
-	if resourceUpdated {
-		token, err = client.UpdateToken(ctx, token.ID, updateOpts)
-
+		_, err = client.UpdateToken(ctx, token.ID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update the token with id %v", tokenID),
@@ -229,10 +158,8 @@ func (r *Resource) Update(
 			)
 			return
 		}
-
-		data.parseToken(token)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(
@@ -247,18 +174,20 @@ func (r *Resource) Delete(
 		return
 	}
 
-	tokenID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
+	tokenID := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	client := r.client
+	client := r.Meta.Client
 	err := client.DeleteToken(ctx, tokenID)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete the token with id %v", tokenID),
-			err.Error(),
-		)
+		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete the token with id %v", tokenID),
+				err.Error(),
+			)
+		}
 		return
 	}
 

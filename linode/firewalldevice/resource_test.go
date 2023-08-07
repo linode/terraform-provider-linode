@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/firewalldevice/tmpl"
@@ -25,7 +25,7 @@ func init() {
 	testRegion = region
 }
 
-func TestAccResourceFirewallDevice_basic(t *testing.T) {
+func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	var firewall linodego.Firewall
@@ -39,7 +39,7 @@ func TestAccResourceFirewallDevice_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		Providers:                 acceptance.TestAccProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion),

@@ -97,6 +97,11 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Description: "The Linode’s host machine, as a UUID.",
 		Computed:    true,
 	},
+	"has_user_data": {
+		Type:        schema.TypeBool,
+		Description: "Whether this Instance was created with user-data.",
+		Computed:    true,
+	},
 	"specs": {
 		Computed: true,
 		Type:     schema.TypeList,

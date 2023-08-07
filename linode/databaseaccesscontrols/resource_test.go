@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols/tmpl"
@@ -18,13 +19,12 @@ import (
 
 var (
 	mysqlEngineVersion    string
-	mongoEngineVersion    string
 	postgresEngineVersion string
 	testRegion            string
 )
 
 func init() {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -35,14 +35,6 @@ func init() {
 	}
 
 	mysqlEngineVersion = v.ID
-
-	// TODO: Uncomment once Mongo support is re-enabled
-	//v, err = helper.ResolveValidDBEngine(context.Background(), *client, "mongodb")
-	//if err != nil {
-	//	log.Fatalf("failed to get db engine version: %s", err)
-	//}
-	//
-	//mongoEngineVersion = v.ID
 
 	v, err = helper.ResolveValidDBEngine(context.Background(), *client, "postgresql")
 	if err != nil {
@@ -60,15 +52,18 @@ func init() {
 }
 
 func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.MySQL(t, dbName, mysqlEngineVersion, "0.0.0.0/0", testRegion),
@@ -95,51 +90,19 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 	})
 }
 
-func TestAccResourceDatabaseAccessControls_MongoDB(t *testing.T) {
-	t.Parallel()
-	t.Skip()
-
-	resName := "linode_database_access_controls.foobar"
-	dbName := acctest.RandomWithPrefix("tf_test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "0.0.0.0/0", testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(resName, "allow_list.0", "0.0.0.0/0"),
-				),
-			},
-			{
-				Config: tmpl.MongoDB(t, dbName, mongoEngineVersion, "192.168.0.25/32", testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(resName, "allow_list.0", "192.168.0.25/32"),
-				),
-			},
-			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PostgreSQL(t, dbName, postgresEngineVersion, "0.0.0.0/0", testRegion),

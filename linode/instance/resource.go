@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	LinodeInstanceCreateTimeout = 10 * time.Minute
-	LinodeInstanceUpdateTimeout = 20 * time.Minute
+	LinodeInstanceCreateTimeout = 15 * time.Minute
+	LinodeInstanceUpdateTimeout = 25 * time.Minute
 	LinodeInstanceDeleteTimeout = 10 * time.Minute
 )
 
@@ -96,6 +96,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("tags", instance.Tags)
 	d.Set("booted", isInstanceBooted(instance))
 	d.Set("host_uuid", instance.HostUUID)
+	d.Set("has_user_data", instance.HasUserData)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -178,6 +179,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		for i, ni := range interfaces {
 			createOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
 		}
+	}
+
+	if _, metadataOk := d.GetOk("metadata.0"); metadataOk {
+		var metadata linodego.InstanceMetadataOptions
+
+		if userData, userDataOk := d.GetOk("metadata.0.user_data"); userDataOk {
+			metadata.UserData = userData.(string)
+		}
+
+		createOpts.Metadata = &metadata
 	}
 
 	_, disksOk := d.GetOk("disk")
@@ -640,6 +651,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	// Don't reboot if the Linode should be powered off
 	if !bootedNull && !booted {
+		rebootInstance = false
+	}
+
+	// Only reboot the instance if implicit reboots are not skipped
+	if meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
 		rebootInstance = false
 	}
 

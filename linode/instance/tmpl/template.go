@@ -157,6 +157,15 @@ func ConfigInterfacesUpdate(t *testing.T, label, region string) string {
 		})
 }
 
+func ConfigInterfacesUpdateNoReboot(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_config_interfaces_update_no_reboot", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
 func ConfigInterfacesUpdateEmpty(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_update_empty", TemplateData{
@@ -521,6 +530,15 @@ func ManyLinodes(t *testing.T, label, pubKey, region string) string {
 			Label:  label,
 			Image:  acceptance.TestImageLatest,
 			PubKey: pubKey,
+			Region: region,
+		})
+}
+
+func UserData(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_userdata", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
 			Region: region,
 		})
 }

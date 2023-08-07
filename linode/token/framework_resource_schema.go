@@ -1,13 +1,23 @@
 package token
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
+)
+
+const (
+	RequireReplacementWhenExpiryChangedDescription = "Requiring token recreation if the " +
+		"Expiry time semantically changed."
+	RequireReplacementWhenScopesChangedDescription = "Requiring token recreation if the " +
+		"OAuth 2.0 scopes changed semantically. For example, from 'linodes:read_only lke:read_only' " +
+		"to 'linodes:read_write lke:read_only' is a semantically change, but from " +
+		"'linodes:read_only lke:read_only' to 'lke:read_only linodes:read_only' isn't."
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -24,34 +34,70 @@ var frameworkResourceSchema = schema.Schema{
 				"list of available scopes on Linode API docs site, https://www.linode.com/docs/api#oauth-reference",
 			Required: true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						sr planmodifier.StringRequest,
+						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						rrifr.RequiresReplace = !helper.CompareScopes(
+							sr.PlanValue.ValueString(),
+							sr.StateValue.ValueString(),
+						)
+					},
+					RequireReplacementWhenExpiryChangedDescription,
+					RequireReplacementWhenExpiryChangedDescription,
+				),
 			},
+			CustomType: customtypes.LinodeScopesStringType{},
 		},
 		"expiry": schema.StringAttribute{
 			Description: "When this token will expire. Personal Access Tokens cannot be renewed, so after " +
 				"this time the token will be completely unusable and a new token will need to be generated. Tokens " +
 				"may be created with 'null' as their expiry and will never expire unless revoked. Format: " +
-				time.RFC3339,
+				helper.TIME_FORMAT,
 			Optional: true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						sr planmodifier.StringRequest,
+						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						rrifr.RequiresReplace = !helper.CompareTimeStrings(
+							sr.PlanValue.ValueString(),
+							sr.StateValue.ValueString(),
+							time.RFC3339,
+						)
+					},
+					RequireReplacementWhenScopesChangedDescription,
+					RequireReplacementWhenScopesChangedDescription,
+				),
 			},
-			Validators: []validator.String{
-				helper.NewDateTimeStringValidator(time.RFC3339),
-			},
+			CustomType: customtypes.RFC3339TimeStringType{},
 		},
 		"created": schema.StringAttribute{
 			Description: "The date and time this token was created.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+			CustomType: customtypes.RFC3339TimeStringType{},
 		},
 		"token": schema.StringAttribute{
 			Sensitive:   true,
 			Description: "The token used to access the API.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"id": schema.StringAttribute{
 			Description: "The ID of the token.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 	},
 }

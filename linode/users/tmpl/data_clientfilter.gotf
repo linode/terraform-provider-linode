@@ -1,0 +1,17 @@
+{{ define "users_data_clientfilter"}}
+
+{{ template "users_data_base" .}}
+
+data "linode_users" "user" {
+    filter {
+        name = "email"
+        values = [linode_user.test.email]
+    }
+
+    filter {
+        name = "restricted"
+        values = [linode_user.test.restricted]
+    }
+}
+
+{{ end }}

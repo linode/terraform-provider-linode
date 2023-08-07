@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func GetClientForSweepers() (*linodego.Client, error) {
+func GetTestClient() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")
 	if token == "" {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")

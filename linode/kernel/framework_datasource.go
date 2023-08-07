@@ -10,15 +10,22 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			helper.BaseDataSourceConfig{
+				Name:   "linode_kernel",
+				Schema: &frameworkDatasourceSchema,
+			},
+		),
+	}
 }
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func (data *DataSourceModel) parseKernel(kernel *linodego.LinodeKernel) {
-	// data.ID = types.StringValue(kernel.ID)
+	data.ID = types.StringValue(kernel.ID)
 	data.Architecture = types.StringValue(kernel.Architecture)
 	data.Deprecated = types.BoolValue(kernel.Deprecated)
 	data.KVM = types.BoolValue(kernel.KVM)
@@ -26,24 +33,6 @@ func (data *DataSourceModel) parseKernel(kernel *linodego.LinodeKernel) {
 	data.PVOPS = types.BoolValue(kernel.PVOPS)
 	data.Version = types.StringValue(kernel.Version)
 	data.XEN = types.BoolValue(kernel.XEN)
-}
-
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
 }
 
 type DataSourceModel struct {
@@ -57,28 +46,12 @@ type DataSourceModel struct {
 	XEN          types.Bool   `tfsdk:"xen"`
 }
 
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_kernel"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDatasourceSchema
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.client
+	client := d.Meta.Client
 
 	var data DataSourceModel
 

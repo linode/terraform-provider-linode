@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/instancenetworking/tmpl"
@@ -31,9 +31,9 @@ func TestAccDataSourceInstanceNetworking_basic(t *testing.T) {
 
 	name := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: acceptance.CheckInstanceDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, name, testRegion),
@@ -42,8 +42,13 @@ func TestAccDataSourceInstanceNetworking_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t, name, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.#"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.private.#"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.public.#"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.reserved.#"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.shared.#"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.global.#"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.link_local.%"),
+					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.slaac.%"),
 				),
 			},
 		},

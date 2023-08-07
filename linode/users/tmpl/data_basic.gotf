@@ -1,0 +1,12 @@
+{{ define "users_data_basic" }}
+
+{{ template "users_data_base" .}}
+
+data "linode_users" "user" {
+    filter {
+        name = "username"
+        values = [data.linode_user.test.username]
+    }
+}
+
+{{ end }}

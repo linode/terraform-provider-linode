@@ -2,15 +2,15 @@ package databasemysqlbackups_test
 
 import (
 	"context"
-	"log"
-	"testing"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"log"
+	"os"
+	"testing"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -40,6 +40,9 @@ func init() {
 }
 
 func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	var db linodego.MySQLDatabase
@@ -51,8 +54,8 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 	dataSourceName := "data.linode_database_mysql_backups.foobar"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: acceptance.TestAccProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, tmpl.TemplateData{

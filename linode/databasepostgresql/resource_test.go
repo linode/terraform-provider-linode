@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databasepostgresql/tmpl"
@@ -28,7 +28,7 @@ func init() {
 		F:    sweep,
 	})
 
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatalf("failed to get client: %s", err)
 	}
@@ -49,7 +49,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetClientForSweepers()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
@@ -73,16 +73,16 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestAccResourceDatabasePostgres_basic(t *testing.T) {
+func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_database_postgresql.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, dbName, engineVersion, testRegion),
@@ -127,9 +127,9 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 	dbName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Complex(t, tmpl.TemplateData{
@@ -138,7 +138,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 					AllowedIP:             "0.0.0.0/0",
 					ClusterSize:           3,
 					Encrypted:             true,
-					ReplicationType:       "semi_synch",
+					ReplicationType:       "asynch",
 					ReplicationCommitType: "on",
 					SSLConnection:         true,
 					Region:                testRegion,
@@ -155,7 +155,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "cluster_size", "3"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "semi_synch"),
+					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
 					resource.TestCheckResourceAttr(resName, "replication_commit_type", "on"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 
@@ -185,7 +185,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 					AllowedIP:             "192.0.2.1/32",
 					ClusterSize:           3,
 					Encrypted:             true,
-					ReplicationType:       "semi_synch",
+					ReplicationType:       "asynch",
 					ReplicationCommitType: "on",
 					SSLConnection:         true,
 					Region:                testRegion,
@@ -202,7 +202,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "cluster_size", "3"),
 					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
-					resource.TestCheckResourceAttr(resName, "replication_type", "semi_synch"),
+					resource.TestCheckResourceAttr(resName, "replication_type", "asynch"),
 					resource.TestCheckResourceAttr(resName, "replication_commit_type", "on"),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 
@@ -248,7 +248,7 @@ func checkDestroy(s *terraform.State) error {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
 		}
 
-		_, err = client.GetMongoDatabase(context.Background(), id)
+		_, err = client.GetPostgresDatabase(context.Background(), id)
 
 		if err == nil {
 			return fmt.Errorf("postgres database with id %d still exists", id)

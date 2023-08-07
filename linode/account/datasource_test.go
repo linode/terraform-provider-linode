@@ -3,12 +3,12 @@ package account_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/account/tmpl"
 )
 
-func TestAccDataSourceAccount_basic(t *testing.T) {
+func TestAccDataSourceAccount_basic_smoke(t *testing.T) {
 	acceptance.OptInTest(t)
 
 	t.Parallel()

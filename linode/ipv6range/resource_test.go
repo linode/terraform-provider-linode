@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -27,9 +27,9 @@ func TestAccIPv6Range_basic(t *testing.T) {
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkIPv6RangeDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Basic(t, instLabel, testRegion),
@@ -63,9 +63,9 @@ func TestAccIPv6Range_routeTarget(t *testing.T) {
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkIPv6RangeDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.RouteTarget(t, instLabel, testRegion),
@@ -95,13 +95,13 @@ func TestAccIPv6Range_noID(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    acceptance.TestAccProviders,
-		CheckDestroy: checkIPv6RangeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkIPv6RangeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.NoID(t),
-				ExpectError: regexp.MustCompile("either linode_id or route_target must be specified"),
+				ExpectError: regexp.MustCompile("Either linode_id or route_target must be specified."),
 			},
 		},
 	})
@@ -121,9 +121,9 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 		var instance2 linodego.Instance
 
 		resource.Test(retryT, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkIPv6RangeDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.ReassignmentStep1(t, instLabel, testRegion),
@@ -176,9 +176,9 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(t, resource.TestCase{
-			PreCheck:     func() { acceptance.PreCheck(t) },
-			Providers:    acceptance.TestAccProviders,
-			CheckDestroy: checkIPv6RangeDestroy,
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkIPv6RangeDestroy,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.RaceCondition(t, instLabel, testRegion),
