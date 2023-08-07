@@ -4,61 +4,28 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func NewResource() resource.Resource {
-	return &Resource{}
+	return &Resource{
+		BaseResource: helper.NewBaseResource(
+			helper.BaseResourceConfig{
+				Name:   "linode_account_settings",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
+		),
+	}
 }
 
 type Resource struct {
-	client *linodego.Client
-}
-
-func (r *Resource) Configure(
-	ctx context.Context,
-	req resource.ConfigureRequest,
-	resp *resource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetResourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	r.client = meta.Client
-}
-
-func (r *Resource) Metadata(
-	ctx context.Context,
-	req resource.MetadataRequest,
-	resp *resource.MetadataResponse,
-) {
-	resp.TypeName = "linode_account_settings"
-}
-
-func (r *Resource) Schema(
-	ctx context.Context,
-	req resource.SchemaRequest,
-	resp *resource.SchemaResponse,
-) {
-	resp.Schema = frameworkResourceSchema
-}
-
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	helper.BaseResource
 }
 
 func (r *Resource) Create(
@@ -74,9 +41,8 @@ func (r *Resource) Create(
 	}
 
 	// Update the account
-	plan, err := r.updateAccountSettings(ctx, plan)
 	resp.Diagnostics.Append(
-		err...,
+		r.updateAccountSettings(ctx, &plan)...,
 	)
 	if resp.Diagnostics.HasError() {
 		return
@@ -91,7 +57,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	client := r.client
+	client := r.Meta.Client
 
 	var data AccountSettingsModel
 
@@ -118,14 +84,10 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseAccountSettings(
-		ctx,
+	data.parseAccountSettings(
 		account.Email,
 		settings,
-	)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -143,9 +105,8 @@ func (r *Resource) Update(
 	}
 
 	// Update the account
-	plan, err := r.updateAccountSettings(ctx, plan)
 	resp.Diagnostics.Append(
-		err...,
+		r.updateAccountSettings(ctx, &plan)...,
 	)
 	if resp.Diagnostics.HasError() {
 		return
@@ -164,9 +125,9 @@ func (r *Resource) Delete(
 
 func (r *Resource) updateAccountSettings(
 	ctx context.Context,
-	plan AccountSettingsModel,
-) (AccountSettingsModel, diag.Diagnostics) {
-	client := r.client
+	plan *AccountSettingsModel,
+) diag.Diagnostics {
+	client := r.Meta.Client
 	var diagnostics diag.Diagnostics
 
 	// Longview Plan update functionality has been moved
@@ -179,7 +140,7 @@ func (r *Resource) updateAccountSettings(
 				"Failed to update Linode Longview Plan",
 				err.Error(),
 			)
-			return plan, diagnostics
+			return diagnostics
 		}
 	}
 
@@ -194,16 +155,13 @@ func (r *Resource) updateAccountSettings(
 			fmt.Sprintf("Failed to update Linode Account Settings"),
 			err.Error(),
 		)
-		return plan, diagnostics
+		return diagnostics
 	}
 
-	diagnostics.Append(
-		plan.parseAccountSettings(
-			ctx,
-			plan.ID.ValueString(),
-			settings,
-		)...,
+	plan.parseAccountSettings(
+		plan.ID.ValueString(),
+		settings,
 	)
 
-	return plan, diagnostics
+	return diagnostics
 }
