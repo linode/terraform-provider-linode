@@ -36,7 +36,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -75,7 +75,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.FirewallCreateOptions{
@@ -84,14 +84,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	createOpts.Devices.Linodes = helper.ExpandIntSet(d.Get("linodes").(*schema.Set))
-	createOpts.Rules.Inbound = expandFirewallRules(d.Get("inbound").([]interface{}))
+	createOpts.Rules.Inbound = expandFirewallRules(d.Get("inbound").([]any))
 	createOpts.Rules.InboundPolicy = d.Get("inbound_policy").(string)
-	createOpts.Rules.Outbound = expandFirewallRules(d.Get("outbound").([]interface{}))
+	createOpts.Rules.Outbound = expandFirewallRules(d.Get("outbound").([]any))
 	createOpts.Rules.OutboundPolicy = d.Get("outbound_policy").(string)
-
-	if len(createOpts.Rules.Inbound)+len(createOpts.Rules.Outbound) == 0 {
-		return diag.Errorf("cannot create firewall without at least one inbound or outbound rule")
-	}
 
 	firewall, err := client.CreateFirewall(ctx, createOpts)
 	if err != nil {
@@ -110,7 +106,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -135,8 +131,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	inboundRules := expandFirewallRules(d.Get("inbound").([]interface{}))
-	outboundRules := expandFirewallRules(d.Get("outbound").([]interface{}))
+	inboundRules := expandFirewallRules(d.Get("inbound").([]any))
+	outboundRules := expandFirewallRules(d.Get("outbound").([]any))
 	ruleSet := linodego.FirewallRuleSet{
 		Inbound:        inboundRules,
 		InboundPolicy:  d.Get("inbound_policy").(string),
@@ -189,7 +185,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {

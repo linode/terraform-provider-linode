@@ -9,20 +9,25 @@ import (
 
 // NewBaseDataSource returns a new instance of the BaseDataSource
 // struct for cleaner initialization.
-func NewBaseDataSource(name string, schemaObject schema.Schema) BaseDataSource {
+func NewBaseDataSource(cfg BaseDataSourceConfig) BaseDataSource {
 	return BaseDataSource{
-		TypeName:     name,
-		SchemaObject: schemaObject,
+		Config: cfg,
 	}
+}
+
+// BaseDataSourceConfig contains all configurable base resource fields.
+type BaseDataSourceConfig struct {
+	Name string
+
+	// Optional
+	Schema *schema.Schema
 }
 
 // BaseDataSource contains various re-usable fields and methods
 // intended for use in data source implementations by composition.
 type BaseDataSource struct {
-	Meta *FrameworkProviderMeta
-
-	SchemaObject schema.Schema
-	TypeName     string
+	Config BaseDataSourceConfig
+	Meta   *FrameworkProviderMeta
 }
 
 func (r *BaseDataSource) Configure(
@@ -46,7 +51,7 @@ func (r *BaseDataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = r.TypeName
+	resp.TypeName = r.Config.Name
 }
 
 func (r *BaseDataSource) Schema(
@@ -54,5 +59,14 @@ func (r *BaseDataSource) Schema(
 	req datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = r.SchemaObject
+	if r.Config.Schema == nil {
+		resp.Diagnostics.AddError(
+			"Missing Schema",
+			"Base data source was not provided a schema. "+
+				"Please provide a Schema config attribute or implement, the Schema(...) function.",
+		)
+		return
+	}
+
+	resp.Schema = *r.Config.Schema
 }

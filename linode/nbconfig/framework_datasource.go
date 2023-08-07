@@ -20,8 +20,10 @@ type DataSource struct {
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_nodebalancer_config",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_nodebalancer_config",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

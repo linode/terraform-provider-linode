@@ -20,14 +20,6 @@ resource "linode_instance" "foobar" {
             network = true
         }
 
-        interface {
-            purpose = "public"
-        }
-
-        interface {
-            purpose = "vlan"
-            label = "tf-really-cool-vlan"
-        }
         devices {
             sda {
                 disk_label = "boot"
@@ -43,14 +35,6 @@ resource "linode_instance" "foobar" {
             network = true
         }
 
-        interface {
-            purpose = "public"
-        }
-
-        interface {
-            purpose = "vlan"
-            label = "tf-really-cool-vlan"
-        }
         devices {
             sda {
                 disk_label = "boot"
