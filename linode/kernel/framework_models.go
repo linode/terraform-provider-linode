@@ -24,9 +24,16 @@ type DataSourceModel struct {
 func (data *DataSourceModel) ParseKernel(ctx context.Context, kernel *linodego.LinodeKernel) {
 	data.ID = types.StringValue(kernel.ID)
 	data.Architecture = types.StringValue(kernel.Architecture)
-	data.Built = customtypes.RFC3339TimeStringValue{
-		StringValue: types.StringValue(kernel.Built.Format(time.RFC3339)),
+	
+	built := types.StringNull()
+	if kernel.Built != nil {
+		built = types.StringValue(kernel.Built.Format(time.RFC3339))
 	}
+
+	data.Built = customtypes.RFC3339TimeStringValue{
+		StringValue: built,
+	}
+	
 	data.Deprecated = types.BoolValue(kernel.Deprecated)
 	data.KVM = types.BoolValue(kernel.KVM)
 	data.Label = types.StringValue(kernel.Label)
