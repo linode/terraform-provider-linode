@@ -62,6 +62,107 @@ resource "linode_volume" "foobar" {
 }
 ```
 
+If you use a `linode_instance_config` you should not include the `linode_id` in the `linode_volume`. The volume will be attached to the linode via the instance config. The folowing is a complete example which demonstrates the usage: 
+
+```hcl
+terraform {
+  required_providers {
+    linode = {
+      source  = "linode/linode"
+      version = "2.5.2"
+    }
+  }
+}
+
+provider "linode" {
+  # use default LINODE_TOKEN env var
+}
+
+resource "linode_instance_config" "my-config" {
+  linode_id = linode_instance.my-instance.id
+  label = "my-config"
+
+  devices {
+    sda {
+      disk_id = linode_instance_disk.boot.id
+    }
+
+    sdb {
+      disk_id = linode_instance_disk.swap.id
+    }
+
+    sdc {
+      volume_id = linode_volume.my-volume.id
+    }
+  }
+
+  helpers {
+    # Disable the updatedb helper
+    updatedb_disabled = false
+  }
+
+  # Public networking on eth0
+  interface {
+    purpose = "public"
+  }
+
+  # VLAN networking on eth1
+  interface {
+    purpose = "vlan"
+    label = "my-vlan"
+    ipam_address = "10.0.0.2/24"
+  }
+
+  booted = true
+
+  // Run a remote-exec provisioner
+  connection {
+    host        = linode_instance.my-instance.ip_address
+    user        = "root"
+    password    = "myc00lpass!"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Hello World!'"
+    ]
+  }
+}
+
+# Create a boot disk
+resource "linode_instance_disk" "boot" {
+  label = "boot"
+  linode_id = linode_instance.my-instance.id
+  size = linode_instance.my-instance.specs.0.disk - 512
+
+  image = "linode/ubuntu20.04"
+  root_pass = "myc00lpass!"
+}
+
+# Create a swap disk
+resource "linode_instance_disk" "swap" {
+  label = "swap"
+  linode_id = linode_instance.my-instance.id
+  size = 512
+  filesystem = "swap"
+}
+
+# Create a volume
+resource "linode_volume" "my-volume" {
+  region = "us-southeast"
+  label      = "my-volume"
+  size       = 20
+  linode_id = linode_instance.my-instance.id
+}
+
+resource "linode_instance" "my-instance" {
+  label = "my-instance"
+  type = "g6-standard-1"
+  region = "us-southeast"
+}
+```
+
+
 ## Argument Reference
 
 The following arguments are supported:
