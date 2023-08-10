@@ -62,7 +62,7 @@ resource "linode_volume" "foobar" {
 }
 ```
 
-If you use a `linode_instance_config` you should not include the `linode_id` in the `linode_volume`. The volume will be attached to the linode via the instance config. The folowing is a complete example which demonstrates the usage: 
+If you use a `linode_instance_config` you should not include the `linode_id` in the `linode_volume`. The volume will be attached to the linode via the instance config. The folowing is a complete example which demonstrates the usage:
 
 ```hcl
 terraform {
@@ -161,7 +161,6 @@ resource "linode_instance" "my-instance" {
   region = "us-southeast"
 }
 ```
-
 
 ## Argument Reference
 
