@@ -3,6 +3,7 @@ package helper
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"time"
 )
 
 // GetValueIfNotNull - assign StringNull() safely without throwing error.
@@ -57,4 +58,12 @@ func IntSliceToFramework(val []int) []types.Int64 {
 	}
 
 	return result
+}
+
+func NullableTimeToFramework(t *time.Time) types.String {
+	if t == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(t.Format(TIME_FORMAT))
 }

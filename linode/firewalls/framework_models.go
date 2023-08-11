@@ -2,13 +2,12 @@ package firewalls
 
 import (
 	"context"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	firewallresource "github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 )
 
@@ -58,16 +57,16 @@ func (data *FirewallDeviceModel) parseDevice(device linodego.FirewallDevice) {
 // FirewallModel describes the Terraform resource data model to match the
 // resource schema.
 type FirewallModel struct {
-	ID             types.Int64    `tfsdk:"id"`
-	Label          types.String   `tfsdk:"label"`
-	Tags           []types.String `tfsdk:"tags"`
-	Disabled       types.Bool     `tfsdk:"disabled"`
-	InboundPolicy  types.String   `tfsdk:"inbound_policy"`
-	OutboundPolicy types.String   `tfsdk:"outbound_policy"`
-	Linodes        []types.Int64  `tfsdk:"linodes"`
-	Status         types.String   `tfsdk:"status"`
-	Created        types.String   `tfsdk:"created"`
-	Updated        types.String   `tfsdk:"updated"`
+	ID             types.Int64                        `tfsdk:"id"`
+	Label          types.String                       `tfsdk:"label"`
+	Tags           []types.String                     `tfsdk:"tags"`
+	Disabled       types.Bool                         `tfsdk:"disabled"`
+	InboundPolicy  types.String                       `tfsdk:"inbound_policy"`
+	OutboundPolicy types.String                       `tfsdk:"outbound_policy"`
+	Linodes        []types.Int64                      `tfsdk:"linodes"`
+	Status         types.String                       `tfsdk:"status"`
+	Created        customtypes.RFC3339TimeStringValue `tfsdk:"created"`
+	Updated        customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
 
 	Inbound  []FirewallRuleModel   `tfsdk:"inbound"`
 	Outbound []FirewallRuleModel   `tfsdk:"outbound"`
@@ -88,8 +87,12 @@ func (data *FirewallModel) parseFirewall(
 	data.Linodes = helper.IntSliceToFramework(firewallresource.AggregateLinodeIDs(devices))
 	data.Status = types.StringValue(string(firewall.Status))
 
-	data.Created = types.StringValue(firewall.Created.Format(time.RFC3339))
-	data.Updated = types.StringValue(firewall.Updated.Format(time.RFC3339))
+	data.Created = customtypes.RFC3339TimeStringValue{
+		StringValue: helper.NullableTimeToFramework(firewall.Created),
+	}
+	data.Updated = customtypes.RFC3339TimeStringValue{
+		StringValue: helper.NullableTimeToFramework(firewall.Updated),
+	}
 
 	data.Inbound = make([]FirewallRuleModel, len(rules.Inbound))
 	for i, v := range rules.Inbound {
