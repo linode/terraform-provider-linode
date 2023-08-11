@@ -148,6 +148,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		sshkey.NewResource,
 		ipv6range.NewResource,
 		nb.NewResource,
+		accountsettings.NewResource,
 	}
 }
 
