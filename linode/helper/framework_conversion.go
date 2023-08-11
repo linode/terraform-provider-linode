@@ -1,9 +1,10 @@
 package helper
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"time"
 )
 
 // GetValueIfNotNull - assign StringNull() safely without throwing error.
