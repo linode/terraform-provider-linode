@@ -11,8 +11,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		helper.NewBaseDataSource(
-			"linode_database_postgresql",
-			frameworkDatasourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_database_postgresql",
+				Schema: &frameworkDatasourceSchema,
+			},
 		),
 	}
 }

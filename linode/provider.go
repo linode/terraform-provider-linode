@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
@@ -26,14 +25,11 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
-	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/lke"
-	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/linode/obj"
 	"github.com/linode/terraform-provider-linode/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/linode/rdns"
 	"github.com/linode/terraform-provider-linode/linode/user"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
@@ -131,7 +127,6 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_account_settings":         accountsettings.Resource(),
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
 			"linode_database_postgresql":      databasepostgresql.Resource(),
@@ -145,14 +140,11 @@ func Provider() *schema.Provider {
 			"linode_instance_disk":            instancedisk.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),
 			"linode_instance_shared_ips":      instancesharedips.Resource(),
-			"linode_ipv6_range":               ipv6range.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
-			"linode_nodebalancer":             nb.Resource(),
 			"linode_nodebalancer_node":        nbnode.Resource(),
 			"linode_nodebalancer_config":      nbconfig.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
-			"linode_rdns":                     rdns.Resource(),
 			"linode_user":                     user.Resource(),
 			"linode_volume":                   volume.Resource(),
 		},

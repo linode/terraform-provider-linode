@@ -8,33 +8,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/nbnode/tmpl"
 )
 
-var (
-	testProviders map[string]*schema.Provider
-	testProvider  *schema.Provider
-	testRegion    string
-)
+var testRegion string
 
 func init() {
-	provider, providerMap := acceptance.CreateTestProvider()
-	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
-		config.Config.SkipInstanceReadyPoll = true
-		config.Config.SkipInstanceDeletePoll = true
-		return nil
-	})
-
-	testProvider = provider
-	testProviders = providerMap
-
 	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})
 	if err != nil {
 		log.Fatal(err)
@@ -53,7 +37,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		Providers:                 testProviders,
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:              checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -83,9 +67,9 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 	nodeName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acceptance.PreCheck(t) },
-		Providers:    testProviders,
-		CheckDestroy: checkNodeBalancerNodeDestroy,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodeName, testRegion),
@@ -114,7 +98,10 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 }
 
 func checkNodeBalancerNodeExists(s *terraform.State) (err error) {
-	client := testProvider.Meta().(*helper.ProviderMeta).Client
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
 
 	var linodeID, nodebalancerID, nodeID, configID int
 	var expectedNodePort string
@@ -181,7 +168,10 @@ func checkNodeBalancerNodeExists(s *terraform.State) (err error) {
 }
 
 func checkNodeBalancerNodeDestroy(s *terraform.State) error {
-	client := testProvider.Meta().(*helper.ProviderMeta).Client
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_node" {
 			continue

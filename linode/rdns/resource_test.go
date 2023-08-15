@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/rdns/tmpl"
 )
 
@@ -164,7 +163,7 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 }
 
 func checkRDNSExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_rdns" {
@@ -181,7 +180,7 @@ func checkRDNSExists(s *terraform.State) error {
 }
 
 func checkRDNSDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccFrameworkProvider.Meta.Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_rdns" {
 			continue

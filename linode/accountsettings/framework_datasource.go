@@ -10,8 +10,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_account_settings",
-			frameworkDataSourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_account_settings",
+				Schema: &frameworkDataSourceSchema,
+			},
 		),
 	}
 }
@@ -52,14 +54,10 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseAccountSettings(
-		ctx,
+	data.parseAccountSettings(
 		account.Email,
 		settings,
-	)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
