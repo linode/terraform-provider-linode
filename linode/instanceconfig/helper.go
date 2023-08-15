@@ -3,6 +3,7 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 
@@ -116,14 +117,25 @@ func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
 		return nil
 	}
 
-	// devices := devicesBlock.([]map[string]any)
+	seenDevices := make(map[string]bool)
 
 	for _, rawDevice := range devices {
 		device := rawDevice.(map[string]any)
 		linodeGoDevice := createDevice(device)
 
 		if deviceName, ok := device["device_name"]; ok {
-			field := reflect.Indirect(reflect.ValueOf(&result)).FieldByName(strings.ToUpper(deviceName.(string)))
+			if seenDevices[deviceName.(string)] {
+				log.Printf("[WARN] device %v was defined more than once", deviceName)
+			} else {
+				seenDevices[deviceName.(string)] = true
+			}
+
+			field := reflect.Indirect(
+				reflect.ValueOf(&result),
+			).FieldByName(
+				strings.ToUpper(deviceName.(string)),
+			)
+
 			field.Set(reflect.ValueOf(&linodeGoDevice))
 		}
 	}
