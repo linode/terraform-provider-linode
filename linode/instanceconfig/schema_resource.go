@@ -22,12 +22,12 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 
 	"device": {
-		Type:          schema.TypeList,
+		Type:          schema.TypeSet,
 		Elem:          &schema.Resource{Schema: deviceV2Schema},
 		Optional:      true,
 		Computed:      true,
 		ConflictsWith: []string{"devices"},
-		Description:   "A dictionary of device disks to use as a device map in a Linode's configuration profile.",
+		Description:   "Blocks for device disks in a Linode's configuration profile.",
 	},
 
 	"devices": {
@@ -37,7 +37,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:      true,
 		MaxItems:      1,
 		ConflictsWith: []string{"device"},
-		Deprecated:    "Devices attribute is deprecated in flavor of `devices_map` or `device`.",
+		Deprecated:    "Devices attribute is deprecated in flavor of `device`.",
 		Description:   "A dictionary of device disks to use as a device map in a Linode's configuration profile.",
 	},
 
