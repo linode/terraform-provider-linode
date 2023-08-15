@@ -28,7 +28,7 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (data *DataSourceModel) parseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics {
+func (data *DataSourceModel) ParseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	if ssh.ID == 0 {
@@ -91,7 +91,7 @@ func (d *DataSource) Read(
 		}
 	}
 
-	resp.Diagnostics.Append(data.parseSSHKey(&sshkey)...)
+	resp.Diagnostics.Append(data.ParseSSHKey(&sshkey)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
