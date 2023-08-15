@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
 	"github.com/linode/terraform-provider-linode/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
@@ -128,7 +127,6 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"linode_account_settings":         accountsettings.Resource(),
 			"linode_database_access_controls": databaseaccesscontrols.Resource(),
 			"linode_database_mysql":           databasemysql.Resource(),
 			"linode_database_postgresql":      databasepostgresql.Resource(),
