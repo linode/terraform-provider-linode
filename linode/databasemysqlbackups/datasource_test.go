@@ -2,15 +2,16 @@ package databasemysqlbackups_test
 
 import (
 	"context"
+	"log"
+	"os"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"log"
-	"os"
-	"testing"
 )
 
 var (

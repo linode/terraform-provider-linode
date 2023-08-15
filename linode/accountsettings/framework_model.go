@@ -1,9 +1,6 @@
 package accountsettings
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -21,10 +18,9 @@ type AccountSettingsModel struct {
 }
 
 func (data *AccountSettingsModel) parseAccountSettings(
-	ctx context.Context,
 	email string,
 	settings *linodego.AccountSettings,
-) diag.Diagnostics {
+) {
 	data.ID = types.StringValue(email)
 
 	// These use empty strings ("") rather than StringNull to maintain backwards compatibility
@@ -32,9 +28,7 @@ func (data *AccountSettingsModel) parseAccountSettings(
 	data.LongviewSubscription = helper.GetStringPtrWithDefault(settings.LongviewSubscription, "")
 	data.ObjectStorage = helper.GetStringPtrWithDefault(settings.ObjectStorage, "")
 
-	data.BackupsEnabed = types.BoolValue(settings.BackupsEnabled)
 	data.Managed = types.BoolValue(settings.Managed)
+	data.BackupsEnabed = types.BoolValue(settings.BackupsEnabled)
 	data.NetworkHelper = types.BoolValue(settings.NetworkHelper)
-
-	return nil
 }

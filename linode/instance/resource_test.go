@@ -441,7 +441,6 @@ func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.In
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
 		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
-
 		if err != nil {
 			t.Fail()
 		}
@@ -2036,8 +2035,8 @@ func TestAccResourceInstance_userData(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
 					resource.TestCheckResourceAttr(resName, "region", "eu-west"),
 
-					//TODO:: This attribute currently does not get set by the API. Need to uncomment this line when metadata api returns a valid response
-					//resource.TestCheckResourceAttr(resName, "has_user_data", "true"),
+					// TODO:: This attribute currently does not get set by the API. Need to uncomment this line when metadata api returns a valid response
+					// resource.TestCheckResourceAttr(resName, "has_user_data", "true"),
 				),
 			},
 			{
