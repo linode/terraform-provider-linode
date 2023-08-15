@@ -145,10 +145,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.RootDevice = &rootDeviceStr
 	}
 
+	var devices *linodego.InstanceConfigDeviceMap
 	if devicesBlock, ok := d.GetOk("device"); ok {
-		createOpts.Devices = *expandDevicesBlock(devicesBlock)
+		devices = expandDevicesBlock(devicesBlock)
 	} else if devicesBlock, ok := d.GetOk("devices"); ok {
-		createOpts.Devices = *expandDevicesNamedBlock(devicesBlock)
+		devices = expandDevicesNamedBlock(devicesBlock)
+	}
+	if devices != nil {
+		createOpts.Devices = *devices
 	}
 
 	cfg, err := client.CreateInstanceConfig(ctx, linodeID, createOpts)
