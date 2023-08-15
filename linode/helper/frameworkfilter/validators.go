@@ -58,12 +58,12 @@ func (v filterNameValidator) ValidateString(
 		return
 	}
 
-	if v.IsOrderBy && !config.APIFilterable && !config.AllowOrder {
+	if v.IsOrderBy && !config.APIFilterable && !config.AllowOrderOverride {
 		// Aggregate filterable attributes
 		var filterableAttributes []string
 
 		for k, v := range v.FilterConfig {
-			if !v.APIFilterable && !v.AllowOrder {
+			if !v.APIFilterable && !v.AllowOrderOverride {
 				continue
 			}
 

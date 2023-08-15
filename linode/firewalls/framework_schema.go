@@ -14,8 +14,8 @@ var filterConfig = frameworkfilter.Config{
 	"tags":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 
 	"status":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
-	"created": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrder: true},
-	"updated": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrder: true},
+	"created": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrderOverride: true},
+	"updated": {APIFilterable: false, TypeFunc: helper.FilterTypeString, AllowOrderOverride: true},
 }
 
 var firewallDeviceObject = schema.NestedBlockObject{

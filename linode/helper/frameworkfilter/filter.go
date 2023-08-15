@@ -50,7 +50,7 @@ type FilterAttribute struct {
 	// for the order and order_by fields.
 	// This is useful for edge cases where we want order
 	// through the API but filter on the client.
-	AllowOrder bool
+	AllowOrderOverride bool
 }
 
 // Config is the root configuration type for filter data sources.
