@@ -158,6 +158,13 @@ func flattenInstanceConfigs(
 
 		interfaces := make([]interface{}, len(config.Interfaces))
 		for i, ni := range config.Interfaces {
+			// Workaround for "222" responses for null IPAM
+			// addresses from the API.
+			// TODO: Remove this when issue is resolved.
+			if ni.IPAMAddress == "222" {
+				ni.IPAMAddress = ""
+			}
+
 			interfaces[i] = flattenConfigInterface(ni)
 		}
 
