@@ -15,6 +15,7 @@ resource "linode_instance" "foobar" {
     interface {
         purpose = "vlan"
         label = "tf-test"
+        ipam_address = "10.0.0.7/24"
     }
 }
 

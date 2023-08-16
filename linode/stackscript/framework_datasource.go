@@ -11,8 +11,10 @@ import (
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
-			"linode_stackscript",
-			frameworkDataSourceSchema,
+			helper.BaseDataSourceConfig{
+				Name:   "linode_stackscript",
+				Schema: &frameworkDataSourceSchema,
+			},
 		),
 	}
 }
@@ -35,12 +37,12 @@ func (r *DataSource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
+	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to find the Linode StackScript",

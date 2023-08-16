@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -13,23 +13,17 @@ import (
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
-			"linode_stackscript",
-			frameworkResourceSchema,
+			helper.BaseResourceConfig{
+				Name:   "linode_stackscript",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
 		),
 	}
 }
 
 type Resource struct {
 	helper.BaseResource
-}
-
-// TODO: We should use Int64 ID attributes
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *Resource) Create(
@@ -92,12 +86,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	stackscript, err := client.GetStackscript(ctx, int(id))
+	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -145,7 +139,7 @@ func (r *Resource) Update(
 	}
 
 	// Get the ID from the plan
-	stackScriptID := int(helper.StringToInt64(state.ID.ValueString(), resp.Diagnostics))
+	stackScriptID := helper.StringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -176,7 +170,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	stackscriptID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
+	stackscriptID := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

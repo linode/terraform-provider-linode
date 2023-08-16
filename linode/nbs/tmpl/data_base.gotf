@@ -1,0 +1,11 @@
+{{ define "nbs_data_base" }}
+
+resource "linode_nodebalancer" "foobar" {
+    count = 2
+    label = "{{.Label}}-${count.index}"
+    region = "{{.Region}}"
+    client_conn_throttle = 20
+    tags = count.index == 0 ? ["tf_test_1"] : ["tf_test_1", "tf_test_2"]
+}
+
+{{ end }}

@@ -464,3 +464,34 @@ func TestAccLinodeFirewall_emptyIPv6(t *testing.T) {
 		},
 	})
 }
+
+func TestAccLinodeFirewall_noRules(t *testing.T) {
+	t.Parallel()
+
+	name := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acceptance.PreCheck(t) },
+		Providers: testProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.NoRules(t, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
+					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
+					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "0"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
+				),
+			},
+			{
+				ResourceName:      testFirewallResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
