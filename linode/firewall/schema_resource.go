@@ -158,4 +158,14 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The status of the firewall.",
 		Computed:    true,
 	},
+	"created": {
+		Type:        schema.TypeString,
+		Description: "When this firewall was created",
+		Computed:    true,
+	},
+	"updated": {
+		Type:        schema.TypeString,
+		Description: "When this firewall was last updated",
+		Computed:    true,
+	},
 }
