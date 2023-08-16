@@ -67,7 +67,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseComputedAttrs(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodebalancer)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -104,8 +104,8 @@ func (r *Resource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.parseComputedAttrs(ctx, nodebalancer)...)
-	resp.Diagnostics.Append(data.parseNonComputedAttrs(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.ParseNonComputedAttrs(ctx, nodebalancer)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -150,7 +150,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.parseComputedAttrs(ctx, nodebalancer)...)
+		resp.Diagnostics.Append(plan.ParseComputedAttrs(ctx, nodebalancer)...)
 	} else {
 		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 		req.State.GetAttribute(ctx, path.Root("transfer"), &plan.Transfer)
