@@ -1,0 +1,15 @@
+{{ define "nbs_data_order" }}
+
+{{ template "nbs_data_base" . }}
+
+data "linode_nodebalancers" "nbs" {
+    order_by = "label"
+    order = "asc"
+
+    filter {
+        name   = "label" 
+        values = ["{{.Label}}-0", "{{.Label}}-1"]
+    }
+}
+
+{{ end }}

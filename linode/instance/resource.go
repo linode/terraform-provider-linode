@@ -136,6 +136,13 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 			flattenedInterfaces := make([]map[string]interface{}, len(defaultConfig.Interfaces))
 
 			for i, configInterface := range defaultConfig.Interfaces {
+				// Workaround for "222" responses for null IPAM
+				// addresses from the API.
+				// TODO: Remove this when issue is resolved.
+				if configInterface.IPAMAddress == "222" {
+					configInterface.IPAMAddress = ""
+				}
+
 				flattenedInterfaces[i] = flattenConfigInterface(configInterface)
 			}
 
