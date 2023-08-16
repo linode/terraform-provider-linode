@@ -1,3 +1,5 @@
+//go:build integration
+
 package databasebackups_test
 
 import (

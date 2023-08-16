@@ -1,3 +1,5 @@
+//go:build integration
+
 package instancetype_test
 
 import (

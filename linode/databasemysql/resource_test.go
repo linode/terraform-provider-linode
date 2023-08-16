@@ -1,3 +1,5 @@
+//go:build integration
+
 package databasemysql_test
 
 import (
