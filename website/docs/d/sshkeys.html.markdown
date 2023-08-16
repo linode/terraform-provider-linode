@@ -49,13 +49,15 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-- `id` - The ID of the SSH Key.
+Each Linode SSH Key will be stored in the `sshkeys` attribute and will export the following attributes:
 
-- `label` - The label of the SSH Key.
+* `id` - The ID of the SSH Key.
 
-- `ssh_key` - The public SSH Key, which is used to authenticate to the root user of the Linodes you deploy.
+* `label` - The label of the SSH Key.
 
-- `created` - The date this key was added.
+* `ssh_key` - The public SSH Key, which is used to authenticate to the root user of the Linodes you deploy.
+
+* `created` - The date this key was added.
 
 ## Filterable Fields
 
