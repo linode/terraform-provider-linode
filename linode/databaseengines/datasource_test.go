@@ -1,3 +1,5 @@
+//go:build integration
+
 package databaseengines_test
 
 import (

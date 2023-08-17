@@ -1,3 +1,5 @@
+//go:build integration
+
 package ipv6range_test
 
 import (

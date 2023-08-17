@@ -1,3 +1,5 @@
+//go:build integration
+
 package nbnode_test
 
 import (
