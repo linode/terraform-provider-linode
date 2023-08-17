@@ -1,3 +1,5 @@
+//go:build unit
+
 package instance
 
 import (
@@ -54,66 +56,78 @@ func TestExpandInstanceConfigDeviceMap(t *testing.T) {
 }
 
 func TestExpandInstanceConfigDevice(t *testing.T) {
-	// Test case 1: Disk ID provided
-	deviceInput1 := map[string]interface{}{
-		"disk_id":   123,
-		"volume_id": nil,
-	}
-	device1 := expandInstanceConfigDevice(deviceInput1)
-	if device1 == nil {
-		t.Error("Expected device1 to not be nil")
-	}
-	if device1.DiskID != 123 {
-		t.Errorf("Expected DiskID %d, but got %d", 123, device1.DiskID)
+	tests := []struct {
+		name string
+		m    map[string]interface{}
+		want *linodego.InstanceConfigDevice
+	}{
+		{
+			name: "Valid DiskID",
+			m: map[string]interface{}{
+				"disk_id": 123,
+			},
+			want: &linodego.InstanceConfigDevice{
+				DiskID: 123,
+			},
+		},
+		{
+			name: "Valid VolumeID",
+			m: map[string]interface{}{
+				"volume_id": 456,
+			},
+			want: &linodego.InstanceConfigDevice{
+				VolumeID: 456,
+			},
+		},
+		{
+			name: "Invalid IDs",
+			m: map[string]interface{}{
+				"disk_id":   0,
+				"volume_id": -1,
+			},
+			want: nil,
+		},
+		{
+			name: "No IDs",
+			m:    map[string]interface{}{},
+			want: nil,
+		},
 	}
 
-	// Test case 2: Volume ID provided
-	deviceInput2 := map[string]interface{}{
-		"disk_id":   nil,
-		"volume_id": 456,
-	}
-	device2 := expandInstanceConfigDevice(deviceInput2)
-	if device2 == nil {
-		t.Error("Expected device2 to not be nil")
-	}
-	if device2.VolumeID != 456 {
-		t.Errorf("Expected VolumeID %d, but got %d", 456, device2.VolumeID)
-	}
-
-	// Test case 3: No valid ID provided
-	deviceInput3 := map[string]interface{}{
-		"disk_id":   nil,
-		"volume_id": nil,
-	}
-	device3 := expandInstanceConfigDevice(deviceInput3)
-	if device3 != nil {
-		t.Error("Expected device3 to be nil")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := expandInstanceConfigDevice(tt.m)
+			if got != nil && tt.want == nil || got == nil && tt.want != nil {
+				t.Errorf("expandInstanceConfigDevice() = %v, want %v", got, tt.want)
+			} else if got != nil && tt.want != nil {
+				if got.DiskID != tt.want.DiskID || got.VolumeID != tt.want.VolumeID {
+					t.Errorf("expandInstanceConfigDevice() = %v, want %v", got, tt.want)
+				}
+			}
+		})
 	}
 }
 
 func TestExpandConfigInterface(t *testing.T) {
-	// Create example input data
 	interfaceInput := map[string]interface{}{
-		"label":        "eth0",
-		"purpose":      "public",
-		"ipam_address": "192.168.1.2",
+		"label":        "eth0.100",
+		"purpose":      "vlan",
+		"ipam_address": "192.168.1.2/24",
 	}
 
-	// Call the function being tested
 	interfaceResult := expandConfigInterface(interfaceInput)
 
-	// Perform assertions
-	expectedLabel := "eth0"
+	expectedLabel := "eth0.100"
 	if interfaceResult.Label != expectedLabel {
 		t.Errorf("Expected label %s, but got %s", expectedLabel, interfaceResult.Label)
 	}
 
-	expectedPurpose := linodego.ConfigInterfacePurpose("public")
+	expectedPurpose := linodego.InterfacePurposeVLAN
 	if interfaceResult.Purpose != expectedPurpose {
 		t.Errorf("Expected purpose %s, but got %s", expectedPurpose, interfaceResult.Purpose)
 	}
 
-	expectedIPAMAddress := "192.168.1.2"
+	expectedIPAMAddress := "192.168.1.2/24"
 	if interfaceResult.IPAMAddress != expectedIPAMAddress {
 		t.Errorf("Expected IPAMAddress %s, but got %s", expectedIPAMAddress, interfaceResult.IPAMAddress)
 	}
