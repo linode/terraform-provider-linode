@@ -1,3 +1,5 @@
+//go:build integration
+
 package nbs_test
 
 import (

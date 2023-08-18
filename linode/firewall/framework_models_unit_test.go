@@ -1,22 +1,28 @@
-//go:build integration
+//go:build unit
 
 package firewall
 
 import (
 	"context"
-	"github.com/linode/linodego"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/linode/linodego"
+	"github.com/stretchr/testify/assert"
 )
 
 // Unit tests for private functions in framework_models
-// Functions under test: parseComputedAttributes, parseNonComputedAttributes, parseFirewallRules, parseFirewallLinodes
+// Functions under test: parseComputedAttributes, parseNonComputedAttributes, parseFirewallRules
 
 func TestParseComputedAttributes(t *testing.T) {
+	createdTime := time.Date(2023, time.August, 17, 12, 0, 0, 0, time.UTC)
+	updatedTime := time.Date(2023, time.August, 18, 12, 0, 0, 0, time.UTC)
+
 	firewall := &linodego.Firewall{
-		ID:     123,
-		Status: linodego.FirewallEnabled,
+		ID:      123,
+		Status:  linodego.FirewallEnabled,
+		Created: &createdTime,
+		Updated: &updatedTime,
 	}
 
 	deviceEntity1 := linodego.FirewallDeviceEntity{
@@ -106,57 +112,4 @@ func TestParseNonComputedAttributes(t *testing.T) {
 	assert.Contains(t, data.Outbound.String(), outboundRules[0].Protocol)
 	assert.Contains(t, data.Outbound.String(), outboundRules[0].Ports)
 	assert.Contains(t, data.Outbound.String(), (*outboundRules[0].Addresses.IPv4)[0])
-}
-
-func TestParseFirewallLinodes(t *testing.T) {
-	deviceEntity1 := linodego.FirewallDeviceEntity{
-		ID:    1234,
-		Type:  linodego.FirewallDeviceLinode,
-		Label: "device_entity_1",
-		URL:   "test-firewall.example.com",
-	}
-
-	deviceEntity2 := linodego.FirewallDeviceEntity{
-		ID:    1235,
-		Type:  linodego.FirewallDeviceLinode,
-		Label: "device_entity_2",
-		URL:   "test-firewall.example-2.com",
-	}
-
-	created := time.Date(2022, time.January, 15, 12, 30, 0, 0, time.UTC)
-	updated := time.Date(2023, time.March, 7, 9, 45, 0, 0, time.UTC)
-
-	device1 := linodego.FirewallDevice{
-		ID:      123,
-		Entity:  deviceEntity1,
-		Created: &created,
-		Updated: &updated,
-	}
-
-	device2 := linodego.FirewallDevice{
-		ID:      123,
-		Entity:  deviceEntity2,
-		Created: &created,
-		Updated: &updated,
-	}
-
-	devices := []linodego.FirewallDevice{
-		device1, device2,
-	}
-
-	cases := []struct {
-		devices  []linodego.FirewallDevice
-		expected []int
-	}{
-		{
-			devices:  devices,
-			expected: []int{1234, 1235},
-		},
-	}
-
-	for _, c := range cases {
-		out := parseFirewallLinodes(c.devices)
-
-		assert.ElementsMatch(t, c.expected, out)
-	}
 }

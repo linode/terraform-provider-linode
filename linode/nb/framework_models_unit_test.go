@@ -1,3 +1,5 @@
+//go:build unit
+
 package nb
 
 import (
@@ -12,8 +14,8 @@ import (
 )
 
 func TestParseNonComputedAttrs(t *testing.T) {
-	// Create a Linode NodeBalancer object with mock data
 	label := "test-nodebalancer"
+
 	nodeBalancer := &linodego.NodeBalancer{
 		ID:    123,
 		Label: &label,
@@ -22,7 +24,7 @@ func TestParseNonComputedAttrs(t *testing.T) {
 
 	nodeBalancerModel := &NodebalancerModel{}
 
-	diags := nodeBalancerModel.parseNonComputedAttrs(context.Background(), nodeBalancer)
+	diags := nodeBalancerModel.ParseNonComputedAttrs(context.Background(), nodeBalancer)
 
 	assert.False(t, diags.HasError(), "Errors should be returned due to custom context error")
 	assert.Equal(t, types.StringValue("test-nodebalancer"), nodeBalancerModel.Label)
@@ -60,7 +62,7 @@ func TestParseComputedAttrs(t *testing.T) {
 
 	nodeBalancerModel := &NodebalancerModel{}
 
-	diags := nodeBalancerModel.parseComputedAttrs(context.Background(), nodeBalancer)
+	diags := nodeBalancerModel.ParseComputedAttrs(context.Background(), nodeBalancer)
 
 	assert.False(t, diags.HasError())
 
