@@ -1,17 +1,18 @@
+//go:build unit
+
 package kernels
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseKernels(t *testing.T) {
-	// Sample LinodeKernel data
 	kernels := []linodego.LinodeKernel{
 		{
 			ID:           "linode/latest-64bit",
