@@ -2,6 +2,7 @@ package sshkey
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var SSHKeyAttributes = map[string]schema.Attribute{
@@ -14,6 +15,7 @@ var SSHKeyAttributes = map[string]schema.Attribute{
 		Computed:    true,
 	},
 	"created": schema.StringAttribute{
+		CustomType:  customtypes.RFC3339TimeStringType{},
 		Description: "The date this key was added.",
 		Computed:    true,
 	},
