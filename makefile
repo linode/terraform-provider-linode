@@ -56,7 +56,7 @@ smoketest: fmtcheck
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	go test -v -run smoke ./linode/... -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/version.ProviderVersion=acc"
 
-unittest: fmtcheck
+unittest:
 	go test -v --tags=unit ./linode/...
 
 vet:
