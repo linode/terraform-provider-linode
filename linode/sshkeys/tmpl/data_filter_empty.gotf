@@ -1,0 +1,13 @@
+{{ define "ssh_keys_filter_empty" }}
+
+{{ template "ssh_keys_base" . }}
+
+data "linode_sshkeys" "keys" {
+    filter {
+        name   = "label" 
+        values = ["bad-label"]
+    }
+
+}
+
+{{ end }}
