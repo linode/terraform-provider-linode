@@ -1,0 +1,9 @@
+{{ define "ssh_keys_base" }}
+
+resource "linode_sshkey" "key" {
+    count = 2
+    label = "{{.Label}}-${count.index}"
+    ssh_key = "{{.SSHKey}}"
+}
+
+{{ end }}
