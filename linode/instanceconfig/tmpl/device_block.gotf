@@ -1,0 +1,22 @@
+{{ define "instance_config_device_block" }}
+
+{{ template "instance_config_empty_instance" . }}
+
+{{ template "instance_config_disk_with_swap" . }}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config"
+
+  device {
+    device_name = "sda"
+    disk_id = linode_instance_disk.foobar.id
+  }
+
+  device {
+    device_name = "sdb"
+    disk_id = linode_instance_disk.foobar_swap.id
+  }
+}
+
+{{ end }}

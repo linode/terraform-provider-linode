@@ -62,3 +62,23 @@ func Provisioner(t *testing.T, label, region string) string {
 			Region: region,
 		})
 }
+
+func DeviceBlock(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_device_block", TemplateData{
+			Label:  label,
+			Region: region,
+		},
+	)
+}
+
+func DeviceNamedBlock(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"instance_config_device_named_block", TemplateData{
+			Label:  label,
+			Region: region,
+		},
+	)
+}
