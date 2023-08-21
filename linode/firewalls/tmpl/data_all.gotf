@@ -1,0 +1,9 @@
+{{ define "data_linode_firewalls_all" }}
+
+{{ template "data_linode_firewalls_base" . }}
+
+data "linode_firewalls" "test" {
+    depends_on = [linode_firewall.foobar]
+}
+
+{{ end }}

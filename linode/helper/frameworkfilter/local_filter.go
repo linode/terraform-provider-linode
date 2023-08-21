@@ -6,9 +6,11 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 const (
@@ -132,6 +134,11 @@ func normalizeValue(field any) (string, diag.Diagnostic) {
 		}
 
 		rField = reflect.Indirect(rField)
+	}
+
+	// Special handler for time.Time values
+	if t, ok := rField.Interface().(time.Time); ok {
+		return t.Format(helper.TIME_FORMAT), nil
 	}
 
 	switch rField.Kind() {

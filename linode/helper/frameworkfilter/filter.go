@@ -45,6 +45,12 @@ type FilterAttribute struct {
 
 	// Converts the filter string to the correct type.
 	TypeFunc FilterTypeFunc
+
+	// (Optional) Allows this attribute during validation
+	// for the order and order_by fields.
+	// This is useful for edge cases where we want order
+	// through the API but filter on the client.
+	AllowOrderOverride bool
 }
 
 // Config is the root configuration type for filter data sources.

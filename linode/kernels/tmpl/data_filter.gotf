@@ -1,0 +1,47 @@
+{{ define "kernels_data_filter" }}
+
+{{ template "kernels_data_base" . }}
+
+data "linode_kernels" "kernels" {
+    filter {
+        name   = "id" 
+        values = ["{{.Id}}"]
+    }
+
+    filter {
+        name = "architecture"
+        values = ["x86_64"]
+    }
+
+    filter {
+        name = "deprecated"
+        values = [false]
+    }
+
+    filter {
+        name = "kvm"
+        values = [true]
+    }
+    
+    filter {
+        name = "label"
+        values = ["Latest 64 bit (6.2.9-x86_64-linode160)"]
+    }
+
+    filter {
+        name = "pvops"
+        values = [true]
+    }
+
+    filter {
+        name = "version"
+        values = ["6.2.9"]
+    }
+
+    filter {
+        name = "xen"
+        values = ["false"]
+    }
+}
+
+{{ end }}

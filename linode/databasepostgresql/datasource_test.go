@@ -1,3 +1,5 @@
+//go:build integration
+
 package databasepostgresql_test
 
 import (

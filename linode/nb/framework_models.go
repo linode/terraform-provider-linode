@@ -44,10 +44,11 @@ type nbModelV0 struct {
 	Transfer           types.Map    `tfsdk:"transfer"`
 }
 
-func (data *NodebalancerModel) parseNonComputedAttrs(
+func (data *NodebalancerModel) ParseNonComputedAttrs(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 ) diag.Diagnostics {
+	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, nodebalancer.Tags)
@@ -59,7 +60,7 @@ func (data *NodebalancerModel) parseNonComputedAttrs(
 	return nil
 }
 
-func (data *NodebalancerModel) parseComputedAttrs(
+func (data *NodebalancerModel) ParseComputedAttrs(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 ) diag.Diagnostics {

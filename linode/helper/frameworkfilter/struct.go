@@ -3,6 +3,7 @@ package frameworkfilter
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
@@ -15,6 +16,12 @@ func resolveStructFieldByJSON(val any, field string) (reflect.StructField, diag.
 	for i := 0; i < rType.NumField(); i++ {
 		currentField := rType.Field(i)
 		if tag, ok := currentField.Tag.Lookup("json"); ok && tag == field {
+			return currentField, nil
+		}
+
+		// If there is no JSON tag, compare against the lowercase field name.
+		// This is a workaround for untagged fields (created, updated)
+		if field == strings.ToLower(currentField.Name) {
 			return currentField, nil
 		}
 	}
