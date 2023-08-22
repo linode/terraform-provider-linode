@@ -1,3 +1,5 @@
+//go:build integration
+
 package sshkeys_test
 
 import (

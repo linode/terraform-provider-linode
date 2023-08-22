@@ -58,6 +58,7 @@ smoketest: fmtcheck
 
 unittest:
 	go test -v --tags=unit ./linode/...
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./...) ; if [ $$? -eq 1 ]; then \
