@@ -3,11 +3,12 @@
 package databasebackups
 
 import (
+	"testing"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestParseMySQLBackup(t *testing.T) {

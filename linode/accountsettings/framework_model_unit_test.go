@@ -3,8 +3,9 @@
 package accountsettings
 
 import (
-	"github.com/linode/linodego"
 	"testing"
+
+	"github.com/linode/linodego"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

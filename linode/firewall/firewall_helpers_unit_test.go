@@ -3,10 +3,11 @@
 package firewall
 
 import (
-	"github.com/linode/linodego"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/linode/linodego"
+	"github.com/stretchr/testify/assert"
 )
 
 // Assertion helpers

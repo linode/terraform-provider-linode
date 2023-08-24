@@ -28,11 +28,11 @@ func TestParseConfiguredAttributes(t *testing.T) {
 
 	data := ResourceModel{}
 	data.parseConfiguredAttributes(&key)
-	//assert.Equal(t, types.Int64Value(123), data.ID)
-	//assert.Equal(t, types.StringValue("my-key"), data.Label)
-	//assert.Equal(t, types.StringValue("KVAKUTGBA4WTR2NSJQ81"), data.AccessKey)
-	//assert.Equal(t, types.StringValue("OiA6F5r0niLs3QA2stbyq7mY5VCV7KqOzcmitmHw"), data.SecretKey)
-	//assert.Equal(t, types.BoolValue(true), data.Limited)
+	// assert.Equal(t, types.Int64Value(123), data.ID)
+	// assert.Equal(t, types.StringValue("my-key"), data.Label)
+	// assert.Equal(t, types.StringValue("KVAKUTGBA4WTR2NSJQ81"), data.AccessKey)
+	// assert.Equal(t, types.StringValue("OiA6F5r0niLs3QA2stbyq7mY5VCV7KqOzcmitmHw"), data.SecretKey)
+	// assert.Equal(t, types.BoolValue(true), data.Limited)
 
 	//assert.NotNil(t, data.BucketAccess)
 	//
