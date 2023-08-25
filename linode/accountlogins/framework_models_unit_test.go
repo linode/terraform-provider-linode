@@ -3,10 +3,11 @@
 package accountlogins
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 )
 
 func TestParseLogins(t *testing.T) {

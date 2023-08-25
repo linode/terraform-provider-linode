@@ -3,10 +3,11 @@
 package instance
 
 import (
-	"github.com/linode/linodego"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/linode/linodego"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -324,7 +325,6 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 	}
 
 	for i := 0; i < len(expectedConfigs); i++ {
-
 		if !areMapsEqual(actualConfigs[i], expectedConfigs[i]) {
 			t.Errorf("Config %d: Mismatch between expected and actual config", i)
 		}

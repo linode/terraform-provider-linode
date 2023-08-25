@@ -4,10 +4,11 @@ package user
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
@@ -150,5 +151,4 @@ func TestParseUserGrants(t *testing.T) {
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"add_volumes\":true")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"cancel_account\":false")
 	assert.Contains(t, dataModel.GlobalGrants.String(), "\"longview_subscription\":true")
-
 }
