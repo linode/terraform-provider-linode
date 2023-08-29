@@ -1,3 +1,5 @@
+//go:build integration
+
 package instanceconfig_test
 
 import (
@@ -43,6 +45,61 @@ func TestAccResourceInstanceConfig_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_config.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	devicesCheck := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
+		resource.TestCheckResourceAttrSet(resName, "devices.0.sdb.0.disk_id"),
+
+		resource.TestCheckResourceAttrSet(resName, "device.0.disk_id"),
+		resource.TestCheckResourceAttrSet(resName, "device.1.disk_id"),
+		resource.TestCheckResourceAttr(resName, "device.0.device_name", "sda"),
+		resource.TestCheckResourceAttr(resName, "device.1.device_name", "sdb"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DeviceNamedBlock(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					devicesCheck,
+				),
+			},
+			{
+				Config: tmpl.DeviceBlock(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					devicesCheck,
+				),
+			},
+			{
+				Config: tmpl.DeviceNamedBlock(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					devicesCheck,
 				),
 			},
 			{

@@ -66,6 +66,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("disabled", firewall.Status == linodego.FirewallDisabled)
 	d.Set("tags", firewall.Tags)
 	d.Set("status", firewall.Status)
+	d.Set("created", firewall.Created.Format(helper.TIME_FORMAT))
+	d.Set("updated", firewall.Updated.Format(helper.TIME_FORMAT))
 	d.Set("inbound", flattenFirewallRules(rules.Inbound))
 	d.Set("outbound", flattenFirewallRules(rules.Outbound))
 	d.Set("inbound_policy", firewall.Rules.InboundPolicy)

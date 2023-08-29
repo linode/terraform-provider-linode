@@ -1,0 +1,32 @@
+{{ define "data_linode_firewalls_filter" }}
+
+{{ template "data_linode_firewalls_base" . }}
+
+data "linode_firewalls" "test" {
+    depends_on = [ linode_firewall.foobar ]
+
+    order_by = "created"
+    order = "desc"
+
+    filter {
+        name = "created"
+        values = [linode_firewall.foobar.created]
+    }
+
+    filter {
+        name = "label"
+        values = ["{{ .Label }}"]
+    }
+
+    filter {
+        name = "tags"
+        values = ["foo", "bar"]
+    }
+
+    filter {
+        name = "status"
+        values = ["enabled"]
+    }
+}
+
+{{ end }}

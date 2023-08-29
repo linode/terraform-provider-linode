@@ -1,0 +1,17 @@
+{{ define "ssh_keys_basic" }}
+
+{{ template "ssh_keys_base" . }}
+
+data "linode_sshkeys" "keys" {
+    filter {
+        name = "label"
+        values = [linode_sshkey.key[0].label]
+    }
+
+    filter {
+        name = "ssh_key"
+        values = [linode_sshkey.key[0].ssh_key]
+    }
+}
+
+{{ end }}

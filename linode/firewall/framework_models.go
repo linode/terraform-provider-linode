@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 // FirewallModel describes the Terraform resource data model to match the
@@ -24,6 +25,8 @@ type FirewallModel struct {
 	Linodes        types.Set    `tfsdk:"linodes"`
 	Devices        types.List   `tfsdk:"devices"`
 	Status         types.String `tfsdk:"status"`
+	Created        types.String `tfsdk:"created"`
+	Updated        types.String `tfsdk:"updated"`
 }
 
 func (data *FirewallModel) parseComputedAttributes(
@@ -34,8 +37,10 @@ func (data *FirewallModel) parseComputedAttributes(
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(firewall.ID))
 	data.Status = types.StringValue(string(firewall.Status))
+	data.Created = types.StringValue(firewall.Created.Format(helper.TIME_FORMAT))
+	data.Updated = types.StringValue(firewall.Updated.Format(helper.TIME_FORMAT))
 
-	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, parseFirewallLinodes(devices))
+	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, AggregateLinodeIDs(devices))
 	if diags.HasError() {
 		return diags
 	}
@@ -128,7 +133,7 @@ func parseFirewallRules(
 	return &result, nil
 }
 
-func parseFirewallLinodes(devices []linodego.FirewallDevice) []int {
+func AggregateLinodeIDs(devices []linodego.FirewallDevice) []int {
 	linodes := make([]int, 0, len(devices))
 	for _, device := range devices {
 		if device.Entity.Type == linodego.FirewallDeviceLinode {

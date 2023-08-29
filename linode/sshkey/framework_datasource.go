@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -28,7 +28,7 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (data *DataSourceModel) parseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics {
+func (data *DataSourceModel) ParseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
 	if ssh.ID == 0 {
@@ -40,7 +40,9 @@ func (data *DataSourceModel) parseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics 
 
 	data.Label = types.StringValue(ssh.Label)
 	data.SSHKey = types.StringValue(ssh.SSHKey)
-	data.Created = types.StringValue(ssh.Created.Format(time.RFC3339))
+	data.Created = customtypes.RFC3339TimeStringValue{
+		StringValue: helper.NullableTimeToFramework(ssh.Created),
+	}
 
 	id, err := json.Marshal(ssh)
 	if err != nil {
@@ -54,10 +56,10 @@ func (data *DataSourceModel) parseSSHKey(ssh *linodego.SSHKey) diag.Diagnostics 
 }
 
 type DataSourceModel struct {
-	Label   types.String `tfsdk:"label"`
-	SSHKey  types.String `tfsdk:"ssh_key"`
-	Created types.String `tfsdk:"created"`
-	ID      types.String `tfsdk:"id"`
+	Label   types.String                       `tfsdk:"label"`
+	SSHKey  types.String                       `tfsdk:"ssh_key"`
+	Created customtypes.RFC3339TimeStringValue `tfsdk:"created"`
+	ID      types.String                       `tfsdk:"id"`
 }
 
 func (d *DataSource) Read(
@@ -91,7 +93,7 @@ func (d *DataSource) Read(
 		}
 	}
 
-	resp.Diagnostics.Append(data.parseSSHKey(&sshkey)...)
+	resp.Diagnostics.Append(data.ParseSSHKey(&sshkey)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

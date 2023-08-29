@@ -1,3 +1,5 @@
+//go:build integration
+
 package instance_test
 
 import (
@@ -2014,12 +2016,16 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 }
 
 func TestAccResourceInstance_userData(t *testing.T) {
-	t.Skip("Skipping this test due to: 'Error creating a Linode Instance: [400] [metadata] The Metadata service is not currently available in this datacenter.'")
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Metadata"})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2027,16 +2033,15 @@ func TestAccResourceInstance_userData(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.UserData(t, instanceName, "eu-west"),
+				Config: tmpl.UserData(t, instanceName, region),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "region", "eu-west"),
+					resource.TestCheckResourceAttr(resName, "region", region),
 
-					// TODO:: This attribute currently does not get set by the API. Need to uncomment this line when metadata api returns a valid response
-					// resource.TestCheckResourceAttr(resName, "has_user_data", "true"),
+					resource.TestCheckResourceAttr(resName, "has_user_data", "true"),
 				),
 			},
 			{

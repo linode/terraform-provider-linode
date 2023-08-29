@@ -1,0 +1,7 @@
+{{ define "ssh_keys_all" }}
+
+{{ template "ssh_keys_base" . }}
+
+data "linode_sshkeys" "keys" {}
+
+{{ end }}

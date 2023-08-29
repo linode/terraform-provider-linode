@@ -1,3 +1,5 @@
+//go:build integration
+
 package accountlogin_test
 
 import (

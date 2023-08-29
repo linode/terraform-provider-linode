@@ -1,3 +1,5 @@
+//go:build integration
+
 package lke_test
 
 import (

@@ -151,7 +151,9 @@ The following arguments are supported:
 
 * `virt_mode` - (Optional) Controls the virtualization mode. (`paravirt`, `fullvirt`)
 
-### devices
+### devices and device
+
+#### devices (deprecated)
 
 The following attributes are available on devices:
 
@@ -160,6 +162,24 @@ The following attributes are available on devices:
   * `volume_id` - (Optional) The Volume ID to map to this `device` slot.
 
   * `disk_id` - (Optional) The Disk ID to map to this `device` slot
+
+#### device (recommended)
+
+An assignment between a disk and a configuration profile device. This block supersedes the `devices` block.
+
+Compared with `devices`, `sda` ... `sdh` is now in the `device_name` attribute in a device block, and the block itself becomes unnamed.
+
+```terraform
+device {
+  device_name = "sda"
+  volume_id = 1234
+}
+
+device {
+  device_name = "sdb"
+  disk_id = 5678
+}
+``````
 
 ### helpers
 

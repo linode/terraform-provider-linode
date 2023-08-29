@@ -1,3 +1,5 @@
+//go:build integration
+
 package kernel_test
 
 import (
@@ -30,6 +32,7 @@ func TestAccDataSourceKernel_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "pvops"),
 					resource.TestCheckResourceAttrSet(resourceName, "version"),
 					resource.TestCheckResourceAttrSet(resourceName, "xen"),
+					resource.TestCheckResourceAttrSet(resourceName, "built"),
 				),
 			},
 		},

@@ -21,6 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/linode/firewall"
+	"github.com/linode/terraform-provider-linode/linode/firewalls"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/image"
 	"github.com/linode/terraform-provider-linode/linode/images"
@@ -29,6 +30,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/kernel"
+	"github.com/linode/terraform-provider-linode/linode/kernels"
 	"github.com/linode/terraform-provider-linode/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
@@ -43,6 +45,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/region"
 	"github.com/linode/terraform-provider-linode/linode/regions"
 	"github.com/linode/terraform-provider-linode/linode/sshkey"
+	"github.com/linode/terraform-provider-linode/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/linode/stackscript"
 	"github.com/linode/terraform-provider-linode/linode/stackscripts"
 	"github.com/linode/terraform-provider-linode/linode/token"
@@ -169,6 +172,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		ipv6range.NewDataSource,
 		objbucket.NewDataSource,
 		sshkey.NewDataSource,
+		sshkeys.NewDataSource,
 		instancenetworking.NewDataSource,
 		objcluster.NewDataSource,
 		domainrecord.NewDataSource,
@@ -194,5 +198,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nbnode.NewDataSource,
 		nbs.NewDataSource,
 		accountsettings.NewDataSource,
+		firewalls.NewDataSource,
+		kernels.NewDataSource,
 	}
 }
