@@ -3,6 +3,7 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"reflect"
 	"strings"
@@ -118,7 +119,7 @@ func createDevice(deviceMap map[string]any) linodego.InstanceConfigDevice {
 func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
 	var result linodego.InstanceConfigDeviceMap
 
-	devices := devicesBlock.([]any)
+	devices := devicesBlock.(*schema.Set).List()
 
 	if len(devices) <= 0 {
 		return nil
