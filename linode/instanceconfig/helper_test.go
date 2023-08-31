@@ -4,6 +4,8 @@ package instanceconfig
 
 import (
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func TestExpandDevicesNamedBlock(t *testing.T) {
@@ -39,7 +41,12 @@ func TestExpandDevicesBlock(t *testing.T) {
 		"volume_id":   54321,
 	}
 
-	result := expandDevicesBlock(inputValue)
+	// Hack to create a *schema.Set hashing on device_name
+	setValue := schema.NewSet(func(i any) int {
+		return schema.HashString(i.(map[string]any)["device_name"])
+	}, inputValue)
+
+	result := expandDevicesBlock(setValue)
 
 	if result.SDA.DiskID != 12345 {
 		t.Fatal("disk id != 12345")
