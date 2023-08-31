@@ -78,6 +78,16 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
+			// Ensure the provider doesn't panic when creating an instance
+			// with the new `device` block.
+			{
+				Config: tmpl.DeviceBlock(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "label", "my-config"),
+					devicesCheck,
+				),
+			},
 			{
 				Config: tmpl.DeviceNamedBlock(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
