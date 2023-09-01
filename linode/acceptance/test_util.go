@@ -590,8 +590,6 @@ func GetRegionsWithCaps(capabilities []string) ([]string, error) {
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
 func GetRandomRegionWithCaps(capabilities []string) (string, error) {
-	rand.Seed(time.Now().UnixNano())
-
 	regions, err := GetRegionsWithCaps(capabilities)
 	if err != nil {
 		return "", err
@@ -607,8 +605,6 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 
 // GetRandomOBJCluster gets a random Object Storage cluster.
 func GetRandomOBJCluster() (string, error) {
-	rand.Seed(time.Now().UnixNano())
-
 	client, err := GetTestClient()
 	if err != nil {
 		return "", err
