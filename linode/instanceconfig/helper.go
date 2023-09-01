@@ -288,13 +288,13 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 	return err
 }
 
-func expandInterfaces(ifaces []any) []linodego.InstanceConfigInterface {
-	result := make([]linodego.InstanceConfigInterface, len(ifaces))
+func expandInterfaces(ifaces []any) []linodego.InstanceConfigInterfaceCreateOptions {
+	result := make([]linodego.InstanceConfigInterfaceCreateOptions, len(ifaces))
 
 	for i, iface := range ifaces {
 		ifaceMap := iface.(map[string]any)
 
-		result[i] = linodego.InstanceConfigInterface{
+		result[i] = linodego.InstanceConfigInterfaceCreateOptions{
 			IPAMAddress: ifaceMap["ipam_address"].(string),
 			Label:       ifaceMap["label"].(string),
 			Purpose:     linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string)),

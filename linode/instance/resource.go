@@ -181,7 +181,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
 		interfaces := interfaces.([]interface{})
 
-		createOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+		createOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
 			createOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
@@ -629,7 +629,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if d.HasChange("interface") {
 		interfaces := d.Get("interface").([]interface{})
 
-		expandedInterfaces := make([]linodego.InstanceConfigInterface, len(interfaces))
+		expandedInterfaces := make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
 			expandedInterfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
