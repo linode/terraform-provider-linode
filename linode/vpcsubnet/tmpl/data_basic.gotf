@@ -1,0 +1,8 @@
+{{ define "vpc_subnet_data_basic" }}
+
+data "linode_vpc_subnet" "foo" {
+    vpc_id = 123
+    id = 123
+}
+
+{{ end }}

@@ -79,7 +79,7 @@ func createInstanceConfigsFromSet(
 
 		if interfaces, ok := config["interface"]; ok {
 			interfaces := interfaces.([]interface{})
-			configOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+			configOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 			for i, ni := range interfaces {
 				configOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
@@ -190,12 +190,12 @@ func updateInstanceConfigs(
 
 			}
 
-			configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, 0)
+			configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, 0)
 
 			if interfaces, ok := tfc["interface"]; ok {
 				interfaces := interfaces.([]interface{})
 
-				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 				for i, ni := range interfaces {
 					mappedInterface := ni.(map[string]interface{})
