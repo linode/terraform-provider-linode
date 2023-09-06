@@ -21,7 +21,7 @@ func compareRule(rule map[string]interface{}, expected map[string]interface{}) b
 }
 
 // Unit tests for private functions in helper
-// Functions under test: expandFirewallStatus, expandFirewallRules, flattenFirewallLinodes, flattenFirewallRules, flattenFirewallDevices
+// Functions under test: expandFirewallStatus, expandFirewallRules, flattenFirewallDeviceIDs, flattenFirewallRules, flattenFirewallDevices
 
 func TestExpandFirewallStatus(t *testing.T) {
 	testCases := []struct {

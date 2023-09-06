@@ -41,12 +41,12 @@ func init() {
 	testProvider = provider
 	testProviders = providerMap
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
+	_, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testRegion = region
+	testRegion = "us-east"
 }
 
 func sweep(prefix string) error {
@@ -78,8 +78,8 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
@@ -103,9 +103,10 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "2"),
+					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.type"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "nodebalancers.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
 					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.url"),
@@ -129,8 +130,8 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Minimum(t, name),
@@ -166,8 +167,8 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.MultipleRules(t, name, devicePrefix, testRegion),
@@ -236,8 +237,8 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NoDevice(t, name),
@@ -275,8 +276,8 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
@@ -301,9 +302,10 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "2"),
+					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.type"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "nodebalancers.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
 				),
@@ -339,6 +341,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound_policy", "ACCEPT"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.#", "0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "nodebalancers.#", "2"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.1", "test2"),
@@ -356,8 +359,8 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 	devicePrefix := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
@@ -439,8 +442,8 @@ func TestAccLinodeFirewall_emptyIPv6(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NoIPv6(t, name),
@@ -473,8 +476,8 @@ func TestAccLinodeFirewall_noRules(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: testProviders,
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NoRules(t, name),

@@ -72,7 +72,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("outbound", flattenFirewallRules(rules.Outbound))
 	d.Set("inbound_policy", firewall.Rules.InboundPolicy)
 	d.Set("outbound_policy", firewall.Rules.OutboundPolicy)
-	d.Set("linodes", flattenFirewallLinodes(devices))
+	d.Set("linodes", flattenFirewallDeviceIDs(devices, linodego.FirewallDeviceLinode))
+	d.Set("nodebalancers", flattenFirewallDeviceIDs(devices, linodego.FirewallDeviceNodeBalancer))
 	d.Set("devices", flattenFirewallDevices(devices))
 	return nil
 }
@@ -86,6 +87,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	createOpts.Devices.Linodes = helper.ExpandIntSet(d.Get("linodes").(*schema.Set))
+	createOpts.Devices.NodeBalancers = helper.ExpandIntSet(d.Get("nodebalancers").(*schema.Set))
 	createOpts.Rules.Inbound = expandFirewallRules(d.Get("inbound").([]any))
 	createOpts.Rules.InboundPolicy = d.Get("inbound_policy").(string)
 	createOpts.Rules.Outbound = expandFirewallRules(d.Get("outbound").([]any))
@@ -145,42 +147,28 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to update rules for firewall %d: %s", id, err)
 	}
 
-	linodes := helper.ExpandIntSet(d.Get("linodes").(*schema.Set))
-	devices, err := client.ListFirewallDevices(ctx, id, nil)
-	if err != nil {
-		return diag.Errorf("failed to get devices for firewall %d: %s", id, err)
-	}
+	linodes, linodesOk := d.GetOk("linodes")
+	nodebalancers, nodebalancersOk := d.GetOk("nodebalancers")
 
-	provisionedLinodes := make(map[int]linodego.FirewallDevice)
-	for _, device := range devices {
-		if device.Entity.Type == linodego.FirewallDeviceLinode {
-			provisionedLinodes[device.Entity.ID] = device
-		}
-	}
+	if linodesOk || nodebalancersOk {
+		assignments := make([]firewallDeviceAssignment, 0)
 
-	// keep track of all visited linodes for accounting
-	visitedLinodes := make(map[int]struct{})
-
-	for _, linodeID := range linodes {
-		if _, ok := provisionedLinodes[linodeID]; !ok {
-			if _, err := client.CreateFirewallDevice(ctx, id, linodego.FirewallDeviceCreateOptions{
-				ID:   linodeID,
+		for _, entityID := range helper.ExpandIntSet(linodes.(*schema.Set)) {
+			assignments = append(assignments, firewallDeviceAssignment{
+				ID:   entityID,
 				Type: linodego.FirewallDeviceLinode,
-			}); err != nil {
-				return diag.Errorf("failed to create firewall device for linode %d: %s", linodeID, err)
-			}
+			})
 		}
 
-		visitedLinodes[linodeID] = struct{}{}
-	}
+		for _, entityID := range helper.ExpandIntSet(nodebalancers.(*schema.Set)) {
+			assignments = append(assignments, firewallDeviceAssignment{
+				ID:   entityID,
+				Type: linodego.FirewallDeviceNodeBalancer,
+			})
+		}
 
-	// ensure there are no provisioned firewall devices for which there is no
-	// declared reference.
-	for linodeID, device := range provisionedLinodes {
-		if _, ok := visitedLinodes[linodeID]; !ok {
-			if err := client.DeleteFirewallDevice(ctx, id, device.ID); err != nil {
-				return diag.Errorf("failed to delete firewall device %d: %s", id, err)
-			}
+		if err := updateFirewallDevices(ctx, d, client, id, assignments); err != nil {
+			return diag.Errorf("failed to update firewall devices: %s", err)
 		}
 	}
 
