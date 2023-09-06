@@ -43,8 +43,8 @@ func expandInstanceConfigDevice(m map[string]interface{}) *linodego.InstanceConf
 	return dev
 }
 
-func expandConfigInterface(i map[string]interface{}) linodego.InstanceConfigInterface {
-	result := linodego.InstanceConfigInterface{}
+func expandConfigInterface(i map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
+	result := linodego.InstanceConfigInterfaceCreateOptions{}
 
 	result.Label = i["label"].(string)
 	result.Purpose = linodego.ConfigInterfacePurpose(i["purpose"].(string))
