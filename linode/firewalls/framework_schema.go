@@ -104,7 +104,12 @@ var firewallObject = schema.NestedBlockObject{
 		},
 		"linodes": schema.SetAttribute{
 			ElementType: types.Int64Type,
-			Description: "The IDs of Linodes to apply this firewall to.",
+			Description: "The IDs of Linodes assigned to this Firewall.",
+			Computed:    true,
+		},
+		"nodebalancers": schema.SetAttribute{
+			ElementType: types.Int64Type,
+			Description: "The IDs of NodeBalancers assigned to this Firewall..",
 			Computed:    true,
 		},
 		"status": schema.StringAttribute{
