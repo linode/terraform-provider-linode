@@ -23,6 +23,7 @@ type FirewallModel struct {
 	Outbound       types.List   `tfsdk:"outbound"`
 	OutboundPolicy types.String `tfsdk:"outbound_policy"`
 	Linodes        types.Set    `tfsdk:"linodes"`
+	NodeBalancers  types.Set    `tfsdk:"nodebalancers"`
 	Devices        types.List   `tfsdk:"devices"`
 	Status         types.String `tfsdk:"status"`
 	Created        types.String `tfsdk:"created"`
@@ -40,11 +41,25 @@ func (data *FirewallModel) parseComputedAttributes(
 	data.Created = types.StringValue(firewall.Created.Format(helper.TIME_FORMAT))
 	data.Updated = types.StringValue(firewall.Updated.Format(helper.TIME_FORMAT))
 
-	linodes, diags := types.SetValueFrom(ctx, types.Int64Type, AggregateLinodeIDs(devices))
+	linodes, diags := types.SetValueFrom(
+		ctx,
+		types.Int64Type,
+		AggregateEntityIDs(devices, linodego.FirewallDeviceLinode),
+	)
 	if diags.HasError() {
 		return diags
 	}
 	data.Linodes = linodes
+
+	nodebalancers, diags := types.SetValueFrom(
+		ctx,
+		types.Int64Type,
+		AggregateEntityIDs(devices, linodego.FirewallDeviceNodeBalancer),
+	)
+	if diags.HasError() {
+		return diags
+	}
+	data.NodeBalancers = nodebalancers
 
 	firewallDevices, diags := parseFirewallDevices(devices)
 	if diags.HasError() {
@@ -133,14 +148,14 @@ func parseFirewallRules(
 	return &result, nil
 }
 
-func AggregateLinodeIDs(devices []linodego.FirewallDevice) []int {
-	linodes := make([]int, 0, len(devices))
+func AggregateEntityIDs(devices []linodego.FirewallDevice, entityType linodego.FirewallDeviceType) []int {
+	results := make([]int, 0, len(devices))
 	for _, device := range devices {
-		if device.Entity.Type == linodego.FirewallDeviceLinode {
-			linodes = append(linodes, device.Entity.ID)
+		if device.Entity.Type == entityType {
+			results = append(results, device.Entity.ID)
 		}
 	}
-	return linodes
+	return results
 }
 
 func parseFirewallDevices(devices []linodego.FirewallDevice) (*basetypes.ListValue, diag.Diagnostics) {

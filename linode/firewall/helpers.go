@@ -1,9 +1,10 @@
 package firewall
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/net/context"
-	"strings"
 
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"

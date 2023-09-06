@@ -85,7 +85,7 @@ func (data *FirewallModel) parseFirewall(
 	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
 	data.InboundPolicy = types.StringValue(rules.InboundPolicy)
 	data.OutboundPolicy = types.StringValue(rules.OutboundPolicy)
-	data.Linodes = helper.IntSliceToFramework(firewallresource.AggregateLinodeIDs(devices))
+	data.Linodes = helper.IntSliceToFramework(firewallresource.AggregateEntityIDs(devices))
 	data.Status = types.StringValue(string(firewall.Status))
 
 	data.Created = customtypes.RFC3339TimeStringValue{

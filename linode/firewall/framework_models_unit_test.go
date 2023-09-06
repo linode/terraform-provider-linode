@@ -31,10 +31,20 @@ func TestParseComputedAttributes(t *testing.T) {
 		Label: "device_entity_1",
 		URL:   "test-firewall.example.com",
 	}
+	deviceEntity2 := linodego.FirewallDeviceEntity{
+		ID:    4321,
+		Type:  linodego.FirewallDeviceNodeBalancer,
+		Label: "device_entity_2",
+		URL:   "test-firewall.example.com",
+	}
 	devices := []linodego.FirewallDevice{
 		{
 			ID:     111,
 			Entity: deviceEntity1,
+		},
+		{
+			ID:     112,
+			Entity: deviceEntity2,
 		},
 	}
 
@@ -45,6 +55,8 @@ func TestParseComputedAttributes(t *testing.T) {
 	assert.Equal(t, int64(123), data.ID.ValueInt64())
 	assert.Contains(t, data.Status.String(), string(linodego.FirewallEnabled))
 
+	expectedLinodeID := "1234"
+	assert.Contains(t, data.Linodes.String(), expectedLinodeID)
 	expectedLinodeID := "1234"
 	assert.Contains(t, data.Linodes.String(), expectedLinodeID)
 

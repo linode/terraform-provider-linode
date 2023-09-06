@@ -8,7 +8,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
@@ -19,27 +18,13 @@ import (
 
 const testFirewallResName = "linode_firewall.test"
 
-var (
-	testProviders map[string]*schema.Provider
-	testProvider  *schema.Provider
-	testRegion    string
-)
+var testRegion string
 
 func init() {
 	resource.AddTestSweepers("linode_firewall", &resource.Sweeper{
 		Name: "linode_firewall",
 		F:    sweep,
 	})
-
-	provider, providerMap := acceptance.CreateTestProvider()
-	acceptance.ModifyProviderMeta(provider, func(ctx context.Context, config *helper.ProviderMeta) error {
-		config.Config.SkipInstanceReadyPoll = true
-		config.Config.SkipInstanceDeletePoll = true
-		return nil
-	})
-
-	testProvider = provider
-	testProviders = providerMap
 
 	_, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
 	if err != nil {
@@ -211,9 +196,9 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv6.0", "2001:db8::/32"),
 
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "2"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "nodebalancers.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
 					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.url"),
@@ -365,7 +350,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckFirewallExists(testProvider, testFirewallResName, &firewall),
+					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
@@ -386,8 +371,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "2"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
@@ -396,7 +380,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 			{
 				PreConfig: func() {
 					// Delete the Firewall external from Terraform
-					client := testProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.DeleteFirewall(context.Background(), firewall.ID); err != nil {
 						t.Fatalf("failed to delete firewall: %s", err)
@@ -404,7 +388,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 				},
 				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckFirewallExists(testProvider, testFirewallResName, &firewall),
+					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound_policy", "DROP"),
@@ -425,9 +409,9 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.0.ipv6.0", "2001:db8::/32"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "2"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
+					resource.TestCheckResourceAttr(testFirewallResName, "nodebalancers.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
 				),
