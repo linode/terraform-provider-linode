@@ -4,10 +4,9 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"golang.org/x/net/context"
-
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"golang.org/x/net/context"
 )
 
 // firewallDeviceAssignment is a helper struct intended to be used in conjunction
