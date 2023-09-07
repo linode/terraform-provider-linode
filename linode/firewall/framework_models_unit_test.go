@@ -55,13 +55,11 @@ func TestParseComputedAttributes(t *testing.T) {
 	assert.Equal(t, int64(123), data.ID.ValueInt64())
 	assert.Contains(t, data.Status.String(), string(linodego.FirewallEnabled))
 
-	expectedLinodeID := "1234"
-	assert.Contains(t, data.Linodes.String(), expectedLinodeID)
-	expectedLinodeID := "1234"
-	assert.Contains(t, data.Linodes.String(), expectedLinodeID)
+	assert.Contains(t, data.Linodes.String(), "1234")
+	assert.Contains(t, data.NodeBalancers.String(), "4321")
 
-	expectedDevicesID := "111"
-	assert.Contains(t, data.Devices.String(), expectedDevicesID)
+	assert.Contains(t, data.Devices.String(), "111")
+	assert.Contains(t, data.Devices.String(), "112")
 }
 
 func TestParseNonComputedAttributes(t *testing.T) {
