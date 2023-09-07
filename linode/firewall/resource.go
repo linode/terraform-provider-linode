@@ -72,8 +72,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("outbound", flattenFirewallRules(rules.Outbound))
 	d.Set("inbound_policy", firewall.Rules.InboundPolicy)
 	d.Set("outbound_policy", firewall.Rules.OutboundPolicy)
-	d.Set("linodes", flattenFirewallDeviceIDs(devices, linodego.FirewallDeviceLinode))
-	d.Set("nodebalancers", flattenFirewallDeviceIDs(devices, linodego.FirewallDeviceNodeBalancer))
+	d.Set("linodes", AggregateEntityIDs(devices, linodego.FirewallDeviceLinode))
+	d.Set("nodebalancers", AggregateEntityIDs(devices, linodego.FirewallDeviceNodeBalancer))
 	d.Set("devices", flattenFirewallDevices(devices))
 	return nil
 }

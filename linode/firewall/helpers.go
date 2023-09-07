@@ -47,16 +47,6 @@ func expandFirewallRules(ruleSpecs []interface{}) []linodego.FirewallRule {
 	return rules
 }
 
-func flattenFirewallDeviceIDs(devices []linodego.FirewallDevice, deviceType linodego.FirewallDeviceType) []int {
-	results := make([]int, 0, len(devices))
-	for _, device := range devices {
-		if device.Entity.Type == deviceType {
-			results = append(results, device.Entity.ID)
-		}
-	}
-	return results
-}
-
 func flattenFirewallRules(rules []linodego.FirewallRule) []map[string]interface{} {
 	specs := make([]map[string]interface{}, len(rules))
 	for i, rule := range rules {
