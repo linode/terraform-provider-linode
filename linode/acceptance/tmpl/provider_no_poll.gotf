@@ -1,4 +1,4 @@
-{{ define "firewall_provider" }}
+{{ define "provider_no_poll" }}
 
 provider "linode" {
     skip_instance_delete_poll = true

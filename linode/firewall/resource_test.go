@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/linode/acceptance/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/firewall/tmpl"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -67,7 +68,7 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -119,7 +120,7 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Minimum(t, name),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Minimum(t, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -225,7 +226,7 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NoDevice(t, name),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.NoDevice(t, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -264,7 +265,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -295,7 +296,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, newName, devicePrefix, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Updates(t, newName, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", newName),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "true"),
@@ -347,7 +348,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
@@ -385,7 +386,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 						t.Fatalf("failed to delete firewall: %s", err)
 					}
 				},
-				Config: tmpl.Basic(t, name, devicePrefix, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckFirewallExists(testFirewallResName, &firewall),
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
@@ -429,7 +430,7 @@ func TestAccLinodeFirewall_emptyIPv6(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NoIPv6(t, name),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.NoIPv6(t, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
@@ -463,7 +464,7 @@ func TestAccLinodeFirewall_noRules(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.NoRules(t, name),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.NoRules(t, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testFirewallResName, "label", name),
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),

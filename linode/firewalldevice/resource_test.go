@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"testing"
 
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/linode/acceptance/tmpl"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -43,7 +45,7 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttrSet(deviceName, "created"),
@@ -51,7 +53,7 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 			},
 			// Refresh the state and verify the attachment
 			{
-				Config: tmpl.Basic(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
@@ -65,14 +67,14 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 				ImportStateIdFunc: resourceImportStateID,
 			},
 			{
-				Config: tmpl.Detached(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 				),
 			},
 			// Refresh the state and verify the detachment
 			{
-				Config: tmpl.Detached(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "0"),
@@ -100,7 +102,7 @@ func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
 		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.WithNodeBalancer(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.WithNodeBalancer(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttrSet(deviceName, "created"),
@@ -108,7 +110,7 @@ func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
 			},
 			// Refresh the state and verify the attachment
 			{
-				Config: tmpl.WithNodeBalancer(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.WithNodeBalancer(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
@@ -122,14 +124,14 @@ func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
 				ImportStateIdFunc: resourceImportStateID,
 			},
 			{
-				Config: tmpl.Detached(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 				),
 			},
 			// Refresh the state and verify the detachment
 			{
-				Config: tmpl.Detached(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "0"),
