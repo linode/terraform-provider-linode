@@ -97,5 +97,6 @@ linters:
     - errorlint
     - forbidigo
     - godot
+    - gomoddirectives
 
   fast: false

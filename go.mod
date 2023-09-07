@@ -95,6 +95,6 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace github.com/linode/linodego => github.com/linode/linodego v1.21.1-0.20230905223015-1df9dbe40b16 //nolint:gomoddirectives // This is a temporary replacement
+replace github.com/linode/linodego => github.com/linode/linodego v1.21.1-0.20230905223015-1df9dbe40b16
 
 go 1.20
