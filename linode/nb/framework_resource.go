@@ -52,7 +52,7 @@ func (r *Resource) Create(
 	}
 
 	if !data.Tags.IsNull() {
-		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
+		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, true)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}

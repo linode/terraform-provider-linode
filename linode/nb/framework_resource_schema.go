@@ -77,6 +77,7 @@ var frameworkResourceSchema = schema.Schema{
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
+			Computed:    true,
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},
 		"transfer": schema.ListAttribute{

@@ -4,7 +4,6 @@ package firewalldevice_test
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"testing"
 
@@ -19,12 +18,12 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
-	if err != nil {
-		log.Fatal(err)
-	}
+	//region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
-	testRegion = region
+	testRegion = "us-east"
 }
 
 func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
@@ -46,7 +45,7 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
+					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttrSet(deviceName, "created"),
 				),
 			},
@@ -54,7 +53,7 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 			{
 				Config: tmpl.Basic(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
+					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
 					resource.TestCheckResourceAttrPair(firewallName, "linodes.0", instanceName, "id"),
 				),
@@ -68,14 +67,71 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 			{
 				Config: tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
+					acceptance.CheckFirewallExists(firewallName, &firewall),
 				),
 			},
 			// Refresh the state and verify the detachment
 			{
 				Config: tmpl.Detached(t, label, testRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					acceptance.CheckFirewallExists(acceptance.TestAccProvider, firewallName, &firewall),
+					acceptance.CheckFirewallExists(firewallName, &firewall),
+					resource.TestCheckResourceAttr(firewallName, "devices.#", "0"),
+					resource.TestCheckResourceAttr(firewallName, "linodes.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
+	t.Parallel()
+
+	var firewall linodego.Firewall
+
+	firewallName := "linode_firewall.foobar"
+	nodebalancerName := "linode_nodebalancer.foobar"
+	deviceName := "linode_firewall_device.foobar"
+
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreventPostDestroyRefresh: true,
+		PreCheck:                  func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithNodeBalancer(t, label, testRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					acceptance.CheckFirewallExists(firewallName, &firewall),
+					resource.TestCheckResourceAttrSet(deviceName, "created"),
+				),
+			},
+			// Refresh the state and verify the attachment
+			{
+				Config: tmpl.WithNodeBalancer(t, label, testRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					acceptance.CheckFirewallExists(firewallName, &firewall),
+					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
+					resource.TestCheckResourceAttrPair(firewallName, "nodebalancers.0", nodebalancerName, "id"),
+				),
+			},
+			{
+				ResourceName:      deviceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+			{
+				Config: tmpl.Detached(t, label, testRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					acceptance.CheckFirewallExists(firewallName, &firewall),
+				),
+			},
+			// Refresh the state and verify the detachment
+			{
+				Config: tmpl.Detached(t, label, testRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "0"),
 					resource.TestCheckResourceAttr(firewallName, "linodes.#", "0"),
 				),

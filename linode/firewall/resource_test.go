@@ -196,9 +196,8 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "outbound.1.ipv6.0", "2001:db8::/32"),
 
-					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "2"),
+					resource.TestCheckResourceAttr(testFirewallResName, "devices.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "linodes.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallResName, "nodebalancers.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "tags.0", "test"),
 					resource.TestCheckResourceAttrSet(testFirewallResName, "devices.0.url"),
