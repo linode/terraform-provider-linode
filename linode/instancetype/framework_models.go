@@ -11,16 +11,17 @@ import (
 )
 
 type DataSourceModel struct {
-	ID         types.String `tfsdk:"id"`
-	Label      types.String `tfsdk:"label"`
-	Disk       types.Int64  `tfsdk:"disk"`
-	Class      types.String `tfsdk:"class"`
-	Price      types.List   `tfsdk:"price"`
-	Addons     types.List   `tfsdk:"addons"`
-	NetworkOut types.Int64  `tfsdk:"network_out"`
-	Memory     types.Int64  `tfsdk:"memory"`
-	Transfer   types.Int64  `tfsdk:"transfer"`
-	VCPUs      types.Int64  `tfsdk:"vcpus"`
+	ID           types.String `tfsdk:"id"`
+	Label        types.String `tfsdk:"label"`
+	Disk         types.Int64  `tfsdk:"disk"`
+	Class        types.String `tfsdk:"class"`
+	Price        types.List   `tfsdk:"price"`
+	Addons       types.List   `tfsdk:"addons"`
+	RegionPrices types.List   `tfsdk:"region_prices"`
+	NetworkOut   types.Int64  `tfsdk:"network_out"`
+	Memory       types.Int64  `tfsdk:"memory"`
+	Transfer     types.Int64  `tfsdk:"transfer"`
+	VCPUs        types.Int64  `tfsdk:"vcpus"`
 }
 
 func (data *DataSourceModel) ParseLinodeType(
@@ -43,6 +44,12 @@ func (data *DataSourceModel) ParseLinodeType(
 		return diags
 	}
 	data.Addons = *addons
+
+	regionPrices, d := FlattenRegionPrices(linodeType.RegionPrices)
+	if d.HasError() {
+		return d
+	}
+	data.RegionPrices = *regionPrices
 
 	data.NetworkOut = types.Int64Value(int64(linodeType.NetworkOut))
 	data.Memory = types.Int64Value(int64(linodeType.Memory))
@@ -136,4 +143,29 @@ func FlattenPrice(ctx context.Context, price linodego.LinodePrice) (
 	}
 
 	return &resultList, nil
+}
+
+func FlattenRegionPrices(prices []linodego.LinodeRegionPrice) (
+	*basetypes.ListValue, diag.Diagnostics,
+) {
+	result := make([]attr.Value, len(prices))
+
+	for i, price := range prices {
+		obj, d := types.ObjectValue(priceObjectType.AttrTypes, map[string]attr.Value{
+			"id":      types.StringValue(price.ID),
+			"hourly":  types.Float64Value(float64(price.Hourly)),
+			"monthly": types.Float64Value(float64(price.Monthly)),
+		})
+		if d.HasError() {
+			return nil, d
+		}
+
+		result[i] = obj
+	}
+
+	priceList, d := basetypes.NewListValue(
+		priceObjectType,
+		result,
+	)
+	return &priceList, d
 }
