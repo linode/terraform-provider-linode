@@ -37,7 +37,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:      true,
 		MaxItems:      1,
 		ConflictsWith: []string{"device"},
-		Deprecated:    "Devices attribute is deprecated in flavor of `device`.",
+		Deprecated:    "Devices attribute is deprecated in favor of `device`.",
 		Description:   "A dictionary of device disks to use as a device map in a Linode's configuration profile.",
 	},
 
