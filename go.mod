@@ -97,4 +97,4 @@ require (
 
 go 1.20
 
-replace github.com/linode/linodego => github.com/linode/linodego v1.20.2-0.20230901141837-dd66c1105950
+replace github.com/linode/linodego => github.com/linode/linodego v1.20.2-0.20230911135806-50aa9cde32eb
