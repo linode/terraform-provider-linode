@@ -134,7 +134,7 @@ func FlattenPrice(ctx context.Context, price linodego.LinodePrice) (
 
 	objList := []attr.Value{obj}
 
-	resultList, diag := basetypes.NewListValue(
+	resultList, diag := types.ListValue(
 		priceObjectType,
 		objList,
 	)
