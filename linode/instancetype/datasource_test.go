@@ -81,6 +81,7 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 						"addons.0.backups.0.price.0.monthly",
 						strconv.FormatFloat(float64(typeInfo.Addons.Backups.Price.Monthly), 'f', -1, 64),
 					),
+					// TODO: Add a test case for region-specific pricing once it has been rolled out
 				),
 			},
 		},
