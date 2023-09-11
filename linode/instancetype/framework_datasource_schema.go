@@ -13,6 +13,14 @@ var priceObjectType = types.ObjectType{
 	},
 }
 
+var regionPriceObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":      types.StringType,
+		"hourly":  types.Float64Type,
+		"monthly": types.Float64Type,
+	},
+}
+
 var backupsObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"price": types.ListType{ElemType: priceObjectType},
@@ -53,6 +61,11 @@ var Attributes = map[string]schema.Attribute{
 		Description: "Information about the optional Backup service offered for Linodes.",
 		Computed:    true,
 		ElementType: addonsObjectType,
+	},
+	"region_prices": schema.ListAttribute{
+		Description: "A list of region-specific prices for this plan.",
+		Computed:    true,
+		ElementType: regionPriceObjectType,
 	},
 	"network_out": schema.Int64Attribute{
 		Description: "The Mbits outbound bandwidth allocation.",
