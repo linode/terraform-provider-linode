@@ -1,0 +1,14 @@
+{{ define "vpc_subnet_updates" }}
+
+provider "linode" {
+    url = "https://api.dev.linode.com"
+    api_version = "v4beta"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = "{{.VPCId}}"
+    label = "{{.Label}}-renamed"
+    ipv4 = "{{.IPv4}}"
+}
+
+{{ end }}

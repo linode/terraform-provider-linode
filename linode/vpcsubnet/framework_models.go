@@ -20,12 +20,11 @@ type VPCSubnetModel struct {
 	Updated customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
 }
 
-func (d *VPCSubnetModel) ParseVPCSubnet(
+func (d *VPCSubnetModel) parseComputedAttributes(
 	ctx context.Context,
 	subnet *linodego.VPCSubnet,
 ) diag.Diagnostics {
-	d.Label = types.StringValue(subnet.Label)
-	d.IPv4 = types.StringValue(subnet.IPv4)
+	d.ID = types.Int64Value(int64(subnet.ID))
 
 	linodes, diag := types.ListValueFrom(ctx, types.Int64Type, subnet.Linodes)
 	if diag != nil {
@@ -46,4 +45,14 @@ func (d *VPCSubnetModel) ParseVPCSubnet(
 	}
 
 	return nil
+}
+
+func (d *VPCSubnetModel) ParseVPCSubnet(
+	ctx context.Context,
+	subnet *linodego.VPCSubnet,
+) diag.Diagnostics {
+	d.Label = types.StringValue(subnet.Label)
+	d.IPv4 = types.StringValue(subnet.IPv4)
+
+	return d.parseComputedAttributes(ctx, subnet)
 }

@@ -12,22 +12,27 @@ import (
 )
 
 type VPCModel struct {
-	ID          types.Int64                        `tfsdk:"id"`
-	Label       types.String                       `tfsdk:"label"`
-	Description types.String                       `tfsdk:"description"`
-	Region      types.String                       `tfsdk:"region"`
-	Subnets     []vpcsubnet.VPCSubnetModel         `tfsdk:"subnets"`
-	Created     customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	Updated     customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
+	ID                   types.Int64                        `tfsdk:"id"`
+	Label                types.String                       `tfsdk:"label"`
+	Description          types.String                       `tfsdk:"description"`
+	Region               types.String                       `tfsdk:"region"`
+	Subnets              []vpcsubnet.VPCSubnetModel         `tfsdk:"subnets"`
+	Created              customtypes.RFC3339TimeStringValue `tfsdk:"created"`
+	Updated              customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
+	SubnetsCreateOptions []VPCSubnetCreateOpts              `tfsdk:"subnets_create_options"`
 }
 
-func (d *VPCModel) parseVPC(
+type VPCSubnetCreateOpts struct {
+	VPCId types.Int64  `tfsdk:"vpc_id"`
+	Label types.String `tfsdk:"label"`
+	IPv4  types.String `tfsdk:"ipv4"`
+}
+
+func (d *VPCModel) parseComputedAttributes(
 	ctx context.Context,
 	vpc *linodego.VPC,
 ) diag.Diagnostics {
-	d.Label = types.StringValue(vpc.Label)
-	d.Description = types.StringValue(vpc.Description)
-	d.Region = types.StringValue(vpc.Region)
+	d.ID = types.Int64Value(int64(vpc.ID))
 
 	if vpc.Created != nil {
 		d.Created = customtypes.RFC3339TimeStringValue{
@@ -41,6 +46,8 @@ func (d *VPCModel) parseVPC(
 		}
 	}
 
+	// TODO: comfirm if need to separate subnet object vs createopts
+	// because subnets are both optional and computed
 	subnets := make([]vpcsubnet.VPCSubnetModel, len(vpc.Subnets))
 
 	for i, subnet := range vpc.Subnets {
@@ -57,4 +64,15 @@ func (d *VPCModel) parseVPC(
 	d.Subnets = subnets
 
 	return nil
+}
+
+func (d *VPCModel) parseVPC(
+	ctx context.Context,
+	vpc *linodego.VPC,
+) diag.Diagnostics {
+	d.Label = types.StringValue(vpc.Label)
+	d.Description = types.StringValue(vpc.Description)
+	d.Region = types.StringValue(vpc.Region)
+
+	return d.parseComputedAttributes(ctx, vpc)
 }

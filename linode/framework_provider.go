@@ -155,6 +155,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		ipv6range.NewResource,
 		nb.NewResource,
 		accountsettings.NewResource,
+		vpc.NewResource,
+		vpcsubnet.NewResource,
 	}
 }
 

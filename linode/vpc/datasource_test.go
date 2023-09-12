@@ -11,7 +11,7 @@ import (
 func TestAccDataSourceUser_basic(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "data.linode_vpc_.foo"
+	resourceName := "data.linode_vpc.foo"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
