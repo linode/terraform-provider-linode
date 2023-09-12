@@ -71,7 +71,6 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	println("STATE CREATING")
 	var data VPCSubnetModel
 	client := r.Meta.Client
 
