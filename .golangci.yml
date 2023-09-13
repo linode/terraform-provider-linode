@@ -75,6 +75,9 @@ linters:
     - gocritic
     - scopelint
 
+    # Not useful because we widely use open-source dependencies.
+    - depguard
+
     # These ignores have been added to maintain compatibility with the existing codebase.
     # These issues should be resolved at a later date.
     - wrapcheck
