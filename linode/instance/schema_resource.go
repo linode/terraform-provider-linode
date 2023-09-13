@@ -464,10 +464,6 @@ var resourceSchema = map[string]*schema.Schema{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
 			"backup_id", "stackscript_id", "interface",
 		},
-		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-			_, hasImage := d.GetOk("image")
-			return hasImage
-		},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"label": {
@@ -647,10 +643,6 @@ var resourceSchema = map[string]*schema.Schema{
 			"backup_id", "stackscript_id", "interface",
 		},
 		Type: schema.TypeList,
-		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-			_, hasImage := d.GetOk("image")
-			return hasImage
-		},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"label": {

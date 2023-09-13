@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -118,7 +119,7 @@ func createDevice(deviceMap map[string]any) linodego.InstanceConfigDevice {
 func expandDevicesBlock(devicesBlock any) *linodego.InstanceConfigDeviceMap {
 	var result linodego.InstanceConfigDeviceMap
 
-	devices := devicesBlock.([]any)
+	devices := devicesBlock.(*schema.Set).List()
 
 	if len(devices) <= 0 {
 		return nil
