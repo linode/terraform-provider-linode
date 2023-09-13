@@ -29,6 +29,10 @@ var frameworkResourceSchema = schema.Schema{
 		"description": schema.StringAttribute{
 			Description: "The user-defined description of this VPC.",
 			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"subnets": schema.ListAttribute{
 			Description: "A list of subnets under this VPC.",
@@ -54,13 +58,10 @@ var frameworkResourceSchema = schema.Schema{
 	},
 	Blocks: map[string]schema.Block{
 		"subnets_create_options": schema.ListNestedBlock{
-			Description: "A list of create options to create a list of VPC subnets under this VPC.",
+			Description: "A list of create options to create a list of VPC subnets. " +
+				"Configure this block when creating if you want to have a list of VPC subnets under this VPC.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
-					"vpc_id": schema.Int64Attribute{
-						Description: "The id of the parent VPC for this VPC Subnet",
-						Required:    true,
-					},
 					"label": schema.StringAttribute{
 						Description: "The label of the VPC subnet.",
 						Required:    true,
@@ -70,6 +71,9 @@ var frameworkResourceSchema = schema.Schema{
 						Required:    true,
 					},
 				},
+			},
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
 			},
 		},
 	},

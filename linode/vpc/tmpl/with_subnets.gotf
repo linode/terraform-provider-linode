@@ -1,0 +1,17 @@
+{{ define "vpc_with_subnets" }}
+
+provider "linode" {
+    url = "https://api.dev.linode.com"
+    api_version = "v4beta"
+}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    subnets_create_options {
+        label = "{{.Label}}-s"
+        ipv4 = "10.0.0.0/24"
+    }
+}
+
+{{ end }}

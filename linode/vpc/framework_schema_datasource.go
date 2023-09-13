@@ -13,8 +13,8 @@ var subnetObjectType = types.ObjectType{
 		"label":   types.StringType,
 		"ipv4":    types.StringType,
 		"linodes": types.ListType{ElemType: types.Int64Type},
-		"created": types.StringType,
-		"updated": types.StringType,
+		"created": customtypes.RFC3339TimeStringType{},
+		"updated": customtypes.RFC3339TimeStringType{},
 	},
 }
 

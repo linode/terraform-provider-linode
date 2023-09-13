@@ -30,7 +30,7 @@ func (d *DataSource) Read(
 ) {
 	client := d.Meta.Client
 
-	var data VPCModel
+	var data VPCDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
