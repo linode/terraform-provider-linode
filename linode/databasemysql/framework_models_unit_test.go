@@ -62,7 +62,7 @@ func TestParseMySQLDatabase(t *testing.T) {
 	assert.Contains(t, data.AllowList.String(), "203.0.113.1/32")
 	assert.Contains(t, data.AllowList.String(), "192.0.1.0/24")
 
-	assert.Contains(t, data.Updates.String(), "sunday")
+	assert.Contains(t, data.Updates.String(), "monday")
 	assert.Contains(t, data.Updates.String(), "3")
 	assert.Contains(t, data.Updates.String(), "weekly")
 	assert.Contains(t, data.Updates.String(), "0")
