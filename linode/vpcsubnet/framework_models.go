@@ -47,7 +47,7 @@ func (d *VPCSubnetModel) parseComputedAttributes(
 	return nil
 }
 
-func (d *VPCSubnetModel) ParseVPCSubnet(
+func (d *VPCSubnetModel) parseVPCSubnet(
 	ctx context.Context,
 	subnet *linodego.VPCSubnet,
 ) diag.Diagnostics {

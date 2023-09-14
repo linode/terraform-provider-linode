@@ -134,7 +134,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseVPCSubnet(ctx, subnet)...)
+	resp.Diagnostics.Append(data.parseVPCSubnet(ctx, subnet)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

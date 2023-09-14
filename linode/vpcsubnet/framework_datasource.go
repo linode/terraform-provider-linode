@@ -45,7 +45,7 @@ func (d *DataSource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.ParseVPCSubnet(ctx, vpcSubnet)...)
+	resp.Diagnostics.Append(data.parseVPCSubnet(ctx, vpcSubnet)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
