@@ -30,9 +30,6 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The user-defined description of this VPC.",
 			Optional:    true,
 			Computed:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"subnets": schema.ListAttribute{
 			Description: "A list of subnets under this VPC.",
@@ -71,9 +68,6 @@ var frameworkResourceSchema = schema.Schema{
 						Required:    true,
 					},
 				},
-			},
-			PlanModifiers: []planmodifier.List{
-				listplanmodifier.UseStateForUnknown(),
 			},
 		},
 	},

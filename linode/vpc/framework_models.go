@@ -43,11 +43,7 @@ func (d *VPCResourceModel) parseComputedAttributes(
 	vpc *linodego.VPC,
 ) diag.Diagnostics {
 	d.ID = types.Int64Value(int64(vpc.ID))
-
 	d.Description = types.StringValue(vpc.Description)
-	if d.Description.IsUnknown() {
-		d.Description = types.StringNull()
-	}
 
 	if vpc.Created != nil {
 		d.Created = customtypes.RFC3339TimeStringValue{
@@ -100,10 +96,13 @@ func (d *VPCResourceModel) parseVPC(
 	return d.parseComputedAttributes(ctx, vpc)
 }
 
-func (d *VPCDataSourceModel) parseComputedAttributes(
+func (d *VPCDataSourceModel) parseVPC(
 	ctx context.Context,
 	vpc *linodego.VPC,
 ) diag.Diagnostics {
+	d.Label = types.StringValue(vpc.Label)
+	d.Description = types.StringValue(vpc.Description)
+	d.Region = types.StringValue(vpc.Region)
 	d.ID = types.Int64Value(int64(vpc.ID))
 
 	if vpc.Created != nil {
@@ -125,17 +124,6 @@ func (d *VPCDataSourceModel) parseComputedAttributes(
 
 	d.Subnets = *subnetList
 	return nil
-}
-
-func (d *VPCDataSourceModel) parseVPC(
-	ctx context.Context,
-	vpc *linodego.VPC,
-) diag.Diagnostics {
-	d.Label = types.StringValue(vpc.Label)
-	d.Description = types.StringValue(vpc.Description)
-	d.Region = types.StringValue(vpc.Region)
-
-	return d.parseComputedAttributes(ctx, vpc)
 }
 
 func parseSubnets(

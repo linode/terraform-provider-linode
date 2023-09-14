@@ -1,6 +1,6 @@
 {{ define "vpc_data_basic" }}
 
-{{ template "vpc_basic" .}}
+{{ template "vpc_basic" . }}
 
 data "linode_vpc" "foo" {
     id = linode_vpc.foobar.id

@@ -112,9 +112,6 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		print("ERROR SEEING THE STATE AFTER READ.")
-	}
 }
 
 func (r *Resource) Update(

@@ -26,7 +26,7 @@ func init() {
 		F:    sweep,
 	})
 
-	testRegion = "us-east"
+	testRegion = "us-east" // VPC only available in certain regions currently
 }
 
 func sweep(prefix string) error {
