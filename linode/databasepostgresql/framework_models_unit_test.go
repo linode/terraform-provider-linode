@@ -57,7 +57,7 @@ func TestParsePostgresDatabase(t *testing.T) {
 	assert.Equal(t, types.StringValue("lin-0000-000-pgsql-primary.servers.linodedb.net"), data.HostPrimary)
 	assert.Equal(t, types.StringValue("lin-0000-000-pgsql-primary-private.servers.linodedb.net"), data.HostSecondary)
 
-	assert.Contains(t, data.Updates.String(), "sunday")
+	assert.Contains(t, data.Updates.String(), "monday")
 	assert.Contains(t, data.Updates.String(), "3")
 	assert.Contains(t, data.Updates.String(), "weekly")
 	assert.Contains(t, data.Updates.String(), "0")
