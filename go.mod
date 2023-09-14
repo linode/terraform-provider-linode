@@ -18,8 +18,6 @@ require (
 	golang.org/x/crypto v0.13.0
 )
 
-replace github.com/linode/linodego => /Users/yechen/linode/dx-devenv/repos/linodego
-
 require (
 	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
