@@ -1,7 +1,7 @@
 {{ define "nodebalancer_firewall" }}
 
 resource "linode_firewall" "firebar" {
-    label = "{{.Label}}-firewall"
+    label = "{{.Label}}-fw"
     tags  = ["test"]
 
     inbound {
