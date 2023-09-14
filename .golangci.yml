@@ -15,6 +15,10 @@ linters-settings:
     check-type-assertions: true
     check-blank: true
 
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/linode/linodego
+
   govet:
     check-shadowing: true
 
