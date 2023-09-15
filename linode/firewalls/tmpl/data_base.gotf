@@ -6,6 +6,11 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
 }
 
+resource "linode_nodebalancer" "foobar" {
+  label = "{{ .Label }}"
+  region = "{{ .Region }}"
+}
+
 resource "linode_firewall" "foobar" {
   label = "{{ .Label }}"
   tags = ["foo", "bar"]
@@ -33,6 +38,7 @@ resource "linode_firewall" "foobar" {
   outbound_policy = "ACCEPT"
 
   linodes = [linode_instance.foobar.id]
+  nodebalancers = [linode_nodebalancer.foobar.id]
 }
 
 {{ end }}

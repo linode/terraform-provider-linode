@@ -21,7 +21,7 @@ func compareRule(rule map[string]interface{}, expected map[string]interface{}) b
 }
 
 // Unit tests for private functions in helper
-// Functions under test: expandFirewallStatus, expandFirewallRules, flattenFirewallLinodes, flattenFirewallRules, flattenFirewallDevices
+// Functions under test: expandFirewallStatus, expandFirewallRules, flattenFirewallDeviceIDs, flattenFirewallRules, flattenFirewallDevices
 
 func TestExpandFirewallStatus(t *testing.T) {
 	testCases := []struct {
@@ -176,6 +176,13 @@ func TestFlattenFirewallDevices(t *testing.T) {
 		URL:   "test-firewall.example-2.com",
 	}
 
+	deviceEntity3 := linodego.FirewallDeviceEntity{
+		ID:    3333,
+		Type:  linodego.FirewallDeviceNodeBalancer,
+		Label: "device_entity_3",
+		URL:   "test-firewall.example-3.com",
+	}
+
 	devices := []linodego.FirewallDevice{
 		{
 			ID:     123,
@@ -184,6 +191,10 @@ func TestFlattenFirewallDevices(t *testing.T) {
 		{
 			ID:     1234,
 			Entity: deviceEntity2,
+		},
+		{
+			ID:     12345,
+			Entity: deviceEntity3,
 		},
 	}
 
@@ -201,6 +212,13 @@ func TestFlattenFirewallDevices(t *testing.T) {
 			"type":      linodego.FirewallDeviceLinode,
 			"label":     "device_entity_2",
 			"url":       "test-firewall.example-2.com",
+		},
+		{
+			"id":        12345,
+			"entity_id": 3333,
+			"type":      linodego.FirewallDeviceNodeBalancer,
+			"label":     "device_entity_3",
+			"url":       "test-firewall.example-3.com",
 		},
 	}
 

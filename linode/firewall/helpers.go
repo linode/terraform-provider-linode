@@ -3,9 +3,18 @@ package firewall
 import (
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"golang.org/x/net/context"
 )
+
+// firewallDeviceAssignment is a helper struct intended to be used in conjunction
+// with updateFirewallDevices.
+type firewallDeviceAssignment struct {
+	ID   int
+	Type linodego.FirewallDeviceType
+}
 
 func expandFirewallStatus(disabled interface{}) linodego.FirewallStatus {
 	return map[bool]linodego.FirewallStatus{
@@ -38,16 +47,6 @@ func expandFirewallRules(ruleSpecs []interface{}) []linodego.FirewallRule {
 	return rules
 }
 
-func flattenFirewallLinodes(devices []linodego.FirewallDevice) []int {
-	linodes := make([]int, 0, len(devices))
-	for _, device := range devices {
-		if device.Entity.Type == linodego.FirewallDeviceLinode {
-			linodes = append(linodes, device.Entity.ID)
-		}
-	}
-	return linodes
-}
-
 func flattenFirewallRules(rules []linodego.FirewallRule) []map[string]interface{} {
 	specs := make([]map[string]interface{}, len(rules))
 	for i, rule := range rules {
@@ -75,4 +74,49 @@ func flattenFirewallDevices(devices []linodego.FirewallDevice) []map[string]inte
 		}
 	}
 	return governedDevices
+}
+
+func updateFirewallDevices(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client linodego.Client,
+	id int,
+	configuredDevices []firewallDeviceAssignment,
+) error {
+	currentDevices, err := client.ListFirewallDevices(ctx, id, nil)
+	if err != nil {
+		return err
+	}
+
+	// Populate a map to track existing devices by assignment
+	deviceMap := make(map[firewallDeviceAssignment]linodego.FirewallDevice)
+	for _, device := range currentDevices {
+		deviceMap[firewallDeviceAssignment{ID: device.Entity.ID, Type: device.Entity.Type}] = device
+	}
+
+	for _, device := range configuredDevices {
+		if _, ok := deviceMap[device]; ok {
+			// Device exists, drop it from the map so it won't be removed
+			delete(deviceMap, device)
+			continue
+		}
+
+		// Device doesn't exist, create a new one
+		_, err := client.CreateFirewallDevice(ctx, id, linodego.FirewallDeviceCreateOptions{
+			ID:   device.ID,
+			Type: device.Type,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	// Clean up remaining devices
+	for _, device := range deviceMap {
+		if err := client.DeleteFirewallDevice(ctx, id, device.ID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
