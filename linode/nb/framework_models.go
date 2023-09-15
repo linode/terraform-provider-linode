@@ -51,6 +51,12 @@ func (data *NodebalancerModel) ParseNonComputedAttrs(
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 
+	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
+	if diags.HasError() {
+		return diags
+	}
+	data.Tags = tags
+
 	return nil
 }
 
@@ -77,12 +83,6 @@ func (data *NodebalancerModel) ParseComputedAttrs(
 	}
 
 	data.Transfer = *transfer
-
-	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
-	if diags.HasError() {
-		return diags
-	}
-	data.Tags = tags
 
 	return nil
 }
