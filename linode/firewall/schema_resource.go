@@ -147,6 +147,14 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Set:         schema.HashInt,
 	},
+	"nodebalancers": {
+		Type:        schema.TypeSet,
+		Elem:        &schema.Schema{Type: schema.TypeInt},
+		Description: "The IDs of NodeBalancers to apply this firewall to.",
+		Optional:    true,
+		Computed:    true,
+		Set:         schema.HashInt,
+	},
 	"devices": {
 		Type:        schema.TypeList,
 		Elem:        resourceFirewallDevice(),

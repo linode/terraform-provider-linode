@@ -26,3 +26,11 @@ func Detached(t *testing.T, label, region string) string {
 			Region: region,
 		})
 }
+
+func WithNodeBalancer(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"firewall_device_with_nodebalancer", TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}

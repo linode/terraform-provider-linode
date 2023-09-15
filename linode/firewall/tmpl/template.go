@@ -6,7 +6,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 )
 
-type InstanceTemplateData struct {
+type ResourceTemplateData struct {
 	Prefix string
 	ID     string
 	PubKey string
@@ -14,44 +14,51 @@ type InstanceTemplateData struct {
 }
 
 type TemplateData struct {
-	Instances []InstanceTemplateData
+	Instances     []ResourceTemplateData
+	NodeBalancers []ResourceTemplateData
 
 	Label string
 }
 
 func Basic(t *testing.T, label, devicePrefix, region string) string {
+	resources := []ResourceTemplateData{
+		{
+			Prefix: devicePrefix,
+			ID:     "one",
+			PubKey: acceptance.PublicKeyMaterial,
+			Region: region,
+		},
+	}
+
 	return acceptance.ExecuteTemplate(t,
 		"firewall_basic", TemplateData{
-			Label: label,
-			Instances: []InstanceTemplateData{
-				{
-					Prefix: devicePrefix,
-					ID:     "one",
-					PubKey: acceptance.PublicKeyMaterial,
-					Region: region,
-				},
-			},
+			Label:         label,
+			Instances:     resources,
+			NodeBalancers: resources,
 		})
 }
 
 func Updates(t *testing.T, label, devicePrefix, region string) string {
+	resources := []ResourceTemplateData{
+		{
+			Prefix: devicePrefix,
+			ID:     "one",
+			PubKey: acceptance.PublicKeyMaterial,
+			Region: region,
+		},
+		{
+			Prefix: devicePrefix,
+			ID:     "two",
+			PubKey: acceptance.PublicKeyMaterial,
+			Region: region,
+		},
+	}
+
 	return acceptance.ExecuteTemplate(t,
 		"firewall_updates", TemplateData{
-			Label: label,
-			Instances: []InstanceTemplateData{
-				{
-					Prefix: devicePrefix,
-					ID:     "one",
-					PubKey: acceptance.PublicKeyMaterial,
-					Region: region,
-				},
-				{
-					Prefix: devicePrefix,
-					ID:     "two",
-					PubKey: acceptance.PublicKeyMaterial,
-					Region: region,
-				},
-			},
+			Label:         label,
+			Instances:     resources,
+			NodeBalancers: resources,
 		})
 }
 
@@ -66,7 +73,7 @@ func MultipleRules(t *testing.T, label, devicePrefix, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_multiple_rules", TemplateData{
 			Label: label,
-			Instances: []InstanceTemplateData{
+			Instances: []ResourceTemplateData{
 				{
 					Prefix: devicePrefix,
 					ID:     "one",
@@ -99,16 +106,19 @@ func NoRules(t *testing.T, label string) string {
 }
 
 func DataBasic(t *testing.T, label, devicePrefix, region string) string {
+	resources := []ResourceTemplateData{
+		{
+			Prefix: devicePrefix,
+			ID:     "one",
+			PubKey: acceptance.PublicKeyMaterial,
+			Region: region,
+		},
+	}
+
 	return acceptance.ExecuteTemplate(t,
 		"firewall_data_basic", TemplateData{
-			Label: label,
-			Instances: []InstanceTemplateData{
-				{
-					Prefix: devicePrefix,
-					ID:     "one",
-					PubKey: acceptance.PublicKeyMaterial,
-					Region: region,
-				},
-			},
+			Label:         label,
+			Instances:     resources,
+			NodeBalancers: resources,
 		})
 }
