@@ -27,12 +27,12 @@ func init() {
 		F:    sweep,
 	})
 
-	_, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall", "NodeBalancers"})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testRegion = "us-east"
+	testRegion = region
 }
 
 func sweep(prefix string) error {

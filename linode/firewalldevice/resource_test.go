@@ -4,6 +4,7 @@ package firewalldevice_test
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"testing"
 
@@ -20,12 +21,12 @@ import (
 var testRegion string
 
 func init() {
-	//region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall", "NodeBalancers"})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	testRegion = "us-east"
+	testRegion = region
 }
 
 func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
