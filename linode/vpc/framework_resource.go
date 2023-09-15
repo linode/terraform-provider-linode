@@ -149,6 +149,7 @@ func (r *Resource) Update(
 				fmt.Sprintf("Failed to update VPC (%d).", plan.ID.ValueInt64()),
 				err.Error(),
 			)
+			return
 		}
 		resp.Diagnostics.Append(plan.parseComputedAttributes(ctx, vpc)...)
 		if resp.Diagnostics.HasError() {

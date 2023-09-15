@@ -60,7 +60,7 @@ func (d *VPCResourceModel) parseComputedAttributes(
 			StringValue: types.StringValue(vpc.Updated.Format(time.RFC3339)),
 		}
 	} else {
-		d.Created = customtypes.RFC3339TimeStringValue{
+		d.Updated = customtypes.RFC3339TimeStringValue{
 			StringValue: types.StringNull(),
 		}
 	}
