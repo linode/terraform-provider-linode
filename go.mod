@@ -95,4 +95,7 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
+// TODO: Remove this replacement before merging to dev
+replace github.com/linode/linodego => github.com/linode/linodego v1.22.1-0.20230913213544-b58773254148
+
 go 1.20
