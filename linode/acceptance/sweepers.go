@@ -16,20 +16,13 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func GetTestClient(apiUrl ...string) (*linodego.Client, error) {
+func GetTestClient() (*linodego.Client, error) {
 	token := os.Getenv("LINODE_TOKEN")
 	if token == "" {
 		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
 	}
 
 	config := &helper.Config{AccessToken: token, APIVersion: "v4beta"}
-
-	// Allow to customize API URL for alpha testing
-	if len(apiUrl) > 0 {
-		config.APIURL = apiUrl[0]
-
-	}
-
 	client, err := config.Client()
 	if err != nil {
 		return nil, err

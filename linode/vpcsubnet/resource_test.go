@@ -26,7 +26,7 @@ func init() {
 		F:    sweep,
 	})
 
-	client, err := acceptance.GetTestClient("https://api.dev.linode.com")
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting client: %s", err))
 	}
@@ -43,7 +43,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetTestClient("https://api.dev.linode.com")
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting client: %s", err))
 	}
