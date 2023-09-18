@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
@@ -77,6 +78,8 @@ var frameworkResourceSchema = schema.Schema{
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
+			Default:     helper.EmptySetDefault(types.StringType),
+			Computed:    true,
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},
 		"transfer": schema.ListAttribute{

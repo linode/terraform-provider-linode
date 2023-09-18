@@ -77,9 +77,9 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallDataName, "firewalls.0.outbound.0.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallDataName, "firewalls.0.outbound.0.ipv6.0", "::/0"),
 
-					resource.TestCheckResourceAttr(testFirewallDataName, "firewalls.0.devices.#", "1"),
-					resource.TestCheckResourceAttr(testFirewallDataName, "firewalls.0.devices.0.label", firewallName),
-					resource.TestCheckResourceAttr(testFirewallDataName, "firewalls.0.devices.0.type", "linode"),
+					resource.TestCheckResourceAttr(testFirewallDataName, "firewalls.0.devices.#", "2"),
+					resource.TestCheckResourceAttrSet(testFirewallDataName, "firewalls.0.devices.0.label"),
+					resource.TestCheckResourceAttrSet(testFirewallDataName, "firewalls.0.devices.0.type"),
 				),
 			},
 		},

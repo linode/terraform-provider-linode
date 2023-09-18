@@ -12,10 +12,11 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
 	github.com/hashicorp/terraform-plugin-testing v1.5.1
-	github.com/linode/linodego v1.21.0
+	github.com/linode/linodego v1.22.0
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.13.0
+	golang.org/x/net v0.15.0
 )
 
 replace github.com/linode/linodego => github.com/linode/linodego v1.22.1-0.20230913213544-b58773254148
@@ -73,7 +74,6 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.14.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/term v0.12.0 // indirect
@@ -96,5 +96,8 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
+
+// TODO: Remove this replacement before merging to dev
+replace github.com/linode/linodego => github.com/linode/linodego v1.22.1-0.20230913213544-b58773254148
 
 go 1.20

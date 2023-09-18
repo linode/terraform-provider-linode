@@ -1,0 +1,8 @@
+{{ define "firewall_nb" }}
+
+resource "linode_nodebalancer" "{{.ID}}" {
+    label = "{{.Prefix}}-{{.ID}}"
+    region = "{{ .Region }}"
+}
+
+{{ end }}
