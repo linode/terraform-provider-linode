@@ -2,7 +2,7 @@ module github.com/linode/terraform-provider-linode
 
 require (
 	github.com/aws/aws-sdk-go v1.42.16
-	github.com/go-resty/resty/v2 v2.7.0
+	github.com/go-resty/resty/v2 v2.8.0
 	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/go-version v1.6.0
