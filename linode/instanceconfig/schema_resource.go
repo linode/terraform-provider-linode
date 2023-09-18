@@ -64,7 +64,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:     schema.TypeList,
 		Elem:     &schema.Resource{Schema: interfaceSchema},
 		Optional: true,
-		Deprecated: "The embedded interface blocks in linode_instance_config is deprecated " +
+		Deprecated: "The embedded interface blocks in linode_instance_config are deprecated " +
 			"and scheduled to be removed in a future version. Please consider migrating to " +
 			"linode_instance_config_interface resource.",
 		Description: "An array of Network Interfaces to add to this Linode's Configuration Profile.",
