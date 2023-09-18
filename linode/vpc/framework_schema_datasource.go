@@ -1,22 +1,9 @@
 package vpc
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
-
-var subnetObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"id":      types.Int64Type,
-		"label":   types.StringType,
-		"ipv4":    types.StringType,
-		"linodes": types.ListType{ElemType: types.Int64Type},
-		"created": customtypes.RFC3339TimeStringType{},
-		"updated": customtypes.RFC3339TimeStringType{},
-	},
-}
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -35,11 +22,6 @@ var frameworkDatasourceSchema = schema.Schema{
 		"region": schema.StringAttribute{
 			Description: "The region of the VPC.",
 			Computed:    true,
-		},
-		"subnets": schema.ListAttribute{
-			Description: "A list of subnets under this VPC.",
-			Computed:    true,
-			ElementType: subnetObjectType,
 		},
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC was created.",

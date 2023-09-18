@@ -25,7 +25,6 @@ func TestAccDataSourceVPC_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t, vpcLabel, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "label", vpcLabel),
-					resource.TestCheckResourceAttr(resourceName, "subnet.#", "0"),
 					resource.TestCheckResourceAttrSet(resourceName, "description"),
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),

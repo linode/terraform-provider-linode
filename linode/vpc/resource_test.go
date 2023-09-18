@@ -30,7 +30,7 @@ func init() {
 }
 
 func sweep(prefix string) error {
-	client, err := acceptance.GetTestClient("https://api.dev.linode.com")
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting client: %s", err))
 	}
@@ -71,41 +71,10 @@ func TestAccResourceVPC_basic(t *testing.T) {
 					checkVPCExists,
 					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
 					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "description"),
+					resource.TestCheckResourceAttrSet(resName, "region"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
-				),
-			},
-			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccResourceVPC_withSubnets(t *testing.T) {
-	t.Parallel()
-
-	resName := "linode_vpc.foobar"
-	vpcLabel := acctest.RandomWithPrefix("tf-test")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             checkVPCDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.WithSubnets(t, vpcLabel, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					checkVPCExists,
-					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
-					resource.TestCheckResourceAttrSet(resName, "id"),
-					resource.TestCheckResourceAttrSet(resName, "created"),
-
-					resource.TestCheckResourceAttr(resName, "subnets.#", "1"),
-					resource.TestCheckResourceAttr(resName, "subnets.0.label", fmt.Sprintf("%s-s", vpcLabel)),
-					resource.TestCheckResourceAttrSet(resName, "subnets.0.id"),
-					resource.TestCheckResourceAttrSet(resName, "subnets.0.created"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
 				),
 			},
 			{
@@ -141,7 +110,7 @@ func TestAccResourceVPC_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", vpcLabel)),
-					resource.TestCheckResourceAttr(resName, "description", "some description updated"),
+					resource.TestCheckResourceAttr(resName, "description", "some description"),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 				),

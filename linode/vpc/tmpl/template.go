@@ -19,14 +19,6 @@ func Basic(t *testing.T, label, region string) string {
 		})
 }
 
-func WithSubnets(t *testing.T, label, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"vpc_with_subnets", TemplateData{
-			Label:  label,
-			Region: region,
-		})
-}
-
 func Updates(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_updates", TemplateData{

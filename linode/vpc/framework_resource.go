@@ -31,7 +31,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data VPCResourceModel
+	var data VPCModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -39,21 +39,11 @@ func (r *Resource) Create(
 		return
 	}
 
-	subnetCreateOptsList := make([]linodego.VPCSubnetCreateOptions, len(data.SubnetsCreateOptions))
-
-	for i, subnetOpts := range data.SubnetsCreateOptions {
-		subnetCreateOpts := linodego.VPCSubnetCreateOptions{
-			Label: subnetOpts.Label.ValueString(),
-			IPv4:  subnetOpts.IPv4.ValueString(),
-		}
-		subnetCreateOptsList[i] = subnetCreateOpts
-	}
-
+	// TODO: support creating subnets with VPC creation after upgrade to protocol version 6
 	vpcCreateOpts := linodego.VPCCreateOptions{
 		Label:       data.Label.ValueString(),
 		Region:      data.Region.ValueString(),
 		Description: data.Description.ValueString(),
-		Subnets:     subnetCreateOptsList,
 	}
 
 	vpc, err := client.CreateVPC(ctx, vpcCreateOpts)
@@ -78,7 +68,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data VPCResourceModel
+	var data VPCModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -120,7 +110,7 @@ func (r *Resource) Update(
 	resp *resource.UpdateResponse,
 ) {
 	client := r.Meta.Client
-	var plan, state VPCResourceModel
+	var plan, state VPCModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -166,7 +156,7 @@ func (r *Resource) Delete(
 	resp *resource.DeleteResponse,
 ) {
 	client := r.Meta.Client
-	var data VPCResourceModel
+	var data VPCModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
