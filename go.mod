@@ -19,8 +19,6 @@ require (
 	golang.org/x/net v0.15.0
 )
 
-replace github.com/linode/linodego => github.com/linode/linodego v1.22.1-0.20230913213544-b58773254148
-
 require (
 	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect

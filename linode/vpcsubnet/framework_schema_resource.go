@@ -22,6 +22,9 @@ var frameworkResourceSchema = schema.Schema{
 		"vpc_id": schema.Int64Attribute{
 			Description: "The id of the parent VPC for this VPC Subnet",
 			Required:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.RequiresReplace(),
+			},
 		},
 		"label": schema.StringAttribute{
 			Description: "The label of the VPC subnet.",
@@ -30,6 +33,9 @@ var frameworkResourceSchema = schema.Schema{
 		"ipv4": schema.StringAttribute{
 			Description: "The IPv4 range of this subnet in CIDR format.",
 			Required:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
 		},
 		"linodes": schema.ListAttribute{
 			ElementType: types.Int64Type,
