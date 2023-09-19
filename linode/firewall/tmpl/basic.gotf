@@ -2,6 +2,8 @@
 
 {{ template "firewall_inst" (index .Instances 0) }}
 
+{{ template "firewall_nb" (index .NodeBalancers 0) }}
+
 resource "linode_firewall" "test" {
     label = "{{.Label}}"
     tags  = ["test"]
@@ -27,6 +29,7 @@ resource "linode_firewall" "test" {
     outbound_policy = "DROP"
 
     linodes = [linode_instance.one.id]
+    nodebalancers = [linode_nodebalancer.one.id]
 }
 
 {{ end }}

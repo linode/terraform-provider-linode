@@ -42,7 +42,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
 
-* `linodes` - The IDs of Linodes to apply this firewall to.
+* `linodes` - The IDs of Linodes assigned to this Firewall.
+
+* `nodebalancers` - The IDs of NodeBalancers assigned to this Firewall.
 
 * `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`)
 
