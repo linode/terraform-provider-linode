@@ -24,6 +24,9 @@ var frameworkResourceSchema = schema.Schema{
 		"region": schema.StringAttribute{
 			Description: "The region of the VPC.",
 			Required:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
 		},
 		"description": schema.StringAttribute{
 			Description: "The user-defined description of this VPC.",
