@@ -49,6 +49,13 @@ var frameworkResourceSchema = schema.Schema{
 			Computed: true,
 			Default:  int64default.StaticInt64(0),
 		},
+		"firewall_id": schema.Int64Attribute{
+			Description: "ID for the firewall you'd like to use with this NodeBalancer.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.RequiresReplace(),
+			},
+		},
 		"hostname": schema.StringAttribute{
 			Description:   "This NodeBalancer's hostname, ending with .nodebalancer.linode.com",
 			Computed:      true,
