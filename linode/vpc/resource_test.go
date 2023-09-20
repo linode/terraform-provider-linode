@@ -26,6 +26,8 @@ func init() {
 		F:    sweep,
 	})
 
+	// testRegion = acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+
 	testRegion = "us-east" // VPC only available in certain regions currently
 }
 

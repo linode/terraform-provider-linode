@@ -37,12 +37,18 @@ func (d *DataSource) Read(
 		return
 	}
 
-	vpc, err := client.GetVPC(ctx, int(data.ID.ValueInt64()))
+	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to read VPC %v", data.ID.ValueInt64()),
+			fmt.Sprintf("Failed to read VPC %v", id),
 			err.Error(),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(data.parseVPC(ctx, vpc)...)

@@ -76,14 +76,19 @@ func (r *Resource) Read(
 		return
 	}
 
-	vpc, err := client.GetVPC(ctx, int(data.ID.ValueInt64()))
+	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"VPC no longer exists.",
 				fmt.Sprintf(
 					"Removing Linode VPC with ID %v from state because it no longer exists.",
-					data.ID.ValueInt64(),
+					id,
 				),
 			)
 			resp.State.RemoveResource(ctx)
@@ -133,10 +138,15 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		vpc, err := client.UpdateVPC(ctx, int(plan.ID.ValueInt64()), updateOpts)
+		id := helper.SafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		vpc, err := client.UpdateVPC(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update VPC (%d).", plan.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update VPC (%d).", id),
 				err.Error(),
 			)
 			return
@@ -163,7 +173,12 @@ func (r *Resource) Delete(
 		return
 	}
 
-	err := client.DeleteVPC(ctx, int(data.ID.ValueInt64()))
+	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	err := client.DeleteVPC(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
