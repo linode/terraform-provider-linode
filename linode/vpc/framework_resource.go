@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -155,6 +156,8 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+	} else {
+		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
