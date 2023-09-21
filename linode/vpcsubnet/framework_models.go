@@ -2,11 +2,11 @@ package vpcsubnet
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
@@ -32,16 +32,11 @@ func (d *VPCSubnetModel) parseComputedAttributes(
 	}
 	d.Linodes = linodes
 
-	if subnet.Created != nil {
-		d.Created = customtypes.RFC3339TimeStringValue{
-			StringValue: types.StringValue(subnet.Created.Format(time.RFC3339)),
-		}
+	d.Created = customtypes.RFC3339TimeStringValue{
+		StringValue: helper.NullableTimeToFramework(subnet.Created),
 	}
-
-	if subnet.Updated != nil {
-		d.Updated = customtypes.RFC3339TimeStringValue{
-			StringValue: types.StringValue(subnet.Updated.Format(time.RFC3339)),
-		}
+	d.Updated = customtypes.RFC3339TimeStringValue{
+		StringValue: helper.NullableTimeToFramework(subnet.Updated),
 	}
 
 	return nil

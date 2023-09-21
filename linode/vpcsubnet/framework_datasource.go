@@ -37,12 +37,20 @@ func (d *DataSource) Read(
 		return
 	}
 
-	vpcSubnet, err := client.GetVPCSubnet(ctx, int(data.VPCId.ValueInt64()), int(data.ID.ValueInt64()))
+	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	vpcSubnet, err := client.GetVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to read VPC Subnet %v", data.ID.ValueInt64()),
 			err.Error(),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(data.parseVPCSubnet(ctx, vpcSubnet)...)

@@ -3,7 +3,6 @@ package vpcsubnet
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -44,21 +43,10 @@ func (r *Resource) ImportState(
 		return
 	}
 
-	vpcID, err := strconv.ParseInt(idParts[0], 10, 64)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to convert VPC ID attribute",
-			err.Error(),
-		)
-		return
-	}
+	vpcID := helper.StringToInt64(idParts[0], &resp.Diagnostics)
+	id := helper.StringToInt64(idParts[1], &resp.Diagnostics)
 
-	id, err := strconv.ParseInt(idParts[1], 10, 64)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to convert ID attribute",
-			err.Error(),
-		)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -84,7 +72,13 @@ func (r *Resource) Create(
 		IPv4:  data.IPv4.ValueString(),
 	}
 
-	subnet, err := client.CreateVPCSubnet(ctx, createOpts, int(data.VPCId.ValueInt64()))
+	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	subnet, err := client.CreateVPCSubnet(ctx, createOpts, vpcId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create VPC subnet.",
@@ -114,14 +108,21 @@ func (r *Resource) Read(
 		return
 	}
 
-	subnet, err := client.GetVPCSubnet(ctx, int(data.VPCId.ValueInt64()), int(data.ID.ValueInt64()))
+	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	subnet, err := client.GetVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"VPC subnet does not exist.",
 				fmt.Sprintf(
 					"Removing VPC subnet with ID %v from state because it no longer exists",
-					data.ID.ValueInt64(),
+					id,
 				),
 			)
 			resp.State.RemoveResource(ctx)
@@ -166,17 +167,27 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		subnet, err := client.UpdateVPCSubnet(ctx, int(plan.VPCId.ValueInt64()), int(plan.ID.ValueInt64()), updateOpts)
+		vpcId := helper.SafeInt64ToInt(plan.VPCId.ValueInt64(), &resp.Diagnostics)
+		id := helper.SafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		subnet, err := client.UpdateVPCSubnet(ctx, vpcId, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update VPC subnet (%d).", plan.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update VPC subnet (%d).", id),
 				err.Error(),
 			)
+			return
 		}
 		resp.Diagnostics.Append(plan.parseComputedAttributes(ctx, subnet)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
+	} else {
+		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -195,7 +206,14 @@ func (r *Resource) Delete(
 		return
 	}
 
-	err := client.DeleteVPCSubnet(ctx, int(data.VPCId.ValueInt64()), int(data.ID.ValueInt64()))
+	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	err := client.DeleteVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(

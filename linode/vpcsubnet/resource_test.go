@@ -33,7 +33,7 @@ func init() {
 
 	vpc, err := client.CreateVPC(context.Background(), linodego.VPCCreateOptions{
 		Label:  acctest.RandomWithPrefix("tf-test"),
-		Region: "us-east", // VPC only supported in certain regions currently
+		Region: acceptance.GetRandomRegionWithCaps([]string{"VPCs"}),
 	})
 	if err != nil {
 		log.Fatal(err)
