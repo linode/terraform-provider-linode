@@ -1,0 +1,36 @@
+{{ define "nodebalancer_firewall" }}
+
+resource "linode_firewall" "firebar" {
+    label = "{{.Label}}-fw"
+    tags  = ["test"]
+
+    inbound {
+        label    = "tf-test-in"
+        action = "ACCEPT"
+        protocol  = "TCP"
+        ports     = "80"
+        ipv4 = ["0.0.0.0/0"]
+        ipv6 = ["::/0"]
+    }
+    inbound_policy = "DROP"
+
+    outbound {
+        label    = "tf-test-out"
+        action = "ACCEPT"
+        protocol  = "TCP"
+        ports     = "80"
+        ipv4 = ["0.0.0.0/0"]
+        ipv6 = ["2001:db8::/32"]
+    }
+    outbound_policy = "DROP"
+}
+
+resource "linode_nodebalancer" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    client_conn_throttle = 20
+    tags = ["tf_test"]
+    firewall_id = linode_firewall.firebar.id
+}
+
+{{ end }}

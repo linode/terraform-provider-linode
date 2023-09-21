@@ -29,8 +29,15 @@ func Updates(t *testing.T, nodebalancer, region string) string {
 
 func DataBasic(t *testing.T, nodebalancer, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"nodebalancer_data_basic",
-		TemplateData{
+		"nodebalancer_data_basic", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
+
+func Firewall(t *testing.T, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_firewall", TemplateData{
 			Label:  nodebalancer,
 			Region: region,
 		})
