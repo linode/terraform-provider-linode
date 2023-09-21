@@ -26,7 +26,11 @@ func init() {
 		F:    sweep,
 	})
 
-	testRegion = acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	var err error
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
 }
 
 func sweep(prefix string) error {

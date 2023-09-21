@@ -31,9 +31,14 @@ func init() {
 		log.Fatal(fmt.Errorf("Error getting client: %s", err))
 	}
 
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
+
 	vpc, err := client.CreateVPC(context.Background(), linodego.VPCCreateOptions{
 		Label:  acctest.RandomWithPrefix("tf-test"),
-		Region: acceptance.GetRandomRegionWithCaps([]string{"VPCs"}),
+		Region: testRegion,
 	})
 	if err != nil {
 		log.Fatal(err)
