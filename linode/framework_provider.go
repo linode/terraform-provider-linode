@@ -54,6 +54,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 	"github.com/linode/terraform-provider-linode/linode/vpc"
+	"github.com/linode/terraform-provider-linode/linode/vpcsubnet"
 )
 
 type FrameworkProvider struct {
@@ -154,6 +155,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		ipv6range.NewResource,
 		nb.NewResource,
 		accountsettings.NewResource,
+		vpcsubnet.NewResource,
 		vpc.NewResource,
 	}
 }
@@ -202,6 +204,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		accountsettings.NewDataSource,
 		firewalls.NewDataSource,
 		kernels.NewDataSource,
+		vpcsubnet.NewDataSource,
 		vpc.NewDataSource,
 	}
 }
