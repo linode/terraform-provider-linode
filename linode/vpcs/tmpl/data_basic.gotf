@@ -1,0 +1,10 @@
+{{ define "vpcs_data_basic" }}
+
+provider "linode" {
+    url = "https://api.dev.linode.com"
+    api_version = "v4beta"
+}
+
+data "linode_vpcs" "foobar" {}
+
+{{ end }}

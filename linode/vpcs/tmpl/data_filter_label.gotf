@@ -1,0 +1,21 @@
+{{ define "vpcs_data_filter_label" }}
+
+provider "linode" {
+    url = "https://api.dev.linode.com"
+    api_version = "v4beta"
+}
+
+resource "linode_vpc" "foo" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+}
+
+data "linode_vpcs" "foobar" {
+    filter {
+        name = "label"
+        values = ["tf-test"]
+        match_by = "substring"
+    }
+}
+
+{{ end }}
