@@ -3,6 +3,8 @@
 package vpcs_test
 
 import (
+	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -40,7 +42,10 @@ func TestAccDataSourceVPCs_filterByLabel(t *testing.T) {
 
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion := "us-east"
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
