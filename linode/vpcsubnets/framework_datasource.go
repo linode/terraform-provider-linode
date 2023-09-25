@@ -63,7 +63,11 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (data *VPCSubnetFilterModel) listVPCSubnets(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+func (data *VPCSubnetFilterModel) listVPCSubnets(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
 	var diags diag.Diagnostics
 	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &diags)
 	if diags.HasError() {

@@ -3,6 +3,8 @@
 package vpcsubnets_test
 
 import (
+	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -16,7 +18,10 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 
 	resourceName := "data.linode_vpc_subnets.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion := "us-east"
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -42,7 +47,10 @@ func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 
 	resourceName := "data.linode_vpc_subnets.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion := "us-east"
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
