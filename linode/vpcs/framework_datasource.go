@@ -2,10 +2,10 @@ package vpcs
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
