@@ -23,7 +23,8 @@ var regionPriceObjectType = types.ObjectType{
 
 var backupsObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"price": types.ListType{ElemType: priceObjectType},
+		"price":         types.ListType{ElemType: priceObjectType},
+		"region_prices": types.ListType{ElemType: regionPriceObjectType},
 	},
 }
 

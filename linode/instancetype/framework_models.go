@@ -101,6 +101,13 @@ func FlattenBackups(ctx context.Context, backup linodego.LinodeBackupsAddon) (
 
 	result["price"] = price
 
+	regionPrices, diag := FlattenRegionPrices(backup.RegionPrices)
+	if diag.HasError() {
+		return nil, diag
+	}
+
+	result["region_prices"] = regionPrices
+
 	obj, diag := types.ObjectValue(backupsObjectType.AttrTypes, result)
 	if diag.HasError() {
 		return nil, diag
@@ -151,7 +158,7 @@ func FlattenRegionPrices(prices []linodego.LinodeRegionPrice) (
 	result := make([]attr.Value, len(prices))
 
 	for i, price := range prices {
-		obj, d := types.ObjectValue(priceObjectType.AttrTypes, map[string]attr.Value{
+		obj, d := types.ObjectValue(regionPriceObjectType.AttrTypes, map[string]attr.Value{
 			"id":      types.StringValue(price.ID),
 			"hourly":  types.Float64Value(float64(price.Hourly)),
 			"monthly": types.Float64Value(float64(price.Monthly)),
@@ -164,7 +171,7 @@ func FlattenRegionPrices(prices []linodego.LinodeRegionPrice) (
 	}
 
 	priceList, d := basetypes.NewListValue(
-		priceObjectType,
+		regionPriceObjectType,
 		result,
 	)
 	return &priceList, d
