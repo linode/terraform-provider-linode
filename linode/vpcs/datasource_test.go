@@ -42,7 +42,7 @@ func TestAccDataSourceVPCs_filterByLabel(t *testing.T) {
 
 	resourceName := "data.linode_vpcs.foobar"
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
