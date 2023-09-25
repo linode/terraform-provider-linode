@@ -25,10 +25,10 @@ func (model *VPCFilterModel) parseVPCs(
 ) {
 	vpcModels := make([]vpc.VPCModel, len(vpcs))
 
-	for i, v := range vpcs {
+	for i, _ := range vpcs {
 		var vpc vpc.VPCModel
 
-		vpc.ParseVPC(ctx, &v)
+		vpc.ParseVPC(ctx, &vpcs[i])
 
 		vpcModels[i] = vpc
 	}
