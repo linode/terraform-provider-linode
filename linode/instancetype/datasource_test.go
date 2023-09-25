@@ -7,9 +7,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/linode/linodego"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/instancetype/tmpl"
 )
