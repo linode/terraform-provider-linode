@@ -8,7 +8,7 @@ description: |-
 
 # linode\_instance\_shared\_ips
 
-~> **Beta Notice** IPv6 sharing is currently available through early access. 
+~> **Beta Notice** IPv6 sharing is currently available through early access.
 To use early access resources, the `api_version` provider argument must be set to `v4beta`.
 To learn more, see the [early access documentation](../..#early-access).
 
