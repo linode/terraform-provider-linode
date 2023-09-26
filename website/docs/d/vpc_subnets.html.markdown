@@ -34,7 +34,7 @@ The following arguments are supported:
 
 * `vpc_id` - (Required) The id of the parent VPC for the list of VPCs.
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode users that meet certain requirements.
+* [`filter`](#filter) - (Optional) A set of filters used to select Linode VPC subnets that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 

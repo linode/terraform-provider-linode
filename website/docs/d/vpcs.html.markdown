@@ -31,7 +31,7 @@ output "vpcs" {
 
 The following arguments are supported:
 
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode users that meet certain requirements.
+* [`filter`](#filter) - (Optional) A set of filters used to select Linode VPCs that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
