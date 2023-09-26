@@ -15,13 +15,13 @@ var filterConfig = frameworkfilter.Config{
 
 var frameworkDataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
+		"vpc_id": schema.Int64Attribute{
+			Description: "The id of the parent VPC for the list of VPC subnets",
+			Required:    true,
+		},
 		"id": schema.StringAttribute{
 			Description: "The data source's unique ID.",
 			Computed:    true,
-		},
-		"vpc_id": schema.Int64Attribute{
-			Description: "The id of the parent VPC for this VPC Subnet",
-			Required:    true,
 		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
