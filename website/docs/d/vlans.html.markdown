@@ -8,6 +8,10 @@ description: |-
 
 # Data Source: linode\_vlans
 
+~> **Beta Notice** IPv6 sharing is currently available through early access.
+To use early access resources, the `api_version` provider argument must be set to `v4beta`.
+To learn more, see the [early access documentation](../..#early-access).
+
 Provides details about Linode VLANs.
 
 ## Example Usage

@@ -8,9 +8,11 @@ description: |-
 
 # linode\_instance\_shared\_ips
 
-~> **NOTICE:** This resource should only be defined once per-instance and should not be used alongside the `shared_ipv4` field in `linode_instance`.
+~> **Beta Notice** IPv6 sharing is currently available through early access. 
+To use early access resources, the `api_version` provider argument must be set to `v4beta`.
+To learn more, see the [early access documentation](../..#early-access).
 
-~> **NOTICE:** IPv6 sharing is currently available through early access. To learn more, see the [early access documentation](https://github.com/linode/terraform-provider-linode/tree/main/EARLY_ACCESS.md).
+~> **Notice** This resource should only be defined once per-instance and should not be used alongside the `shared_ipv4` field in `linode_instance`.
 
 Manages IPs shared to a Linode instance.
 
