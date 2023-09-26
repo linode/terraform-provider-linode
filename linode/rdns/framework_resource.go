@@ -63,11 +63,13 @@ func (r *Resource) Create(
 		)
 	}
 
-	updateOpts := linodego.IPAddressUpdateOptions{
-		RDNS: plan.RDNS.ValueStringPointer(),
-	}
-
-	ip, err = client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
+	ip, err = updateIPAddress(
+		ctx,
+		client,
+		plan.Address.ValueString(),
+		plan.RDNS.ValueStringPointer(),
+		plan.WaitForAvailable.ValueBool(),
+	)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Linode RDNS",
@@ -143,7 +145,13 @@ func (r *Resource) Update(
 	}
 
 	if resourceUpdated {
-		ip, err := client.UpdateIPAddress(ctx, plan.Address.ValueString(), updateOpts)
+		ip, err := updateIPAddress(
+			ctx,
+			client,
+			plan.Address.ValueString(),
+			plan.RDNS.ValueStringPointer(),
+			plan.WaitForAvailable.ValueBool(),
+		)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to update the Linode RDNS",
