@@ -1,11 +1,7 @@
-{{ define "firewall_basic" }}
+{{ define "nodebalancer_firewall" }}
 
-{{ template "firewall_inst" (index .Instances 0) }}
-
-{{ template "firewall_nb" (index .NodeBalancers 0) }}
-
-resource "linode_firewall" "test" {
-    label = "{{.Label}}"
+resource "linode_firewall" "firebar" {
+    label = "{{.Label}}-fw"
     tags  = ["test"]
 
     inbound {
@@ -27,9 +23,14 @@ resource "linode_firewall" "test" {
         ipv6 = ["2001:db8::/32"]
     }
     outbound_policy = "DROP"
+}
 
-    linodes = [linode_instance.one.id]
-    nodebalancers = [linode_nodebalancer.one.id]
+resource "linode_nodebalancer" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    client_conn_throttle = 20
+    tags = ["tf_test"]
+    firewall_id = linode_firewall.firebar.id
 }
 
 {{ end }}

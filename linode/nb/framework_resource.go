@@ -51,6 +51,10 @@ func (r *Resource) Create(
 		ClientConnThrottle: &clientConnThrottle,
 	}
 
+	if !data.FirewallID.IsNull() {
+		createOpts.FirewallID = int(data.FirewallID.ValueInt64())
+	}
+
 	if !data.Tags.IsNull() {
 		resp.Diagnostics.Append(data.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {

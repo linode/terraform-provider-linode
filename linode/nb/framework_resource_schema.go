@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
@@ -48,6 +49,13 @@ var frameworkResourceSchema = schema.Schema{
 			Computed: true,
 			Default:  int64default.StaticInt64(0),
 		},
+		"firewall_id": schema.Int64Attribute{
+			Description: "ID for the firewall you'd like to use with this NodeBalancer.",
+			Optional:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.RequiresReplace(),
+			},
+		},
 		"hostname": schema.StringAttribute{
 			Description:   "This NodeBalancer's hostname, ending with .nodebalancer.linode.com",
 			Computed:      true,
@@ -77,6 +85,8 @@ var frameworkResourceSchema = schema.Schema{
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
+			Default:     helper.EmptySetDefault(types.StringType),
+			Computed:    true,
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},
 		"transfer": schema.ListAttribute{

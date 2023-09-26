@@ -1,8 +1,10 @@
 {{ define "firewall_updates" }}
 
 {{ template "firewall_inst" (index .Instances 0) }}
-
 {{ template "firewall_inst" (index .Instances 1) }}
+
+{{ template "firewall_nb" (index .NodeBalancers 0) }}
+{{ template "firewall_nb" (index .NodeBalancers 1) }}
 
 resource "linode_firewall" "test" {
     label    = "{{.Label}}"
@@ -38,6 +40,11 @@ resource "linode_firewall" "test" {
 
     linodes = [
         linode_instance.two.id,
+    ]
+
+    nodebalancers = [
+        linode_nodebalancer.one.id,
+        linode_nodebalancer.two.id
     ]
 }
 

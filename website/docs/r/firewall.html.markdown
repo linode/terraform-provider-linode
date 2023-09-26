@@ -87,7 +87,9 @@ The following arguments are supported:
   
 * `outbound_policy` - (Required) The default behavior for outbound traffic. This setting can be overridden by updating the outbound.action property for an individual Firewall Rule. (`ACCEPT`, `DROP`)
 
-* `linodes` - (Optional) A list of IDs of Linodes this Firewall should govern it's network traffic for.
+* `linodes` - (Optional) A list of IDs of Linodes this Firewall should govern network traffic for.
+
+* `nodebalancers` - (Optional) A list of IDs of NodeBalancers this Firewall should govern network traffic for.
 
 * `tags` - (Optional) A list of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
 

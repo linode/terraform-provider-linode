@@ -15,6 +15,10 @@ linters-settings:
     check-type-assertions: true
     check-blank: true
 
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/linode/linodego
+
   govet:
     check-shadowing: true
 
@@ -75,6 +79,9 @@ linters:
     - gocritic
     - scopelint
 
+    # Not useful because we widely use open-source dependencies.
+    - depguard
+
     # These ignores have been added to maintain compatibility with the existing codebase.
     # These issues should be resolved at a later date.
     - wrapcheck
@@ -97,5 +104,6 @@ linters:
     - errorlint
     - forbidigo
     - godot
+    - gomoddirectives
 
   fast: false
