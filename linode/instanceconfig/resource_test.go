@@ -338,6 +338,47 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 	})
 }
 
+
+func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_config.foobar"
+	instanceName := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCInterface(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
+					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.250"),
+				),
+			},
+			{
+				Config: tmpl.VPCInterfaceUpdates(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
+					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.249"),
+					resource.TestCheckResourceAttrSet(resName, "interface.1.ipv4.0.nat_1_1"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
 func checkExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
