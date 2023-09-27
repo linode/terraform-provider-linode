@@ -61,12 +61,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "Helpers enabled when booting to this Linode Config.",
 	},
 	"interface": {
-		Type:     schema.TypeList,
-		Elem:     &schema.Resource{Schema: interfaceSchema},
-		Optional: true,
-		Deprecated: "The embedded interface blocks in linode_instance_config are deprecated " +
-			"and scheduled to be removed in a future version. Please consider migrating to " +
-			"linode_instance_config_interface resource.",
+		Type:        schema.TypeList,
+		Elem:        &schema.Resource{Schema: interfaceSchema},
+		Optional:    true,
 		Description: "An array of Network Interfaces to add to this Linode's Configuration Profile.",
 	},
 	"kernel": {
@@ -233,24 +230,85 @@ var helpersSchema = map[string]*schema.Schema{
 	},
 }
 
+const (
+	onlyAllowedForVPCMsg  = "This attribute is only allowed for VPC interfaces."
+	onlyAllowedForVLANMsg = "This attribute is only allowed for VLAN interfaces."
+	requiredForVPCMsg     = "This attribute is required for VPC interfaces."
+	requiredForVLANMsg    = "This attribute is required for VPC interfaces."
+)
+
 var interfaceSchema = map[string]*schema.Schema{
 	"purpose": {
 		Type:        schema.TypeString,
 		Description: "The type of interface.",
 		Required:    true,
 		ValidateDiagFunc: validation.ToDiagFunc(
-			validation.StringInSlice([]string{"public", "vlan"}, true),
+			validation.StringInSlice([]string{"public", "vlan", "vpc"}, true),
 		),
 	},
 
 	"ipam_address": {
 		Type:        schema.TypeString,
-		Description: "This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation.",
+		Description: "This Network Interface's private IP address in Classless Inter-Domain Routing (CIDR) notation.",
 		Optional:    true,
 	},
 	"label": {
 		Type:        schema.TypeString,
 		Description: "The name of this interface.",
 		Optional:    true,
+	},
+
+	"id": {
+		Type:        schema.TypeInt,
+		Description: "The ID of the interface.",
+		Computed:    true,
+	},
+	"subnet_id": {
+		Type: schema.TypeInt,
+		Description: "The ID of the VPC subnet attached to this interface." +
+			requiredForVPCMsg + onlyAllowedForVPCMsg,
+		Optional: true,
+	},
+	"vpc_id": {
+		Type:        schema.TypeInt,
+		Description: "The ID of VPC of the subnet which the VPC interface is in.",
+		Computed:    true,
+	},
+	"primary": {
+		Type: schema.TypeBool,
+		Description: "Whether the interface is the primary interface that should " +
+			"have the default route for this Linode.",
+		Optional: true,
+		Default:  false,
+	},
+	"ipv4": {
+		Type: schema.TypeList,
+		Description: "The IPv4 configuration of the VPC interface." +
+			onlyAllowedForVPCMsg,
+		Computed: true,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"vpc": {
+					Type:        schema.TypeString,
+					Description: "The ID of VPC of the subnet which the VPC interface is in.",
+					Computed:    true,
+					Optional:    true,
+				},
+				"nat_1_1": {
+					Type:        schema.TypeString,
+					Description: "The ID of VPC of the subnet which the VPC interface is in.",
+					Computed:    true,
+					Optional:    true,
+					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+						if new == "any" && old != "" {
+							return true
+						}
+						return old == new
+					},
+				},
+			},
+		},
 	},
 }
