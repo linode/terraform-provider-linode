@@ -338,7 +338,6 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 	})
 }
 
-
 func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 	t.Parallel()
 
