@@ -79,6 +79,16 @@ resource "linode_instance_config" "my-config" {
     label = "my-vlan"
     ipam_address = "10.0.0.2/24"
   }
+    
+  # VPC networking on eth1
+  interface {
+    purpose = "vpc"
+    subnet_id = 123
+    ipv4 {
+      vpc = "10.0.4.250"
+      nat_1_1 = "any"
+    }
+  }
   
   booted = true
 
@@ -94,6 +104,19 @@ resource "linode_instance_config" "my-config" {
       "echo 'Hello World!'"
     ]
   }
+}
+
+# Create a VPC and a subnet
+resource "linode_vpc" "foobar" {
+    label = join("", ["{{.Label}}", "-vpc"])
+    region = "{{.Region}}"
+    description = "test description"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = join("", ["{{.Label}}", "-subnet"])
+    ipv4 = "10.0.4.0/24"
 }
 
 # Create a boot disk
@@ -197,13 +220,31 @@ The following attributes are available on helpers:
 
 ### interface
 
-The following attributes are available on interface:
+The following arguments are available in an interface:
 
 * `purpose` - (Required) The type of interface. (`public`, `vlan`)
 
-* `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation. (e.g. `10.0.0.1/24`)
+* `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation. (e.g. `10.0.0.1/24`) This field is only allowed for interfaces with the `vlan` purpose.
 
-* `label` - (Optional) The name of the VLAN to join. This field is only allowed for interfaces with the `vlan` purpose.
+* `label` - (Optional) The name of the VLAN to join. This field is only allowed and required for interfaces with the `vlan` purpose.
+
+* `subnet_id` - (Optional) The name of the VLAN to join. This field is only allowed and required for interfaces with the `vpc` purpose.
+
+* `primary` - (Optional) Whether the interface is the primary interface that should have the default route for this Linode.
+
+* [`ipv4`](#ipv4) - (Optional) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.
+
+The following computed attribute is available in a VPC interface:
+
+* `vpc_id` - (Optional) The ID of VPC of the subnet which the VPC interface is connected to.
+
+#### ipv4
+
+The following arguments are available in an `ipv4` configuration block of an `interface` block:
+
+* `vpc` - (Optional) The IP from the VPC subnet to use for this interface. A random address will be assigned if this is not specified in a VPC interface.
+
+* `nat_1_1` - (Optional) The public IP that will be used for the one-to-one NAT purpose. If this is `any`, the public IPv4 address assigned to this Linode is used on this interface and will be 1:1 natted with the vpc ipv4 address.
 
 ## Import
 

@@ -246,18 +246,19 @@ var interfaceSchema = map[string]*schema.Schema{
 			validation.StringInSlice([]string{"public", "vlan", "vpc"}, true),
 		),
 	},
-
 	"ipam_address": {
-		Type:        schema.TypeString,
-		Description: "This Network Interface's private IP address in Classless Inter-Domain Routing (CIDR) notation.",
-		Optional:    true,
+		Type: schema.TypeString,
+		Description: "This Network Interface's private IP address in " +
+			"Classless Inter-Domain Routing (CIDR) notation." +
+			onlyAllowedForVLANMsg,
+		Optional: true,
 	},
 	"label": {
-		Type:        schema.TypeString,
-		Description: "The name of this interface.",
-		Optional:    true,
+		Type: schema.TypeString,
+		Description: "The name of the VALN. " + requiredForVLANMsg +
+			" " + onlyAllowedForVLANMsg,
+		Optional: true,
 	},
-
 	"id": {
 		Type:        schema.TypeInt,
 		Description: "The ID of the interface.",
@@ -265,14 +266,15 @@ var interfaceSchema = map[string]*schema.Schema{
 	},
 	"subnet_id": {
 		Type: schema.TypeInt,
-		Description: "The ID of the VPC subnet attached to this interface." +
+		Description: "The ID of the subnet which the VPC interface is connected to." +
 			requiredForVPCMsg + onlyAllowedForVPCMsg,
 		Optional: true,
 	},
 	"vpc_id": {
-		Type:        schema.TypeInt,
-		Description: "The ID of VPC of the subnet which the VPC interface is in.",
-		Computed:    true,
+		Type: schema.TypeInt,
+		Description: "The ID of VPC of the subnet which the VPC " +
+			"interface is connected to.",
+		Computed: true,
 	},
 	"primary": {
 		Type: schema.TypeBool,
@@ -292,15 +294,16 @@ var interfaceSchema = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				"vpc": {
 					Type:        schema.TypeString,
-					Description: "The ID of VPC of the subnet which the VPC interface is in.",
+					Description: "The IP from the VPC subnet to use for this interface.",
 					Computed:    true,
 					Optional:    true,
 				},
 				"nat_1_1": {
-					Type:        schema.TypeString,
-					Description: "The ID of VPC of the subnet which the VPC interface is in.",
-					Computed:    true,
-					Optional:    true,
+					Type: schema.TypeString,
+					Description: "The public IP that will be used for the " +
+						"one-to-one NAT purpose.",
+					Computed: true,
+					Optional: true,
 					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 						if new == "any" && old != "" {
 							return true
