@@ -10,7 +10,7 @@ description: |-
 
 Manages a Linode VPC.
 
-Please refer to [linode_vpc_subnet](vpc_subnet.html.markdown) to manage the subnets under a Linode VPC. 
+Please refer to [linode_vpc_subnet](vpc_subnet.html.markdown) to manage the subnets under a Linode VPC.
 
 ## Example Usage
 

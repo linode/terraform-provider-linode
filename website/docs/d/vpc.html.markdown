@@ -42,4 +42,4 @@ In addition to all arguments above, the following attributes are exported:
 
 ### Subnets Reference
 
-To list all subnets under a VPC, please refer to the [linode_vpc_subnets](vpc_subnets.html.markdown) data source. 
+To list all subnets under a VPC, please refer to the [linode_vpc_subnets](vpc_subnets.html.markdown) data source.
