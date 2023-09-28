@@ -79,7 +79,7 @@ resource "linode_instance_config" "my-config" {
     label = "my-vlan"
     ipam_address = "10.0.0.2/24"
   }
-    
+
   # VPC networking on eth1
   interface {
     purpose = "vpc"
