@@ -30,9 +30,12 @@ func (r *DataSource) Read(
 ) {
 	client := r.Meta.Client
 
-	var data VolumeModel
+	var data VolumeFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	id, diag := filterConfig.GenerateID(data.Filters)
 	if diag != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/volume"
 )
 
-type VolumeModel struct {
+type VolumeFilterModel struct {
 	ID      types.String                     `tfsdk:"id"`
 	Filters frameworkfilter.FiltersModelType `tfsdk:"filter"`
 	Order   types.String                     `tfsdk:"order"`
@@ -18,7 +18,7 @@ type VolumeModel struct {
 	Volumes []volume.VolumeModel             `tfsdk:"volumes"`
 }
 
-func (data *VolumeModel) parseVolumes(
+func (data *VolumeFilterModel) parseVolumes(
 	ctx context.Context,
 	client *linodego.Client,
 	volumes []linodego.Volume,
