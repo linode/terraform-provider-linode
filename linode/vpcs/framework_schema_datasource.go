@@ -19,8 +19,6 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-		"order":    filterConfig.OrderSchema(),
-		"order_by": filterConfig.OrderBySchema(),
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
