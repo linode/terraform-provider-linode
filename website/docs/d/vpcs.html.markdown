@@ -55,7 +55,7 @@ Each Linode VPC will be stored in the `vpcs` attribute and will export the follo
 
 * `description` - The user-defined description of this VPC.
 
-* `region` - The region of the VPC.
+* `region` - The region where the VPC is deployed.
 
 * `created` - The date and time when the VPC was created.
 

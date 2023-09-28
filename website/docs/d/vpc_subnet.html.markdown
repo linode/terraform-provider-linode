@@ -19,6 +19,10 @@ data "linode_vpc_subnet" "foo" {
     vpc_id = 123
     id = 12345
 }
+
+output "vpc_subnet" {
+  value = data.linode_vpc_subnet.foo
+}
 ```
 
 ## Argument Reference

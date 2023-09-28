@@ -18,6 +18,10 @@ The following example shows how one might use this data source to access informa
 data "linode_vpc" "foo" {
     id = 123
 }
+
+output "vpc" {
+  value = data.linode_vpc.foo
+}
 ```
 
 ## Argument Reference
@@ -34,7 +38,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `description` - The user-defined description of this VPC.
 
-* `region` - The region of the VPC.
+* `region` - The region where the VPC is deployed.
 
 * `created` - The date and time when the VPC was created.
 
