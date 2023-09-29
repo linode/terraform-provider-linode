@@ -15,8 +15,6 @@ import (
 type VPCFilterModel struct {
 	ID      types.String                     `tfsdk:"id"`
 	Filters frameworkfilter.FiltersModelType `tfsdk:"filter"`
-	Order   types.String                     `tfsdk:"order"`
-	OrderBy types.String                     `tfsdk:"order_by"`
 	VPCs    []vpc.VPCModel                   `tfsdk:"vpcs"`
 }
 

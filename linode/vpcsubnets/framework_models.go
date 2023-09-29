@@ -17,8 +17,6 @@ type VPCSubnetFilterModel struct {
 	ID         types.String                     `tfsdk:"id"`
 	VPCId      types.Int64                      `tfsdk:"vpc_id"`
 	Filters    frameworkfilter.FiltersModelType `tfsdk:"filter"`
-	Order      types.String                     `tfsdk:"order"`
-	OrderBy    types.String                     `tfsdk:"order_by"`
 	VPCSubnets []VPCSubnetModel                 `tfsdk:"vpc_subnets"`
 }
 
