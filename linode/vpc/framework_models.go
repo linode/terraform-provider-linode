@@ -35,7 +35,7 @@ func (d *VPCModel) parseComputedAttributes(
 	return nil
 }
 
-func (d *VPCModel) parseVPC(
+func (d *VPCModel) ParseVPC(
 	ctx context.Context,
 	vpc *linodego.VPC,
 ) diag.Diagnostics {

@@ -54,6 +54,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
 	"github.com/linode/terraform-provider-linode/linode/vpc"
+	"github.com/linode/terraform-provider-linode/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/linode/vpcsubnet"
 	"github.com/linode/terraform-provider-linode/linode/vpcsubnets"
 )
@@ -208,5 +209,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vpcsubnet.NewDataSource,
 		vpc.NewDataSource,
 		vpcsubnets.NewDataSource,
+		vpcs.NewDataSource,
 	}
 }

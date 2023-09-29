@@ -1,0 +1,5 @@
+{{ define "vpcs_data_basic" }}
+
+data "linode_vpcs" "foobar" {}
+
+{{ end }}
