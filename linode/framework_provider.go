@@ -56,6 +56,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/vpc"
 	"github.com/linode/terraform-provider-linode/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/linode/vpcsubnet"
+	"github.com/linode/terraform-provider-linode/linode/vpcsubnets"
 )
 
 type FrameworkProvider struct {
@@ -207,6 +208,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		kernels.NewDataSource,
 		vpcsubnet.NewDataSource,
 		vpc.NewDataSource,
+		vpcsubnets.NewDataSource,
 		vpcs.NewDataSource,
 	}
 }
