@@ -33,10 +33,6 @@ The following arguments are supported:
 
 * [`filter`](#filter) - (Optional) A set of filters used to select Linode VPCs that meet certain requirements.
 
-* `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
-
-* `order` - (Optional) The order in which results should be returned. (`asc`, `desc`; default `asc`)
-
 ### Filter
 
 * `name` - (Required) The name of the field to filter by. See the [Filterable Fields section](#filterable-fields) for a complete list of filterable fields.
