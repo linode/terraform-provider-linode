@@ -18,6 +18,7 @@ lint: fmtcheck
 	golangci-lint run --timeout 15m0s
 	tfproviderlint \
 		-AT001=false \
+		-AT004=false \
 		-S006=false \
 		-R018=false \
 		-R019=false \

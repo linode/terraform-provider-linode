@@ -20,7 +20,8 @@ type BaseDataSourceConfig struct {
 	Name string
 
 	// Optional
-	Schema *schema.Schema
+	Schema        *schema.Schema
+	IsEarlyAccess bool
 }
 
 // BaseDataSource contains various re-usable fields and methods
@@ -43,6 +44,12 @@ func (r *BaseDataSource) Configure(
 	r.Meta = GetDataSourceMeta(req, resp)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	if r.Config.IsEarlyAccess {
+		resp.Diagnostics.Append(
+			AttemptWarnEarlyAccessFramework(r.Meta.Config)...,
+		)
 	}
 }
 
