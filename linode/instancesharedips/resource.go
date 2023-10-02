@@ -22,6 +22,8 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	helper.AttemptWarnEarlyAccessSDKv2(meta.(*helper.ProviderMeta))
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)

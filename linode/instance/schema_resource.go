@@ -456,8 +456,10 @@ var resourceSchema = map[string]*schema.Schema{
 		Elem:          resourceConfigInterface(),
 	},
 	"config": {
-		Optional:    true,
-		Computed:    true,
+		Optional: true,
+		Computed: true,
+		Deprecated: "The embedded config is deprecated and scheduled to be removed in the next major version." +
+			"Please consider migrating it  to linode_instance_config resource.",
 		Description: "Configuration profiles define the VM settings and boot behavior of the Linode Instance.",
 		Type:        schema.TypeList,
 		ConflictsWith: []string{
@@ -642,6 +644,9 @@ var resourceSchema = map[string]*schema.Schema{
 			"image", "root_pass", "authorized_keys", "authorized_users", "swap_size",
 			"backup_id", "stackscript_id", "interface",
 		},
+		Deprecated: "The embedded disk block in linode_instance resource is deprecated and " +
+			"scheduled to be removed in the next major version. Please consider migrating " +
+			"it to be the linode_instance_disk resource.",
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{

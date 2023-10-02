@@ -1,0 +1,8 @@
+{{ define "provider_no_poll" }}
+
+provider "linode" {
+    skip_instance_delete_poll = true
+    skip_instance_ready_poll = true
+}
+
+{{ end }}

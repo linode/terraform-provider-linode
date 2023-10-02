@@ -21,6 +21,7 @@ type NodebalancerModel struct {
 	Label              types.String                       `tfsdk:"label"`
 	Region             types.String                       `tfsdk:"region"`
 	ClientConnThrottle types.Int64                        `tfsdk:"client_conn_throttle"`
+	FirewallID         types.Int64                        `tfsdk:"firewall_id"`
 	Hostname           types.String                       `tfsdk:"hostname"`
 	Ipv4               types.String                       `tfsdk:"ipv4"`
 	Ipv6               types.String                       `tfsdk:"ipv6"`
@@ -51,7 +52,7 @@ func (data *NodebalancerModel) ParseNonComputedAttrs(
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 
-	tags, diags := types.SetValueFrom(ctx, types.StringType, nodebalancer.Tags)
+	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
 	if diags.HasError() {
 		return diags
 	}
