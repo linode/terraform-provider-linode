@@ -17,8 +17,3 @@ func CompareIPv6Ranges(i, v string) (bool, error) {
 
 	return ipi.Equal(ipv) && ipneti.Mask.String() == ipnetv.Mask.String(), nil
 }
-
-func ValidateIPv6Range(i string) error {
-	_, _, err := net.ParseCIDR(i)
-	return err
-}
