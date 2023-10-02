@@ -89,7 +89,7 @@ func (c *Config) Client() (*linodego.Client, error) {
 	client.UseCache(!c.DisableInternalCache)
 
 	if c.EventPollMilliseconds != 0 {
-		client.SetPollDelay(time.Duration(c.EventPollMilliseconds))
+		client.SetPollDelay(time.Duration(c.EventPollMilliseconds) * time.Millisecond)
 	}
 	if c.MinRetryDelayMilliseconds != 0 {
 		client.SetRetryWaitTime(time.Duration(c.MinRetryDelayMilliseconds) * time.Millisecond)
