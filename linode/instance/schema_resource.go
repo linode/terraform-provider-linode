@@ -283,6 +283,13 @@ var resourceSchema = map[string]*schema.Schema{
 		Default:  nil,
 		Computed: true,
 	},
+	"firewall_id": {
+		Type: schema.TypeInt,
+		Description: "The ID of the firewall applied to the Linode " +
+			"instance during creation.",
+		Optional: true,
+		ForceNew: true,
+	},
 	"shared_ipv4": {
 		Type:        schema.TypeSet,
 		Description: "A set of IPv4 addresses to share with this Linode.",
