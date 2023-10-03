@@ -23,7 +23,7 @@ type VolumeModel struct {
 	Updated        types.String `tfsdk:"updated"`
 }
 
-func (data *VolumeModel) parseComputedAttributes(
+func (data *VolumeModel) ParseComputedAttributes(
 	ctx context.Context,
 	volume *linodego.Volume,
 ) diag.Diagnostics {
@@ -49,7 +49,7 @@ func (data *VolumeModel) parseComputedAttributes(
 	return diags
 }
 
-func (data *VolumeModel) parseNonComputedAttributes(
+func (data *VolumeModel) ParseNonComputedAttributes(
 	ctx context.Context,
 	volume *linodego.Volume,
 ) diag.Diagnostics {
