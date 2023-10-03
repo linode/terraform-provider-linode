@@ -1,0 +1,12 @@
+{{ define "volume_data_basic" }}
+
+{{ template "volume_basic" . }}
+
+data "linode_volumes" "volume" {
+    filter {
+        name = "label"
+        values = [linode_volume.foobar.label]
+    }
+}
+
+{{ end }}
