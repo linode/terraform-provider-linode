@@ -2110,6 +2110,51 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
+	t.Parallel()
+
+	instanceResourceName := "linode_instance.foobar"
+	firewallResourceName := "linode_firewall.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.FirewallOnCreation(t, instanceName, region),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(instanceResourceName, &instance),
+				),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						firewallResourceName,
+						"devices.0.label",
+						instanceResourceName,
+						"label",
+					),
+				),
+			},
+			{
+				ResourceName:            instanceResourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "firewall_id"},
+			},
+		},
+	})
+}
+
 func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

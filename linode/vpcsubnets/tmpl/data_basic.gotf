@@ -1,0 +1,19 @@
+{{ define "vpc_subnets_data_basic" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    description = "some description"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}-subnet-label"
+    ipv4 = "{{.IPv4}}"
+}
+
+data "linode_vpc_subnets" "foobar" {
+    vpc_id = linode_vpc_subnet.foobar.vpc_id
+}
+
+{{ end}}
