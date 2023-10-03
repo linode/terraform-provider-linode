@@ -591,3 +591,12 @@ func DataClientFilter(t *testing.T, label, tag, region string) string {
 			Region: region,
 		})
 }
+
+func FirewallOnCreation(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_firewall_on_creation", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}

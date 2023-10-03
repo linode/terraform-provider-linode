@@ -178,6 +178,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
+	if firewallID, ok := d.GetOk("firewall_id"); ok {
+		createOpts.FirewallID = firewallID.(int)
+	}
+
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
 		interfaces := interfaces.([]interface{})
 
