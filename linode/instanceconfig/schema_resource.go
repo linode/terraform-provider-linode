@@ -234,7 +234,7 @@ const (
 	onlyAllowedForVPCMsg  = "This attribute is only allowed for VPC interfaces."
 	onlyAllowedForVLANMsg = "This attribute is only allowed for VLAN interfaces."
 	requiredForVPCMsg     = "This attribute is required for VPC interfaces."
-	requiredForVLANMsg    = "This attribute is required for VPC interfaces."
+	requiredForVLANMsg    = "This attribute is required for VLAN interfaces."
 )
 
 var interfaceSchema = map[string]*schema.Schema{
