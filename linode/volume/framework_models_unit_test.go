@@ -33,8 +33,8 @@ func TestVolumeModelParsing(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Test parseComputedAttributes
-	diags := data.parseComputedAttributes(ctx, volumeData)
+	// Test ParseComputedAttributes
+	diags := data.ParseComputedAttributes(ctx, volumeData)
 	assert.Empty(t, diags)
 
 	assert.Equal(t, types.Int64Value(12345), data.ID)
@@ -49,8 +49,8 @@ func TestVolumeModelParsing(t *testing.T) {
 	assert.NotNil(t, data.Created)
 	assert.NotNil(t, data.Updated)
 
-	// Test parseNonComputedAttributes
-	diags = data.parseNonComputedAttributes(ctx, volumeData)
+	// Test ParseNonComputedAttributes
+	diags = data.ParseNonComputedAttributes(ctx, volumeData)
 	assert.Empty(t, diags)
 	assert.Contains(t, data.Tags.String(), "example tag")
 	assert.Contains(t, data.Tags.String(), "another example")

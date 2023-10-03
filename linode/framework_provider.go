@@ -53,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/users"
 	"github.com/linode/terraform-provider-linode/linode/vlan"
 	"github.com/linode/terraform-provider-linode/linode/volume"
+	"github.com/linode/terraform-provider-linode/linode/volumes"
 )
 
 type FrameworkProvider struct {
@@ -200,5 +201,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		accountsettings.NewDataSource,
 		firewalls.NewDataSource,
 		kernels.NewDataSource,
+		volumes.NewDataSource,
 	}
 }

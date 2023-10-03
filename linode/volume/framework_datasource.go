@@ -48,8 +48,8 @@ func (r *DataSource) Read(
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to get the volume.", err.Error())
 	}
-	data.parseComputedAttributes(ctx, volume)
-	data.parseNonComputedAttributes(ctx, volume)
+	data.ParseComputedAttributes(ctx, volume)
+	data.ParseNonComputedAttributes(ctx, volume)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
