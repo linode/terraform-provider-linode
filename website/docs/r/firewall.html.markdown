@@ -107,9 +107,9 @@ The following arguments are supported in the inbound and outbound rule blocks:
 
 * `ports` - (Optional) A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
   
-* `ipv4` - (Optional) A list of IPv4 addresses or networks. Must be in IP/mask format.
+* `ipv4` - (Optional) A list of IPv4 addresses or networks. Must be in IP/mask (CIDR) format.
 
-* `ipv6` - (Optional) A list of IPv6 addresses or networks. Must be in IP/mask format.
+* `ipv6` - (Optional) A list of IPv6 addresses or networks. Must be in IP/mask (CIDR) format.
 
 ## Attributes Reference
 
