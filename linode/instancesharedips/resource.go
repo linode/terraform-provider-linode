@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -22,11 +24,14 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_instance_shared_ips")
+
 	helper.AttemptWarnEarlyAccessSDKv2(meta.(*helper.ProviderMeta))
 
 	client := meta.(*helper.ProviderMeta).Client
-
 	linodeID := d.Get("linode_id").(int)
+
 	sharedIPs, err := GetSharedIPsForLinode(ctx, client, linodeID)
 	if err != nil {
 		return diag.Errorf("failed to get shared ips for linode %d: %s", linodeID, err)
@@ -37,18 +42,32 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	d.SetId(strconv.Itoa(d.Get("linode_id").(int)))
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_instance_shared_ips")
+
+	linodeID := d.Get("linode_id").(int)
+	d.SetId(strconv.Itoa(linodeID))
 
 	return updateResource(ctx, d, meta)
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_instance_shared_ips")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
+
+	ctx = tflog.SetField(ctx, "linode_id", linodeID)
+
 	ips := helper.ExpandStringSet(d.Get("addresses").(*schema.Set))
 
 	if d.HasChange("addresses") {
+		tflog.Info(ctx, "Updating shared IP addresses", map[string]any{
+			"ips": ips,
+		})
+
 		err := client.ShareIPAddresses(ctx, linodego.IPAddressesShareOptions{
 			LinodeID: linodeID,
 			IPs:      ips,
@@ -62,6 +81,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_instance_shared_ips")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
@@ -98,4 +120,11 @@ func GetSharedIPsForLinode(ctx context.Context, client linodego.Client, linodeID
 	}
 
 	return result, nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"linode_id": d.Get("linode_id").(int),
+		"id":        d.Id(),
+	})
 }

@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -214,6 +216,7 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 
 		// Instance is booted into the wrong config
 		if isBooted && currentConfig != configID {
+			tflog.Debug(ctx, "Waiting for instance to enter running status")
 			if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
 				return fmt.Errorf("failed to wait for instance running: %s", err)
 			}
@@ -223,19 +226,32 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 				return fmt.Errorf("failed to poll for events: %s", err)
 			}
 
+			tflog.Info(ctx, "Wrong config booted; rebooting into correct config", map[string]any{
+				"current_config_id": currentConfig,
+			})
+
 			if err := client.RebootInstance(ctx, instance.ID, configID); err != nil {
 				return fmt.Errorf("failed to reboot instance %d: %s", instance.ID, err)
 			}
 
-			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			tflog.Debug(ctx, "Instance reboot triggered, waiting for event finished")
+
+			event, err := p.WaitForFinished(ctx, timeoutSeconds)
+			if err != nil {
 				return fmt.Errorf("failed to wait for instance reboot: %s", err)
 			}
+
+			tflog.Debug(ctx, "Instance reboot finished", map[string]any{
+				"event_id": event.ID,
+			})
 
 			return nil
 		}
 
 		// Boot the instance
 		if !isBooted {
+			tflog.Info(ctx, "Instance is not booted; booting into config")
+
 			p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot)
 			if err != nil {
 				return fmt.Errorf("failed to poll for events: %s", err)
@@ -245,9 +261,16 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 				return fmt.Errorf("failed to boot instance %d %d: %s", instance.ID, configID, err)
 			}
 
-			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			tflog.Debug(ctx, "Instance boot triggered, waiting for event finished")
+
+			event, err := p.WaitForFinished(ctx, timeoutSeconds)
+			if err != nil {
 				return fmt.Errorf("failed to wait for instance boot: %s", err)
 			}
+
+			tflog.Debug(ctx, "Instance boot finished", map[string]any{
+				"event_id": event.ID,
+			})
 		}
 
 		return nil
@@ -259,6 +282,8 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 			return nil
 		}
 
+		tflog.Info(ctx, "Handling instance shutdown")
+
 		if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance running: %s", err)
 		}
@@ -268,13 +293,20 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 			return fmt.Errorf("failed to poll for events: %s", err)
 		}
 
+		tflog.Debug(ctx, "Instance has entered running state, shutting down")
+
 		if err := client.ShutdownInstance(ctx, instance.ID); err != nil {
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
-		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
+		event, err := p.WaitForFinished(ctx, timeoutSeconds)
+		if err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
+
+		tflog.Debug(ctx, "Instance shutdown complete", map[string]any{
+			"event_id": event.ID,
+		})
 
 		return nil
 	}

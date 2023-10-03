@@ -3,8 +3,8 @@ package instancedisk
 import (
 	"context"
 	"fmt"
-	"log"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -29,7 +29,7 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 	shouldShutdown := configID != 0
 
 	if shouldShutdown {
-		log.Printf("[INFO] Shutting down instance %d for disk %d resize", instID, diskID)
+		tflog.Info(ctx, "Shutting down Instance for disk resize")
 
 		p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
 		if err != nil {
@@ -40,9 +40,13 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 			return fmt.Errorf("failed to shutdown instance: %s", err)
 		}
 
+		tflog.Debug(ctx, "Waiting for Instance shutdown operation to complete")
+
 		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 		}
+
+		tflog.Debug(ctx, "Instance finished shutting down")
 	}
 
 	disk, err := client.GetInstanceDisk(ctx, instID, diskID)
@@ -54,6 +58,11 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 	if err != nil {
 		return fmt.Errorf("failed to poll for events: %s", err)
 	}
+
+	tflog.Info(ctx, "Resizing Instance disk", map[string]any{
+		"old_size": disk.Size,
+		"new_size": newSize,
+	})
 
 	if err := client.ResizeInstanceDisk(ctx, instID, diskID, newSize); err != nil {
 		return fmt.Errorf("failed to resize disk: %s", err)
@@ -73,9 +82,11 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 			"failed to resize disk %d from %d to %d", disk.ID, disk.Size, newSize)
 	}
 
+	tflog.Debug(ctx, "Resize operation complete")
+
 	// Reboot the instance if necessary
 	if shouldShutdown {
-		log.Printf("[INFO] Booting instance %d to config %d", instID, configID)
+		tflog.Info(ctx, "Rebooting instance to previously booted config")
 
 		p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeBoot)
 		if err != nil {
@@ -89,6 +100,8 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 			return fmt.Errorf("failed to wait for instance boot: %s", err)
 		}
+
+		tflog.Debug(ctx, "Reboot event finished")
 	}
 
 	return nil

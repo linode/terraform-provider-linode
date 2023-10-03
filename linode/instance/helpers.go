@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"net"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -109,6 +110,10 @@ func createInstanceConfigsFromSet(
 		if err := detachConfigVolumes(ctx, configOpts.Devices, detacher); err != nil {
 			return configIDMap, err
 		}
+
+		tflog.Info(ctx, "Creating instance config", map[string]any{
+			"body": configOpts,
+		})
 
 		instanceConfig, err := client.CreateInstanceConfig(ctx, instanceID, configOpts)
 		if err != nil {
@@ -231,6 +236,10 @@ func updateInstanceConfigs(
 				}
 			}
 
+			tflog.Debug(ctx, "Updating instance config", map[string]any{
+				"body":      configUpdateOpts,
+				"config_id": existingConfig.ID,
+			})
 			updatedConfig, err := client.UpdateInstanceConfig(ctx, instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
 				return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
@@ -278,6 +287,9 @@ func deleteInstanceConfigs(
 	for _, oldLabel := range oldConfigLabels {
 		if _, found := newConfigLabels[oldLabel]; !found {
 			if listedConfig, found := configMap[oldLabel]; found {
+				tflog.Info(ctx, "Deleting instance config", map[string]any{
+					"config_id": listedConfig.ID,
+				})
 				if err := client.DeleteInstanceConfig(ctx, instanceID, listedConfig.ID); err != nil {
 					return newConfigLabels, err
 				}
@@ -345,21 +357,34 @@ type volumeDetacher func(context.Context, int, string) error
 
 func makeVolumeDetacher(client linodego.Client, d *schema.ResourceData) volumeDetacher {
 	return func(ctx context.Context, volumeID int, reason string) error {
-		log.Printf("[INFO] Detaching Linode Volume %d %s", volumeID, reason)
+		ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+			"volume_id": volumeID,
+			"reason":    reason,
+		})
+
+		tflog.Info(ctx, "Detaching Linode Volume")
 		if err := client.DetachVolume(ctx, volumeID); err != nil {
 			return err
 		}
 
-		log.Printf("[INFO] Waiting for Linode Volume %d to detach ...", volumeID)
+		tflog.Debug(ctx, "Waiting for Linode Volume to detach ...")
 		if _, err := client.WaitForVolumeLinodeID(ctx, volumeID, nil, getDeadlineSeconds(ctx, d)); err != nil {
 			return err
 		}
+
+		tflog.Debug(ctx, "Volume finished detaching")
+
 		return nil
 	}
 }
 
 func makeVolumeDetacherIgnoreAttached(client linodego.Client, d *schema.ResourceData) volumeDetacher {
 	return func(ctx context.Context, volumeID int, reason string) error {
+		ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+			"volume_id": volumeID,
+			"reason":    reason,
+		})
+
 		id, err := strconv.Atoi(d.Id())
 		if err != nil {
 			return err
@@ -371,7 +396,7 @@ func makeVolumeDetacherIgnoreAttached(client linodego.Client, d *schema.Resource
 		}
 
 		if vol.LinodeID != nil && *vol.LinodeID == id {
-			log.Printf("[INFO] Volume %d is already attached to Linode %d, ignoring ...", volumeID, id)
+			tflog.Info(ctx, "Volume is already attached to Linode, ignoring ...")
 			return nil
 		}
 
@@ -443,6 +468,10 @@ func createInstanceDisk(
 		}
 	}
 
+	tflog.Info(ctx, "Creating new instance disk", map[string]any{
+		"body": diskOpts,
+	})
+
 	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskCreate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize event poller: %s", err)
@@ -457,6 +486,10 @@ func createInstanceDisk(
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for Linode instance %d disk: %s", instanceDisk.ID, err)
 	}
+
+	tflog.Debug(ctx, "Instance disk creation complete", map[string]any{
+		"disk_id": instanceDisk.ID,
+	})
 
 	return instanceDisk, err
 }
@@ -583,6 +616,10 @@ func updateInstanceDisks(
 			continue
 		}
 
+		tflog.Info(ctx, "Deleting unused disk", map[string]any{
+			"disk_id": disk.ID,
+		})
+
 		p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskDelete)
 		if err != nil {
 			return false, fmt.Errorf("failed to initialize event poller: %s", err)
@@ -597,6 +634,11 @@ func updateInstanceDisks(
 			return hasChanges, fmt.Errorf(
 				"error waiting for Instance %d Disk %d to finish deleting: %s", instance.ID, disk.ID, err)
 		}
+
+		tflog.Debug(ctx, "Unused disk finished deleting", map[string]any{
+			"disk_id": disk.ID,
+		})
+
 		visited[label] = struct{}{}
 	}
 
@@ -662,13 +704,22 @@ func ensureInstanceOffline(
 	if instance.Status == linodego.InstanceOffline {
 		return
 	} else if instance.Status != linodego.InstanceShuttingDown {
+		tflog.Info(ctx, "Shutting down instance to reach offline status")
 		err = client.ShutdownInstance(ctx, instanceID)
 	}
 
 	if err != nil {
 		return
 	}
-	return client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, timeout)
+
+	inst, err := client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, timeout)
+	if err != nil {
+		return nil, err
+	}
+
+	tflog.Debug(ctx, "Instance has reached offline state")
+
+	return inst, nil
 }
 
 // changeInstanceType resizes the Linode Instance.
@@ -700,6 +751,11 @@ func changeInstanceType(
 		Type:                targetType,
 	}
 
+	tflog.Debug(ctx, "Resizing instance", map[string]any{
+		"body":        resizeOpts,
+		"target_type": targetType,
+	})
+
 	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize event poller %d: %s", instance.ID, err)
@@ -713,6 +769,8 @@ func changeInstanceType(
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for instance %d to finish resizing: %s", instance.ID, err)
 	}
+
+	tflog.Debug(ctx, "Instance resize completed")
 
 	// Wait for instance status to go back to idle, offline state
 	if instance, err = client.WaitForInstanceStatus(
@@ -762,8 +820,12 @@ func changeInstanceDiskSize(
 		return fmt.Errorf("Error resizing disk %d: size exceeds disk size for Instance %d", disk.ID, instance.ID)
 	}
 
+	ctx = tflog.SetField(ctx, "disk_id", disk.ID)
+
 	switch instance.Status {
 	case linodego.InstanceShuttingDown:
+		tflog.Debug(ctx, "Waiting for instance to reach offline status for disk resize")
+
 		if _, err := client.WaitForInstanceStatus(
 			ctx, instance.ID, linodego.InstanceOffline, getDeadlineSeconds(ctx, d),
 		); err != nil {
@@ -771,6 +833,8 @@ func changeInstanceDiskSize(
 		}
 	case linodego.InstanceOffline:
 	default:
+		tflog.Debug(ctx, "Shutting down instance for disk resize")
+
 		if err := client.ShutdownInstance(ctx, instance.ID); err != nil {
 			return err
 		}
@@ -783,6 +847,8 @@ func changeInstanceDiskSize(
 		return fmt.Errorf("Error waiting for Instance %d to go offline: %s", instance.ID, err)
 	}
 
+	tflog.Info(ctx, "Instance has reached offline status, resizing disk")
+
 	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionDiskResize)
 	if err != nil {
 		return fmt.Errorf("failed to initialize event poller: %s", err)
@@ -792,7 +858,7 @@ func changeInstanceDiskSize(
 		return fmt.Errorf("Error resizing disk %d for Instance %d: %s", disk.ID, instance.ID, err)
 	}
 
-	// Wait for the disk resize operation to complete, and boot instance.
+	// Wait for the disk resize operation to complete.
 	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 	if err != nil {
 		return fmt.Errorf("Error waiting for resize of Instance %d Disk %d: %s", instance.ID, disk.ID, err)
@@ -806,6 +872,8 @@ func changeInstanceDiskSize(
 		return fmt.Errorf(
 			"Error resizing disk %d on instance %d from %d to %d", disk.ID, instance.ID, disk.Size, targetSize)
 	}
+
+	tflog.Debug(ctx, "Disk has finished resizing")
 
 	return nil
 }
@@ -1048,7 +1116,7 @@ func handleBootedUpdate(
 	case linodego.InstanceOffline:
 
 	case linodego.InstanceShuttingDown:
-		log.Printf("[INFO] Awaiting instance (%d) shutdown before continuing", instanceID)
+		tflog.Info(ctx, "Awaiting instance shutdown before continuing")
 
 		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, 120)
 		if err != nil {
@@ -1058,7 +1126,7 @@ func handleBootedUpdate(
 		instStatus = linodego.InstanceOffline
 
 	case linodego.InstanceBooting, linodego.InstanceRebooting:
-		log.Printf("[INFO] Awaiting instance (%d) boot before continuing", instanceID)
+		tflog.Info(ctx, "Awaiting instance boot before continuing")
 
 		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceRunning, 120)
 		if err != nil {
@@ -1088,7 +1156,7 @@ func handleBootedUpdate(
 }
 
 func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceID, deadlineSeconds int) error {
-	log.Printf("[INFO] Shutting down instance (%d)", instanceID)
+	tflog.Info(ctx, "Shutting down instance")
 
 	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
 	if err != nil {
@@ -1103,11 +1171,15 @@ func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceI
 		return fmt.Errorf("failed to wait for instance shutdown: %s", err)
 	}
 
+	tflog.Debug(ctx, "Instance has finished shutting down")
+
 	return nil
 }
 
 func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, configID, deadlineSeconds int) error {
-	log.Printf("[INFO] Booting instance (%d)", instanceID)
+	tflog.Info(ctx, "Booting instance", map[string]any{
+		"config_id": configID,
+	})
 
 	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeBoot)
 	if err != nil {
@@ -1121,6 +1193,8 @@ func bootInstanceSync(ctx context.Context, client linodego.Client, instanceID, c
 	if _, err := p.WaitForFinished(ctx, deadlineSeconds); err != nil {
 		return fmt.Errorf("failed to wait for instance boot: %s", err)
 	}
+
+	tflog.Debug(ctx, "Instance has finished booting")
 
 	return nil
 }

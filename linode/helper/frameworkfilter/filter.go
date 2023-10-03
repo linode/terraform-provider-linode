@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -160,6 +162,10 @@ func (f Config) GetAndFilter(
 	}
 
 	// Call the user-defined list function
+	tflog.Trace(ctx, "Calling resource-defined list function", map[string]any{
+		"filter_header": filterStr,
+	})
+
 	listedElems, err := listFunc(ctx, client, filterStr)
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(

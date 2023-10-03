@@ -3,9 +3,10 @@ package instance
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -39,6 +40,9 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_instance")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -48,7 +52,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	instance, err := client.GetInstance(ctx, int(id))
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Linode Instance ID %q from state because it no longer exists", d.Id())
+			tflog.Warn(ctx, "removing Linode Instance ID %q from state because it no longer exists")
 			d.SetId("")
 			return nil
 		}
@@ -156,6 +160,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_instance")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	if err := validateBooted(ctx, d); err != nil {
@@ -262,10 +269,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
 
+	tflog.Debug(ctx, "Creating Linode Instance", map[string]any{
+		"body": createOpts,
+	})
+
 	instance, err := client.CreateInstance(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("Error creating a Linode Instance: %s", err)
 	}
+
+	ctx = tflog.SetField(ctx, "id", instance.ID)
 
 	d.SetId(fmt.Sprintf("%d", instance.ID))
 	createPoller.EntityID = instance.ID
@@ -308,6 +321,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if doUpdate {
+		ctx = populateLogAttributes(ctx, d)
+		tflog.Debug(ctx, "Updating Linode Instance (during create)", map[string]any{
+			"body": updateOpts,
+		})
+
 		instance, err = client.UpdateInstance(ctx, instance.ID, updateOpts)
 		if err != nil {
 			return diag.FromErr(err)
@@ -321,10 +339,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	var configIDLabelMap map[string]int
 
 	if disksOk {
+		tflog.Debug(ctx, "Waiting for instance creation to complete before provisioning disks")
+
 		_, err = createPoller.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
 		if err != nil {
 			return diag.Errorf("Error waiting for Instance to finish creating: %s", err)
 		}
+
+		tflog.Debug(ctx, "Instance is ready, provisioning disks")
 
 		diskSpecs := d.Get("disk").([]interface{})
 		diskIDLabelMap = make(map[string]int, len(diskSpecs))
@@ -368,8 +390,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if ipv4Shared, ok := d.GetOk("shared_ipv4"); ok {
+		toShare := helper.ExpandStringSet(ipv4Shared.(*schema.Set))
+
+		tflog.Debug(ctx, "Sharing IP addresses with instance", map[string]any{
+			"ips": toShare,
+		})
+
 		err = client.ShareIPAddresses(ctx, linodego.IPAddressesShareOptions{
-			IPs:      helper.ExpandStringSet(ipv4Shared.(*schema.Set)),
+			IPs:      toShare,
 			LinodeID: instance.ID,
 		})
 		if err != nil {
@@ -386,15 +414,24 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 				return diag.Errorf("failed to initialize event poller: %s", err)
 			}
 
+			tflog.Debug(ctx, "Booting instance", map[string]any{
+				"boot_config": bootConfig,
+			})
+
 			if err = client.BootInstance(ctx, instance.ID, bootConfig); err != nil {
 				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 			}
 
-			if _, err = p.WaitForFinished(
+			event, err := p.WaitForFinished(
 				ctx, getDeadlineSeconds(ctx, d),
-			); err != nil {
+			)
+			if err != nil {
 				return diag.Errorf("Error booting Linode instance %d: %s", instance.ID, err)
 			}
+
+			tflog.Debug(ctx, "Instance finished booting", map[string]any{
+				"event_id": event.ID,
+			})
 		} else {
 			targetStatus = linodego.InstanceOffline
 		}
@@ -406,6 +443,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if !meta.(*helper.ProviderMeta).Config.SkipInstanceReadyPoll {
+		tflog.Debug(ctx, "Waiting for instance to reach target status", map[string]any{
+			"target_status": targetStatus,
+		})
+
 		if _, err = client.WaitForInstanceStatus(ctx, instance.ID, targetStatus, getDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("timed-out waiting for Linode instance %d to reach status %s: %s", instance.ID, targetStatus, err)
 		}
@@ -474,6 +515,9 @@ func adjustSwapSizeIfNeeded(
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_instance")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -527,13 +571,23 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if simpleUpdate {
 		instanceID := instance.ID
 
+		tflog.Debug(ctx, "Updating instance", map[string]any{
+			"body": updateOpts,
+		})
+
 		if instance, err = client.UpdateInstance(ctx, instance.ID, updateOpts); err != nil {
 			return diag.Errorf("Error updating Instance %d: %s", instanceID, err)
 		}
 	}
 
 	if d.HasChange("backups_enabled") {
-		if d.Get("backups_enabled").(bool) {
+		backupsEnabled := d.Get("backups_enabled").(bool)
+
+		tflog.Info(ctx, "Updating backups enrollment", map[string]any{
+			"backups_enabled": backupsEnabled,
+		})
+
+		if backupsEnabled {
 			if err = client.EnableInstanceBackups(ctx, instance.ID); err != nil {
 				return diag.FromErr(err)
 			}
@@ -551,6 +605,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("Error removing private IP address for Instance %d: Removing a Private IP "+
 				"address must be handled through a support ticket", instance.ID)
 		}
+
+		tflog.Info(ctx, "Allocating additional private IP")
 
 		privateIP, err := client.AddInstanceIPAddress(ctx, instance.ID, false)
 		if err != nil {
@@ -635,6 +691,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			expandedInterfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
 		}
 
+		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{
+			"config_id": bootConfig,
+		})
+
 		if _, err := client.UpdateInstanceConfig(ctx, instance.ID, bootConfig, linodego.InstanceConfigUpdateOptions{
 			Interfaces: expandedInterfaces,
 		}); err != nil {
@@ -644,8 +704,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("shared_ipv4") {
+		sharedIPs := helper.ExpandStringSet(d.Get("shared_ipv4").(*schema.Set))
+
+		tflog.Debug(ctx, "Updating instance shared IPv4 addresses", map[string]any{
+			"ips": sharedIPs,
+		})
+
 		err = client.ShareIPAddresses(ctx, linodego.IPAddressesShareOptions{
-			IPs:      helper.ExpandStringSet(d.Get("shared_ipv4").(*schema.Set)),
+			IPs:      sharedIPs,
 			LinodeID: instance.ID,
 		})
 		if err != nil {
@@ -672,9 +738,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to initialize event poller: %s", err)
 		}
 
-		err = client.RebootInstance(ctx, instance.ID, bootConfig)
+		tflog.Info(ctx, "Implicitly rebooting instance", map[string]any{
+			"boot_config_id": bootConfig,
+		})
 
-		log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
+		err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
 		if err != nil {
 			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
@@ -683,6 +751,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if err != nil {
 			return diag.Errorf("Error waiting for Instance %d to finish rebooting: %s", instance.ID, err)
 		}
+
+		tflog.Debug(ctx, "Instance has finished rebooting")
 
 		if _, err = client.WaitForInstanceStatus(
 			ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
@@ -699,6 +769,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_instance")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -709,6 +782,8 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
+
+	tflog.Debug(ctx, "Deleting instance")
 
 	err = client.DeleteInstance(ctx, int(id))
 	if err != nil {
@@ -724,4 +799,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	d.SetId("")
 	return nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"lid": d.Id(),
+	})
 }

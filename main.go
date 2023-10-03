@@ -16,6 +16,9 @@ import (
 func main() {
 	ctx := context.Background()
 
+	// Disable the baked-in timestamp in favor of tflog
+	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
+
 	var debug bool
 
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
