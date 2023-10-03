@@ -1,0 +1,15 @@
+{{ define "vpc_for_instance_config" }}
+
+resource "linode_vpc" "foobar" {
+    label = join("", ["{{.Label}}", "-vpc"])
+    region = "{{.Region}}"
+    description = "test description"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = join("", ["{{.Label}}", "-subnet"])
+    ipv4 = "10.0.4.0/24"
+}
+
+{{ end }}

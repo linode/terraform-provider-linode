@@ -133,7 +133,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		Label:       d.Get("label").(string),
 		Comments:    d.Get("comments").(string),
 		Helpers:     expandHelpers(d.Get("helpers")),
-		Interfaces:  expandInterfaces(d.Get("interface").([]any)),
+		Interfaces:  expandInterfaces(ctx, d.Get("interface").([]any)),
 		MemoryLimit: d.Get("memory_limit").(int),
 		Kernel:      d.Get("kernel").(string),
 		RunLevel:    d.Get("run_level").(string),
@@ -244,7 +244,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if d.HasChange("interface") {
-		putRequest.Interfaces = expandInterfaces(d.Get("interface").([]any))
+		putRequest.Interfaces = expandInterfaces(ctx, d.Get("interface").([]any))
 		shouldUpdate = true
 	}
 

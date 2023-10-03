@@ -1,0 +1,36 @@
+{{ define "vpc_interface" }}
+
+{{ template "instance_config_empty_instance" . }}
+
+{{ template "instance_config_disk" . }}
+
+{{ template "vpc_for_instance_config" . }}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config"
+  comments = "cool"
+
+  device {
+    device_name = "sda"
+    disk_id = linode_instance_disk.foobar.id
+  }
+
+  interface {
+    purpose = "public"
+  }
+
+  interface {
+    purpose = "vpc"
+    subnet_id = linode_vpc_subnet.foobar.id
+    ipv4 {
+      vpc = "10.0.4.250"
+      nat_1_1 = "any"
+    }
+  }
+
+  kernel = "linode/grub2"
+  root_device = "/dev/sda"
+}
+
+{{ end }}
