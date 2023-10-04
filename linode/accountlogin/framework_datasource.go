@@ -85,7 +85,11 @@ func (d *DataSource) Read(
 		return
 	}
 
-	accountlogin, err := client.GetLogin(ctx, int(data.ID.ValueInt64()))
+	loginID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	accountlogin, err := client.GetLogin(ctx, loginID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get Account Login",
