@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -31,7 +30,6 @@ func (d *DataSource) Read(
 	var data DataSourceModel
 	client := d.Meta.Client
 
-	var linodeId types.Int64
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -53,7 +51,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseBackups(ctx, backups, linodeId)...)
+	resp.Diagnostics.Append(data.parseBackups(ctx, backups, data.Linode_ID)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
