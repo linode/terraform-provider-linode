@@ -3,7 +3,6 @@ package linode
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"log"
 	"net/http"
 	"net/url"
@@ -16,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"

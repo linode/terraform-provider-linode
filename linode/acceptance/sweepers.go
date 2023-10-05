@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -23,7 +24,7 @@ func GetTestClient() (*linodego.Client, error) {
 	}
 
 	config := &helper.Config{AccessToken: token, APIVersion: "v4beta"}
-	client, err := config.Client()
+	client, err := config.Client(context.Background())
 	if err != nil {
 		return nil, err
 	}
