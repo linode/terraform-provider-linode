@@ -248,7 +248,7 @@ func providerConfigure(
 	handleDefault(config, d)
 
 	config.TerraformVersion = terraformVersion
-	client, err := config.Client()
+	client, err := config.Client(ctx)
 	if err != nil {
 		return nil, diag.Errorf("failed to initialize client: %s", err)
 	}
