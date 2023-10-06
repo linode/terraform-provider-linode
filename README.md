@@ -69,7 +69,7 @@ There are a number of useful flags and variables to aid in debugging.
 
 - `TF_LOG` - This instructs Terraform to emit logging messages at the given level.
 
-- `TF_LOG_PROVIDER_LINODE` - This instructs terraform-provider-linode to output API request logs at the given level.
+- `TF_LOG_PROVIDER_LINODE_REQUESTS` - This instructs terraform-provider-linode to output API request logs at the given level.
 
 - `TF_SCHEMA_PANIC_ON_ERROR` - This forces Terraform to panic if a Schema Set command failed.
 
