@@ -13,5 +13,5 @@ type TemplateData struct {
 
 func DataBasic(t *testing.T, volume, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"volume_data_basic", TemplateData{Label: volume, Region: region})
+		"volumes_data_basic", TemplateData{Label: volume, Region: region})
 }
