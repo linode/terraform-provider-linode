@@ -1,9 +1,0 @@
-{{ define "volume_basic" }}
-
-resource "linode_volume" "foobar" {
-    label = "{{.Label}}"
-    region = "{{ .Region }}"
-    tags = ["tf_test"]
-}
-
-{{ end }}

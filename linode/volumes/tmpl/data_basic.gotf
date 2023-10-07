@@ -1,4 +1,4 @@
-{{ define "volume_data_basic" }}
+{{ define "volumes_data_basic" }}
 
 {{ template "volume_basic" . }}
 
