@@ -1,8 +1,8 @@
-# How to migrate an embedded attribute referring a cloud resource to be an TF-managed resource?
+# How to Migrate Embedded Attributes to Terraform-Managed Resources
 
-In this guide, we provide an example of migrating `config` and `disk`
-attributes in `linode_instance` resource to be `linode_instance_config`
-and `linode_instance_disk` resource.
+In this guide, we demonstrate how to migrate the `config` and `disk`
+attributes from the `linode_instance` resource to the `linode_instance_config`
+and `linode_instance_disk` resources, respectively.
 
 -> An experimental feature, generating configuration, will be used in this guide.
 For details, please check
@@ -10,7 +10,7 @@ For details, please check
 
 ## Create a simple instance with embedded config and disk
 
-This is a sample TF config file for a Linode instance containing deprecated
+This is a sample Terraform config file for a Linode instance containing deprecated
 and embedded `config` and `disk` fields, let's say `main.tf`.
 
 This doc will explain how to migrate them to be
@@ -37,6 +37,7 @@ resource "linode_instance" "test_instance" {
   type   = "g6-nanode-1"
   private_ip = true
 
+  # the embedded config block attribute that needs to be migrated
   config {
     label  = "test-config-1"
     kernel = "linode/grub2"
@@ -60,12 +61,14 @@ resource "linode_instance" "test_instance" {
     }
   }
 
+  # the embedded disk block attribute that needs to be migrated
   disk {
     label      = "test-swap"
     size       = 1024
     filesystem = "swap"
   }
 
+  # the embedded disk block attribute that needs to be migrated
   disk {
     label            = "test-disk"
     size             = 24576
@@ -80,12 +83,12 @@ resource "linode_instance" "test_instance" {
 ## Import linode_instance_config and generate the config file
 
 Add import statements for the `linode_instance_config` resources
-then remove the embedded config in the `linode_instance` resource.
+then remove the embedded config from the `linode_instance` resource.
 
 Now we can run `terraform plan -generate-config-out=generated.tf`
 command to generate the config files.
 
-This step will result the following TF config files.
+This step will result the following Terraform config files.
 
 main.tf
 
@@ -208,10 +211,10 @@ Terraform has generated configuration and written it to generated.tf. Please rev
 
 ## Apply
 
-Finally, we can run `terraform apply` to put the imported config
-into the states.
+Finally, execute `terraform apply` to incorporate the imported configurations into the state.
 
-Don't forget to double check the sensitive values because TF might not be able to generate them.
+Don't forget to double check the reference to the sensitive values
+because Terraform may not be able to generate them.
 
 ```
 Apply complete! Resources: 3 imported, 0 added, 0 changed, 0 destroyed.
@@ -219,12 +222,9 @@ Apply complete! Resources: 3 imported, 0 added, 0 changed, 0 destroyed.
 
 ## Future
 
-Ideally, we would like to import the resources with ids stored in the states,
-but it's currently not supported by the TF.
-
-I put up an [issue](https://github.com/hashicorp/terraform/issues/33880)
-in their repo for it, and later realized they already implemented it. This feature will be available in TF v1.6
-according to their plan on GitHub.
+Ideally, we aim to import resources with IDs stored in the state.
+Although this feature is not currently supported by Terraform, it
+is planned for release in version 1.6.
 
 We also plan to store Linode config ID in the embedded `config` field of `linode_instance`
 resource.
