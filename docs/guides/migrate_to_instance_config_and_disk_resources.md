@@ -10,7 +10,7 @@ For details, please check
 
 ## Create a simple instance with embedded config and disk
 
-This is a sample TF config file for a linode instance containing deprecated
+This is a sample TF config file for a Linode instance containing deprecated
 and embedded `config` and `disk` fields, let's say `main.tf`.
 
 This doc will explain how to migrate them to be
