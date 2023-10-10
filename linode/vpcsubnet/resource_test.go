@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -32,6 +33,7 @@ func init() {
 	}
 
 	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -134,6 +136,53 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
+	t.Parallel()
+
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.Basic(t, vpcID, subnetLabel, "172.16.0.0/24"),
+				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
+	t.Parallel()
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	invalidLabel := "invalid_test_label"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, vpcID, subnetLabel, "192.168.0.0/26"),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCSubnetExists,
+					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+				),
+			},
+			{
+				Config:      tmpl.Updates(t, vpcID, invalidLabel, "192.168.0.0/26"),
+				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
 			},
 		},
 	})
