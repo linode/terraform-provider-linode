@@ -22,7 +22,7 @@ func TestParseNonComputedAttrs(t *testing.T) {
 		Tags:  []string{"tag1", "tag2"},
 	}
 
-	nodeBalancerModel := &NodebalancerModel{}
+	nodeBalancerModel := &NodeBalancerModel{}
 
 	diags := nodeBalancerModel.ParseNonComputedAttrs(context.Background(), nodeBalancer)
 
@@ -60,7 +60,7 @@ func TestParseComputedAttrs(t *testing.T) {
 		},
 	}
 
-	nodeBalancerModel := &NodebalancerModel{}
+	nodeBalancerModel := &NodeBalancerModel{}
 
 	diags := nodeBalancerModel.ParseComputedAttrs(context.Background(), nodeBalancer)
 
