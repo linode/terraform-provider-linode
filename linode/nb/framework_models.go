@@ -122,17 +122,17 @@ func UpgradeResourceStateValue(val string) (basetypes.Float64Value, diag.Diagnos
 }
 
 type NodeBalancerDataSourceModel struct {
-	ID                 types.Int64                        `tfsdk:"id"`
-	Label              types.String                       `tfsdk:"label"`
-	Region             types.String                       `tfsdk:"region"`
-	ClientConnThrottle types.Int64                        `tfsdk:"client_conn_throttle"`
-	Hostname           types.String                       `tfsdk:"hostname"`
-	Ipv4               types.String                       `tfsdk:"ipv4"`
-	Ipv6               types.String                       `tfsdk:"ipv6"`
-	Created            customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	Updated            customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
-	Transfer           types.List                         `tfsdk:"transfer"`
-	Tags               types.Set                          `tfsdk:"tags"`
+	ID                 types.Int64       `tfsdk:"id"`
+	Label              types.String      `tfsdk:"label"`
+	Region             types.String      `tfsdk:"region"`
+	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
+	Hostname           types.String      `tfsdk:"hostname"`
+	Ipv4               types.String      `tfsdk:"ipv4"`
+	Ipv6               types.String      `tfsdk:"ipv6"`
+	Created            timetypes.RFC3339 `tfsdk:"created"`
+	Updated            timetypes.RFC3339 `tfsdk:"updated"`
+	Transfer           types.List        `tfsdk:"transfer"`
+	Tags               types.Set         `tfsdk:"tags"`
 }
 
 func (data *NodeBalancerDataSourceModel) FlattenNodeBalancer(
@@ -147,13 +147,8 @@ func (data *NodeBalancerDataSourceModel) FlattenNodeBalancer(
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
-
-	data.Created = customtypes.RFC3339TimeStringValue{
-		StringValue: helper.NullableTimeToFramework(nodebalancer.Created),
-	}
-	data.Updated = customtypes.RFC3339TimeStringValue{
-		StringValue: helper.NullableTimeToFramework(nodebalancer.Updated),
-	}
+	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
+	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 
 	transfer, diags := parseTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
