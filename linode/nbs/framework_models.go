@@ -16,16 +16,16 @@ type NodeBalancerFilterModel struct {
 	Filters       frameworkfilter.FiltersModelType `tfsdk:"filter"`
 	Order         types.String                     `tfsdk:"order"`
 	OrderBy       types.String                     `tfsdk:"order_by"`
-	NodeBalancers []nb.NodebalancerModel           `tfsdk:"nodebalancers"`
+	NodeBalancers []nb.NodeBalancerModel           `tfsdk:"nodebalancers"`
 }
 
 func (data *NodeBalancerFilterModel) parseNodeBalancers(
 	ctx context.Context,
 	nodebalancers []linodego.NodeBalancer,
 ) {
-	result := make([]nb.NodebalancerModel, len(nodebalancers))
+	result := make([]nb.NodeBalancerModel, len(nodebalancers))
 	for i := range nodebalancers {
-		var nbData nb.NodebalancerModel
+		var nbData nb.NodeBalancerModel
 		nbData.ParseComputedAttrs(ctx, &nodebalancers[i])
 		nbData.ParseNonComputedAttrs(ctx, &nodebalancers[i])
 		result[i] = nbData
