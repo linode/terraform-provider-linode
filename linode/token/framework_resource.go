@@ -40,24 +40,20 @@ func (r *Resource) Create(
 		return
 	}
 
-	expireStr := data.Expiry.ValueString()
-	dt, err := time.Parse(time.RFC3339, expireStr)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid datetime string",
-			fmt.Sprintf(
-				"Expected expiry to be an time.RFC3339 datetime string (e.g., %s), got %s",
-				time.RFC3339,
-				expireStr,
-			),
-		)
-		return
+	var expiry *time.Time
+	if !data.Expiry.IsNull() {
+		parsedExpiry, d := data.Expiry.ValueRFC3339Time()
+		resp.Diagnostics.Append(d...)
+		if d.HasError() {
+			return
+		}
+		expiry = &parsedExpiry
 	}
 
 	createOpts := linodego.TokenCreateOptions{
 		Label:  data.Label.ValueString(),
 		Scopes: data.Scopes.ValueString(),
-		Expiry: &dt,
+		Expiry: expiry,
 	}
 
 	token, err := client.CreateToken(ctx, createOpts)
