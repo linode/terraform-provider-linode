@@ -28,7 +28,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data NodebalancerModel
+	var data NodeBalancerDataSourceModel
 	client := d.Meta.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -44,8 +44,7 @@ func (d *DataSource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodebalancer)...)
-	resp.Diagnostics.Append(data.ParseNonComputedAttrs(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodebalancer)...)
 
 	if resp.Diagnostics.HasError() {
 		return
