@@ -3,32 +3,31 @@ package nb
 import (
 	"context"
 	"strconv"
-	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 // NodebalancerModel describes the Terraform resource data model to match the
 // resource schema.
 type NodebalancerModel struct {
-	ID                 types.Int64                        `tfsdk:"id"`
-	Label              types.String                       `tfsdk:"label"`
-	Region             types.String                       `tfsdk:"region"`
-	ClientConnThrottle types.Int64                        `tfsdk:"client_conn_throttle"`
-	FirewallID         types.Int64                        `tfsdk:"firewall_id"`
-	Hostname           types.String                       `tfsdk:"hostname"`
-	Ipv4               types.String                       `tfsdk:"ipv4"`
-	Ipv6               types.String                       `tfsdk:"ipv6"`
-	Created            customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	Updated            customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
-	Transfer           types.List                         `tfsdk:"transfer"`
-	Tags               types.Set                          `tfsdk:"tags"`
+	ID                 types.Int64       `tfsdk:"id"`
+	Label              types.String      `tfsdk:"label"`
+	Region             types.String      `tfsdk:"region"`
+	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
+	FirewallID         types.Int64       `tfsdk:"firewall_id"`
+	Hostname           types.String      `tfsdk:"hostname"`
+	Ipv4               types.String      `tfsdk:"ipv4"`
+	Ipv6               types.String      `tfsdk:"ipv6"`
+	Created            timetypes.RFC3339 `tfsdk:"created"`
+	Updated            timetypes.RFC3339 `tfsdk:"updated"`
+	Transfer           types.List        `tfsdk:"transfer"`
+	Tags               types.Set         `tfsdk:"tags"`
 }
 
 type nbModelV0 struct {
@@ -71,12 +70,8 @@ func (data *NodebalancerModel) ParseComputedAttrs(
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
-	data.Created = customtypes.RFC3339TimeStringValue{
-		StringValue: types.StringValue(nodebalancer.Created.Format(time.RFC3339)),
-	}
-	data.Updated = customtypes.RFC3339TimeStringValue{
-		StringValue: types.StringValue(nodebalancer.Updated.Format(time.RFC3339)),
-	}
+	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
+	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 
 	transfer, diags := parseTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {

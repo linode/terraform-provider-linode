@@ -1,10 +1,10 @@
 package firewalls
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 )
 
@@ -117,12 +117,12 @@ var firewallObject = schema.NestedBlockObject{
 			Computed:    true,
 		},
 		"created": schema.StringAttribute{
-			CustomType:  customtypes.RFC3339TimeStringType{},
+			CustomType:  timetypes.RFC3339Type{},
 			Description: "When this Firewall was created.",
 			Computed:    true,
 		},
 		"updated": schema.StringAttribute{
-			CustomType:  customtypes.RFC3339TimeStringType{},
+			CustomType:  timetypes.RFC3339Type{},
 			Description: "When this Firewall was last updated.",
 			Computed:    true,
 		},

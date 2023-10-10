@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -74,7 +75,7 @@ var frameworkResourceSchema = schema.Schema{
 					RequireReplacementWhenScopesChangedDescription,
 				),
 			},
-			CustomType: customtypes.RFC3339TimeStringType{},
+			CustomType: timetypes.RFC3339Type{},
 		},
 		"created": schema.StringAttribute{
 			Description: "The date and time this token was created.",
@@ -82,7 +83,7 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
-			CustomType: customtypes.RFC3339TimeStringType{},
+			CustomType: timetypes.RFC3339Type{},
 		},
 		"token": schema.StringAttribute{
 			Sensitive:   true,
