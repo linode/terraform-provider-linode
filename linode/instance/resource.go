@@ -802,6 +802,6 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"lid": d.Id(),
+		"linode_id": d.Id(),
 	})
 }
