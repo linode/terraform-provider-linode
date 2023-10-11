@@ -58,7 +58,9 @@ var frameworkResourceSchema = schema.Schema{
 				"may be created with 'null' as their expiry and will never expire unless revoked. Format: " +
 				helper.TIME_FORMAT,
 			Optional: true,
+			Computed: true,
 			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 				stringplanmodifier.RequiresReplaceIf(
 					func(
 						ctx context.Context,

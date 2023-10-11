@@ -41,7 +41,7 @@ func (r *Resource) Create(
 	}
 
 	var expiry *time.Time
-	if !data.Expiry.IsNull() {
+	if !data.Expiry.IsNull() && !data.Expiry.IsUnknown() {
 		parsedExpiry, d := data.Expiry.ValueRFC3339Time()
 		resp.Diagnostics.Append(d...)
 		if d.HasError() {
