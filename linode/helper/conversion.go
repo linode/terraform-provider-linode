@@ -50,17 +50,27 @@ func StringToInt(s string, diags *diag.Diagnostics) int {
 	return num
 }
 
-func SafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
-	if number > math.MaxInt32 {
+func FrameworkSafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
+	result, err := SafeInt64ToInt(number)
+	if err != nil {
 		diags.AddError(
 			"Failed int64 to int conversion",
-			"Integer %v is larger than the upper bound of int32",
-		)
-	} else if number < math.MinInt32 {
-		diags.AddError(
-			"Failed int64 to int conversion",
-			"Integer %v is smaller than the lower bound of int32",
+			err.Error(),
 		)
 	}
-	return int(number)
+	return result
+}
+
+func SafeInt64ToInt(number int64) (int, error) {
+	if number > math.MaxInt || number < math.MinInt {
+		return 0, fmt.Errorf("int64 value %v is out of range for int", number)
+	}
+	return int(number), nil
+}
+
+func SafeFloat64ToInt(number float64) (int, error) {
+	if number > float64(math.MaxInt) || number < float64(math.MinInt) {
+		return 0, fmt.Errorf("float64 value %v is out of range for int64", number)
+	}
+	return int(number), nil
 }
