@@ -1,8 +1,6 @@
 package helper
 
 import (
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -59,12 +57,4 @@ func IntSliceToFramework(val []int) []types.Int64 {
 	}
 
 	return result
-}
-
-func NullableTimeToFramework(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(TIME_FORMAT))
 }

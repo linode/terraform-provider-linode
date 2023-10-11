@@ -2,8 +2,8 @@ package token
 
 import (
 	"strconv"
-	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
@@ -14,21 +14,17 @@ import (
 type ResourceModel struct {
 	Label   types.String                        `tfsdk:"label"`
 	Scopes  customtypes.LinodeScopesStringValue `tfsdk:"scopes"`
-	Expiry  customtypes.RFC3339TimeStringValue  `tfsdk:"expiry"`
-	Created customtypes.RFC3339TimeStringValue  `tfsdk:"created"`
+	Expiry  timetypes.RFC3339                   `tfsdk:"expiry"`
+	Created timetypes.RFC3339                   `tfsdk:"created"`
 	Token   types.String                        `tfsdk:"token"`
 	ID      types.String                        `tfsdk:"id"`
 }
 
 func (rm *ResourceModel) parseToken(token *linodego.Token, refresh bool) {
-	rm.Created = customtypes.RFC3339TimeStringValue{
-		StringValue: types.StringValue(token.Created.Format(time.RFC3339)),
-	}
+	rm.Created = timetypes.NewRFC3339TimePointerValue(token.Created)
 
 	rm.Label = types.StringValue(token.Label)
-	rm.Expiry = customtypes.RFC3339TimeStringValue{
-		StringValue: types.StringValue(token.Expiry.Format(time.RFC3339)),
-	}
+	rm.Expiry = timetypes.NewRFC3339TimePointerValue(token.Expiry)
 
 	rm.Scopes = customtypes.LinodeScopesStringValue{
 		StringValue: types.StringValue(token.Scopes),
