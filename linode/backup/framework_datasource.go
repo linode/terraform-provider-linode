@@ -36,7 +36,7 @@ func (d *DataSource) Read(
 	}
 
 	linodeID := helper.FrameworkSafeInt64ToInt(
-		data.Linode_ID.ValueInt64(),
+		data.LinodeID.ValueInt64(),
 		&resp.Diagnostics,
 	)
 	if resp.Diagnostics.HasError() {
@@ -51,7 +51,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseBackups(ctx, backups, data.Linode_ID)...)
+	resp.Diagnostics.Append(data.parseBackups(ctx, backups, data.LinodeID)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

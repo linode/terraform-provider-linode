@@ -14,7 +14,7 @@ import (
 type DataSourceModel struct {
 	Automatic  types.List  `tfsdk:"automatic"`
 	Current    types.List  `tfsdk:"current"`
-	Linode_ID  types.Int64 `tfsdk:"linode_id"`
+	LinodeID   types.Int64 `tfsdk:"linode_id"`
 	InProgress types.List  `tfsdk:"in_progress"`
 	ID         types.Int64 `tfsdk:"id"`
 }
