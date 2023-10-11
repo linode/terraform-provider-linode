@@ -11,6 +11,7 @@ func TestGetTestClient_noURLOverride(t *testing.T) {
 	expectedURL := "api.linode.com"
 	expectedVersion := "v4beta"
 
+	t.Setenv("LINODE_TOKEN", "foobar")
 	t.Setenv("LINODE_URL", "")
 	t.Setenv("LINODE_API_VERSION", "")
 
@@ -38,6 +39,7 @@ func TestGetTestClient_URLOverride(t *testing.T) {
 	expectedURL := "foo.linode.com"
 	expectedVersion := "v4"
 
+	t.Setenv("LINODE_TOKEN", "foobar")
 	t.Setenv("LINODE_URL", expectedURL)
 	t.Setenv("LINODE_API_VERSION", expectedVersion)
 
