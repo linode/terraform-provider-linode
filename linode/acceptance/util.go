@@ -626,3 +626,28 @@ func GetRandomOBJCluster() (string, error) {
 	// #nosec G404 -- Test data, doesn't need to be cryptography
 	return clusters[rand.Intn(len(clusters))].ID, nil
 }
+
+func GetTestClient() (*linodego.Client, error) {
+	token := os.Getenv("LINODE_TOKEN")
+	if token == "" {
+		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
+	}
+
+	apiVersion := os.Getenv("LINODE_API_VERSION")
+	if apiVersion == "" {
+		apiVersion = "v4beta"
+	}
+
+	config := &helper.Config{
+		AccessToken: token,
+		APIVersion:  apiVersion,
+		APIURL:      os.Getenv("LINODE_URL"),
+	}
+
+	client, err := config.Client()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
