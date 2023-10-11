@@ -32,7 +32,8 @@ func init() {
 		log.Fatal(fmt.Errorf("Error getting client: %s", err))
 	}
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	testRegion := "us-east"
+	//testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
 
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
@@ -152,7 +153,7 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.Basic(t, vpcID, subnetLabel, "172.16.0.0/24"),
+				Config:      tmpl.Basic(t, vpcID, subnetLabel, "172.16.0.4/24"),
 				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
 			},
 		},
@@ -172,7 +173,7 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, vpcID, subnetLabel, "192.168.0.0/26"),
+				Config: tmpl.Basic(t, vpcID, subnetLabel, "192.168.0.4/26"),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -181,7 +182,7 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 				),
 			},
 			{
-				Config:      tmpl.Updates(t, vpcID, invalidLabel, "192.168.0.0/26"),
+				Config:      tmpl.Updates(t, vpcID, invalidLabel, "192.168.0.4/26"),
 				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
 			},
 		},
