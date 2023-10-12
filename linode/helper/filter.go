@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -218,6 +219,10 @@ func (f FilterConfig) FilterDataSource(
 	}
 
 	// Call linode list function defined by data source
+	tflog.Trace(ctx, "Calling resource-defined list function", map[string]any{
+		"filter_header": filter,
+	})
+
 	items, err := listFunc(ctx, d, &client, &linodego.ListOptions{
 		Filter: filter,
 	})
@@ -230,12 +235,20 @@ func (f FilterConfig) FilterDataSource(
 		itemsFlattened[i] = flattenFunc(image)
 	}
 
+	tflog.Trace(ctx, "Filtering results using local filter rules", map[string]any{
+		"items_flattened": itemsFlattened,
+	})
+
 	itemsFiltered, err := f.FilterResults(d, itemsFlattened)
 	if err != nil {
 		return nil, fmt.Errorf("failed to filter returned data: %s", err)
 	}
 
 	d.SetId(filterID)
+
+	tflog.Trace(ctx, "Result filtering complete", map[string]any{
+		"items_filtered": itemsFiltered,
+	})
 
 	return itemsFiltered, nil
 }

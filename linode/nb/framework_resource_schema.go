@@ -1,6 +1,7 @@
 package nb
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -12,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -74,13 +74,13 @@ var frameworkResourceSchema = schema.Schema{
 		"created": schema.StringAttribute{
 			Description:   "When this NodeBalancer was created.",
 			Computed:      true,
-			CustomType:    customtypes.RFC3339TimeStringType{},
+			CustomType:    timetypes.RFC3339Type{},
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"updated": schema.StringAttribute{
 			Description: "When this NodeBalancer was last updated.",
 			Computed:    true,
-			CustomType:  customtypes.RFC3339TimeStringType{},
+			CustomType:  timetypes.RFC3339Type{},
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,

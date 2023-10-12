@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var _ resource.ResourceWithUpgradeState = &Resource{}
@@ -36,7 +36,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data NodebalancerModel
+	var data NodeBalancerModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -84,7 +84,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var data NodebalancerModel
+	var data NodeBalancerModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -122,7 +122,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var plan, state NodebalancerModel
+	var plan, state NodeBalancerModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -167,7 +167,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	var data NodebalancerModel
+	var data NodeBalancerModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -214,7 +214,7 @@ func upgradeNodebalancerResourceStateV0toV1(
 		return
 	}
 
-	nbDataV1 := NodebalancerModel{
+	nbDataV1 := NodeBalancerModel{
 		ID:                 nbDataV0.ID,
 		Label:              nbDataV0.Label,
 		Region:             nbDataV0.Region,
@@ -222,8 +222,8 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Hostname:           nbDataV0.Hostname,
 		Ipv4:               nbDataV0.Ipv4,
 		Ipv6:               nbDataV0.Ipv6,
-		Created:            customtypes.RFC3339TimeStringValue{StringValue: nbDataV0.Created},
-		Updated:            customtypes.RFC3339TimeStringValue{StringValue: nbDataV0.Updated},
+		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
+		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
 		Tags:               nbDataV0.Tags,
 	}
 

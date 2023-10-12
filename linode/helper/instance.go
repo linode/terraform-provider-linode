@@ -6,9 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -25,6 +25,11 @@ var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.Acti
 func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 	meta interface{}, bootConfig int,
 ) diag.Diagnostics {
+	ctx = SetLogFieldBulk(ctx, map[string]any{
+		"linode_id": entityID,
+		"config_id": bootConfig,
+	})
+
 	client := meta.(*ProviderMeta).Client
 	instance, err := client.GetInstance(ctx, int(entityID))
 	if err != nil {
@@ -32,11 +37,11 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 	}
 
 	if instance.Status != linodego.InstanceRunning {
-		log.Printf("[INFO] Instance [%d] is not running\n", instance.ID)
+		tflog.Info(ctx, "Instance is not running")
 		return nil
 	}
 
-	log.Printf("[INFO] Instance [%d] will be rebooted\n", instance.ID)
+	tflog.Info(ctx, "Rebooting instance")
 
 	p, err := client.NewEventPoller(ctx, entityID, linodego.EntityLinode, linodego.ActionLinodeReboot)
 	if err != nil {
@@ -58,6 +63,9 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 	); err != nil {
 		return diag.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
 	}
+
+	tflog.Debug(ctx, "Instance has finished rebooting")
+
 	return nil
 }
 
