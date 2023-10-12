@@ -32,8 +32,7 @@ func init() {
 		log.Fatal(fmt.Errorf("Error getting client: %s", err))
 	}
 
-	testRegion := "us-east"
-	//testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
 
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
