@@ -3,12 +3,12 @@ package firewalls
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	firewallresource "github.com/linode/terraform-provider-linode/linode/firewall"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 )
 
@@ -58,17 +58,17 @@ func (data *FirewallDeviceModel) parseDevice(device linodego.FirewallDevice) {
 // FirewallModel describes the Terraform resource data model to match the
 // resource schema.
 type FirewallModel struct {
-	ID             types.Int64                        `tfsdk:"id"`
-	Label          types.String                       `tfsdk:"label"`
-	Tags           []types.String                     `tfsdk:"tags"`
-	Disabled       types.Bool                         `tfsdk:"disabled"`
-	InboundPolicy  types.String                       `tfsdk:"inbound_policy"`
-	OutboundPolicy types.String                       `tfsdk:"outbound_policy"`
-	Linodes        []types.Int64                      `tfsdk:"linodes"`
-	NodeBalancers  []types.Int64                      `tfsdk:"nodebalancers"`
-	Status         types.String                       `tfsdk:"status"`
-	Created        customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	Updated        customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
+	ID             types.Int64       `tfsdk:"id"`
+	Label          types.String      `tfsdk:"label"`
+	Tags           []types.String    `tfsdk:"tags"`
+	Disabled       types.Bool        `tfsdk:"disabled"`
+	InboundPolicy  types.String      `tfsdk:"inbound_policy"`
+	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
+	Linodes        []types.Int64     `tfsdk:"linodes"`
+	NodeBalancers  []types.Int64     `tfsdk:"nodebalancers"`
+	Status         types.String      `tfsdk:"status"`
+	Created        timetypes.RFC3339 `tfsdk:"created"`
+	Updated        timetypes.RFC3339 `tfsdk:"updated"`
 
 	Inbound  []FirewallRuleModel   `tfsdk:"inbound"`
 	Outbound []FirewallRuleModel   `tfsdk:"outbound"`
@@ -94,12 +94,8 @@ func (data *FirewallModel) parseFirewall(
 	)
 	data.Status = types.StringValue(string(firewall.Status))
 
-	data.Created = customtypes.RFC3339TimeStringValue{
-		StringValue: helper.NullableTimeToFramework(firewall.Created),
-	}
-	data.Updated = customtypes.RFC3339TimeStringValue{
-		StringValue: helper.NullableTimeToFramework(firewall.Updated),
-	}
+	data.Created = timetypes.NewRFC3339TimePointerValue(firewall.Created)
+	data.Updated = timetypes.NewRFC3339TimePointerValue(firewall.Updated)
 
 	data.Inbound = make([]FirewallRuleModel, len(rules.Inbound))
 	for i, v := range rules.Inbound {

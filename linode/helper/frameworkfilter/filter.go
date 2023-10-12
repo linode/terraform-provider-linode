@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"golang.org/x/crypto/sha3"
 )
@@ -160,6 +161,10 @@ func (f Config) GetAndFilter(
 	}
 
 	// Call the user-defined list function
+	tflog.Trace(ctx, "Calling resource-defined list function", map[string]any{
+		"filter_header": filterStr,
+	})
+
 	listedElems, err := listFunc(ctx, client, filterStr)
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(

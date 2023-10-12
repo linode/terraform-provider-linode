@@ -3,6 +3,7 @@ package instanceip
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -20,10 +21,13 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_instance_ip")
 
+	client := meta.(*helper.ProviderMeta).Client
 	address := d.Id()
 	linodeID := d.Get("linode_id").(int)
+
 	ip, err := client.GetInstanceIPAddress(ctx, linodeID, address)
 	if err != nil {
 		return diag.Errorf("failed to get instance (%d) ip: %s", linodeID, err)
@@ -40,16 +44,22 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_instance_ip")
 
 	linodeID := d.Get("linode_id").(int)
 	private := d.Get("public").(bool)
 	applyImmediately := d.Get("apply_immediately").(bool)
 
+	client := meta.(*helper.ProviderMeta).Client
+
 	ip, err := client.AddInstanceIPAddress(ctx, linodeID, private)
 	if err != nil {
 		return diag.Errorf("failed to create instance (%d) ip: %s", linodeID, err)
 	}
+
+	ctx = tflog.SetField(ctx, "ip", ip.Address)
+	tflog.Info(ctx, "Allocated Instance IP address")
 
 	rdns := d.Get("rdns").(string)
 	if rdns != "" {
@@ -58,6 +68,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}); err != nil {
 			return diag.Errorf("failed to set RDNS for instance (%d) ip (%s): %s", linodeID, ip.Address, err)
 		}
+
+		tflog.Info(ctx, "Updated RDNS for IP address", map[string]any{
+			"rdns": rdns,
+		})
 	}
 
 	d.SetId(ip.Address)
@@ -70,23 +84,31 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if diagErr := helper.RebootInstance(ctx, d, linodeID, meta, 0); diagErr != nil {
 			return diagErr
 		}
+		tflog.Info(ctx, "Rebooting instance for apply_immediately")
 	}
 
 	return readResource(ctx, d, meta)
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_instance_ip")
+
+	linodeID := d.Get("linode_id").(int)
+	address := d.Id()
+	rdns := d.Get("rdns").(string)
+
 	client := meta.(*helper.ProviderMeta).Client
 
-	address := d.Id()
-	linodeID := d.Get("linode_id").(int)
-	rdns := d.Get("rdns").(string)
 	if d.HasChange("rdns") {
 		updateOptions := linodego.IPAddressUpdateOptions{}
 		if rdns != "" {
 			updateOptions.RDNS = &rdns
 		}
 
+		tflog.Info(ctx, "Updating RDNS for IP", map[string]any{
+			"rdns": rdns,
+		})
 		if _, err := client.UpdateIPAddress(ctx, address, linodego.IPAddressUpdateOptions{
 			RDNS: &rdns,
 		}); err != nil {
@@ -97,12 +119,26 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_instance_ip")
 
 	address := d.Id()
 	linodeID := d.Get("linode_id").(int)
+
+	client := meta.(*helper.ProviderMeta).Client
+
 	if err := client.DeleteInstanceIPAddress(ctx, linodeID, address); err != nil {
 		return diag.Errorf("failed to delete instance (%d) ip (%s): %s", linodeID, address, err)
 	}
+
+	tflog.Info(ctx, "Deleted Instance IP")
+
 	return nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"linode_id": d.Get("linode_id").(int),
+		"id":        d.Id(),
+	})
 }

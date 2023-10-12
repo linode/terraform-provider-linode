@@ -1,35 +1,17 @@
 package acceptance
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
-}
-
-func GetTestClient() (*linodego.Client, error) {
-	token := os.Getenv("LINODE_TOKEN")
-	if token == "" {
-		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
-	}
-
-	config := &helper.Config{AccessToken: token, APIVersion: "v4beta"}
-	client, err := config.Client(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
 }
 
 func SweeperListOptions(prefix, field string) *linodego.ListOptions {

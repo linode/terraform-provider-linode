@@ -95,7 +95,7 @@ func (d *DataSource) Read(
 	profile, err := client.GetProfile(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get LKE Versions: %s", err.Error(),
+			"Unable to get profile", err.Error(),
 		)
 		return
 	}

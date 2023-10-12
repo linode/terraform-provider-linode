@@ -1,10 +1,10 @@
 package nb
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var TransferObjectType = types.ObjectType{
@@ -47,12 +47,12 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 	"created": schema.StringAttribute{
 		Description: "When this NodeBalancer was created.",
 		Computed:    true,
-		CustomType:  customtypes.RFC3339TimeStringType{},
+		CustomType:  timetypes.RFC3339Type{},
 	},
 	"updated": schema.StringAttribute{
 		Description: "When this NodeBalancer was last updated.",
 		Computed:    true,
-		CustomType:  customtypes.RFC3339TimeStringType{},
+		CustomType:  timetypes.RFC3339Type{},
 	},
 	"transfer": schema.ListAttribute{
 		Description: "Information about the amount of transfer this NodeBalancer has had so far this month.",

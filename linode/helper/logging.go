@@ -51,3 +51,14 @@ func (t *APILoggerTransport) createAPILoggerSubsystem(ctx context.Context) conte
 	ctx = tflog.SubsystemMaskFieldValuesWithFieldKeys(ctx, APILoggerSubsystem, "Authorization")
 	return ctx
 }
+
+// SetLogFieldBulk allows for setting multiple logger fields at a time.
+func SetLogFieldBulk(ctx context.Context, fields map[string]any) context.Context {
+	result := ctx
+
+	for k, v := range fields {
+		result = tflog.SetField(result, k, v)
+	}
+
+	return result
+}
