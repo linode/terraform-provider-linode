@@ -15,7 +15,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_sshkey",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -71,14 +71,19 @@ func (r *Resource) Read(
 		return
 	}
 
-	key, err := client.GetSSHKey(ctx, int(data.ID.ValueInt64()))
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	key, err := client.GetSSHKey(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"SSH Key",
 				fmt.Sprintf(
 					"Removing SSH Key with ID %v from state because it no longer exists",
-					data.ID,
+					id,
 				),
 			)
 			resp.State.RemoveResource(ctx)
@@ -107,6 +112,11 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
+	id := helper.StringToInt(plan.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var updateOpts linodego.SSHKeyUpdateOptions
 	shouldUpdate := false
 
@@ -118,12 +128,12 @@ func (r *Resource) Update(
 	if shouldUpdate {
 		key, err := r.Meta.Client.UpdateSSHKey(
 			ctx,
-			int(plan.ID.ValueInt64()),
+			id,
 			updateOpts,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update SSH Key (%d)", plan.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update SSH Key (%d)", id),
 				err.Error())
 			return
 		}
@@ -145,12 +155,17 @@ func (r *Resource) Delete(
 		return
 	}
 
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client := r.Meta.Client
-	err := client.DeleteSSHKey(ctx, int(data.ID.ValueInt64()))
+	err := client.DeleteSSHKey(ctx, id)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the SSH Key (%d)", data.ID.ValueInt64()),
+				fmt.Sprintf("Failed to delete the SSH Key (%d)", id),
 				err.Error(),
 			)
 		}
