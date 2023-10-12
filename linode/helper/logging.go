@@ -42,7 +42,7 @@ func (t *APILoggerTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 func (t *APILoggerTransport) createAPILoggerSubsystem(ctx context.Context) context.Context {
 	targetLevel := APILogLevel
 
-	// Disable the logger is no logger is defined
+	// Disable the logger if no logger is defined
 	if targetLevel == hclog.NoLevel {
 		targetLevel = hclog.Off
 	}
