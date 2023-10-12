@@ -644,7 +644,7 @@ func GetTestClient() (*linodego.Client, error) {
 		APIURL:      os.Getenv("LINODE_URL"),
 	}
 
-	client, err := config.Client()
+	client, err := config.Client(context.Background())
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/linode/linodego"
@@ -48,8 +50,13 @@ type Config struct {
 }
 
 // Client returns a fully initialized Linode client.
-func (c *Config) Client() (*linodego.Client, error) {
-	loggingTransport := logging.NewTransport("Linode", http.DefaultTransport)
+func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
+	loggingTransport := NewAPILoggerTransport(
+		logging.NewSubsystemLoggingHTTPTransport(
+			APILoggerSubsystem,
+			http.DefaultTransport,
+		),
+	)
 
 	oauth2Client := &http.Client{
 		Transport: loggingTransport,
@@ -61,7 +68,9 @@ func (c *Config) Client() (*linodego.Client, error) {
 
 	// Load the config file if it exists
 	if _, err := os.Stat(c.ConfigPath); err == nil {
-		log.Println("[INFO] Using Linode profile: ", c.ConfigPath)
+		tflog.Info(ctx, "Using Linode profile", map[string]any{
+			"config_path": c.ConfigPath,
+		})
 		err = client.LoadConfig(&linodego.LoadConfigOptions{
 			Path:    c.ConfigPath,
 			Profile: c.ConfigProfile,
@@ -70,7 +79,7 @@ func (c *Config) Client() (*linodego.Client, error) {
 			return nil, err
 		}
 	} else {
-		log.Println("[INFO] Linode config does not exist, skipping..")
+		tflog.Info(ctx, "Linode config does not exist, skipping..")
 	}
 
 	// Overrides
@@ -108,6 +117,10 @@ func (c *Config) Client() (*linodego.Client, error) {
 	client.AddRetryCondition(Database502Retry())
 	client.AddRetryCondition(LinodeInstance500Retry())
 	client.AddRetryCondition(ImageUpload500Retry())
+
+	// We always want to disable resty debugging in favor
+	// of Terraform transport debugging.
+	client.SetDebug(false)
 
 	return &client, nil
 }
