@@ -72,7 +72,7 @@ func (r *Resource) Create(
 		IPv4:  data.IPv4.ValueString(),
 	}
 
-	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -108,8 +108,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -167,8 +167,11 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		vpcId := helper.SafeInt64ToInt(plan.VPCId.ValueInt64(), &resp.Diagnostics)
-		id := helper.SafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		vpcId := helper.FrameworkSafeInt64ToInt(
+			plan.VPCId.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		id := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
 
 		if resp.Diagnostics.HasError() {
 			return
@@ -206,8 +209,8 @@ func (r *Resource) Delete(
 		return
 	}
 
-	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return

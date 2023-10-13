@@ -1,9 +1,9 @@
 package vpcsubnets
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 )
 
@@ -50,12 +50,12 @@ var frameworkDataSourceSchema = schema.Schema{
 					"created": schema.StringAttribute{
 						Description: "The date and time when the VPC Subnet was created.",
 						Computed:    true,
-						CustomType:  customtypes.RFC3339TimeStringType{},
+						CustomType:  timetypes.RFC3339Type{},
 					},
 					"updated": schema.StringAttribute{
 						Description: "The date and time when the VPC Subnet was updated.",
 						Computed:    true,
-						CustomType:  customtypes.RFC3339TimeStringType{},
+						CustomType:  timetypes.RFC3339Type{},
 					},
 				},
 			},

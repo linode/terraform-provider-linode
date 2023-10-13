@@ -1,8 +1,8 @@
 package vpc
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var VPCAttrs = map[string]schema.Attribute{
@@ -25,12 +25,12 @@ var VPCAttrs = map[string]schema.Attribute{
 	"created": schema.StringAttribute{
 		Description: "The date and time when the VPC was created.",
 		Computed:    true,
-		CustomType:  customtypes.RFC3339TimeStringType{},
+		CustomType:  timetypes.RFC3339Type{},
 	},
 	"updated": schema.StringAttribute{
 		Description: "The date and time when the VPC was updated.",
 		Computed:    true,
-		CustomType:  customtypes.RFC3339TimeStringType{},
+		CustomType:  timetypes.RFC3339Type{},
 	},
 }
 

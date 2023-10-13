@@ -77,7 +77,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -139,7 +139,7 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		id := helper.SafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		id := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -176,7 +176,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	id := helper.SafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
