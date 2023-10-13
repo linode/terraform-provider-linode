@@ -70,8 +70,12 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	keyID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	key, err := client.GetSSHKey(ctx, int(data.ID.ValueInt64()))
+	key, err := client.GetSSHKey(ctx, keyID)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -116,9 +120,13 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
+		keyID := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		key, err := r.Meta.Client.UpdateSSHKey(
 			ctx,
-			int(plan.ID.ValueInt64()),
+			keyID,
 			updateOpts,
 		)
 		if err != nil {
@@ -146,7 +154,11 @@ func (r *Resource) Delete(
 	}
 
 	client := r.Meta.Client
-	err := client.DeleteSSHKey(ctx, int(data.ID.ValueInt64()))
+	keyID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	err := client.DeleteSSHKey(ctx, keyID)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(

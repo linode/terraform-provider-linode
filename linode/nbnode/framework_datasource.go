@@ -37,11 +37,17 @@ func (d *DataSource) Read(
 		return
 	}
 
-	id := int(data.ID.ValueInt64())
-	nodebalancerID := int(data.NodeBalancerID.ValueInt64())
-	configID := int(data.ConfigID.ValueInt64())
+	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	nodeBalancerID := helper.FrameworkSafeInt64ToInt(
+		data.NodeBalancerID.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	configID := helper.FrameworkSafeInt64ToInt(data.ConfigID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	node, err := client.GetNodeBalancerNode(ctx, nodebalancerID, configID, id)
+	node, err := client.GetNodeBalancerNode(ctx, nodeBalancerID, configID, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to get nodebalancer node with id %d:", id), err.Error(),
