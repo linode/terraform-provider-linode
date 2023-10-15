@@ -4,7 +4,7 @@ package obj_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"testing"
 
@@ -155,7 +155,7 @@ func checkObjectDestroy(s *terraform.State) error {
 
 func checkObjectBodyContains(obj *s3.GetObjectOutput, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		body, err := ioutil.ReadAll(obj.Body)
+		body, err := io.ReadAll(obj.Body)
 		if err != nil {
 			return fmt.Errorf("failed to read body: %s", err)
 		}

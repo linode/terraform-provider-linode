@@ -5,7 +5,6 @@ package linode_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -74,7 +73,7 @@ api_version = v4beta
 }
 
 func createTestConfig(t *testing.T, conf string) *os.File {
-	file, err := ioutil.TempFile("", "linode")
+	file, err := os.CreateTemp("", "linode")
 	if err != nil {
 		t.Fatal(err)
 	}
