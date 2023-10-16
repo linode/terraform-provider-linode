@@ -1,11 +1,10 @@
 package sshkey
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -26,16 +25,16 @@ var frameworkResourceSchema = schema.Schema{
 		"created": schema.StringAttribute{
 			Description: "The date this key was added.",
 			Computed:    true,
-			CustomType:  customtypes.RFC3339TimeStringType{},
+			CustomType:  timetypes.RFC3339Type{},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description: "The unique identifier for this SSH key.",
 			Computed:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 	},

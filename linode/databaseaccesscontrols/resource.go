@@ -126,9 +126,13 @@ func updateDBAllowListByEngine(ctx context.Context, client linodego.Client, d *s
 	default:
 		return fmt.Errorf("invalid database engine: %s", engine)
 	}
+	timeoutSeconds, err := helper.SafeFloat64ToInt(d.Timeout(schema.TimeoutUpdate).Seconds())
+	if err != nil {
+		return err
+	}
 
 	return helper.WaitForDatabaseUpdated(ctx, client, id, linodego.DatabaseEngineType(engine),
-		createdDate, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		createdDate, timeoutSeconds)
 }
 
 func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine string, id int) ([]string, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -28,6 +29,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_instance_types")
+
 	var data InstanceTypeFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -55,6 +58,10 @@ func (r *DataSource) Read(
 }
 
 func listInstanceTypes(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	tflog.Debug(ctx, "Listing instance types", map[string]any{
+		"filter_header": filter,
+	})
+
 	types, err := client.ListTypes(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

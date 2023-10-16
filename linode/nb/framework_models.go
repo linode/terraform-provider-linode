@@ -3,36 +3,35 @@ package nb
 import (
 	"context"
 	"strconv"
-	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 // NodeBalancerModel describes the Terraform resource data model to match the
 // resource schema.
 type NodeBalancerModel struct {
-	ID                 types.Int64                        `tfsdk:"id"`
-	Label              types.String                       `tfsdk:"label"`
-	Region             types.String                       `tfsdk:"region"`
-	ClientConnThrottle types.Int64                        `tfsdk:"client_conn_throttle"`
-	FirewallID         types.Int64                        `tfsdk:"firewall_id"`
-	Hostname           types.String                       `tfsdk:"hostname"`
-	Ipv4               types.String                       `tfsdk:"ipv4"`
-	Ipv6               types.String                       `tfsdk:"ipv6"`
-	Created            customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	Updated            customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
-	Transfer           types.List                         `tfsdk:"transfer"`
-	Tags               types.Set                          `tfsdk:"tags"`
+	ID                 types.String      `tfsdk:"id"`
+	Label              types.String      `tfsdk:"label"`
+	Region             types.String      `tfsdk:"region"`
+	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
+	FirewallID         types.Int64       `tfsdk:"firewall_id"`
+	Hostname           types.String      `tfsdk:"hostname"`
+	Ipv4               types.String      `tfsdk:"ipv4"`
+	Ipv6               types.String      `tfsdk:"ipv6"`
+	Created            timetypes.RFC3339 `tfsdk:"created"`
+	Updated            timetypes.RFC3339 `tfsdk:"updated"`
+	Transfer           types.List        `tfsdk:"transfer"`
+	Tags               types.Set         `tfsdk:"tags"`
 }
 
 type nbModelV0 struct {
-	ID                 types.Int64  `tfsdk:"id"`
+	ID                 types.String `tfsdk:"id"`
 	Label              types.String `tfsdk:"label"`
 	Region             types.String `tfsdk:"region"`
 	ClientConnThrottle types.Int64  `tfsdk:"client_conn_throttle"`
@@ -49,7 +48,7 @@ func (data *NodeBalancerModel) ParseNonComputedAttrs(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 ) diag.Diagnostics {
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
+	data.ID = types.StringValue(strconv.Itoa(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
@@ -65,18 +64,14 @@ func (data *NodeBalancerModel) ParseComputedAttrs(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 ) diag.Diagnostics {
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
+	data.ID = types.StringValue(strconv.Itoa(nodebalancer.ID))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
-	data.Created = customtypes.RFC3339TimeStringValue{
-		StringValue: types.StringValue(nodebalancer.Created.Format(time.RFC3339)),
-	}
-	data.Updated = customtypes.RFC3339TimeStringValue{
-		StringValue: types.StringValue(nodebalancer.Updated.Format(time.RFC3339)),
-	}
+	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
+	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 
 	transfer, diags := parseTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
@@ -127,17 +122,17 @@ func UpgradeResourceStateValue(val string) (basetypes.Float64Value, diag.Diagnos
 }
 
 type NodeBalancerDataSourceModel struct {
-	ID                 types.Int64                        `tfsdk:"id"`
-	Label              types.String                       `tfsdk:"label"`
-	Region             types.String                       `tfsdk:"region"`
-	ClientConnThrottle types.Int64                        `tfsdk:"client_conn_throttle"`
-	Hostname           types.String                       `tfsdk:"hostname"`
-	Ipv4               types.String                       `tfsdk:"ipv4"`
-	Ipv6               types.String                       `tfsdk:"ipv6"`
-	Created            customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	Updated            customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
-	Transfer           types.List                         `tfsdk:"transfer"`
-	Tags               types.Set                          `tfsdk:"tags"`
+	ID                 types.Int64       `tfsdk:"id"`
+	Label              types.String      `tfsdk:"label"`
+	Region             types.String      `tfsdk:"region"`
+	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
+	Hostname           types.String      `tfsdk:"hostname"`
+	Ipv4               types.String      `tfsdk:"ipv4"`
+	Ipv6               types.String      `tfsdk:"ipv6"`
+	Created            timetypes.RFC3339 `tfsdk:"created"`
+	Updated            timetypes.RFC3339 `tfsdk:"updated"`
+	Transfer           types.List        `tfsdk:"transfer"`
+	Tags               types.Set         `tfsdk:"tags"`
 }
 
 func (data *NodeBalancerDataSourceModel) FlattenNodeBalancer(
@@ -152,13 +147,8 @@ func (data *NodeBalancerDataSourceModel) FlattenNodeBalancer(
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
 	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
 	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
-
-	data.Created = customtypes.RFC3339TimeStringValue{
-		StringValue: helper.NullableTimeToFramework(nodebalancer.Created),
-	}
-	data.Updated = customtypes.RFC3339TimeStringValue{
-		StringValue: helper.NullableTimeToFramework(nodebalancer.Updated),
-	}
+	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
+	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 
 	transfer, diags := parseTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {

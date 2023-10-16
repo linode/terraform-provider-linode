@@ -39,7 +39,14 @@ func (r *DataSource) Read(
 
 	if data.DatabaseType.ValueString() == "mysql" {
 		listMySQLBackups := func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-			backups, err := client.ListMySQLDatabaseBackups(ctx, int(data.DatabaseID.ValueInt64()), &linodego.ListOptions{
+			databaseID, err := helper.SafeInt64ToInt(
+				data.DatabaseID.ValueInt64(),
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			backups, err := client.ListMySQLDatabaseBackups(ctx, databaseID, &linodego.ListOptions{
 				Filter: filter,
 			})
 			if err != nil {

@@ -1,6 +1,7 @@
 package nb
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -12,16 +13,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var frameworkResourceSchema = schema.Schema{
 	Version: 1,
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description:   "The unique ID of the Linode NodeBalancer.",
 			Computed:      true,
-			PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"label": schema.StringAttribute{
 			Description: "The label of the Linode NodeBalancer.",
@@ -74,13 +74,13 @@ var frameworkResourceSchema = schema.Schema{
 		"created": schema.StringAttribute{
 			Description:   "When this NodeBalancer was created.",
 			Computed:      true,
-			CustomType:    customtypes.RFC3339TimeStringType{},
+			CustomType:    timetypes.RFC3339Type{},
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"updated": schema.StringAttribute{
 			Description: "When this NodeBalancer was last updated.",
 			Computed:    true,
-			CustomType:  customtypes.RFC3339TimeStringType{},
+			CustomType:  timetypes.RFC3339Type{},
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
@@ -99,7 +99,7 @@ var frameworkResourceSchema = schema.Schema{
 
 var resourceNodebalancerV0 = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description: "The unique ID of the Linode NodeBalancer.",
 			Computed:    true,
 		},

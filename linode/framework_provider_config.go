@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -38,7 +39,7 @@ func (fp *FrameworkProvider) Configure(
 		return
 	}
 
-	fp.InitProvider(&data, req.TerraformVersion, &resp.Diagnostics, &meta)
+	fp.InitProvider(ctx, &data, req.TerraformVersion, &resp.Diagnostics, &meta)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -190,14 +191,17 @@ func (fp *FrameworkProvider) HandleDefaults(
 }
 
 func (fp *FrameworkProvider) InitProvider(
+	ctx context.Context,
 	lpm *helper.FrameworkProviderModel,
 	tfVersion string,
 	diags *diag.Diagnostics,
 	meta *helper.FrameworkProviderMeta,
 ) {
-	loggingTransport := logging.NewSubsystemLoggingHTTPTransport(
-		"Linode",
-		http.DefaultTransport,
+	loggingTransport := helper.NewAPILoggerTransport(
+		logging.NewSubsystemLoggingHTTPTransport(
+			helper.APILoggerSubsystem,
+			http.DefaultTransport,
+		),
 	)
 
 	oauth2Client := &http.Client{
@@ -227,7 +231,9 @@ func (fp *FrameworkProvider) InitProvider(
 
 	// Load the config file if it exists
 	if _, err := os.Stat(configPath); err == nil {
-		log.Println("[INFO] Using Linode profile: ", lpm.ConfigPath)
+		tflog.Info(ctx, "Using Linode profile", map[string]any{
+			"config_path": lpm.ConfigPath,
+		})
 		err = client.LoadConfig(&linodego.LoadConfigOptions{
 			Path:    configPath,
 			Profile: configProfile,
@@ -237,7 +243,7 @@ func (fp *FrameworkProvider) InitProvider(
 			return
 		}
 	} else {
-		log.Println("[INFO] Linode config does not exist, skipping..")
+		tflog.Info(ctx, "Linode config does not exist, skipping..")
 	}
 
 	// Overrides
