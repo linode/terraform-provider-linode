@@ -16,7 +16,7 @@ import (
 // NodeBalancerModel describes the Terraform resource data model to match the
 // resource schema.
 type NodeBalancerModel struct {
-	ID                 types.Int64       `tfsdk:"id"`
+	ID                 types.String      `tfsdk:"id"`
 	Label              types.String      `tfsdk:"label"`
 	Region             types.String      `tfsdk:"region"`
 	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
@@ -31,7 +31,7 @@ type NodeBalancerModel struct {
 }
 
 type nbModelV0 struct {
-	ID                 types.Int64  `tfsdk:"id"`
+	ID                 types.String `tfsdk:"id"`
 	Label              types.String `tfsdk:"label"`
 	Region             types.String `tfsdk:"region"`
 	ClientConnThrottle types.Int64  `tfsdk:"client_conn_throttle"`
@@ -48,7 +48,7 @@ func (data *NodeBalancerModel) ParseNonComputedAttrs(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 ) diag.Diagnostics {
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
+	data.ID = types.StringValue(strconv.Itoa(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
@@ -64,7 +64,7 @@ func (data *NodeBalancerModel) ParseComputedAttrs(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
 ) diag.Diagnostics {
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
+	data.ID = types.StringValue(strconv.Itoa(nodebalancer.ID))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)

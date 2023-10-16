@@ -3,6 +3,7 @@
 package sshkey
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -34,6 +35,6 @@ func TestParseComputedAttributes(t *testing.T) {
 	rm := &ResourceModel{}
 	rm.parseComputedAttributes(&key)
 
-	assert.Equal(t, types.Int64Value(int64(key.ID)), rm.ID)
+	assert.Equal(t, types.StringValue(strconv.Itoa(key.ID)), rm.ID)
 	assert.Equal(t, types.StringValue(created.Format(time.RFC3339)), rm.Created.StringValue)
 }

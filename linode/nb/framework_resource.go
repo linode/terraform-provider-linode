@@ -20,7 +20,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_nodebalancer",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -92,18 +92,23 @@ func (r *Resource) Read(
 		return
 	}
 
-	nodebalancer, err := client.GetNodeBalancer(ctx, int(data.ID.ValueInt64()))
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	nodebalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"Nodebalancer",
-				fmt.Sprintf("removing Linode NodeBalancer ID %v from state because it no longer exists", data.ID.ValueInt64()),
+				fmt.Sprintf("removing Linode NodeBalancer ID %v from state because it no longer exists", id),
 			)
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get nodebalancer %v", data.ID.ValueInt64()),
+			fmt.Sprintf("Failed to get nodebalancer %v", id),
 			err.Error(),
 		)
 	}
@@ -131,6 +136,11 @@ func (r *Resource) Update(
 		return
 	}
 
+	id := helper.StringToInt(plan.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	isEqual := state.Label.Equal(plan.Label) &&
 		state.ClientConnThrottle.Equal(plan.ClientConnThrottle) &&
 		state.Tags.Equal(plan.Tags)
@@ -145,10 +155,10 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		nodebalancer, err := client.UpdateNodeBalancer(ctx, int(plan.ID.ValueInt64()), updateOpts)
+		nodebalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update Nodebalancer %v", plan.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update Nodebalancer %v", id),
 				err.Error(),
 			)
 			return
@@ -175,12 +185,17 @@ func (r *Resource) Delete(
 		return
 	}
 
-	err := client.DeleteNodeBalancer(ctx, int(data.ID.ValueInt64()))
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	err := client.DeleteNodeBalancer(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"Nodebalancer does not exist.",
-				fmt.Sprintf("Nodebalancer %v does not exist, removing from state.", data.ID.ValueInt64()),
+				fmt.Sprintf("Nodebalancer %v does not exist, removing from state.", id),
 			)
 			resp.State.RemoveResource(ctx)
 			return

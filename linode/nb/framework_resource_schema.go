@@ -18,10 +18,10 @@ import (
 var frameworkResourceSchema = schema.Schema{
 	Version: 1,
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description:   "The unique ID of the Linode NodeBalancer.",
 			Computed:      true,
-			PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"label": schema.StringAttribute{
 			Description: "The label of the Linode NodeBalancer.",
@@ -99,7 +99,7 @@ var frameworkResourceSchema = schema.Schema{
 
 var resourceNodebalancerV0 = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description: "The unique ID of the Linode NodeBalancer.",
 			Computed:    true,
 		},
