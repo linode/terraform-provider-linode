@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -18,9 +18,7 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
-			Validators: []validator.String{
-				helper.NewIPStringValidator(),
-			},
+			CustomType: customtypes.IPAddrStringType{},
 		},
 		"rdns": schema.StringAttribute{
 			Description: "The reverse DNS assigned to this address. For public IPv4 addresses, this will be set " +
