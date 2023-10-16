@@ -167,10 +167,10 @@ func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 		t.Fatalf("failed to parse private key: %s", err)
 	}
 
-	// #nosec G106 -- Test data, not used in production
 	config := &ssh.ClientConfig{
-		User:            "root",
-		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		User: "root",
+		Auth: []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		// #nosec G106 -- Test data, not used in production
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Minute,
 	}

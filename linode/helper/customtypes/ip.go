@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/attr/xattr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces
@@ -158,10 +159,11 @@ func (v IPAddrStringValue) StringSemanticEquals(
 		return false, diags
 	}
 
-	tflog.Info(ctx, "boagaagdrgnehrigureinigrb KBGKJSDBGJK", map[string]any{
-		"cool": newValue.ValueString(),
-		"old":  v.ValueString(),
-	})
-
 	return net.ParseIP(v.ValueString()).Equal(net.ParseIP(newValue.ValueString())), nil
+}
+
+func IPAddrValue(value string) IPAddrStringValue {
+	return IPAddrStringValue{
+		StringValue: types.StringValue(value),
+	}
 }
