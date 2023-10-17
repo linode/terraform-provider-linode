@@ -65,9 +65,11 @@ make PKG_NAME="linode/volume" TESTARGS="-run TestAccResourceVolume_basic" testac
 
 There are a number of useful flags and variables to aid in debugging.
 
-- `LINODE_DEBUG` - If truthy, this will emit all HTTP requests and responses to the Linode API.  **This may include sensitive data** such as the account `tax_id` (VAT) and the credit card `last_four` and `expiry`.  Be very cautious about storing this output.
+- `TF_LOG_PROVIDER` - This instructs Terraform to emit provider logging messages at the given level.
 
-- `TF_LOG` - This instructs Terraform to emit trace level (and higher) logging messages.
+- `TF_LOG` - This instructs Terraform to emit logging messages at the given level.
+
+- `TF_LOG_PROVIDER_LINODE_REQUESTS` - This instructs terraform-provider-linode to output API request logs at the given level.
 
 - `TF_SCHEMA_PANIC_ON_ERROR` - This forces Terraform to panic if a Schema Set command failed.
 

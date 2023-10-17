@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -167,10 +166,10 @@ func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
 		t.Fatalf("failed to parse private key: %s", err)
 	}
 
-	// #nosec G106 -- Test data, not used in production
 	config := &ssh.ClientConfig{
-		User:            "root",
-		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		User: "root",
+		Auth: []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		//#nosec G106 -- Test data, not used in production
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Minute,
 	}
@@ -502,7 +501,7 @@ func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string
 }
 
 func CreateTempFile(t *testing.T, name, content string) *os.File {
-	file, err := ioutil.TempFile(os.TempDir(), name)
+	file, err := os.CreateTemp(os.TempDir(), name)
 	if err != nil {
 		t.Fatalf("failed to create temp file: %s", err)
 	}
@@ -513,7 +512,7 @@ func CreateTempFile(t *testing.T, name, content string) *os.File {
 		}
 	})
 
-	if _, err := file.Write([]byte(content)); err != nil {
+	if _, err := file.WriteString(content); err != nil {
 		t.Fatalf("failed to write to temp file: %s", err)
 	}
 
@@ -640,7 +639,7 @@ func GetTestClient() (*linodego.Client, error) {
 		APIURL:      os.Getenv("LINODE_URL"),
 	}
 
-	client, err := config.Client()
+	client, err := config.Client(context.Background())
 	if err != nil {
 		return nil, err
 	}
