@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -27,6 +28,7 @@ func init() {
 	})
 
 	var err error
+
 	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
@@ -118,6 +120,57 @@ func TestAccResourceVPC_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccResourceLinodeVPC_create_InvalidLabel(t *testing.T) {
+	t.Parallel()
+
+	vpcLabel := "tf-test_123"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.Basic(t, vpcLabel, testRegion),
+				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+			},
+		},
+	})
+}
+
+func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
+	t.Parallel()
+	resName := "linode_vpc.foobar"
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+
+	invalidLabel := "tf-test_123"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, vpcLabel, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCExists,
+					resource.TestCheckResourceAttr(resName, "label", vpcLabel),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+				),
+			},
+			{
+				Config:      tmpl.Updates(t, invalidLabel, testRegion),
+				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
 			},
 			{
 				ResourceName:      resName,
