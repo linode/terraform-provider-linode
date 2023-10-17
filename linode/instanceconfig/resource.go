@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -27,6 +28,10 @@ func Resource() *schema.Resource {
 }
 
 func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	tflog.Debug(ctx, "Import linode_instance_config", map[string]any{
+		"id": d.Id(),
+	})
+
 	if strings.Contains(d.Id(), ",") {
 		s := strings.Split(d.Id(), ",")
 		// Validate that this is an ID by making sure it can be converted into an int
@@ -56,6 +61,9 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_instance_config")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.Atoi(d.Id())
@@ -120,6 +128,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_instance_config")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
@@ -155,10 +166,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.Devices = *devices
 	}
 
+	tflog.Debug(ctx, "Sending config creation API request", map[string]any{
+		"body": createOpts,
+	})
+
 	cfg, err := client.CreateInstanceConfig(ctx, linodeID, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create linode instance config: %s", err)
 	}
+
+	ctx = tflog.SetField(ctx, "config_id", cfg.ID)
 
 	d.SetId(strconv.Itoa(cfg.ID))
 
@@ -173,13 +190,24 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_instance_config")
+
 	client := meta.(*helper.ProviderMeta).Client
+
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse id: %s", err)
 	}
 
 	linodeID := d.Get("linode_id").(int)
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"id":        id,
+		"linode_id": linodeID,
+	})
+
+	tflog.Debug(ctx, "Update resource")
 
 	inst, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
@@ -249,6 +277,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if shouldUpdate {
+		tflog.Debug(ctx, "Update detected, sending config PUT request to API", map[string]any{
+			"body": putRequest,
+		})
 		if _, err := client.UpdateInstanceConfig(ctx, linodeID, int(id), putRequest); err != nil {
 			return diag.Errorf("failed to update instance config: %s", err)
 		}
@@ -266,7 +297,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_instance_config")
+
 	client := meta.(*helper.ProviderMeta).Client
+
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse id: %s", err)
@@ -283,7 +318,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if booted, err := isConfigBooted(ctx, &client, inst, id); err != nil {
 		return diag.Errorf("failed to check if config is booted: %s", err)
 	} else if booted {
-		log.Printf("[INFO] Shutting down instance %d for config deletion: %s\n", inst.ID, err)
+		tflog.Info(ctx, "Shutting down instance for config deletion")
 
 		p, err := client.NewEventPoller(ctx, inst.ID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
 		if err != nil {
@@ -297,12 +332,23 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
 		}
+		tflog.Debug(ctx, "Instance shutdown complete")
 	}
+
+	tflog.Debug(ctx, "Deleting instance config")
 
 	err = client.DeleteInstanceConfig(ctx, linodeID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode Instance Config %d: %s", id, err)
 	}
 	d.SetId("")
+
 	return nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"linode_id": d.Get("linode_id").(int),
+		"id":        d.Id(),
+	})
 }

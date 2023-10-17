@@ -22,7 +22,7 @@ func TestParseNonComputedAttrs(t *testing.T) {
 		Tags:  []string{"tag1", "tag2"},
 	}
 
-	nodeBalancerModel := &NodebalancerModel{}
+	nodeBalancerModel := &NodeBalancerModel{}
 
 	diags := nodeBalancerModel.ParseNonComputedAttrs(context.Background(), nodeBalancer)
 
@@ -60,13 +60,13 @@ func TestParseComputedAttrs(t *testing.T) {
 		},
 	}
 
-	nodeBalancerModel := &NodebalancerModel{}
+	nodeBalancerModel := &NodeBalancerModel{}
 
 	diags := nodeBalancerModel.ParseComputedAttrs(context.Background(), nodeBalancer)
 
 	assert.False(t, diags.HasError())
 
-	assert.Equal(t, types.Int64Value(123), nodeBalancerModel.ID)
+	assert.Equal(t, types.StringValue("123"), nodeBalancerModel.ID)
 	assert.Equal(t, types.StringValue("us-east"), nodeBalancerModel.Region)
 	assert.Equal(t, types.Int64Value(10), nodeBalancerModel.ClientConnThrottle)
 	assert.Equal(t, types.StringPointerValue(&hostname), nodeBalancerModel.Hostname)

@@ -209,11 +209,11 @@ func handleDefault(config *helper.Config, d *schema.ResourceData) diag.Diagnosti
 	if v, ok := d.GetOk("event_poll_ms"); ok {
 		config.EventPollMilliseconds = v.(int)
 	} else {
-		eventPollMs, err := strconv.ParseInt(os.Getenv("LINODE_EVENT_POLL_MS"), 10, 64)
+		eventPollMs, err := strconv.Atoi(os.Getenv("LINODE_EVENT_POLL_MS"))
 		if err != nil {
 			eventPollMs = 4000
 		}
-		config.EventPollMilliseconds = int(eventPollMs)
+		config.EventPollMilliseconds = eventPollMs
 	}
 
 	if v, ok := d.GetOk("lke_event_poll_ms"); ok {
@@ -248,7 +248,7 @@ func providerConfigure(
 	handleDefault(config, d)
 
 	config.TerraformVersion = terraformVersion
-	client, err := config.Client()
+	client, err := config.Client(ctx)
 	if err != nil {
 		return nil, diag.Errorf("failed to initialize client: %s", err)
 	}

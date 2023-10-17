@@ -3,11 +3,10 @@ package vpcsubnets
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
 )
 
@@ -21,12 +20,12 @@ type VPCSubnetFilterModel struct {
 }
 
 type VPCSubnetModel struct {
-	ID      types.Int64                        `tfsdk:"id"`
-	Label   types.String                       `tfsdk:"label"`
-	IPv4    types.String                       `tfsdk:"ipv4"`
-	Linodes types.List                         `tfsdk:"linodes"`
-	Created customtypes.RFC3339TimeStringValue `tfsdk:"created"`
-	Updated customtypes.RFC3339TimeStringValue `tfsdk:"updated"`
+	ID      types.Int64       `tfsdk:"id"`
+	Label   types.String      `tfsdk:"label"`
+	IPv4    types.String      `tfsdk:"ipv4"`
+	Linodes types.List        `tfsdk:"linodes"`
+	Created timetypes.RFC3339 `tfsdk:"created"`
+	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
 func (model *VPCSubnetFilterModel) parseVPCSubnets(
@@ -45,12 +44,8 @@ func (model *VPCSubnetFilterModel) parseVPCSubnets(
 		}
 		s.Linodes = linodes
 
-		s.Created = customtypes.RFC3339TimeStringValue{
-			StringValue: helper.NullableTimeToFramework(subnet.Created),
-		}
-		s.Updated = customtypes.RFC3339TimeStringValue{
-			StringValue: helper.NullableTimeToFramework(subnet.Updated),
-		}
+		s.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
+		s.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)
 
 		return s, nil
 	}

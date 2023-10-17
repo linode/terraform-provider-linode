@@ -16,7 +16,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_object_storage_key",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -84,7 +84,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	key, err := client.GetObjectStorageKey(ctx, int(data.ID.ValueInt64()))
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	key, err := client.GetObjectStorageKey(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -120,6 +125,11 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
+	id := helper.StringToInt(plan.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var updateOpts linodego.ObjectStorageKeyUpdateOptions
 	shouldUpdate := false
 
@@ -131,12 +141,12 @@ func (r *Resource) Update(
 	if shouldUpdate {
 		key, err := r.Meta.Client.UpdateObjectStorageKey(
 			ctx,
-			int(plan.ID.ValueInt64()),
+			id,
 			updateOpts,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update Object Storage Key (%d)", plan.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update Object Storage Key (%d)", id),
 				err.Error())
 			return
 		}
@@ -159,12 +169,17 @@ func (r *Resource) Delete(
 		return
 	}
 
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client := r.Meta.Client
-	err := client.DeleteObjectStorageKey(ctx, int(data.ID.ValueInt64()))
+	err := client.DeleteObjectStorageKey(ctx, id)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the Object Storage Key (%d)", data.ID.ValueInt64()),
+				fmt.Sprintf("Failed to delete the Object Storage Key (%d)", id),
 				err.Error(),
 			)
 		}

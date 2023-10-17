@@ -1,6 +1,8 @@
 package objkey
 
 import (
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 )
@@ -14,7 +16,7 @@ type BucketAccessModelEntry struct {
 // ResourceModel describes the Terraform resource rm model to match the
 // resource schema.
 type ResourceModel struct {
-	ID           types.Int64              `tfsdk:"id"`
+	ID           types.String             `tfsdk:"id"`
 	Label        types.String             `tfsdk:"label"`
 	AccessKey    types.String             `tfsdk:"access_key"`
 	SecretKey    types.String             `tfsdk:"secret_key"`
@@ -44,7 +46,7 @@ func (rm *ResourceModel) parseConfiguredAttributes(key *linodego.ObjectStorageKe
 }
 
 func (rm *ResourceModel) parseComputedAttributes(key *linodego.ObjectStorageKey) {
-	rm.ID = types.Int64Value(int64(key.ID))
+	rm.ID = types.StringValue(strconv.Itoa(key.ID))
 	rm.AccessKey = types.StringValue(key.AccessKey)
 	rm.Limited = types.BoolValue(key.Limited)
 

@@ -5,7 +5,6 @@ package image_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -250,7 +249,7 @@ func checkImageDestroy(s *terraform.State) error {
 }
 
 func createTempFile(name string, content []byte) (*os.File, error) {
-	file, err := ioutil.TempFile(os.TempDir(), name)
+	file, err := os.CreateTemp(os.TempDir(), name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %s", err)
 	}

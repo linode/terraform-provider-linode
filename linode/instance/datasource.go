@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -47,6 +48,8 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "Read data.linode_instances")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	filterID, err := filterConfig.GetFilterID(d)

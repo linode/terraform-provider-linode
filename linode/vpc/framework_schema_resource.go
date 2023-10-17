@@ -1,11 +1,11 @@
 package vpc
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -39,7 +39,7 @@ var frameworkResourceSchema = schema.Schema{
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC was created.",
 			Computed:    true,
-			CustomType:  customtypes.RFC3339TimeStringType{},
+			CustomType:  timetypes.RFC3339Type{},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
@@ -47,7 +47,7 @@ var frameworkResourceSchema = schema.Schema{
 		"updated": schema.StringAttribute{
 			Description: "The date and time when the VPC was updated.",
 			Computed:    true,
-			CustomType:  customtypes.RFC3339TimeStringType{},
+			CustomType:  timetypes.RFC3339Type{},
 		},
 	},
 }

@@ -5,19 +5,21 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
+	github.com/hashicorp/go-hclog v1.5.0
 	github.com/hashicorp/go-version v1.6.0
-	github.com/hashicorp/terraform-plugin-framework v1.4.0
+	github.com/hashicorp/terraform-plugin-framework v1.4.1
+	github.com/hashicorp/terraform-plugin-framework-timetypes v0.3.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.12.0
 	github.com/hashicorp/terraform-plugin-go v0.19.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
 	github.com/hashicorp/terraform-plugin-testing v1.5.1
-	github.com/linode/linodego v1.22.0
+	github.com/linode/linodego v1.23.0
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.13.0
-	golang.org/x/net v0.15.0
+	golang.org/x/crypto v0.14.0
+	golang.org/x/net v0.16.0
 )
 
 require (
@@ -40,7 +42,6 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.5.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -72,8 +73,8 @@ require (
 	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -96,6 +97,6 @@ require (
 )
 
 // TODO: Remove this replacement before merging to dev
-replace github.com/linode/linodego => github.com/linode/linodego v1.22.1-0.20230926172253-9eee757b17a6
+replace github.com/linode/linodego => github.com/linode/linodego v1.23.1-0.20231011201222-efeae876d8d2
 
 go 1.20

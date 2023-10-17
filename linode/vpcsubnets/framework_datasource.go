@@ -69,7 +69,7 @@ func (data *VPCSubnetFilterModel) listVPCSubnets(
 	filter string,
 ) ([]any, error) {
 	var diags diag.Diagnostics
-	vpcId := helper.SafeInt64ToInt(data.VPCId.ValueInt64(), &diags)
+	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &diags)
 	if diags.HasError() {
 		for _, err := range diags.Errors() {
 			return nil, errors.New(err.Detail())

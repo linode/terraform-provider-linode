@@ -40,12 +40,12 @@ func Resource() *schema.Resource {
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Volume ID %s as int: %s", d.Id(), err)
 	}
 
-	volume, err := client.GetVolume(ctx, int(id))
+	volume, err := client.GetVolume(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Volume ID %q from state because it no longer exists", d.Id())
