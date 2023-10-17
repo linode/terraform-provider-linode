@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -502,7 +501,7 @@ func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string
 }
 
 func CreateTempFile(t *testing.T, name, content string) *os.File {
-	file, err := ioutil.TempFile(os.TempDir(), name)
+	file, err := os.CreateTemp(os.TempDir(), name)
 	if err != nil {
 		t.Fatalf("failed to create temp file: %s", err)
 	}
@@ -513,7 +512,7 @@ func CreateTempFile(t *testing.T, name, content string) *os.File {
 		}
 	})
 
-	if _, err := file.Write([]byte(content)); err != nil {
+	if _, err := file.WriteString(content); err != nil {
 		t.Fatalf("failed to write to temp file: %s", err)
 	}
 
