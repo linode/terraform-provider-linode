@@ -279,8 +279,19 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	tflog.Info(ctx, "Deleting instance disk")
 	err = client.DeleteInstanceDisk(ctx, linodeID, id)
+
+	p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskDelete)
 	if err != nil {
+		return diag.Errorf("failed to initialize event poller: %s", err)
+	}
+
+	if err := client.DeleteInstanceDisk(ctx, linodeID, id); err != nil {
 		return diag.Errorf("Error deleting Linode Instance Disk %d: %s", id, err)
+	}
+
+	if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+		return diag.Errorf(
+			"Error waiting for Instance %d Disk %d to finish deleting: %s", linodeID, id, err)
 	}
 
 	d.SetId("")
