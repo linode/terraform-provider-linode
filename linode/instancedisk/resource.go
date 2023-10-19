@@ -278,8 +278,6 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	tflog.Info(ctx, "Deleting instance disk")
-	err = client.DeleteInstanceDisk(ctx, linodeID, id)
-
 	p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionDiskDelete)
 	if err != nil {
 		return diag.Errorf("failed to initialize event poller: %s", err)
