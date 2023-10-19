@@ -142,10 +142,6 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		keyID := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
 		key, err := r.Meta.Client.UpdateObjectStorageKey(
 			ctx,
 			id,

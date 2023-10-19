@@ -70,10 +70,6 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	keyID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 
 	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -130,10 +126,6 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		keyID := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
 		key, err := r.Meta.Client.UpdateSSHKey(
 			ctx,
 			id,

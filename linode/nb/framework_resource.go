@@ -110,7 +110,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	nodebalancer, err := client.GetNodeBalancer(ctx, id)
+	nodeBalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -175,7 +175,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		nodebalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
+		nodeBalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update Nodebalancer %v", id),
@@ -204,7 +204,6 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 
 	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
