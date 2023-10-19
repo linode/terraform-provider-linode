@@ -16,7 +16,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_object_storage_key",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -84,11 +84,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	keyID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	key, err := client.GetObjectStorageKey(ctx, keyID)
+
+	key, err := client.GetObjectStorageKey(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -127,6 +128,11 @@ func (r *Resource) Update(
 		return
 	}
 
+	id := helper.StringToInt(plan.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var updateOpts linodego.ObjectStorageKeyUpdateOptions
 	shouldUpdate := false
 
@@ -142,12 +148,12 @@ func (r *Resource) Update(
 		}
 		key, err := r.Meta.Client.UpdateObjectStorageKey(
 			ctx,
-			keyID,
+			id,
 			updateOpts,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update Object Storage Key (%d)", plan.ID.ValueInt64()),
+				fmt.Sprintf("Failed to update Object Storage Key (%d)", id),
 				err.Error())
 			return
 		}
@@ -170,16 +176,17 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
-	keyID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	err := client.DeleteObjectStorageKey(ctx, keyID)
+
+	client := r.Meta.Client
+	err := client.DeleteObjectStorageKey(ctx, id)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the Object Storage Key (%d)", data.ID.ValueInt64()),
+				fmt.Sprintf("Failed to delete the Object Storage Key (%d)", id),
 				err.Error(),
 			)
 		}

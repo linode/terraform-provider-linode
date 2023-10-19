@@ -1,7 +1,5 @@
 ---
-layout: "linode"
 page_title: "Linode: linode_database_access_controls"
-sidebar_current: "docs-linode-database-access-controls"
 description: |-
   Manages the access controls for a Linode Database.
 ---

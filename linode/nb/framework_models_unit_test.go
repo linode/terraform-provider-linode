@@ -66,7 +66,7 @@ func TestParseComputedAttrs(t *testing.T) {
 
 	assert.False(t, diags.HasError())
 
-	assert.Equal(t, types.Int64Value(123), nodeBalancerModel.ID)
+	assert.Equal(t, types.StringValue("123"), nodeBalancerModel.ID)
 	assert.Equal(t, types.StringValue("us-east"), nodeBalancerModel.Region)
 	assert.Equal(t, types.Int64Value(10), nodeBalancerModel.ClientConnThrottle)
 	assert.Equal(t, types.StringPointerValue(&hostname), nodeBalancerModel.Hostname)
