@@ -127,6 +127,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
