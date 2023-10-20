@@ -37,11 +37,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := helper.S3ConnFromResourceData(d)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	headOutput, err := client.HeadObject(&s3.HeadObjectInput{
+	headOutput, err := s3client.HeadObject(&s3.HeadObjectInput{
 		Bucket: &bucket,
 		Key:    &key,
 	})
@@ -63,8 +67,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("etag", strings.Trim(aws.StringValue(headOutput.ETag), `"`))
 	d.Set("website_redirect", headOutput.WebsiteRedirectLocation)
 	d.Set("version_id", headOutput.VersionId)
-
 	d.Set("metadata", flattenObjectMetadata(headOutput.Metadata))
+	d.Set("endpoint", s3client.Config.Endpoint)
 
 	return nil
 }
@@ -81,8 +85,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	acl := d.Get("acl").(string)
 
 	if d.HasChange("acl") {
-		client := helper.S3ConnFromResourceData(d)
-		if _, err := client.PutObjectAcl(&s3.PutObjectAclInput{
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if _, err := s3client.PutObjectAcl(&s3.PutObjectAclInput{
 			Bucket: &bucket,
 			Key:    &key,
 			ACL:    &acl,
@@ -95,16 +103,20 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn := helper.S3ConnFromResourceData(d)
-
-	if _, ok := d.GetOk("version_id"); ok {
-		return deleteAllObjectVersions(ctx, d)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	bucket := d.Get("bucket").(string)
-	key := strings.TrimPrefix(d.Get("key").(string), "/")
+	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
-	return diag.FromErr(deleteObject(conn, bucket, key, "", force))
+
+	if _, ok := d.GetOk("version_id"); ok {
+		return deleteAllObjectVersions(s3client, bucket, key, force)
+	}
+
+	return diag.FromErr(deleteObject(s3client, bucket, strings.TrimPrefix(key, "/"), "", force))
 }
 
 func diffResource(
@@ -120,15 +132,19 @@ func diffResource(
 // specified bucket via the *schema.ResourceData, then it calls
 // readResource.
 func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := helper.S3ConnFromResourceData(d)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	bucket := d.Get("bucket").(string)
+	key := d.Get("key").(string)
+
 	body, err := objectBodyFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	defer body.Close()
-
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
 
 	nilOrValue := func(s string) *string {
 		if s == "" {
@@ -155,7 +171,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		putInput.Metadata = expandObjectMetadata(metadata.(map[string]interface{}))
 	}
 
-	if _, err := client.PutObject(putInput); err != nil {
+	if _, err := s3client.PutObject(putInput); err != nil {
 		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
 	}
 
@@ -164,15 +180,8 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	return readResource(ctx, d, meta)
 }
 
-// deleteAllObjectVersions deletes all versions of a given
-// object.
-func deleteAllObjectVersions(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
-	force := d.Get("force_destroy").(bool)
-
-	conn := helper.S3ConnFromResourceData(d)
-
+// deleteAllObjectVersions deletes all versions of a given object
+func deleteAllObjectVersions(client *s3.S3, bucket, key string, force bool) diag.Diagnostics {
 	var versions []string
 	listObjectVersionsInput := &s3.ListObjectVersionsInput{
 		Bucket: &bucket,
@@ -183,7 +192,7 @@ func deleteAllObjectVersions(ctx context.Context, d *schema.ResourceData) diag.D
 	}
 
 	// accumulate all versions of the current object to be deleted
-	if err := conn.ListObjectVersionsPages(
+	if err := client.ListObjectVersionsPages(
 		listObjectVersionsInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
 			if page == nil {
 				return !lastPage
@@ -204,7 +213,7 @@ func deleteAllObjectVersions(ctx context.Context, d *schema.ResourceData) diag.D
 
 	// delete all version of the current object
 	for _, version := range versions {
-		if err := deleteObject(conn, bucket, key, version, force); err != nil {
+		if err := deleteObject(client, bucket, key, version, force); err != nil {
 			return diag.FromErr(err)
 		}
 	}

@@ -19,6 +19,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Required:    true,
 		ForceNew:    true,
 	},
+	"endpoint": {
+		Type:        schema.TypeString,
+		Description: "The endpoint for the bucket used for s3 connections.",
+		Computed:    true,
+	},
 	"label": {
 		Type:        schema.TypeString,
 		Description: "The label of the Linode Object Storage Bucket.",
