@@ -69,7 +69,15 @@ func (d *DataSource) Read(
 
 	retry := time.Duration(d.Meta.Config.EventPollMilliseconds.ValueInt64()) * time.Millisecond
 
-	zf, diags := getZoneFileRetry(ctx, client, int(data.DomainID.ValueInt64()), retry)
+	domainID := helper.FrameworkSafeInt64ToInt(
+		data.DomainID.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zf, diags := getZoneFileRetry(ctx, client, domainID, retry)
 	if diags.HasError() {
 		return
 	}

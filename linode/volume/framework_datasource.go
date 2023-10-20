@@ -43,8 +43,11 @@ func (r *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	volume, err := client.GetVolume(ctx, int(data.ID.ValueInt64()))
+	volumeID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	volume, err := client.GetVolume(ctx, volumeID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to get the volume.", err.Error())
 	}

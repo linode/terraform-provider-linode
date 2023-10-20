@@ -124,6 +124,9 @@ func (r *Resource) Update(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	id := helper.StringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
