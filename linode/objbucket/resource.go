@@ -74,6 +74,7 @@ func readResource(
 	// Functionality requiring direct S3 API access
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
+	endpoint := strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label))
 
 	_, versioningPresent := d.GetOk("versioning")
 	_, lifecyclePresent := d.GetOk("lifecycle_rule")
@@ -83,13 +84,16 @@ func readResource(
 			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
 		}
 
-		conn := helper.S3ConnFromResourceData(d)
+		client, err := helper.S3Connection(endpoint, accessKey, secretKey)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-		if err := readBucketLifecycle(d, conn); err != nil {
+		if err := readBucketLifecycle(d, client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
 		}
 
-		if err := readBucketVersioning(d, conn); err != nil {
+		if err := readBucketVersioning(d, client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
@@ -98,8 +102,10 @@ func readResource(
 	d.Set("cluster", bucket.Cluster)
 	d.Set("label", bucket.Label)
 	d.Set("hostname", bucket.Hostname)
+	d.Set("endpoint", strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label)))
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
+	d.Set("endpoint", endpoint)
 
 	return nil
 }
@@ -126,6 +132,7 @@ func createResource(
 		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
+	d.Set("endpoint", strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label)))
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 
 	return updateResource(ctx, d, meta)
@@ -135,11 +142,6 @@ func updateResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-
-	accessKey := d.Get("access_key")
-	secretKey := d.Get("secret_key")
-
-	conn := helper.S3ConnFromResourceData(d)
 
 	if d.HasChanges("acl", "cors_enabled") {
 		if err := updateBucketAccess(ctx, d, client); err != nil {
@@ -157,19 +159,20 @@ func updateResource(
 	lifecycleChanged := d.HasChange("lifecycle_rule")
 
 	if versioningChanged || lifecycleChanged {
-		if accessKey == "" || secretKey == "" {
-			return diag.Errorf("access_key and secret_key are required to set versioning and lifecycle info")
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		// Ensure we only update what is changed
 		if versioningChanged {
-			if err := updateBucketVersioning(d, conn); err != nil {
+			if err := updateBucketVersioning(d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if lifecycleChanged {
-			if err := updateBucketLifecycle(d, conn); err != nil {
+			if err := updateBucketLifecycle(d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
 		}
