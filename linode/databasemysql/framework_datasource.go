@@ -39,9 +39,18 @@ func (d *DataSource) Read(
 	id := 0
 
 	if data.ID.IsNull() || data.ID.IsUnknown() {
-		id = int(data.DatabaseID.ValueInt64())
+		id = helper.FrameworkSafeInt64ToInt(
+			data.DatabaseID.ValueInt64(),
+			&resp.Diagnostics,
+		)
 	} else if data.DatabaseID.IsNull() || data.DatabaseID.IsUnknown() {
-		id = int(data.ID.ValueInt64())
+		id = helper.FrameworkSafeInt64ToInt(
+			data.ID.ValueInt64(),
+			&resp.Diagnostics,
+		)
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	if id == 0 {

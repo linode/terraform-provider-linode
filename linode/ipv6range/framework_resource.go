@@ -41,13 +41,28 @@ func (r *Resource) Create(
 		return
 	}
 
+	prefixLength := helper.FrameworkSafeInt64ToInt(
+		data.PrefixLength.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	createOpts := linodego.IPv6RangeCreateOptions{
-		PrefixLength: int(data.PrefixLength.ValueInt64()),
+		PrefixLength: prefixLength,
 	}
 
 	linodeIdConfigured := false
+	linodeID := helper.FrameworkSafeInt64ToInt(
+		data.LinodeId.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if !data.LinodeId.IsNull() && !data.LinodeId.IsUnknown() {
-		createOpts.LinodeID = int(data.LinodeId.ValueInt64())
+		createOpts.LinodeID = linodeID
 		linodeIdConfigured = true
 	} else if !data.RouteTarget.IsNull() && !data.RouteTarget.IsUnknown() {
 		createOpts.RouteTarget = strings.Split(data.RouteTarget.ValueString(), "/")[0]
@@ -112,6 +127,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
@@ -161,11 +180,18 @@ func (r *Resource) Update(
 	}
 
 	if !state.LinodeId.Equal(plan.LinodeId) {
+		linodeID := helper.FrameworkSafeInt64ToInt(
+			plan.LinodeId.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		err := client.InstancesAssignIPs(ctx, linodego.LinodesAssignIPsOptions{
 			Region: ipv6range.Region,
 			Assignments: []linodego.LinodeIPAssignment{
 				{
-					LinodeID: int(plan.LinodeId.ValueInt64()),
+					LinodeID: linodeID,
 					Address:  fmt.Sprintf("%s/%d", ipv6range.Range, ipv6range.Prefix),
 				},
 			},

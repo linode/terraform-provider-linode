@@ -77,7 +77,19 @@ func (d *DataSource) Read(
 	var record *linodego.DomainRecord
 
 	if !(data.ID.IsNull() || data.ID.IsUnknown()) {
-		rec, err := client.GetDomainRecord(ctx, int(data.DomainID.ValueInt64()), int(data.ID.ValueInt64()))
+		domainID := helper.FrameworkSafeInt64ToInt(
+			data.DomainID.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		recordID := helper.FrameworkSafeInt64ToInt(
+			data.ID.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		rec, err := client.GetDomainRecord(ctx, domainID, recordID)
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching domain record: %v", err.Error())
 			return
@@ -85,7 +97,14 @@ func (d *DataSource) Read(
 		record = rec
 	} else if data.Name.ValueString() != "" {
 		filter, _ := json.Marshal(map[string]interface{}{"name": data.Name.ValueString()})
-		records, err := client.ListDomainRecords(ctx, int(data.DomainID.ValueInt64()),
+		domainID := helper.FrameworkSafeInt64ToInt(
+			data.DomainID.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		records, err := client.ListDomainRecords(ctx, domainID,
 			linodego.NewListOptions(0, string(filter)))
 		if err != nil {
 			resp.Diagnostics.AddError("Error listing domain records: %v", err.Error())

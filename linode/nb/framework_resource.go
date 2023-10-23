@@ -44,7 +44,14 @@ func (r *Resource) Create(
 		return
 	}
 
-	clientConnThrottle := int(data.ClientConnThrottle.ValueInt64())
+	clientConnThrottle := helper.FrameworkSafeInt64ToInt(
+		data.ClientConnThrottle.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	createOpts := linodego.NodeBalancerCreateOptions{
 		Region:             data.Region.ValueString(),
 		Label:              data.Label.ValueStringPointer(),
@@ -52,7 +59,13 @@ func (r *Resource) Create(
 	}
 
 	if !data.FirewallID.IsNull() {
-		createOpts.FirewallID = int(data.FirewallID.ValueInt64())
+		createOpts.FirewallID = helper.FrameworkSafeInt64ToInt(
+			data.FirewallID.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	if !data.Tags.IsNull() {
@@ -92,12 +105,16 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	nodebalancer, err := client.GetNodeBalancer(ctx, id)
+	nodeBalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -113,8 +130,8 @@ func (r *Resource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodebalancer)...)
-	resp.Diagnostics.Append(data.ParseNonComputedAttrs(ctx, nodebalancer)...)
+	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodeBalancer)...)
+	resp.Diagnostics.Append(data.ParseNonComputedAttrs(ctx, nodeBalancer)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -146,7 +163,13 @@ func (r *Resource) Update(
 		state.Tags.Equal(plan.Tags)
 
 	if !isEqual {
-		clientConnThrottle := int(plan.ClientConnThrottle.ValueInt64())
+		clientConnThrottle := helper.FrameworkSafeInt64ToInt(
+			plan.ClientConnThrottle.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		updateOpts := linodego.NodeBalancerUpdateOptions{
 			Label:              plan.Label.ValueStringPointer(),
 			ClientConnThrottle: &clientConnThrottle,
@@ -155,7 +178,8 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		nodebalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
+
+		nodeBalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update Nodebalancer %v", id),
@@ -164,7 +188,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.ParseComputedAttrs(ctx, nodebalancer)...)
+		resp.Diagnostics.Append(plan.ParseComputedAttrs(ctx, nodeBalancer)...)
 	} else {
 		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 		req.State.GetAttribute(ctx, path.Root("transfer"), &plan.Transfer)
