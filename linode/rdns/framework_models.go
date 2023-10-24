@@ -3,17 +3,18 @@ package rdns
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
 )
 
 type ResourceModel struct {
-	Address          types.String `tfsdk:"address"`
-	RDNS             types.String `tfsdk:"rdns"`
-	WaitForAvailable types.Bool   `tfsdk:"wait_for_available"`
-	ID               types.String `tfsdk:"id"`
+	Address          customtypes.IPAddrStringValue `tfsdk:"address"`
+	RDNS             types.String                  `tfsdk:"rdns"`
+	WaitForAvailable types.Bool                    `tfsdk:"wait_for_available"`
+	ID               types.String                  `tfsdk:"id"`
 }
 
 func (rm *ResourceModel) parseConfiguredAttributes(ip *linodego.InstanceIP) {
-	rm.Address = types.StringValue(ip.Address)
+	rm.Address = customtypes.IPAddrValue(ip.Address)
 
 	if !rm.RDNS.Equal(types.StringValue(ip.RDNS)) {
 		rm.RDNS = types.StringValue(ip.RDNS)
