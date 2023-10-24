@@ -246,6 +246,7 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 
 	expectedConfigs := []map[string]interface{}{
 		{
+			"id":           1,
 			"root_device":  "/dev/sda",
 			"kernel":       "linode/latest-64bit",
 			"run_level":    "default",
