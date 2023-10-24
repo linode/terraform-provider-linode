@@ -5,7 +5,7 @@ package instance_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
@@ -39,6 +39,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "instances.0.has_user_data"),
 					resource.TestCheckResourceAttr(resName, "instances.0.disk.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.config.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.config.0.id"),
 				),
 			},
 		},

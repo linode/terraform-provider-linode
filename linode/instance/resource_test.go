@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
@@ -261,6 +261,7 @@ func TestAccResourceInstance_config(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 					resource.TestCheckResourceAttr(resName, "alerts.0.cpu", "60"),
 
+					resource.TestCheckResourceAttrSet(resName, "config.0.id"),
 					resource.TestCheckResourceAttr(resName, "config.0.run_level", "binbash"),
 					resource.TestCheckResourceAttr(resName, "config.0.virt_mode", "fullvirt"),
 					resource.TestCheckResourceAttr(resName, "config.0.memory_limit", "1024"),

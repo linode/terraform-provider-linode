@@ -35,8 +35,12 @@ func (d *DataSource) Read(
 		return
 	}
 
-	firewallId := int(data.ID.ValueInt64())
-	firewall, err := client.GetFirewall(ctx, firewallId)
+	firewallID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	firewall, err := client.GetFirewall(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get firewall",
@@ -44,7 +48,7 @@ func (d *DataSource) Read(
 		)
 		return
 	}
-	rules, err := client.GetFirewallRules(ctx, firewallId)
+	rules, err := client.GetFirewallRules(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get firewall rules",
@@ -52,7 +56,7 @@ func (d *DataSource) Read(
 		)
 		return
 	}
-	devices, err := client.ListFirewallDevices(ctx, firewallId, nil)
+	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get firewall devices",

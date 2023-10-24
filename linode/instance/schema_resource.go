@@ -475,6 +475,11 @@ var resourceSchema = map[string]*schema.Schema{
 		},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"id": {
+					Type:        schema.TypeInt,
+					Description: "The unique ID of this Config.",
+					Computed:    true,
+				},
 				"label": {
 					Type:         schema.TypeString,
 					Description:  "The Config's label for display purposes.  Also used by `boot_config_label`.",

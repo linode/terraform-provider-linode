@@ -39,7 +39,15 @@ func (d *DataSource) Read(
 		return
 	}
 
-	netInfo, err := client.GetInstanceIPAddresses(ctx, int(data.LinodeID.ValueInt64()))
+	linodeID := helper.FrameworkSafeInt64ToInt(
+		data.LinodeID.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	netInfo, err := client.GetInstanceIPAddresses(ctx, linodeID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get Instance Networking Information: ", err.Error(),

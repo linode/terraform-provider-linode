@@ -43,7 +43,11 @@ func (d *DataSource) Read(
 
 	// Resolve the domain from the corresponding field
 	if !data.ID.IsNull() {
-		domain, err = d.getDomainByID(ctx, int(data.ID.ValueInt64()))
+		id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		domain, err = d.getDomainByID(ctx, id)
 	} else {
 		domain, err = d.getDomainByDomain(ctx, data.Domain.ValueString())
 	}

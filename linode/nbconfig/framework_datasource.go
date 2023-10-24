@@ -62,7 +62,13 @@ func (d *DataSource) Read(
 		return
 	}
 
-	config, err := client.GetNodeBalancerConfig(ctx, int(data.NodebalancerId.ValueInt64()), int(data.ID.ValueInt64()))
+	nodeBalancerID := helper.FrameworkSafeInt64ToInt(data.NodebalancerId.ValueInt64(), &resp.Diagnostics)
+	configID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	config, err := client.GetNodeBalancerConfig(ctx, nodeBalancerID, configID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("failed to get nodebalancer config %d", data.ID.ValueInt64()),
