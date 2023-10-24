@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
 	github.com/hashicorp/terraform-plugin-testing v1.5.1
-	github.com/linode/linodego v1.23.0
+	github.com/linode/linodego v1.24.0
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.14.0
@@ -97,6 +97,6 @@ require (
 )
 
 // TODO: Remove this replacement before merging to dev
-replace github.com/linode/linodego => github.com/linode/linodego v1.23.1-0.20231011201222-efeae876d8d2
+replace github.com/linode/linodego => github.com/linode/linodego v1.24.1-0.20231024013514-a3629785d59b
 
 go 1.20
