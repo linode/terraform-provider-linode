@@ -33,7 +33,6 @@ func init() {
 	}
 
 	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
-
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
