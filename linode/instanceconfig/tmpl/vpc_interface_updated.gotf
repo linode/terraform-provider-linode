@@ -33,7 +33,8 @@ resource "linode_instance_config" "foobar" {
 }
 
 data "linode_instance_networking" "foobar" {
-    linode_id = linode_instance.foobar.id
+  depends_on = [linode_instance_config.foobar]
+  linode_id = linode_instance.foobar.id
 }
 
 {{ end }}

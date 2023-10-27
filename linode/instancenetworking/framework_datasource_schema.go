@@ -10,7 +10,7 @@ var vpcNAT1To1Type = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"address":   types.StringType,
 		"vpc_id":    types.Int64Type,
-		"subnet_Id": types.Int64Type,
+		"subnet_id": types.Int64Type,
 	},
 }
 

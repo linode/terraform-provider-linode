@@ -342,7 +342,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance_config.foobar"
-	networkDSName := "data.linode_insatnce_networking"
+	networkDSName := "data.linode_instance_networking.foobar"
 	instanceName := acctest.RandomWithPrefix("tf-test")
 
 	resource.Test(t, resource.TestCase{
@@ -351,7 +351,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPCInterface(t, instanceName, testRegion),
+				Config: tmpl.VPCInterface(t, instanceName, "us-east"),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
@@ -359,20 +359,20 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.250"),
 					resource.TestCheckResourceAttrSet(resName, "interface.1.ipv4.0.nat_1_1"),
 
-					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.0.address", "10.0.4.250"),
-					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.0.vpc_id"),
-					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.0.subnet_id"),
+					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.address", "10.0.4.250"),
+					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.vpc_id"),
+					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.subnet_id"),
 				),
 			},
 			{
-				Config: tmpl.VPCInterfaceUpdates(t, instanceName, testRegion),
+				Config: tmpl.VPCInterfaceUpdates(t, instanceName, "us-east"),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
 					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.249"),
 
-					resource.TestCheckNoResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.0"),
+					resource.TestCheckNoResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1"),
 				),
 			},
 			{
