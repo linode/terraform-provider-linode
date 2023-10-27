@@ -9,6 +9,16 @@ import (
 	"github.com/linode/linodego"
 )
 
+type VPCSubnetInterfaceModel struct {
+	ID     types.Int64 `tfsdk:"id"`
+	Active types.Bool  `tfsdk:"active"`
+}
+
+type VPCSubnetLinodeModel struct {
+	ID         types.Int64               `tfsdk:"id"`
+	Interfaces []VPCSubnetInterfaceModel `tfsdk:"interfaces"`
+}
+
 type VPCSubnetModel struct {
 	ID      types.Int64       `tfsdk:"id"`
 	VPCId   types.Int64       `tfsdk:"vpc_id"`
@@ -19,17 +29,32 @@ type VPCSubnetModel struct {
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
+func parseLinode(linode linodego.VPCSubnetLinode) VPCSubnetLinodeModel {
+	result := VPCSubnetLinodeModel{
+		ID: types.Int64Value(int64(linode.ID)),
+	}
+
+	result.Interfaces = make([]VPCSubnetInterfaceModel, len(linode.Interfaces))
+	for i, v := range linode.Interfaces {
+		result.Interfaces[i] = VPCSubnetInterfaceModel{
+			ID:     types.Int64Value(int64(v.ID)),
+			Active: types.BoolValue(v.Active),
+		}
+	}
+
+	return result
+}
+
 func (d *VPCSubnetModel) parseComputedAttributes(
 	ctx context.Context,
 	subnet *linodego.VPCSubnet,
 ) diag.Diagnostics {
 	d.ID = types.Int64Value(int64(subnet.ID))
 
-	linodes, diag := types.ListValueFrom(ctx, types.Int64Type, subnet.Linodes)
-	if diag != nil {
-		return diag
+	linodes := make([]VPCSubnetLinodeModel, len(subnet.Linodes))
+	for i, v := range subnet.Linodes {
+		linodes[i] = parseLinode(v)
 	}
-	d.Linodes = linodes
 
 	d.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
 	d.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)
