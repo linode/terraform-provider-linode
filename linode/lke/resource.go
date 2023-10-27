@@ -133,9 +133,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
-	client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
+	if err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
 		TimeoutSeconds: 15 * 60,
-	}, k8scondition.ClusterHasReadyNode)
+	}, k8scondition.ClusterHasReadyNode); err != nil {
+		return diag.FromErr(err)
+	}
 	return readResource(ctx, d, meta)
 }
 
@@ -242,7 +244,9 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
 	}
-	client.WaitForLKEClusterStatus(ctx, id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	if _, err := client.WaitForLKEClusterStatus(ctx, id, "not_ready", int(d.Timeout(schema.TimeoutDelete).Seconds())); err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }
 
