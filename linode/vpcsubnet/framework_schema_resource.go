@@ -8,6 +8,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
+var subnetLinodesAttribute = schema.ListNestedAttribute{
+	NestedObject: schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The ID of a Linode attached to this subnet.",
+			},
+			"interfaces": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.Int64Attribute{
+							Computed:    true,
+							Description: "The ID of an interface that references this VPC subnet.",
+						},
+						"active": schema.BoolAttribute{
+							Computed:    true,
+							Description: "Whether this interface is active",
+						},
+					},
+				},
+				Computed: true,
+			},
+		},
+	},
+	Computed: true,
+}
+
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
@@ -35,32 +62,7 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
-		"linodes": schema.ListNestedAttribute{
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.Int64Attribute{
-						Computed:    true,
-						Description: "The ID of a Linode attached to this subnet.",
-					},
-					"interfaces": schema.ListNestedAttribute{
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"id": schema.Int64Attribute{
-									Computed:    true,
-									Description: "The ID of an interface that references this VPC subnet.",
-								},
-								"active": schema.BoolAttribute{
-									Computed:    true,
-									Description: "Whether this interface is active",
-								},
-							},
-						},
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
+		"linodes": subnetLinodesAttribute,
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC Subnet was created.",
 			Computed:    true,

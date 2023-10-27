@@ -3,7 +3,6 @@ package vpcsubnet
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -24,11 +23,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The IPv4 range of this subnet in CIDR format.",
 			Computed:    true,
 		},
-		"linodes": schema.ListAttribute{
-			ElementType: types.Int64Type,
-			Description: "A list of Linode IDs that added to this subnet.",
-			Computed:    true,
-		},
+		"linodes": subnetLinodesAttribute,
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC Subnet was created.",
 			Computed:    true,
