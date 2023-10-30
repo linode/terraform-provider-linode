@@ -8,15 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-var subnetLinodesAttribute = schema.ListNestedAttribute{
-	NestedObject: schema.NestedAttributeObject{
+var LinodesSchema = schema.ListNestedBlock{
+	NestedObject: schema.NestedBlockObject{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The ID of a Linode attached to this subnet.",
 			},
-			"interfaces": schema.ListNestedAttribute{
-				NestedObject: schema.NestedAttributeObject{
+		},
+		Blocks: map[string]schema.Block{
+			"interfaces": schema.ListNestedBlock{
+				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.Int64Attribute{
 							Computed:    true,
@@ -28,11 +30,9 @@ var subnetLinodesAttribute = schema.ListNestedAttribute{
 						},
 					},
 				},
-				Computed: true,
 			},
 		},
 	},
-	Computed: true,
 }
 
 var frameworkResourceSchema = schema.Schema{
@@ -62,7 +62,6 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
-		"linodes": subnetLinodesAttribute,
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC Subnet was created.",
 			Computed:    true,
@@ -76,5 +75,8 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"linodes": LinodesSchema,
 	},
 }

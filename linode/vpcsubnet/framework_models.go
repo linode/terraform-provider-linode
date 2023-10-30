@@ -29,7 +29,7 @@ type VPCSubnetModel struct {
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-func parseLinode(linode linodego.VPCSubnetLinode) VPCSubnetLinodeModel {
+func ParseLinode(linode linodego.VPCSubnetLinode) VPCSubnetLinodeModel {
 	result := VPCSubnetLinodeModel{
 		ID: types.Int64Value(int64(linode.ID)),
 	}
@@ -53,7 +53,7 @@ func (d *VPCSubnetModel) parseComputedAttributes(
 
 	linodes := make([]VPCSubnetLinodeModel, len(subnet.Linodes))
 	for i, v := range subnet.Linodes {
-		linodes[i] = parseLinode(v)
+		linodes[i] = ParseLinode(v)
 	}
 
 	d.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)

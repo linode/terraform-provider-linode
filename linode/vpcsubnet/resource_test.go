@@ -90,6 +90,10 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
+
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.interfaces.0.id"),
+					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.0.active", "false"),
 				),
 			},
 			{
@@ -119,6 +123,10 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "created"),
+
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.interfaces.0.id"),
+					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.0.active", "false"),
 				),
 			},
 			{
@@ -128,6 +136,10 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", subnetLabel)),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
+
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.interfaces.0.id"),
+					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.0.active", "false"),
 				),
 			},
 			{

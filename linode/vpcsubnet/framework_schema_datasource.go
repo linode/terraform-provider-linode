@@ -23,7 +23,6 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The IPv4 range of this subnet in CIDR format.",
 			Computed:    true,
 		},
-		"linodes": subnetLinodesAttribute,
 		"created": schema.StringAttribute{
 			Description: "The date and time when the VPC Subnet was created.",
 			Computed:    true,
@@ -34,5 +33,8 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
 		},
+	},
+	Blocks: map[string]schema.Block{
+		"linodes": LinodesSchema,
 	},
 }

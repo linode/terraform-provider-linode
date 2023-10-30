@@ -2,6 +2,7 @@ package vpcsubnets
 
 import (
 	"context"
+	"github.com/linode/terraform-provider-linode/linode/vpcsubnet"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,12 +21,12 @@ type VPCSubnetFilterModel struct {
 }
 
 type VPCSubnetModel struct {
-	ID      types.Int64       `tfsdk:"id"`
-	Label   types.String      `tfsdk:"label"`
-	IPv4    types.String      `tfsdk:"ipv4"`
-	Linodes types.List        `tfsdk:"linodes"`
-	Created timetypes.RFC3339 `tfsdk:"created"`
-	Updated timetypes.RFC3339 `tfsdk:"updated"`
+	ID      types.Int64                      `tfsdk:"id"`
+	Label   types.String                     `tfsdk:"label"`
+	IPv4    types.String                     `tfsdk:"ipv4"`
+	Linodes []vpcsubnet.VPCSubnetLinodeModel `tfsdk:"linodes"`
+	Created timetypes.RFC3339                `tfsdk:"created"`
+	Updated timetypes.RFC3339                `tfsdk:"updated"`
 }
 
 func (model *VPCSubnetFilterModel) parseVPCSubnets(
@@ -38,9 +39,9 @@ func (model *VPCSubnetFilterModel) parseVPCSubnets(
 		s.Label = types.StringValue(subnet.Label)
 		s.IPv4 = types.StringValue(subnet.IPv4)
 
-		linodes, diags := types.ListValueFrom(ctx, types.Int64Type, subnet.Linodes)
-		if diags.HasError() {
-			return s, diags
+		linodes := make([]vpcsubnet.VPCSubnetLinodeModel, len(subnet.Linodes))
+		for i, v := range subnet.Linodes {
+			linodes[i] = vpcsubnet.ParseLinode(v)
 		}
 		s.Linodes = linodes
 
