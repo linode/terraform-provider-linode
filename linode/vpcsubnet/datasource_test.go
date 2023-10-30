@@ -22,7 +22,7 @@ func TestAccDataSourceVPCSubnet_basic(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, vpcID, subnetLabel, "10.0.0.0/24"),
+				Config: tmpl.DataBasic(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "label"),
 					resource.TestCheckResourceAttrSet(resourceName, "ipv4"),

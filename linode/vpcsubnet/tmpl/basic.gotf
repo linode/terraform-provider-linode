@@ -1,26 +1,14 @@
 {{ define "vpc_subnet_basic" }}
 
-resource "linode_vpc_subnet" "foobar" {
-    vpc_id = "{{.VPCId}}"
-    label = "{{.Label}}"
-    ipv4 = "{{.IPv4}}"
-}
-
-# Create a test instance to test the `linodes` field
-resource "linode_instance" "foobar" {
+resource "linode_vpc" "foobar" {
     label = "{{.Label}}"
     region = "{{.Region}}"
-    type = "g6-nanode-1"
 }
 
-resource "linode_instance_config" "foobar" {
-  linode_id = linode_instance.foobar.id
-  label = "test-config"
-
-  interface {
-    purpose = "vpc"
-    subnet_id = linode_vpc_subnet.foobar.id
-  }
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}"
+    ipv4 = "{{.IPv4}}"
 }
 
 {{ end }}

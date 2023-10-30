@@ -20,13 +20,13 @@ type VPCSubnetLinodeModel struct {
 }
 
 type VPCSubnetModel struct {
-	ID      types.Int64       `tfsdk:"id"`
-	VPCId   types.Int64       `tfsdk:"vpc_id"`
-	Label   types.String      `tfsdk:"label"`
-	IPv4    types.String      `tfsdk:"ipv4"`
-	Linodes types.List        `tfsdk:"linodes"`
-	Created timetypes.RFC3339 `tfsdk:"created"`
-	Updated timetypes.RFC3339 `tfsdk:"updated"`
+	ID      types.Int64            `tfsdk:"id"`
+	VPCId   types.Int64            `tfsdk:"vpc_id"`
+	Label   types.String           `tfsdk:"label"`
+	IPv4    types.String           `tfsdk:"ipv4"`
+	Linodes []VPCSubnetLinodeModel `tfsdk:"linodes"`
+	Created timetypes.RFC3339      `tfsdk:"created"`
+	Updated timetypes.RFC3339      `tfsdk:"updated"`
 }
 
 func ParseLinode(linode linodego.VPCSubnetLinode) VPCSubnetLinodeModel {
@@ -55,6 +55,7 @@ func (d *VPCSubnetModel) parseComputedAttributes(
 	for i, v := range subnet.Linodes {
 		linodes[i] = ParseLinode(v)
 	}
+	d.Linodes = linodes
 
 	d.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
 	d.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)
