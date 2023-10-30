@@ -371,8 +371,9 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
 					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.249"),
+					resource.TestCheckResourceAttr(resName, "interface.1.active", "false"),
 
-					resource.TestCheckNoResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1"),
+					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.#", "0"),
 				),
 			},
 			{

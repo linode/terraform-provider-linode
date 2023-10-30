@@ -283,6 +283,11 @@ var interfaceSchema = map[string]*schema.Schema{
 		Optional: true,
 		Default:  false,
 	},
+	"active": {
+		Type:        schema.TypeBool,
+		Description: "Whether this interface is currently booted and active.",
+		Computed:    true,
+	},
 	"ipv4": {
 		Type: schema.TypeList,
 		Description: "The IPv4 configuration of the VPC interface." +
