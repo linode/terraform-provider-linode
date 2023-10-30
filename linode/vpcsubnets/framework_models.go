@@ -21,12 +21,12 @@ type VPCSubnetFilterModel struct {
 }
 
 type VPCSubnetModel struct {
-	ID      types.Int64                      `tfsdk:"id"`
-	Label   types.String                     `tfsdk:"label"`
-	IPv4    types.String                     `tfsdk:"ipv4"`
-	Linodes []vpcsubnet.VPCSubnetLinodeModel `tfsdk:"linodes"`
-	Created timetypes.RFC3339                `tfsdk:"created"`
-	Updated timetypes.RFC3339                `tfsdk:"updated"`
+	ID      types.Int64       `tfsdk:"id"`
+	Label   types.String      `tfsdk:"label"`
+	IPv4    types.String      `tfsdk:"ipv4"`
+	Linodes types.List        `tfsdk:"linodes"`
+	Created timetypes.RFC3339 `tfsdk:"created"`
+	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
 func (model *VPCSubnetFilterModel) parseVPCSubnets(
@@ -39,11 +39,22 @@ func (model *VPCSubnetFilterModel) parseVPCSubnets(
 		s.Label = types.StringValue(subnet.Label)
 		s.IPv4 = types.StringValue(subnet.IPv4)
 
-		linodes := make([]vpcsubnet.VPCSubnetLinodeModel, len(subnet.Linodes))
-		for i, v := range subnet.Linodes {
-			linodes[i] = vpcsubnet.ParseLinode(v)
+		linodes := make([]types.Object, len(subnet.Linodes))
+
+		for i, inst := range subnet.Linodes {
+			linodeObj, d := vpcsubnet.ParseLinode(ctx, inst)
+			if d.HasError() {
+				return s, d
+			}
+
+			linodes[i] = *linodeObj
 		}
-		s.Linodes = linodes
+
+		linodesList, d := types.ListValueFrom(ctx, vpcsubnet.LinodeObjectType, linodes)
+		if d.HasError() {
+			return s, d
+		}
+		s.Linodes = linodesList
 
 		s.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
 		s.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)

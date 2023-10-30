@@ -33,8 +33,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
 		},
-	},
-	Blocks: map[string]schema.Block{
+
 		"linodes": LinodesSchema,
 	},
 }

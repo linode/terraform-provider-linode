@@ -2,6 +2,7 @@ package vpcsubnet
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -9,40 +10,49 @@ import (
 	"github.com/linode/linodego"
 )
 
-type VPCSubnetInterfaceModel struct {
-	ID     types.Int64 `tfsdk:"id"`
-	Active types.Bool  `tfsdk:"active"`
-}
-
-type VPCSubnetLinodeModel struct {
-	ID         types.Int64               `tfsdk:"id"`
-	Interfaces []VPCSubnetInterfaceModel `tfsdk:"interfaces"`
-}
-
 type VPCSubnetModel struct {
-	ID      types.Int64            `tfsdk:"id"`
-	VPCId   types.Int64            `tfsdk:"vpc_id"`
-	Label   types.String           `tfsdk:"label"`
-	IPv4    types.String           `tfsdk:"ipv4"`
-	Linodes []VPCSubnetLinodeModel `tfsdk:"linodes"`
-	Created timetypes.RFC3339      `tfsdk:"created"`
-	Updated timetypes.RFC3339      `tfsdk:"updated"`
+	ID      types.Int64       `tfsdk:"id"`
+	VPCId   types.Int64       `tfsdk:"vpc_id"`
+	Label   types.String      `tfsdk:"label"`
+	IPv4    types.String      `tfsdk:"ipv4"`
+	Linodes types.List        `tfsdk:"linodes"`
+	Created timetypes.RFC3339 `tfsdk:"created"`
+	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-func ParseLinode(linode linodego.VPCSubnetLinode) VPCSubnetLinodeModel {
-	result := VPCSubnetLinodeModel{
-		ID: types.Int64Value(int64(linode.ID)),
+func parseLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
+	return types.ObjectValue(LinodeInterfaceObjectType.AttrTypes, map[string]attr.Value{
+		"id":     types.Int64Value(int64(iface.ID)),
+		"active": types.BoolValue(iface.Active),
+	})
+
+}
+
+func ParseLinode(ctx context.Context, linode linodego.VPCSubnetLinode) (*types.Object, diag.Diagnostics) {
+	result := map[string]attr.Value{
+		"id": types.Int64Value(int64(linode.ID)),
 	}
 
-	result.Interfaces = make([]VPCSubnetInterfaceModel, len(linode.Interfaces))
-	for i, v := range linode.Interfaces {
-		result.Interfaces[i] = VPCSubnetInterfaceModel{
-			ID:     types.Int64Value(int64(v.ID)),
-			Active: types.BoolValue(v.Active),
+	ifaces := make([]types.Object, len(linode.Interfaces))
+
+	for i, iface := range linode.Interfaces {
+		ifaceObj, d := parseLinodeInterface(iface)
+		if d.HasError() {
+			return nil, d
 		}
+
+		ifaces[i] = ifaceObj
 	}
 
-	return result
+	ifacesList, d := types.ListValueFrom(ctx, LinodeInterfaceObjectType, ifaces)
+	if d.HasError() {
+		return nil, d
+	}
+
+	result["interfaces"] = ifacesList
+
+	resultObject, d := types.ObjectValue(LinodeObjectType.AttrTypes, result)
+	return &resultObject, d
 }
 
 func (d *VPCSubnetModel) parseComputedAttributes(
@@ -51,11 +61,22 @@ func (d *VPCSubnetModel) parseComputedAttributes(
 ) diag.Diagnostics {
 	d.ID = types.Int64Value(int64(subnet.ID))
 
-	linodes := make([]VPCSubnetLinodeModel, len(subnet.Linodes))
-	for i, v := range subnet.Linodes {
-		linodes[i] = ParseLinode(v)
+	linodes := make([]types.Object, len(subnet.Linodes))
+
+	for i, inst := range subnet.Linodes {
+		linodeObj, d := ParseLinode(ctx, inst)
+		if d.HasError() {
+			return d
+		}
+
+		linodes[i] = *linodeObj
 	}
-	d.Linodes = linodes
+
+	linodesList, dg := types.ListValueFrom(ctx, LinodeObjectType, linodes)
+	if dg.HasError() {
+		return dg
+	}
+	d.Linodes = linodesList
 
 	d.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
 	d.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)
