@@ -13,6 +13,7 @@ resource "linode_vpc_subnet" "foobar" {
 }
 
 data "linode_vpc_subnets" "foobar" {
+    depends_on = [linode_instance_config.foobar]
     vpc_id = linode_vpc_subnet.foobar.vpc_id
 }
 
