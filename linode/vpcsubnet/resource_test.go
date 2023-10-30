@@ -19,9 +19,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/vpcsubnet/tmpl"
 )
 
-var (
-	testRegion string
-)
+var testRegion string
 
 func init() {
 	r, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})

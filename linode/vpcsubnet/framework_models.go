@@ -2,9 +2,9 @@ package vpcsubnet
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -25,7 +25,6 @@ func parseLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object
 		"id":     types.Int64Value(int64(iface.ID)),
 		"active": types.BoolValue(iface.Active),
 	})
-
 }
 
 func ParseLinode(ctx context.Context, linode linodego.VPCSubnetLinode) (*types.Object, diag.Diagnostics) {
