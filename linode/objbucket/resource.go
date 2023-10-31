@@ -74,7 +74,7 @@ func readResource(
 	// Functionality requiring direct S3 API access
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
-	endpoint := strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label))
+	endpoint := helper.ComputeS3EndpointFromBucket(*bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
 	_, lifecyclePresent := d.GetOk("lifecycle_rule")
@@ -102,7 +102,6 @@ func readResource(
 	d.Set("cluster", bucket.Cluster)
 	d.Set("label", bucket.Label)
 	d.Set("hostname", bucket.Hostname)
-	d.Set("endpoint", strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label)))
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
 	d.Set("endpoint", endpoint)
@@ -132,7 +131,7 @@ func createResource(
 		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
-	d.Set("endpoint", strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label)))
+	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(*bucket))
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 
 	return updateResource(ctx, d, meta)

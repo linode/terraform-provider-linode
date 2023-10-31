@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/linodego"
 )
 
 const (
@@ -57,7 +58,11 @@ func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interfa
 		return "", fmt.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
 	}
 
-	return strings.TrimPrefix(b.Hostname, fmt.Sprintf("%s.", bucket)), nil
+	return ComputeS3EndpointFromBucket(*b), nil
+}
+
+func ComputeS3EndpointFromBucket(bucket linodego.ObjectStorageBucket) string {
+	return strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label))
 }
 
 func BuildObjectStorageObjectID(d *schema.ResourceData) string {
