@@ -40,7 +40,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("region", ip.Region)
 	d.Set("subnet_mask", ip.SubnetMask)
 	d.Set("type", ip.Type)
-	d.Set("vpc_nat_1_1", flattenVPCNAT1To1(ip.VPCNAT1To1))
+	d.Set("vpc_nat_1_1", []map[string]any{flattenVPCNAT1To1(ip.VPCNAT1To1)})
 	return nil
 }
 
