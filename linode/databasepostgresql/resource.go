@@ -41,12 +41,12 @@ func Resource() *schema.Resource {
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode PostgreSQL database ID %s as int: %s", d.Id(), err)
 	}
 
-	db, err := client.GetPostgresDatabase(ctx, int(id))
+	db, err := client.GetPostgresDatabase(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing PostgreSQL database ID %q from state because it no longer exists", d.Id())
@@ -57,12 +57,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to find the specified postgresql database: %s", err)
 	}
 
-	cert, err := client.GetPostgresDatabaseSSL(ctx, int(id))
+	cert, err := client.GetPostgresDatabaseSSL(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get cert for the specified postgresql database: %s", err)
 	}
 
-	creds, err := client.GetPostgresDatabaseCredentials(ctx, int(id))
+	creds, err := client.GetPostgresDatabaseCredentials(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get credentials for the specified PostgreSQL database: %s", err)
 	}
@@ -125,9 +125,17 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to wait for mysql database creation event: %s", err)
 	}
 
+	timeoutSeconds, err := helper.SafeFloat64ToInt(d.Timeout(schema.TimeoutCreate).Seconds())
+	if err != nil {
+		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+	}
 	err = client.WaitForDatabaseStatus(
-		ctx, db.ID, linodego.DatabaseEngineTypePostgres,
-		linodego.DatabaseStatusActive, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+		ctx,
+		db.ID,
+		linodego.DatabaseEngineTypePostgres,
+		linodego.DatabaseStatusActive,
+		timeoutSeconds,
+	)
 	if err != nil {
 		return diag.Errorf("failed to wait for database active: %s", err)
 	}
@@ -146,9 +154,18 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if err != nil {
 			return diag.Errorf("failed to update postgresql database maintenance window: %s", err)
 		}
-
-		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
-			linodego.DatabaseEngineTypePostgres, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		timeoutSeconds, err := helper.SafeFloat64ToInt(d.Timeout(schema.TimeoutUpdate).Seconds())
+		if err != nil {
+			return diag.Errorf("failed to convert float64 update timeout to int: %s", err)
+		}
+		err = helper.WaitForDatabaseUpdated(
+			ctx,
+			client,
+			db.ID,
+			linodego.DatabaseEngineTypePostgres,
+			updatedDB.Created,
+			timeoutSeconds,
+		)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -160,7 +177,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode PostgreSQL database ID %s as int: %s", d.Id(), err)
 	}
@@ -198,13 +215,19 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if shouldUpdate {
-		updatedDB, err := client.UpdatePostgresDatabase(ctx, int(id), updateOpts)
+		updatedDB, err := client.UpdatePostgresDatabase(ctx, id, updateOpts)
 		if err != nil {
 			return diag.Errorf("failed to update postgresql database: %s", err)
 		}
-
-		err = helper.WaitForDatabaseUpdated(ctx, client, int(id),
-			linodego.DatabaseEngineTypePostgres, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		timeoutSeconds, err := helper.SafeFloat64ToInt(d.Timeout(schema.TimeoutUpdate).Seconds())
+		if err != nil {
+			return diag.Errorf(
+				"failed to convert float64 update timeout to int: %s",
+				err,
+			)
+		}
+		err = helper.WaitForDatabaseUpdated(ctx, client, id,
+			linodego.DatabaseEngineTypePostgres, updatedDB.Created, timeoutSeconds)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -215,14 +238,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode PostgreSQL database ID %s as int: %s", d.Id(), err)
 	}
 
 	// We should retry on intermittent deletion errors
 	return diag.FromErr(retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
-		err := client.DeletePostgresDatabase(ctx, int(id))
+		err := client.DeletePostgresDatabase(ctx, id)
 		if err != nil {
 			if lerr, ok := err.(*linodego.Error); ok &&
 				lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to delete instance") {
