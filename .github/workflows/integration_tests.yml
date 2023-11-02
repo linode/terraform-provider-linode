@@ -50,6 +50,7 @@ jobs:
 
       - name: Add additional information to XML report
         run: |
+          ls -ltrh
           filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$') 
           python scripts/add_to_xml_test_report.py \
           --branch_name "${GITHUB_REF#refs/*/}" \
