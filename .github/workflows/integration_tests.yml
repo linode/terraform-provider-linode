@@ -57,7 +57,7 @@ jobs:
           if [ -f "$filename" ]; then
             go_junit_report_dir=$(go env GOPATH)/bin
             export PATH="$PATH:$go_junit_report_dir"
-            xml_filename=$(echo "$filename" | sed 's/\.json$/.xml/')
+            xml_filename=$(echo "$filename" | sed 's/\.log$/.xml/')
             go-junit-report -in "$filename" -iocopy -out "$xml_filename"
             echo "Conversion from JSON to XML completed successfully."
           else
@@ -69,7 +69,6 @@ jobs:
 
       - name: Add additional information to XML report
         run: |
-          ls -ltrh
           filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$') 
           python scripts/add_to_xml_test_report.py \
           --branch_name "${{ env.RELEASE_VERSION }}" \
