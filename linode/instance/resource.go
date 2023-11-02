@@ -43,12 +43,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	tflog.Debug(ctx, "Read linode_instance")
 
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
 	}
 
-	instance, err := client.GetInstance(ctx, int(id))
+	instance, err := client.GetInstance(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			tflog.Warn(ctx, "removing Linode Instance ID %q from state because it no longer exists")
@@ -59,7 +59,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error finding the specified Linode instance: %s", err)
 	}
 
-	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, int(id))
+	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, id)
 	if err != nil {
 		return diag.Errorf("Error getting the IPs for Linode instance %s: %s", d.Id(), err)
 	}
@@ -111,7 +111,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
-	instanceDisks, err := client.ListInstanceDisks(ctx, int(id), nil)
+	instanceDisks, err := client.ListInstanceDisks(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("Error getting the disks for the Linode instance %d: %s", id, err)
 	}
@@ -120,7 +120,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("disk", disks)
 	d.Set("swap_size", swapSize)
 
-	instanceConfigs, err := client.ListInstanceConfigs(ctx, int(id), nil)
+	instanceConfigs, err := client.ListInstanceConfigs(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("Error getting the config for Linode instance %d (%s): %s", instance.ID, instance.Label, err)
 	}
@@ -518,7 +518,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	tflog.Debug(ctx, "Update linode_instance")
 
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
 	}
@@ -527,7 +527,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to validate: %v", err)
 	}
 
-	instance, err := client.GetInstance(ctx, int(id))
+	instance, err := client.GetInstance(ctx, id)
 	if err != nil {
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
@@ -772,19 +772,19 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	tflog.Debug(ctx, "Delete linode_instance")
 
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int", d.Id())
 	}
 
-	p, err := client.NewEventPoller(ctx, int(id), linodego.EntityLinode, linodego.ActionLinodeDelete)
+	p, err := client.NewEventPoller(ctx, id, linodego.EntityLinode, linodego.ActionLinodeDelete)
 	if err != nil {
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
 
 	tflog.Debug(ctx, "Deleting instance")
 
-	err = client.DeleteInstance(ctx, int(id))
+	err = client.DeleteInstance(ctx, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode instance %d: %s", id, err)
 	}
