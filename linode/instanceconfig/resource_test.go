@@ -351,7 +351,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPCInterface(t, instanceName, "us-east"),
+				Config: tmpl.VPCInterface(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
@@ -365,7 +365,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.VPCInterfaceUpdates(t, instanceName, "us-east"),
+				Config: tmpl.VPCInterfaceUpdates(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
