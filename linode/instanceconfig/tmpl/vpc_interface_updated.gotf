@@ -32,4 +32,9 @@ resource "linode_instance_config" "foobar" {
   root_device = "/dev/sda"
 }
 
+data "linode_instance_networking" "foobar" {
+  depends_on = [linode_instance_config.foobar]
+  linode_id = linode_instance.foobar.id
+}
+
 {{ end }}

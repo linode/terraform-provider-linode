@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -19,17 +20,62 @@ type VPCSubnetModel struct {
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
+func parseLinodeInterface(iface linodego.VPCSubnetLinodeInterface) (types.Object, diag.Diagnostics) {
+	return types.ObjectValue(LinodeInterfaceObjectType.AttrTypes, map[string]attr.Value{
+		"id":     types.Int64Value(int64(iface.ID)),
+		"active": types.BoolValue(iface.Active),
+	})
+}
+
+func ParseLinode(ctx context.Context, linode linodego.VPCSubnetLinode) (*types.Object, diag.Diagnostics) {
+	result := map[string]attr.Value{
+		"id": types.Int64Value(int64(linode.ID)),
+	}
+
+	ifaces := make([]types.Object, len(linode.Interfaces))
+
+	for i, iface := range linode.Interfaces {
+		ifaceObj, d := parseLinodeInterface(iface)
+		if d.HasError() {
+			return nil, d
+		}
+
+		ifaces[i] = ifaceObj
+	}
+
+	ifacesList, d := types.ListValueFrom(ctx, LinodeInterfaceObjectType, ifaces)
+	if d.HasError() {
+		return nil, d
+	}
+
+	result["interfaces"] = ifacesList
+
+	resultObject, d := types.ObjectValue(LinodeObjectType.AttrTypes, result)
+	return &resultObject, d
+}
+
 func (d *VPCSubnetModel) parseComputedAttributes(
 	ctx context.Context,
 	subnet *linodego.VPCSubnet,
 ) diag.Diagnostics {
 	d.ID = types.Int64Value(int64(subnet.ID))
 
-	linodes, diag := types.ListValueFrom(ctx, types.Int64Type, subnet.Linodes)
-	if diag != nil {
-		return diag
+	linodes := make([]types.Object, len(subnet.Linodes))
+
+	for i, inst := range subnet.Linodes {
+		linodeObj, d := ParseLinode(ctx, inst)
+		if d.HasError() {
+			return d
+		}
+
+		linodes[i] = *linodeObj
 	}
-	d.Linodes = linodes
+
+	linodesList, dg := types.ListValueFrom(ctx, LinodeObjectType, linodes)
+	if dg.HasError() {
+		return dg
+	}
+	d.Linodes = linodesList
 
 	d.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
 	d.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)

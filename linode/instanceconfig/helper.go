@@ -106,6 +106,7 @@ func flattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[stri
 			"vpc_id":       iface.VPCID,
 			"subnet_id":    iface.SubnetID,
 			"primary":      iface.Primary,
+			"active":       iface.Active,
 			"ipv4":         flattenInterfaceIPv4(iface.IPv4),
 		}
 	}

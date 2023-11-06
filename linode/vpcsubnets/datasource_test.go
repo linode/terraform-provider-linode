@@ -36,6 +36,10 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.updated"),
+
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.linodes.0.id"),
+					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.linodes.0.interfaces.0.id"),
+					resource.TestCheckResourceAttr(resourceName, "vpc_subnets.0.linodes.0.interfaces.0.active", "false"),
 				),
 			},
 		},

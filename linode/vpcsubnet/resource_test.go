@@ -19,58 +19,15 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/vpcsubnet/tmpl"
 )
 
-var vpcID int
+var testRegion string
 
 func init() {
-	resource.AddTestSweepers("linode_vpc_subnet", &resource.Sweeper{
-		Name: "linode_vpc_subnet",
-		F:    sweep,
-	})
-
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		log.Fatal(fmt.Errorf("Error getting client: %s", err))
-	}
-
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
-
+	r, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
 
-	vpc, err := client.CreateVPC(context.Background(), linodego.VPCCreateOptions{
-		Label:  acctest.RandomWithPrefix("tf-test"),
-		Region: testRegion,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	vpcID = vpc.ID
-}
-
-func sweep(prefix string) error {
-	client, err := acceptance.GetTestClient()
-	if err != nil {
-		log.Fatal(fmt.Errorf("Error getting client: %s", err))
-	}
-
-	listOpts := acceptance.SweeperListOptions(prefix, "label")
-	subnets, err := client.ListVPCSubnet(context.Background(), vpcID, listOpts)
-	if err != nil {
-		return fmt.Errorf("Error getting VPC subnets: %s", err)
-	}
-	for _, subnet := range subnets {
-		if !acceptance.ShouldSweep(prefix, subnet.Label) {
-			continue
-		}
-		err := client.DeleteVPCSubnet(context.Background(), vpcID, subnet.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying %s during sweep: %s", subnet.Label, err)
-		}
-	}
-
-	return nil
+	testRegion = r
 }
 
 func TestAccResourceVPCSubnet_basic(t *testing.T) {
@@ -85,7 +42,7 @@ func TestAccResourceVPCSubnet_basic(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, vpcID, subnetLabel, "172.16.0.0/24"),
+				Config: tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -114,7 +71,7 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, vpcID, subnetLabel, "192.168.0.0/26"),
+				Config: tmpl.Basic(t, subnetLabel, "192.168.0.0/26", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -123,7 +80,7 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, vpcID, subnetLabel, "192.168.0.0/26"),
+				Config: tmpl.Updates(t, subnetLabel, "192.168.0.0/26", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", subnetLabel)),
@@ -144,7 +101,7 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 	t.Parallel()
 
-	subnetLabel := acctest.RandomWithPrefix("tf-test")
+	subnetLabel := acctest.RandomWithPrefix("tf-test") + "__"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -152,7 +109,7 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.Basic(t, vpcID, subnetLabel, "172.16.0.4/24"),
+				Config:      tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
 				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
 			},
 		},
@@ -172,7 +129,7 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, vpcID, subnetLabel, "192.168.0.4/26"),
+				Config: tmpl.Basic(t, subnetLabel, "192.168.0.0/26", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
 					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
@@ -181,8 +138,49 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 				),
 			},
 			{
-				Config:      tmpl.Updates(t, vpcID, invalidLabel, "192.168.0.4/26"),
+				Config:      tmpl.Updates(t, invalidLabel, "192.168.0.0/26", testRegion),
 				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+			},
+		},
+	})
+}
+
+func TestAccResourceVPCSubnet_attached(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_vpc_subnet.foobar"
+	subnetLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkVPCSubnetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkVPCSubnetExists,
+					resource.TestCheckResourceAttr(resName, "label", subnetLabel),
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+				),
+			},
+			{
+				// Refresh the configuration so the `linodes` field is updated
+				Config: tmpl.Attached(t, subnetLabel, "172.16.0.0/24", testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "linodes.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),
+					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "linodes.0.interfaces.0.id"),
+					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.0.active", "false"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
 			},
 		},
 	})
@@ -199,6 +197,11 @@ func checkVPCSubnetExists(s *terraform.State) error {
 		id, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
+		}
+
+		vpcID, err := strconv.Atoi(rs.Primary.Attributes["vpc_id"])
+		if err != nil {
+			return fmt.Errorf("failed to parse vpc_id: %w", err)
 		}
 
 		_, err = client.GetVPCSubnet(context.Background(), vpcID, id)
@@ -223,6 +226,11 @@ func checkVPCSubnetDestroy(s *terraform.State) error {
 		}
 		if id == 0 {
 			return fmt.Errorf("Would have considered %v as %d", rs.Primary.ID, id)
+		}
+
+		vpcID, err := strconv.Atoi(rs.Primary.Attributes["vpc_id"])
+		if err != nil {
+			return fmt.Errorf("failed to parse vpc_id: %w", err)
 		}
 
 		_, err = client.GetVPCSubnet(context.Background(), vpcID, id)

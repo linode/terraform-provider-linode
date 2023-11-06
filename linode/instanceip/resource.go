@@ -40,6 +40,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("region", ip.Region)
 	d.Set("subnet_mask", ip.SubnetMask)
 	d.Set("type", ip.Type)
+	d.Set("vpc_nat_1_1", []map[string]any{flattenVPCNAT1To1(ip.VPCNAT1To1)})
 	return nil
 }
 
@@ -141,4 +142,16 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 		"linode_id": d.Get("linode_id").(int),
 		"id":        d.Id(),
 	})
+}
+
+func flattenVPCNAT1To1(data *linodego.InstanceIPNAT1To1) map[string]any {
+	if data == nil {
+		return nil
+	}
+
+	return map[string]any{
+		"address":   data.Address,
+		"vpc_id":    data.VPCID,
+		"subnet_id": data.SubnetID,
+	}
 }

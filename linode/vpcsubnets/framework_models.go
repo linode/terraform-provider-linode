@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/linode/vpcsubnet"
 )
 
 // VPCSubnetFilterModel describes the Terraform resource data model to match the
@@ -38,11 +39,22 @@ func (model *VPCSubnetFilterModel) parseVPCSubnets(
 		s.Label = types.StringValue(subnet.Label)
 		s.IPv4 = types.StringValue(subnet.IPv4)
 
-		linodes, diags := types.ListValueFrom(ctx, types.Int64Type, subnet.Linodes)
-		if diags.HasError() {
-			return s, diags
+		linodes := make([]types.Object, len(subnet.Linodes))
+
+		for i, inst := range subnet.Linodes {
+			linodeObj, d := vpcsubnet.ParseLinode(ctx, inst)
+			if d.HasError() {
+				return s, d
+			}
+
+			linodes[i] = *linodeObj
 		}
-		s.Linodes = linodes
+
+		linodesList, d := types.ListValueFrom(ctx, vpcsubnet.LinodeObjectType, linodes)
+		if d.HasError() {
+			return s, d
+		}
+		s.Linodes = linodesList
 
 		s.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
 		s.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)

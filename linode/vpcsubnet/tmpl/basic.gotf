@@ -1,7 +1,12 @@
 {{ define "vpc_subnet_basic" }}
 
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+}
+
 resource "linode_vpc_subnet" "foobar" {
-    vpc_id = "{{.VPCId}}"
+    vpc_id = linode_vpc.foobar.id
     label = "{{.Label}}"
     ipv4 = "{{.IPv4}}"
 }

@@ -22,13 +22,18 @@ func TestAccDataSourceVPCSubnet_basic(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, vpcID, subnetLabel, "10.0.0.0/24"),
+				Config: tmpl.DataBasic(t, subnetLabel, "10.0.0.0/24", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "label"),
 					resource.TestCheckResourceAttrSet(resourceName, "ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
-					resource.TestCheckResourceAttr(resourceName, "linodes.#", "0"),
+
+					resource.TestCheckResourceAttr(resourceName, "linodes.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "linodes.0.id"),
+					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "linodes.0.interfaces.0.id"),
+					resource.TestCheckResourceAttr(resourceName, "linodes.0.interfaces.0.active", "false"),
 				),
 			},
 		},

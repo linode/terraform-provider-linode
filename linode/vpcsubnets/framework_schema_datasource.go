@@ -3,8 +3,8 @@ package vpcsubnets
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/linode/vpcsubnet"
 )
 
 var filterConfig = frameworkfilter.Config{
@@ -42,11 +42,6 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "The IPv4 range of this subnet in CIDR format.",
 						Computed:    true,
 					},
-					"linodes": schema.ListAttribute{
-						ElementType: types.Int64Type,
-						Description: "A list of Linode IDs that added to this subnet.",
-						Computed:    true,
-					},
 					"created": schema.StringAttribute{
 						Description: "The date and time when the VPC Subnet was created.",
 						Computed:    true,
@@ -57,6 +52,8 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 						CustomType:  timetypes.RFC3339Type{},
 					},
+
+					"linodes": vpcsubnet.LinodesSchema,
 				},
 			},
 		},
