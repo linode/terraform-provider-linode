@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -217,15 +216,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(updatedIds))
-
 	for _, poolID := range updatedIds {
-		go waitForNodePoolReady(ctx, &client, make(chan<- error),
-			&wg, providerMeta.Config.LKENodeReadyPollMilliseconds, id, poolID)
+		if err := waitForNodePoolReady(ctx, client, providerMeta.Config.LKENodeReadyPollMilliseconds, id, poolID); err != nil {
+			return diag.Errorf("failed to wait for LKE Cluster %d pool %d ready: %s", id, poolID, err)
+		}
 	}
-
-	wg.Wait()
 
 	return nil
 }

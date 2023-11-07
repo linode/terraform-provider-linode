@@ -2,13 +2,12 @@ package lke
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"sort"
-	"sync"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -179,165 +178,164 @@ func ReconcileLKENodePoolSpecs(
 }
 
 func waitForNodePoolReady(
-	ctx context.Context, client *linodego.Client, errCh chan<- error, wg *sync.WaitGroup, pollMs, clusterID, poolID int,
-) {
+	ctx context.Context, client linodego.Client, pollMs, clusterID, poolID int,
+) error {
 	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
 
-main:
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("[ERROR] timed out waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
-			return
+			return fmt.Errorf("timed out waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
 
 		case <-eventTicker.C:
 			pool, err := client.GetLKENodePool(ctx, clusterID, poolID)
 			if err != nil {
-				errCh <- fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
+				return fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
 			}
+
+			allNodesReady := true
 
 			for _, instance := range pool.Linodes {
 				if instance.Status == linodego.LKELinodeNotReady {
-					continue main
+					allNodesReady = false
+					tflog.Trace(ctx, "Node detected as unready", map[string]any{
+						"node_id":     instance.ID,
+						"instance_id": instance.InstanceID,
+					})
+					break
 				}
 			}
 
-			log.Printf("[DEBUG] finished waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
-			wg.Done()
-			return
+			if !allNodesReady {
+				continue
+			}
+
+			// We're finished!
+			tflog.Trace(ctx, "All nodes ready!")
+
+			return nil
 		}
 	}
 }
 
-func waitForNodePoolsToStartRecycle(
-	ctx context.Context, client *linodego.Client, pollMs, clusterID int, pools []linodego.LKENodePool,
-) (<-chan int, <-chan error) {
-	clusterInstances := make(map[int]int)
-	poolInstances := make(map[int]map[int]struct{}, len(pools))
-	for _, pool := range pools {
-		poolInstances[pool.ID] = make(map[int]struct{}, len(pool.Linodes))
-		for _, instance := range pool.Linodes {
-			poolInstances[pool.ID][instance.InstanceID] = struct{}{}
-			clusterInstances[instance.InstanceID] = pool.ID
-		}
+func waitForNodesDeleted(ctx context.Context, client linodego.Client, intervalMS int, nodes []linodego.LKENodePoolLinode) error {
+	ticker := time.NewTicker(time.Duration(intervalMS) * time.Millisecond)
+	defer ticker.Stop()
+
+	// Let's track which nodes still haven't been deleted
+	// using a pseudo-set
+	remainingNodes := make(map[int]bool, len(nodes))
+	for _, node := range nodes {
+		remainingNodes[node.InstanceID] = true
 	}
 
-	poolRecyclesCh := make(chan int)
-	errCh := make(chan error)
+	// Filter down to only instance deletion events
+	f := linodego.Filter{
+		OrderBy: "created",
+		Order:   linodego.Descending,
+	}
+	f.AddField(linodego.Eq, "entity.type", linodego.EntityLinode)
+	f.AddField(linodego.Eq, "action", linodego.ActionLinodeDelete)
 
-	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
+	filterBytes, err := f.MarshalJSON()
+	if err != nil {
+		return fmt.Errorf("failed to marshal filter: %w", err)
+	}
 
-	go func() {
-		defer eventTicker.Stop()
-		defer close(poolRecyclesCh)
-		defer close(errCh)
+	listOpts := linodego.ListOptions{
+		Filter:      string(filterBytes),
+		PageOptions: &linodego.PageOptions{Page: 1},
+	}
 
-		lastEventID := 0
+	for {
+		select {
+		case <-ticker.C:
+			events, err := client.ListEvents(ctx, &listOpts)
+			if err != nil {
+				return fmt.Errorf("failed to list events: %w", err)
+			}
 
-		for len(clusterInstances) != 0 {
-			select {
-			case <-ctx.Done():
-				log.Printf("[ERROR] timed out waiting for all original nodes of LKE Cluster (%d) to be deleted (%d remaining)\n",
-					clusterID, len(clusterInstances))
-				return
+			for _, event := range events {
+				instID := 0
 
-			case <-eventTicker.C:
-				filterBytes, _ := json.Marshal(map[string]interface{}{
-					"+order_by":   "created",
-					"+gte":        lastEventID,
-					"entity.type": string(linodego.EntityLinode),
-				})
-
-				events, err := client.ListEvents(ctx, linodego.NewListOptions(1, string(filterBytes)))
-				if err != nil {
-					errCh <- err
-					return
+				// Sometimes go will parse entity.id as float,
+				// we should convert accordingly
+				switch event.Entity.ID.(type) {
+				case int:
+					instID = event.Entity.ID.(int)
+				case float64:
+					instID = int(event.Entity.ID.(float64))
+				case float32:
+					instID = int(event.Entity.ID.(float32))
+				default:
+					// This shouldn't happen, but let's handle it gracefully just in case
+					tflog.Trace(ctx, "Invalid entity.id type detected", map[string]any{
+						"value": event.Entity.ID,
+						"type":  fmt.Sprintf("%T", event.Entity.ID),
+					})
+					continue
 				}
 
-				if len(events) != 0 {
-					lastEventID = events[0].ID
-				}
-
-				for _, event := range events {
-					if event.Action != linodego.ActionLinodeDelete {
-						continue
-					}
-					id := int(event.Entity.ID.(float64))
-					poolID, ok := clusterInstances[id]
-					if !ok {
-						continue
-					}
-
-					delete(clusterInstances, id)
-					delete(poolInstances[poolID], id)
-					log.Printf("[DEBUG] finished waiting for LKE Cluster (%d) Pool (%d) Node (%d) to be deleted\n",
-						clusterID, poolID, id)
-
-					if len(poolInstances[poolID]) == 0 {
-						// all original instances for this pool have been deleted
-						delete(poolInstances, poolID)
-						log.Printf("[DEBUG] finished waiting for all nodes in LKE Cluster (%d) Pool (%d) to be recreated\n",
-							clusterID, poolID)
-						poolRecyclesCh <- poolID
-					}
+				if _, ok := remainingNodes[instID]; ok {
+					delete(remainingNodes, instID)
+					tflog.Trace(ctx, "Node detected as deleted", map[string]any{
+						"instance_id":     instID,
+						"nodes_remaining": len(remainingNodes),
+					})
 				}
 			}
+
+			// All nodes have been deleted
+			if len(remainingNodes) < 1 {
+				return nil
+			}
+		case <-ctx.Done():
+			return fmt.Errorf("failed to wait for node deletion: %w", ctx.Err())
 		}
-	}()
-	return poolRecyclesCh, errCh
+	}
 }
 
 func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, pools []linodego.LKENodePool) error {
 	client := meta.Client
 
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"cluster_id": id,
+		"pools":      pools,
+	})
+
+	tflog.Info(ctx, "Recycling LKE cluster")
+
 	if err := client.RecycleLKEClusterNodes(ctx, id); err != nil {
 		return fmt.Errorf("failed to recycle LKE Cluster (%d): %s", id, err)
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	// Aggregate all nodes to be recycled
+	oldNodes := make([]linodego.LKENodePoolLinode, 0)
+	for _, pool := range pools {
+		oldNodes = append(oldNodes, pool.Linodes...)
+	}
 
-	poolRecyclesCh, errCh := waitForNodePoolsToStartRecycle(
-		ctx, &client, meta.Config.LKEEventPollMilliseconds, id, pools)
+	tflog.Debug(ctx, "Waiting for all nodes to be deleted", map[string]any{
+		"nodes": oldNodes,
+	})
 
-	var wg sync.WaitGroup
-	wg.Add(len(pools))
-	poolsRecycledCh := waitGroupCh(&wg)
+	// Wait for the old nodes to be deleted
+	if err := waitForNodesDeleted(ctx, client, meta.Config.EventPollMilliseconds, oldNodes); err != nil {
+		return fmt.Errorf("failed to wait for old nodes to be recycled: %w", err)
+	}
 
-	readyErrCh := make(chan error)
-	defer close(readyErrCh)
+	tflog.Debug(ctx, "All old nodes detected as deleted, waiting for all node pools to enter ready status")
 
-	go func() {
-		for poolID := range poolRecyclesCh {
-			go waitForNodePoolReady(ctx, &client, readyErrCh, &wg, meta.Config.LKENodeReadyPollMilliseconds, id, poolID)
-		}
-	}()
-
-	for {
-		select {
-		case <-poolsRecycledCh:
-			return nil
-
-		case err := <-errCh:
-			if err != nil {
-				return fmt.Errorf("failed to wait for all LKE Cluster (%d) nodes to start recycle: %w", id, err)
-			}
-
-		case err := <-readyErrCh:
-			if err != nil {
-				return err
-			}
+	// Wait for all node pools to be ready
+	for _, pool := range pools {
+		if err := waitForNodePoolReady(ctx, client, meta.Config.EventPollMilliseconds, id, pool.ID); err != nil {
+			return fmt.Errorf("failed to wait for pool %d ready: %w", pool.ID, err)
 		}
 	}
-}
 
-func waitGroupCh(wg *sync.WaitGroup) <-chan struct{} {
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		done <- struct{}{}
-	}()
-	return done
+	tflog.Debug(ctx, "All node pools have entered ready status; recycle operation completed")
+
+	return nil
 }
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
