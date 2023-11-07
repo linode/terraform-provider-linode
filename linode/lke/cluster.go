@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
@@ -218,7 +217,12 @@ func waitForNodePoolReady(
 	}
 }
 
-func waitForNodesDeleted(ctx context.Context, client linodego.Client, intervalMS int, nodes []linodego.LKENodePoolLinode) error {
+func waitForNodesDeleted(
+	ctx context.Context,
+	client linodego.Client,
+	intervalMS int,
+	nodes []linodego.LKENodePoolLinode,
+) error {
 	ticker := time.NewTicker(time.Duration(intervalMS) * time.Millisecond)
 	defer ticker.Stop()
 
@@ -256,7 +260,7 @@ func waitForNodesDeleted(ctx context.Context, client linodego.Client, intervalMS
 			}
 
 			for _, event := range events {
-				instID := 0
+				var instID int
 
 				// Sometimes go will parse entity.id as float,
 				// we should convert accordingly
