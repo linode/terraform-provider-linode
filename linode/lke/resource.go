@@ -217,7 +217,13 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	for _, poolID := range updatedIds {
-		if err := waitForNodePoolReady(ctx, client, providerMeta.Config.LKENodeReadyPollMilliseconds, id, poolID); err != nil {
+		if err := waitForNodePoolReady(
+			ctx,
+			client,
+			providerMeta.Config.LKENodeReadyPollMilliseconds,
+			id,
+			poolID,
+		); err != nil {
 			return diag.Errorf("failed to wait for LKE Cluster %d pool %d ready: %s", id, poolID, err)
 		}
 	}
