@@ -97,6 +97,6 @@ require (
 )
 
 // TODO: Remove this replacement before merging to dev
-replace github.com/linode/linodego => github.com/linode/linodego v1.24.1-0.20231103153039-045b3cdde28b
+replace github.com/linode/linodego => github.com/linode/linodego v1.24.2-0.20231106212628-a9ac19b31b36
 
 go 1.20
