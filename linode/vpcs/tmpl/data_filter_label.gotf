@@ -1,15 +1,11 @@
 {{ define "vpcs_data_filter_label" }}
 
-resource "linode_vpc" "foo" {
-    label = "{{.Label}}"
-    region = "{{.Region}}"
-}
+{{ template "vpc_basic" . }}
 
 data "linode_vpcs" "foobar" {
     filter {
         name = "label"
-        values = ["tf-test"]
-        match_by = "substring"
+        values = [linode_vpc.foobar.label]
     }
 }
 
