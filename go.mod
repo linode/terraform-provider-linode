@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.12.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
 	github.com/hashicorp/terraform-plugin-testing v1.5.1
-	github.com/linode/linodego v1.24.1
+	github.com/linode/linodego v1.25.0
 	github.com/linode/linodego/k8s v0.0.0-20200831124119-58d5d5bb7947
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.14.0
@@ -75,7 +75,7 @@ require (
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
@@ -95,8 +95,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
-
-// TODO: Remove this replacement before merging to dev
-replace github.com/linode/linodego => github.com/linode/linodego v1.24.2-0.20231106212628-a9ac19b31b36
 
 go 1.20

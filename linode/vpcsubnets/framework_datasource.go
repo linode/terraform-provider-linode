@@ -46,7 +46,7 @@ func (r *DataSource) Read(
 	data.ID = id
 
 	result, d := filterConfig.GetAndFilter(
-		ctx, r.Meta.Client, data.Filters, data.listVPCSubnets,
+		ctx, r.Meta.Client, data.Filters, data.ListVPCSubnetss,
 		// There are no API filterable fields so we don't need to provide
 		// order and order_by.
 		types.StringNull(), types.StringNull())
@@ -63,7 +63,7 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (data *VPCSubnetFilterModel) listVPCSubnets(
+func (data *VPCSubnetFilterModel) ListVPCSubnetss(
 	ctx context.Context,
 	client *linodego.Client,
 	filter string,
@@ -76,7 +76,7 @@ func (data *VPCSubnetFilterModel) listVPCSubnets(
 		}
 	}
 
-	vpcs, err := client.ListVPCSubnet(ctx, vpcId, &linodego.ListOptions{
+	vpcs, err := client.ListVPCSubnets(ctx, vpcId, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {

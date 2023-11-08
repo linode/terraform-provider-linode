@@ -42,7 +42,7 @@ func sweep(prefix string) error {
 	}
 
 	listOpts := acceptance.SweeperListOptions(prefix, "label")
-	vpcs, err := client.ListVPC(context.Background(), listOpts)
+	vpcs, err := client.ListVPCs(context.Background(), listOpts)
 	if err != nil {
 		return fmt.Errorf("Error getting VPCs: %s", err)
 	}

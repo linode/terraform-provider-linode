@@ -44,7 +44,7 @@ func (r *DataSource) Read(
 	data.ID = id
 
 	result, d := filterConfig.GetAndFilter(
-		ctx, r.Meta.Client, data.Filters, listVPCs,
+		ctx, r.Meta.Client, data.Filters, ListVPCss,
 		// There are no API filterable fields so we don't need to provide
 		// order and order_by.
 		types.StringNull(), types.StringNull())
@@ -61,8 +61,8 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listVPCs(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-	vpcs, err := client.ListVPC(ctx, &linodego.ListOptions{
+func ListVPCss(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	vpcs, err := client.ListVPCs(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
