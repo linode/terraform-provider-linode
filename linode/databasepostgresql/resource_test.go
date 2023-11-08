@@ -76,6 +76,9 @@ func sweep(prefix string) error {
 }
 
 func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
+	if os.Getenv("RUN_LONG_TESTS") != "true" {
+		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
+	}
 	t.Parallel()
 
 	resName := "linode_database_postgresql.foobar"
