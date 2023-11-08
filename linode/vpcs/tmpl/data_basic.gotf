@@ -1,5 +1,12 @@
 {{ define "vpcs_data_basic" }}
 
-data "linode_vpcs" "foobar" {}
+{{ template "vpc_basic" . }}
+
+data "linode_vpcs" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_vpc.foobar.id]
+    }
+}
 
 {{ end }}

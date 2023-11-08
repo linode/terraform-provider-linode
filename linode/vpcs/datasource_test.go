@@ -17,13 +17,17 @@ func TestAccDataSourceVPCs_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_vpcs.foobar"
-
+	vpcLabel := acctest.RandomWithPrefix("tf-test")
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	if err != nil {
+		t.Error(fmt.Errorf("failed to get region with VPC capability: %w", err))
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t),
+				Config: tmpl.DataBasic(t, vpcLabel, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpcs.#", 0),
 					resource.TestCheckResourceAttrSet(resourceName, "vpcs.0.label"),

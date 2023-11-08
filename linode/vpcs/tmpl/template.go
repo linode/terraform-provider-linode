@@ -11,9 +11,12 @@ type TemplateData struct {
 	Region string
 }
 
-func DataBasic(t *testing.T) string {
+func DataBasic(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"vpcs_data_basic", nil)
+		"vpcs_data_basic", TemplateData{
+			Label:  label,
+			Region: region,
+		})
 }
 
 func DataFilterLabel(t *testing.T, label, region string) string {
