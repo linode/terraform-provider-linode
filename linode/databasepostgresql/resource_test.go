@@ -76,6 +76,8 @@ func sweep(prefix string) error {
 }
 
 func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
+	t.Parallel()
+	
 	resName := "linode_database_postgresql.foobar"
 	dbName := acctest.RandomWithPrefix("tf_test")
 
