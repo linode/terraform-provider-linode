@@ -44,9 +44,8 @@ def change_xml_report_to_tod_acceptable_version(file_name):
             new_testcase.append(child)
 
     # Save the new XML to a file
-    new_tree = ET.ElementTree(new_testsuites)
     try:
-        new_tree = ET.ElementTree(root)
+        new_tree = ET.ElementTree(new_testsuites)
         new_tree.write(file_name, encoding="UTF-8", xml_declaration=True)
         print("XML content successfully over-written to " + file_name)
 
