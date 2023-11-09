@@ -30,6 +30,10 @@ import (
 const (
 	optInTestsEnvVar         = "ACC_OPT_IN_TESTS"
 	SkipInstanceReadyPollKey = "skip_instance_ready_poll"
+
+	runLongTestsEnvVar  = "RUN_LONG_TEST"
+	skipLongTestMessage = "This test has been marked as a long-running test and is skipped by default." +
+		"If you would like to run this test, please set the RUN_LONG_TEST environment variable to true."
 )
 
 type AttrValidateFunc func(val string) error
@@ -155,6 +159,24 @@ func OptInTest(t *testing.T) {
 
 	if _, ok := optInTests[t.Name()]; !ok {
 		t.Skipf("skipping opt-in test; specify test in environment variable %q to run", optInTestsEnvVar)
+	}
+}
+
+func LongRunningTest(t *testing.T) {
+	t.Helper()
+
+	shouldRunStr := os.Getenv(runLongTestsEnvVar)
+	if len(shouldRunStr) == 0 {
+		t.Skip(skipLongTestMessage)
+	}
+
+	shouldRun, err := strconv.ParseBool(shouldRunStr)
+	if err != nil {
+		t.Fatalf("failed to parse %s as bool: %s", runLongTestsEnvVar, err)
+	}
+
+	if !shouldRun {
+		t.Skip(skipLongTestMessage)
 	}
 }
 
