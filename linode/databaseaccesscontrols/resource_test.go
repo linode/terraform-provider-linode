@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"testing"
 
@@ -54,9 +53,7 @@ func init() {
 }
 
 func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
-	if os.Getenv("RUN_LONG_TESTS") != "true" {
-		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
-	}
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
@@ -93,9 +90,7 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 }
 
 func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
-	if os.Getenv("RUN_LONG_TESTS") != "true" {
-		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
-	}
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"

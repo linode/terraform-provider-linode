@@ -5,7 +5,6 @@ package databasebackups_test
 import (
 	"context"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -44,9 +43,7 @@ func init() {
 }
 
 func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
-	if os.Getenv("RUN_LONG_TESTS") != "true" {
-		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
-	}
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	var db linodego.PostgresDatabase
