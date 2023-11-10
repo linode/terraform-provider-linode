@@ -23,10 +23,10 @@ def change_xml_report_to_tod_acceptable_version(file_name):
     testsuites_element = root
 
     # total
-    total_tests = int(testsuites_element.get('tests'))
-    total_failures = int(testsuites_element.get('failures'))
-    total_errors = int(testsuites_element.get('errors'))
-    total_skipped = int(testsuites_element.get('skipped'))
+    total_tests = int(testsuites_element.get('tests')) if testsuites_element.get('tests') is not None else 0
+    total_failures = int(testsuites_element.get('failures')) if testsuites_element.get('failures') is not None else 0
+    total_errors = int(testsuites_element.get('errors')) if testsuites_element.get('errors') is not None else 0
+    total_skipped = int(testsuites_element.get('skipped')) if testsuites_element.get('skipped') is not None else 0
 
     # Create a new <testsuites> element with aggregated values
     new_testsuites = ET.Element("testsuites")
