@@ -66,9 +66,18 @@ func (r *DataSource) Read(
 		data.parseMySQLBackups(helper.AnySliceToTyped[linodego.MySQLDatabaseBackup](result))
 	} else if data.DatabaseType.ValueString() == "postgresql" {
 		listPostgresSQLBackups := func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-			backups, err := client.ListPostgresDatabaseBackups(ctx, int(data.DatabaseID.ValueInt64()), &linodego.ListOptions{
-				Filter: filter,
-			})
+			databaseID, err := helper.SafeInt64ToInt(data.DatabaseID.ValueInt64())
+			if err != nil {
+				return nil, err
+			}
+
+			backups, err := client.ListPostgresDatabaseBackups(
+				ctx,
+				databaseID,
+				&linodego.ListOptions{
+					Filter: filter,
+				},
+			)
 			if err != nil {
 				return nil, err
 			}

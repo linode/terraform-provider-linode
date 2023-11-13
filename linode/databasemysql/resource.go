@@ -41,12 +41,12 @@ func Resource() *schema.Resource {
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode MySQL database ID %s as int: %s", d.Id(), err)
 	}
 
-	db, err := client.GetMySQLDatabase(ctx, int(id))
+	db, err := client.GetMySQLDatabase(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing MySQL database ID %q from state because it no longer exists", d.Id())
@@ -57,12 +57,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to find the specified mysql database: %s", err)
 	}
 
-	cert, err := client.GetMySQLDatabaseSSL(ctx, int(id))
+	cert, err := client.GetMySQLDatabaseSSL(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get cert for the specified mysql database: %s", err)
 	}
 
-	creds, err := client.GetMySQLDatabaseCredentials(ctx, int(id))
+	creds, err := client.GetMySQLDatabaseCredentials(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get credentials for the specified mysql database: %s", err)
 	}
@@ -123,9 +123,16 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to wait for mysql database creation event: %s", err)
 	}
 
+	timeoutSeconds, err := helper.SafeFloat64ToInt(
+		d.Timeout(schema.TimeoutCreate).Seconds(),
+	)
+	if err != nil {
+		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+	}
+
 	err = client.WaitForDatabaseStatus(
 		ctx, db.ID, linodego.DatabaseEngineTypeMySQL,
-		linodego.DatabaseStatusActive, int(d.Timeout(schema.TimeoutCreate).Seconds()))
+		linodego.DatabaseStatusActive, timeoutSeconds)
 	if err != nil {
 		return diag.Errorf("failed to wait for database active: %s", err)
 	}
@@ -145,8 +152,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to update mysql database maintenance window: %s", err)
 		}
 
+		timeoutSeconds, err := helper.SafeFloat64ToInt(
+			d.Timeout(schema.TimeoutUpdate).Seconds(),
+		)
+		if err != nil {
+			return diag.Errorf("failed to convert float64 update timeout to int: %s", err)
+		}
+
 		err = helper.WaitForDatabaseUpdated(ctx, client, db.ID,
-			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, timeoutSeconds)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -158,7 +172,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode MySQL database ID %s as int: %s", d.Id(), err)
 	}
@@ -196,7 +210,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if shouldUpdate {
-		updatedDB, err := client.UpdateMySQLDatabase(ctx, int(id), updateOpts)
+		updatedDB, err := client.UpdateMySQLDatabase(ctx, id, updateOpts)
 		if err != nil {
 			return diag.Errorf("failed to update mysql database: %s", err)
 		}
@@ -206,8 +220,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to get update timestamp for db %d", id)
 		}
 
-		err = helper.WaitForDatabaseUpdated(ctx, client, int(id),
-			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, int(d.Timeout(schema.TimeoutUpdate).Seconds()))
+		timeoutSeconds, err := helper.SafeFloat64ToInt(
+			d.Timeout(schema.TimeoutUpdate).Seconds(),
+		)
+		if err != nil {
+			return diag.Errorf("failed to convert float64 update timeout to int: %s", err)
+		}
+		err = helper.WaitForDatabaseUpdated(ctx, client, id,
+			linodego.DatabaseEngineTypeMySQL, updatedDB.Created, timeoutSeconds)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -218,14 +238,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode MySQL database ID %s as int: %s", d.Id(), err)
 	}
 
 	// We should retry on intermittent deletion errors
 	return diag.FromErr(retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
-		err := client.DeleteMySQLDatabase(ctx, int(id))
+		err := client.DeleteMySQLDatabase(ctx, id)
 		if err != nil {
 			if lerr, ok := err.(*linodego.Error); ok &&
 				lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to delete instance") {
