@@ -106,6 +106,9 @@ var resourceNodebalancerV0 = schema.Schema{
 		"label": schema.StringAttribute{
 			Description: "The label of the Linode NodeBalancer.",
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(3, 32),
+			},
 		},
 		"region": schema.StringAttribute{
 			Description:   "The region where this NodeBalancer will be deployed.",

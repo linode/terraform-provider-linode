@@ -1,8 +1,10 @@
 package firewall
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -37,6 +39,9 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
 				"default will be assigned.",
 			Computed: true,
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(3, 32),
+			},
 		},
 		"tags": schema.SetAttribute{
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",

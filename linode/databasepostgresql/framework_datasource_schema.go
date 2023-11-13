@@ -2,6 +2,7 @@ package databasepostgresql
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -24,6 +25,9 @@ var frameworkDatasourceSchema = schema.Schema{
 		"label": schema.StringAttribute{
 			Description: "A unique, user-defined string referring to the Managed Database.",
 			Computed:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(3, 32),
+			},
 		},
 		"region": schema.StringAttribute{
 			Description: "The region to use for the Managed Database.",

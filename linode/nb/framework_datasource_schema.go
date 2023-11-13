@@ -2,8 +2,10 @@ package nb
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -23,6 +25,9 @@ var NodeBalancerAttributes = map[string]schema.Attribute{
 	"label": schema.StringAttribute{
 		Description: "The label of the Linode NodeBalancer.",
 		Computed:    true,
+		Validators: []validator.String{
+			stringvalidator.LengthBetween(3, 32),
+		},
 	},
 	"region": schema.StringAttribute{
 		Description: "The region where this NodeBalancer will be deployed.",
