@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccDataSourceDatabasePostgres_basic(t *testing.T) {
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "data.linode_database_postgresql.foobar"

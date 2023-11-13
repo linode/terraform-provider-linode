@@ -14,7 +14,7 @@ func flattenInstance(
 
 	id := instance.ID
 
-	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, int(id))
+	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ips for linode instance %d: %s", id, err)
 	}
@@ -53,7 +53,7 @@ func flattenInstance(
 	result["specs"] = flattenInstanceSpecs(*instance)
 	result["alerts"] = flattenInstanceAlerts(*instance)
 
-	instanceDisks, err := client.ListInstanceDisks(ctx, int(id), nil)
+	instanceDisks, err := client.ListInstanceDisks(ctx, id, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the disks for the Linode instance %d: %s", id, err)
 	}
@@ -62,7 +62,7 @@ func flattenInstance(
 	result["disk"] = disks
 	result["swap_size"] = swapSize
 
-	instanceConfigs, err := client.ListInstanceConfigs(ctx, int(id), nil)
+	instanceConfigs, err := client.ListInstanceConfigs(ctx, id, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the config for Linode instance %d (%s): %s", id, instance.Label, err)
 	}

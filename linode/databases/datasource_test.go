@@ -41,6 +41,7 @@ func init() {
 }
 
 func TestAccDataSourceDatabases_byAttr(t *testing.T) {
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_databases.foobar"
