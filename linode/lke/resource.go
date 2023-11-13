@@ -242,7 +242,13 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
 	}
-	client.WaitForLKEClusterStatus(ctx, id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	timeoutSeconds, err := helper.SafeFloat64ToInt(
+		d.Timeout(schema.TimeoutCreate).Seconds(),
+	)
+	if err != nil {
+		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+	}
+	client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
 	return nil
 }
 
