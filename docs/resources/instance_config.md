@@ -200,7 +200,7 @@ device {
   device_name = "sdb"
   disk_id = 5678
 }
-``````
+```
 
 ### helpers
 
@@ -235,6 +235,8 @@ The following arguments are available in an interface:
 The following computed attribute is available in a VPC interface:
 
 * `vpc_id` - (Optional) The ID of VPC of the subnet which the VPC interface is connected to.
+
+* `ip_ranges` - (Optional) IPv4 CIDR VPC Subnet ranges that are routed to this Interface. IPv6 ranges are also available to select participants in the Beta program.
 
 #### ipv4
 
