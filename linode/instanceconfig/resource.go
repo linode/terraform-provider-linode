@@ -107,7 +107,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	d.Set("root_device", cfg.RootDevice)
 	d.Set("run_level", cfg.RunLevel)
 	d.Set("virt_mode", cfg.VirtMode)
-	d.Set("interface", flattenInterfaces(cfg.Interfaces))
+	d.Set("interface", helper.FlattenInterfaces(cfg.Interfaces))
 	d.Set("booted", configBooted)
 
 	if cfg.Devices != nil {
@@ -144,7 +144,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		Label:       d.Get("label").(string),
 		Comments:    d.Get("comments").(string),
 		Helpers:     expandHelpers(d.Get("helpers")),
-		Interfaces:  expandInterfaces(ctx, d.Get("interface").([]any)),
+		Interfaces:  helper.ExpandInterfaces(ctx, d.Get("interface").([]any)),
 		MemoryLimit: d.Get("memory_limit").(int),
 		Kernel:      d.Get("kernel").(string),
 		RunLevel:    d.Get("run_level").(string),
@@ -272,7 +272,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if d.HasChange("interface") {
-		putRequest.Interfaces = expandInterfaces(ctx, d.Get("interface").([]any))
+		putRequest.Interfaces = helper.ExpandInterfaces(ctx, d.Get("interface").([]any))
 		shouldUpdate = true
 	}
 

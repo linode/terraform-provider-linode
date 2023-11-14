@@ -332,32 +332,6 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 	}
 }
 
-func TestFlattenConfigInterface(t *testing.T) {
-	configInterface := linodego.InstanceConfigInterface{
-		IPAMAddress: "192.168.1.1",
-		Label:       "test-vlan",
-		Purpose:     linodego.InterfacePurposeVLAN,
-	}
-
-	result := flattenConfigInterface(configInterface)
-
-	expected := map[string]interface{}{
-		"ipam_address": "192.168.1.1",
-		"label":        "test-vlan",
-		"purpose":      linodego.InterfacePurposeVLAN,
-	}
-
-	if len(result) != len(expected) {
-		t.Errorf("Result map length does not match the expected map length")
-	}
-
-	for key, expectedValue := range expected {
-		if resultValue, ok := result[key]; !ok || resultValue != expectedValue {
-			t.Errorf("Mismatch for key %s: Expected %v, but got %v", key, expectedValue, resultValue)
-		}
-	}
-}
-
 func TestFlattenInstanceSpecs(t *testing.T) {
 	instance := linodego.Instance{
 		ID:     1,

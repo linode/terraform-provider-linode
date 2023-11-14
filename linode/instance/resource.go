@@ -136,19 +136,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		defaultConfig := instanceConfigs[0]
 
 		if _, ok := d.GetOk("interface"); ok {
-			flattenedInterfaces := make([]map[string]interface{}, len(defaultConfig.Interfaces))
-
-			for i, configInterface := range defaultConfig.Interfaces {
-				// Workaround for "222" responses for null IPAM
-				// addresses from the API.
-				// TODO: Remove this when issue is resolved.
-				if configInterface.IPAMAddress == "222" {
-					configInterface.IPAMAddress = ""
-				}
-
-				flattenedInterfaces[i] = flattenConfigInterface(configInterface)
-			}
-
+			flattenedInterfaces := helper.FlattenInterfaces(defaultConfig.Interfaces)
 			d.Set("interface", flattenedInterfaces)
 		}
 
@@ -194,7 +182,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
-			createOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
+			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 		}
 	}
 
@@ -691,7 +679,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		expandedInterfaces := make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
-			expandedInterfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
+			expandedInterfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 		}
 
 		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{

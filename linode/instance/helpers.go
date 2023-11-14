@@ -82,7 +82,7 @@ func createInstanceConfigsFromSet(
 			configOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 			for i, ni := range interfaces {
-				configOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
+				configOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 			}
 		}
 
@@ -203,7 +203,7 @@ func updateInstanceConfigs(
 
 				for i, ni := range interfaces {
 					mappedInterface := ni.(map[string]interface{})
-					configUpdateOpts.Interfaces[i] = expandConfigInterface(mappedInterface)
+					configUpdateOpts.Interfaces[i] = helper.ExpandConfigInterface(mappedInterface)
 					if label == bootConfigLabel {
 						newBootInterfaces = append(newBootInterfaces, mappedInterface["ipam_address"].(string))
 					}
