@@ -250,7 +250,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
 	}
-	client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
+	_, err = client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }
 
