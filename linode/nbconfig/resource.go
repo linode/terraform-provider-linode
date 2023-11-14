@@ -71,7 +71,7 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
 	}
@@ -80,7 +80,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 
-	config, err := client.GetNodeBalancerConfig(ctx, int(nodebalancerID), int(id))
+	config, err := client.GetNodeBalancerConfig(ctx, nodebalancerID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing NodeBalancer Config ID %q from state because it no longer exists", d.Id())
@@ -151,7 +151,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
 	}
@@ -181,8 +181,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.CheckPassive = &checkPassive
 	}
 
-	if _, err = client.UpdateNodeBalancerConfig(ctx, int(nodebalancerID), int(id), updateOpts); err != nil {
-		return diag.Errorf("Error updating Nodebalancer %d Config %d: %s", int(nodebalancerID), int(id), err)
+	if _, err = client.UpdateNodeBalancerConfig(ctx, nodebalancerID, id, updateOpts); err != nil {
+		return diag.Errorf("Error updating Nodebalancer %d Config %d: %s", nodebalancerID, id, err)
 	}
 
 	return readResource(ctx, d, meta)
@@ -190,7 +190,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
 	}
@@ -198,7 +198,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if !ok {
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
-	err = client.DeleteNodeBalancerConfig(ctx, nodebalancerID, int(id))
+	err = client.DeleteNodeBalancerConfig(ctx, nodebalancerID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode NodeBalancerConfig %d: %s", id, err)
 	}

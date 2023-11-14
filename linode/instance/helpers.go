@@ -136,7 +136,7 @@ func updateInstanceConfigs(
 	var rebootInstance bool
 	var updatedConfigs []*linodego.InstanceConfig
 
-	configs, err := client.ListInstanceConfigs(ctx, int(instance.ID), nil)
+	configs, err := client.ListInstanceConfigs(ctx, instance.ID, nil)
 	if err != nil {
 		return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
 			"Error fetching the config for Instance %d: %s", instance.ID, err)

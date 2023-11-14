@@ -31,7 +31,7 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 	})
 
 	client := meta.(*ProviderMeta).Client
-	instance, err := client.GetInstance(ctx, int(entityID))
+	instance, err := client.GetInstance(ctx, entityID)
 	if err != nil {
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}

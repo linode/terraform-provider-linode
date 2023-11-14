@@ -62,12 +62,12 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
 	}
 	domainID := d.Get("domain_id").(int)
-	record, err := client.GetDomainRecord(ctx, int(domainID), int(id))
+	record, err := client.GetDomainRecord(ctx, domainID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode Domain Record ID %q from state because it no longer exists", d.Id())
@@ -158,7 +158,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode DomainRecord id %s as int: %s", d.Id(), err)
 	}
@@ -175,7 +175,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
-	_, err = client.UpdateDomainRecord(ctx, domainID, int(id), updateOpts)
+	_, err = client.UpdateDomainRecord(ctx, domainID, id, updateOpts)
 	if err != nil {
 		return diag.Errorf("Error updating Domain Record: %s", err)
 	}
@@ -186,11 +186,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode DomainRecord id %s as int", d.Id())
 	}
-	err = client.DeleteDomainRecord(ctx, domainID, int(id))
+	err = client.DeleteDomainRecord(ctx, domainID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode DomainRecord %d: %s", id, err)
 	}

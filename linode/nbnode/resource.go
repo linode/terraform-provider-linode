@@ -28,7 +28,7 @@ func Resource() *schema.Resource {
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerNode ID %s as int: %s", d.Id(), err)
 	}
@@ -41,7 +41,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
 
-	node, err := client.GetNodeBalancerNode(ctx, nodebalancerID, configID, int(id))
+	node, err := client.GetNodeBalancerNode(ctx, nodebalancerID, configID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing NodeBalancer Node ID %q from state because it no longer exists", d.Id())
@@ -113,7 +113,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Mode:    linodego.NodeMode(d.Get("mode").(string)),
 		Weight:  d.Get("weight").(int),
 	}
-	node, err := client.CreateNodeBalancerNode(ctx, int(nodebalancerID), int(configID), createOpts)
+	node, err := client.CreateNodeBalancerNode(ctx, nodebalancerID, configID, createOpts)
 	if err != nil {
 		return diag.Errorf("Error creating a Linode NodeBalancerNode: %s", err)
 	}
@@ -127,7 +127,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %v as int: %s", d.Id(), err)
 	}
@@ -147,9 +147,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Weight:  d.Get("weight").(int),
 	}
 
-	if _, err = client.UpdateNodeBalancerNode(ctx, nodebalancerID, configID, int(id), updateOpts); err != nil {
+	if _, err = client.UpdateNodeBalancerNode(ctx, nodebalancerID, configID, id, updateOpts); err != nil {
 		return diag.Errorf("Error updating Linode Nodebalancer %d Config %d Node %d: %s",
-			nodebalancerID, configID, int(id), err)
+			nodebalancerID, configID, id, err)
 	}
 
 	return readResource(ctx, d, meta)
@@ -157,7 +157,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)
 	}
@@ -169,7 +169,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if !ok {
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
-	err = client.DeleteNodeBalancerNode(ctx, nodebalancerID, configID, int(id))
+	err = client.DeleteNodeBalancerNode(ctx, nodebalancerID, configID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode NodeBalancerNode %d: %s", id, err)
 	}
