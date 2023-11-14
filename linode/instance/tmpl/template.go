@@ -600,3 +600,12 @@ func FirewallOnCreation(t *testing.T, label, region string) string {
 			Region: region,
 		})
 }
+
+func VPCInterface(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_vpc_interface", TemplateData{
+			Label:  label,
+			Region: region,
+			Image:  acceptance.TestImageLatest,
+		})
+}

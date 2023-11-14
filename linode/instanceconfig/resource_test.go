@@ -357,6 +357,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
 					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.250"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.101/32"),
 					resource.TestCheckResourceAttrSet(resName, "interface.1.ipv4.0.nat_1_1"),
 
 					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.address", "10.0.4.250"),
@@ -372,6 +373,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.249"),
 					resource.TestCheckResourceAttr(resName, "interface.1.active", "false"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.100/32"),
 
 					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.#", "0"),
 				),
