@@ -67,26 +67,109 @@ func resourceDeviceDisk() *schema.Resource {
 	}
 }
 
-func resourceConfigInterface() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The unique label of this interface.",
-			},
-			"purpose": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The purpose of this interface.",
-			},
-			"ipam_address": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The IPAM Address of this interface.",
+const (
+	onlyAllowedForVPCMsg  = "This attribute is only allowed for VPC interfaces."
+	onlyAllowedForVLANMsg = "This attribute is only allowed for VLAN interfaces."
+	requiredForVPCMsg     = "This attribute is required for VPC interfaces."
+	requiredForVLANMsg    = "This attribute is required for VLAN interfaces."
+)
+
+var InterfaceSchema = &schema.Resource{
+	Schema: map[string]*schema.Schema{
+		"purpose": {
+			Type:        schema.TypeString,
+			Description: "The type of interface.",
+			Required:    true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringInSlice([]string{"public", "vlan", "vpc"}, true),
+			),
+		},
+		"ipam_address": {
+			Type: schema.TypeString,
+			Description: "This Network Interface's private IP address in " +
+				"Classless Inter-Domain Routing (CIDR) notation." +
+				onlyAllowedForVLANMsg,
+			Optional: true,
+		},
+		"label": {
+			Type: schema.TypeString,
+			Description: "The name of the VALN. " + requiredForVLANMsg +
+				" " + onlyAllowedForVLANMsg,
+			Optional: true,
+		},
+		"id": {
+			Type:        schema.TypeInt,
+			Description: "The ID of the interface.",
+			Computed:    true,
+		},
+		"subnet_id": {
+			Type: schema.TypeInt,
+			Description: "The ID of the subnet which the VPC interface is connected to." +
+				requiredForVPCMsg + onlyAllowedForVPCMsg,
+			Optional: true,
+		},
+		"vpc_id": {
+			Type: schema.TypeInt,
+			Description: "The ID of VPC of the subnet which the VPC " +
+				"interface is connected to.",
+			Computed: true,
+		},
+		"primary": {
+			Type: schema.TypeBool,
+			Description: "Whether the interface is the primary interface that should " +
+				"have the default route for this Linode.",
+			Optional: true,
+			Default:  false,
+		},
+		"active": {
+			Type:        schema.TypeBool,
+			Description: "Whether this interface is currently booted and active.",
+			Computed:    true,
+		},
+		"ip_ranges": {
+			Type:        schema.TypeList,
+			Description: "List of VPC IPs or IP ranges inside the VPC subnet.",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+				ValidateDiagFunc: validation.AnyDiag(
+					helper.SDKv2ValidateIPv4Range,
+					helper.SDKv2ValidateIPv6Range,
+				),
 			},
 		},
-	}
+		"ipv4": {
+			Type: schema.TypeList,
+			Description: "The IPv4 configuration of the VPC interface." +
+				onlyAllowedForVPCMsg,
+			Computed: true,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"vpc": {
+						Type:        schema.TypeString,
+						Description: "The IP from the VPC subnet to use for this interface.",
+						Computed:    true,
+						Optional:    true,
+					},
+					"nat_1_1": {
+						Type: schema.TypeString,
+						Description: "The public IP that will be used for the " +
+							"one-to-one NAT purpose.",
+						Computed: true,
+						Optional: true,
+						DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+							if new == "any" && old != "" {
+								return true
+							}
+							return old == new
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 var resourceSchema = map[string]*schema.Schema{
@@ -460,7 +543,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"If an explicit config or disk is defined, interfaces must be declared in the config block.",
 		Optional:      true,
 		ConflictsWith: []string{"disk", "config"},
-		Elem:          resourceConfigInterface(),
+		Elem:          InterfaceSchema,
 	},
 	"config": {
 		Optional: true,
@@ -608,7 +691,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Description: "An array of Network Interfaces for this Linode’s Configuration Profile.",
 					Optional:    true,
-					Elem:        resourceConfigInterface(),
+					Elem:        InterfaceSchema,
 				},
 				"kernel": {
 					Type:     schema.TypeString,

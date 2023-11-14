@@ -3,6 +3,7 @@ package instanceconfig
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/linode/instance"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -62,7 +63,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"interface": {
 		Type:        schema.TypeList,
-		Elem:        &schema.Resource{Schema: interfaceSchema},
+		Elem:        instance.InterfaceSchema,
 		Optional:    true,
 		Description: "An array of Network Interfaces to add to this Linode's Configuration Profile.",
 	},
@@ -227,96 +228,5 @@ var helpersSchema = map[string]*schema.Schema{
 		Description: "Disables updatedb cron job to avoid disk thrashing.",
 		Optional:    true,
 		Default:     true,
-	},
-}
-
-const (
-	onlyAllowedForVPCMsg  = "This attribute is only allowed for VPC interfaces."
-	onlyAllowedForVLANMsg = "This attribute is only allowed for VLAN interfaces."
-	requiredForVPCMsg     = "This attribute is required for VPC interfaces."
-	requiredForVLANMsg    = "This attribute is required for VLAN interfaces."
-)
-
-var interfaceSchema = map[string]*schema.Schema{
-	"purpose": {
-		Type:        schema.TypeString,
-		Description: "The type of interface.",
-		Required:    true,
-		ValidateDiagFunc: validation.ToDiagFunc(
-			validation.StringInSlice([]string{"public", "vlan", "vpc"}, true),
-		),
-	},
-	"ipam_address": {
-		Type: schema.TypeString,
-		Description: "This Network Interface's private IP address in " +
-			"Classless Inter-Domain Routing (CIDR) notation." +
-			onlyAllowedForVLANMsg,
-		Optional: true,
-	},
-	"label": {
-		Type: schema.TypeString,
-		Description: "The name of the VALN. " + requiredForVLANMsg +
-			" " + onlyAllowedForVLANMsg,
-		Optional: true,
-	},
-	"id": {
-		Type:        schema.TypeInt,
-		Description: "The ID of the interface.",
-		Computed:    true,
-	},
-	"subnet_id": {
-		Type: schema.TypeInt,
-		Description: "The ID of the subnet which the VPC interface is connected to." +
-			requiredForVPCMsg + onlyAllowedForVPCMsg,
-		Optional: true,
-	},
-	"vpc_id": {
-		Type: schema.TypeInt,
-		Description: "The ID of VPC of the subnet which the VPC " +
-			"interface is connected to.",
-		Computed: true,
-	},
-	"primary": {
-		Type: schema.TypeBool,
-		Description: "Whether the interface is the primary interface that should " +
-			"have the default route for this Linode.",
-		Optional: true,
-		Default:  false,
-	},
-	"active": {
-		Type:        schema.TypeBool,
-		Description: "Whether this interface is currently booted and active.",
-		Computed:    true,
-	},
-	"ipv4": {
-		Type: schema.TypeList,
-		Description: "The IPv4 configuration of the VPC interface." +
-			onlyAllowedForVPCMsg,
-		Computed: true,
-		Optional: true,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"vpc": {
-					Type:        schema.TypeString,
-					Description: "The IP from the VPC subnet to use for this interface.",
-					Computed:    true,
-					Optional:    true,
-				},
-				"nat_1_1": {
-					Type: schema.TypeString,
-					Description: "The public IP that will be used for the " +
-						"one-to-one NAT purpose.",
-					Computed: true,
-					Optional: true,
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						if new == "any" && old != "" {
-							return true
-						}
-						return old == new
-					},
-				},
-			},
-		},
 	},
 }

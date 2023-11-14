@@ -340,7 +340,7 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Description: "An array of Network Interfaces for this Linode’s Configuration Profile.",
 					Computed:    true,
-					Elem:        resourceConfigInterface(),
+					Elem:        InterfaceSchema,
 				},
 				"kernel": {
 					Type:     schema.TypeString,
