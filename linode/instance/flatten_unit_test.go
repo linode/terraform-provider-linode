@@ -315,7 +315,7 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 					},
 				},
 			},
-			"interface": []interface{}{},
+			"interface": make([]map[string]any, 0),
 		},
 	}
 
@@ -324,9 +324,10 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 	if len(actualConfigs) != len(expectedConfigs) {
 		t.Fatalf("Expected %d configs, but got %d", len(expectedConfigs), len(actualConfigs))
 	}
-
+	t.Logf("%v", reflect.DeepEqual(actualConfigs[0]["interface"], expectedConfigs[0]["interface"]))
 	for i := 0; i < len(expectedConfigs); i++ {
 		if !areMapsEqual(actualConfigs[i], expectedConfigs[i]) {
+			t.Logf("%v, %v", actualConfigs[i], expectedConfigs[i])
 			t.Errorf("Config %d: Mismatch between expected and actual config", i)
 		}
 	}
