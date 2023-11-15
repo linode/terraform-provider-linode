@@ -1,5 +1,7 @@
 module github.com/linode/terraform-provider-linode
 
+go 1.20
+
 require (
 	github.com/aws/aws-sdk-go v1.47.0
 	github.com/go-resty/resty/v2 v2.9.1
@@ -103,5 +105,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-go 1.20
