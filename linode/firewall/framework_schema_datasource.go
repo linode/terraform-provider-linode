@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var deviceObjectType = types.ObjectType{
@@ -41,6 +42,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed: true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(3, 32),
+				stringvalidator.RegexMatches(helper.StringToRegex("^[a-zA-Z0-9]([-_.]?[a-zA-Z0-9]+)*[a-zA-Z0-9]$"), "Label does not follow contraints. Check API documentation for more information"),
 			},
 		},
 		"tags": schema.SetAttribute{
