@@ -86,7 +86,7 @@ The following arguments are supported:
 
 * `force_destroy` - (Optional) Allow the object to be deleted regardless of any legal hold or object lock (defaults to `false`).
 
-* `endpoint` - (Optional) Used with the s3 client to make bucket changes and will be computed automatically if left blank, override for testing/debug purposes. 
+* `endpoint` - (Optional) Used with the s3 client to make bucket changes and will be computed automatically if left blank, override for testing/debug purposes.
 
 ## Attributes Reference
 

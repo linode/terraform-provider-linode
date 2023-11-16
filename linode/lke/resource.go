@@ -133,9 +133,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
-	client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
+	if err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
 		TimeoutSeconds: 15 * 60,
-	}, k8scondition.ClusterHasReadyNode)
+	}, k8scondition.ClusterHasReadyNode); err != nil {
+		return diag.FromErr(err)
+	}
 	return readResource(ctx, d, meta)
 }
 
@@ -248,7 +250,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
 	}
-	client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
+	_, err = client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }
 

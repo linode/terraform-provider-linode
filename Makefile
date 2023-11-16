@@ -1,21 +1,25 @@
 SWEEP?="tf_test,tf-test"
-GOFMT_FILES?=$$(find . -name '*.go')
-WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=linode/...
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
-MARKDOWNLINT_TAG := 0.19.0
+MARKDOWNLINT_TAG := 0.28.1
 
 ACCTEST_COUNT?=1
 ACCTEST_PARALLELISM?=10
 ACCTEST_TIMEOUT?=240m
 RUN_LONG_TESTS?="false"
 
+.PHONY: build sweep test testacc vet fmt fmtcheck errcheck test-compile
+
 tooldeps:
 	go generate -tags tools tools/tools.go
 
-lint: fmtcheck
-	golangci-lint run --timeout 15m0s
+lint:
+	# remove two disabled linters when their errors are addressed
+	golangci-lint run \
+		--disable gosimple \
+		--disable staticcheck \
+		--timeout 15m0s
 	tfproviderlint \
 		-AT001=false \
 		-AT004=false \
@@ -29,7 +33,7 @@ docscheck:
 		-v $$(pwd):/markdown:ro \
 		$(MARKDOWNLINT_IMG):$(MARKDOWNLINT_TAG) \
 		--config .markdownlint.yml \
-		website
+		docs
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -38,7 +42,11 @@ sweep:
 default: build
 
 build: fmtcheck
-	go install
+	# trying to copy .goreleaser.yaml
+	go build -a -ldflags '-s -extldflags "-static"'
+
+clean:
+	rm -f terraform-provider-linode
 
 test: fmtcheck
 	go test -i $(TEST) || exit 1
@@ -61,23 +69,19 @@ unittest:
 	go test -v --tags=unit ./linode/...
 
 vet:
-	@echo "go vet ."
-	@go vet $$(go list ./...) ; if [ $$? -eq 1 ]; then \
-		echo ""; \
-		echo "Vet found suspicious constructs. Please check the reported constructs"; \
-		echo "and fix them if necessary before submitting the code for review."; \
-		exit 1; \
-	fi
+	golangci-lint run --disable-all --enable govet ./...
 
 fmt:
-	gofmt -w $(GOFMT_FILES)
-	gofumpt -w $(GOFMT_FILES)
+	gofumpt -w -l .
+
+imports:
+	golangci-lint run --disable-all --enable goimports ./...
 
 fmtcheck:
-	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
+	golangci-lint run --disable-all --enable gofumpt ./...
 
 errcheck:
-	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
+	golangci-lint run --disable-all -E errcheck ./...
 
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \
@@ -86,9 +90,3 @@ test-compile:
 		exit 1; \
 	fi
 	go test -c $(TEST) $(TESTARGS) -timeout 120m -parallel=2
-
-
-imports:
-	goimports -w $(GOFMT_FILES)
-
-.PHONY: build sweep test testacc vet fmt fmtcheck errcheck test-compile
