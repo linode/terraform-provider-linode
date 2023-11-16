@@ -1,0 +1,12 @@
+{{ define "vpcs_data_filter_label" }}
+
+{{ template "vpc_basic" . }}
+
+data "linode_vpcs" "foobar" {
+    filter {
+        name = "label"
+        values = [linode_vpc.foobar.label]
+    }
+}
+
+{{ end }}

@@ -82,27 +82,6 @@ func flattenHelpers(helpers linodego.InstanceConfigHelpers) []map[string]any {
 	return []map[string]any{result}
 }
 
-func flattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[string]any {
-	result := make([]map[string]any, len(interfaces))
-
-	for i, iface := range interfaces {
-		// Workaround for "222" responses for null IPAM
-		// addresses from the API.
-		// TODO: Remove this when issue is resolved.
-		if iface.IPAMAddress == "222" {
-			iface.IPAMAddress = ""
-		}
-
-		result[i] = map[string]any{
-			"purpose":      iface.Purpose,
-			"ipam_address": iface.IPAMAddress,
-			"label":        iface.Label,
-		}
-	}
-
-	return result
-}
-
 func createDevice(deviceMap map[string]any) linodego.InstanceConfigDevice {
 	device := linodego.InstanceConfigDevice{}
 
@@ -317,22 +296,6 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 	}
 
 	return err
-}
-
-func expandInterfaces(ifaces []any) []linodego.InstanceConfigInterface {
-	result := make([]linodego.InstanceConfigInterface, len(ifaces))
-
-	for i, iface := range ifaces {
-		ifaceMap := iface.(map[string]any)
-
-		result[i] = linodego.InstanceConfigInterface{
-			IPAMAddress: ifaceMap["ipam_address"].(string),
-			Label:       ifaceMap["label"].(string),
-			Purpose:     linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string)),
-		}
-	}
-
-	return result
 }
 
 func isConfigBooted(ctx context.Context, client *linodego.Client,

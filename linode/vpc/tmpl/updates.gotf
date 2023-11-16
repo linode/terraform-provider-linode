@@ -1,0 +1,8 @@
+{{ define "vpc_updates" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}-renamed"
+    region = "{{.Region}}"
+}
+
+{{ end }}

@@ -1,0 +1,9 @@
+{{ define "vpc_basic" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    description = "some description"
+}
+
+{{ end }}
