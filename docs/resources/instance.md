@@ -308,8 +308,6 @@ This Linode Instance resource exports the following attributes:
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
 
-
-
 ## Import
 
 Linodes Instances can be imported using the Linode `id`, e.g.

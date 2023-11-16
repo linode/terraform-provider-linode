@@ -298,19 +298,6 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, instance *lin
 	return err
 }
 
-func expandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
-	IPv4 := ipv4.(map[string]any)
-	vpcAddress := IPv4["vpc"].(string)
-	nat1To1 := IPv4["nat_1_1"].(string)
-	if vpcAddress == "" && nat1To1 == "" {
-		return nil
-	}
-	return &linodego.VPCIPv4{
-		VPC:     vpcAddress,
-		NAT1To1: nat1To1,
-	}
-}
-
 func isConfigBooted(ctx context.Context, client *linodego.Client,
 	instance *linodego.Instance, configID int,
 ) (bool, error) {
