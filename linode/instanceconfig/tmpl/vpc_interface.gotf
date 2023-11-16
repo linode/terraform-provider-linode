@@ -27,6 +27,7 @@ resource "linode_instance_config" "foobar" {
       vpc = "10.0.4.250"
       nat_1_1 = "any"
     }
+    ip_ranges = ["10.0.4.101/32"]
   }
 
   kernel = "linode/grub2"

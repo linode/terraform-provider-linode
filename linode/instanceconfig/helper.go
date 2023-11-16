@@ -82,38 +82,6 @@ func flattenHelpers(helpers linodego.InstanceConfigHelpers) []map[string]any {
 	return []map[string]any{result}
 }
 
-func flattenInterfaceIPv4(ipv4 linodego.VPCIPv4) []map[string]any {
-	if ipv4.NAT1To1 == "" && ipv4.VPC == "" {
-		return nil
-	}
-	return []map[string]any{
-		{
-			"vpc":     ipv4.VPC,
-			"nat_1_1": ipv4.NAT1To1,
-		},
-	}
-}
-
-func flattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[string]any {
-	result := make([]map[string]any, len(interfaces))
-
-	for i, iface := range interfaces {
-		result[i] = map[string]any{
-			"purpose":      iface.Purpose,
-			"ipam_address": iface.IPAMAddress,
-			"label":        iface.Label,
-			"id":           iface.ID,
-			"vpc_id":       iface.VPCID,
-			"subnet_id":    iface.SubnetID,
-			"primary":      iface.Primary,
-			"active":       iface.Active,
-			"ipv4":         flattenInterfaceIPv4(iface.IPv4),
-		}
-	}
-
-	return result
-}
-
 func createDevice(deviceMap map[string]any) linodego.InstanceConfigDevice {
 	device := linodego.InstanceConfigDevice{}
 
@@ -341,45 +309,6 @@ func expandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
 		VPC:     vpcAddress,
 		NAT1To1: nat1To1,
 	}
-}
-
-func expandInterfaces(ctx context.Context, ifaces []any) []linodego.InstanceConfigInterfaceCreateOptions {
-	result := make([]linodego.InstanceConfigInterfaceCreateOptions, len(ifaces))
-
-	for i, iface := range ifaces {
-		ifaceMap := iface.(map[string]any)
-
-		result[i] = linodego.InstanceConfigInterfaceCreateOptions{
-			Purpose: linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string)),
-			Primary: ifaceMap["primary"].(bool),
-		}
-		if ifaceMap["label"] != nil {
-			result[i].Label = ifaceMap["label"].(string)
-		}
-		if ifaceMap["ipam_address"] != nil {
-			result[i].IPAMAddress = ifaceMap["ipam_address"].(string)
-		}
-		if ifaceMap["subnet_id"] != nil {
-			subnet_id := ifaceMap["subnet_id"].(int)
-			if subnet_id != 0 {
-				result[i].SubnetID = &subnet_id
-			}
-		}
-		tflog.Info(ctx, fmt.Sprintf("%v", ifaceMap["subnet_id"]))
-		tflog.Info(ctx, "_____________________________________")
-		if ifaceMap["primary"] != nil {
-			result[i].Primary = ifaceMap["primary"].(bool)
-		}
-
-		if ifaceMap["ipv4"] != nil {
-			ipv4 := ifaceMap["ipv4"].([]any)
-			if len(ipv4) > 0 {
-				result[i].IPv4 = expandInterfaceIPv4(ipv4[0])
-			}
-		}
-	}
-
-	return result
 }
 
 func isConfigBooted(ctx context.Context, client *linodego.Client,

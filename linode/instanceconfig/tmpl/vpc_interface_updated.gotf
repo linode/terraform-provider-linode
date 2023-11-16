@@ -26,6 +26,7 @@ resource "linode_instance_config" "foobar" {
     ipv4 {
       vpc = "10.0.4.249"
     }
+    ip_ranges = ["10.0.4.100/32"]
   }
 
   kernel = "linode/grub2"
