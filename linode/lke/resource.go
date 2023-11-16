@@ -137,6 +137,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	// Sometimes the K8S API will raise an EOF error if polling immediately after
 	// a cluster is created. We should retry accordingly.
+	// NOTE: This routine has a short retry period because we want to raise
+	// and meaningful errors quickly.
 	diag.FromErr(retry.RetryContext(ctx, time.Second*25, func() *retry.RetryError {
 		err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
 			TimeoutSeconds: 15 * 60,
