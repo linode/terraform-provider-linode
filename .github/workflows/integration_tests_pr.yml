@@ -28,6 +28,7 @@ jobs:
         with:
           go-version: 'stable'
       - run: go version
+      - run: make tooldeps
 
       - uses: actions/github-script@v6
         id: disallowed-character-check

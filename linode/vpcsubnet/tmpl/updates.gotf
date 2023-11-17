@@ -1,0 +1,14 @@
+{{ define "vpc_subnet_updates" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}-renamed"
+    ipv4 = "{{.IPv4}}"
+}
+
+{{ end }}

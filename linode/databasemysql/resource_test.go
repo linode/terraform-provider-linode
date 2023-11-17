@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -99,9 +98,8 @@ func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
 }
 
 func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
-	if os.Getenv("RUN_LONG_TESTS") != "true" {
-		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
-	}
+	acceptance.LongRunningTest(t)
+
 	t.Parallel()
 
 	resName := "linode_database_mysql.foobar"
@@ -149,9 +147,7 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 }
 
 func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
-	if os.Getenv("RUN_LONG_TESTS") != "true" {
-		t.Skip("Skipping test if RUN_LONG_TESTS environment variable is not set or not true.")
-	}
+	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_mysql.foobar"

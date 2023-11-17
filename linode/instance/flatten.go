@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 func flattenInstance(
@@ -14,7 +15,7 @@ func flattenInstance(
 
 	id := instance.ID
 
-	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, int(id))
+	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ips for linode instance %d: %s", id, err)
 	}
@@ -53,7 +54,7 @@ func flattenInstance(
 	result["specs"] = flattenInstanceSpecs(*instance)
 	result["alerts"] = flattenInstanceAlerts(*instance)
 
-	instanceDisks, err := client.ListInstanceDisks(ctx, int(id), nil)
+	instanceDisks, err := client.ListInstanceDisks(ctx, id, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the disks for the Linode instance %d: %s", id, err)
 	}
@@ -62,7 +63,7 @@ func flattenInstance(
 	result["disk"] = disks
 	result["swap_size"] = swapSize
 
-	instanceConfigs, err := client.ListInstanceConfigs(ctx, int(id), nil)
+	instanceConfigs, err := client.ListInstanceConfigs(ctx, id, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the config for Linode instance %d (%s): %s", id, instance.Label, err)
 	}
@@ -156,10 +157,7 @@ func flattenInstanceConfigs(
 			"sdh": flattenInstanceConfigDevice(config.Devices.SDH, diskLabelIDMap),
 		}}
 
-		interfaces := make([]interface{}, len(config.Interfaces))
-		for i, ni := range config.Interfaces {
-			interfaces[i] = flattenConfigInterface(ni)
-		}
+		interfaces := helper.FlattenInterfaces(config.Interfaces)
 
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		c := map[string]interface{}{
@@ -185,16 +183,6 @@ func flattenInstanceConfigs(
 		configs = append(configs, c)
 	}
 	return
-}
-
-func flattenConfigInterface(i linodego.InstanceConfigInterface) map[string]interface{} {
-	result := make(map[string]interface{})
-
-	result["label"] = i.Label
-	result["purpose"] = i.Purpose
-	result["ipam_address"] = i.IPAMAddress
-
-	return result
 }
 
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {

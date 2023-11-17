@@ -1,31 +1,30 @@
 *.dll
 *.exe
 .DS_Store
-example.tf
-terraform.tfplan
-terraform.tfstate
-bin/
-modules-dev/
-/pkg/
-website/.vagrant
-website/.bundle
-website/build
-website/node_modules
-.vagrant/
 *.backup
-./*.tfstate
-.terraform/
 *.log
 *.bak
 *~
 .*.swp
-.idea
 *.iml
 *.test
-*.iml
-.vscode
 
-website/vendor
+# tf
+.terraform/
+./*.tfstate
+example.tf
+terraform.tfplan
+terraform.tfstate
+
+# directories
+bin/
+modules-dev/
+/pkg/
+.vagrant/
+
+# editors
+.vscode
+.idea
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

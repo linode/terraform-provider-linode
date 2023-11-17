@@ -79,10 +79,10 @@ func createInstanceConfigsFromSet(
 
 		if interfaces, ok := config["interface"]; ok {
 			interfaces := interfaces.([]interface{})
-			configOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+			configOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 			for i, ni := range interfaces {
-				configOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
+				configOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 			}
 		}
 
@@ -136,7 +136,7 @@ func updateInstanceConfigs(
 	var rebootInstance bool
 	var updatedConfigs []*linodego.InstanceConfig
 
-	configs, err := client.ListInstanceConfigs(ctx, int(instance.ID), nil)
+	configs, err := client.ListInstanceConfigs(ctx, instance.ID, nil)
 	if err != nil {
 		return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
 			"Error fetching the config for Instance %d: %s", instance.ID, err)
@@ -194,16 +194,16 @@ func updateInstanceConfigs(
 
 			}
 
-			configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, 0)
+			configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, 0)
 
 			if interfaces, ok := tfc["interface"]; ok {
 				interfaces := interfaces.([]interface{})
 
-				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+				configUpdateOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 				for i, ni := range interfaces {
 					mappedInterface := ni.(map[string]interface{})
-					configUpdateOpts.Interfaces[i] = expandConfigInterface(mappedInterface)
+					configUpdateOpts.Interfaces[i] = helper.ExpandConfigInterface(mappedInterface)
 					if label == bootConfigLabel {
 						newBootInterfaces = append(newBootInterfaces, mappedInterface["ipam_address"].(string))
 					}

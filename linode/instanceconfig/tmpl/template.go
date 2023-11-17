@@ -82,3 +82,23 @@ func DeviceNamedBlock(t *testing.T, label, region string) string {
 		},
 	)
 }
+
+func VPCInterface(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"vpc_interface", TemplateData{
+			Label:  label,
+			Region: region,
+		},
+	)
+}
+
+func VPCInterfaceUpdates(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"vpc_interface_update", TemplateData{
+			Label:  label,
+			Region: region,
+		},
+	)
+}
