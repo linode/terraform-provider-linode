@@ -240,23 +240,23 @@ Interface defines a network interfaces that is exposed to a Linode. See the offi
 
 Each interface exports the following attributes:
 
-* `purpose` - (Required) The type of interface. (`public`, `vlan`)
+* `purpose` - (Required) The type of interface. (`public`, `vlan`, `vpc`)
 
 * `ipam_address` - (Optional) This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation. (e.g. `10.0.0.1/24`) This field is only allowed for interfaces with the `vlan` purpose.
 
 * `label` - (Optional) The name of the VLAN to join. This field is only allowed and required for interfaces with the `vlan` purpose.
 
-* `subnet_id` - (Optional) The name of the VLAN to join. This field is only allowed and required for interfaces with the `vpc` purpose.
+* `subnet_id` - (Optional) The name of the VPC Subnet to join. This field is only allowed and required for interfaces with the `vpc` purpose.
 
-* `primary` - (Optional) Whether the interface is the primary interface that should have the default route for this Linode.
+* `primary` - (Optional) Whether the interface is the primary interface that should have the default route for this Linode. This field is only allowed for interfaces with the `public` or `vpc` purpose.
 
 * [`ipv4`](#ipv4) - (Optional) The IPv4 configuration of the VPC interface. This field is currently only allowed for interfaces with the `vpc` purpose.
 
 The following computed attribute is available in a VPC interface:
 
-* `vpc_id` - (Optional) The ID of VPC of the subnet which the VPC interface is connected to.
+* `vpc_id` - The ID of VPC which this interface is attached to.
 
-* `ip_ranges` - (Optional) IPv4 CIDR VPC Subnet ranges that are routed to this Interface. IPv6 ranges are also available to select participants in the Beta program.
+* `ip_ranges` - IPv4 CIDR VPC Subnet ranges that are routed to this Interface. IPv6 ranges are also available to select participants in the Beta program.
 
 #### ipv4
 
@@ -264,7 +264,7 @@ The following arguments are available in an `ipv4` configuration block of an `in
 
 * `vpc` - (Optional) The IP from the VPC subnet to use for this interface. A random address will be assigned if this is not specified in a VPC interface.
 
-* `nat_1_1` - (Optional) The public IP that will be used for the one-to-one NAT purpose. If this is `any`, the public IPv4 address assigned to this Linode is used on this interface and will be 1:1 natted with the vpc ipv4 address.
+* `nat_1_1` - (Optional) The public IP that will be used for the one-to-one NAT purpose. If this is `any`, the public IPv4 address assigned to this Linode is used on this interface and will be 1:1 NATted with the VPC IPv4 address.
 
 ### Timeouts
 
