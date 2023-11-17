@@ -1,9 +1,7 @@
 package volume
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -15,9 +13,6 @@ var VolumeAttributes = map[string]schema.Attribute{
 	"label": schema.StringAttribute{
 		Description: "The Volume's label. For display purposes only.",
 		Computed:    true,
-		Validators: []validator.String{
-			stringvalidator.LengthBetween(1, 32),
-		},
 	},
 	"region": schema.StringAttribute{
 		Description: "The datacenter where this Volume is located.",

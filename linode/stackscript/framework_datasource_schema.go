@@ -1,9 +1,7 @@
 package stackscript
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -15,9 +13,6 @@ var StackscriptAttributes = map[string]schema.Attribute{
 	"label": schema.StringAttribute{
 		Description: "The StackScript's label is for display purposes only.",
 		Computed:    true,
-		Validators: []validator.String{
-			stringvalidator.LengthBetween(3, 128),
-		},
 	},
 	"script": schema.StringAttribute{
 		Description: "The script to execute when provisioning a new Linode with this StackScript.",

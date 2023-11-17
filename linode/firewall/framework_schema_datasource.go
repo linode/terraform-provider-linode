@@ -1,12 +1,9 @@
 package firewall
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var deviceObjectType = types.ObjectType{
@@ -40,10 +37,6 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The label for the Firewall. For display purposes only. If no label is provided, a " +
 				"default will be assigned.",
 			Computed: true,
-			Validators: []validator.String{
-				stringvalidator.LengthBetween(3, 32),
-				stringvalidator.RegexMatches(helper.StringToRegex("^[a-zA-Z0-9]([-_.]?[a-zA-Z0-9]+)*[a-zA-Z0-9]$"), "Label does not follow contraints. Check API documentation for more information"),
-			},
 		},
 		"tags": schema.SetAttribute{
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",

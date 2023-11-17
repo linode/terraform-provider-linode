@@ -2,7 +2,6 @@ package domain
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -40,9 +39,6 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"description": schema.StringAttribute{
 			Description: "A description for this Domain. This is for display purposes only.",
-			Validators: []validator.String{
-				stringvalidator.LengthBetween(0, 253),
-			},
 			Computed: true,
 		},
 		"master_ips": schema.SetAttribute{

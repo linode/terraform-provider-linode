@@ -1,9 +1,7 @@
 package nbnode
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -23,9 +21,6 @@ var frameworkDatasourceSchema = schema.Schema{
 		"label": schema.StringAttribute{
 			Description: "The label for this node. This is for display purposes only.",
 			Computed:    true,
-			Validators: []validator.String{
-				stringvalidator.LengthBetween(3, 32),
-			},
 		},
 		"weight": schema.Int64Attribute{
 			Description: "Used when picking a backend to serve a request and is not pinned to a single backend yet. " +
