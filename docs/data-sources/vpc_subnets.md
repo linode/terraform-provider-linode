@@ -56,7 +56,7 @@ Each Linode VPC subnet will be stored in the `vpc_subnets` attribute and will ex
 
 * `created` - The date and time when the VPC Subnet was created.
 
-* `updated` - The date and time when the VPC Subnet was updated.
+* `updated` - The date and time when the VPC Subnet was last updated.
 
 ## Filterable Fields
 
