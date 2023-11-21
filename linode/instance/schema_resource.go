@@ -257,6 +257,15 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional: true,
 		Default:  false,
 	},
+	"migration_type": {
+		Type:        schema.TypeString,
+		Description: "The type of migration to use for resize and migration operations.",
+		Optional:    true,
+		Default:     "cold",
+		ValidateDiagFunc: validation.ToDiagFunc(
+			validation.StringInSlice([]string{"cold", "warm"}, true),
+		),
+	},
 	"status": {
 		Type:        schema.TypeString,
 		Description: "The status of the instance, indicating the current readiness state.",

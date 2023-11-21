@@ -727,6 +727,7 @@ func changeInstanceType(
 	client *linodego.Client,
 	instanceID int,
 	targetType string,
+	migrationType linodego.InstanceMigrationType,
 	diskResize bool,
 	d *schema.ResourceData,
 ) (*linodego.Instance, error) {
@@ -748,6 +749,7 @@ func changeInstanceType(
 	resizeOpts := linodego.InstanceResizeOptions{
 		AllowAutoDiskResize: &diskResize,
 		Type:                targetType,
+		MigrationType:       migrationType,
 	}
 
 	tflog.Debug(ctx, "Resizing instance", map[string]any{
@@ -981,6 +983,10 @@ func applyInstanceTypeChange(
 	typ *linodego.LinodeType,
 ) (*linodego.Instance, error) {
 	resizeDisk := d.Get("resize_disk").(bool)
+	migrationType := linodego.InstanceMigrationType(
+		d.Get("migration_type").(string),
+	)
+
 	if resizeDisk {
 		// Verify that there are implicit disks defined
 		if d.GetRawConfig().GetAttr("image").IsNull() && d.GetRawConfig().GetAttr("disk").LengthInt() > 0 {
@@ -1005,7 +1011,7 @@ func applyInstanceTypeChange(
 		return nil, err
 	}
 
-	return changeInstanceType(ctx, client, instance.ID, typ.ID, resizeDisk, d)
+	return changeInstanceType(ctx, client, instance.ID, typ.ID, migrationType, resizeDisk, d)
 }
 
 // detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct.

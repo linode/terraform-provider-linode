@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"sync"
@@ -22,7 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
 )
 
-var testRegion string
+var testRegion = "us-east"
 
 func init() {
 	resource.AddTestSweepers("linode_instance", &resource.Sweeper{
@@ -30,12 +29,12 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Vlans", "VPCs"})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testRegion = region
+	//region, err := acceptance.GetRandomRegionWithCaps([]string{"Vlans", "VPCs"})
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -1702,6 +1701,15 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 			{
 				Config:      tmpl.TypeChangeDisk(t, instanceName, "g6-nanode-1", testRegion, true),
 				ExpectError: regexp.MustCompile("Did you try to resize a linode with implicit"),
+			},
+			// Run a warm resize
+			{
+				Config: tmpl.TypeChangeWarm(t, instanceName, "g6-standard-1", testRegion, false),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+				),
 			},
 		},
 	})

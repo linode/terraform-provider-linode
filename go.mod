@@ -105,3 +105,7 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+// Temporary replacement, replace with project branch once
+// Zhiwei's PR is merged.
+replace github.com/linode/linodego => github.com/zliang-akamai/linodego v1.16.2-0.20231117064335-cddc6f17d034
