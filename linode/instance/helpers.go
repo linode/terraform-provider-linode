@@ -753,8 +753,9 @@ func changeInstanceType(
 	}
 
 	tflog.Debug(ctx, "Resizing instance", map[string]any{
-		"body":        resizeOpts,
-		"target_type": targetType,
+		"body":           resizeOpts,
+		"target_type":    targetType,
+		"migration_type": migrationType,
 	})
 
 	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeResize)
@@ -1012,6 +1013,52 @@ func applyInstanceTypeChange(
 	}
 
 	return changeInstanceType(ctx, client, instance.ID, typ.ID, migrationType, resizeDisk, d)
+}
+
+// applyInstanceMigration synchronously migrates a Linode to a new region.
+func applyInstanceMigration(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *linodego.Client,
+	instance *linodego.Instance,
+	targetRegion string,
+) (*linodego.Instance, error) {
+	migrationType := linodego.InstanceMigrationType(
+		d.Get("migration_type").(string),
+	)
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"target_region":  targetRegion,
+		"migration_type": migrationType,
+	})
+
+	tflog.Debug(ctx, "Migrating instance to new region")
+
+	p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeMigrateDatacenter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize event poller %d: %s", instance.ID, err)
+	}
+
+	if err := client.MigrateInstance(ctx, instance.ID, linodego.InstanceMigrateOptions{
+		Region: targetRegion,
+		Type:   migrationType,
+	}); err != nil {
+		return nil, fmt.Errorf("failed to migrate instance %d to region %s: %w", instance.ID, targetRegion, err)
+	}
+
+	_, err = p.WaitForFinished(ctx, getDeadlineSeconds(ctx, d))
+	if err != nil {
+		return nil, fmt.Errorf("failed to wait for instance %d to finish migration: %w", instance.ID, err)
+	}
+
+	tflog.Debug(ctx, "Instance migration has finished")
+
+	result, err := client.GetInstance(ctx, instance.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to refresh instance %d: %w", instance.ID, err)
+	}
+
+	return result, nil
 }
 
 // detachConfigVolumes detaches any volumes associated with an InstanceConfig.Devices struct.

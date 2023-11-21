@@ -607,6 +607,21 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		rebootInstance = true
 	}
 
+	// If the region has changed,
+	// we should migrate the Linode.
+	if d.HasChange("region") {
+		instance, err = applyInstanceMigration(
+			ctx,
+			d,
+			&client,
+			instance,
+			d.Get("region").(string),
+		)
+		if err != nil {
+			return diag.Errorf("failed to migrate instance: %s", err)
+		}
+	}
+
 	oldSpec, newSpec, err := getInstanceTypeChange(ctx, d, &client)
 	if err != nil {
 		return diag.Errorf("Error getting resize info for instance: %s", err)
