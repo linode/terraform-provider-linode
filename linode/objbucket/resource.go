@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -61,7 +61,13 @@ func readResource(
 	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Object Storage Bucket %q from state because it no longer exists", d.Id())
+			tflog.Warn(
+				ctx,
+				fmt.Sprintf(
+					"[WARN] removing Object Storage Bucket %q from state because it no longer exists",
+					d.Id(),
+				),
+			)
 			d.SetId("")
 			return nil
 		}
@@ -229,7 +235,7 @@ func readBucketLifecycle(ctx context.Context, d *schema.ResourceData, client *s3
 	}
 
 	if lifecycleConfigOutput == nil {
-		log.Printf("[DEBUG] 'lifecycleConfigOutput' is nil, skipping further processing")
+		tflog.Debug(ctx, "'lifecycleConfigOutput' is nil, skipping further processing")
 		return nil
 	}
 
