@@ -68,6 +68,13 @@ func SafeInt64ToInt(number int64) (int, error) {
 	return int(number), nil
 }
 
+func SafeIntToInt32(number int) (int32, error) {
+	if number > math.MaxInt32 || number < math.MinInt32 {
+		return 0, fmt.Errorf("int value %v is out of range for int32", number)
+	}
+	return int32(number), nil
+}
+
 func SafeFloat64ToInt(number float64) (int, error) {
 	if number > float64(math.MaxInt) || number < float64(math.MinInt) {
 		return 0, fmt.Errorf("float64 value %v is out of range for int64", number)

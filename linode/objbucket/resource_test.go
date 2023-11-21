@@ -19,11 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -129,21 +127,23 @@ func sweep(prefix string) error {
 		}
 		bucket := objectStorageBucket.Label
 
-		if haveBucketAccess {
-			conn := s3.New(session.New(&aws.Config{
-				Region:      aws.String(testCluster),
-				Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-				Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, objectStorageBucket.Cluster)),
-			}))
-			iter := s3manager.NewDeleteListIterator(conn, &s3.ListObjectsInput{
-				Bucket: aws.String(bucket),
-			})
-			if err := s3manager.NewBatchDeleteWithClient(conn).Delete(aws.BackgroundContext(), iter); err != nil {
-				return fmt.Errorf("unable to delete objects from bucket (%s): %s", bucket, err)
-			}
+		s3client, err := helper.S3ConnectionV2(
+			fmt.Sprintf(helper.LinodeObjectsEndpoint, objectStorageBucket.Cluster),
+			accessKey,
+			secretKey,
+		)
+		if err != nil {
+			log.Printf("failed to create s3 client: %v", err)
 		}
 
-		err := client.DeleteObjectStorageBucket(context.Background(), objectStorageBucket.Cluster, bucket)
+		helper.DeleteAllObjects(bucket, s3client)
+
+		_, err = s3client.DeleteBucket(
+			context.Background(),
+			&s3.DeleteBucketInput{
+				Bucket: aws.String(bucket),
+			},
+		)
 		if err != nil {
 			if apiErr, ok := err.(*linodego.Error); ok && !haveBucketAccess && strings.HasPrefix(
 				apiErr.Message, fmt.Sprintf("Bucket %s is not empty", bucket)) {

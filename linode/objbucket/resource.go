@@ -2,13 +2,15 @@ package objbucket
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -84,16 +86,16 @@ func readResource(
 			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
 		}
 
-		client, err := helper.S3Connection(endpoint, accessKey, secretKey)
+		s3Client, err := helper.S3ConnectionV2(endpoint, accessKey, secretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err := readBucketLifecycle(d, client); err != nil {
+		if err := readBucketLifecycle(ctx, d, s3Client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
 		}
 
-		if err := readBucketVersioning(d, client); err != nil {
+		if err := readBucketVersioning(ctx, d, s3Client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
@@ -158,20 +160,20 @@ func updateResource(
 	lifecycleChanged := d.HasChange("lifecycle_rule")
 
 	if versioningChanged || lifecycleChanged {
-		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+		s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		// Ensure we only update what is changed
 		if versioningChanged {
-			if err := updateBucketVersioning(d, s3client); err != nil {
+			if err := updateBucketVersioning(ctx, d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if lifecycleChanged {
-			if err := updateBucketLifecycle(d, s3client); err != nil {
+			if err := updateBucketLifecycle(ctx, d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -195,32 +197,40 @@ func deleteResource(
 	return nil
 }
 
-func readBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
+func readBucketVersioning(ctx context.Context, d *schema.ResourceData, client *s3.Client) error {
 	label := d.Get("label").(string)
 
-	versioningOutput, err := conn.GetBucketVersioning(&s3.GetBucketVersioningInput{
-		Bucket: &label,
-	})
+	versioningOutput, err := client.GetBucketVersioning(
+		ctx,
+		&s3.GetBucketVersioningInput{Bucket: &label},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get versioning for bucket id %s: %s", d.Id(), err)
 	}
 
-	d.Set("versioning", versioningOutput.Status != nil &&
-		*versioningOutput.Status == s3.BucketVersioningStatusEnabled)
+	d.Set("versioning", versioningOutput.Status == s3types.BucketVersioningStatusEnabled)
 
 	return nil
 }
 
-func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
+func readBucketLifecycle(ctx context.Context, d *schema.ResourceData, client *s3.Client) error {
 	label := d.Get("label").(string)
 
-	lifecycleConfigOutput, err := conn.GetBucketLifecycleConfiguration(
-		&s3.GetBucketLifecycleConfigurationInput{Bucket: &label})
+	lifecycleConfigOutput, err := client.GetBucketLifecycleConfiguration(
+		ctx,
+		&s3.GetBucketLifecycleConfigurationInput{Bucket: &label},
+	)
 	// A "NoSuchLifecycleConfiguration" error should be ignored in this context
 	if err != nil {
-		if err, ok := err.(awserr.Error); !ok || (ok && err.Code() != "NoSuchLifecycleConfiguration") {
-			return fmt.Errorf("failed to get lifecycle for bucket id %s: %s", d.Id(), err)
+		var ae smithy.APIError
+		if ok := errors.As(err, &ae); !ok || ae.ErrorCode() != "NoSuchLifecycleConfiguration" {
+			return fmt.Errorf("failed to get lifecycle for bucket id %s: %w", d.Id(), err)
 		}
+	}
+
+	if lifecycleConfigOutput == nil {
+		log.Printf("[DEBUG] 'lifecycleConfigOutput' is nil, skipping further processing")
+		return nil
 	}
 
 	rulesMatched := lifecycleConfigOutput.Rules
@@ -228,7 +238,7 @@ func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 
 	// We should match the existing lifecycle rules to the schema if they're defined
 	if ok {
-		rulesMatched = matchRulesWithSchema(lifecycleConfigOutput.Rules, declaredRules)
+		rulesMatched = matchRulesWithSchema(rulesMatched, declaredRules)
 	}
 
 	d.Set("lifecycle_rule", flattenLifecycleRules(rulesMatched))
@@ -236,30 +246,38 @@ func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 	return nil
 }
 
-func updateBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
+func updateBucketVersioning(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *s3.Client,
+) error {
 	bucket := d.Get("label").(string)
 	n := d.Get("versioning").(bool)
 
-	status := s3.BucketVersioningStatusSuspended
+	status := s3types.BucketVersioningStatusSuspended
 	if n {
-		status = s3.BucketVersioningStatusEnabled
+		status = s3types.BucketVersioningStatusEnabled
 	}
 
 	inputVersioningConfig := &s3.PutBucketVersioningInput{
 		Bucket: &bucket,
-		VersioningConfiguration: &s3.VersioningConfiguration{
-			Status: &status,
+		VersioningConfiguration: &s3types.VersioningConfiguration{
+			Status: status,
 		},
 	}
 
-	if _, err := conn.PutBucketVersioning(inputVersioningConfig); err != nil {
+	if _, err := client.PutBucketVersioning(ctx, inputVersioningConfig); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func updateBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
+func updateBucketLifecycle(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *s3.Client,
+) error {
 	bucket := d.Get("label").(string)
 
 	rules, err := expandLifecycleRules(d.Get("lifecycle_rule").([]interface{}))
@@ -267,13 +285,15 @@ func updateBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 		return err
 	}
 
-	_, err = conn.PutBucketLifecycleConfiguration(
+	_, err = client.PutBucketLifecycleConfiguration(
+		ctx,
 		&s3.PutBucketLifecycleConfigurationInput{
 			Bucket: &bucket,
-			LifecycleConfiguration: &s3.BucketLifecycleConfiguration{
+			LifecycleConfiguration: &s3types.BucketLifecycleConfiguration{
 				Rules: rules,
 			},
-		})
+		},
+	)
 
 	return err
 }
@@ -346,7 +366,7 @@ func DecodeBucketID(id string) (cluster, label string, err error) {
 	return
 }
 
-func flattenLifecycleRules(rules []*s3.LifecycleRule) []map[string]interface{} {
+func flattenLifecycleRules(rules []s3types.LifecycleRule) []map[string]interface{} {
 	result := make([]map[string]interface{}, len(rules))
 
 	for i, rule := range rules {
@@ -360,11 +380,9 @@ func flattenLifecycleRules(rules []*s3.LifecycleRule) []map[string]interface{} {
 			ruleMap["prefix"] = *prefix
 		}
 
-		if status := rule.Status; status != nil {
-			ruleMap["enabled"] = *status == "Enabled"
-		}
+		ruleMap["enabled"] = rule.Status == s3types.ExpirationStatusEnabled
 
-		if rule.AbortIncompleteMultipartUpload != nil {
+		if rule.AbortIncompleteMultipartUpload != nil && rule.AbortIncompleteMultipartUpload.DaysAfterInitiation != nil {
 			ruleMap["abort_incomplete_multipart_upload_days"] = *rule.AbortIncompleteMultipartUpload.DaysAfterInitiation
 		}
 
@@ -402,17 +420,17 @@ func flattenLifecycleRules(rules []*s3.LifecycleRule) []map[string]interface{} {
 	return result
 }
 
-func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) {
-	rules := make([]*s3.LifecycleRule, len(ruleSpecs))
+func expandLifecycleRules(ruleSpecs []interface{}) ([]s3types.LifecycleRule, error) {
+	rules := make([]s3types.LifecycleRule, len(ruleSpecs))
 	for i, ruleSpec := range ruleSpecs {
 		ruleSpec := ruleSpec.(map[string]interface{})
-		rule := &s3.LifecycleRule{}
+		rule := s3types.LifecycleRule{}
 
-		status := "Disabled"
+		status := s3types.ExpirationStatusDisabled
 		if ruleSpec["enabled"].(bool) {
-			status = "Enabled"
+			status = s3types.ExpirationStatusEnabled
 		}
-		rule.Status = &status
+		rule.Status = status
 
 		if id, ok := ruleSpec["id"]; ok {
 			id := id.(string)
@@ -425,15 +443,19 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 		}
 
 		//nolint:lll
-		if abortIncompleteDays, ok := ruleSpec["abort_incomplete_multipart_upload_days"].(int); ok && abortIncompleteDays > 0 {
-			rule.AbortIncompleteMultipartUpload = &s3.AbortIncompleteMultipartUpload{}
-			abortIncompleteDays := int64(abortIncompleteDays)
-
-			rule.AbortIncompleteMultipartUpload.DaysAfterInitiation = &abortIncompleteDays
+		abortIncompleteDays, ok := ruleSpec["abort_incomplete_multipart_upload_days"].(int)
+		if ok && abortIncompleteDays > 0 {
+			int32Days, err := helper.SafeIntToInt32(abortIncompleteDays)
+			if err != nil {
+				return nil, err
+			}
+			rule.AbortIncompleteMultipartUpload = &s3types.AbortIncompleteMultipartUpload{
+				DaysAfterInitiation: &int32Days,
+			}
 		}
 
 		if expirationList := ruleSpec["expiration"].([]interface{}); len(expirationList) > 0 {
-			rule.Expiration = &s3.LifecycleExpiration{}
+			rule.Expiration = &s3types.LifecycleExpiration{}
 
 			expirationMap := expirationList[0].(map[string]interface{})
 
@@ -447,9 +469,11 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 			}
 
 			if days, ok := expirationMap["days"].(int); ok && days > 0 {
-				days := int64(days)
-
-				rule.Expiration.Days = &days
+				int32Days, err := helper.SafeIntToInt32(days)
+				if err != nil {
+					return nil, err
+				}
+				rule.Expiration.Days = &int32Days
 			}
 
 			if marker, ok := expirationMap["expired_object_delete_marker"].(bool); ok && marker {
@@ -458,13 +482,16 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 		}
 
 		if expirationList := ruleSpec["noncurrent_version_expiration"].([]interface{}); len(expirationList) > 0 {
-			rule.NoncurrentVersionExpiration = &s3.NoncurrentVersionExpiration{}
+			rule.NoncurrentVersionExpiration = &s3types.NoncurrentVersionExpiration{}
 
 			expirationMap := expirationList[0].(map[string]interface{})
 
-			if days, ok := expirationMap["days"]; ok {
-				days := int64(days.(int))
-				rule.NoncurrentVersionExpiration.NoncurrentDays = &days
+			if days, ok := expirationMap["days"].(int); ok && days > 0 {
+				int32Days, err := helper.SafeIntToInt32(days)
+				if err != nil {
+					return nil, err
+				}
+				rule.NoncurrentVersionExpiration.NoncurrentDays = &int32Days
 			}
 		}
 
@@ -474,10 +501,15 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 	return rules, nil
 }
 
-func matchRulesWithSchema(rules []*s3.LifecycleRule, declaredRules []interface{}) []*s3.LifecycleRule {
-	result := make([]*s3.LifecycleRule, 0)
+// matchRulesWithSchema is for keeping the order of existing rules in the
+// TF states and append any addition rules received
+func matchRulesWithSchema(
+	rules []s3types.LifecycleRule,
+	declaredRules []interface{},
+) []s3types.LifecycleRule {
+	result := make([]s3types.LifecycleRule, 0)
 
-	ruleMap := make(map[string]*s3.LifecycleRule, len(declaredRules))
+	ruleMap := make(map[string]s3types.LifecycleRule, len(declaredRules))
 	for _, rule := range rules {
 		ruleMap[*rule.ID] = rule
 	}
