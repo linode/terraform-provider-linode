@@ -2204,7 +2204,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 func TestAccResourceInstance_migration(t *testing.T) {
 	// This is a very long-running test so we should
 	// only run it if necessary.
-	acceptance.OptInTest(t)
+	acceptance.LongRunningTest(t)
 
 	t.Parallel()
 
