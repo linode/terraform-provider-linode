@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"slices"
 	"strconv"
 	"sync"
 	"testing"
@@ -2212,20 +2211,16 @@ func TestAccResourceInstance_migration(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	regions, err := acceptance.GetRegionsWithCaps([]string{"Linodes"})
+	// Resolve a region to migrate to
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes"},
+		func(v linodego.Region) bool {
+			return v.ID != testRegion
+		},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	regionIndex := slices.IndexFunc(regions, func(s string) bool {
-		return s != testRegion
-	})
-
-	if regionIndex < 0 {
-		t.Fatal("Could not resolve adequate region for migrations")
-	}
-
-	targetRegion := regions[regionIndex]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
