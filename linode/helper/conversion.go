@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -26,6 +27,22 @@ func AnySliceToTyped[T any](obj []any) []T {
 	}
 
 	return result
+}
+
+func StringAliasSliceToStringSlice[T any](obj []T) ([]string, error) {
+	var result []string
+
+	var typeOfT T
+	if reflect.TypeOf(typeOfT).Kind() != reflect.String {
+		return nil, fmt.Errorf("type T is not an alias of string")
+	}
+
+	for _, v := range obj {
+		strValue := reflect.ValueOf(v).String()
+		result = append(result, strValue)
+	}
+
+	return result, nil
 }
 
 func StringToInt64(s string, diags *diag.Diagnostics) int64 {
@@ -80,4 +97,11 @@ func SafeFloat64ToInt(number float64) (int, error) {
 		return 0, fmt.Errorf("float64 value %v is out of range for int64", number)
 	}
 	return int(number), nil
+}
+
+func StringValue(v *string) string {
+	if v != nil {
+		return *v
+	}
+	return ""
 }

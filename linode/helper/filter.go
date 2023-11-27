@@ -456,11 +456,11 @@ func (f FilterConfig) validateFilter(
 	recursiveValidate := func() (bool, error) {
 		var s []any
 
-		switch itemValue.(type) {
+		switch itemValue := itemValue.(type) {
 		case []int:
-			s = TypedSliceToAny(itemValue.([]int))
+			s = TypedSliceToAny(itemValue)
 		case []string:
-			s = TypedSliceToAny(itemValue.([]string))
+			s = TypedSliceToAny(itemValue)
 		default:
 			return false, fmt.Errorf("unknown slice type")
 		}

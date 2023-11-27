@@ -126,9 +126,8 @@ func sweep(prefix string) error {
 			continue
 		}
 		bucket := objectStorageBucket.Label
-
 		s3client, err := helper.S3ConnectionV2(
-			fmt.Sprintf(helper.LinodeObjectsEndpoint, objectStorageBucket.Cluster),
+			helper.ComputeS3EndpointFromBucket(objectStorageBucket),
 			accessKey,
 			secretKey,
 		)

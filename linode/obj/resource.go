@@ -6,14 +6,18 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/smithy-go"
+
+	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
+	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	s3v2 "github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/terraform-provider-linode/linode/helper"
@@ -37,7 +41,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -45,16 +49,21 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	headOutput, err := s3client.HeadObject(&s3.HeadObjectInput{
-		Bucket: &bucket,
-		Key:    &key,
-	})
+	headOutput, err := s3client.HeadObject(
+		ctx,
+		&s3v2.HeadObjectInput{
+			Bucket: &bucket,
+			Key:    &key,
+		},
+	)
 	if err != nil {
-		// If the object is not found, mark as destroyed so it can be recreated.
-		if awsErr, ok := err.(awserr.RequestFailure); ok && awsErr.StatusCode() == http.StatusNotFound {
-			d.SetId("")
-			fmt.Printf(`[WARN] could not find Bucket (%s) Object (%s)`, bucket, key)
-			return nil
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) {
+			if apiErr.ErrorCode() == "NoSuchKey" || apiErr.ErrorCode() == "NoSuchKey" {
+				d.SetId("")
+				tflog.Warn(ctx, fmt.Sprintf("couldn't find Bucket (%s) or Object (%s)", bucket, key))
+				return nil
+			}
 		}
 		return diag.FromErr(err)
 	}
@@ -64,11 +73,19 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("content_encoding", headOutput.ContentEncoding)
 	d.Set("content_language", headOutput.ContentLanguage)
 	d.Set("content_type", headOutput.ContentType)
-	d.Set("etag", strings.Trim(aws.StringValue(headOutput.ETag), `"`))
+	d.Set("etag", strings.Trim(helper.StringValue(headOutput.ETag), `"`))
 	d.Set("website_redirect", headOutput.WebsiteRedirectLocation)
 	d.Set("version_id", headOutput.VersionId)
 	d.Set("metadata", flattenObjectMetadata(headOutput.Metadata))
-	d.Set("endpoint", s3client.Config.Endpoint)
+
+	// Compute s3 endpoint when it's not configured by the user
+	if _, ok := d.GetOk("endpoint"); !ok {
+		endpoint, err := helper.ComputeS3Endpoint(ctx, d, meta)
+		if err != nil {
+			return diag.Errorf("failed to compute object storage endpoint: %s", err)
+		}
+		d.Set("endpoint", endpoint)
+	}
 
 	return nil
 }
@@ -82,19 +99,22 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
-	acl := d.Get("acl").(string)
+	acl := s3types.ObjectCannedACL(d.Get("acl").(string))
 
 	if d.HasChange("acl") {
-		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+		s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		if _, err := s3client.PutObjectAcl(&s3.PutObjectAclInput{
-			Bucket: &bucket,
-			Key:    &key,
-			ACL:    &acl,
-		}); err != nil {
+		_, err = s3client.PutObjectAcl(
+			ctx, &s3v2.PutObjectAclInput{
+				Bucket: &bucket,
+				Key:    &key,
+				ACL:    acl,
+			},
+		)
+		if err != nil {
 			return diag.Errorf("failed to put Bucket (%s) Object (%s) ACL: %s", bucket, key, err)
 		}
 	}
@@ -103,7 +123,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,10 +133,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	force := d.Get("force_destroy").(bool)
 
 	if _, ok := d.GetOk("version_id"); ok {
-		return deleteAllObjectVersions(s3client, bucket, key, force)
+		return deleteAllObjectVersions(ctx, s3client, bucket, key, force)
 	}
 
-	return diag.FromErr(deleteObject(s3client, bucket, strings.TrimPrefix(key, "/"), "", force))
+	return diag.FromErr(deleteObject(ctx, s3client, bucket, strings.TrimPrefix(key, "/"), "", force))
 }
 
 func diffResource(
@@ -132,7 +152,7 @@ func diffResource(
 // specified bucket via the *schema.ResourceData, then it calls
 // readResource.
 func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -153,12 +173,12 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		return &s
 	}
 
-	putInput := &s3.PutObjectInput{
+	putInputV2 := &s3v2.PutObjectInput{
 		Bucket: &bucket,
 		Key:    &key,
-		Body:   body,
+		Body:   &body,
 
-		ACL:                     nilOrValue(d.Get("acl").(string)),
+		ACL:                     s3types.ObjectCannedACL(d.Get("acl").(string)),
 		CacheControl:            nilOrValue(d.Get("cache_control").(string)),
 		ContentDisposition:      nilOrValue(d.Get("content_disposition").(string)),
 		ContentEncoding:         nilOrValue(d.Get("content_encoding").(string)),
@@ -168,10 +188,10 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
-		putInput.Metadata = expandObjectMetadata(metadata.(map[string]interface{}))
+		putInputV2.Metadata = expandObjectMetadata(metadata.(map[string]interface{}))
 	}
 
-	if _, err := s3client.PutObject(putInput); err != nil {
+	if _, err := s3client.PutObject(ctx, putInputV2); err != nil {
 		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
 	}
 
@@ -181,81 +201,95 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 }
 
 // deleteAllObjectVersions deletes all versions of a given object
-func deleteAllObjectVersions(client *s3.S3, bucket, key string, force bool) diag.Diagnostics {
-	var versions []string
-	listObjectVersionsInput := &s3.ListObjectVersionsInput{
-		Bucket: &bucket,
-	}
+func deleteAllObjectVersions(ctx context.Context, client *s3v2.Client, bucket, key string, force bool) diag.Diagnostics {
+	paginator := s3v2.NewListObjectVersionsPaginator(client, &s3v2.ListObjectVersionsInput{
+		Bucket: awsv2.String(bucket),
+		Prefix: awsv2.String(key),
+	})
 
-	if key != "" {
-		listObjectVersionsInput.Prefix = &key
-	}
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.Background())
+		shouldIgnore := func(code string) bool {
+			return (code == "NoSuchBucket" ||
+				code == "NoSuchKey" ||
+				code == "NoSuchVersion")
+		}
 
-	// accumulate all versions of the current object to be deleted
-	if err := client.ListObjectVersionsPages(
-		listObjectVersionsInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-			if page == nil {
-				return !lastPage
+		if err != nil {
+			var apiErr smithy.APIError
+			if errors.As(err, &apiErr) && shouldIgnore(apiErr.ErrorCode()) {
+				tflog.Error(
+					ctx,
+					fmt.Sprintf("bucket or object does not exist: %v", err),
+				)
+			} else {
+				return diag.FromErr(err)
 			}
+		}
 
-			for _, objectVersion := range page.Versions {
-				if objectKey := aws.StringValue(objectVersion.Key); objectKey == key {
-					versions = append(versions, aws.StringValue(objectVersion.VersionId))
+		for _, version := range page.Versions {
+			_, err := client.DeleteObject(
+				context.Background(),
+				&s3v2.DeleteObjectInput{
+					Bucket:    awsv2.String(bucket),
+					Key:       version.Key,
+					VersionId: version.VersionId,
+				})
+			if err != nil {
+				var apiErr smithy.APIError
+				if errors.As(err, &apiErr) && shouldIgnore(apiErr.ErrorCode()) {
+					tflog.Error(
+						ctx,
+						fmt.Sprintf("bucket or object does not exist: %v", err),
+					)
+				} else {
+					return diag.FromErr(err)
 				}
 			}
-
-			return !lastPage
-		}); err != nil {
-		if err, ok := err.(awserr.Error); !(ok && err.Code() != s3.ErrCodeNoSuchBucket) {
-			return diag.Errorf("failed to list Bucket (%s) Object (%s) versions: %s", bucket, key, err)
-		}
-	}
-
-	// delete all version of the current object
-	for _, version := range versions {
-		if err := deleteObject(client, bucket, key, version, force); err != nil {
-			return diag.FromErr(err)
 		}
 	}
 	return nil
 }
 
-func deleteObject(client *s3.S3, bucket, key, version string, force bool) error {
-	deleteObjectInput := &s3.DeleteObjectInput{
+func deleteObject(ctx context.Context, client *s3v2.Client, bucket, key, version string, force bool) error {
+	deleteObjectInput := &s3v2.DeleteObjectInput{
 		Bucket:                    &bucket,
 		Key:                       &key,
-		BypassGovernanceRetention: aws.Bool(force),
+		BypassGovernanceRetention: awsv2.Bool(force),
 	}
 	if version != "" {
 		deleteObjectInput.VersionId = &version
 	}
 
-	_, err := client.DeleteObject(deleteObjectInput)
-	if err == nil {
-		return nil
+	_, err := client.DeleteObject(ctx, deleteObjectInput)
+	if err != nil {
+		msg := fmt.Sprintf(
+			"failed to delete Bucket (%s) Object (%s) Version (%s): %s",
+			bucket,
+			key,
+			version,
+			err,
+		)
+
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) {
+			if apiErr.ErrorCode() != "NoSuchBucket" && apiErr.ErrorCode() != "NoSuchKey" {
+				return fmt.Errorf("%s: %w", msg, err)
+			}
+		}
 	}
-
-	msg := fmt.Sprintf("failed to delete Bucket (%s) Object (%s) Version (%s): %s", bucket, key, version, err)
-
-	//nolint:lll
-	if awsErr, ok := err.(awserr.Error); ok && (awsErr.Code() == s3.ErrCodeNoSuchBucket || awsErr.Code() == s3.ErrCodeNoSuchKey) {
-		return nil
-	} else if ok {
-		return awserr.New(awsErr.Code(), msg, awsErr)
-	}
-
-	return errors.New(msg)
+	return nil
 }
 
-func objectBodyFromResourceData(d *schema.ResourceData) (body aws.ReaderSeekerCloser, err error) {
+func objectBodyFromResourceData(d *schema.ResourceData) (body s3manager.ReaderSeekerCloser, err error) {
 	if source, ok := d.GetOk("source"); ok {
 		sourceFilePath := source.(string)
 
 		file, err := os.Open(filepath.Clean(sourceFilePath))
 		if err != nil {
-			return aws.ReaderSeekerCloser{}, err
+			return s3manager.ReaderSeekerCloser{}, err
 		}
-		return aws.ReadSeekCloser(file), err
+		return *s3manager.ReadSeekCloser(file), err
 	}
 
 	var contentBytes []byte
@@ -266,28 +300,23 @@ func objectBodyFromResourceData(d *schema.ResourceData) (body aws.ReaderSeekerCl
 		contentBytes = []byte(content)
 	}
 
-	body = aws.ReadSeekCloser(bytes.NewReader(contentBytes))
+	body = *s3manager.ReadSeekCloser(bytes.NewReader(contentBytes))
 	return
 }
 
-func expandObjectMetadata(metadata map[string]interface{}) map[string]*string {
-	metadataMap := make(map[string]*string, len(metadata))
+func expandObjectMetadata(metadata map[string]interface{}) map[string]string {
+	metadataMap := make(map[string]string, len(metadata))
 	for key, value := range metadata {
-		metadataMap[key] = aws.String(value.(string))
+		metadataMap[key] = value.(string)
 	}
 	return metadataMap
 }
 
-func flattenObjectMetadata(metadata map[string]*string) map[string]string {
+func flattenObjectMetadata(metadata map[string]string) map[string]string {
 	metadataObject := make(map[string]string, len(metadata))
 	for key, value := range metadata {
-		if value == nil {
-			continue
-		}
-
-		// AWS Go SDK capitalizes metadata, this is a workaround. https://github.com/aws/aws-sdk-go/issues/445
 		key := strings.ToLower(key)
-		metadataObject[key] = *value
+		metadataObject[key] = value
 	}
 
 	return metadataObject

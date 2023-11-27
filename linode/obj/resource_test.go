@@ -3,15 +3,13 @@
 package obj_test
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -96,26 +94,27 @@ func TestAccResourceObject_basic(t *testing.T) {
 	})
 }
 
-func getObject(rs *terraform.ResourceState) (*s3.GetObjectOutput, error) {
+func getObject(ctx context.Context, rs *terraform.ResourceState) (*s3.GetObjectOutput, error) {
 	bucket := rs.Primary.Attributes["bucket"]
 	key := rs.Primary.Attributes["key"]
 	etag := rs.Primary.Attributes["etag"]
 	accessKey := rs.Primary.Attributes["access_key"]
 	secretKey := rs.Primary.Attributes["secret_key"]
-	cluster := rs.Primary.Attributes["cluster"]
+	endpoint := rs.Primary.Attributes["endpoint"]
 
-	conn := s3.New(session.New(&aws.Config{
-		Region:      aws.String(testCluster),
-		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-		Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, cluster)),
-	}))
+	s3client, err := helper.S3ConnectionV2(endpoint, accessKey, secretKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get create s3 client: %w", err)
+	}
 
-	return conn.GetObject(
+	return s3client.GetObject(
+		ctx,
 		&s3.GetObjectInput{
 			Bucket:  &bucket,
 			Key:     &key,
 			IfMatch: &etag,
-		})
+		},
+	)
 }
 
 func checkObjectExists(resourceName string, obj *s3.GetObjectOutput) resource.TestCheckFunc {
@@ -127,7 +126,7 @@ func checkObjectExists(resourceName string, obj *s3.GetObjectOutput) resource.Te
 		key := rs.Primary.Attributes["key"]
 		bucket := rs.Primary.Attributes["bucket"]
 
-		out, err := getObject(rs)
+		out, err := getObject(context.Background(), rs)
 		if err != nil {
 			return fmt.Errorf("failed to get Bucket (%s) Object (%s): %s", bucket, key, err)
 		}
@@ -145,7 +144,7 @@ func checkObjectDestroy(s *terraform.State) error {
 
 		key := rs.Primary.Attributes["key"]
 
-		if _, err := getObject(rs); err == nil {
+		if _, err := getObject(context.Background(), rs); err == nil {
 			return fmt.Errorf("object with %s Key still exists", key)
 		}
 	}
