@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/sshkey"
+	"github.com/linode/terraform-provider-linode/v2/linode/sshkey"
 	"github.com/stretchr/testify/assert"
 )
 

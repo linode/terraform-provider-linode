@@ -5,7 +5,7 @@ package helper_test
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func TestGetLatestVersion(t *testing.T) {
