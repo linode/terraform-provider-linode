@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"regexp"
+	"slices"
 	"strconv"
 	"sync"
 	"testing"
@@ -21,7 +23,7 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
 )
 
-var testRegion = "us-east"
+var testRegion string
 
 func init() {
 	resource.AddTestSweepers("linode_instance", &resource.Sweeper{
@@ -29,12 +31,12 @@ func init() {
 		F:    sweep,
 	})
 
-	//region, err := acceptance.GetRandomRegionWithCaps([]string{"Vlans", "VPCs"})
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//testRegion = region
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Vlans", "VPCs"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -2202,8 +2204,6 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 }
 
 func TestAccResourceInstance_migration(t *testing.T) {
-	// This is a very long-running test so we should
-	// only run it if necessary.
 	acceptance.LongRunningTest(t)
 
 	t.Parallel()
@@ -2211,6 +2211,21 @@ func TestAccResourceInstance_migration(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	regions, err := acceptance.GetRegionsWithCaps([]string{"Linodes"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	regionIndex := slices.IndexFunc(regions, func(s string) bool {
+		return s != testRegion
+	})
+
+	if regionIndex < 0 {
+		t.Fatal("Could not resolve adequate region for migrations")
+	}
+
+	targetRegion := regions[regionIndex]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2228,15 +2243,16 @@ func TestAccResourceInstance_migration(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, "us-mia"),
+				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, targetRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "region", "us-mia"),
+					resource.TestCheckResourceAttr(resName, "region", targetRegion),
 				),
 			},
+			// TODO: Add logic for testing warm migrations once possible
 			{
 				ResourceName:            resName,
 				ImportState:             true,
