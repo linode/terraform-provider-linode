@@ -2057,7 +2057,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type"},
 			},
 		},
 	})
@@ -2202,6 +2202,10 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 }
 
 func TestAccResourceInstance_migration(t *testing.T) {
+	// This is a very long-running test so we should
+	// only run it if necessary.
+	acceptance.OptInTest(t)
+
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -2237,7 +2241,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type"},
 			},
 		},
 	})
