@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `vpc_id` - (Required) The id of the parent VPC for this VPC Subnet.
 
-* `label` - (Required) The label of the VPC. Only contains ascii letters, digits and dashes.
+* `label` - (Required) The label of the VPC. Only contains ASCII letters, digits and dashes.
 
 * `ipv4` - (Required) The IPv4 range of this subnet in CIDR format.
 
@@ -40,4 +40,4 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `created` - The date and time when the VPC was created.
 
-* `updated` - The date and time when the VPC was updated.
+* `updated` - The date and time when the VPC was last updated.

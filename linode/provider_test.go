@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func TestAccProvider_Overrides(t *testing.T) {
