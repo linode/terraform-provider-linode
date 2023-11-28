@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
+	acceptance.OptInTest(t)
+
 	t.Parallel()
 
 	resourceName := "data.linode_account_settings.foobar"
