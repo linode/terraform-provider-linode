@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
 // ProviderNoPoll is used to configure the provider to disable instance

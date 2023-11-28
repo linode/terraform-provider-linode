@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/linode"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
 func TestCreatingFrameworkProvider(t *testing.T) {

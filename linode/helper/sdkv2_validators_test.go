@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func TestSDKv2ValidateIPv4Range(t *testing.T) {
