@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/instance/tmpl"
 )
 
 var testRegion string
@@ -30,7 +30,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Vlans"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Vlans", "VPCs"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -2096,7 +2096,7 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					requestsPerSecond := (float64(numRequests) / float64(time.Since(startTime).Milliseconds())) * 1000
+					requestsPerSecond := (float64(numRequests) / float64(time.Since(startTime).Seconds()))
 
 					t.Logf("\n[INFO] results from 12 linode parallel creation:\n"+
 						"total requests: %d\nfrequency: ~%f requests/second\n", numRequests, requestsPerSecond)
@@ -2106,6 +2106,88 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 					}
 				},
 				Config: tmpl.ManyLinodes(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
+	t.Parallel()
+
+	instanceResourceName := "linode_instance.foobar"
+	firewallResourceName := "linode_firewall.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.FirewallOnCreation(t, instanceName, region),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(instanceResourceName, &instance),
+				),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						firewallResourceName,
+						"devices.0.label",
+						instanceResourceName,
+						"label",
+					),
+				),
+			},
+			{
+				ResourceName:            instanceResourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "firewall_id"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_VPCInterface(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCInterface(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vpc"),
+
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv4.0.vpc", "10.0.4.150"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ip_ranges.0", "10.0.4.100/32"),
+					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv4.0.nat_1_1"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk"},
 			},
 		},
 	})

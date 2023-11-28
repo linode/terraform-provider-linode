@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 const (
@@ -91,8 +91,18 @@ func createResourceFromLinode(
 	linodeID := d.Get("linode_id").(int)
 	diskID := d.Get("disk_id").(int)
 
+	timeoutSeconds, err := helper.SafeFloat64ToInt(
+		d.Timeout(schema.TimeoutCreate).Seconds(),
+	)
+	if err != nil {
+		return diag.Errorf(
+			"failed to convert the float64 creation timeout to be an integer: %s",
+			err,
+		)
+	}
+
 	if _, err := client.WaitForInstanceDiskStatus(
-		ctx, linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
+		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
 	); err != nil {
 		return diag.Errorf(
 			"Error waiting for Linode Instance %d Disk %d to become ready for taking an Image", linodeID, diskID)
@@ -113,7 +123,7 @@ func createResourceFromLinode(
 	d.SetId(image.ID)
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		ctx, linodeID, diskID, linodego.DiskReady, int(d.Timeout(schema.TimeoutCreate).Seconds()),
+		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
 	); err != nil {
 		return diag.Errorf(
 			"failed to wait for linode instance %d disk %d to become ready while taking an image", linodeID, diskID)
@@ -158,9 +168,21 @@ func createResourceFromUpload(
 	if err := uploadImageAndStoreHash(ctx, d, meta, uploadURL, imageReader); err != nil {
 		return diag.Errorf("failed to upload image: %v", err)
 	}
-
-	image, err = client.WaitForImageStatus(ctx, image.ID, linodego.ImageStatusAvailable,
-		int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	timeoutSeconds, err := helper.SafeFloat64ToInt(
+		d.Timeout(schema.TimeoutCreate).Seconds(),
+	)
+	if err != nil {
+		return diag.Errorf(
+			"failed to convert the float64 creation timeout to be an integer: %s",
+			err,
+		)
+	}
+	image, err = client.WaitForImageStatus(
+		ctx,
+		image.ID,
+		linodego.ImageStatusAvailable,
+		timeoutSeconds,
+	)
 	if err != nil {
 		return diag.Errorf("failed to wait for image to be available: %v", err)
 	}

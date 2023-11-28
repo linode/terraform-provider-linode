@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 const (
@@ -110,14 +110,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Volume id %s as int: %s", d.Id(), err)
 	}
 
-	volume, errVolume := client.GetVolume(ctx, int(id))
+	volume, errVolume := client.GetVolume(ctx, id)
 	if errVolume != nil {
-		return diag.Errorf("Error fetching data about the volume %d: %s", int(id), errVolume)
+		return diag.Errorf("Error fetching data about the volume %d: %s", id, errVolume)
 	}
 
 	if d.HasChange("size") {
@@ -213,11 +213,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id64, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Volume id %s as int", d.Id())
 	}
-	id := int(id64)
 
 	// We should retry on intermittent deletion errors
 	return diag.FromErr(retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
@@ -229,7 +228,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		// We only want to detach if the volume is already attached to an instance,
 		// otherwise a context timeout will be thrown for non-attached volumes.
 		if vol.LinodeID != nil && *vol.LinodeID != 0 {
-			p, err := client.NewEventPoller(ctx, int(id64), "volume", linodego.ActionVolumeDetach)
+			p, err := client.NewEventPoller(ctx, id, "volume", linodego.ActionVolumeDetach)
 			if err != nil {
 				return retry.NonRetryableError(fmt.Errorf("failed to initialize event poller: %s", err))
 			}

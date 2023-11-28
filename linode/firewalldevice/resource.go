@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func Resource() *schema.Resource {
@@ -56,14 +56,14 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Firewall ID %s as int: %s", d.Id(), err)
 	}
 
 	firewallID := d.Get("firewall_id").(int)
 
-	device, err := client.GetFirewallDevice(ctx, firewallID, int(id))
+	device, err := client.GetFirewallDevice(ctx, firewallID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Firewall Device ID %q from state because it no longer exists", d.Id())
@@ -106,7 +106,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Firewall Device ID %s as int: %s", d.Id(), err)
 	}
@@ -116,7 +116,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("Error parsing Linode Firewall Device ID %v as int", d.Get("firewall_id"))
 	}
 
-	err = client.DeleteFirewallDevice(ctx, firewallID, int(id))
+	err = client.DeleteFirewallDevice(ctx, firewallID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode Firewall Device %d: %s", id, err)
 	}

@@ -21,9 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/version"
+	"github.com/linode/terraform-provider-linode/v2/linode"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/version"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -611,8 +611,6 @@ func GetRegionsWithCaps(capabilities []string) ([]string, error) {
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
 func GetRandomRegionWithCaps(capabilities []string) (string, error) {
-	rand.Seed(time.Now().UnixNano())
-
 	regions, err := GetRegionsWithCaps(capabilities)
 	if err != nil {
 		return "", err
@@ -628,8 +626,6 @@ func GetRandomRegionWithCaps(capabilities []string) (string, error) {
 
 // GetRandomOBJCluster gets a random Object Storage cluster.
 func GetRandomOBJCluster() (string, error) {
-	rand.Seed(time.Now().UnixNano())
-
 	client, err := GetTestClient()
 	if err != nil {
 		return "", err

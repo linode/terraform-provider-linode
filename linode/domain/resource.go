@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func Resource() *schema.Resource {
@@ -27,12 +27,12 @@ func Resource() *schema.Resource {
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
 
-	domain, err := client.GetDomain(ctx, int(id))
+	domain, err := client.GetDomain(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			log.Printf("[WARN] removing Linode Domain ID %q from state because it no longer exists", d.Id())
@@ -112,7 +112,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Domain id %s as int: %s", d.Id(), err)
 	}
@@ -156,7 +156,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.Tags = tags
 	}
 
-	_, err = client.UpdateDomain(ctx, int(id), updateOpts)
+	_, err = client.UpdateDomain(ctx, id, updateOpts)
 	if err != nil {
 		return diag.Errorf("Error updating Linode Domain %d: %s", id, err)
 	}
@@ -165,11 +165,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Domain id %s as int", d.Id())
 	}
-	err = client.DeleteDomain(ctx, int(id))
+	err = client.DeleteDomain(ctx, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode Domain %d: %s", id, err)
 	}

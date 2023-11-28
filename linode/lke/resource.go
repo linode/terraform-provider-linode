@@ -6,11 +6,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 const (
@@ -133,9 +135,21 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
-	client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
-		TimeoutSeconds: 15 * 60,
-	}, k8scondition.ClusterHasReadyNode)
+	// Sometimes the K8S API will raise an EOF error if polling immediately after
+	// a cluster is created. We should retry accordingly.
+	// NOTE: This routine has a short retry period because we want to raise
+	// and meaningful errors quickly.
+	diag.FromErr(retry.RetryContext(ctx, time.Second*25, func() *retry.RetryError {
+		err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
+			TimeoutSeconds: 15 * 60,
+		}, k8scondition.ClusterHasReadyNode)
+		if err != nil {
+			return retry.RetryableError(err)
+		}
+
+		return nil
+	}))
+
 	return readResource(ctx, d, meta)
 }
 
@@ -242,7 +256,24 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err != nil {
 		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
 	}
-	client.WaitForLKEClusterStatus(ctx, id, "not_ready", int(d.Timeout(schema.TimeoutCreate).Seconds()))
+	timeoutSeconds, err := helper.SafeFloat64ToInt(
+		d.Timeout(schema.TimeoutCreate).Seconds(),
+	)
+	if err != nil {
+		return diag.Errorf("failed to convert float64 creation timeout to int: %s", err)
+	}
+
+	_, err = client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
+	if err != nil {
+		// If we're getting a 404, it's safe to say the cluster has been
+		// deleted.
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

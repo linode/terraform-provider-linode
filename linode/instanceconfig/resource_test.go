@@ -13,15 +13,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/instanceconfig/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig/tmpl"
 )
 
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"vlans"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"vlans", "VPCs"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -326,6 +326,56 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
 					resource.TestCheckResourceAttr(resName, "booted", "true"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance_config.foobar"
+	networkDSName := "data.linode_instance_networking.foobar"
+	instanceName := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPCInterface(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
+					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.250"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.101/32"),
+					resource.TestCheckResourceAttrSet(resName, "interface.1.ipv4.0.nat_1_1"),
+
+					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.address", "10.0.4.250"),
+					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.vpc_id"),
+					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.subnet_id"),
+				),
+			},
+			{
+				Config: tmpl.VPCInterfaceUpdates(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
+					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.249"),
+					resource.TestCheckResourceAttr(resName, "interface.1.active", "false"),
+					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.100/32"),
+
+					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.#", "0"),
 				),
 			},
 			{

@@ -31,7 +31,7 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 	})
 
 	client := meta.(*ProviderMeta).Client
-	instance, err := client.GetInstance(ctx, int(entityID))
+	instance, err := client.GetInstance(ctx, entityID)
 	if err != nil {
 		return diag.Errorf("Error fetching data about the current linode: %s", err)
 	}
@@ -140,4 +140,90 @@ func CreateRandomRootPassword() (string, error) {
 	}
 	rootPass := base64.StdEncoding.EncodeToString(rawRootPass)
 	return rootPass, nil
+}
+
+func ExpandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
+	IPv4 := ipv4.(map[string]any)
+	vpcAddress := IPv4["vpc"].(string)
+	nat1To1 := IPv4["nat_1_1"].(string)
+	if vpcAddress == "" && nat1To1 == "" {
+		return nil
+	}
+	return &linodego.VPCIPv4{
+		VPC:     vpcAddress,
+		NAT1To1: nat1To1,
+	}
+}
+
+func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
+	result := linodego.InstanceConfigInterfaceCreateOptions{
+		Purpose:     linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string)),
+		Label:       ifaceMap["label"].(string),
+		IPAMAddress: ifaceMap["ipam_address"].(string),
+		Primary:     ifaceMap["primary"].(bool),
+	}
+	if ifaceMap["subnet_id"] != nil {
+		subnet_id := ifaceMap["subnet_id"].(int)
+		if subnet_id != 0 {
+			result.SubnetID = &subnet_id
+		}
+	}
+
+	if ifaceMap["ipv4"] != nil {
+		ipv4 := ifaceMap["ipv4"].([]any)
+		if len(ipv4) > 0 {
+			result.IPv4 = ExpandInterfaceIPv4(ipv4[0])
+		}
+	}
+	if ifaceMap["ip_ranges"] != nil {
+		result.IPRanges = ExpandStringList(ifaceMap["ip_ranges"].([]interface{}))
+	}
+
+	return result
+}
+
+func ExpandInterfaces(ctx context.Context, ifaces []any) []linodego.InstanceConfigInterfaceCreateOptions {
+	result := make([]linodego.InstanceConfigInterfaceCreateOptions, len(ifaces))
+
+	for i, iface := range ifaces {
+		ifaceMap := iface.(map[string]any)
+		result[i] = ExpandConfigInterface(ifaceMap)
+	}
+
+	return result
+}
+
+func FlattenInterfaceIPv4(ipv4 linodego.VPCIPv4) []map[string]any {
+	if ipv4.NAT1To1 == "" && ipv4.VPC == "" {
+		return nil
+	}
+	return []map[string]any{
+		{
+			"vpc":     ipv4.VPC,
+			"nat_1_1": ipv4.NAT1To1,
+		},
+	}
+}
+
+func FlattenInterface(iface linodego.InstanceConfigInterface) map[string]any {
+	return map[string]any{
+		"purpose":      iface.Purpose,
+		"ipam_address": iface.IPAMAddress,
+		"label":        iface.Label,
+		"id":           iface.ID,
+		"vpc_id":       iface.VPCID,
+		"subnet_id":    iface.SubnetID,
+		"primary":      iface.Primary,
+		"active":       iface.Active,
+		"ip_ranges":    iface.IPRanges,
+		"ipv4":         FlattenInterfaceIPv4(iface.IPv4),
+	}
+}
+
+func FlattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[string]any {
+	result := make([]map[string]any, len(interfaces))
+	for i, iface := range interfaces {
+		result[i] = FlattenInterface(iface)
+	}
+	return result
 }
