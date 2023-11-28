@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
+	aws "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
-	s3v2 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -18,25 +18,29 @@ const (
 	LinodeObjectsEndpoint = "https://%s.linodeobjects.com"
 )
 
-func S3ConnectionV2(endpoint, accessKey, secretKey string) (*s3v2.Client, error) {
+func S3ConnectionV2(endpoint, accessKey, secretKey string) (*s3.Client, error) {
 	awsSDKConfig, err := config.LoadDefaultConfig(
 		context.Background(),
 		config.WithCredentialsProvider(
-			credentialsv2.NewStaticCredentialsProvider(accessKey, secretKey, ""),
+			credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
 		),
+		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
+			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+				return aws.Endpoint{
+					URL: "https://" + endpoint,
+				}, nil
+			})),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return s3v2.NewFromConfig(awsSDKConfig, func(o *s3v2.Options) {
-		o.BaseEndpoint = awsv2.String("https://" + endpoint)
-	}), nil
+	return s3.NewFromConfig(awsSDKConfig), nil
 }
 
 // S3ConnectionFromDataV1 requires endpoint, access_key and secret_key in the data.
 // if endpoint is empty a bucket and cluster are required
-func S3ConnectionFromDataV2(ctx context.Context, d *schema.ResourceData, meta interface{}) (*s3v2.Client, error) {
+func S3ConnectionFromDataV2(ctx context.Context, d *schema.ResourceData, meta interface{}) (*s3.Client, error) {
 	endpoint := d.Get("endpoint").(string)
 	if endpoint == "" {
 		var err error
@@ -73,9 +77,9 @@ func BuildObjectStorageObjectID(d *schema.ResourceData) string {
 	return fmt.Sprintf("%s/%s", bucket, key)
 }
 
-func DeleteAllObjects(bucket string, client *s3v2.Client) error {
-	paginator := s3v2.NewListObjectsV2Paginator(client, &s3v2.ListObjectsV2Input{
-		Bucket: awsv2.String(bucket),
+func DeleteAllObjects(bucket string, client *s3.Client) error {
+	paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucket),
 	})
 
 	for paginator.HasMorePages() {
@@ -93,8 +97,8 @@ func DeleteAllObjects(bucket string, client *s3v2.Client) error {
 
 		_, err = client.DeleteObjects(
 			context.Background(),
-			&s3v2.DeleteObjectsInput{
-				Bucket: awsv2.String(bucket),
+			&s3.DeleteObjectsInput{
+				Bucket: aws.String(bucket),
 				Delete: &s3types.Delete{
 					Objects: objects,
 				},
