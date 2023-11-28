@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func NewResource() resource.Resource {

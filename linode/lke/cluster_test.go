@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/lke"
+	"github.com/linode/terraform-provider-linode/v2/linode/lke"
 )
 
 func TestReconcileLKENodePoolSpecs(t *testing.T) {

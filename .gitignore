@@ -32,3 +32,5 @@ modules-dev/
 
 # Binary exclusions
 terraform-provider-linode
+
+dist/**

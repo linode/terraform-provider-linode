@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	nodebalancer "github.com/linode/terraform-provider-linode/linode/nb/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	nodebalancer "github.com/linode/terraform-provider-linode/v2/linode/nb/tmpl"
 )
 
 var (

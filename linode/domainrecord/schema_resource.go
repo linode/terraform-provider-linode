@@ -3,7 +3,7 @@ package domainrecord
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{

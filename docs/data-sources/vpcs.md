@@ -53,7 +53,7 @@ Each Linode VPC will be stored in the `vpcs` attribute and will export the follo
 
 * `created` - The date and time when the VPC was created.
 
-* `updated` - The date and time when the VPC was updated.
+* `updated` - The date and time when the VPC was last updated.
 
 ## Filterable Fields
 
