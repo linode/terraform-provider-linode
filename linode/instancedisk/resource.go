@@ -195,9 +195,26 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			"body": putRequest,
 		})
 
+		p, err := client.NewEventPollerWithSecondary(
+			ctx,
+			linodeID,
+			linodego.EntityLinode,
+			id,
+			linodego.ActionDiskUpdate,
+		)
+		if err != nil {
+			return diag.Errorf("failed to poll for events: %s", err)
+		}
+
 		if _, err := client.UpdateInstanceDisk(ctx, linodeID, id, putRequest); err != nil {
 			return diag.Errorf("failed to update instance disk: %s", err)
 		}
+
+		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
+			return diag.Errorf("failed to wait for disk update: %s", err)
+		}
+
+		tflog.Debug(ctx, "Disk update event finished")
 	}
 
 	return readResource(ctx, d, meta)
