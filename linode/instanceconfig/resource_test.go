@@ -388,6 +388,79 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 	})
 }
 
+// Test case to ensure instances manually booted into rescue mode
+// will not crash the provider.
+func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	resName := "linode_instance_config.foobar"
+	instanceResName := "linode_instance.foobar"
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Complex(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+				),
+			},
+			{
+				PreConfig: func() {
+					client, err := acceptance.GetTestClient()
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					poller, err := client.NewEventPoller(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeReboot)
+					if err != nil {
+						t.Fatalf("failed to create event poller: %v", err)
+					}
+
+					if err := client.RescueInstance(context.Background(), instance.ID, linodego.InstanceRescueOptions{}); err != nil {
+						t.Fatalf("failed to boot instance into rescue mode: %v", err)
+					}
+
+					if _, err := poller.WaitForFinished(context.Background(), 240); err != nil {
+						t.Fatalf("failed to wait for instance to boot into rescue mode: %v", err)
+					}
+				},
+				Config: tmpl.ComplexUpdates(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+
+					// The provider should not be booted into this config
+					resource.TestCheckResourceAttr(resName, "booted", "false"),
+				),
+			},
+			{
+				Config: tmpl.Complex(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+
+					// The provider should now have been rebooted into this config
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
 func checkExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
