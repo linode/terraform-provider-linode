@@ -261,7 +261,13 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if shouldShutdown {
 		tflog.Info(ctx, "Shutting down instance for disk deletion")
 
-		p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+		p, err := client.NewEventPollerWithSecondary(
+			ctx,
+			linodeID,
+			linodego.EntityLinode,
+			id,
+			linodego.ActionLinodeShutdown,
+		)
 		if err != nil {
 			return diag.Errorf("failed to poll for events: %s", err)
 		}
@@ -306,7 +312,13 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			"config_id": configID,
 		})
 
-		p, err := client.NewEventPoller(ctx, linodeID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+		p, err := client.NewEventPollerWithSecondary(
+			ctx,
+			linodeID,
+			linodego.EntityLinode,
+			id,
+			linodego.ActionLinodeBoot,
+		)
 		if err != nil {
 			return diag.Errorf("failed to poll for events: %s", err)
 		}
