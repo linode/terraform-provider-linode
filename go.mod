@@ -108,4 +108,4 @@ require (
 
 // Temporary replacement, replace with project branch once
 // Zhiwei's PR is merged.
-replace github.com/linode/linodego => github.com/zliang-akamai/linodego v1.16.2-0.20231117064335-cddc6f17d034
+replace github.com/linode/linodego => github.com/linode/linodego v1.25.1-0.20231128213456-3a4cc7014c2e
