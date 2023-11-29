@@ -15,6 +15,10 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+const (
+	nbLabelRegex = "^[a-zA-Z0-9_-]*$"
+)
+
 var frameworkResourceSchema = schema.Schema{
 	Version: 1,
 	Attributes: map[string]schema.Attribute{
@@ -28,6 +32,7 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(3, 32),
+				helper.MatchesRegex(nbLabelRegex),
 			},
 		},
 		"region": schema.StringAttribute{
@@ -108,6 +113,7 @@ var resourceNodebalancerV0 = schema.Schema{
 			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(3, 32),
+				helper.MatchesRegex(nbLabelRegex),
 			},
 		},
 		"region": schema.StringAttribute{

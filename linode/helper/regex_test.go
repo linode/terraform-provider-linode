@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestCheckRegex(t *testing.T) {
+func TestRegexSuccess_firewallLabel(t *testing.T) {
 	pattern := "^[a-zA-Z0-9]([-_.]?[a-zA-Z0-9]+)*[a-zA-Z0-9]$"
 
 	regExp := helper.StringToRegex(pattern)
@@ -30,6 +30,39 @@ func TestCheckRegex(t *testing.T) {
 		"no_double--dash",
 		"no_double__underscore",
 		"!NotValid",
+	}
+
+	for _, str := range testValidStrings {
+		if !regExp.MatchString(str) {
+			t.Fatal("Should match regex")
+		}
+	}
+
+	for _, str := range testInvalidStrings {
+		if regExp.MatchString(str) {
+			t.Fatal("Should not match regex")
+		}
+	}
+}
+
+func TestCheckSuccess_nbLabel(t *testing.T) {
+	pattern := "^[a-zA-Z0-9_-]*$"
+
+	regExp := helper.StringToRegex(pattern)
+
+	testValidStrings := []string{
+		"valid_String123",
+		"valid__string",
+		"valid_string-WITH_dash",
+	}
+
+	testInvalidStrings := []string{
+		"*InvalidString",
+		"AnotherInvalid!",
+		"Not..Invalid",
+		"&notValid",
+		"#Nope",
+		"(NotValid)",
 	}
 
 	for _, str := range testValidStrings {
