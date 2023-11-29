@@ -5,6 +5,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+)
+
+const (
+	sskKeyLabelRegex = "^[a-zA-Z0-9_-]*$"
 )
 
 var SSHKeyAttributes = map[string]schema.Attribute{
@@ -13,6 +18,7 @@ var SSHKeyAttributes = map[string]schema.Attribute{
 		Required:    true,
 		Validators: []validator.String{
 			stringvalidator.LengthBetween(0, 64),
+			helper.MatchesRegex(sskKeyLabelRegex),
 		},
 	},
 	"ssh_key": schema.StringAttribute{

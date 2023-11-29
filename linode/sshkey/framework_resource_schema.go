@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -16,6 +17,7 @@ var frameworkResourceSchema = schema.Schema{
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(0, 64),
+				helper.MatchesRegex(sskKeyLabelRegex),
 			},
 		},
 		"ssh_key": schema.StringAttribute{
