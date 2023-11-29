@@ -4,8 +4,12 @@ package helper_test
 
 import (
 	"testing"
+	"context"
 
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func TestCheckRegex(t *testing.T) {
@@ -38,5 +42,27 @@ func TestCheckRegex(t *testing.T) {
 		if regExp.MatchString(str) {
 			t.Fatal("Should not match regex")
 		}
+	}
+}
+
+func TestRegexValidator_success(t *testing.T) {
+	v := helper.MatchesRegex("^[a-zA-Z0-9]([-_.]?[a-zA-Z0-9]+)*[a-zA-Z0-9]$")
+
+	var d diag.Diagnostics
+
+	response := validator.StringResponse{
+		Diagnostics: d,
+	}
+
+	v.ValidateString(
+		context.Background(),
+		validator.StringRequest{
+			ConfigValue: types.StringValue("valid_String123"),
+		},
+		&response,
+	)
+
+	if response.Diagnostics.HasError() {
+		t.Fatalf("expected no error; got %s", response.Diagnostics[0].Detail())
 	}
 }
