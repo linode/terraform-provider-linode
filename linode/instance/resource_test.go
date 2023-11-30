@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/instance/tmpl"
 )
 
 var testRegion string
@@ -1102,51 +1102,6 @@ func TestAccResourceInstance_tagWithVolume(t *testing.T) {
 					acceptance.CheckInstanceExists(instanceResName, &instance),
 					resource.TestCheckResourceAttr(instanceResName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(instanceResName, "tags.0", "tf_test_updated"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccResourceInstance_diskRawDeleted(t *testing.T) {
-	t.Skip("This test is currently disabled as null disk " +
-		"configurations are now computed by default.")
-
-	t.Parallel()
-	var instance linodego.Instance
-	instanceName := acctest.RandomWithPrefix("tf_test")
-	resName := "linode_instance.foobar"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		Steps: []resource.TestStep{
-			// Start off with a Linode 1024
-			{
-				Config: tmpl.RawDisk(t, instanceName, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
-					resource.TestCheckResourceAttr(resName, "config.#", "0"),
-					resource.TestCheckResourceAttr(resName, "disk.#", "1"),
-					resource.TestCheckResourceAttr(resName, "disk.0.size", "3000"),
-					resource.TestCheckResourceAttr(resName, "disk.0.label", "disk"),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
-					checkInstanceDisks(&instance, testDisk("disk", testDiskSize(3000))),
-				),
-			},
-			// Bump it to a 2048, and expand the disk
-			{
-				Config: tmpl.RawDiskDeleted(t, instanceName, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),
-					resource.TestCheckResourceAttr(resName, "config.#", "0"),
-					resource.TestCheckResourceAttr(resName, "disk.#", "0"),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "swap_size", "0"),
 				),
 			},
 		},

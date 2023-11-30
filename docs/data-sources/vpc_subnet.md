@@ -43,4 +43,4 @@ In addition to all arguments above, the following attributes are exported:
 
 * `created` - The date and time when the VPC Subnet was created.
 
-* `updated` - The date and time when the VPC Subnet was updated.
+* `updated` - The date and time when the VPC Subnet was last updated.

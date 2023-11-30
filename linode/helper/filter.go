@@ -593,7 +593,7 @@ func validateItemValueType(value any) error {
 
 	return fmt.Errorf("The underlying type (%v) for this filterable field is not supported. "+
 		"This is always a provider bug. Please create an issue describing this bug on the terraform-provider-linode "+
-		"GitHub repository. (https://github.com/linode/terraform-provider-linode/issues)",
+		"GitHub repository. (https://github.com/linode/terraform-provider-linode/v2/issues)",
 		kind)
 }
 

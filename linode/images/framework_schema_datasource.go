@@ -2,8 +2,8 @@ package images
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/linode/image"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v2/linode/image"
 )
 
 var filterConfig = frameworkfilter.Config{

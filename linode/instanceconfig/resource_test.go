@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/instanceconfig/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig/tmpl"
 )
 
 var testRegion string
@@ -376,6 +376,79 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.100/32"),
 
 					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.#", "0"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+// Test case to ensure instances manually booted into rescue mode
+// will not crash the provider.
+func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	resName := "linode_instance_config.foobar"
+	instanceResName := "linode_instance.foobar"
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Complex(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+				),
+			},
+			{
+				PreConfig: func() {
+					client, err := acceptance.GetTestClient()
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					poller, err := client.NewEventPoller(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeReboot)
+					if err != nil {
+						t.Fatalf("failed to create event poller: %v", err)
+					}
+
+					if err := client.RescueInstance(context.Background(), instance.ID, linodego.InstanceRescueOptions{}); err != nil {
+						t.Fatalf("failed to boot instance into rescue mode: %v", err)
+					}
+
+					if _, err := poller.WaitForFinished(context.Background(), 240); err != nil {
+						t.Fatalf("failed to wait for instance to boot into rescue mode: %v", err)
+					}
+				},
+				Config: tmpl.ComplexUpdates(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+
+					// The provider should not be booted into this config
+					resource.TestCheckResourceAttr(resName, "booted", "false"),
+				),
+			},
+			{
+				Config: tmpl.Complex(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+
+					// The provider should now have been rebooted into this config
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
 				),
 			},
 			{

@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"testing"
 
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/linode/acceptance/tmpl"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v2/linode/acceptance/tmpl"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/firewalldevice/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice/tmpl"
 )
 
 var testRegion string

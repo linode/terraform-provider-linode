@@ -1,4 +1,4 @@
-module github.com/linode/terraform-provider-linode
+module github.com/linode/terraform-provider-linode/v2
 
 go 1.20
 
@@ -25,7 +25,7 @@ require (
 	github.com/linode/linodego v1.25.0
 	github.com/linode/linodego/k8s v1.25.1
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.15.0
+	golang.org/x/crypto v0.16.0
 	golang.org/x/net v0.18.0
 )
 
@@ -101,8 +101,8 @@ require (
 	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
