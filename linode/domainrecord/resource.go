@@ -23,10 +23,6 @@ func Resource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: importResource,
 		},
-		//CustomizeDiff: customdiff.All(
-		//	// suppressParentSuffix,
-		//	suppressEmptyName,
-		//),
 	}
 }
 
