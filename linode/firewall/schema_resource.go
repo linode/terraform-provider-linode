@@ -8,6 +8,8 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
+// RegExp for firewall label validation: "^[a-zA-Z0-9]([-_.]?[a-zA-Z0-9]+)*[a-zA-Z0-9]$"
+
 var resourceRuleSchema = map[string]*schema.Schema{
 	"label": {
 		Type:        schema.TypeString,
