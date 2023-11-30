@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 )
@@ -73,35 +76,116 @@ func BuildObjectStorageObjectID(d *schema.ResourceData) string {
 	return fmt.Sprintf("%s/%s", bucket, key)
 }
 
-func DeleteAllObjects(bucket string, client *s3.Client) error {
-	paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
+func IsObjNotFoundErr(err error) bool {
+	var apiErr smithy.APIError
+	// Error code is 'Forbidden' when the bucket has been removed
+	return errors.As(err, &apiErr) && (apiErr.ErrorCode() == "NotFound" || apiErr.ErrorCode() == "Forbidden")
+}
+
+// Purge all objects, wiping out all versions and delete markers for versioned objects.
+func PurgeAllObjects(bucket string, s3client *s3.Client, bypassRetention, ignoreNotFound bool) error {
+	versioning, err := s3client.GetBucketVersioning(context.Background(), &s3.GetBucketVersioningInput{
 		Bucket: aws.String(bucket),
 	})
+	if err != nil {
+		return err
+	}
 
+	if versioning.Status == s3types.BucketVersioningStatusEnabled {
+		err = DeleteAllObjectVersionsAndDeleteMarkers(
+			context.Background(),
+			s3client,
+			bucket,
+			"",
+			bypassRetention,
+			ignoreNotFound,
+		)
+	} else {
+		err = DeleteAllObjects(s3client, bucket, bypassRetention)
+	}
+	return err
+}
+
+// Send delete requests for every objects.
+// Versioned objects will get a deletion marker instead of being fully purged.
+func DeleteAllObjects(s3client *s3.Client, bucketName string, bypassRetention bool) error {
+	objPaginator := s3.NewListObjectsV2Paginator(s3client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucketName),
+	})
+
+	var objectsToDelete []s3types.ObjectIdentifier
+	for objPaginator.HasMorePages() {
+		page, err := objPaginator.NextPage(context.Background())
+		if err != nil {
+			return err
+		}
+
+		for _, obj := range page.Contents {
+			objectsToDelete = append(objectsToDelete, s3types.ObjectIdentifier{
+				Key: obj.Key,
+			})
+		}
+	}
+
+	_, err := s3client.DeleteObjects(context.Background(), &s3.DeleteObjectsInput{
+		Bucket:                    aws.String(bucketName),
+		Delete:                    &s3types.Delete{Objects: objectsToDelete},
+		BypassGovernanceRetention: &bypassRetention,
+	})
+
+	return err
+}
+
+// deleteAllObjectVersions deletes all versions of a given object
+func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, key string, bypassRetention, ignoreNotFound bool) error {
+	paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
+		Bucket: aws.String(bucket),
+		Prefix: aws.String(key),
+	})
+
+	var objectsToDelete []s3types.ObjectIdentifier
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(context.Background())
 		if err != nil {
-			return err
-		}
-
-		objects := make([]s3types.ObjectIdentifier, len(page.Contents))
-		for i, object := range page.Contents {
-			objects[i] = s3types.ObjectIdentifier{
-				Key: object.Key,
+			if !IsObjNotFoundErr(err) || !ignoreNotFound {
+				return err
 			}
+			tflog.Warn(ctx, fmt.Sprintf("bucket or object does not exist: %v", err))
 		}
 
-		_, err = client.DeleteObjects(
-			context.Background(),
-			&s3.DeleteObjectsInput{
-				Bucket: aws.String(bucket),
-				Delete: &s3types.Delete{
-					Objects: objects,
+		for _, version := range page.Versions {
+			objectsToDelete = append(
+				objectsToDelete,
+				s3types.ObjectIdentifier{
+					Key:       version.Key,
+					VersionId: version.VersionId,
 				},
-			})
-		if err != nil {
+			)
+		}
+		for _, marker := range page.DeleteMarkers {
+			objectsToDelete = append(
+				objectsToDelete,
+				s3types.ObjectIdentifier{
+					Key:       marker.Key,
+					VersionId: marker.VersionId,
+				},
+			)
+		}
+	}
+
+	_, err := client.DeleteObjects(
+		context.Background(),
+		&s3.DeleteObjectsInput{
+			Bucket:                    aws.String(bucket),
+			Delete:                    &s3types.Delete{Objects: objectsToDelete},
+			BypassGovernanceRetention: &bypassRetention,
+		},
+	)
+	if err != nil {
+		if !IsObjNotFoundErr(err) || !ignoreNotFound {
 			return err
 		}
+		tflog.Warn(ctx, fmt.Sprintf("bucket or object does not exist: %v", err))
 	}
 	return nil
 }

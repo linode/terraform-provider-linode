@@ -4,13 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/aws/smithy-go"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -40,10 +37,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return putObject(ctx, d, meta)
 }
 
-func isNotFoundErr(e smithy.APIError) bool {
-	return e.ErrorCode() == "NotFound" || e.ErrorCode() == "Forbidden"
-}
-
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
 	if err != nil {
@@ -61,17 +54,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		},
 	)
 	if err != nil {
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) {
-			// Error code is 'Forbidden' when the bucket has been removed
-			if isNotFoundErr(apiErr) {
-				d.SetId("")
-				tflog.Warn(
-					ctx,
-					fmt.Sprintf("couldn't find Bucket (%s) or Object (%s)", bucket, key),
-				)
-				return nil
-			}
+		if helper.IsObjNotFoundErr(err) {
+			d.SetId("")
+			tflog.Warn(ctx, fmt.Sprintf("couldn't find Bucket (%s) or Object (%s)", bucket, key))
+			return nil
 		}
 		return diag.FromErr(err)
 	}
@@ -141,7 +127,9 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	force := d.Get("force_destroy").(bool)
 
 	if _, ok := d.GetOk("version_id"); ok {
-		return deleteAllObjectVersionsAndDeleteMarkers(ctx, s3client, bucket, key, force)
+		return diag.FromErr(
+			helper.DeleteAllObjectVersionsAndDeleteMarkers(ctx, s3client, bucket, key, force, true),
+		)
 	}
 
 	return diag.FromErr(deleteObject(ctx, s3client, bucket, strings.TrimPrefix(key, "/"), "", force))
@@ -208,70 +196,6 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	return readResource(ctx, d, meta)
 }
 
-// deleteAllObjectVersions deletes all versions of a given object
-func deleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, key string, force bool) diag.Diagnostics {
-	paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
-		Bucket: aws.String(bucket),
-		Prefix: aws.String(key),
-	})
-
-	var objectsToDelete []s3types.ObjectIdentifier
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(context.Background())
-		if err != nil {
-			var apiErr smithy.APIError
-			if errors.As(err, &apiErr) && isNotFoundErr(apiErr) {
-				tflog.Error(
-					ctx,
-					fmt.Sprintf("bucket or object does not exist: %v", err),
-				)
-			} else {
-				return diag.FromErr(err)
-			}
-		}
-
-		for _, version := range page.Versions {
-			objectsToDelete = append(
-				objectsToDelete,
-				s3types.ObjectIdentifier{
-					Key:       version.Key,
-					VersionId: version.VersionId,
-				},
-			)
-		}
-		for _, marker := range page.DeleteMarkers {
-			objectsToDelete = append(
-				objectsToDelete,
-				s3types.ObjectIdentifier{
-					Key:       marker.Key,
-					VersionId: marker.VersionId,
-				},
-			)
-		}
-	}
-
-	_, err := client.DeleteObjects(
-		context.Background(),
-		&s3.DeleteObjectsInput{
-			Bucket: aws.String(bucket),
-			Delete: &s3types.Delete{Objects: objectsToDelete},
-		},
-	)
-	if err != nil {
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) && isNotFoundErr(apiErr) {
-			tflog.Error(
-				ctx,
-				fmt.Sprintf("bucket or object does not exist: %v", err),
-			)
-		} else {
-			return diag.FromErr(err)
-		}
-	}
-
-	return nil
-}
-
 func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version string, force bool) error {
 	deleteObjectInput := &s3.DeleteObjectInput{
 		Bucket:                    &bucket,
@@ -291,9 +215,8 @@ func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version s
 			version,
 			err,
 		)
-
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) && isNotFoundErr(apiErr) {
+		tflog.Error(ctx, msg)
+		if !helper.IsObjNotFoundErr(err) {
 			return fmt.Errorf("%s: %w", msg, err)
 		}
 	}

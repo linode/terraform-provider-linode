@@ -135,7 +135,7 @@ func sweep(prefix string) error {
 			log.Printf("failed to create s3 client: %v", err)
 		}
 
-		helper.DeleteAllObjects(bucket, s3client)
+		helper.PurgeAllObjects(bucket, s3client, true, true)
 
 		_, err = s3client.DeleteBucket(
 			context.Background(),
