@@ -14,10 +14,6 @@ import (
 	"github.com/linode/linodego"
 )
 
-const (
-	LinodeObjectsEndpoint = "https://%s.linodeobjects.com"
-)
-
 func S3ConnectionV2(endpoint, accessKey, secretKey string) (*s3.Client, error) {
 	awsSDKConfig, err := config.LoadDefaultConfig(
 		context.Background(),
