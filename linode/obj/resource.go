@@ -12,9 +12,9 @@ import (
 
 	"github.com/aws/smithy-go"
 
-	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
-	s3v2 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -40,6 +40,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return putObject(ctx, d, meta)
 }
 
+func isNotFoundErr(e smithy.APIError) bool {
+	return e.ErrorCode() == "NotFound" || e.ErrorCode() == "Forbidden"
+}
+
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
 	if err != nil {
@@ -51,7 +55,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	headOutput, err := s3client.HeadObject(
 		ctx,
-		&s3v2.HeadObjectInput{
+		&s3.HeadObjectInput{
 			Bucket: &bucket,
 			Key:    &key,
 		},
@@ -59,9 +63,13 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if err != nil {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) {
-			if apiErr.ErrorCode() == "NoSuchKey" || apiErr.ErrorCode() == "NoSuchKey" {
+			// Error code is 'Forbidden' when the bucket has been removed
+			if isNotFoundErr(apiErr) {
 				d.SetId("")
-				tflog.Warn(ctx, fmt.Sprintf("couldn't find Bucket (%s) or Object (%s)", bucket, key))
+				tflog.Warn(
+					ctx,
+					fmt.Sprintf("couldn't find Bucket (%s) or Object (%s)", bucket, key),
+				)
 				return nil
 			}
 		}
@@ -108,7 +116,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		_, err = s3client.PutObjectAcl(
-			ctx, &s3v2.PutObjectAclInput{
+			ctx, &s3.PutObjectAclInput{
 				Bucket: &bucket,
 				Key:    &key,
 				ACL:    acl,
@@ -133,7 +141,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	force := d.Get("force_destroy").(bool)
 
 	if _, ok := d.GetOk("version_id"); ok {
-		return deleteAllObjectVersions(ctx, s3client, bucket, key, force)
+		return deleteAllObjectVersionsAndDeleteMarkers(ctx, s3client, bucket, key, force)
 	}
 
 	return diag.FromErr(deleteObject(ctx, s3client, bucket, strings.TrimPrefix(key, "/"), "", force))
@@ -173,7 +181,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		return &s
 	}
 
-	putInputV2 := &s3v2.PutObjectInput{
+	putInputV2 := &s3.PutObjectInput{
 		Bucket: &bucket,
 		Key:    &key,
 		Body:   &body,
@@ -201,23 +209,18 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 }
 
 // deleteAllObjectVersions deletes all versions of a given object
-func deleteAllObjectVersions(ctx context.Context, client *s3v2.Client, bucket, key string, force bool) diag.Diagnostics {
-	paginator := s3v2.NewListObjectVersionsPaginator(client, &s3v2.ListObjectVersionsInput{
-		Bucket: awsv2.String(bucket),
-		Prefix: awsv2.String(key),
+func deleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, key string, force bool) diag.Diagnostics {
+	paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
+		Bucket: aws.String(bucket),
+		Prefix: aws.String(key),
 	})
 
+	var objectsToDelete []s3types.ObjectIdentifier
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(context.Background())
-		shouldIgnore := func(code string) bool {
-			return (code == "NoSuchBucket" ||
-				code == "NoSuchKey" ||
-				code == "NoSuchVersion")
-		}
-
 		if err != nil {
 			var apiErr smithy.APIError
-			if errors.As(err, &apiErr) && shouldIgnore(apiErr.ErrorCode()) {
+			if errors.As(err, &apiErr) && isNotFoundErr(apiErr) {
 				tflog.Error(
 					ctx,
 					fmt.Sprintf("bucket or object does not exist: %v", err),
@@ -228,34 +231,52 @@ func deleteAllObjectVersions(ctx context.Context, client *s3v2.Client, bucket, k
 		}
 
 		for _, version := range page.Versions {
-			_, err := client.DeleteObject(
-				context.Background(),
-				&s3v2.DeleteObjectInput{
-					Bucket:    awsv2.String(bucket),
+			objectsToDelete = append(
+				objectsToDelete,
+				s3types.ObjectIdentifier{
 					Key:       version.Key,
 					VersionId: version.VersionId,
-				})
-			if err != nil {
-				var apiErr smithy.APIError
-				if errors.As(err, &apiErr) && shouldIgnore(apiErr.ErrorCode()) {
-					tflog.Error(
-						ctx,
-						fmt.Sprintf("bucket or object does not exist: %v", err),
-					)
-				} else {
-					return diag.FromErr(err)
-				}
-			}
+				},
+			)
+		}
+		for _, marker := range page.DeleteMarkers {
+			objectsToDelete = append(
+				objectsToDelete,
+				s3types.ObjectIdentifier{
+					Key:       marker.Key,
+					VersionId: marker.VersionId,
+				},
+			)
 		}
 	}
+
+	_, err := client.DeleteObjects(
+		context.Background(),
+		&s3.DeleteObjectsInput{
+			Bucket: aws.String(bucket),
+			Delete: &s3types.Delete{Objects: objectsToDelete},
+		},
+	)
+	if err != nil {
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) && isNotFoundErr(apiErr) {
+			tflog.Error(
+				ctx,
+				fmt.Sprintf("bucket or object does not exist: %v", err),
+			)
+		} else {
+			return diag.FromErr(err)
+		}
+	}
+
 	return nil
 }
 
-func deleteObject(ctx context.Context, client *s3v2.Client, bucket, key, version string, force bool) error {
-	deleteObjectInput := &s3v2.DeleteObjectInput{
+func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version string, force bool) error {
+	deleteObjectInput := &s3.DeleteObjectInput{
 		Bucket:                    &bucket,
 		Key:                       &key,
-		BypassGovernanceRetention: awsv2.Bool(force),
+		BypassGovernanceRetention: aws.Bool(force),
 	}
 	if version != "" {
 		deleteObjectInput.VersionId = &version
@@ -272,10 +293,8 @@ func deleteObject(ctx context.Context, client *s3v2.Client, bucket, key, version
 		)
 
 		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) {
-			if apiErr.ErrorCode() != "NoSuchBucket" && apiErr.ErrorCode() != "NoSuchKey" {
-				return fmt.Errorf("%s: %w", msg, err)
-			}
+		if errors.As(err, &apiErr) && isNotFoundErr(apiErr) {
+			return fmt.Errorf("%s: %w", msg, err)
 		}
 	}
 	return nil
