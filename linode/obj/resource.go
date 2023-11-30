@@ -48,17 +48,23 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
+	headObjectInput := &s3.HeadObjectInput{
+		Bucket: &bucket,
+		Key:    &key,
+	}
+	tflog.Debug(ctx, "getting object header", map[string]any{"HeadObjectInput": headObjectInput})
 	headOutput, err := s3client.HeadObject(
 		ctx,
-		&s3.HeadObjectInput{
-			Bucket: &bucket,
-			Key:    &key,
-		},
+		headObjectInput,
 	)
 	if err != nil {
 		if helper.IsObjNotFoundErr(err) {
 			d.SetId("")
-			tflog.Warn(ctx, fmt.Sprintf("couldn't find Bucket (%s) or Object (%s)", bucket, key))
+			tflog.Warn(ctx, fmt.Sprintf(
+				"couldn't find bucket (%s) or object (%s), "+
+					"removing the object from the TF state", bucket, key),
+			)
+
 			return nil
 		}
 		return diag.FromErr(err)
@@ -76,10 +82,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	// Compute s3 endpoint when it's not configured by the user
 	if _, ok := d.GetOk("endpoint"); !ok {
+		tflog.Debug(ctx, "'endpoint' wasn't configured, computing it from cluster name")
 		endpoint, err := helper.ComputeS3Endpoint(ctx, d, meta)
 		if err != nil {
 			return diag.Errorf("failed to compute object storage endpoint: %s", err)
 		}
+		tflog.Debug(ctx, fmt.Sprintf("computed endpoint: '%s'", endpoint))
 		d.Set("endpoint", endpoint)
 	}
 
@@ -91,6 +99,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if d.HasChanges("cache_control", "content_base64", "content_disposition",
 		"content_encoding", "content_language", "content_type", "content",
 		"etag", "metadata", "source", "website_redirect") {
+		tflog.Debug(ctx, "detected qualified change(s), calling 'putObject'")
 		return putObject(ctx, d, meta)
 	}
 
@@ -104,13 +113,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.FromErr(err)
 		}
 
-		_, err = s3client.PutObjectAcl(
-			ctx, &s3.PutObjectAclInput{
-				Bucket: &bucket,
-				Key:    &key,
-				ACL:    acl,
-			},
+		aclPutInput := &s3.PutObjectAclInput{
+			Bucket: &bucket,
+			Key:    &key,
+			ACL:    acl,
+		}
+		tflog.Debug(
+			ctx,
+			"detected ACL change in TF files, updating it on the cloud",
+			map[string]any{"PutObjectAclInput": aclPutInput},
 		)
+
+		_, err = s3client.PutObjectAcl(ctx, aclPutInput)
 		if err != nil {
 			return diag.Errorf("failed to put Bucket (%s) Object (%s) ACL: %s", bucket, key, err)
 		}
@@ -131,11 +145,12 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	force := d.Get("force_destroy").(bool)
 
 	if _, ok := d.GetOk("version_id"); ok {
+		tflog.Debug(ctx, "versioning was enabled for this object, deleting all versions and delete markers")
 		return diag.FromErr(
 			helper.DeleteAllObjectVersionsAndDeleteMarkers(ctx, s3client, bucket, key, force, true),
 		)
 	}
-
+	tflog.Debug(ctx, "versioning was disabled for this object, simply delete the object")
 	return diag.FromErr(deleteObject(ctx, s3client, bucket, strings.TrimPrefix(key, "/"), "", force))
 }
 
@@ -143,6 +158,7 @@ func diffResource(
 	ctx context.Context, d *schema.ResourceDiff, meta interface{},
 ) error {
 	if d.HasChange("etag") {
+		tflog.Debug(ctx, "'etag' has been changed, computing new 'version_id'")
 		d.SetNewComputed("version_id")
 	}
 	return nil
@@ -152,6 +168,7 @@ func diffResource(
 // specified bucket via the *schema.ResourceData, then it calls
 // readResource.
 func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "entered 'putObject' function")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -160,6 +177,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
+	tflog.Debug(ctx, "getting object body from resource data")
 	body, err := objectBodyFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -173,7 +191,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		return &s
 	}
 
-	putInputV2 := &s3.PutObjectInput{
+	putInput := &s3.PutObjectInput{
 		Bucket: &bucket,
 		Key:    &key,
 		Body:   &body,
@@ -188,10 +206,12 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
-		putInputV2.Metadata = expandObjectMetadata(metadata.(map[string]interface{}))
+		putInput.Metadata = expandObjectMetadata(metadata.(map[string]interface{}))
+		tflog.Debug(ctx, fmt.Sprintf("got Metadata: %v", putInput.Metadata))
 	}
 
-	if _, err := s3client.PutObject(ctx, putInputV2); err != nil {
+	tflog.Debug(ctx, "putting the object", map[string]any{"PutObjectInput": putInput})
+	if _, err := s3client.PutObject(ctx, putInput); err != nil {
 		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
 	}
 
@@ -201,6 +221,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 }
 
 func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version string, force bool) error {
+	tflog.Debug(ctx, fmt.Sprintf("deleting the object key '%s' in bucket '%s'", key, bucket))
 	deleteObjectInput := &s3.DeleteObjectInput{
 		Bucket:                    &bucket,
 		Key:                       &key,
@@ -210,6 +231,7 @@ func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version s
 		deleteObjectInput.VersionId = &version
 	}
 
+	tflog.Debug(ctx, "DeleteObjectInput", map[string]any{"DeleteObjectInput": deleteObjectInput})
 	_, err := client.DeleteObject(ctx, deleteObjectInput)
 	if err != nil {
 		msg := fmt.Sprintf(
