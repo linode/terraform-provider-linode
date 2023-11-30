@@ -33,13 +33,13 @@ func Resource() *schema.Resource {
 	}
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "creating linode_object_storage_object")
 	return putObject(ctx, d, meta)
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "reading linode_object_storage_object")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
@@ -94,7 +94,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "updating linode_object_storage_object")
 	if d.HasChanges("cache_control", "content_base64", "content_disposition",
@@ -134,7 +134,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "deleting linode_object_storage_object")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
@@ -157,7 +157,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func diffResource(
-	ctx context.Context, d *schema.ResourceDiff, meta interface{},
+	ctx context.Context, d *schema.ResourceDiff, meta any,
 ) error {
 	if d.HasChange("etag") {
 		tflog.Debug(ctx, "'etag' has been changed, computing new 'version_id'")
@@ -169,7 +169,7 @@ func diffResource(
 // putObject builds the object from spec and puts it in the
 // specified bucket via the *schema.ResourceData, then it calls
 // readResource.
-func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tflog.Debug(ctx, "entered 'putObject' function")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
@@ -208,7 +208,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
-		putInput.Metadata = expandObjectMetadata(metadata.(map[string]interface{}))
+		putInput.Metadata = expandObjectMetadata(metadata.(map[string]any))
 		tflog.Debug(ctx, fmt.Sprintf("got Metadata: %v", putInput.Metadata))
 	}
 
@@ -268,7 +268,7 @@ func objectBodyFromResourceData(d *schema.ResourceData) (body s3manager.ReaderSe
 	return
 }
 
-func expandObjectMetadata(metadata map[string]interface{}) map[string]string {
+func expandObjectMetadata(metadata map[string]any) map[string]string {
 	metadataMap := make(map[string]string, len(metadata))
 	for key, value := range metadata {
 		metadataMap[key] = value.(string)
