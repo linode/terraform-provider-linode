@@ -17,7 +17,7 @@ var frameworkResourceSchema = schema.Schema{
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(0, 64),
-				helper.MatchesRegex(sskKeyLabelRegex),
+				helper.RegexMatches(SSHKeyLabelRegex, SSHKeyLabelErrorMessage),
 			},
 		},
 		"ssh_key": schema.StringAttribute{

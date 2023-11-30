@@ -7,29 +7,31 @@ import (
 	"context"
 
 	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/sshkey"
+	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestRegexSuccess_firewallLabel(t *testing.T) {
-	pattern := "^[a-zA-Z0-9]([-_.]?[a-zA-Z0-9]+)*[a-zA-Z0-9]$"
+func TestRegexSuccess_sshKey(t *testing.T) {
+	pattern := sshkey.SSHKeyLabelRegex
 
 	regExp := helper.StringToRegex(pattern)
 
 	testValidStrings := []string{
 		"valid_String123",
-		"valid_string.with_period",
-		"valid_string-with_dash",
+		"valid__string",
+		"valid_string-WITH_dash",
 	}
 
 	testInvalidStrings := []string{
-		"_InvalidString",
-		"AnotherInvalid_",
+		"*InvalidString",
+		"AnotherInvalid!",
 		"Not..Invalid",
-		"no_double--dash",
-		"no_double__underscore",
-		"!NotValid",
+		"&notValid",
+		"#Nope",
+		"(NotValid)",
 	}
 
 	for _, str := range testValidStrings {
@@ -46,7 +48,7 @@ func TestRegexSuccess_firewallLabel(t *testing.T) {
 }
 
 func TestCheckSuccess_nbLabel(t *testing.T) {
-	pattern := "^[a-zA-Z0-9_-]*$"
+	pattern := nb.NBLabelRegex
 
 	regExp := helper.StringToRegex(pattern)
 
@@ -79,7 +81,7 @@ func TestCheckSuccess_nbLabel(t *testing.T) {
 }
 
 func TestRegexValidator_success(t *testing.T) {
-	v := helper.MatchesRegex("^[a-zA-Z0-9]([-_.]?[a-zA-Z0-9]+)*[a-zA-Z0-9]$")
+	v := helper.RegexMatches(sshkey.SSHKeyLabelRegex, sshkey.SSHKeyLabelErrorMessage)
 
 	var d diag.Diagnostics
 

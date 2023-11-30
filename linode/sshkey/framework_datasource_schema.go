@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	sskKeyLabelRegex = "^[a-zA-Z0-9_-]*$"
+	SSHKeyLabelRegex = "^[a-zA-Z0-9_-]*$"
+	SSHKeyLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
 )
 
 var SSHKeyAttributes = map[string]schema.Attribute{
@@ -18,7 +19,7 @@ var SSHKeyAttributes = map[string]schema.Attribute{
 		Required:    true,
 		Validators: []validator.String{
 			stringvalidator.LengthBetween(0, 64),
-			helper.MatchesRegex(sskKeyLabelRegex),
+			helper.RegexMatches(SSHKeyLabelRegex, SSHKeyLabelErrorMessage),
 		},
 	},
 	"ssh_key": schema.StringAttribute{
