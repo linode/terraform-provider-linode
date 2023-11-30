@@ -71,6 +71,14 @@ func SRV(t *testing.T, domainName string, target string) string {
 		})
 }
 
+func WithDomain(t *testing.T, domainName, domainRecord string) string {
+	return acceptance.ExecuteTemplate(t,
+		"domain_record_with_domain", TemplateData{
+			Domain: domain.TemplateData{Domain: domainName},
+			Record: domainRecord,
+		})
+}
+
 func DataBasic(t *testing.T, domainName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_data_basic", TemplateData{
