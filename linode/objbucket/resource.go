@@ -294,16 +294,22 @@ func updateBucketLifecycle(
 	if err != nil {
 		return err
 	}
-
-	_, err = client.PutBucketLifecycleConfiguration(
-		ctx,
-		&s3.PutBucketLifecycleConfigurationInput{
-			Bucket: &bucket,
-			LifecycleConfiguration: &s3types.BucketLifecycleConfiguration{
-				Rules: rules,
+	if len(rules) > 0 {
+		_, err = client.PutBucketLifecycleConfiguration(
+			ctx,
+			&s3.PutBucketLifecycleConfigurationInput{
+				Bucket: &bucket,
+				LifecycleConfiguration: &s3types.BucketLifecycleConfiguration{
+					Rules: rules,
+				},
 			},
-		},
-	)
+		)
+	} else {
+		_, err = client.DeleteBucketLifecycle(
+			ctx,
+			&s3.DeleteBucketLifecycleInput{Bucket: &bucket},
+		)
+	}
 
 	return err
 }
@@ -452,7 +458,6 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]s3types.LifecycleRule, err
 			rule.Prefix = &prefix
 		}
 
-		//nolint:lll
 		abortIncompleteDays, ok := ruleSpec["abort_incomplete_multipart_upload_days"].(int)
 		if ok && abortIncompleteDays > 0 {
 			int32Days, err := helper.SafeIntToInt32(abortIncompleteDays)
