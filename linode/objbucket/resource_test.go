@@ -461,7 +461,7 @@ func checkBucketExists(s *terraform.State) error {
 			continue
 		}
 
-		cluster, label, err := objbucket.DecodeBucketID(rs.Primary.ID)
+		cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s, %s", rs.Primary.ID, err)
 		}
@@ -483,7 +483,7 @@ func checkBucketHasSSL(expected bool) func(*terraform.State) error {
 				continue
 			}
 
-			cluster, label, err := objbucket.DecodeBucketID(rs.Primary.ID)
+			cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("could not parse bucket ID %s: %s", rs.Primary.ID, err)
 			}
@@ -509,7 +509,7 @@ func checkBucketDestroy(s *terraform.State) error {
 		}
 
 		id := rs.Primary.ID
-		cluster, label, err := objbucket.DecodeBucketID(id)
+		cluster, label, err := objbucket.DecodeBucketID(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s", id)
 		}
