@@ -126,8 +126,9 @@ func sweep(prefix string) error {
 			continue
 		}
 		bucket := objectStorageBucket.Label
-		s3client, err := helper.S3ConnectionV2(
-			helper.ComputeS3EndpointFromBucket(objectStorageBucket),
+		s3client, err := helper.S3Connection(
+			context.Background(),
+			helper.ComputeS3EndpointFromBucket(context.Background(), objectStorageBucket),
 			accessKey,
 			secretKey,
 		)
@@ -135,7 +136,7 @@ func sweep(prefix string) error {
 			log.Printf("failed to create s3 client: %v", err)
 		}
 
-		helper.PurgeAllObjects(bucket, s3client, true, true)
+		helper.PurgeAllObjects(context.Background(), bucket, s3client, true, true)
 
 		_, err = s3client.DeleteBucket(
 			context.Background(),

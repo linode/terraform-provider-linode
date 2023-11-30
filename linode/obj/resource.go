@@ -38,7 +38,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,7 +96,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	acl := s3types.ObjectCannedACL(d.Get("acl").(string))
 
 	if d.HasChange("acl") {
-		s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -117,7 +117,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -148,7 +148,7 @@ func diffResource(
 // specified bucket via the *schema.ResourceData, then it calls
 // readResource.
 func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -102,7 +102,7 @@ func getObject(ctx context.Context, rs *terraform.ResourceState) (*s3.GetObjectO
 	secretKey := rs.Primary.Attributes["secret_key"]
 	endpoint := rs.Primary.Attributes["endpoint"]
 
-	s3client, err := helper.S3ConnectionV2(endpoint, accessKey, secretKey)
+	s3client, err := helper.S3Connection(ctx, endpoint, accessKey, secretKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get create s3 client: %w", err)
 	}

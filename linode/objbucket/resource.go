@@ -82,7 +82,7 @@ func readResource(
 	// Functionality requiring direct S3 API access
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
-	endpoint := helper.ComputeS3EndpointFromBucket(*bucket)
+	endpoint := helper.ComputeS3EndpointFromBucket(ctx, *bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
 	_, lifecyclePresent := d.GetOk("lifecycle_rule")
@@ -92,7 +92,7 @@ func readResource(
 			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
 		}
 
-		s3Client, err := helper.S3ConnectionV2(endpoint, accessKey, secretKey)
+		s3Client, err := helper.S3Connection(ctx, endpoint, accessKey, secretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -139,7 +139,7 @@ func createResource(
 		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
-	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(*bucket))
+	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(ctx, *bucket))
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 
 	return updateResource(ctx, d, meta)
@@ -166,7 +166,7 @@ func updateResource(
 	lifecycleChanged := d.HasChange("lifecycle_rule")
 
 	if versioningChanged || lifecycleChanged {
-		s3client, err := helper.S3ConnectionFromDataV2(ctx, d, meta)
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
