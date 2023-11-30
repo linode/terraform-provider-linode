@@ -34,11 +34,13 @@ func Resource() *schema.Resource {
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "creating linode_object_storage_object")
 	return putObject(ctx, d, meta)
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "reading linode_object_storage_object")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
@@ -60,11 +62,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if err != nil {
 		if helper.IsObjNotFoundErr(err) {
 			d.SetId("")
-			tflog.Warn(ctx, fmt.Sprintf(
-				"couldn't find bucket (%s) or object (%s), "+
-					"removing the object from the TF state", bucket, key),
-			)
-
+			tflog.Warn(ctx,
+				"couldn't find the bucket or object, "+
+					"removing the object from the TF state")
 			return nil
 		}
 		return diag.FromErr(err)
@@ -95,6 +95,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "updating linode_object_storage_object")
 	if d.HasChanges("cache_control", "content_base64", "content_disposition",
 		"content_encoding", "content_language", "content_type", "content",
@@ -134,6 +135,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "deleting linode_object_storage_object")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
@@ -221,7 +223,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 }
 
 func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version string, force bool) error {
-	tflog.Debug(ctx, fmt.Sprintf("deleting the object key '%s' in bucket '%s'", key, bucket))
+	tflog.Debug(ctx, "deleting the object key")
 	deleteObjectInput := &s3.DeleteObjectInput{
 		Bucket:                    &bucket,
 		Key:                       &key,
@@ -234,13 +236,7 @@ func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version s
 	tflog.Debug(ctx, "DeleteObjectInput", map[string]any{"DeleteObjectInput": deleteObjectInput})
 	_, err := client.DeleteObject(ctx, deleteObjectInput)
 	if err != nil {
-		msg := fmt.Sprintf(
-			"failed to delete Bucket (%s) Object (%s) Version (%s): %s",
-			bucket,
-			key,
-			version,
-			err,
-		)
+		msg := fmt.Sprintf("failed to delete object version (%s): %s", version, err)
 		tflog.Error(ctx, msg)
 		if !helper.IsObjNotFoundErr(err) {
 			return fmt.Errorf("%s: %w", msg, err)
