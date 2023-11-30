@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -133,7 +134,7 @@ func sweep(prefix string) error {
 			secretKey,
 		)
 		if err != nil {
-			log.Printf("failed to create s3 client: %v", err)
+			tflog.Error(context.Background(), fmt.Sprintf("failed to create s3 client: %v", err))
 		}
 
 		helper.PurgeAllObjects(context.Background(), bucket, s3client, true, true)
@@ -147,8 +148,14 @@ func sweep(prefix string) error {
 		if err != nil {
 			if apiErr, ok := err.(*linodego.Error); ok && !haveBucketAccess && strings.HasPrefix(
 				apiErr.Message, fmt.Sprintf("Bucket %s is not empty", bucket)) {
-				log.Printf("[WARN] will not delete Object Storage Bucket (%s) as it needs to be emptied; "+
-					"specify %q and %q env variables for bucket access", bucket, objAccessKeyEnvVar, objSecretKeyEnvVar)
+				tflog.Warn(
+					context.Background(),
+					fmt.Sprintf(
+						"will not delete Object Storage Bucket (%s) as it needs to be emptied; "+
+							"specify %q and %q env variables for bucket access",
+						bucket, objAccessKeyEnvVar, objSecretKeyEnvVar,
+					),
+				)
 				continue
 			}
 			return fmt.Errorf("Error destroying %s during sweep: %s", bucket, err)

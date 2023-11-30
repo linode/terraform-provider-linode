@@ -34,10 +34,12 @@ func Resource() *schema.Resource {
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "creating linode_object_storage_object")
 	return putObject(ctx, d, meta)
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "reading linode_object_storage_object")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -85,6 +87,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "updating linode_object_storage_object")
 	if d.HasChanges("cache_control", "content_base64", "content_disposition",
 		"content_encoding", "content_language", "content_type", "content",
 		"etag", "metadata", "source", "website_redirect") {
@@ -117,6 +120,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "deleting linode_object_storage_object")
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)

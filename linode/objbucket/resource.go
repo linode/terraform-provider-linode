@@ -51,6 +51,7 @@ func Resource() *schema.Resource {
 func readResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
+	tflog.Debug(ctx, "reading linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
 	cluster, label, err := DecodeBucketID(d.Id())
@@ -120,6 +121,7 @@ func readResource(
 func createResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
+	tflog.Debug(ctx, "creating linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
@@ -148,6 +150,7 @@ func createResource(
 func updateResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
+	tflog.Debug(ctx, "updating linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
 	if d.HasChanges("acl", "cors_enabled") {
@@ -191,6 +194,7 @@ func updateResource(
 func deleteResource(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
+	tflog.Debug(ctx, "deleting linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 	cluster, label, err := DecodeBucketID(d.Id())
 	if err != nil {
