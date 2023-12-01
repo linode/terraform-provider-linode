@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	fwdiag "github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,9 @@ import (
 )
 
 const (
-	RootPassMinimumCharacters = 11
-	RootPassMaximumCharacters = 128
+	RootPassMinimumCharacters     = 11
+	RootPassMaximumCharacters     = 128
+	DefaultFrameworkRebootTimeout = 600
 )
 
 var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
@@ -35,18 +37,25 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, linodeID int,
 }
 
 func FrameworkRebootInstance(
+	ctx context.Context,
 	linodeID int,
 	client *linodego.Client,
 	bootConfig int,
-	timeoutSeconds int,
-) error {
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		time.Duration(timeoutSeconds)*time.Second,
-	)
-	defer cancel()
-
-	return rebootInstance(ctx, linodeID, client, bootConfig)
+) fwdiag.Diagnostics {
+	var diags fwdiag.Diagnostics
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(
+			ctx,
+			time.Duration(DefaultFrameworkRebootTimeout)*time.Second,
+		)
+		defer cancel()
+	}
+	err := rebootInstance(ctx, linodeID, client, bootConfig)
+	if err != nil {
+		diags.AddError("Failed to Reboot Instance", err.Error())
+	}
+	return diags
 }
 
 func rebootInstance(
