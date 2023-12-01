@@ -198,13 +198,16 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		Key:    &key,
 		Body:   &body,
 
-		ACL:                     s3types.ObjectCannedACL(d.Get("acl").(string)),
 		CacheControl:            nilOrValue(d.Get("cache_control").(string)),
 		ContentDisposition:      nilOrValue(d.Get("content_disposition").(string)),
 		ContentEncoding:         nilOrValue(d.Get("content_encoding").(string)),
 		ContentLanguage:         nilOrValue(d.Get("content_language").(string)),
 		ContentType:             nilOrValue(d.Get("content_type").(string)),
 		WebsiteRedirectLocation: nilOrValue(d.Get("website_redirect").(string)),
+	}
+
+	if acl := nilOrValue(d.Get("acl").(string)); acl != nil {
+		putInput.ACL = s3types.ObjectCannedACL(*acl)
 	}
 
 	if metadata, ok := d.GetOk("metadata"); ok {
