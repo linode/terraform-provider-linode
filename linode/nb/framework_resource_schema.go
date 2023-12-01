@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	NBLabelRegex = "^[a-zA-Z0-9_-]*$"
+	NBLabelRegex        = "^[a-zA-Z0-9_-]*$"
 	NBLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
 )
 

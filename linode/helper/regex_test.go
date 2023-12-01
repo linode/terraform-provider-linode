@@ -3,15 +3,15 @@
 package helper_test
 
 import (
-	"testing"
 	"context"
+	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/sshkey"
-	"github.com/linode/terraform-provider-linode/linode/nb"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/linode/nb"
+	"github.com/linode/terraform-provider-linode/linode/sshkey"
 )
 
 func TestRegexSuccess_sshKey(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	SSHKeyLabelRegex = "^[a-zA-Z0-9_-]*$"
+	SSHKeyLabelRegex        = "^[a-zA-Z0-9_-]*$"
 	SSHKeyLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
 )
 

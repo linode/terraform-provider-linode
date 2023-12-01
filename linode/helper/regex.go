@@ -22,4 +22,3 @@ func RegexMatches(pattern string, errorMessage string) validator.String {
 	patternRegEx := StringToRegex(pattern)
 	return stringvalidator.RegexMatches(patternRegEx, errorMessage)
 }
-

@@ -39,7 +39,7 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"description": schema.StringAttribute{
 			Description: "A description for this Domain. This is for display purposes only.",
-			Computed: true,
+			Computed:    true,
 		},
 		"master_ips": schema.SetAttribute{
 			Description: "The IP addresses representing the master DNS for this Domain.",
