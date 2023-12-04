@@ -385,13 +385,14 @@ func NoImage(t *testing.T, label, region string) string {
 		})
 }
 
-func PrivateNetworking(t *testing.T, label, pubKey, region string) string {
+func PrivateNetworking(t *testing.T, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_private_networking", TemplateData{
-			Label:  label,
-			PubKey: pubKey,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			PubKey:   pubKey,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -474,13 +475,14 @@ func BootStateInterface(t *testing.T, label, region string, booted bool) string 
 		})
 }
 
-func BootStateConfig(t *testing.T, label, region string, booted bool) string {
+func BootStateConfig(t *testing.T, label, region string, booted bool, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state_config", TemplateData{
-			Label:  label,
-			Booted: booted,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Booted:   booted,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
@@ -578,33 +580,36 @@ func DataBasic(t *testing.T, label, region string, rootPass string) string {
 		})
 }
 
-func DataMultiple(t *testing.T, label, tag, region string) string {
+func DataMultiple(t *testing.T, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple", TemplateData{
-			Label:  label,
-			Tag:    tag,
-			Region: region,
-			Image:  acceptance.TestImageLatest,
+			Label:    label,
+			Tag:      tag,
+			Region:   region,
+			Image:    acceptance.TestImageLatest,
+			RootPass: rootPass,
 		})
 }
 
-func DataMultipleOrder(t *testing.T, label, tag, region string) string {
+func DataMultipleOrder(t *testing.T, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple_order", TemplateData{
-			Label:  label,
-			Tag:    tag,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Tag:      tag,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 
-func DataMultipleRegex(t *testing.T, label, tag, region string) string {
+func DataMultipleRegex(t *testing.T, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple_regex", TemplateData{
-			Label:  label,
-			Tag:    tag,
-			Image:  acceptance.TestImageLatest,
-			Region: region,
+			Label:    label,
+			Tag:      tag,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
 

@@ -1530,6 +1530,7 @@ func TestAccResourceInstance_privateNetworking(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1537,7 +1538,7 @@ func TestAccResourceInstance_privateNetworking(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.PrivateNetworking(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Config: tmpl.PrivateNetworking(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					checkInstancePrivateNetworkAttributes("linode_instance.foobar"),
@@ -1848,6 +1849,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1855,7 +1857,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.BootStateConfig(t, instanceName, testRegion, false),
+				Config: tmpl.BootStateConfig(t, instanceName, testRegion, false, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1863,7 +1865,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.BootStateConfig(t, instanceName, testRegion, true),
+				Config: tmpl.BootStateConfig(t, instanceName, testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1871,7 +1873,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.BootStateConfig(t, instanceName, testRegion, false),
+				Config: tmpl.BootStateConfig(t, instanceName, testRegion, false, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1888,6 +1890,7 @@ func TestAccResourceInstance_powerStateConfigBooted(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1895,7 +1898,7 @@ func TestAccResourceInstance_powerStateConfigBooted(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.BootStateConfig(t, instanceName, testRegion, true),
+				Config: tmpl.BootStateConfig(t, instanceName, testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),

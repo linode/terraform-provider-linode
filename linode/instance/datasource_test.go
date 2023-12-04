@@ -62,13 +62,13 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataMultiple(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataMultiple(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
 				),
 			},
 			{
-				Config: tmpl.DataMultipleOrder(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataMultipleOrder(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					// Ensure order is correctly appended to filter
 					resource.TestCheckResourceAttr(resNameDesc, "instances.#", "3"),
@@ -76,7 +76,7 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.DataMultipleRegex(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataMultipleRegex(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
 				),
