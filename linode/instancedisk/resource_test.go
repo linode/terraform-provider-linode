@@ -90,6 +90,7 @@ func TestAccResourceInstanceDisk_complex(t *testing.T) {
 
 	resName := "linode_instance_disk.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -97,7 +98,7 @@ func TestAccResourceInstanceDisk_complex(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Complex(t, label, testRegion, 2048),
+				Config: tmpl.Complex(t, label, testRegion, 2048, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
@@ -122,6 +123,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 
 	resName := "linode_instance_disk.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	var instance linodego.Instance
 
@@ -131,7 +133,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.BootedResize(t, label, testRegion, 2048),
+				Config: tmpl.BootedResize(t, label, testRegion, 2048, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),
@@ -143,7 +145,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 			},
 			// Resize up
 			{
-				Config: tmpl.BootedResize(t, label, testRegion, 2049),
+				Config: tmpl.BootedResize(t, label, testRegion, 2049, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
@@ -160,7 +162,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 						t.Fatalf("expected instance to be running, found %s", instance.Status)
 					}
 				},
-				Config: tmpl.BootedResize(t, label, testRegion, 2049),
+				Config: tmpl.BootedResize(t, label, testRegion, 2049, rootPass),
 			},
 			{
 				ResourceName:            resName,

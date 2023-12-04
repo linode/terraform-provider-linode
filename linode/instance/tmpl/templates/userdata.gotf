@@ -5,7 +5,7 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     image = "{{.Image}}"
     region = "{{ .Region }}"
-    root_pass = "myr00tp@ssw0rd!!!"
+    root_pass = "{{ .RootPass }}"
     booted = false
 
     metadata {

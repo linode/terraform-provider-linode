@@ -34,6 +34,8 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 
 	resourceName := "data.linode_instance_backups.foobar"
 
+	rootPass := acctest.RandString(12)
+
 	var instance linodego.Instance
 	var snapshot *linodego.InstanceSnapshot
 
@@ -42,7 +44,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: resourceInstanceBasic(instanceName, testRegion),
+				Config: resourceInstanceBasic(instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 				),
@@ -57,7 +59,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 
 					snapshot = newSnapshot
 				},
-				Config: dataSourceConfigBasic(instanceName, testRegion),
+				Config: dataSourceConfigBasic(instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "in_progress.0.label", snapshotName),
@@ -74,7 +76,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 						t.Fatal(err)
 					}
 				},
-				Config: dataSourceConfigBasic(instanceName, testRegion),
+				Config: dataSourceConfigBasic(instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "current.0.label", snapshotName),
@@ -91,21 +93,21 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 	})
 }
 
-func resourceInstanceBasic(label, region string) string {
+func resourceInstanceBasic(label, region string, rootPass string) string {
 	return fmt.Sprintf(`
 resource "linode_instance" "foobar" {
 	label = "%s"
 	type = "g6-nanode-1"
 	image = "linode/alpine3.15"
 	region = "%s"
-	root_pass = "myr00tp@ssw0rd!!!"
+	root_pass = "%s"
 	swap_size = 256
 	backups_enabled = true
 }`, label, region)
 }
 
-func dataSourceConfigBasic(instanceLabel, region string) string {
-	return resourceInstanceBasic(instanceLabel, region) + `
+func dataSourceConfigBasic(instanceLabel, region string, rootPass string) string {
+	return resourceInstanceBasic(instanceLabel, region, rootPass) + `
 data "linode_instance_backups" "foobar" {
 	linode_id = linode_instance.foobar.id
 }`

@@ -16,6 +16,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -23,7 +24,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceName, testRegion),
+				Config: tmpl.DataBasic(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
@@ -53,6 +54,7 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	tagName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -80,7 +82,7 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.DataClientFilter(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataClientFilter(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.status", "running"),
