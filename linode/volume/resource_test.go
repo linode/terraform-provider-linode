@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/volume"
-	"github.com/linode/terraform-provider-linode/linode/volume/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/volume"
+	"github.com/linode/terraform-provider-linode/v2/linode/volume/tmpl"
 )
 
 var testRegion string

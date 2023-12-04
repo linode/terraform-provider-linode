@@ -8,8 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/firewalls/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalls/tmpl"
 )
 
 const testFirewallDataName = "data.linode_firewalls.test"

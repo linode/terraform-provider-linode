@@ -129,6 +129,11 @@ func GetCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID
 		return 0, nil
 	}
 
+	// Special case for instances booted into rescue mode
+	if events[0].SecondaryEntity == nil {
+		return 0, nil
+	}
+
 	return int(events[0].SecondaryEntity.ID.(float64)), nil
 }
 

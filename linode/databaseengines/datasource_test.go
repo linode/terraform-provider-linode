@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/databaseengines/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines/tmpl"
 )
 
 func TestAccDataSourceDatabaseEngines_all(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/version"
+	"github.com/linode/terraform-provider-linode/v2/version"
 )
 
 const UAEnvVar = "TF_APPEND_USER_AGENT"

@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/region/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/region/tmpl"
 )
 
 var (

@@ -2,8 +2,8 @@ package instancetypes
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/linode/instancetype"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 )
 
 var filterConfig = frameworkfilter.Config{
