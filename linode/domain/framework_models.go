@@ -3,7 +3,7 @@ package domain
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 // DomainModel maps a Linode Domain object to a Terraform config.

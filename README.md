@@ -1,8 +1,13 @@
 # Terraform Provider for Linode
 
+[![Release](https://img.shields.io/github/v/release/linode/terraform-provider-linode)](https://github.com/linode/terraform-provider-linode/releases/latest)
+[![GoDoc](https://godoc.org/github.com/linode/terraform-provider-linode?status.svg)](https://godoc.org/github.com/linode/terraform-provider-linode)
+[![Go Report Card](https://goreportcard.com/badge/github.com/linode/terraform-provider-linode)](https://goreportcard.com/report/github.com/linode/linodego)
+[![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
+
+
 - Website: <https://www.terraform.io>
 - Documentation: <https://www.terraform.io/docs/providers/linode/index.html>
-- [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
 <img src="https://raw.githubusercontent.com/hashicorp/terraform-website/master/public/img/logo-hashicorp.svg" width="600px">

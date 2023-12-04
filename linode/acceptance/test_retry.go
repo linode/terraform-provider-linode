@@ -131,4 +131,5 @@ func (t *TRetry) Parallel() {
 	t.t.Parallel()
 }
 
+//lint:ignore U1000 Ignore unused function
 func (t *TRetry) private() {}

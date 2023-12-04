@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func flattenInstance(
@@ -156,10 +157,7 @@ func flattenInstanceConfigs(
 			"sdh": flattenInstanceConfigDevice(config.Devices.SDH, diskLabelIDMap),
 		}}
 
-		interfaces := make([]interface{}, len(config.Interfaces))
-		for i, ni := range config.Interfaces {
-			interfaces[i] = flattenConfigInterface(ni)
-		}
+		interfaces := helper.FlattenInterfaces(config.Interfaces)
 
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		c := map[string]interface{}{
@@ -185,16 +183,6 @@ func flattenInstanceConfigs(
 		configs = append(configs, c)
 	}
 	return
-}
-
-func flattenConfigInterface(i linodego.InstanceConfigInterface) map[string]interface{} {
-	result := make(map[string]interface{})
-
-	result["label"] = i.Label
-	result["purpose"] = i.Purpose
-	result["ipam_address"] = i.IPAMAddress
-
-	return result
 }
 
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {

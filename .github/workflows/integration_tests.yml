@@ -18,6 +18,7 @@ jobs:
         with:
           go-version: 'stable'
       - run: go version
+      - run: make tooldeps
 
       - name: Update system packages
         run: sudo apt-get update -y

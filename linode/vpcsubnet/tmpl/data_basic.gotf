@@ -1,0 +1,12 @@
+{{ define "vpc_subnet_data_basic" }}
+
+{{ template "vpc_subnet_attached" . }}
+
+data "linode_vpc_subnet" "foo" {
+    depends_on = [linode_instance_config.foobar]
+
+    vpc_id = linode_vpc_subnet.foobar.vpc_id
+    id = linode_vpc_subnet.foobar.id
+}
+
+{{ end }}

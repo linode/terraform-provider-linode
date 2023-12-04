@@ -2,6 +2,28 @@ package instanceip
 
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+func resourceIPVPCNAT1To1() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The address of the VPC interface mapped to this IP.",
+			},
+			"subnet_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The ID of the VPC subnet the corresponding interface is attached to.",
+			},
+			"vpc_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The ID of the VPC the corresponding interface is attached to.",
+			},
+		},
+	}
+}
+
 var resourceSchema = map[string]*schema.Schema{
 	"linode_id": {
 		Type:        schema.TypeInt,
@@ -53,6 +75,13 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The type of IP address.",
 		Computed:    true,
 	},
+	"vpc_nat_1_1": {
+		Type:        schema.TypeList,
+		Description: "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",
+		Computed:    true,
+		Elem:        resourceIPVPCNAT1To1(),
+	},
+
 	"apply_immediately": {
 		Type: schema.TypeBool,
 		Description: "If true, the instance will be rebooted to update network interfaces. " +

@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -589,5 +589,23 @@ func DataClientFilter(t *testing.T, label, tag, region string) string {
 			Tag:    tag,
 			Image:  acceptance.TestImageLatest,
 			Region: region,
+		})
+}
+
+func FirewallOnCreation(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_firewall_on_creation", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
+func VPCInterface(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_vpc_interface", TemplateData{
+			Label:  label,
+			Region: region,
+			Image:  acceptance.TestImageLatest,
 		})
 }

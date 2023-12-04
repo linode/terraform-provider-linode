@@ -108,28 +108,3 @@ func TestExpandInstanceConfigDevice(t *testing.T) {
 		})
 	}
 }
-
-func TestExpandConfigInterface(t *testing.T) {
-	interfaceInput := map[string]interface{}{
-		"label":        "eth0.100",
-		"purpose":      "vlan",
-		"ipam_address": "192.168.1.2/24",
-	}
-
-	interfaceResult := expandConfigInterface(interfaceInput)
-
-	expectedLabel := "eth0.100"
-	if interfaceResult.Label != expectedLabel {
-		t.Errorf("Expected label %s, but got %s", expectedLabel, interfaceResult.Label)
-	}
-
-	expectedPurpose := linodego.InterfacePurposeVLAN
-	if interfaceResult.Purpose != expectedPurpose {
-		t.Errorf("Expected purpose %s, but got %s", expectedPurpose, interfaceResult.Purpose)
-	}
-
-	expectedIPAMAddress := "192.168.1.2/24"
-	if interfaceResult.IPAMAddress != expectedIPAMAddress {
-		t.Errorf("Expected IPAMAddress %s, but got %s", expectedIPAMAddress, interfaceResult.IPAMAddress)
-	}
-}

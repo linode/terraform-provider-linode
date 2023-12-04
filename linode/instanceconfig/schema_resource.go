@@ -3,6 +3,7 @@ package instanceconfig
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/v2/linode/instance"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -62,7 +63,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"interface": {
 		Type:        schema.TypeList,
-		Elem:        &schema.Resource{Schema: interfaceSchema},
+		Elem:        instance.InterfaceSchema,
 		Optional:    true,
 		Description: "An array of Network Interfaces to add to this Linode's Configuration Profile.",
 	},
@@ -227,27 +228,5 @@ var helpersSchema = map[string]*schema.Schema{
 		Description: "Disables updatedb cron job to avoid disk thrashing.",
 		Optional:    true,
 		Default:     true,
-	},
-}
-
-var interfaceSchema = map[string]*schema.Schema{
-	"purpose": {
-		Type:        schema.TypeString,
-		Description: "The type of interface.",
-		Required:    true,
-		ValidateDiagFunc: validation.ToDiagFunc(
-			validation.StringInSlice([]string{"public", "vlan"}, true),
-		),
-	},
-
-	"ipam_address": {
-		Type:        schema.TypeString,
-		Description: "This Network Interface’s private IP address in Classless Inter-Domain Routing (CIDR) notation.",
-		Optional:    true,
-	},
-	"label": {
-		Type:        schema.TypeString,
-		Description: "The name of this interface.",
-		Optional:    true,
 	},
 }

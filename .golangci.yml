@@ -12,98 +12,19 @@ linters-settings:
         severity: warning
         disabled: true
   errcheck:
-    check-type-assertions: true
-    check-blank: true
+    exclude-functions:
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).SetNewComputed
 
   gomoddirectives:
     replace-allow-list:
       - github.com/linode/linodego
 
   govet:
-    check-shadowing: true
-
-    enable:
-      - atomicalign
-      - fieldalignment
-    enable-all: false
     disable:
       - shadow
-    disable-all: false
-  # golint:
-  #   min-confidence: 0.8
-  # gocyclo:
-  #   min-complexity: 30
-  # gocognit:
-  #   min-complexity: 30
   dupl:
     threshold: 100
 
 linters:
-  enable-all: true
-  disable:
-    - vetshadow
-    - gocyclo
-    - unparam
-    - nakedret
-    - dupl
-    - gosec
-    - gochecknoinits
-    - gochecknoglobals
-    - errcheck
-    - staticcheck
-    - stylecheck
-    - wsl
-    - interfacer
-    - gomnd
-
-    # not compatible with upper stream design
-    - ireturn
-
-    # deprecated linters
-    - deadcode
-    - structcheck
-    - varcheck
-    - golint
-    - nosnakecase
-    - maligned
-
-    # TODO(charliekenney23): enable these rules once compliant
-    - prealloc
-    - funlen
-    - whitespace
-    - godox
-    - unconvert
-    - gocognit
-    - unused
-    - gosimple
-    - gocritic
-    - scopelint
-
-    # Not useful because we widely use open-source dependencies.
-    - depguard
-
-    # These ignores have been added to maintain compatibility with the existing codebase.
-    # These issues should be resolved at a later date.
-    - wrapcheck
-    - varnamelen
-    - nonamedreturns
-    - nlreturn
-    - thelper
-    - predeclared
-    - nilnil
-    - ifshort
-    - goerr113
-    - errchkjson
-    - cyclop
-    - nestif
-    - maintidx
-    - forcetypeassert
-    - exhaustruct
-    - exhaustivestruct
-    - exhaustive
-    - errorlint
-    - forbidigo
-    - godot
-    - gomoddirectives
-
   fast: false

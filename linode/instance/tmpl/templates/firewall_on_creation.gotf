@@ -1,0 +1,19 @@
+{{ define "instance_firewall_on_creation" }}
+
+resource "linode_firewall" "foobar" {
+  label = "{{.Label}}_fw"
+  inbound_policy = "DROP"
+  outbound_policy = "ACCEPT"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    image = "{{.Image}}"
+    region = "{{ .Region }}"
+    root_pass = "myr00tp@ssw0rd!!!"
+    firewall_id = linode_firewall.foobar.id
+}
+
+{{ end }}

@@ -315,7 +315,7 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 					},
 				},
 			},
-			"interface": []interface{}{},
+			"interface": make([]map[string]any, 0),
 		},
 	}
 
@@ -324,36 +324,9 @@ func TestFlattenInstanceConfigs(t *testing.T) {
 	if len(actualConfigs) != len(expectedConfigs) {
 		t.Fatalf("Expected %d configs, but got %d", len(expectedConfigs), len(actualConfigs))
 	}
-
 	for i := 0; i < len(expectedConfigs); i++ {
 		if !areMapsEqual(actualConfigs[i], expectedConfigs[i]) {
 			t.Errorf("Config %d: Mismatch between expected and actual config", i)
-		}
-	}
-}
-
-func TestFlattenConfigInterface(t *testing.T) {
-	configInterface := linodego.InstanceConfigInterface{
-		IPAMAddress: "192.168.1.1",
-		Label:       "test-vlan",
-		Purpose:     linodego.InterfacePurposeVLAN,
-	}
-
-	result := flattenConfigInterface(configInterface)
-
-	expected := map[string]interface{}{
-		"ipam_address": "192.168.1.1",
-		"label":        "test-vlan",
-		"purpose":      linodego.InterfacePurposeVLAN,
-	}
-
-	if len(result) != len(expected) {
-		t.Errorf("Result map length does not match the expected map length")
-	}
-
-	for key, expectedValue := range expected {
-		if resultValue, ok := result[key]; !ok || resultValue != expectedValue {
-			t.Errorf("Mismatch for key %s: Expected %v, but got %v", key, expectedValue, resultValue)
 		}
 	}
 }

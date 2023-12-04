@@ -3,7 +3,7 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
 type TemplateData struct {
@@ -77,6 +77,26 @@ func DeviceNamedBlock(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"instance_config_device_named_block", TemplateData{
+			Label:  label,
+			Region: region,
+		},
+	)
+}
+
+func VPCInterface(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"vpc_interface", TemplateData{
+			Label:  label,
+			Region: region,
+		},
+	)
+}
+
+func VPCInterfaceUpdates(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"vpc_interface_update", TemplateData{
 			Label:  label,
 			Region: region,
 		},

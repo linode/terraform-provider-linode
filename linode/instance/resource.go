@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 const (
@@ -136,19 +136,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		defaultConfig := instanceConfigs[0]
 
 		if _, ok := d.GetOk("interface"); ok {
-			flattenedInterfaces := make([]map[string]interface{}, len(defaultConfig.Interfaces))
-
-			for i, configInterface := range defaultConfig.Interfaces {
-				// Workaround for "222" responses for null IPAM
-				// addresses from the API.
-				// TODO: Remove this when issue is resolved.
-				if configInterface.IPAMAddress == "222" {
-					configInterface.IPAMAddress = ""
-				}
-
-				flattenedInterfaces[i] = flattenConfigInterface(configInterface)
-			}
-
+			flattenedInterfaces := helper.FlattenInterfaces(defaultConfig.Interfaces)
 			d.Set("interface", flattenedInterfaces)
 		}
 
@@ -184,13 +172,17 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
+	if firewallID, ok := d.GetOk("firewall_id"); ok {
+		createOpts.FirewallID = firewallID.(int)
+	}
+
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
 		interfaces := interfaces.([]interface{})
 
-		createOpts.Interfaces = make([]linodego.InstanceConfigInterface, len(interfaces))
+		createOpts.Interfaces = make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
-			createOpts.Interfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
+			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 		}
 	}
 
@@ -684,10 +676,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if d.HasChange("interface") {
 		interfaces := d.Get("interface").([]interface{})
 
-		expandedInterfaces := make([]linodego.InstanceConfigInterface, len(interfaces))
+		expandedInterfaces := make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
 
 		for i, ni := range interfaces {
-			expandedInterfaces[i] = expandConfigInterface(ni.(map[string]interface{}))
+			expandedInterfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 		}
 
 		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{

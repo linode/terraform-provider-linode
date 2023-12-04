@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	fwdiag "github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,25 +16,61 @@ import (
 )
 
 const (
-	RootPassMinimumCharacters = 11
-	RootPassMaximumCharacters = 128
+	RootPassMinimumCharacters     = 11
+	RootPassMaximumCharacters     = 128
+	DefaultFrameworkRebootTimeout = 600
 )
 
 var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
 
 // set bootConfig = 0 if using existing boot config
-func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
+func RebootInstance(ctx context.Context, d *schema.ResourceData, linodeID int,
 	meta interface{}, bootConfig int,
 ) diag.Diagnostics {
+	client := meta.(*ProviderMeta).Client
+	ctx, cancel := context.WithTimeout(
+		ctx,
+		time.Duration(GetDeadlineSeconds(ctx, d))*time.Second,
+	)
+	defer cancel()
+	return diag.FromErr(rebootInstance(ctx, linodeID, &client, bootConfig))
+}
+
+func FrameworkRebootInstance(
+	ctx context.Context,
+	linodeID int,
+	client *linodego.Client,
+	bootConfig int,
+) fwdiag.Diagnostics {
+	var diags fwdiag.Diagnostics
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(
+			ctx,
+			time.Duration(DefaultFrameworkRebootTimeout)*time.Second,
+		)
+		defer cancel()
+	}
+	err := rebootInstance(ctx, linodeID, client, bootConfig)
+	if err != nil {
+		diags.AddError("Failed to Reboot Instance", err.Error())
+	}
+	return diags
+}
+
+func rebootInstance(
+	ctx context.Context,
+	entityID int,
+	client *linodego.Client,
+	bootConfig int,
+) error {
 	ctx = SetLogFieldBulk(ctx, map[string]any{
 		"linode_id": entityID,
 		"config_id": bootConfig,
 	})
-
-	client := meta.(*ProviderMeta).Client
 	instance, err := client.GetInstance(ctx, entityID)
 	if err != nil {
-		return diag.Errorf("Error fetching data about the current linode: %s", err)
+		return fmt.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
 	if instance.Status != linodego.InstanceRunning {
@@ -45,23 +82,31 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 
 	p, err := client.NewEventPoller(ctx, entityID, linodego.EntityLinode, linodego.ActionLinodeReboot)
 	if err != nil {
-		return diag.Errorf("failed to initialize event poller: %s", err)
+		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
 
 	err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
 	if err != nil {
-		return diag.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
-	}
-	_, err = p.WaitForFinished(ctx, GetDeadlineSeconds(ctx, d))
-	if err != nil {
-		return diag.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
+		return fmt.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
 	}
 
+	deadlineSeconds := 600
+	if deadline, ok := ctx.Deadline(); ok {
+		deadlineSeconds = int(time.Until(deadline).Seconds())
+	}
+	_, err = p.WaitForFinished(ctx, deadlineSeconds)
+	if err != nil {
+		return fmt.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
+	}
+
+	if deadline, ok := ctx.Deadline(); ok {
+		deadlineSeconds = int(time.Until(deadline).Seconds())
+	}
 	if _, err = client.WaitForInstanceStatus(
-		ctx, instance.ID, linodego.InstanceRunning, GetDeadlineSeconds(ctx, d),
+		ctx, instance.ID, linodego.InstanceRunning, deadlineSeconds,
 	); err != nil {
-		return diag.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
+		return fmt.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
 	}
 
 	tflog.Debug(ctx, "Instance has finished rebooting")
@@ -129,6 +174,11 @@ func GetCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID
 		return 0, nil
 	}
 
+	// Special case for instances booted into rescue mode
+	if events[0].SecondaryEntity == nil {
+		return 0, nil
+	}
+
 	return int(events[0].SecondaryEntity.ID.(float64)), nil
 }
 
@@ -140,4 +190,90 @@ func CreateRandomRootPassword() (string, error) {
 	}
 	rootPass := base64.StdEncoding.EncodeToString(rawRootPass)
 	return rootPass, nil
+}
+
+func ExpandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
+	IPv4 := ipv4.(map[string]any)
+	vpcAddress := IPv4["vpc"].(string)
+	nat1To1 := IPv4["nat_1_1"].(string)
+	if vpcAddress == "" && nat1To1 == "" {
+		return nil
+	}
+	return &linodego.VPCIPv4{
+		VPC:     vpcAddress,
+		NAT1To1: nat1To1,
+	}
+}
+
+func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
+	result := linodego.InstanceConfigInterfaceCreateOptions{
+		Purpose:     linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string)),
+		Label:       ifaceMap["label"].(string),
+		IPAMAddress: ifaceMap["ipam_address"].(string),
+		Primary:     ifaceMap["primary"].(bool),
+	}
+	if ifaceMap["subnet_id"] != nil {
+		subnet_id := ifaceMap["subnet_id"].(int)
+		if subnet_id != 0 {
+			result.SubnetID = &subnet_id
+		}
+	}
+
+	if ifaceMap["ipv4"] != nil {
+		ipv4 := ifaceMap["ipv4"].([]any)
+		if len(ipv4) > 0 {
+			result.IPv4 = ExpandInterfaceIPv4(ipv4[0])
+		}
+	}
+	if ifaceMap["ip_ranges"] != nil {
+		result.IPRanges = ExpandStringList(ifaceMap["ip_ranges"].([]interface{}))
+	}
+
+	return result
+}
+
+func ExpandInterfaces(ctx context.Context, ifaces []any) []linodego.InstanceConfigInterfaceCreateOptions {
+	result := make([]linodego.InstanceConfigInterfaceCreateOptions, len(ifaces))
+
+	for i, iface := range ifaces {
+		ifaceMap := iface.(map[string]any)
+		result[i] = ExpandConfigInterface(ifaceMap)
+	}
+
+	return result
+}
+
+func FlattenInterfaceIPv4(ipv4 linodego.VPCIPv4) []map[string]any {
+	if ipv4.NAT1To1 == "" && ipv4.VPC == "" {
+		return nil
+	}
+	return []map[string]any{
+		{
+			"vpc":     ipv4.VPC,
+			"nat_1_1": ipv4.NAT1To1,
+		},
+	}
+}
+
+func FlattenInterface(iface linodego.InstanceConfigInterface) map[string]any {
+	return map[string]any{
+		"purpose":      iface.Purpose,
+		"ipam_address": iface.IPAMAddress,
+		"label":        iface.Label,
+		"id":           iface.ID,
+		"vpc_id":       iface.VPCID,
+		"subnet_id":    iface.SubnetID,
+		"primary":      iface.Primary,
+		"active":       iface.Active,
+		"ip_ranges":    iface.IPRanges,
+		"ipv4":         FlattenInterfaceIPv4(iface.IPv4),
+	}
+}
+
+func FlattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[string]any {
+	result := make([]map[string]any, len(interfaces))
+	for i, iface := range interfaces {
+		result[i] = FlattenInterface(iface)
+	}
+	return result
 }
