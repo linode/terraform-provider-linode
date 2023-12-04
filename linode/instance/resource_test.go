@@ -68,7 +68,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandomWithPrefix(12)
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1149,7 +1149,7 @@ func TestAccResourceInstance_diskResize(t *testing.T) {
 			},
 			// Increase disk size
 			{
-				Config: tmpl.DiskConfigResized(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Config: tmpl.DiskConfigResized(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "specs.0.disk", "25600"),

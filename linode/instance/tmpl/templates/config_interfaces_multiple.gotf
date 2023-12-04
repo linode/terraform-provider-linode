@@ -57,7 +57,7 @@ resource "linode_instance" "foobar" {
         label = "boot"
         size = 3000
         image  = "{{.Image}}"
-        root_pass = "{{.RootPass}"
+        root_pass = "{{.RootPass}}"
     }
 
     boot_config_label = "config"

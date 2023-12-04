@@ -90,7 +90,6 @@ func TestAccResourceInstanceDisk_complex(t *testing.T) {
 
 	resName := "linode_instance_disk.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -98,7 +97,7 @@ func TestAccResourceInstanceDisk_complex(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Complex(t, label, testRegion, 2048, rootPass),
+				Config: tmpl.Complex(t, label, testRegion, 2048),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", label),

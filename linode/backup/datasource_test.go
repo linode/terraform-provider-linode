@@ -103,7 +103,7 @@ resource "linode_instance" "foobar" {
 	root_pass = "%s"
 	swap_size = 256
 	backups_enabled = true
-}`, label, region)
+}`, label, region, rootPass)
 }
 
 func dataSourceConfigBasic(instanceLabel, region string, rootPass string) string {
