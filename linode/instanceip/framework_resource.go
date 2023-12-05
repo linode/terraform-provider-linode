@@ -1,0 +1,279 @@
+package instanceip
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+)
+
+func NewResource() resource.Resource {
+	return &Resource{
+		BaseResource: helper.NewBaseResource(
+			helper.BaseResourceConfig{
+				Name:   "linode_instance_ip",
+				IDType: types.StringType,
+				Schema: &frameworkResourceSchema,
+			},
+		),
+	}
+}
+
+type Resource struct {
+	helper.BaseResource
+}
+
+func (r *Resource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
+	tflog.Debug(ctx, "Create linode_instance_ip")
+	var plan InstanceIPModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx = populateLogAttributes(ctx, &plan)
+	tflog.Debug(ctx, "got plan data", map[string]any{"plan": plan})
+
+	linodeID := helper.FrameworkSafeInt64ToInt(
+		plan.LinodeID.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	isPublic := plan.Public.ValueBool()
+
+	client := r.Meta.Client
+	ip, err := client.AddInstanceIPAddress(ctx, linodeID, isPublic)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to created instance (%d) IP", linodeID),
+			err.Error(),
+		)
+		return
+	}
+
+	if plan.RDNS.IsNull() && plan.RDNS.IsUnknown() {
+		rdns := plan.RDNS.ValueString()
+		if _, err := client.UpdateIPAddress(ctx, ip.Address, linodego.IPAddressUpdateOptions{
+			RDNS: &rdns,
+		}); err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf(
+					"failed to set RDNS for instance (%d) ip (%s)",
+					linodeID, ip.Address,
+				),
+				err.Error(),
+			)
+			return
+		}
+
+		tflog.Info(ctx, "Updated RDNS for IP address", map[string]any{
+			"rdns": rdns,
+		})
+	}
+
+	if ip == nil {
+		resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the instance ip")
+		return
+	}
+
+	resp.Diagnostics.Append(plan.FlattenInstanceIP(ctx, *ip, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if plan.ApplyImmediately.ValueBool() {
+		tflog.Debug(ctx, "attempting apply_immediately")
+
+		instance, err := client.GetInstance(ctx, linodeID)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to Get Linode Instance", err.Error())
+			return
+		}
+
+		if instance.Status == linodego.InstanceRunning {
+			tflog.Info(ctx, "detected instance in running status, rebooting instance")
+			ctx, cancel := context.WithTimeout(ctx, time.Duration(600)*time.Second)
+			resp.Diagnostics.Append(helper.FrameworkRebootInstance(ctx, linodeID, client, 0)...)
+			cancel()
+		} else {
+			tflog.Info(ctx, "detected instance not in running status, can't perform a reboot.")
+		}
+
+	}
+}
+
+func (r *Resource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
+	tflog.Debug(ctx, "Create linode_instance_ip")
+	var state InstanceIPModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx = populateLogAttributes(ctx, &state)
+	tflog.Debug(ctx, "got state data", map[string]any{"state": state})
+
+	client := r.Meta.Client
+	address := state.Address.ValueString()
+	linodeID := helper.FrameworkSafeInt64ToInt(
+		state.LinodeID.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ip, err := client.GetInstanceIPAddress(ctx, linodeID, address)
+	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			resp.Diagnostics.AddWarning(
+				"Instance IP No Longer Exists",
+				fmt.Sprintf(
+					"Removing instance IP %s from state because it no longer exists",
+					state.ID,
+				),
+			)
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		resp.Diagnostics.AddError(
+			"Unable to Refresh the Instance IP",
+			fmt.Sprintf(
+				"Error finding the specified Instance IP: %s",
+				err.Error(),
+			),
+		)
+		return
+	}
+
+	if ip == nil {
+		resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the instance ip")
+		return
+	}
+
+	resp.Diagnostics.Append(state.FlattenInstanceIP(ctx, *ip, false)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan InstanceIPModel
+	var state InstanceIPModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if state.RDNS != plan.RDNS {
+		rdns := plan.RDNS.ValueStringPointer()
+		updateOptions := linodego.IPAddressUpdateOptions{
+			RDNS: rdns,
+		}
+
+		tflog.Info(ctx, "Updating RDNS for IP", map[string]any{
+			"rdns": rdns,
+		})
+		client := r.Meta.Client
+		address := plan.Address.ValueString()
+		linodeID := plan.LinodeID.ValueInt64()
+		ip, err := client.UpdateIPAddress(ctx, address, updateOptions)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to Update RDNS",
+				fmt.Sprintf(
+					"failed to update RDNS for instance (%d) ip (%s): %s",
+					linodeID, address, err,
+				),
+			)
+			return
+		}
+		if ip == nil {
+			resp.Diagnostics.AddError(
+				"Failed to Get Updated IP",
+				fmt.Sprintf(
+					"ip is a nil pointer after update operation for instance (%d) ip (%s): %s",
+					linodeID, address, err,
+				),
+			)
+			return
+		}
+		resp.Diagnostics.Append(plan.FlattenInstanceIP(ctx, *ip, true)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		plan.CopyFrom(ctx, state, true)
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *Resource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
+	var state InstanceIPModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client := r.Meta.Client
+	address := state.Address.ValueString()
+	linodeID := helper.FrameworkSafeInt64ToInt(
+		state.LinodeID.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if err := client.DeleteInstanceIPAddress(ctx, linodeID, address); err != nil {
+		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				"Failed to Delete IP",
+				fmt.Sprintf(
+					"failed to delete instance (%d) ip (%s): %s",
+					linodeID, address, err.Error(),
+				),
+			)
+		}
+	}
+}
+
+func populateLogAttributes(ctx context.Context, data *InstanceIPModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"linode_id": data.LinodeID,
+		"id":        data.ID,
+	})
+}

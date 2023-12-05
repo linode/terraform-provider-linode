@@ -25,6 +25,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/image"
 	"github.com/linode/terraform-provider-linode/v2/linode/images"
+	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
@@ -160,6 +161,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		accountsettings.NewResource,
 		vpcsubnet.NewResource,
 		vpc.NewResource,
+		instanceip.NewResource,
 	}
 }
 

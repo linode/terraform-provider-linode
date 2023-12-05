@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var vpcNAT1To1Type = types.ObjectType{
+var VPCNAT1To1Type = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"address":   types.StringType,
 		"vpc_id":    types.Int64Type,
@@ -25,7 +25,7 @@ var networkObjectType = types.ObjectType{
 		"type":        types.StringType,
 		"public":      types.BoolType,
 		"linode_id":   types.Int64Type,
-		"vpc_nat_1_1": vpcNAT1To1Type,
+		"vpc_nat_1_1": VPCNAT1To1Type,
 	},
 }
 
