@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -165,6 +167,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		accountavailabilities.NewDataSource,
 		account.NewDataSource,
 		backup.NewDataSource,
 		firewall.NewDataSource,

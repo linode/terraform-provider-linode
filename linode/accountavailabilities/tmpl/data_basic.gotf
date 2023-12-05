@@ -1,0 +1,5 @@
+{{ define "account_availabilities_data_basic" }}
+
+data "linode_account_availabilities" "foobar" {}
+
+{{ end }}
