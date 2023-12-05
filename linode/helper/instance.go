@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	fwdiag "github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,25 +16,61 @@ import (
 )
 
 const (
-	RootPassMinimumCharacters = 11
-	RootPassMaximumCharacters = 128
+	RootPassMinimumCharacters     = 11
+	RootPassMaximumCharacters     = 128
+	DefaultFrameworkRebootTimeout = 600
 )
 
 var bootEvents = []linodego.EventAction{linodego.ActionLinodeBoot, linodego.ActionLinodeReboot}
 
 // set bootConfig = 0 if using existing boot config
-func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
+func RebootInstance(ctx context.Context, d *schema.ResourceData, linodeID int,
 	meta interface{}, bootConfig int,
 ) diag.Diagnostics {
+	client := meta.(*ProviderMeta).Client
+	ctx, cancel := context.WithTimeout(
+		ctx,
+		time.Duration(GetDeadlineSeconds(ctx, d))*time.Second,
+	)
+	defer cancel()
+	return diag.FromErr(rebootInstance(ctx, linodeID, &client, bootConfig))
+}
+
+func FrameworkRebootInstance(
+	ctx context.Context,
+	linodeID int,
+	client *linodego.Client,
+	bootConfig int,
+) fwdiag.Diagnostics {
+	var diags fwdiag.Diagnostics
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(
+			ctx,
+			time.Duration(DefaultFrameworkRebootTimeout)*time.Second,
+		)
+		defer cancel()
+	}
+	err := rebootInstance(ctx, linodeID, client, bootConfig)
+	if err != nil {
+		diags.AddError("Failed to Reboot Instance", err.Error())
+	}
+	return diags
+}
+
+func rebootInstance(
+	ctx context.Context,
+	entityID int,
+	client *linodego.Client,
+	bootConfig int,
+) error {
 	ctx = SetLogFieldBulk(ctx, map[string]any{
 		"linode_id": entityID,
 		"config_id": bootConfig,
 	})
-
-	client := meta.(*ProviderMeta).Client
 	instance, err := client.GetInstance(ctx, entityID)
 	if err != nil {
-		return diag.Errorf("Error fetching data about the current linode: %s", err)
+		return fmt.Errorf("Error fetching data about the current linode: %s", err)
 	}
 
 	if instance.Status != linodego.InstanceRunning {
@@ -45,23 +82,31 @@ func RebootInstance(ctx context.Context, d *schema.ResourceData, entityID int,
 
 	p, err := client.NewEventPoller(ctx, entityID, linodego.EntityLinode, linodego.ActionLinodeReboot)
 	if err != nil {
-		return diag.Errorf("failed to initialize event poller: %s", err)
+		return fmt.Errorf("failed to initialize event poller: %s", err)
 	}
 
 	err = client.RebootInstance(ctx, instance.ID, bootConfig)
 
 	if err != nil {
-		return diag.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
-	}
-	_, err = p.WaitForFinished(ctx, GetDeadlineSeconds(ctx, d))
-	if err != nil {
-		return diag.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
+		return fmt.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
 	}
 
+	deadlineSeconds := 600
+	if deadline, ok := ctx.Deadline(); ok {
+		deadlineSeconds = int(time.Until(deadline).Seconds())
+	}
+	_, err = p.WaitForFinished(ctx, deadlineSeconds)
+	if err != nil {
+		return fmt.Errorf("Error waiting for Instance [%d] to finish rebooting: %s", instance.ID, err)
+	}
+
+	if deadline, ok := ctx.Deadline(); ok {
+		deadlineSeconds = int(time.Until(deadline).Seconds())
+	}
 	if _, err = client.WaitForInstanceStatus(
-		ctx, instance.ID, linodego.InstanceRunning, GetDeadlineSeconds(ctx, d),
+		ctx, instance.ID, linodego.InstanceRunning, deadlineSeconds,
 	); err != nil {
-		return diag.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
+		return fmt.Errorf("Timed-out waiting for Linode instance [%d] to boot: %s", instance.ID, err)
 	}
 
 	tflog.Debug(ctx, "Instance has finished rebooting")
