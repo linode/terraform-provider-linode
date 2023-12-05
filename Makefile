@@ -66,7 +66,7 @@ smoketest: fmtcheck
 	go test -v -run smoke ./linode/... -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
 
 unittest:
-	go test -v --tags=unit ./linode/...
+	go test -v --tags=unit ./$(PKG_NAME)
 
 vet:
 	golangci-lint run --disable-all --enable govet ./...
