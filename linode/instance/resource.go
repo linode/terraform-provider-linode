@@ -15,7 +15,7 @@ import (
 
 const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
-	LinodeInstanceUpdateTimeout = 25 * time.Minute
+	LinodeInstanceUpdateTimeout = time.Hour
 	LinodeInstanceDeleteTimeout = 10 * time.Minute
 )
 

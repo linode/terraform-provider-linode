@@ -94,7 +94,7 @@ resource "linode_instance_config" "boot_config" {
 
 The following arguments are supported:
 
-* `region` - (Required) This is the location where the Linode is deployed. Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). *Changing `region` forces the creation of a new Linode Instance.*.
+* `region` - (Required) This is the location where the Linode is deployed. Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). *Changing `region` will trigger a migration of this Linode. Migration operations are typically long-running operations, so the [update timeout](#timeouts) should be adjusted accordingly.*.
 
 * `type` - (Required) The Linode type defines the pricing, CPU, disk, and RAM specs of the instance. Examples are `"g6-nanode-1"`, `"g6-standard-2"`, `"g6-highmem-16"`, `"g6-dedicated-16"`, etc. See all types [here](https://api.linode.com/v4/linode/types).
 
@@ -129,6 +129,8 @@ The following arguments are supported:
 * `watchdog_enabled` - (Optional) The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.
 
 * `booted` - (Optional) If true, then the instance is kept or converted into in a running state. If false, the instance will be shutdown. If unspecified, the Linode's power status will not be managed by the Provider.
+
+* `migration_type` - (Optional) The type of migration to use when updating the type or region of a Linode. (`cold`, `warm`; default `cold`)
 
 * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
 
@@ -271,7 +273,7 @@ The following arguments are available in an `ipv4` configuration block of an `in
 The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
 
 * `create` - (Defaults to 10 mins) Used when launching the instance (until it reaches the initial `running` state)
-* `update` - (Defaults to 20 mins) Used when stopping and starting the instance when necessary during update - e.g. when changing instance type
+* `update` - (Defaults to 1 hour) Used when stopping and starting the instance when necessary during update - e.g. when changing instance type
 * `delete` - (Defaults to 10 mins) Used when terminating the instance
 
 ## Attributes Reference
