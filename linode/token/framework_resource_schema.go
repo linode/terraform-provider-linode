@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/customtypes"
 )
@@ -26,6 +28,9 @@ var frameworkResourceSchema = schema.Schema{
 		"label": schema.StringAttribute{
 			Description: "The label of the Linode Token.",
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(1, 100),
+			},
 		},
 		"scopes": schema.StringAttribute{
 			Description: "The scopes this token was created with. These define what parts of the Account the " +

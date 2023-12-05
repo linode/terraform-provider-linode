@@ -15,6 +15,11 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+const (
+	NBLabelRegex        = "^[a-zA-Z0-9_-]*$"
+	NBLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
+)
+
 var frameworkResourceSchema = schema.Schema{
 	Version: 1,
 	Attributes: map[string]schema.Attribute{
@@ -28,6 +33,7 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(3, 32),
+				helper.RegexMatches(NBLabelRegex, NBLabelErrorMessage),
 			},
 		},
 		"region": schema.StringAttribute{
@@ -106,6 +112,10 @@ var resourceNodebalancerV0 = schema.Schema{
 		"label": schema.StringAttribute{
 			Description: "The label of the Linode NodeBalancer.",
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthBetween(3, 32),
+				helper.RegexMatches(NBLabelRegex, NBLabelErrorMessage),
+			},
 		},
 		"region": schema.StringAttribute{
 			Description:   "The region where this NodeBalancer will be deployed.",
