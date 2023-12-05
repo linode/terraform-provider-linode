@@ -305,6 +305,14 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.0.days", "37"),
 					),
 				},
+				{
+					Config: tmpl.LifeCycleRemoved(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "0"),
+					),
+				},
 			},
 		})
 	})
