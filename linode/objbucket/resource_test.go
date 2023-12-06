@@ -310,26 +310,28 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, testCluster, objectStorageKeyName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-					resource.TestCheckResourceAttr(resName, "cluster", testCluster),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
-					resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.id"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.enabled", "true"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
-					resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "5"),
-					resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.expiration.0.date"),
-				),
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
+						resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.id"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.enabled", "true"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "5"),
+						resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.expiration.0.date"),
+					),
+				},
 			},
-		},
+		})
 	})
 }
 
@@ -353,40 +355,42 @@ func TestAccResourceBucket_cert(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Cert(t, objectStorageBucketName, testCluster, cert, key),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					checkBucketHasSSL(true),
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-				),
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Cert(t, objectStorageBucketName, testCluster, cert, key),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						checkBucketHasSSL(true),
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					),
+				},
+				{
+					Config:      tmpl.Cert(t, objectStorageBucketName, testCluster, invalidCert, invalidKey),
+					ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
+				},
+				{
+					Config: tmpl.Cert(t, objectStorageBucketName, testCluster, otherCert, otherKey),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						checkBucketHasSSL(true),
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					),
+				},
+				{
+					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						checkBucketHasSSL(false),
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					),
+				},
 			},
-			{
-				Config:      tmpl.Cert(t, objectStorageBucketName, testCluster, invalidCert, invalidKey),
-				ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
-			},
-			{
-				Config: tmpl.Cert(t, objectStorageBucketName, testCluster, otherCert, otherKey),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					checkBucketHasSSL(true),
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-				),
-			},
-			{
-				Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					checkBucketHasSSL(false),
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-				),
-			},
-		},
+		})
 	})
 }
 
@@ -396,24 +400,26 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 	resName := "linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.ClusterDataBasic(t, objectStorageBucketName, testCluster),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-				),
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.ClusterDataBasic(t, objectStorageBucketName, testCluster),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					),
+				},
+				{
+					ResourceName:      resName,
+					ImportState:       true,
+					ImportStateVerify: true,
+				},
 			},
-			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
+		})
 	})
 }
 
@@ -423,26 +429,28 @@ func TestAccResourceBucket_update(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	resName := "linode_object_storage_bucket.foobar"
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             checkBucketDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
-				),
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+					),
+				},
+				{
+					Config: tmpl.Updates(t, objectStorageBucketName, testCluster),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", objectStorageBucketName)),
+					),
+				},
 			},
-			{
-				Config: tmpl.Updates(t, objectStorageBucketName, testCluster),
-				Check: resource.ComposeTestCheckFunc(
-					checkBucketExists,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", objectStorageBucketName)),
-				),
-			},
-		},
+		})
 	})
 }
 
