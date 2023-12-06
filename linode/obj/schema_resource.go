@@ -1,8 +1,9 @@
 package obj
 
 import (
-	"github.com/aws/aws-sdk-go/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -51,10 +52,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 	},
 	"acl": {
-		Type:        schema.TypeString,
-		Description: "The ACL config given to this object.",
-		Default:     s3.ObjectCannedACLPrivate,
-		Optional:    true,
+		Type:             schema.TypeString,
+		Description:      "The ACL config given to this object.",
+		Default:          s3types.ObjectCannedACLPrivate,
+		ValidateDiagFunc: helper.SDKv2ObjectCannedACLValidator,
+		Optional:         true,
 	},
 	"cache_control": {
 		Type:        schema.TypeString,

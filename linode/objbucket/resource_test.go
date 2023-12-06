@@ -19,11 +19,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -128,27 +127,35 @@ func sweep(prefix string) error {
 			continue
 		}
 		bucket := objectStorageBucket.Label
-
-		if haveBucketAccess {
-			conn := s3.New(session.New(&aws.Config{
-				Region:      aws.String(testCluster),
-				Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-				Endpoint:    aws.String(fmt.Sprintf(helper.LinodeObjectsEndpoint, objectStorageBucket.Cluster)),
-			}))
-			iter := s3manager.NewDeleteListIterator(conn, &s3.ListObjectsInput{
-				Bucket: aws.String(bucket),
-			})
-			if err := s3manager.NewBatchDeleteWithClient(conn).Delete(aws.BackgroundContext(), iter); err != nil {
-				return fmt.Errorf("unable to delete objects from bucket (%s): %s", bucket, err)
-			}
+		s3client, err := helper.S3Connection(
+			context.Background(),
+			helper.ComputeS3EndpointFromBucket(context.Background(), objectStorageBucket),
+			accessKey,
+			secretKey,
+		)
+		if err != nil {
+			tflog.Error(context.Background(), fmt.Sprintf("failed to create s3 client: %v", err))
 		}
 
-		err := client.DeleteObjectStorageBucket(context.Background(), objectStorageBucket.Cluster, bucket)
+		helper.PurgeAllObjects(context.Background(), bucket, s3client, true, true)
+
+		_, err = s3client.DeleteBucket(
+			context.Background(),
+			&s3.DeleteBucketInput{
+				Bucket: aws.String(bucket),
+			},
+		)
 		if err != nil {
 			if apiErr, ok := err.(*linodego.Error); ok && !haveBucketAccess && strings.HasPrefix(
 				apiErr.Message, fmt.Sprintf("Bucket %s is not empty", bucket)) {
-				log.Printf("[WARN] will not delete Object Storage Bucket (%s) as it needs to be emptied; "+
-					"specify %q and %q env variables for bucket access", bucket, objAccessKeyEnvVar, objSecretKeyEnvVar)
+				tflog.Warn(
+					context.Background(),
+					fmt.Sprintf(
+						"will not delete Object Storage Bucket (%s) as it needs to be emptied; "+
+							"specify %q and %q env variables for bucket access",
+						bucket, objAccessKeyEnvVar, objSecretKeyEnvVar,
+					),
+				)
 				continue
 			}
 			return fmt.Errorf("Error destroying %s during sweep: %s", bucket, err)
@@ -296,6 +303,14 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "42"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.#", "1"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.expiration.0.days", "37"),
+					),
+				},
+				{
+					Config: tmpl.LifeCycleRemoved(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "0"),
 					),
 				},
 			},
@@ -454,7 +469,7 @@ func checkBucketExists(s *terraform.State) error {
 			continue
 		}
 
-		cluster, label, err := objbucket.DecodeBucketID(rs.Primary.ID)
+		cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s, %s", rs.Primary.ID, err)
 		}
@@ -476,7 +491,7 @@ func checkBucketHasSSL(expected bool) func(*terraform.State) error {
 				continue
 			}
 
-			cluster, label, err := objbucket.DecodeBucketID(rs.Primary.ID)
+			cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("could not parse bucket ID %s: %s", rs.Primary.ID, err)
 			}
@@ -502,7 +517,7 @@ func checkBucketDestroy(s *terraform.State) error {
 		}
 
 		id := rs.Primary.ID
-		cluster, label, err := objbucket.DecodeBucketID(id)
+		cluster, label, err := objbucket.DecodeBucketID(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("Error parsing %s", id)
 		}
