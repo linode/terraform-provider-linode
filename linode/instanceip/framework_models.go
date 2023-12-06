@@ -73,10 +73,9 @@ func (m *InstanceIPModel) FlattenInstanceIP(
 			return diags
 		}
 	}
-	m.IPVPCNAT1To1 = helper.KeepOrUpdateListValue(
+	m.IPVPCNAT1To1 = helper.KeepOrUpdateValue(
 		m.IPVPCNAT1To1,
 		resultList,
-		instancenetworking.VPCNAT1To1Type,
 		preserveKnown,
 	)
 
@@ -90,22 +89,21 @@ func (m *InstanceIPModel) CopyFrom(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	m.ID = helper.KeepOrUpdateStringValue(m.ID, other.Address, preserveKnown)
-	m.LinodeID = helper.KeepOrUpdateInt64Value(m.LinodeID, other.LinodeID, preserveKnown)
-	m.Public = helper.KeepOrUpdateBoolValue(m.Public, other.Public, preserveKnown)
-	m.Address = helper.KeepOrUpdateStringValue(m.Address, other.Address, preserveKnown)
-	m.Gateway = helper.KeepOrUpdateStringValue(m.Gateway, other.Gateway, preserveKnown)
-	m.Prefix = helper.KeepOrUpdateInt64Value(m.Prefix, other.Prefix, preserveKnown)
+	m.ID = helper.KeepOrUpdateValue(m.ID, other.Address, preserveKnown)
+	m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, other.LinodeID, preserveKnown)
+	m.Public = helper.KeepOrUpdateValue(m.Public, other.Public, preserveKnown)
+	m.Address = helper.KeepOrUpdateValue(m.Address, other.Address, preserveKnown)
+	m.Gateway = helper.KeepOrUpdateValue(m.Gateway, other.Gateway, preserveKnown)
+	m.Prefix = helper.KeepOrUpdateValue(m.Prefix, other.Prefix, preserveKnown)
 
-	m.RDNS = helper.KeepOrUpdateStringValue(m.RDNS, other.RDNS, preserveKnown)
+	m.RDNS = helper.KeepOrUpdateValue(m.RDNS, other.RDNS, preserveKnown)
 
-	m.Region = helper.KeepOrUpdateStringValue(m.Region, other.Region, preserveKnown)
-	m.SubnetMask = helper.KeepOrUpdateStringValue(m.SubnetMask, other.SubnetMask, preserveKnown)
-	m.Type = helper.KeepOrUpdateStringValue(m.Type, other.Type, preserveKnown)
-	m.IPVPCNAT1To1 = helper.KeepOrUpdateListValue(
+	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
+	m.SubnetMask = helper.KeepOrUpdateValue(m.SubnetMask, other.SubnetMask, preserveKnown)
+	m.Type = helper.KeepOrUpdateValue(m.Type, other.Type, preserveKnown)
+	m.IPVPCNAT1To1 = helper.KeepOrUpdateValue(
 		m.IPVPCNAT1To1,
 		other.IPVPCNAT1To1,
-		instancenetworking.VPCNAT1To1Type,
 		preserveKnown,
 	)
 
