@@ -29,13 +29,8 @@ func AnySliceToTyped[T any](obj []any) []T {
 	return result
 }
 
-func StringAliasSliceToStringSlice[T any](obj []T) ([]string, error) {
+func StringAliasSliceToStringSlice[T ~string](obj []T) ([]string, error) {
 	var result []string
-
-	var typeOfT T
-	if reflect.TypeOf(typeOfT).Kind() != reflect.String {
-		return nil, fmt.Errorf("type T is not an alias of string")
-	}
 
 	for _, v := range obj {
 		strValue := reflect.ValueOf(v).String()
