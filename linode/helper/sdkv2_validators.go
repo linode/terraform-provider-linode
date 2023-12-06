@@ -3,8 +3,10 @@ package helper
 import (
 	"net"
 
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func SDKv2ValidateIPv4Range(i any, path cty.Path) diag.Diagnostics {
@@ -31,4 +33,14 @@ func SDKv2ValidateIPv6Range(i any, path cty.Path) diag.Diagnostics {
 	}
 
 	return nil
+}
+
+func SDKv2ObjectCannedACLValidator(i any, p cty.Path) diag.Diagnostics {
+	aclValues, err := StringAliasSliceToStringSlice[s3types.ObjectCannedACL](
+		s3types.ObjectCannedACLPrivate.Values(), // this return all acl values, not just private
+	)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return validation.ToDiagFunc(validation.StringInSlice(aclValues, true))(i, p)
 }

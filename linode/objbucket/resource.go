@@ -2,13 +2,15 @@ package objbucket
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -47,25 +49,35 @@ func Resource() *schema.Resource {
 }
 
 func readResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{},
+	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
+	populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "reading linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
-	cluster, label, err := DecodeBucketID(d.Id())
+	cluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
 	}
 
+	tflog.Debug(ctx, "calling get bucket info API")
 	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Object Storage Bucket %q from state because it no longer exists", d.Id())
+			tflog.Warn(
+				ctx,
+				fmt.Sprintf(
+					"[WARN] removing Object Storage Bucket %q from state because it no longer exists",
+					d.Id(),
+				),
+			)
 			d.SetId("")
 			return nil
 		}
 		return diag.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
 	}
 
+	tflog.Debug(ctx, "getting bucket access info")
 	access, err := client.GetObjectStorageBucketAccess(ctx, cluster, label)
 	if err != nil {
 		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
@@ -74,26 +86,32 @@ func readResource(
 	// Functionality requiring direct S3 API access
 	accessKey := d.Get("access_key").(string)
 	secretKey := d.Get("secret_key").(string)
-	endpoint := helper.ComputeS3EndpointFromBucket(*bucket)
+	endpoint := helper.ComputeS3EndpointFromBucket(ctx, *bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
 	_, lifecyclePresent := d.GetOk("lifecycle_rule")
 
 	if versioningPresent || lifecyclePresent {
+		tflog.Debug(ctx, "versioning or lifecycle presents", map[string]any{
+			"versioningPresent": versioningPresent,
+			"lifecyclePresent":  lifecyclePresent,
+		})
 		if accessKey == "" || secretKey == "" {
 			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
 		}
 
-		client, err := helper.S3Connection(endpoint, accessKey, secretKey)
+		s3Client, err := helper.S3Connection(ctx, endpoint, accessKey, secretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err := readBucketLifecycle(d, client); err != nil {
+		tflog.Debug(ctx, "getting bucket lifecycle")
+		if err := readBucketLifecycle(ctx, d, s3Client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
 		}
 
-		if err := readBucketVersioning(d, client); err != nil {
+		tflog.Debug(ctx, "getting bucket versioning")
+		if err := readBucketVersioning(ctx, d, s3Client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
@@ -110,8 +128,10 @@ func readResource(
 }
 
 func createResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{},
+	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
+	populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "creating linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
@@ -126,29 +146,34 @@ func createResource(
 		CorsEnabled: &corsEnabled,
 	}
 
+	tflog.Debug(ctx, "getting object header", map[string]any{"body": createOpts})
 	bucket, err := client.CreateObjectStorageBucket(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
-	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(*bucket))
+	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(ctx, *bucket))
 	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 
 	return updateResource(ctx, d, meta)
 }
 
 func updateResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{},
+	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
+	populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "updating linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
 	if d.HasChanges("acl", "cors_enabled") {
+		tflog.Debug(ctx, "'acl' changes detected, will update bucket access")
 		if err := updateBucketAccess(ctx, d, client); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("cert") {
+		tflog.Debug(ctx, "'cert' changes detected, will update bucket certificate")
 		if err := updateBucketCert(ctx, d, client); err != nil {
 			return diag.FromErr(err)
 		}
@@ -158,6 +183,10 @@ func updateResource(
 	lifecycleChanged := d.HasChange("lifecycle_rule")
 
 	if versioningChanged || lifecycleChanged {
+		tflog.Debug(ctx, "versioning or lifecycle change detected", map[string]any{
+			"versioningChanged": versioningChanged,
+			"lifecycleChanged":  lifecycleChanged,
+		})
 		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)
@@ -165,13 +194,15 @@ func updateResource(
 
 		// Ensure we only update what is changed
 		if versioningChanged {
-			if err := updateBucketVersioning(d, s3client); err != nil {
+			tflog.Debug(ctx, "updating bucket versioning configuration")
+			if err := updateBucketVersioning(ctx, d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if lifecycleChanged {
-			if err := updateBucketLifecycle(d, s3client); err != nil {
+			tflog.Debug(ctx, "updating bucket lifecycle configuration")
+			if err := updateBucketLifecycle(ctx, d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -181,13 +212,18 @@ func updateResource(
 }
 
 func deleteResource(
-	ctx context.Context, d *schema.ResourceData, meta interface{},
+	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
+	populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "deleting linode_object_storage_bucket")
+
 	client := meta.(*helper.ProviderMeta).Client
-	cluster, label, err := DecodeBucketID(d.Id())
+	cluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
+
+	tflog.Debug(ctx, "calling bucket deleting API")
 	err = client.DeleteObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
@@ -195,85 +231,123 @@ func deleteResource(
 	return nil
 }
 
-func readBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
+func readBucketVersioning(ctx context.Context, d *schema.ResourceData, client *s3.Client) error {
+	tflog.Debug(ctx, "entering readBucketVersioning")
 	label := d.Get("label").(string)
 
-	versioningOutput, err := conn.GetBucketVersioning(&s3.GetBucketVersioningInput{
-		Bucket: &label,
-	})
+	tflog.Debug(ctx, "getting bucket versioning info from the API")
+	versioningOutput, err := client.GetBucketVersioning(
+		ctx,
+		&s3.GetBucketVersioningInput{Bucket: &label},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get versioning for bucket id %s: %s", d.Id(), err)
 	}
 
-	d.Set("versioning", versioningOutput.Status != nil &&
-		*versioningOutput.Status == s3.BucketVersioningStatusEnabled)
+	d.Set("versioning", versioningOutput.Status == s3types.BucketVersioningStatusEnabled)
 
 	return nil
 }
 
-func readBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
+func readBucketLifecycle(ctx context.Context, d *schema.ResourceData, client *s3.Client) error {
+	tflog.Debug(ctx, "entering readBucketLifecycle")
 	label := d.Get("label").(string)
 
-	lifecycleConfigOutput, err := conn.GetBucketLifecycleConfiguration(
-		&s3.GetBucketLifecycleConfigurationInput{Bucket: &label})
+	tflog.Debug(ctx, "getting bucket lifecycle info from the API")
+	lifecycleConfigOutput, err := client.GetBucketLifecycleConfiguration(
+		ctx,
+		&s3.GetBucketLifecycleConfigurationInput{Bucket: &label},
+	)
 	// A "NoSuchLifecycleConfiguration" error should be ignored in this context
 	if err != nil {
-		if err, ok := err.(awserr.Error); !ok || (ok && err.Code() != "NoSuchLifecycleConfiguration") {
-			return fmt.Errorf("failed to get lifecycle for bucket id %s: %s", d.Id(), err)
+		var ae smithy.APIError
+		if ok := errors.As(err, &ae); !ok || ae.ErrorCode() != "NoSuchLifecycleConfiguration" {
+			return fmt.Errorf("failed to get lifecycle for bucket id %s: %w", d.Id(), err)
 		}
 	}
 
+	if lifecycleConfigOutput == nil {
+		tflog.Debug(ctx, "'lifecycleConfigOutput' is nil, skipping further processing")
+		return nil
+	}
+
 	rulesMatched := lifecycleConfigOutput.Rules
-	declaredRules, ok := d.Get("lifecycle_rule").([]interface{})
+	declaredRules, ok := d.Get("lifecycle_rule").([]any)
 
 	// We should match the existing lifecycle rules to the schema if they're defined
 	if ok {
-		rulesMatched = matchRulesWithSchema(lifecycleConfigOutput.Rules, declaredRules)
+		rulesMatched = matchRulesWithSchema(ctx, rulesMatched, declaredRules)
 	}
 
-	d.Set("lifecycle_rule", flattenLifecycleRules(rulesMatched))
+	d.Set("lifecycle_rule", flattenLifecycleRules(ctx, rulesMatched))
 
 	return nil
 }
 
-func updateBucketVersioning(d *schema.ResourceData, conn *s3.S3) error {
+func updateBucketVersioning(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *s3.Client,
+) error {
+	tflog.Debug(ctx, "entering updateBucketVersioning")
 	bucket := d.Get("label").(string)
 	n := d.Get("versioning").(bool)
 
-	status := s3.BucketVersioningStatusSuspended
+	status := s3types.BucketVersioningStatusSuspended
 	if n {
-		status = s3.BucketVersioningStatusEnabled
+		status = s3types.BucketVersioningStatusEnabled
 	}
 
 	inputVersioningConfig := &s3.PutBucketVersioningInput{
 		Bucket: &bucket,
-		VersioningConfiguration: &s3.VersioningConfiguration{
-			Status: &status,
+		VersioningConfiguration: &s3types.VersioningConfiguration{
+			Status: status,
 		},
 	}
-
-	if _, err := conn.PutBucketVersioning(inputVersioningConfig); err != nil {
+	tflog.Debug(ctx, "making update bucket versioning call to the API", map[string]any{
+		"input": inputVersioningConfig,
+	})
+	if _, err := client.PutBucketVersioning(ctx, inputVersioningConfig); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func updateBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
+func updateBucketLifecycle(
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *s3.Client,
+) error {
+	tflog.Debug(ctx, "entering updateBucketLifecycle")
 	bucket := d.Get("label").(string)
 
-	rules, err := expandLifecycleRules(d.Get("lifecycle_rule").([]interface{}))
+	rules, err := expandLifecycleRules(ctx, d.Get("lifecycle_rule").([]any))
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.PutBucketLifecycleConfiguration(
-		&s3.PutBucketLifecycleConfigurationInput{
-			Bucket: &bucket,
-			LifecycleConfiguration: &s3.BucketLifecycleConfiguration{
-				Rules: rules,
+	tflog.Debug(ctx, "got expanded lifecycle rules", map[string]any{
+		"rules": rules,
+	})
+	if len(rules) > 0 {
+		tflog.Debug(ctx, "there is at least one rule, calling the put endpoint")
+		_, err = client.PutBucketLifecycleConfiguration(
+			ctx,
+			&s3.PutBucketLifecycleConfigurationInput{
+				Bucket: &bucket,
+				LifecycleConfiguration: &s3types.BucketLifecycleConfiguration{
+					Rules: rules,
+				},
 			},
-		})
+		)
+	} else {
+		tflog.Debug(ctx, "there isn't a rule presents, calling the delete endpoint")
+		_, err = client.DeleteBucketLifecycle(
+			ctx,
+			&s3.DeleteBucketLifecycleInput{Bucket: &bucket},
+		)
+	}
 
 	return err
 }
@@ -281,6 +355,7 @@ func updateBucketLifecycle(d *schema.ResourceData, conn *s3.S3) error {
 func updateBucketAccess(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
+	tflog.Debug(ctx, "entering updateBucketAccess")
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 
@@ -293,7 +368,7 @@ func updateBucketAccess(
 		newCorsBool := d.Get("cors_enabled").(bool)
 		updateOpts.CorsEnabled = &newCorsBool
 	}
-
+	tflog.Debug(ctx, "updating bucket access", map[string]any{"updateOpts": updateOpts})
 	if err := client.UpdateObjectStorageBucketAccess(ctx, cluster, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
@@ -304,10 +379,11 @@ func updateBucketAccess(
 func updateBucketCert(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
+	tflog.Debug(ctx, "entering updateBucketCert")
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
-	hasOldCert := len(oldCert.([]interface{})) != 0
+	hasOldCert := len(oldCert.([]any)) != 0
 
 	if hasOldCert {
 		if err := client.DeleteObjectStorageBucketCert(ctx, cluster, label); err != nil {
@@ -315,7 +391,7 @@ func updateBucketCert(
 		}
 	}
 
-	certSpec := newCert.([]interface{})
+	certSpec := newCert.([]any)
 	if len(certSpec) == 0 {
 		return nil
 	}
@@ -327,15 +403,16 @@ func updateBucketCert(
 	return nil
 }
 
-func expandBucketCert(v interface{}) linodego.ObjectStorageBucketCertUploadOptions {
-	certSpec := v.(map[string]interface{})
+func expandBucketCert(v any) linodego.ObjectStorageBucketCertUploadOptions {
+	certSpec := v.(map[string]any)
 	return linodego.ObjectStorageBucketCertUploadOptions{
 		Certificate: certSpec["certificate"].(string),
 		PrivateKey:  certSpec["private_key"].(string),
 	}
 }
 
-func DecodeBucketID(id string) (cluster, label string, err error) {
+func DecodeBucketID(ctx context.Context, id string) (cluster, label string, err error) {
+	tflog.Debug(ctx, "decoding bucket ID")
 	parts := strings.Split(id, ":")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		err = fmt.Errorf("Linode Object Storage Bucket ID must be of the form <Cluster>:<Label>, was provided: %s", id)
@@ -346,11 +423,12 @@ func DecodeBucketID(id string) (cluster, label string, err error) {
 	return
 }
 
-func flattenLifecycleRules(rules []*s3.LifecycleRule) []map[string]interface{} {
-	result := make([]map[string]interface{}, len(rules))
+func flattenLifecycleRules(ctx context.Context, rules []s3types.LifecycleRule) []map[string]any {
+	tflog.Debug(ctx, "entering flattenLifecycleRules")
+	result := make([]map[string]any, len(rules))
 
 	for i, rule := range rules {
-		ruleMap := make(map[string]interface{})
+		ruleMap := make(map[string]any)
 
 		if id := rule.ID; id != nil {
 			ruleMap["id"] = *id
@@ -360,16 +438,14 @@ func flattenLifecycleRules(rules []*s3.LifecycleRule) []map[string]interface{} {
 			ruleMap["prefix"] = *prefix
 		}
 
-		if status := rule.Status; status != nil {
-			ruleMap["enabled"] = *status == "Enabled"
-		}
+		ruleMap["enabled"] = rule.Status == s3types.ExpirationStatusEnabled
 
-		if rule.AbortIncompleteMultipartUpload != nil {
+		if rule.AbortIncompleteMultipartUpload != nil && rule.AbortIncompleteMultipartUpload.DaysAfterInitiation != nil {
 			ruleMap["abort_incomplete_multipart_upload_days"] = *rule.AbortIncompleteMultipartUpload.DaysAfterInitiation
 		}
 
 		if rule.Expiration != nil {
-			e := make(map[string]interface{})
+			e := make(map[string]any)
 
 			if date := rule.Expiration.Date; date != nil {
 				e["date"] = rule.Expiration.Date.Format("2006-01-02")
@@ -383,36 +459,38 @@ func flattenLifecycleRules(rules []*s3.LifecycleRule) []map[string]interface{} {
 				e["expired_object_delete_marker"] = *marker
 			}
 
-			ruleMap["expiration"] = []interface{}{e}
+			ruleMap["expiration"] = []any{e}
 		}
 
 		if rule.NoncurrentVersionExpiration != nil {
-			e := make(map[string]interface{})
+			e := make(map[string]any)
 
 			if days := rule.NoncurrentVersionExpiration.NoncurrentDays; days != nil && *days > 0 {
 				e["days"] = *days
 			}
 
-			ruleMap["noncurrent_version_expiration"] = []interface{}{e}
+			ruleMap["noncurrent_version_expiration"] = []any{e}
 		}
-
+		tflog.Debug(ctx, "a rule has been flattened", ruleMap)
 		result[i] = ruleMap
 	}
 
 	return result
 }
 
-func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) {
-	rules := make([]*s3.LifecycleRule, len(ruleSpecs))
-	for i, ruleSpec := range ruleSpecs {
-		ruleSpec := ruleSpec.(map[string]interface{})
-		rule := &s3.LifecycleRule{}
+func expandLifecycleRules(ctx context.Context, ruleSpecs []any) ([]s3types.LifecycleRule, error) {
+	tflog.Debug(ctx, "entering expandLifecycleRules")
 
-		status := "Disabled"
+	rules := make([]s3types.LifecycleRule, len(ruleSpecs))
+	for i, ruleSpec := range ruleSpecs {
+		ruleSpec := ruleSpec.(map[string]any)
+		rule := s3types.LifecycleRule{}
+
+		status := s3types.ExpirationStatusDisabled
 		if ruleSpec["enabled"].(bool) {
-			status = "Enabled"
+			status = s3types.ExpirationStatusEnabled
 		}
-		rule.Status = &status
+		rule.Status = status
 
 		if id, ok := ruleSpec["id"]; ok {
 			id := id.(string)
@@ -424,18 +502,22 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 			rule.Prefix = &prefix
 		}
 
-		//nolint:lll
-		if abortIncompleteDays, ok := ruleSpec["abort_incomplete_multipart_upload_days"].(int); ok && abortIncompleteDays > 0 {
-			rule.AbortIncompleteMultipartUpload = &s3.AbortIncompleteMultipartUpload{}
-			abortIncompleteDays := int64(abortIncompleteDays)
-
-			rule.AbortIncompleteMultipartUpload.DaysAfterInitiation = &abortIncompleteDays
+		abortIncompleteDays, ok := ruleSpec["abort_incomplete_multipart_upload_days"].(int)
+		if ok && abortIncompleteDays > 0 {
+			int32Days, err := helper.SafeIntToInt32(abortIncompleteDays)
+			if err != nil {
+				return nil, err
+			}
+			rule.AbortIncompleteMultipartUpload = &s3types.AbortIncompleteMultipartUpload{
+				DaysAfterInitiation: &int32Days,
+			}
 		}
 
-		if expirationList := ruleSpec["expiration"].([]interface{}); len(expirationList) > 0 {
-			rule.Expiration = &s3.LifecycleExpiration{}
+		if expirationList := ruleSpec["expiration"].([]any); len(expirationList) > 0 {
+			tflog.Debug(ctx, "expanding expiration list")
+			rule.Expiration = &s3types.LifecycleExpiration{}
 
-			expirationMap := expirationList[0].(map[string]interface{})
+			expirationMap := expirationList[0].(map[string]any)
 
 			if dateStr, ok := expirationMap["date"].(string); ok && dateStr != "" {
 				date, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", dateStr))
@@ -447,9 +529,11 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 			}
 
 			if days, ok := expirationMap["days"].(int); ok && days > 0 {
-				days := int64(days)
-
-				rule.Expiration.Days = &days
+				int32Days, err := helper.SafeIntToInt32(days)
+				if err != nil {
+					return nil, err
+				}
+				rule.Expiration.Days = &int32Days
 			}
 
 			if marker, ok := expirationMap["expired_object_delete_marker"].(bool); ok && marker {
@@ -457,33 +541,45 @@ func expandLifecycleRules(ruleSpecs []interface{}) ([]*s3.LifecycleRule, error) 
 			}
 		}
 
-		if expirationList := ruleSpec["noncurrent_version_expiration"].([]interface{}); len(expirationList) > 0 {
-			rule.NoncurrentVersionExpiration = &s3.NoncurrentVersionExpiration{}
+		if expirationList := ruleSpec["noncurrent_version_expiration"].([]any); len(expirationList) > 0 {
+			tflog.Debug(ctx, "expanding noncurrent_version_expiration list")
+			rule.NoncurrentVersionExpiration = &s3types.NoncurrentVersionExpiration{}
 
-			expirationMap := expirationList[0].(map[string]interface{})
+			expirationMap := expirationList[0].(map[string]any)
 
-			if days, ok := expirationMap["days"]; ok {
-				days := int64(days.(int))
-				rule.NoncurrentVersionExpiration.NoncurrentDays = &days
+			if days, ok := expirationMap["days"].(int); ok && days > 0 {
+				int32Days, err := helper.SafeIntToInt32(days)
+				if err != nil {
+					return nil, err
+				}
+				rule.NoncurrentVersionExpiration.NoncurrentDays = &int32Days
 			}
 		}
-
+		tflog.Debug(ctx, "a rule has been expanded", map[string]any{"rule": rule})
 		rules[i] = rule
 	}
 
 	return rules, nil
 }
 
-func matchRulesWithSchema(rules []*s3.LifecycleRule, declaredRules []interface{}) []*s3.LifecycleRule {
-	result := make([]*s3.LifecycleRule, 0)
+// matchRulesWithSchema is for keeping the order of existing rules in the
+// TF states and append any addition rules received
+func matchRulesWithSchema(
+	ctx context.Context,
+	rules []s3types.LifecycleRule,
+	declaredRules []any,
+) []s3types.LifecycleRule {
+	tflog.Debug(ctx, "entering matchRulesWithSchema")
 
-	ruleMap := make(map[string]*s3.LifecycleRule, len(declaredRules))
+	result := make([]s3types.LifecycleRule, 0)
+
+	ruleMap := make(map[string]s3types.LifecycleRule)
 	for _, rule := range rules {
 		ruleMap[*rule.ID] = rule
 	}
 
 	for _, declaredRule := range declaredRules {
-		declaredRule := declaredRule.(map[string]interface{})
+		declaredRule := declaredRule.(map[string]any)
 
 		declaredID, ok := declaredRule["id"]
 
@@ -499,6 +595,9 @@ func matchRulesWithSchema(rules []*s3.LifecycleRule, declaredRules []interface{}
 
 	// populate remaining values
 	for _, rule := range ruleMap {
+		tflog.Debug(ctx, "adding new rules", map[string]any{
+			"rule": rule,
+		})
 		result = append(result, rule)
 	}
 
