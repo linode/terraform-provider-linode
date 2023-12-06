@@ -240,7 +240,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "This is the location where the Linode was deployed. This cannot be changed without " +
 			"opening a support ticket.",
 		Required:     true,
-		ForceNew:     true,
 		InputDefault: "us-east",
 	},
 	"type": {
@@ -256,6 +255,15 @@ var resourceSchema = map[string]*schema.Schema{
 			"be automatically downsized.",
 		Optional: true,
 		Default:  false,
+	},
+	"migration_type": {
+		Type:        schema.TypeString,
+		Description: "The type of migration to use for resize and migration operations.",
+		Optional:    true,
+		Default:     "cold",
+		ValidateDiagFunc: validation.ToDiagFunc(
+			validation.StringInSlice([]string{"cold", "warm"}, true),
+		),
 	},
 	"status": {
 		Type:        schema.TypeString,

@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -32,13 +33,15 @@ const (
 	SkipInstanceReadyPollKey = "skip_instance_ready_poll"
 
 	runLongTestsEnvVar  = "RUN_LONG_TEST"
-	skipLongTestMessage = "This test has been marked as a long-running test and is skipped by default." +
+	skipLongTestMessage = "This test has been marked as a long-running test and is skipped by default. " +
 		"If you would like to run this test, please set the RUN_LONG_TEST environment variable to true."
 )
 
-type AttrValidateFunc func(val string) error
-
-type ListAttrValidateFunc func(resourceName, path string, state *terraform.State) error
+type (
+	AttrValidateFunc     func(val string) error
+	ListAttrValidateFunc func(resourceName, path string, state *terraform.State) error
+	RegionFilterFunc     func(v linodego.Region) bool
+)
 
 var (
 	optInTests               map[string]struct{}
@@ -569,9 +572,7 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 }
 
 // GetRegionsWithCaps returns a list of regions that support the given capabilities.
-func GetRegionsWithCaps(capabilities []string) ([]string, error) {
-	result := make([]string, 0)
-
+func GetRegionsWithCaps(capabilities []string, filters ...RegionFilterFunc) ([]string, error) {
 	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
@@ -582,36 +583,46 @@ func GetRegionsWithCaps(capabilities []string) ([]string, error) {
 		return nil, err
 	}
 
-	regionHasCaps := func(r linodego.Region) bool {
+	// Filter on capabilities
+	regionsWithCaps := slices.DeleteFunc(regions, func(region linodego.Region) bool {
 		capsMap := make(map[string]bool)
 
-		for _, c := range r.Capabilities {
+		for _, c := range region.Capabilities {
 			capsMap[strings.ToUpper(c)] = true
 		}
 
 		for _, c := range capabilities {
 			if _, ok := capsMap[strings.ToUpper(c)]; !ok {
-				return false
+				return true
 			}
 		}
 
-		return true
-	}
+		return false
+	})
 
-	for _, region := range regions {
-		if region.Status != "ok" || !regionHasCaps(region) {
-			continue
+	// Apply test-supplied filters
+	filteredRegions := slices.DeleteFunc(regionsWithCaps, func(region linodego.Region) bool {
+		for _, filter := range filters {
+			if !filter(region) {
+				return true
+			}
 		}
 
-		result = append(result, region.ID)
+		return false
+	})
+
+	result := make([]string, len(filteredRegions))
+
+	for i, r := range filteredRegions {
+		result[i] = r.ID
 	}
 
 	return result, nil
 }
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
-func GetRandomRegionWithCaps(capabilities []string) (string, error) {
-	regions, err := GetRegionsWithCaps(capabilities)
+func GetRandomRegionWithCaps(capabilities []string, filters ...RegionFilterFunc) (string, error) {
+	regions, err := GetRegionsWithCaps(capabilities, filters...)
 	if err != nil {
 		return "", err
 	}

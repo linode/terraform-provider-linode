@@ -15,7 +15,7 @@ import (
 
 const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
-	LinodeInstanceUpdateTimeout = 25 * time.Minute
+	LinodeInstanceUpdateTimeout = time.Hour
 	LinodeInstanceDeleteTimeout = 10 * time.Minute
 )
 
@@ -605,6 +605,21 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 		d.Set("private_ip_address", privateIP.Address)
 		rebootInstance = true
+	}
+
+	// If the region has changed,
+	// we should migrate the Linode.
+	if d.HasChange("region") {
+		instance, err = applyInstanceMigration(
+			ctx,
+			d,
+			&client,
+			instance,
+			d.Get("region").(string),
+		)
+		if err != nil {
+			return diag.Errorf("failed to migrate instance: %s", err)
+		}
 	}
 
 	oldSpec, newSpec, err := getInstanceTypeChange(ctx, d, &client)
