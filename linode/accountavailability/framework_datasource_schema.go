@@ -6,17 +6,17 @@ import (
 )
 
 var frameworkDataSourceSchema = schema.Schema{
-	Attributes: Attributes,
+	Attributes: AccountAvailabilityAttributes,
 }
 
-var Attributes = map[string]schema.Attribute{
+var AccountAvailabilityAttributes = map[string]schema.Attribute{
 	"region": schema.StringAttribute{
-		Description: "The id of a region.",
+		Description: "The region of this availability entry.",
 		Required:    true,
 	},
-	"unavailable": schema.ListAttribute{
-		Description: "The unavailable resources in a region to a specific customer.",
+	"unavailable": schema.SetAttribute{
 		ElementType: types.StringType,
+		Description: "A set of unavailable services for the current account in this region.",
 		Computed:    true,
 	},
 }

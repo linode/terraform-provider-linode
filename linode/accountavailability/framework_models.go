@@ -10,7 +10,7 @@ import (
 
 type DataSourceModel struct {
 	Region      types.String `tfsdk:"region"`
-	Unavailable types.List   `tfsdk:"unavailable"`
+	Unavailable types.Set    `tfsdk:"unavailable"`
 }
 
 func (d *DataSourceModel) parseAvailability(
@@ -19,7 +19,7 @@ func (d *DataSourceModel) parseAvailability(
 ) diag.Diagnostics {
 	d.Region = types.StringValue(availability.Region)
 
-	unavailable, diags := types.ListValueFrom(ctx, types.StringType, availability.Unavailable)
+	unavailable, diags := types.SetValueFrom(ctx, types.StringType, availability.Unavailable)
 	if diags != nil {
 		return diags
 	}
