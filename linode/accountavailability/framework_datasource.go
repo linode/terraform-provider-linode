@@ -28,7 +28,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data DataSourceModel
+	var data AccountAvailabilityModel
 	client := d.Meta.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -45,7 +45,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseAvailability(ctx, availability)...)
+	resp.Diagnostics.Append(data.ParseAvailability(ctx, availability)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -8,12 +8,12 @@ import (
 	"github.com/linode/linodego"
 )
 
-type DataSourceModel struct {
+type AccountAvailabilityModel struct {
 	Region      types.String `tfsdk:"region"`
 	Unavailable types.Set    `tfsdk:"unavailable"`
 }
 
-func (d *DataSourceModel) parseAvailability(
+func (d *AccountAvailabilityModel) ParseAvailability(
 	ctx context.Context,
 	availability *linodego.AccountAvailability,
 ) diag.Diagnostics {
