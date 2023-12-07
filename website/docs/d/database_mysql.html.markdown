@@ -44,7 +44,7 @@ The `linode_database_mysql` data source exports the following attributes:
 
 * `engine` - The Managed Database engine. (e.g. `mysql`)
 
-* `engine_id` - The Managed Database engine in engine/version format. (e.g. `mysql/8.0.26`)
+* `engine_id` - The Managed Database engine in engine/version format. (e.g. `mysql/8.0.30`)
 
 * `host_primary` - The primary host for the Managed Database.
 

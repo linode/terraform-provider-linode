@@ -50,6 +50,13 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "A detailed description of this Image.",
 		Optional:    true,
 	},
+	"cloud_init": {
+		Type:        schema.TypeBool,
+		Description: "Whether this image supports cloud-init.",
+		Optional:    true,
+		Default:     false,
+		ForceNew:    true,
+	},
 	"created": {
 		Type:        schema.TypeString,
 		Description: "When this Image was created.",
@@ -94,6 +101,12 @@ var resourceSchema = map[string]*schema.Schema{
 	"status": {
 		Type:        schema.TypeString,
 		Description: "The current status of this Image.",
+		Computed:    true,
+	},
+	"capabilities": {
+		Type:        schema.TypeList,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Description: "The capabilities of this Image.",
 		Computed:    true,
 	},
 }

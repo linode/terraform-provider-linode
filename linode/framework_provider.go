@@ -107,6 +107,10 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
 			},
+			"skip_implicit_reboots": schema.BoolAttribute{
+				Optional:    true,
+				Description: "If true, Linode Instances will not be rebooted on config and interface changes.",
+			},
 			"disable_internal_cache": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Disable the internal caching system that backs certain Linode API requests.",
@@ -142,6 +146,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		rdns.NewResource,
 		objkey.NewResource,
 		sshkey.NewResource,
+		ipv6range.NewResource,
 		nb.NewResource,
 		user.NewResource,
 	}

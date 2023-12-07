@@ -29,6 +29,21 @@ You may need to switch to an explicit disk configuration.
 Take a look at the example here:
 https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
 
+func resourceMetadata() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"user_data": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Description: "The base64-encoded user-defined data exposed to this instance " +
+					"through the Linode Metadata service. Refer to the base64encode(...) function " +
+					"for information on encoding content for this field.",
+				ForceNew: true,
+			},
+		},
+	}
+}
+
 func resourceDeviceDisk() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -288,6 +303,17 @@ var resourceSchema = map[string]*schema.Schema{
 		},
 		Optional: true,
 		Computed: true,
+	},
+	"metadata": {
+		Type:        schema.TypeList,
+		Elem:        resourceMetadata(),
+		Description: "Various fields related to the Linode Metadata service.",
+		Optional:    true,
+	},
+	"has_user_data": {
+		Type:        schema.TypeBool,
+		Description: "Whether or not this Instance was created with user-data.",
+		Computed:    true,
 	},
 	"specs": {
 		Computed:    true,

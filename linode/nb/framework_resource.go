@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -150,8 +151,11 @@ func (r *Resource) Update(
 		}
 
 		resp.Diagnostics.Append(plan.parseComputedAttrs(ctx, nodebalancer)...)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	} else {
+		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
+		req.State.GetAttribute(ctx, path.Root("transfer"), &plan.Transfer)
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(

@@ -2,14 +2,10 @@ package ipv6range
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/linode/helper"
 )
 
@@ -26,37 +22,6 @@ func NewDataSource() datasource.DataSource {
 
 type DataSource struct {
 	helper.BaseDataSource
-}
-
-func (data *DataSourceModel) parseIPv6Range(
-	ctx context.Context, ipv6Range *linodego.IPv6Range,
-) diag.Diagnostics {
-	data.Range = types.StringValue(ipv6Range.Range)
-	data.IsBGP = types.BoolValue(ipv6Range.IsBGP)
-
-	linodes, diag := types.SetValueFrom(ctx, types.Int64Type, ipv6Range.Linodes)
-	if diag.HasError() {
-		return diag
-	}
-	data.Linodes = linodes
-
-	data.Prefix = types.Int64Value(int64(ipv6Range.Prefix))
-	data.Region = types.StringValue(ipv6Range.Region)
-
-	id, _ := json.Marshal(ipv6Range)
-
-	data.ID = types.StringValue(string(id))
-
-	return nil
-}
-
-type DataSourceModel struct {
-	Range   types.String `tfsdk:"range"`
-	IsBGP   types.Bool   `tfsdk:"is_bgp"`
-	Linodes types.Set    `tfsdk:"linodes"`
-	Prefix  types.Int64  `tfsdk:"prefix"`
-	Region  types.String `tfsdk:"region"`
-	ID      types.String `tfsdk:"id"`
 }
 
 func (d *DataSource) Read(
@@ -84,7 +49,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseIPv6Range(ctx, rangeData)...)
+	resp.Diagnostics.Append(data.parseIPv6RangeDataSource(ctx, rangeData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

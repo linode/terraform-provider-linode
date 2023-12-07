@@ -17,11 +17,13 @@ type ResourceModel struct {
 	ID      types.Int64                        `tfsdk:"id"`
 }
 
-func (rm *ResourceModel) parseSSHKey(key *linodego.SSHKey) {
+func (rm *ResourceModel) parseConfiguredAttributes(key *linodego.SSHKey) {
 	rm.Label = types.StringValue(key.Label)
 	rm.SSHKey = types.StringValue(key.SSHKey)
-	rm.ID = types.Int64Value(int64(key.ID))
+}
 
+func (rm *ResourceModel) parseComputedAttributes(key *linodego.SSHKey) {
+	rm.ID = types.Int64Value(int64(key.ID))
 	rm.Created = customtypes.RFC3339TimeStringValue{
 		StringValue: types.StringValue(key.Created.Format(time.RFC3339)),
 	}

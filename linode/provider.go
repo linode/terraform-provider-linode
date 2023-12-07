@@ -26,7 +26,6 @@ import (
 	"github.com/linode/terraform-provider-linode/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
-	"github.com/linode/terraform-provider-linode/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/linode/lke"
 	"github.com/linode/terraform-provider-linode/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/linode/nbnode"
@@ -79,6 +78,12 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to finish deleting.",
+			},
+
+			"skip_implicit_reboots": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If true, Linode Instances will not be rebooted on config and interface changes.",
 			},
 
 			"disable_internal_cache": {
@@ -136,7 +141,6 @@ func Provider() *schema.Provider {
 			"linode_instance_disk":            instancedisk.Resource(),
 			"linode_instance_ip":              instanceip.Resource(),
 			"linode_instance_shared_ips":      instancesharedips.Resource(),
-			"linode_ipv6_range":               ipv6range.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
 			"linode_nodebalancer_node":        nbnode.Resource(),
 			"linode_nodebalancer_config":      nbconfig.Resource(),
@@ -233,6 +237,7 @@ func providerConfigure(
 	config := &helper.Config{
 		SkipInstanceReadyPoll:  d.Get("skip_instance_ready_poll").(bool),
 		SkipInstanceDeletePoll: d.Get("skip_instance_delete_poll").(bool),
+		SkipImplicitReboots:    d.Get("skip_implicit_reboots").(bool),
 
 		DisableInternalCache: d.Get("disable_internal_cache").(bool),
 

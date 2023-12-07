@@ -105,7 +105,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "helpers.0.updatedb_disabled", "false"),
 
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "vlan"),
-					resource.TestCheckResourceAttr(resName, "interface.0.label", "cool"),
+					resource.TestCheckResourceAttr(resName, "interface.0.label", "cooler"),
 					resource.TestCheckResourceAttr(resName, "interface.0.ipam_address", "10.0.0.3/24"),
 
 					resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-32bit"),

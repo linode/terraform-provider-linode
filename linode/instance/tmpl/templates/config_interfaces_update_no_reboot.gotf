@@ -1,0 +1,71 @@
+{{ define "instance_config_interfaces_update_no_reboot" }}
+
+provider "linode" {
+    skip_implicit_reboots = true
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    alerts {
+        cpu = 60
+    }
+    config {
+        label = "config"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+        helpers {
+            network = true
+        }
+
+        interface {
+            purpose = "public"
+        }
+
+        interface {
+            purpose = "vlan"
+            label = "tf-really-cool-vlan"
+        }
+        devices {
+            sda {
+                disk_label = "boot"
+            }
+        }
+    }
+
+    config {
+        label = "config2"
+        kernel = "linode/latest-64bit"
+        root_device = "/dev/sda"
+        helpers {
+            network = true
+        }
+
+        interface {
+            purpose = "public"
+        }
+
+        interface {
+            purpose = "vlan"
+            label = "tf-really-cool-vlan"
+        }
+        devices {
+            sda {
+                disk_label = "boot"
+            }
+        }
+    }
+
+    disk {
+        label = "boot"
+        size = 3000
+        image  = "{{.Image}}"
+        root_pass = "myr00tp@ssw0rd!!!"
+    }
+
+    boot_config_label = "config"
+}
+
+{{ end }}

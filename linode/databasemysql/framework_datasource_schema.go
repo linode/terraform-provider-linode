@@ -18,7 +18,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Optional:    true,
 		},
 		"engine_id": schema.StringAttribute{
-			Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.26)",
+			Description: "The Managed Database engine in engine/version format. (e.g. mysql/8.0.30)",
 			Computed:    true,
 		},
 		"label": schema.StringAttribute{

@@ -87,12 +87,12 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	token, err := client.GetToken(ctx, int(id))
+	token, err := client.GetToken(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
@@ -132,7 +132,10 @@ func (r *Resource) Update(
 
 	if !state.Label.Equal(plan.Label) {
 		tokenIDString := state.ID.ValueString()
-		tokenID := int(helper.StringToInt64(tokenIDString, resp.Diagnostics))
+		tokenID := helper.StringToInt(tokenIDString, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
 		client := r.Meta.Client
 		token, err := client.GetToken(ctx, tokenID)
@@ -171,7 +174,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	tokenID := int(helper.StringToInt64(data.ID.ValueString(), resp.Diagnostics))
+	tokenID := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
