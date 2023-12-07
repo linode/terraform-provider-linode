@@ -7,10 +7,11 @@ import (
 )
 
 type TemplateData struct {
-	Label  string
-	Size   int
-	PubKey string
-	Region string
+	Label    string
+	Size     int
+	PubKey   string
+	Region   string
+	RootPass string
 }
 
 func Basic(t *testing.T, label, region string, size int) string {
@@ -32,11 +33,12 @@ func Complex(t *testing.T, label, region string, size int) string {
 		})
 }
 
-func BootedResize(t *testing.T, label, region string, size int) string {
+func BootedResize(t *testing.T, label, region string, size int, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_booted_resize", TemplateData{
-			Label:  label,
-			Size:   size,
-			Region: region,
+			Label:    label,
+			Size:     size,
+			Region:   region,
+			RootPass: rootPass,
 		})
 }
