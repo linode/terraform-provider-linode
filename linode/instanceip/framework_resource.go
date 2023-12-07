@@ -193,7 +193,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	if state.RDNS != plan.RDNS {
+	if !plan.RDNS.Equal(state.RDNS) {
 		rdns := plan.RDNS.ValueStringPointer()
 		updateOptions := linodego.IPAddressUpdateOptions{
 			RDNS: rdns,
