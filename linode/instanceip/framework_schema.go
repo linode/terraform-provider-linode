@@ -61,6 +61,9 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The reverse DNS assigned to this address.",
 			Optional:    true,
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"region": schema.StringAttribute{
 			Description: "The region this IP resides in.",
