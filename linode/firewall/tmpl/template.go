@@ -3,14 +3,16 @@ package tmpl
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
 type ResourceTemplateData struct {
-	Prefix string
-	ID     string
-	PubKey string
-	Region string
+	Prefix   string
+	ID       string
+	PubKey   string
+	Region   string
+	RootPass string
 }
 
 type TemplateData struct {
@@ -23,10 +25,11 @@ type TemplateData struct {
 func Basic(t *testing.T, label, devicePrefix, region string) string {
 	resources := []ResourceTemplateData{
 		{
-			Prefix: devicePrefix,
-			ID:     "one",
-			PubKey: acceptance.PublicKeyMaterial,
-			Region: region,
+			Prefix:   devicePrefix,
+			ID:       "one",
+			PubKey:   acceptance.PublicKeyMaterial,
+			Region:   region,
+			RootPass: acctest.RandString(12),
 		},
 	}
 
@@ -41,16 +44,18 @@ func Basic(t *testing.T, label, devicePrefix, region string) string {
 func Updates(t *testing.T, label, devicePrefix, region string) string {
 	resources := []ResourceTemplateData{
 		{
-			Prefix: devicePrefix,
-			ID:     "one",
-			PubKey: acceptance.PublicKeyMaterial,
-			Region: region,
+			Prefix:   devicePrefix,
+			ID:       "one",
+			PubKey:   acceptance.PublicKeyMaterial,
+			Region:   region,
+			RootPass: acctest.RandString(12),
 		},
 		{
-			Prefix: devicePrefix,
-			ID:     "two",
-			PubKey: acceptance.PublicKeyMaterial,
-			Region: region,
+			Prefix:   devicePrefix,
+			ID:       "two",
+			PubKey:   acceptance.PublicKeyMaterial,
+			Region:   region,
+			RootPass: acctest.RandString(12),
 		},
 	}
 
@@ -75,10 +80,11 @@ func MultipleRules(t *testing.T, label, devicePrefix, region string) string {
 			Label: label,
 			Instances: []ResourceTemplateData{
 				{
-					Prefix: devicePrefix,
-					ID:     "one",
-					PubKey: acceptance.PublicKeyMaterial,
-					Region: region,
+					Prefix:   devicePrefix,
+					ID:       "one",
+					PubKey:   acceptance.PublicKeyMaterial,
+					Region:   region,
+					RootPass: acctest.RandString(12),
 				},
 			},
 		})
@@ -108,10 +114,11 @@ func NoRules(t *testing.T, label string) string {
 func DataBasic(t *testing.T, label, devicePrefix, region string) string {
 	resources := []ResourceTemplateData{
 		{
-			Prefix: devicePrefix,
-			ID:     "one",
-			PubKey: acceptance.PublicKeyMaterial,
-			Region: region,
+			Prefix:   devicePrefix,
+			ID:       "one",
+			PubKey:   acceptance.PublicKeyMaterial,
+			Region:   region,
+			RootPass: acctest.RandString(12),
 		},
 	}
 

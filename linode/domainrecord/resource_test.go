@@ -268,6 +268,71 @@ func TestAccResourceDomainRecord_update(t *testing.T) {
 	})
 }
 
+func TestAccResourceDomainRecord_reconcileName(t *testing.T) {
+	t.Parallel()
+
+	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
+		Steps: []resource.TestStep{
+			// Ensure there is no diff when using the domain name as the record name
+			{
+				Config: tmpl.WithDomain(t, domainName, domainName),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
+			},
+
+			// Ensure there is no diff when using an empty string as the record name
+			{
+				Config: tmpl.WithDomain(t, domainName, ""),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
+			},
+
+			// Ensure there is no diff when specifying a prefix with the domain
+			{
+				Config: tmpl.WithDomain(t, domainName, "test."+domainName),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", "test."+domainName),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
+			},
+
+			// Ensure there is no diff when specifying a prefix without the domain
+			{
+				Config: tmpl.WithDomain(t, domainName, "test"),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", "test"),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
+			},
+		},
+	})
+}
+
 func importStateID(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain_record" {

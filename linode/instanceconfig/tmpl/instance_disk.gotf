@@ -6,7 +6,7 @@ resource "linode_instance_disk" "foobar" {
   size = linode_instance.foobar.specs.0.disk
 
   image = "linode/alpine3.18"
-  root_pass = "myr00tp@ssw0rd!!!"
+  root_pass = "{{ .RootPass }}"
 }
 
 {{ end }}
