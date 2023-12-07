@@ -9,7 +9,7 @@ resource "linode_instance" "foobar" {
     disk {
         label = "disk"
         image = "{{.Image}}"
-        root_pass = "myr00tp@ssw0rd!!!"
+        root_pass = "{{ .RootPass }}"
         authorized_keys = ["{{.PubKey}}"]
         size = 3000
     }
@@ -17,7 +17,7 @@ resource "linode_instance" "foobar" {
     disk {
         label = "diskb"
         image = "linode/ubuntu18.04"
-        root_pass = "myr00tp@ssw0rd!!!"
+        root_pass = "{{ .RootPass }}"
         authorized_keys = ["{{.PubKey}}"]
         size = 3000
     }
