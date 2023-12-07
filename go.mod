@@ -105,3 +105,6 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+// TODO: Revert once DC Get Well has been released in linodego
+replace github.com/linode/linodego => github.com/linode/linodego v1.25.1-0.20231205161609-392c33add4f9

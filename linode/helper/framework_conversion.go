@@ -43,6 +43,22 @@ func StringSliceToFramework(val []string) []types.String {
 	return result
 }
 
+// FrameworkSliceToString converts the given Framework slice
+// into a slice of strings.
+func FrameworkSliceToString(val []types.String) []string {
+	if val == nil {
+		return nil
+	}
+
+	result := make([]string, len(val))
+
+	for i, v := range val {
+		result[i] = v.ValueString()
+	}
+
+	return result
+}
+
 // IntSliceToFramework converts the given int slice
 // into a framework-compatible slice of types.String.
 func IntSliceToFramework(val []int) []types.Int64 {
