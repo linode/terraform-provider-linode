@@ -34,9 +34,6 @@ jobs:
       - name: Install Python deps
         run: pip3 install requests wheel boto3
 
-      - name: Set release version env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
       - name: Install go-junit-report
         run: go install github.com/jstemmer/go-junit-report/v2@latest
 
@@ -55,7 +52,7 @@ jobs:
         run: |
           filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$') 
           python scripts/add_to_xml_test_report.py \
-          --branch_name "${{ env.RELEASE_VERSION }}" \
+          --branch_name "${GITHUB_REF#refs/*/}" \
           --gha_run_id "$GITHUB_RUN_ID" \
           --gha_run_number "$GITHUB_RUN_NUMBER" \
           --xmlfile "${filename}"
