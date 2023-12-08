@@ -46,12 +46,13 @@ def change_xml_report_to_tod_acceptable_version(file_name):
     # Save the new XML to a file
     try:
         new_tree = ET.ElementTree(new_testsuites)
-        new_tree.write(file_name, encoding="UTF-8", xml_declaration=True)
         new_root = new_tree.getroot()
         new_root.append(root.get('branch_name'))
         new_root.append(root.get('gha_run_id'))
         new_root.append(root.get('gha_run_number'))
         new_root.append(root.get('release_tag'))
+
+        new_tree.write(file_name, encoding="UTF-8", xml_declaration=True)
 
         print("XML content successfully over-written to " + file_name)
 
