@@ -5,7 +5,7 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
-    image = "linode/alpine3.14"
+    image = "linode/debian12"
 }
 
 resource "linode_instance_ip" "test" {
