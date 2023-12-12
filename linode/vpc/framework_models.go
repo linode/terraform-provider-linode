@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 type VPCModel struct {
@@ -18,23 +18,28 @@ type VPCModel struct {
 	Updated     timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-func (d *VPCModel) parseComputedAttributes(
-	ctx context.Context,
-	vpc *linodego.VPC,
-) diag.Diagnostics {
-	d.ID = types.Int64Value(int64(vpc.ID))
-	d.Description = types.StringValue(vpc.Description)
-	d.Created = timetypes.NewRFC3339TimePointerValue(vpc.Created)
-	d.Updated = timetypes.NewRFC3339TimePointerValue(vpc.Updated)
-	return nil
+func (m *VPCModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) {
+	m.ID = helper.KeepOrUpdateInt64(m.ID, int64(vpc.ID), preserveKnown)
+	m.Description = helper.KeepOrUpdateString(m.Description, vpc.Description, preserveKnown)
+	m.Created = helper.KeepOrUpdateValue(
+		m.Created,
+		timetypes.NewRFC3339TimePointerValue(vpc.Created),
+		preserveKnown,
+	)
+	m.Updated = helper.KeepOrUpdateValue(
+		m.Updated,
+		timetypes.NewRFC3339TimePointerValue(vpc.Updated),
+		preserveKnown,
+	)
+	m.Label = helper.KeepOrUpdateString(m.Label, vpc.Label, preserveKnown)
+	m.Region = helper.KeepOrUpdateString(m.Region, vpc.Region, preserveKnown)
 }
 
-func (d *VPCModel) ParseVPC(
-	ctx context.Context,
-	vpc *linodego.VPC,
-) diag.Diagnostics {
-	d.Label = types.StringValue(vpc.Label)
-	d.Region = types.StringValue(vpc.Region)
-
-	return d.parseComputedAttributes(ctx, vpc)
+func (m *VPCModel) CopyFrom(ctx context.Context, other VPCModel, preserveKnown bool) {
+	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
+	m.Description = helper.KeepOrUpdateValue(m.Description, other.Description, preserveKnown)
+	m.Created = helper.KeepOrUpdateValue(m.Created, other.Created, preserveKnown)
+	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
+	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
+	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
 }
