@@ -218,6 +218,15 @@ The following attributes are available on helpers:
 
 ### interface
 
+A Linode must have a public interface in the first/eth0 position to be reachable via the public internet
+upon boot without additional system configuration. If no public interface is configured, the Linode
+is not directly reachable via the public internet. In this case, access can only be established via
+LISH or other Linodes connected to the same VLAN.
+
+Only one public interface per Linode can be defined.
+
+The Linode’s default public IPv4 address is assigned to the public interface.
+
 The following arguments are available in an interface:
 
 * `purpose` - (Required) The type of interface. (`public`, `vlan`, `vpc`)
