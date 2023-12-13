@@ -231,7 +231,7 @@ func (r *Resource) Update(
 			return
 		}
 	} else {
-		plan.CopyFrom(ctx, state, false)
+		plan.CopyFrom(ctx, state, true)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
