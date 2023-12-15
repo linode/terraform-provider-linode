@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -56,11 +55,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, vpc)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	data.FlattenVPC(ctx, vpc, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -102,11 +97,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseVPC(ctx, vpc)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	data.FlattenVPC(ctx, vpc, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -152,12 +143,9 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		resp.Diagnostics.Append(plan.parseComputedAttributes(ctx, vpc)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+		plan.FlattenVPC(ctx, vpc, false)
 	} else {
-		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
+		plan.CopyFrom(ctx, state, true)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
