@@ -52,8 +52,10 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 						CustomType:  timetypes.RFC3339Type{},
 					},
-
-					"linodes": vpcsubnet.LinodesSchema,
+					"linodes": schema.ListAttribute{
+						Computed:    true,
+						ElementType: vpcsubnet.LinodeObjectType,
+					},
 				},
 			},
 		},
