@@ -456,11 +456,11 @@ func (f FilterConfig) validateFilter(
 	recursiveValidate := func() (bool, error) {
 		var s []any
 
-		switch itemValue.(type) {
+		switch itemValue := itemValue.(type) {
 		case []int:
-			s = TypedSliceToAny(itemValue.([]int))
+			s = TypedSliceToAny(itemValue)
 		case []string:
-			s = TypedSliceToAny(itemValue.([]string))
+			s = TypedSliceToAny(itemValue)
 		default:
 			return false, fmt.Errorf("unknown slice type")
 		}
@@ -593,7 +593,7 @@ func validateItemValueType(value any) error {
 
 	return fmt.Errorf("The underlying type (%v) for this filterable field is not supported. "+
 		"This is always a provider bug. Please create an issue describing this bug on the terraform-provider-linode "+
-		"GitHub repository. (https://github.com/linode/terraform-provider-linode/issues)",
+		"GitHub repository. (https://github.com/linode/terraform-provider-linode/v2/issues)",
 		kind)
 }
 

@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/instanceconfig/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig/tmpl"
 )
 
 var testRegion string
@@ -62,6 +62,7 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 
 	resName := "linode_instance_config.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	devicesCheck := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
@@ -81,7 +82,7 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 			// Ensure the provider doesn't panic when creating an instance
 			// with the new `device` block.
 			{
-				Config: tmpl.DeviceBlock(t, instanceName, testRegion),
+				Config: tmpl.DeviceBlock(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
@@ -89,7 +90,7 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.DeviceNamedBlock(t, instanceName, testRegion),
+				Config: tmpl.DeviceNamedBlock(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
@@ -97,7 +98,7 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.DeviceBlock(t, instanceName, testRegion),
+				Config: tmpl.DeviceBlock(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
@@ -105,7 +106,7 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.DeviceNamedBlock(t, instanceName, testRegion),
+				Config: tmpl.DeviceNamedBlock(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
@@ -127,6 +128,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 
 	resName := "linode_instance_config.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -134,7 +136,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Complex(t, instanceName, testRegion),
+				Config: tmpl.Complex(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
@@ -159,7 +161,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ComplexUpdates(t, instanceName, testRegion),
+				Config: tmpl.ComplexUpdates(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config-updated"),
@@ -202,6 +204,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 
 	resName := "linode_instance_config.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -209,7 +212,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Booted(t, instanceName, testRegion, false),
+				Config: tmpl.Booted(t, instanceName, testRegion, false, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					checkExists(resName, nil),
@@ -224,7 +227,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 						t.Fatalf("expected instance to be offline, got %s", instance.Status)
 					}
 				},
-				Config: tmpl.Booted(t, instanceName, testRegion, true),
+				Config: tmpl.Booted(t, instanceName, testRegion, true, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					checkExists(resName, nil),
@@ -239,7 +242,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 						t.Fatalf("expected instance to be running, got %s", instance.Status)
 					}
 				},
-				Config: tmpl.Booted(t, instanceName, testRegion, true),
+				Config: tmpl.Booted(t, instanceName, testRegion, true, rootPass),
 			},
 			{
 				ResourceName:      resName,
@@ -260,6 +263,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 		config1Name := "linode_instance_config.foobar1"
 		config2Name := "linode_instance_config.foobar2"
 		instanceName := acctest.RandomWithPrefix("tf_test")
+		rootPass := acctest.RandString(12)
 
 		resource.Test(retryT, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -267,7 +271,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 			CheckDestroy:             checkDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.BootedSwap(t, instanceName, testRegion, false),
+					Config: tmpl.BootedSwap(t, instanceName, testRegion, false, rootPass),
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 						checkExists(config1Name, nil),
@@ -283,7 +287,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 							t.Fatalf("expected instance to be running, got %s", instance.Status)
 						}
 					},
-					Config: tmpl.BootedSwap(t, instanceName, testRegion, true),
+					Config: tmpl.BootedSwap(t, instanceName, testRegion, true, rootPass),
 					Check: resource.ComposeTestCheckFunc(
 						acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 						checkExists(config1Name, nil),
@@ -299,7 +303,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 							t.Fatalf("expected instance to be running, got %s", instance.Status)
 						}
 					},
-					Config: tmpl.BootedSwap(t, instanceName, testRegion, true),
+					Config: tmpl.BootedSwap(t, instanceName, testRegion, true, rootPass),
 				},
 			},
 		})
@@ -313,6 +317,7 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 
 	resName := "linode_instance_config.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -320,7 +325,7 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Provisioner(t, instanceName, testRegion),
+				Config: tmpl.Provisioner(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					checkExists(resName, nil),
@@ -344,6 +349,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 	resName := "linode_instance_config.foobar"
 	networkDSName := "data.linode_instance_networking.foobar"
 	instanceName := acctest.RandomWithPrefix("tf-test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -351,7 +357,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 		CheckDestroy:             checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.VPCInterface(t, instanceName, testRegion),
+				Config: tmpl.VPCInterface(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
@@ -366,7 +372,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.VPCInterfaceUpdates(t, instanceName, testRegion),
+				Config: tmpl.VPCInterfaceUpdates(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
@@ -376,6 +382,80 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.100/32"),
 
 					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.#", "0"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
+// Test case to ensure instances manually booted into rescue mode
+// will not crash the provider.
+func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+
+	resName := "linode_instance_config.foobar"
+	instanceResName := "linode_instance.foobar"
+
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Complex(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+				),
+			},
+			{
+				PreConfig: func() {
+					client, err := acceptance.GetTestClient()
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					poller, err := client.NewEventPoller(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeReboot)
+					if err != nil {
+						t.Fatalf("failed to create event poller: %v", err)
+					}
+
+					if err := client.RescueInstance(context.Background(), instance.ID, linodego.InstanceRescueOptions{}); err != nil {
+						t.Fatalf("failed to boot instance into rescue mode: %v", err)
+					}
+
+					if _, err := poller.WaitForFinished(context.Background(), 240); err != nil {
+						t.Fatalf("failed to wait for instance to boot into rescue mode: %v", err)
+					}
+				},
+				Config: tmpl.ComplexUpdates(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+
+					// The provider should not be booted into this config
+					resource.TestCheckResourceAttr(resName, "booted", "false"),
+				),
+			},
+			{
+				Config: tmpl.Complex(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					acceptance.CheckInstanceExists(instanceResName, &instance),
+
+					// The provider should now have been rebooted into this config
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
 				),
 			},
 			{

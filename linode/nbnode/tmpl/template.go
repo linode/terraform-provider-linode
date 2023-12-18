@@ -3,9 +3,9 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/nb/tmpl"
-	config "github.com/linode/terraform-provider-linode/linode/nbconfig/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/nb/tmpl"
+	config "github.com/linode/terraform-provider-linode/v2/linode/nbconfig/tmpl"
 )
 
 type TemplateData struct {
@@ -15,20 +15,22 @@ type TemplateData struct {
 }
 
 type InstanceTemplateData struct {
-	Label  string
-	PubKey string
-	Region string
+	Label    string
+	PubKey   string
+	Region   string
+	RootPass string
 }
 
-func Basic(t *testing.T, nodebalancer, region string) string {
+func Basic(t *testing.T, nodebalancer, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_basic",
 		TemplateData{
 			Label: nodebalancer,
 			Instance: InstanceTemplateData{
-				Label:  nodebalancer,
-				PubKey: acceptance.PublicKeyMaterial,
-				Region: region,
+				Label:    nodebalancer,
+				PubKey:   acceptance.PublicKeyMaterial,
+				Region:   region,
+				RootPass: rootPass,
 			},
 			Config: config.TemplateData{
 				NodeBalancer: tmpl.TemplateData{
@@ -39,15 +41,16 @@ func Basic(t *testing.T, nodebalancer, region string) string {
 		})
 }
 
-func Updates(t *testing.T, nodebalancer, region string) string {
+func Updates(t *testing.T, nodebalancer, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_updates",
 		TemplateData{
 			Label: nodebalancer,
 			Instance: InstanceTemplateData{
-				Label:  nodebalancer,
-				PubKey: acceptance.PublicKeyMaterial,
-				Region: region,
+				Label:    nodebalancer,
+				PubKey:   acceptance.PublicKeyMaterial,
+				Region:   region,
+				RootPass: rootPass,
 			},
 			Config: config.TemplateData{
 				NodeBalancer: tmpl.TemplateData{
@@ -58,15 +61,16 @@ func Updates(t *testing.T, nodebalancer, region string) string {
 		})
 }
 
-func DataBasic(t *testing.T, nodebalancer, region string) string {
+func DataBasic(t *testing.T, nodebalancer, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_data_basic",
 		TemplateData{
 			Label: nodebalancer,
 			Instance: InstanceTemplateData{
-				Label:  nodebalancer,
-				PubKey: acceptance.PublicKeyMaterial,
-				Region: region,
+				Label:    nodebalancer,
+				PubKey:   acceptance.PublicKeyMaterial,
+				Region:   region,
+				RootPass: rootPass,
 			},
 			Config: config.TemplateData{
 				NodeBalancer: tmpl.TemplateData{

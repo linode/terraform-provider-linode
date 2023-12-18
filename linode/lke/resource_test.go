@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/lke/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/lke/tmpl"
 )
 
 var (
@@ -167,33 +167,35 @@ func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterv
 func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 	t.Parallel()
 
-	clusterName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
-					resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
-					resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
-					resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
-					resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
-					resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
-				),
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
+					),
+				},
 			},
-		},
+		})
 	})
 }
 
@@ -202,36 +204,38 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 
 	var cluster linodego.LKECluster
 
-	clusterName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.ManyPools(t, clusterName, k8sVersionPrevious, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					checkLKEExists(&cluster),
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
-					resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionPrevious),
-				),
-			},
-			{
-				PreConfig: func() {
-					// Before we upgrade the Cluster to a newer version of Kubernetes, we need to first
-					// ensure that every Node in each of this cluster's NodePool is ready. Otherwise, the
-					// recycle will not actually occur.
-					waitForAllNodesReady(t, &cluster, time.Second*5, time.Minute*5)
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.ManyPools(t, clusterName, k8sVersionPrevious, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						checkLKEExists(&cluster),
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionPrevious),
+					),
 				},
-				Config: tmpl.ManyPools(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
-					resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
-				),
+				{
+					PreConfig: func() {
+						// Before we upgrade the Cluster to a newer version of Kubernetes, we need to first
+						// ensure that every Node in each of this cluster's NodePool is ready. Otherwise, the
+						// recycle will not actually occur.
+						waitForAllNodesReady(t, &cluster, time.Second*5, time.Minute*5)
+					},
+					Config: tmpl.ManyPools(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
+					),
+				},
 			},
-		},
+		})
 	})
 }
 
@@ -266,73 +270,77 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 			return nil
 		})
 
-	clusterName := acctest.RandomWithPrefix("tf_test")
-	newClusterName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: providerMap,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-				),
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		newClusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:  func() { acceptance.PreCheck(t) },
+			Providers: providerMap,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+					),
+				},
+				{
+					Config: tmpl.Updates(t, newClusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "4"),
+					),
+				},
 			},
-			{
-				Config: tmpl.Updates(t, newClusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "4"),
-				),
-			},
-		},
+		})
 	})
 }
 
 func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 	t.Parallel()
 
-	clusterName := acctest.RandomWithPrefix("tf_test")
-	newClusterName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-				),
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		newClusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.ComplexPools(t, newClusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.2.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.3.count", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
 			},
-			{
-				Config: tmpl.ComplexPools(t, newClusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.2.count", "2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.3.count", "2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-				),
-			},
-			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-				),
-			},
-		},
+		})
 	})
 }
 
@@ -341,156 +349,162 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 
 	var cluster linodego.LKECluster
 
-	clusterName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					checkLKEExists(&cluster),
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-				),
-			},
-			{
-				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-					if _, err := client.CreateLKENodePool(context.Background(), cluster.ID, linodego.LKENodePoolCreateOptions{
-						Count: 1,
-						Type:  "g6-standard-1",
-					}); err != nil {
-						t.Errorf("failed to create unmanaged pool for cluster %d: %s", cluster.ID, err)
-					}
-
-					pools, err := client.ListLKENodePools(context.Background(), cluster.ID, nil)
-					if err != nil {
-						t.Errorf("failed to get pools for cluster %d: %s", cluster.ID, err)
-					}
-
-					if len(pools) != 2 {
-						t.Errorf("expected cluster to have 2 pools but got %d", len(pools))
-					}
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						checkLKEExists(&cluster),
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					),
 				},
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check:  resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+				{
+					PreConfig: func() {
+						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						if _, err := client.CreateLKENodePool(context.Background(), cluster.ID, linodego.LKENodePoolCreateOptions{
+							Count: 1,
+							Type:  "g6-standard-1",
+						}); err != nil {
+							t.Errorf("failed to create unmanaged pool for cluster %d: %s", cluster.ID, err)
+						}
+
+						pools, err := client.ListLKENodePools(context.Background(), cluster.ID, nil)
+						if err != nil {
+							t.Errorf("failed to get pools for cluster %d: %s", cluster.ID, err)
+						}
+
+						if len(pools) != 2 {
+							t.Errorf("expected cluster to have 2 pools but got %d", len(pools))
+						}
+					},
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check:  resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+				},
 			},
-		},
+		})
 	})
 }
 
 func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 	t.Parallel()
 
-	clusterName := acctest.RandomWithPrefix("tf_test")
-	// newClusterName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-				),
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		// newClusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.Autoscaler(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "5"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.AutoscalerUpdates(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.AutoscalerManyPools(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "5"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.min", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.max", "8"),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+					),
+				},
+				{
+					Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+					),
+				},
 			},
-			{
-				Config: tmpl.Autoscaler(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "5"),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-				),
-			},
-			{
-				Config: tmpl.AutoscalerUpdates(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-				),
-			},
-			{
-				Config: tmpl.AutoscalerManyPools(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "5"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.min", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.max", "8"),
-					resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
-				),
-			},
-			{
-				Config: tmpl.Basic(t, clusterName, k8sVersionLatest, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
-				),
-			},
-		},
+		})
 	})
 }
 
 func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 	t.Parallel()
 
-	clusterName := acctest.RandomWithPrefix("tf_test")
-	// newClusterName := acctest.RandomWithPrefix("tf_test")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
-					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
-				),
-			},
-			{
-				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, true),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
-					resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
-				),
-			},
-			{
-				Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		// newClusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
+					),
+				},
+				{
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, true),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
+					),
+				},
+				{
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
 
-				// Expect a 400 response when attempting to disable HA
-				ExpectError: regexp.MustCompile("\\[400]"),
+					// Expect a 400 response when attempting to disable HA
+					ExpectError: regexp.MustCompile("\\[400]"),
+				},
 			},
-		},
+		})
 	})
 }

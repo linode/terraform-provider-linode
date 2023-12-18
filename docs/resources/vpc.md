@@ -26,7 +26,7 @@ resource "linode_vpc" "test" {
 
 The following arguments are supported:
 
-* `label` - (Required) The label of the VPC. Only contains ascii letters, digits and dashes.
+* `label` - (Required) The label of the VPC. This field can only contain ASCII letters, digits and dashes.
 
 * `region` - (Required) The region of the VPC.
 
@@ -40,4 +40,4 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `created` - The date and time when the VPC was created.
 
-* `updated` - The date and time when the VPC was updated.
+* `updated` - The date and time when the VPC was last updated.

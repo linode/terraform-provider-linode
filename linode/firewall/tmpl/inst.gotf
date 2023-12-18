@@ -8,7 +8,7 @@ resource "linode_instance" "{{.ID}}" {
     disk {
         label = "disk"
         image = "linode/alpine3.15"
-        root_pass = "myr00tp@ssw0rd!!!"
+        root_pass = "{{ .RootPass }}"
         authorized_keys = ["{{.PubKey}}"]
         size = 3000
     }

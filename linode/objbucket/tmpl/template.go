@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	objkey "github.com/linode/terraform-provider-linode/linode/objkey/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	objkey "github.com/linode/terraform-provider-linode/v2/linode/objkey/tmpl"
 )
 
 type TemplateData struct {
@@ -81,6 +81,15 @@ func LifeCycleNoID(t *testing.T, label, cluster, keyName string) string {
 func LifeCycleUpdates(t *testing.T, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_updates", TemplateData{
+			Key:     objkey.TemplateData{Label: keyName},
+			Label:   label,
+			Cluster: cluster,
+		})
+}
+
+func LifeCycleRemoved(t *testing.T, label, cluster, keyName string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_lifecycle_removed", TemplateData{
 			Key:     objkey.TemplateData{Label: keyName},
 			Label:   label,
 			Cluster: cluster,

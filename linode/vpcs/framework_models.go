@@ -3,11 +3,10 @@ package vpcs
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/linode/vpc"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v2/linode/vpc"
 )
 
 // VPCFilterModel describes the Terraform resource data model to match the
@@ -18,24 +17,18 @@ type VPCFilterModel struct {
 	VPCs    []vpc.VPCModel                   `tfsdk:"vpcs"`
 }
 
-func (model *VPCFilterModel) parseVPCs(
+func (model *VPCFilterModel) FlattenVPCs(
 	ctx context.Context,
 	vpcs []linodego.VPC,
-) diag.Diagnostics {
+	preserveKnown bool,
+) {
 	vpcModels := make([]vpc.VPCModel, len(vpcs))
 
 	for i := range vpcs {
 		var vpc vpc.VPCModel
-
-		diags := vpc.ParseVPC(ctx, &vpcs[i])
-		if diags.HasError() {
-			return diags
-		}
-
+		vpc.FlattenVPC(ctx, &vpcs[i], preserveKnown)
 		vpcModels[i] = vpc
 	}
 
 	model.VPCs = vpcModels
-
-	return nil
 }

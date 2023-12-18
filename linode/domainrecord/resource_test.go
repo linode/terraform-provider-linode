@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/domainrecord/tmpl"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func TestAccResourceDomainRecord_basic(t *testing.T) {
@@ -263,6 +263,71 @@ func TestAccResourceDomainRecord_update(t *testing.T) {
 					checkDomainRecordExists,
 					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", fmt.Sprintf("renamed-%s", domainRecordName)),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceDomainRecord_reconcileName(t *testing.T) {
+	t.Parallel()
+
+	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkDomainRecordDestroy,
+		Steps: []resource.TestStep{
+			// Ensure there is no diff when using the domain name as the record name
+			{
+				Config: tmpl.WithDomain(t, domainName, domainName),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
+			},
+
+			// Ensure there is no diff when using an empty string as the record name
+			{
+				Config: tmpl.WithDomain(t, domainName, ""),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
+			},
+
+			// Ensure there is no diff when specifying a prefix with the domain
+			{
+				Config: tmpl.WithDomain(t, domainName, "test."+domainName),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", "test."+domainName),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
+			},
+
+			// Ensure there is no diff when specifying a prefix without the domain
+			{
+				Config: tmpl.WithDomain(t, domainName, "test"),
+				Check: resource.ComposeTestCheckFunc(
+					checkDomainRecordExists,
+					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", "test"),
+				),
+			},
+			{
+				RefreshState: true,
+				PlanOnly:     true,
 			},
 		},
 	})

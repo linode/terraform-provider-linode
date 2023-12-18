@@ -10,28 +10,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/databaseaccesscontrols"
-	"github.com/linode/terraform-provider-linode/linode/databasemysql"
-	"github.com/linode/terraform-provider-linode/linode/databasemysqlbackups"
-	"github.com/linode/terraform-provider-linode/linode/databasepostgresql"
-	"github.com/linode/terraform-provider-linode/linode/domain"
-	"github.com/linode/terraform-provider-linode/linode/domainrecord"
-	"github.com/linode/terraform-provider-linode/linode/firewall"
-	"github.com/linode/terraform-provider-linode/linode/firewalldevice"
-	"github.com/linode/terraform-provider-linode/linode/helper"
-	"github.com/linode/terraform-provider-linode/linode/image"
-	"github.com/linode/terraform-provider-linode/linode/instance"
-	"github.com/linode/terraform-provider-linode/linode/instanceconfig"
-	"github.com/linode/terraform-provider-linode/linode/instancedisk"
-	"github.com/linode/terraform-provider-linode/linode/instanceip"
-	"github.com/linode/terraform-provider-linode/linode/instancesharedips"
-	"github.com/linode/terraform-provider-linode/linode/lke"
-	"github.com/linode/terraform-provider-linode/linode/nbconfig"
-	"github.com/linode/terraform-provider-linode/linode/nbnode"
-	"github.com/linode/terraform-provider-linode/linode/obj"
-	"github.com/linode/terraform-provider-linode/linode/objbucket"
-	"github.com/linode/terraform-provider-linode/linode/user"
-	"github.com/linode/terraform-provider-linode/linode/volume"
+	"github.com/linode/terraform-provider-linode/v2/linode/databaseaccesscontrols"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlbackups"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/v2/linode/domain"
+	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/image"
+	"github.com/linode/terraform-provider-linode/v2/linode/instance"
+	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancedisk"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
+	"github.com/linode/terraform-provider-linode/v2/linode/lke"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
+	"github.com/linode/terraform-provider-linode/v2/linode/obj"
+	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
+	"github.com/linode/terraform-provider-linode/v2/linode/user"
+	"github.com/linode/terraform-provider-linode/v2/linode/volume"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -138,7 +137,6 @@ func Provider() *schema.Provider {
 			"linode_instance":                 instance.Resource(),
 			"linode_instance_config":          instanceconfig.Resource(),
 			"linode_instance_disk":            instancedisk.Resource(),
-			"linode_instance_ip":              instanceip.Resource(),
 			"linode_instance_shared_ips":      instancesharedips.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
 			"linode_nodebalancer_node":        nbnode.Resource(),

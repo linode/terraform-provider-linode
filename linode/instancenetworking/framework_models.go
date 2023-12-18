@@ -136,9 +136,9 @@ func flattenIPv6(ctx context.Context, network *linodego.InstanceIPv6Response) (
 	return &resultList, nil
 }
 
-func flattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValue, diag.Diagnostics) {
+func FlattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValue, diag.Diagnostics) {
 	if data == nil {
-		return types.ObjectNull(vpcNAT1To1Type.AttrTypes), nil
+		return types.ObjectNull(VPCNAT1To1Type.AttrTypes), nil
 	}
 
 	result := map[string]attr.Value{
@@ -147,9 +147,9 @@ func flattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValu
 		"subnet_id": types.Int64Value(int64(data.SubnetID)),
 	}
 
-	obj, diag := types.ObjectValue(vpcNAT1To1Type.AttrTypes, result)
+	obj, diag := types.ObjectValue(VPCNAT1To1Type.AttrTypes, result)
 	if diag.HasError() {
-		return types.ObjectNull(vpcNAT1To1Type.AttrTypes), diag
+		return types.ObjectNull(VPCNAT1To1Type.AttrTypes), diag
 	}
 
 	return obj, nil
@@ -160,7 +160,7 @@ func flattenIP(ctx context.Context, network *linodego.InstanceIP) (
 ) {
 	result := make(map[string]attr.Value)
 
-	vpcNAT1To1, d := flattenIPVPCNAT1To1(network.VPCNAT1To1)
+	vpcNAT1To1, d := FlattenIPVPCNAT1To1(network.VPCNAT1To1)
 	if d.HasError() {
 		return nil, d
 	}

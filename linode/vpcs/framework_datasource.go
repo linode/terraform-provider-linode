@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -53,7 +53,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseVPCs(ctx, helper.AnySliceToTyped[linodego.VPC](result))...)
+	data.FlattenVPCs(ctx, helper.AnySliceToTyped[linodego.VPC](result), false)
 	if resp.Diagnostics.HasError() {
 		return
 	}

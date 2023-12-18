@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/nbnode/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbnode/tmpl"
 )
 
 var testRegion string
@@ -34,7 +34,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
-	config := tmpl.Basic(t, nodeName, testRegion)
+	config := tmpl.Basic(t, nodeName, testRegion, acctest.RandString(12))
 
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -67,6 +67,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -74,7 +75,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 		CheckDestroy:             checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, nodeName, testRegion),
+				Config: tmpl.Basic(t, nodeName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodeName),
@@ -82,7 +83,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, nodeName, testRegion),
+				Config: tmpl.Updates(t, nodeName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodeName)),

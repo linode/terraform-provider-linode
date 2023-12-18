@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	domain "github.com/linode/terraform-provider-linode/linode/domain/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	domain "github.com/linode/terraform-provider-linode/v2/linode/domain/tmpl"
 )
 
 type TemplateData struct {
@@ -68,6 +68,14 @@ func SRV(t *testing.T, domainName string, target string) string {
 		"domain_record_srv", TemplateData{
 			Domain: domain.TemplateData{Domain: domainName},
 			Target: target,
+		})
+}
+
+func WithDomain(t *testing.T, domainName, domainRecord string) string {
+	return acceptance.ExecuteTemplate(t,
+		"domain_record_with_domain", TemplateData{
+			Domain: domain.TemplateData{Domain: domainName},
+			Record: domainRecord,
 		})
 }
 

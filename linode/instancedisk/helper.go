@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func expandStackScriptData(data any) map[string]string {
@@ -54,7 +54,12 @@ func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskI
 		return fmt.Errorf("failed to get instance disk: %s", err)
 	}
 
-	p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionDiskResize)
+	p, err := client.NewEventPollerWithSecondary(
+		ctx,
+		instID,
+		linodego.EntityLinode,
+		diskID,
+		linodego.ActionDiskResize)
 	if err != nil {
 		return fmt.Errorf("failed to poll for events: %s", err)
 	}

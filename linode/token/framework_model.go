@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/linode/helper/customtypes"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper/customtypes"
 )
 
 // ResourceModel describes the Terraform resource rm model to match the

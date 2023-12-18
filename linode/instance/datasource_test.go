@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/linode/instance/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v2/linode/instance/tmpl"
 )
 
 func TestAccDataSourceInstances_basic(t *testing.T) {
@@ -16,6 +16,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -23,7 +24,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceName, testRegion),
+				Config: tmpl.DataBasic(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
@@ -53,6 +54,7 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	tagName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -60,13 +62,13 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataMultiple(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataMultiple(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
 				),
 			},
 			{
-				Config: tmpl.DataMultipleOrder(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataMultipleOrder(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					// Ensure order is correctly appended to filter
 					resource.TestCheckResourceAttr(resNameDesc, "instances.#", "3"),
@@ -74,13 +76,13 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.DataMultipleRegex(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataMultipleRegex(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "3"),
 				),
 			},
 			{
-				Config: tmpl.DataClientFilter(t, instanceName, tagName, testRegion),
+				Config: tmpl.DataClientFilter(t, instanceName, tagName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.status", "running"),

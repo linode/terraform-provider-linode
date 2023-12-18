@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/linode/terraform-provider-linode/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func NewDataSource() datasource.DataSource {
@@ -51,10 +51,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseVPC(ctx, vpc)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	data.FlattenVPC(ctx, vpc, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
