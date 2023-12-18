@@ -238,9 +238,9 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
 Interface defines a network interfaces that is exposed to a Linode. See the official [Linode API documentation](https://www.linode.com/docs/api/linode-instances/#linode-create__request-body-schema) for more details.
 
-A Linode must have a public interface in the first/eth0 position to be reachable via the public internet 
-upon boot without additional system configuration. If no public interface is configured, the Linode 
-is not directly reachable via the public internet. In this case, access can only be established via 
+A Linode must have a public interface in the first/eth0 position to be reachable via the public internet
+upon boot without additional system configuration. If no public interface is configured, the Linode
+is not directly reachable via the public internet. In this case, access can only be established via
 LISH or other Linodes connected to the same VLAN.
 
 Only one public interface per Linode can be defined.
