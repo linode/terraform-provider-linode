@@ -2,9 +2,9 @@ package nbconfigs
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -43,7 +43,7 @@ func (d *DataSource) Read(
 
 	result, diag := filterConfig.GetAndFilter(
 		ctx, d.Meta.Client, data.Filters, data.listNodeBalancerConfigs,
-		// There are no API filterable fields so we don't need to provide
+		// There are no API filterable fields, so we don't need to provide
 		// order and order_by.
 		types.StringNull(), types.StringNull())
 	if diag != nil {
@@ -60,10 +60,11 @@ func (data *NodeBalancerConfigFilterModel) listNodeBalancerConfigs(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
-	nbId := helper.FrameworkSafeInt64ToInt(
-		data.NodeBalancerId.ValueInt64(),
-		&resp.Diagnostics,
-	)
+	nbId, err := helper.SafeInt64ToInt(data.NodeBalancerId.ValueInt64())
+	if err != nil {
+		return nil, err
+	}
+
 	nbs, err := client.ListNodeBalancerConfigs(ctx, nbId, &linodego.ListOptions{
 		Filter: filter,
 	})

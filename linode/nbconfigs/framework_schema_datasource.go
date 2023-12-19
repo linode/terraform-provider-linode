@@ -10,9 +10,14 @@ var filterConfig = frameworkfilter.Config{
 	"algorithm":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"check":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"nodebalancer_id": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"port":            {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 	"protocol":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"proxy_protocol":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"stickiness":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"check_path":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"check_body":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"check_passive":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
+	"cipher_suite":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{

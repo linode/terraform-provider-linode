@@ -35,6 +35,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbconfigs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
@@ -214,5 +215,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vpcsubnets.NewDataSource,
 		vpcs.NewDataSource,
 		volumes.NewDataSource,
+		nbconfigs.NewDataSource,
 	}
 }
