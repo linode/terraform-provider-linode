@@ -32,7 +32,6 @@ func FlattenSubnetLinode(
 	ctx context.Context,
 	linode linodego.VPCSubnetLinode,
 ) (*types.Object, diag.Diagnostics) {
-
 	result := map[string]attr.Value{
 		"id": types.Int64Value(int64(linode.ID)),
 	}
@@ -63,7 +62,6 @@ func FlattenSubnetLinodes(
 	ctx context.Context,
 	subnetLinodes []linodego.VPCSubnetLinode,
 ) (*types.List, diag.Diagnostics) {
-
 	result := make([]types.Object, len(subnetLinodes))
 
 	for i, inst := range subnetLinodes {
