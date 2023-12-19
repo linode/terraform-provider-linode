@@ -1,4 +1,4 @@
-package vpc
+package accountavailability
 
 import (
 	"context"
@@ -8,19 +8,19 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+type DataSource struct {
+	helper.BaseDataSource
+}
+
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_vpc",
-				Schema: &frameworkDatasourceSchema,
+				Name:   "linode_account_availability",
+				Schema: &frameworkDataSourceSchema,
 			},
 		),
 	}
-}
-
-type DataSource struct {
-	helper.BaseDataSource
 }
 
 func (d *DataSource) Read(
@@ -28,29 +28,26 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	var data AccountAvailabilityModel
 	client := d.Meta.Client
-
-	var data VPCModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	vpc, err := client.GetVPC(ctx, id)
+	availability, err := client.GetAccountAvailability(ctx, data.Region.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to read VPC %v", id),
+			fmt.Sprintf("Failed to get account availability in the region %v", data.Region.ValueString()),
 			err.Error(),
 		)
 		return
 	}
 
-	data.FlattenVPC(ctx, vpc, false)
+	resp.Diagnostics.Append(data.ParseAvailability(ctx, availability)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

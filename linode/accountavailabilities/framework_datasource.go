@@ -1,4 +1,4 @@
-package vpcs
+package accountavailabilities
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_vpcs",
+				Name:   "linode_account_availabilities",
 				Schema: &frameworkDataSourceSchema,
 			},
 		),
@@ -29,7 +29,9 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data VPCFilterModel
+	var data AccountAvailabilityFilterModel
+
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -44,30 +46,31 @@ func (r *DataSource) Read(
 	data.ID = id
 
 	result, d := filterConfig.GetAndFilter(
-		ctx, r.Meta.Client, data.Filters, ListVPCs,
-		// There are no API filterable fields so we don't need to provide
-		// order and order_by.
+		ctx, client, data.Filters, listAvailabilities,
 		types.StringNull(), types.StringNull())
 	if d != nil {
 		resp.Diagnostics.Append(d)
 		return
 	}
 
-	data.FlattenVPCs(ctx, helper.AnySliceToTyped[linodego.VPC](result), false)
-	if resp.Diagnostics.HasError() {
+	if d := data.parseAvailabilities(
+		ctx,
+		helper.AnySliceToTyped[linodego.AccountAvailability](result),
+	); d.HasError() {
+		resp.Diagnostics.Append(d...)
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func ListVPCs(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-	vpcs, err := client.ListVPCs(ctx, &linodego.ListOptions{
+func listAvailabilities(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	logins, err := client.ListAccountAvailabilities(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return helper.TypedSliceToAny(vpcs), nil
+	return helper.TypedSliceToAny(logins), nil
 }
