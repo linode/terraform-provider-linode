@@ -49,3 +49,17 @@ resource "linode_object_storage_bucket" "foobar" {
 }
 
 {{ end }}
+
+{{ define "object_bucket_lifecycle_removed" }}
+
+{{ template "object_key_basic" .Key }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    access_key = linode_object_storage_key.foobar.access_key
+    secret_key = linode_object_storage_key.foobar.secret_key
+
+    cluster = "{{ .Cluster }}"
+    label = "{{.Label}}"
+}
+
+{{ end }}

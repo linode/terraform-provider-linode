@@ -16,6 +16,7 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 
 	resName := "data.linode_nodebalancer_node.foonode"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -23,7 +24,7 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 		CheckDestroy:             checkNodeBalancerNodeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),
+				Config: tmpl.DataBasic(t, nodebalancerName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerNodeExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
