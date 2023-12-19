@@ -14,6 +14,7 @@ type NodeBalancerConfigFilterModel struct {
 	Filters             frameworkfilter.FiltersModelType `tfsdk:"filter"`
 	Order               types.String                     `tfsdk:"order"`
 	OrderBy             types.String                     `tfsdk:"order_by"`
+	NodeBalancerId      types.Int64                      `tfsdk:"nodebalancer_id"`
 	NodeBalancerConfigs []nbconfig.DataSourceModel       `tfsdk:"nodebalancer_configs"`
 }
 

@@ -21,6 +21,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
+		"nodebalancer_id": schema.Int64Attribute{
+			Description: "The ID of the NodeBalancer to access.",
+			Required:    true,
+		},
 		"order":    filterConfig.OrderSchema(),
 		"order_by": filterConfig.OrderBySchema(),
 	},
