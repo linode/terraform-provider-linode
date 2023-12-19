@@ -87,7 +87,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, subnet)...)
+	resp.Diagnostics.Append(data.FlattenSubnet(ctx, subnet, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,7 +135,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseVPCSubnet(ctx, subnet)...)
+	resp.Diagnostics.Append(data.FlattenSubnet(ctx, subnet, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -185,7 +185,7 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		resp.Diagnostics.Append(plan.parseComputedAttributes(ctx, subnet)...)
+		resp.Diagnostics.Append(plan.FlattenSubnet(ctx, subnet, true)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnet"
 )
@@ -29,20 +30,21 @@ type VPCSubnetModel struct {
 	Updated timetypes.RFC3339 `tfsdk:"updated"`
 }
 
-func (model *VPCSubnetFilterModel) parseVPCSubnets(
+func (model *VPCSubnetFilterModel) FlattenSubnets(
 	ctx context.Context,
 	subnets []linodego.VPCSubnet,
+	preserveKnown bool,
 ) diag.Diagnostics {
 	parseSubnet := func(subnet linodego.VPCSubnet) (VPCSubnetModel, diag.Diagnostics) {
 		var s VPCSubnetModel
-		s.ID = types.Int64Value(int64(subnet.ID))
-		s.Label = types.StringValue(subnet.Label)
-		s.IPv4 = types.StringValue(subnet.IPv4)
+		s.ID = helper.KeepOrUpdateInt64(s.ID, int64(subnet.ID), preserveKnown)
+		s.Label = helper.KeepOrUpdateString(s.Label, subnet.Label, preserveKnown)
+		s.IPv4 = helper.KeepOrUpdateString(s.IPv4, subnet.IPv4, preserveKnown)
 
 		linodes := make([]types.Object, len(subnet.Linodes))
 
 		for i, inst := range subnet.Linodes {
-			linodeObj, d := vpcsubnet.ParseLinode(ctx, inst)
+			linodeObj, d := vpcsubnet.FlattenSubnetLinode(ctx, inst)
 			if d.HasError() {
 				return s, d
 			}
@@ -54,10 +56,18 @@ func (model *VPCSubnetFilterModel) parseVPCSubnets(
 		if d.HasError() {
 			return s, d
 		}
-		s.Linodes = linodesList
+		s.Linodes = helper.KeepOrUpdateValue(s.Linodes, linodesList, preserveKnown)
 
-		s.Created = timetypes.NewRFC3339TimePointerValue(subnet.Created)
-		s.Updated = timetypes.NewRFC3339TimePointerValue(subnet.Updated)
+		s.Created = helper.KeepOrUpdateValue(
+			s.Created,
+			timetypes.NewRFC3339TimePointerValue(subnet.Created),
+			preserveKnown,
+		)
+		s.Updated = helper.KeepOrUpdateValue(
+			s.Updated,
+			timetypes.NewRFC3339TimePointerValue(subnet.Updated),
+			preserveKnown,
+		)
 
 		return s, nil
 	}
