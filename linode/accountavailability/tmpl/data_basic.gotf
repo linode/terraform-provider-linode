@@ -1,0 +1,7 @@
+{{ define "account_availability_data_basic" }}
+
+data "linode_account_availability" "foobar" {
+    region = "{{.Region}}"
+}
+
+{{ end }}
