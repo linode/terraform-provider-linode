@@ -53,7 +53,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseVPCs(ctx, helper.AnySliceToTyped[linodego.VPC](result))...)
+	data.FlattenVPCs(ctx, helper.AnySliceToTyped[linodego.VPC](result), false)
 	if resp.Diagnostics.HasError() {
 		return
 	}
