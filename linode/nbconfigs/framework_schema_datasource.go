@@ -18,6 +18,7 @@ var filterConfig = frameworkfilter.Config{
 	"check_body":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"check_passive":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 	"cipher_suite":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"ssl_commonname":  {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
