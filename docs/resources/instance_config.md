@@ -160,7 +160,7 @@ The following arguments are supported:
 
 * [`interface`](#interface) - (Optional) An array of Network Interfaces to use for this Configuration Profile.
 
-* `kernel` - (Optional) A Kernel ID to boot a Linode with. Default is based on image choice. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://developers.linode.com/api/v4/linode-kernels)).
+* `kernel` - (Optional) A Kernel ID to boot a Linode with. Default is `linode/latest-64bit`. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://developers.linode.com/api/v4/linode-kernels)).
 
 * `memory_limit` - (Optional) The memory limit of the Config. Defaults to the total ram of the Linode.
 
