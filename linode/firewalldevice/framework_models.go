@@ -1,19 +1,20 @@
 package firewalldevice
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 type FirewallDeviceModel struct {
-	ID         types.Int64       `tfsdk:"id"`
-	FirewallID types.Int64       `tfsdk:"firewall_id"`
-	EntityID   types.Int64       `tfsdk:"entity_id"`
-	EntityType types.String      `tfsdk:"entity_type"`
-	Created    timetypes.RFC3339 `tfsdk:"created"`
-	Updated    timetypes.RFC3339 `tfsdk:"updated"`
+	ID         types.Int64  `tfsdk:"id"`
+	FirewallID types.Int64  `tfsdk:"firewall_id"`
+	EntityID   types.Int64  `tfsdk:"entity_id"`
+	EntityType types.String `tfsdk:"entity_type"`
+	Created    types.String `tfsdk:"created"`
+	Updated    types.String `tfsdk:"updated"`
 }
 
 func (fdm *FirewallDeviceModel) FlattenFirewallDevice(
@@ -34,16 +35,11 @@ func (fdm *FirewallDeviceModel) FlattenFirewallDevice(
 		string(device.Entity.Type),
 		preserveKnown,
 	)
-
-	fdm.Created = helper.KeepOrUpdateValue(
-		fdm.Created,
-		timetypes.NewRFC3339TimePointerValue(device.Created),
-		preserveKnown,
+	fdm.Created = helper.KeepOrUpdateString(
+		fdm.Created, device.Created.Format(time.RFC3339), preserveKnown,
 	)
-	fdm.Updated = helper.KeepOrUpdateValue(
-		fdm.Updated,
-		timetypes.NewRFC3339TimePointerValue(device.Updated),
-		preserveKnown,
+	fdm.Updated = helper.KeepOrUpdateString(
+		fdm.Updated, device.Updated.Format(time.RFC3339), preserveKnown,
 	)
 }
 

@@ -1,7 +1,6 @@
 package firewalldevice
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -42,16 +41,21 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"created": schema.StringAttribute{
+			// Planned breaking change: add RFC3339 custom type in Linode provider v3.0.
+			// Previous SDKv2 resource didn't format the time into RFC3339 format.
+			// Starting Linode provider v2.12, all time string will be converted to
+			// RFC3339 format in the state for this resource. Once the time strings
+			// are converted to RFC3339 format by Linode provider >= v2.12 and < v3.0,
+			// RFC3339 custom type with validating logic may be safely added to his attribute.
 			Description: "When this Firewall Device was created.",
 			Computed:    true,
-			CustomType:  timetypes.RFC3339Type{},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"updated": schema.StringAttribute{
+			// Planned breaking change: add RFC3339 type, similar to 'created' field above
 			Description: "When this Firewall Device was updated.",
-			CustomType:  timetypes.RFC3339Type{},
 			Computed:    true,
 		},
 	},
