@@ -1,0 +1,13 @@
+{{ define "nb_configs_data_filter" }}
+
+{{ template "nb_configs_data_base" . }}
+
+data "linode_nodebalancer_configs" "foo" {
+    nodebalancer_id = "${linode_nodebalancer_config.bar.nodebalancer_id}"
+    filter {
+        name = "port"
+        values = ["{{.Port}}"]
+    }
+}
+
+{{ end }}

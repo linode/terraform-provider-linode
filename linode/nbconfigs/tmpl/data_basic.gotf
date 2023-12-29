@@ -1,0 +1,9 @@
+{{ define "nb_configs_data_basic" }}
+
+{{ template "nb_configs_data_base" . }}
+
+data "linode_nodebalancer_configs" "foo" {
+    nodebalancer_id = "${linode_nodebalancer_config.bar.nodebalancer_id}"
+}
+
+{{ end }}
