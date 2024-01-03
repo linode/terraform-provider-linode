@@ -36,16 +36,19 @@ Volumes can also be attached using the Linode Instance config device map.
 resource "linode_instance" "foo" {
   region             = "us-east"
   type               = "g6-nanode-1"
+}
 
-  config {
-    label = "boot-existing-volume"
-    kernel = "linode/latest-64bit"
-    devices {
-      sda {
-        volume_id = "123"
-      }
-    }
+resource "linode_instance_config" "foo" {
+  linode_id = linode_instance.foo.id
+  label = "boot-existing-volume"
+  kernel = "linode/grub2"
+
+  device {
+    device_name = "sda"
+    volume_id = 12345
   }
+
+  booted = true
 }
 ```
 

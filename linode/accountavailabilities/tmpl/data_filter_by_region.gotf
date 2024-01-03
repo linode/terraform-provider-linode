@@ -1,0 +1,10 @@
+{{ define "account_availabilities_data_by_region" }}
+
+data "linode_account_availabilities" "foobar" {
+  filter {
+    name = "region"
+    values = ["{{ .Region }}"]
+  }
+}
+
+{{ end }}

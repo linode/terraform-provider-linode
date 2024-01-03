@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -24,11 +25,6 @@ var LinodeObjectType = types.ObjectType{
 			ElemType: LinodeInterfaceObjectType,
 		},
 	},
-}
-
-var LinodesSchema = schema.ListAttribute{
-	Computed:    true,
-	ElementType: LinodeObjectType,
 }
 
 var frameworkResourceSchema = schema.Schema{
@@ -72,6 +68,12 @@ var frameworkResourceSchema = schema.Schema{
 			CustomType:  timetypes.RFC3339Type{},
 		},
 
-		"linodes": LinodesSchema,
+		"linodes": schema.ListAttribute{
+			Computed:    true,
+			ElementType: LinodeObjectType,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
+		},
 	},
 }

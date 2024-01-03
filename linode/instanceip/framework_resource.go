@@ -153,7 +153,7 @@ func (r *Resource) Read(
 				"Instance IP No Longer Exists",
 				fmt.Sprintf(
 					"Removing instance IP %s from state because it no longer exists",
-					state.ID,
+					state.ID.ValueString(),
 				),
 			)
 			resp.State.RemoveResource(ctx)

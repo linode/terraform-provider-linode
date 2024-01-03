@@ -1,4 +1,4 @@
-package nbconfig
+package accountavailability
 
 import (
 	"context"
@@ -16,8 +16,8 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_nodebalancer_config",
-				Schema: &frameworkDatasourceSchema,
+				Name:   "linode_account_availability",
+				Schema: &frameworkDataSourceSchema,
 			},
 		),
 	}
@@ -28,32 +28,26 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	var data AccountAvailabilityModel
 	client := d.Meta.Client
-	var data DataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	nodeBalancerID := helper.FrameworkSafeInt64ToInt(data.NodebalancerId.ValueInt64(), &resp.Diagnostics)
-	configID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	config, err := client.GetNodeBalancerConfig(ctx, nodeBalancerID, configID)
+	availability, err := client.GetAccountAvailability(ctx, data.Region.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("failed to get nodebalancer config %d", data.ID.ValueInt64()),
+			fmt.Sprintf("Failed to get account availability in the region %v", data.Region.ValueString()),
 			err.Error(),
 		)
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseNodebalancerConfig(config)...)
+	resp.Diagnostics.Append(data.ParseAvailability(ctx, availability)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.State.Set(ctx, &data)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

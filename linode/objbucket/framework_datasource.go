@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -51,6 +52,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_object_storage_bucket")
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -60,7 +62,17 @@ func (d *DataSource) Read(
 		return
 	}
 
-	bucket, err := client.GetObjectStorageBucket(ctx, data.Cluster.ValueString(), data.Label.ValueString())
+	cluster := data.Cluster.ValueString()
+	bucketLabel := data.Label.ValueString()
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"cluster": cluster,
+		"bucket":  bucketLabel,
+	})
+
+	tflog.Debug(ctx, "Fetching the object storage bucket")
+
+	bucket, err := client.GetObjectStorageBucket(ctx, cluster, bucketLabel)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to find the specified Linode ObjectStorageBucket: %s", err.Error(),

@@ -3,11 +3,14 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/account"
+	"github.com/linode/terraform-provider-linode/v2/linode/accountavailability"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountsettings"
@@ -21,6 +24,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/image"
@@ -35,6 +39,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbconfigs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
@@ -162,11 +167,13 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		vpcsubnet.NewResource,
 		vpc.NewResource,
 		instanceip.NewResource,
+		firewalldevice.NewResource,
 	}
 }
 
 func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		accountavailabilities.NewDataSource,
 		account.NewDataSource,
 		backup.NewDataSource,
 		firewall.NewDataSource,
@@ -214,5 +221,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vpcsubnets.NewDataSource,
 		vpcs.NewDataSource,
 		volumes.NewDataSource,
+		accountavailability.NewDataSource,
+		nbconfigs.NewDataSource,
 	}
 }

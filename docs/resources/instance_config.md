@@ -19,10 +19,9 @@ resource "linode_instance_config" "my-config" {
   linode_id = linode_instance.my-instance.id
   label = "my-config"
 
-  devices {
-    sda {
-      disk_id = linode_instance_disk.boot.id
-    }
+  device {
+    device_name = "sda"
+    disk_id = linode_instance_disk.boot.id
   }
 
   booted = true
@@ -33,7 +32,7 @@ resource "linode_instance_disk" "boot" {
   linode_id = linode_instance.my-instance.id
   size = linode_instance.my-instance.specs.0.disk
 
-  image = "linode/ubuntu20.04"
+  image = "linode/ubuntu22.04"
   root_pass = "myc00lpass!"
 }
 
@@ -51,14 +50,14 @@ resource "linode_instance_config" "my-config" {
   linode_id = linode_instance.my-instance.id
   label = "my-config"
 
-  devices {
-    sda {
-      disk_id = linode_instance_disk.boot.id
-    }
+  device {
+    device_name = "sda"
+    disk_id = linode_instance_disk.boot.id
+  }
 
-    sdb {
-      disk_id = linode_instance_disk.swap.id
-    }
+  device {
+    device_name = "sdb"
+    disk_id = linode_instance_disk.swap.id
   }
   
   helpers {
@@ -84,7 +83,6 @@ resource "linode_instance_config" "my-config" {
     subnet_id = 123
     ipv4 {
       vpc = "10.0.4.250"
-      nat_1_1 = "any"
     }
   }
   
@@ -94,7 +92,7 @@ resource "linode_instance_config" "my-config" {
   connection {
     host        = linode_instance.my-instance.ip_address
     user        = "root"
-    password    = "myc00lpass!"
+    password    = "myc00lpass!ciuw23asxbviwuc"
   }
 
   provisioner "remote-exec" {
@@ -106,14 +104,14 @@ resource "linode_instance_config" "my-config" {
 
 # Create a VPC and a subnet
 resource "linode_vpc" "foobar" {
-    label = join("", ["{{.Label}}", "-vpc"])
-    region = "{{.Region}}"
+    label = "my-vpc"
+    region = "us-mia"
     description = "test description"
 }
 
 resource "linode_vpc_subnet" "foobar" {
     vpc_id = linode_vpc.foobar.id
-    label = join("", ["{{.Label}}", "-subnet"])
+    label = "my-subnet"
     ipv4 = "10.0.4.0/24"
 }
 
@@ -123,8 +121,8 @@ resource "linode_instance_disk" "boot" {
   linode_id = linode_instance.my-instance.id
   size = linode_instance.my-instance.specs.0.disk - 512
 
-  image = "linode/ubuntu20.04"
-  root_pass = "myc00lpass!"
+  image = "linode/ubuntu22.04"
+  root_pass = "myc00lpass!ciuw23asxbviwuc"
 }
 
 # Create a swap disk
@@ -138,7 +136,7 @@ resource "linode_instance_disk" "swap" {
 resource "linode_instance" "my-instance" {
   label = "my-instance"
   type = "g6-standard-1"
-  region = "us-southeast"
+  region = "us-mia"
 }
 ```
 
@@ -162,7 +160,7 @@ The following arguments are supported:
 
 * [`interface`](#interface) - (Optional) An array of Network Interfaces to use for this Configuration Profile.
 
-* `kernel` - (Optional) A Kernel ID to boot a Linode with. (default `linode/latest-64bit`)
+* `kernel` - (Optional) A Kernel ID to boot a Linode with. Default is `linode/latest-64bit`. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://developers.linode.com/api/v4/linode-kernels)).
 
 * `memory_limit` - (Optional) The memory limit of the Config. Defaults to the total ram of the Linode.
 
@@ -217,6 +215,15 @@ The following attributes are available on helpers:
 * `updatedb_disabled` - (Optional) Disables updatedb cron job to avoid disk thrashing. (default `true`)
 
 ### interface
+
+A Linode must have a public interface in the first/eth0 position to be reachable via the public internet
+upon boot without additional system configuration. If no public interface is configured, the Linode
+is not directly reachable via the public internet. In this case, access can only be established via
+LISH or other Linodes connected to the same VLAN.
+
+Only one public interface per Linode can be defined.
+
+The Linode’s default public IPv4 address is assigned to the public interface.
 
 The following arguments are available in an interface:
 

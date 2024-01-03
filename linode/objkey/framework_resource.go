@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -32,6 +33,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_object_storage_key")
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -57,7 +59,16 @@ func (r *Resource) Create(
 		createOpts.BucketAccess = &accessSlice
 	}
 
+	tflog.Info(ctx, "Creating the object storage key", map[string]any{
+		"createOpts": createOpts,
+	})
 	key, err := client.CreateObjectStorageKey(ctx, createOpts)
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"key_id": key.ID,
+		"label":  key.Label,
+	})
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Object Storage Key",
@@ -75,14 +86,19 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_object_storage_key")
 	client := r.Meta.Client
-
 	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"key_id": data.ID.ValueString(),
+		"label":  data.Label.ValueString(),
+	})
 
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
@@ -92,6 +108,8 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "Fetching the object storage key")
 
 	key, err := client.GetObjectStorageKey(ctx, id)
 	if err != nil {
@@ -124,6 +142,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_object_storage_key")
 	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -131,6 +150,11 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"key_id": state.ID.ValueString(),
+		"label":  state.Label.ValueString(),
+	})
 
 	id := helper.StringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -146,11 +170,10 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		key, err := r.Meta.Client.UpdateObjectStorageKey(
-			ctx,
-			id,
-			updateOpts,
-		)
+		tflog.Info(ctx, "Updating object storage key", map[string]any{
+			"updateOpts": updateOpts,
+		})
+		key, err := r.Meta.Client.UpdateObjectStorageKey(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update Object Storage Key (%d)", id),
@@ -169,6 +192,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_object_storage_key")
 	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -176,12 +200,18 @@ func (r *Resource) Delete(
 		return
 	}
 
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"key_id": data.ID.ValueString(),
+		"label":  data.Label.ValueString(),
+	})
+
 	id := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	client := r.Meta.Client
+	tflog.Info(ctx, "Deleting the object storage key")
 	err := client.DeleteObjectStorageKey(ctx, id)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
