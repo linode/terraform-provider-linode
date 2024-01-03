@@ -24,6 +24,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/image"
@@ -166,6 +167,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		vpcsubnet.NewResource,
 		vpc.NewResource,
 		instanceip.NewResource,
+		firewalldevice.NewResource,
 	}
 }
 
