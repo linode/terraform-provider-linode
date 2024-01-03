@@ -14,7 +14,12 @@ jobs:
     steps:
       - name: Clone Repository
         uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: 'stable'
       - run: go version
@@ -51,7 +56,7 @@ jobs:
       - name: Add additional information to XML report
         run: |
           filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$') 
-          python scripts/add_to_xml_test_report.py \
+          python tod_scripts/add_to_xml_test_report.py \
           --branch_name "${GITHUB_REF#refs/*/}" \
           --gha_run_id "$GITHUB_RUN_ID" \
           --gha_run_number "$GITHUB_RUN_NUMBER" \
@@ -60,7 +65,7 @@ jobs:
       - name: Upload test results to bucket
         run: |
           report_filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$')
-          python3 scripts/test_report_upload_script.py "${report_filename}"
+          python3 tod_scripts/test_report_upload_script.py "${report_filename}"
         env:
           LINODE_CLI_OBJ_ACCESS_KEY: ${{ secrets.LINODE_CLI_OBJ_ACCESS_KEY }}
           LINODE_CLI_OBJ_SECRET_KEY: ${{ secrets.LINODE_CLI_OBJ_SECRET_KEY }}
