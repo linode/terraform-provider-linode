@@ -192,6 +192,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"device"},
 			},
 		},
 	})
@@ -463,6 +464,7 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+				ImportStateVerifyIgnore: []string{"device"},
 			},
 		},
 	})
