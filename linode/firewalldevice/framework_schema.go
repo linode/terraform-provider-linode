@@ -41,12 +41,13 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"created": schema.StringAttribute{
-			// Planned breaking change: add RFC3339 custom type in Linode provider v3.0.
+			// Planned breaking change: Adding RFC3339 custom type in Linode provider v3.
 			// Previous SDKv2 resource didn't format the time into RFC3339 format.
 			// Starting Linode provider v2.12, all time string will be converted to
 			// RFC3339 format in the state for this resource. Once the time strings
-			// are converted to RFC3339 format by Linode provider >= v2.12 and < v3.0,
-			// RFC3339 custom type with validating logic may be safely added to his attribute.
+			// are converted to RFC3339 format by a Linode provider >= 2.12 and < 3,
+			// RFC3339 custom type with validating logic may be safely added to this
+			// attribute in v3.
 			Description: "When this Firewall Device was created.",
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
