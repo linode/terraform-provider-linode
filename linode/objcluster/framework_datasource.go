@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -45,6 +46,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_object_storage_cluster")
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -54,7 +56,14 @@ func (d *DataSource) Read(
 		return
 	}
 
-	cluster, err := client.GetObjectStorageCluster(ctx, data.ID.ValueString())
+	cluster_id := data.ID.ValueString()
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"cluster_id": cluster_id,
+	})
+
+	tflog.Debug(ctx, "Fetching object storage cluster")
+	cluster, err := client.GetObjectStorageCluster(ctx, cluster_id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get LKE Versions: %s", err.Error(),

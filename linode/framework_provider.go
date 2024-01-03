@@ -24,6 +24,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/image"
@@ -38,6 +39,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbconfigs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
@@ -165,6 +167,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		vpcsubnet.NewResource,
 		vpc.NewResource,
 		instanceip.NewResource,
+		firewalldevice.NewResource,
 	}
 }
 
@@ -219,5 +222,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vpcs.NewDataSource,
 		volumes.NewDataSource,
 		accountavailability.NewDataSource,
+		nbconfigs.NewDataSource,
 	}
 }

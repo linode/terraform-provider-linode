@@ -55,7 +55,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseVPCSubnets(ctx, helper.AnySliceToTyped[linodego.VPCSubnet](result))...)
+	resp.Diagnostics.Append(data.FlattenSubnets(ctx, helper.AnySliceToTyped[linodego.VPCSubnet](result), false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

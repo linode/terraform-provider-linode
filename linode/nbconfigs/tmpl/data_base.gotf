@@ -1,0 +1,23 @@
+{{ define "nb_configs_data_base" }}
+
+resource "linode_nodebalancer" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    client_conn_throttle = 20
+    tags = ["tf_test"]
+}
+
+resource "linode_nodebalancer_config" "foo" {
+    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+    port = 8080
+    protocol = "HttP"
+    check = "http"
+    check_passive = true
+    check_path = "/"
+}
+
+resource "linode_nodebalancer_config" "bar" {
+    nodebalancer_id = "${linode_nodebalancer.foobar.id}"
+}
+
+{{ end }}
