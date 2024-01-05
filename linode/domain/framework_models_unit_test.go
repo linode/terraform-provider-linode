@@ -30,7 +30,7 @@ func TestParseDomain(t *testing.T) {
 
 	domainModel := &DomainModel{}
 
-	domainModel.parseDomain(mockDomain)
+	domainModel.ParseDomain(mockDomain)
 
 	assert.Equal(t, types.Int64Value(1234), domainModel.ID)
 	assert.Equal(t, types.StringValue("example.org"), domainModel.Domain)
