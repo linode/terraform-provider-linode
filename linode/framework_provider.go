@@ -22,6 +22,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databases"
 	"github.com/linode/terraform-provider-linode/v2/linode/domain"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/v2/linode/domains"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
@@ -223,5 +224,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		volumes.NewDataSource,
 		accountavailability.NewDataSource,
 		nbconfigs.NewDataSource,
+		domains.NewDataSource,
 	}
 }

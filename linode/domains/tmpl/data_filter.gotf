@@ -1,0 +1,12 @@
+{{ define "domains_data_filter" }}
+
+{{ template "domains_data_base" . }}
+
+data "linode_domains" "foo" {
+    filter {
+        name = "type"
+        values = ["master"]
+    }
+}
+
+{{ end }}
