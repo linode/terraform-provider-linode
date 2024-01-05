@@ -21,21 +21,52 @@ The following example shows how one might use this resource to configure a Linod
 
 ```hcl
 resource "linode_instance" "web" {
-    label = "simple_instance"
-    image = "linode/ubuntu18.04"
-    region = "us-central"
-    type = "g6-standard-1"
-    authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
-    root_pass = "terr4form-test"
+  label           = "simple_instance"
+  image           = "linode/ubuntu22.04"
+  region          = "us-central"
+  type            = "g6-standard-1"
+  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+  root_pass       = "this-is-not-a-safe-password"
 
-    group = "foo"
-    tags = [ "foo" ]
-    swap_size = 256
-    private_ip = true
+  tags       = ["foo"]
+  swap_size  = 256
+  private_ip = true
+}
+
+```
+
+### Linode Instance with Explicit Networking Interfaces
+
+You can add a VPC or VLAN interface directly to a Linode instance resource.
+
+```hcl
+resource "linode_instance" "web" {
+  label           = "simple_instance"
+  image           = "linode/ubuntu22.04"
+  region          = "us-central"
+  type            = "g6-standard-1"
+  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+  root_pass       = "this-is-not-a-safe-password"
+
+  interface {
+    purpose = "public"
+  }
+
+  interface {
+    purpose   = "vpc"
+    subnet_id = 123
+    ipv4 {
+      vpc = "10.0.4.250"
+    }
+  }
+
+  tags       = ["foo"]
+  swap_size  = 256
+  private_ip = true
 }
 ```
 
-### Linode Instance with explicit Configs and Disks
+### Linode Instance with Explicit Configs and Disks
 
 Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance. This can be used to provision multiple disks and volumes during Instance creation.
 
@@ -44,50 +75,51 @@ data "linode_profile" "me" {}
 
 resource "linode_instance" "web" {
   label      = "complex_instance"
-  group      = "foo"
-  tags = [ "foo" ]
+  tags       = ["foo"]
   region     = "us-central"
   type       = "g6-nanode-1"
   private_ip = true
 }
 
 resource "linode_volume" "web_volume" {
-  label = "web_volume"
-  size = 20
+  label  = "web_volume"
+  size   = 20
   region = "us-central"
 }
 
 resource "linode_instance_disk" "boot_disk" {
-  label = "boot"
+  label     = "boot"
   linode_id = linode_instance.web.id
 
-  size = 3000
-  image  = "linode/ubuntu18.04"
+  size  = 3000
+  image = "linode/ubuntu22.04"
 
   # Any of authorized_keys, authorized_users, and root_pass
   # can be used for provisioning.
-  authorized_keys = [ "ssh-rsa AAAA...Gw== user@example.local" ]
-  authorized_users = [ data.linode_profile.me.username ]
-  root_pass = "terr4form-test"
+  authorized_keys  = ["ssh-rsa AAAA...Gw== user@example.local"]
+  authorized_users = [data.linode_profile.me.username]
+  root_pass        = "terr4form-test"
 }
 
 resource "linode_instance_config" "boot_config" {
-  label = "boot_config"
+  label     = "boot_config"
   linode_id = linode_instance.web.id
-  
-  devices {
-    sda {
-      disk_id = linode_instance_disk.boot_disk.id
-    }
-    sdb {
-      volume_id = linode_volume.web_volume.id
-    }
+
+  device {
+    device_name = "sda"
+    disk_id     = linode_instance_disk.boot_disk.id
   }
-  
+
+  device {
+    device_name = "sdb"
+    volume_id   = linode_volume.web_volume.id
+  }
+
   root_device = "/dev/sda"
-  kernel = "linode/latest-64bit"
-  booted = true
+  kernel      = "linode/latest-64bit"
+  booted      = true
 }
+
 ```
 
 ## Argument Reference
@@ -101,8 +133,6 @@ The following arguments are supported:
 - - -
 
 * `label` - (Optional) The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned.
-
-* `group` - (Optional) The display group of the Linode instance.
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
@@ -131,6 +161,8 @@ The following arguments are supported:
 * `booted` - (Optional) If true, then the instance is kept or converted into in a running state. If false, the instance will be shutdown. If unspecified, the Linode's power status will not be managed by the Provider.
 
 * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
+
+* `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
 
 ### Simplified Resource Arguments
 
