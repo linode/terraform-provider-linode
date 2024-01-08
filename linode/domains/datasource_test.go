@@ -44,6 +44,14 @@ func TestAccDataSourceDomains_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "domains.0.type", "master"),
 				),
 			},
+			{
+				Config: tmpl.DataAPIFilter(t, domainName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "domains.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "domains.0.tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resourceName, "domains.0.domain", domainName),
+				),
+			},
 		},
 	})
 }

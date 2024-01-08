@@ -1,0 +1,14 @@
+{{ define "domains_data_api_filter" }}
+
+{{ template "domains_data_base" . }}
+
+data "linode_domains" "foo" {
+    filter {
+        name = "tags"
+        values = ["tf_test"]
+    }
+    order_by = "domain"
+    order = "desc"
+}
+
+{{ end }}
