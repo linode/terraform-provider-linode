@@ -192,6 +192,9 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+				// Remove this ignorance when the TF SDK issue is fixed
+				// https://github.com/hashicorp/terraform-plugin-sdk/issues/792
+				ImportStateVerifyIgnore: []string{"device"},
 			},
 		},
 	})
@@ -463,6 +466,9 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+				// Remove this ignorance when the TF SDK issue is fixed
+				// https://github.com/hashicorp/terraform-plugin-sdk/issues/792
+				ImportStateVerifyIgnore: []string{"device"},
 			},
 		},
 	})
