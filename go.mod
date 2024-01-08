@@ -22,7 +22,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.31.0
 	github.com/hashicorp/terraform-plugin-testing v1.6.0
-	github.com/linode/linodego v1.26.0
+	github.com/linode/linodego v1.27.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.17.0
@@ -70,6 +70,7 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.19.0 // indirect
 	github.com/hashicorp/terraform-json v0.18.0 // indirect
+	github.com/hashicorp/terraform-plugin-framework-timeouts v0.4.1
 	github.com/hashicorp/terraform-registry-address v0.2.3 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -120,7 +121,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-// Temporary replacement, replace with project branch once
-// Zhiwei's PR is merged.
-replace github.com/linode/linodego => github.com/linode/linodego v1.25.1-0.20231128213456-3a4cc7014c2e
