@@ -8,10 +8,10 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"group": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"tags":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"group":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"tags":   {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"domain": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
 
-	"domain":      {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 	"type":        {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 	"status":      {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 	"description": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
