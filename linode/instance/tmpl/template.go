@@ -517,6 +517,17 @@ func TypeChangeDiskNone(t *testing.T, label, instanceType, region string, resize
 		})
 }
 
+func TypeChangeWarm(t *testing.T, label, instanceType, region string, resizeDisk bool) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_type_change_warm", TemplateData{
+			Label:      label,
+			Type:       instanceType,
+			Image:      acceptance.TestImageLatest,
+			ResizeDisk: resizeDisk,
+			Region:     region,
+		})
+}
+
 func IPv4Sharing(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ipv4_sharing", TemplateData{
