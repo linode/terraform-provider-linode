@@ -1,12 +1,12 @@
 ---
 page_title: "Linode: linode_domains"
 description: |-
-Provides information about Linode Cloud Domains that match a set of filters.
+  Provides information about Linode Cloud Domains that match a set of filters.
 ---
 
 # Data Source: linode\_domains
 
-Provides information about Linode Cloud Domains that match a set of filters.
+Provides information about Linode Domains that match a set of filters.
 
 ## Example Usage
 
