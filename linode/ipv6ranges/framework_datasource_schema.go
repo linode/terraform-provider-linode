@@ -18,8 +18,6 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The data source's unique ID.",
 			Computed:    true,
 		},
-		"order":    filterConfig.OrderSchema(),
-		"order_by": filterConfig.OrderBySchema(),
 	},
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
@@ -28,7 +26,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
 					"range": schema.StringAttribute{
-						Description: "The IPv6 range to retrieve information about.",
+						Description: "The IPv6 address of this range.",
 						Required:    true,
 					},
 					"route_target": schema.StringAttribute{

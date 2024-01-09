@@ -3,6 +3,8 @@ package ipv6ranges
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -46,7 +48,7 @@ func (r *DataSource) Read(
 
 	result, diag := filterConfig.GetAndFilter(
 		ctx, client, data.Filters, listRanges,
-		data.Order, data.OrderBy)
+		types.StringNull(), types.StringNull())
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return

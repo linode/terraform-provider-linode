@@ -24,8 +24,6 @@ func (m *IPv6ListEntryModel) ParseRange(r linodego.IPv6Range) {
 type IPv6RangeFilterModel struct {
 	ID      types.String                     `tfsdk:"id"`
 	Filters frameworkfilter.FiltersModelType `tfsdk:"filter"`
-	Order   types.String                     `tfsdk:"order"`
-	OrderBy types.String                     `tfsdk:"order_by"`
 	Ranges  []IPv6ListEntryModel             `tfsdk:"ranges"`
 }
 
