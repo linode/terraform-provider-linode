@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+	"github.com/linode/terraform-provider-linode/v2/linode/ipv6ranges"
 
 	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
 
@@ -223,5 +224,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		volumes.NewDataSource,
 		accountavailability.NewDataSource,
 		nbconfigs.NewDataSource,
+		ipv6ranges.NewDataSource,
 	}
 }
