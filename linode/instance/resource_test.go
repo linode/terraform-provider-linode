@@ -2186,6 +2186,8 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	t.Parallel()
 
+	rootPass := acctest.RandString(12)
+
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
@@ -2207,7 +2209,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2217,7 +2219,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, targetRegion),
+				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, targetRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
