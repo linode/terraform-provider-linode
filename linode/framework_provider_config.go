@@ -275,6 +275,8 @@ func (fp *FrameworkProvider) InitProvider(
 	userAgent := fp.terraformUserAgent(tfVersion, UAPrefix)
 	client.SetUserAgent(userAgent)
 
+	helper.ApplyAllConditions(&client)
+
 	meta.Config = lpm
 	meta.Client = &client
 }
