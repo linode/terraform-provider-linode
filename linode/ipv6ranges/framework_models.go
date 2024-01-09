@@ -7,6 +7,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
 )
 
+// NOTE: We cannot reuse the model from the singular data source
+// because the fields returned from the list endpoint are slightly
+// different from the fields returned from the view endpoint.
+
 type IPv6ListEntryModel struct {
 	Range       types.String `tfsdk:"range"`
 	RouteTarget types.String `tfsdk:"route_target"`
