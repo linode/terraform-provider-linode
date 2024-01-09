@@ -114,7 +114,7 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 		userAgent = c.UAPrefix + " " + userAgent
 	}
 	client.SetUserAgent(userAgent)
-	ApplyAllConditions(&client)
+	ApplyAllRetryConditions(&client)
 
 	// We always want to disable resty debugging in favor
 	// of Terraform transport debugging.

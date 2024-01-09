@@ -15,7 +15,7 @@ func Database502Retry() func(response *resty.Response, err error) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return GenericCondition(500, databaseGetRegex)
+	return GenericRetryCondition(500, databaseGetRegex)
 }
 
 func LinodeInstance500Retry() func(response *resty.Response, err error) bool {
@@ -23,7 +23,7 @@ func LinodeInstance500Retry() func(response *resty.Response, err error) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return GenericCondition(500, linodeGetRegex)
+	return GenericRetryCondition(500, linodeGetRegex)
 }
 
 // ImageUpload500Retry for [500] error when uploading an image
@@ -32,10 +32,10 @@ func ImageUpload500Retry() func(response *resty.Response, err error) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return GenericCondition(500, ImageUpload)
+	return GenericRetryCondition(500, ImageUpload)
 }
 
-func GenericCondition(statusCode int, pathPattern *regexp.Regexp) func(response *resty.Response, err error) bool {
+func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *resty.Response, err error) bool {
 	return func(response *resty.Response, _ error) bool {
 		if response.StatusCode() != statusCode || response.Request == nil {
 			return false
@@ -52,7 +52,7 @@ func GenericCondition(statusCode int, pathPattern *regexp.Regexp) func(response 
 	}
 }
 
-func ApplyAllConditions(client *linodego.Client) {
+func ApplyAllRetryConditions(client *linodego.Client) {
 	client.AddRetryCondition(Database502Retry())
 	client.AddRetryCondition(LinodeInstance500Retry())
 	client.AddRetryCondition(ImageUpload500Retry())

@@ -275,7 +275,7 @@ func (fp *FrameworkProvider) InitProvider(
 	userAgent := fp.terraformUserAgent(tfVersion, UAPrefix)
 	client.SetUserAgent(userAgent)
 
-	helper.ApplyAllConditions(&client)
+	helper.ApplyAllRetryConditions(&client)
 
 	meta.Config = lpm
 	meta.Client = &client
