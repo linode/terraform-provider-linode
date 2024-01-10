@@ -9,7 +9,7 @@ var filterConfig = frameworkfilter.Config{
 	"route_target": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"region":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"range":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"prefix":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"prefix":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
@@ -27,7 +27,7 @@ var frameworkDataSourceSchema = schema.Schema{
 				Attributes: map[string]schema.Attribute{
 					"range": schema.StringAttribute{
 						Description: "The IPv6 address of this range.",
-						Required:    true,
+						Computed:    true,
 					},
 					"route_target": schema.StringAttribute{
 						Description: "The IPv6 SLAAC address.",
