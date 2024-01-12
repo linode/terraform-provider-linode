@@ -116,6 +116,8 @@ func (data *LKEDataModel) parseLKEAttributes(
 			}
 			pool.Nodes = poolNodes
 
+			// Only parse the autoscaler when it's enabled in order to keep returning
+			// the same list result of SDKv2.
 			if p.Autoscaler.Enabled {
 				var autoscaler LKENodePoolAutoscaler
 				autoscaler.Enabled = types.BoolValue(p.Autoscaler.Enabled)

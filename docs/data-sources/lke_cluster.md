@@ -48,6 +48,8 @@ In addition to all arguments above, the following attributes are exported:
 
   * `count` - The number of nodes in the Node Pool.
 
+  * `tags` - An array of tags applied to this object. Tags are for organizational purposes only.
+
   * `nodes` - The nodes in the Node Pool.
 
     * `id` - The ID of the node.
@@ -58,8 +60,16 @@ In addition to all arguments above, the following attributes are exported:
 
   * `autoscaler` - The configuration options for the autoscaler. This field only contains an autoscaler configuration if autoscaling is enabled on this cluster.
 
+    * `enabled` - Whether autoscaling is enabled for this Node Pool. Defaults to false.
+
     * `min` - The minimum number of nodes to autoscale to.
 
     * `max` - The maximum number of nodes to autoscale to.
+
+  * `disks` - This Node Pool’s custom disk layout.
+
+    * `size` - The size of this custom disk partition in MB.
+
+    * `type` - This custom disk partition’s filesystem type.
 
 * `control_plane.0.high_availability` - Whether High Availability is enabled for the cluster Control Plane.

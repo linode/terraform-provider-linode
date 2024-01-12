@@ -116,11 +116,11 @@ var frameworkDataSourceSchema = schema.Schema{
 						NestedObject: schema.NestedBlockObject{
 							Attributes: map[string]schema.Attribute{
 								"min": schema.Int64Attribute{
-									Description: "The minimum number of nodes to autoscale to.",
+									Description: "The minimum number of nodes to autoscale to. Defaults to the Node Pool’s count.",
 									Computed:    true,
 								},
 								"max": schema.Int64Attribute{
-									Description: "The maximum number of nodes to autoscale to.",
+									Description: "The maximum number of nodes to autoscale to. Defaults to the Node Pool’s count.",
 									Computed:    true,
 								},
 								"enabled": schema.BoolAttribute{
