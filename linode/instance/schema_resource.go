@@ -221,6 +221,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"group": {
 		Type:        schema.TypeString,
 		Description: "The display group of the Linode instance.",
+		Deprecated:  "Group label is deprecated. We recommend using tags instead.",
 		Optional:    true,
 	},
 	"tags": {

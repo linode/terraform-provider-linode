@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/linode/linodego"
 )
 
 // Workaround for intermittent 5xx errors when retrieving a database from the API
@@ -14,20 +15,7 @@ func Database502Retry() func(response *resty.Response, err error) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return func(response *resty.Response, _ error) bool {
-		if response.StatusCode() != 502 || response.Request == nil {
-			return false
-		}
-
-		requestURL, err := url.ParseRequestURI(response.Request.URL)
-		if err != nil {
-			log.Printf("[WARN] failed to parse request URL: %s", err)
-			return false
-		}
-
-		// Check whether the string matches
-		return databaseGetRegex.MatchString(requestURL.Path)
-	}
+	return GenericRetryCondition(500, databaseGetRegex)
 }
 
 func LinodeInstance500Retry() func(response *resty.Response, err error) bool {
@@ -35,20 +23,7 @@ func LinodeInstance500Retry() func(response *resty.Response, err error) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return func(response *resty.Response, _ error) bool {
-		if response.StatusCode() != 500 || response.Request == nil {
-			return false
-		}
-
-		requestURL, err := url.ParseRequestURI(response.Request.URL)
-		if err != nil {
-			log.Printf("[WARN] failed to parse request URL: %s", err)
-			return false
-		}
-
-		// Check whether the string matches
-		return linodeGetRegex.MatchString(requestURL.Path)
-	}
+	return GenericRetryCondition(500, linodeGetRegex)
 }
 
 // ImageUpload500Retry for [500] error when uploading an image
@@ -57,8 +32,12 @@ func ImageUpload500Retry() func(response *resty.Response, err error) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return GenericRetryCondition(500, ImageUpload)
+}
+
+func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *resty.Response, err error) bool {
 	return func(response *resty.Response, _ error) bool {
-		if response.StatusCode() != 500 || response.Request == nil {
+		if response.StatusCode() != statusCode || response.Request == nil {
 			return false
 		}
 
@@ -69,6 +48,12 @@ func ImageUpload500Retry() func(response *resty.Response, err error) bool {
 		}
 
 		// Check whether the string matches
-		return ImageUpload.MatchString(requestURL.Path)
+		return pathPattern.MatchString(requestURL.Path)
 	}
+}
+
+func ApplyAllRetryConditions(client *linodego.Client) {
+	client.AddRetryCondition(Database502Retry())
+	client.AddRetryCondition(LinodeInstance500Retry())
+	client.AddRetryCondition(ImageUpload500Retry())
 }
