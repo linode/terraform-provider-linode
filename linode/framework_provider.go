@@ -3,15 +3,12 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/ipv6ranges"
-
-	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/account"
+	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountavailability"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogins"
@@ -37,6 +34,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/ipv6range"
+	"github.com/linode/terraform-provider-linode/v2/linode/ipv6ranges"
 	"github.com/linode/terraform-provider-linode/v2/linode/kernel"
 	"github.com/linode/terraform-provider-linode/v2/linode/kernels"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
