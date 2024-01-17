@@ -34,6 +34,12 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - The status of the cluster.
 
+* `label` - The unique label for the cluster.
+
+* `created` - When this Kubernetes cluster was created.
+
+* `updated` - When this Kubernetes cluster was updated.
+
 * `api_endpoints` - The endpoints for the Kubernetes API server.
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
