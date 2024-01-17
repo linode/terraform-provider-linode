@@ -37,6 +37,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/ipv6range"
 	"github.com/linode/terraform-provider-linode/v2/linode/kernel"
 	"github.com/linode/terraform-provider-linode/v2/linode/kernels"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
@@ -225,5 +226,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		accountavailability.NewDataSource,
 		nbconfigs.NewDataSource,
 		domains.NewDataSource,
+		lkeclusters.NewDataSource,
 	}
 }
