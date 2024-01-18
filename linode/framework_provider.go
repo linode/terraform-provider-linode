@@ -169,6 +169,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		vpc.NewResource,
 		instanceip.NewResource,
 		firewalldevice.NewResource,
+		volume.NewResource,
 	}
 }
 
