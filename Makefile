@@ -86,4 +86,4 @@ docscheck:
 sweep:
 	# sweep cleans the test infra from your account
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
-	go test -v ./$(PKG_NAME) -sweep=$(SWEEP) $(SWEEPARGS)
+	go test -v ./$(PKG_NAME) -sweep=$(SWEEP) $(ARGS)
