@@ -24,7 +24,7 @@ type DomainModel struct {
 	Tags        []types.String `tfsdk:"tags"`
 }
 
-func (m *DomainModel) parseDomain(domain *linodego.Domain) {
+func (m *DomainModel) ParseDomain(domain *linodego.Domain) {
 	m.ID = types.Int64Value(int64(domain.ID))
 	m.Domain = types.StringValue(domain.Domain)
 	m.Type = types.StringValue(string(domain.Type))

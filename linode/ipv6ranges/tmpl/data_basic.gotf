@@ -1,0 +1,27 @@
+{{ define "ipv6ranges_data_basic" }}
+
+{{ template "ipv6range_basic" . }}
+
+data "linode_ipv6_ranges" "test" {
+    filter {
+        name = "range"
+        values = [linode_ipv6_range.foobar.range]
+    }
+
+    filter {
+        name = "region"
+        values = [linode_ipv6_range.foobar.region]
+    }
+
+    filter {
+        name = "prefix"
+        values = [linode_ipv6_range.foobar.prefix_length]
+    }
+
+    // We don't filter route_target here because of an outstanding issue
+    // in the linode_ipv6_range resource where the route target is not
+    // implicitly populated if linode_id is specified.
+    // This issue is being tracked internally.
+}
+
+{{ end }}

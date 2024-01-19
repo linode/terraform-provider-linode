@@ -53,6 +53,13 @@ resource "linode_nodebalancer_node" "foonode" {
     address = "${element(linode_instance.web.*.private_ip_address, count.index)}:80"
     label = "mynodebalancernode"
     weight = 50
+
+  lifecycle {
+    // Tell Terraform to implicitly recreate the NodeBalancer node when
+    // the target instance has been marked for recreation.
+    // See: https://github.com/linode/terraform-provider-linode/issues/1224
+    replace_triggered_by = [linode_instance.foo.id]
+  }
 }
 ```
 

@@ -1,0 +1,9 @@
+{{ define "domains_data_basic" }}
+
+{{ template "domains_data_base" . }}
+
+data "linode_domains" "foo" {
+    depends_on = [linode_domain.bar]
+}
+
+{{ end }}
