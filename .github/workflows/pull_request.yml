@@ -9,14 +9,13 @@ jobs:
         with:
           go-version: 'stable'
       - run: go version
-
-      - run: make tooldeps
+      - run: make deps
       - name: Check docs
         run: make docscheck
       - name: Lint
         run: make lint
       - name: Unit tests
-        run: make test
+        run: make unit-test
       - name: Vet
         run: make vet
       - name: Tidy

@@ -2186,6 +2186,8 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	t.Parallel()
 
+	rootPass := acctest.RandString(12)
+
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
