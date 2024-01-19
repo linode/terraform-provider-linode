@@ -4,7 +4,6 @@ package lkeclusters_test
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sort"
 	"testing"
@@ -68,20 +67,19 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 				{
 					Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion),
 					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.#", "2"),
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.label", clusterName),
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.region", testRegion),
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.k8s_version", k8sVersionLatest),
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.status", "ready"),
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tags.#", "1"),
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.control_plane.high_availability", "false"),
+						acceptance.CheckResourceAttrGreaterThan(dataSourceName, "lke_clusters.#", 2),
 					),
 				},
 				{
 					Config: tmpl.DataFilter(t, clusterName, k8sVersionLatest, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.#", "1"),
-						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.label", fmt.Sprintf("2-%v", clusterName)),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.label", clusterName),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.region", testRegion),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.k8s_version", k8sVersionLatest),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.status", "ready"),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tags.#", "1"),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.control_plane.high_availability", "false"),
 					),
 				},
 			},
