@@ -23,6 +23,6 @@ jobs:
       - run: go version
 
       - name: Run smoke tests
-        run: make smoketest
+        run: make smoke-test
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}

@@ -50,9 +50,9 @@ jobs:
         with:
           ref: ${{ inputs.sha }}
 
-      - run: make tooldeps
+      - run: make deps
 
-      - run: make PKG_NAME="${{ inputs.module }}" testacc
+      - run: make PKG_NAME="${{ inputs.module }}" int-test
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
