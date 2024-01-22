@@ -8,6 +8,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v2/linode/lke"
 )
 
 // LKEClusterFilterModel describes the Terraform resource data model to match the
@@ -21,20 +22,15 @@ type LKEClusterFilterModel struct {
 }
 
 type LKEClusterModel struct {
-	ID           types.Int64     `tfsdk:"id"`
-	Created      types.String    `tfsdk:"created"`
-	Updated      types.String    `tfsdk:"updated"`
-	Label        types.String    `tfsdk:"label"`
-	Region       types.String    `tfsdk:"region"`
-	Status       types.String    `tfsdk:"status"`
-	K8sVersion   types.String    `tfsdk:"k8s_version"`
-	Tags         types.Set       `tfsdk:"tags"`
-	ControlPlane LKEControlPlane `tfsdk:"control_plane"`
-}
-
-// TODO: reuse LKEControlPlane model from lke package once that change merged
-type LKEControlPlane struct {
-	HighAvailability types.Bool `tfsdk:"high_availability"`
+	ID           types.Int64         `tfsdk:"id"`
+	Created      types.String        `tfsdk:"created"`
+	Updated      types.String        `tfsdk:"updated"`
+	Label        types.String        `tfsdk:"label"`
+	Region       types.String        `tfsdk:"region"`
+	Status       types.String        `tfsdk:"status"`
+	K8sVersion   types.String        `tfsdk:"k8s_version"`
+	Tags         types.Set           `tfsdk:"tags"`
+	ControlPlane lke.LKEControlPlane `tfsdk:"control_plane"`
 }
 
 func (data *LKEClusterFilterModel) parseLKEClusters(
@@ -73,14 +69,7 @@ func (data *LKEClusterModel) parseLKECluster(
 	}
 	data.Tags = tags
 
-	parseControlPlane := func() LKEControlPlane {
-		var cp LKEControlPlane
-		cp.HighAvailability = types.BoolValue(cluster.ControlPlane.HighAvailability)
-
-		return cp
-	}
-
-	data.ControlPlane = parseControlPlane()
+	data.ControlPlane = lke.ParseControlPlane(cluster.ControlPlane)
 
 	return nil
 }
