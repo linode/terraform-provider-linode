@@ -32,7 +32,7 @@ resource "linode_instance_disk" "boot" {
   linode_id = linode_instance.my-instance.id
   size = linode_instance.my-instance.specs.0.disk
 
-  image = "linode/ubuntu22.04"
+  image = "linode/ubuntu23.10"
   root_pass = "myc00lpass!"
 }
 
@@ -121,7 +121,7 @@ resource "linode_instance_disk" "boot" {
   linode_id = linode_instance.my-instance.id
   size = linode_instance.my-instance.specs.0.disk - 512
 
-  image = "linode/ubuntu22.04"
+  image = "linode/ubuntu23.10"
   root_pass = "myc00lpass!ciuw23asxbviwuc"
 }
 

@@ -20,7 +20,7 @@ resource "linode_sshkey" "foo" {
 }
 
 resource "linode_instance" "foo" {
-  image  = "linode/ubuntu18.04"
+  image  = "linode/ubuntu23.10"
   label  = "foo"
   region = "us-east"
   type   = "g6-nanode-1"
