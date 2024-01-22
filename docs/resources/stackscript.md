@@ -25,12 +25,12 @@ resource "linode_stackscript" "foo" {
 # <UDF name="package" label="System Package to Install" example="nginx" default="">
 apt-get -q update && apt-get -q -y install $PACKAGE
 EOF
-  images = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+  images = ["linode/ubuntu22.04", "linode/ubuntu20.04"]
   rev_note = "initial version"
 }
 
 resource "linode_instance" "foo" {
-  image  = "linode/ubuntu18.04"
+  image  = "linode/ubuntu22.04"
   label  = "foo"
   region = "us-east"
   type   = "g6-nanode-1"
