@@ -37,7 +37,7 @@ resource "linode_instance_disk" "boot" {
   linode_id = linode_instance.my-instance.id
   size = linode_instance.my-instance.specs.0.disk
 
-  image = "linode/ubuntu20.04"
+  image = "linode/ubuntu22.04"
   root_pass = "myc00lpass!"
   authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
   

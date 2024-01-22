@@ -1,6 +1,6 @@
 # Linode Instance, Volume, NodeBalancer, StackScript, and Domain example
 
-This example launches a trio of Ubuntu 18.04 LTS Linode Instances, mounts a volume on each, and serves a webpage from those volume using nginx.
+This example launches a trio of Ubuntu 22.04 LTS Linode Instances, mounts a volume on each, and serves a webpage from those volume using nginx.
 
 A NodeBalancer proxies for the Linodes using their private IP address. DNS domain records are mapped to each Linode and the public NodeBalancer addresses.
 

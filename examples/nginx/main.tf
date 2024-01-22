@@ -22,7 +22,7 @@ data "linode_instance_type" "default" {
 }
 
 data "linode_image" "ubuntu" {
-  id = "linode/ubuntu18.04"
+  id = "linode/ubuntu22.04"
 }
 
 data "linode_domain" "foo-com" {
@@ -236,7 +236,7 @@ apt-get -q -y install unattended-upgrades $PACKAGE
 EOF
 
 
-  images   = ["linode/ubuntu18.04", "linode/ubuntu16.04lts"]
+  images   = ["linode/ubuntu22.04", "linode/ubuntu20.04"]
   rev_note = "initial script"
 }
 
@@ -246,7 +246,7 @@ resource "linode_sshkey" "mykey" {
 }
 
 resource "linode_instance" "simple" {
-  image = "linode/ubuntu18.04"
+  image = "linode/ubuntu22.04"
   label = "${random_pet.project.id}-simple"
 
   group            = "foo"

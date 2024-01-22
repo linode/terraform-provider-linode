@@ -15,7 +15,7 @@ Creating a basic LKE cluster:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.21"
+    k8s_version = "1.28"
     region      = "us-central"
     tags        = ["prod"]
 
@@ -31,7 +31,7 @@ Creating an LKE cluster with autoscaler:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.21"
+    k8s_version = "1.28"
     region      = "us-central"
     tags        = ["prod"]
 

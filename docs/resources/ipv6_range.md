@@ -15,7 +15,7 @@ Manages a Linode IPv6 range.
 ```terraform
 resource "linode_instance" "foobar" {
   label = "my-linode"
-  image = "linode/alpine3.14"
+  image = "linode/alpine3.19"
   type = "g6-nanode-1"
   region = "us-southeast"
 }
