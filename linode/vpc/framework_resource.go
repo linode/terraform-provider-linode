@@ -144,9 +144,8 @@ func (r *Resource) Update(
 			return
 		}
 		plan.FlattenVPC(ctx, vpc, false)
-	} else {
-		plan.CopyFrom(ctx, state, true)
 	}
+	plan.CopyFrom(ctx, state, true)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
