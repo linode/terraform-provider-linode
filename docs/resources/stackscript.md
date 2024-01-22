@@ -25,7 +25,7 @@ resource "linode_stackscript" "foo" {
 # <UDF name="package" label="System Package to Install" example="nginx" default="">
 apt-get -q update && apt-get -q -y install $PACKAGE
 EOF
-  images = ["linode/ubuntu23.10", "linode/ubuntu22.04lts"]
+  images = ["linode/ubuntu23.10", "linode/ubuntu22.04"]
   rev_note = "initial version"
 }
 
