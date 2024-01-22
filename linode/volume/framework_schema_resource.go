@@ -1,6 +1,8 @@
 package volume
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
+
+const RequireReplacementWhenNewSourceVolumeIDIsNotNull = "When source_volume_id is set to a non-null new value, a replacement will be required."
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -27,7 +31,17 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The ID of a volume to clone.",
 			Optional:    true,
 			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.RequiresReplace(),
+				int64planmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						sr planmodifier.Int64Request,
+						rrifr *int64planmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						rrifr.RequiresReplace = !sr.PlanValue.IsNull()
+					},
+					RequireReplacementWhenNewSourceVolumeIDIsNotNull,
+					RequireReplacementWhenNewSourceVolumeIDIsNotNull,
+				),
 			},
 			Validators: []validator.Int64{
 				int64validator.AtLeastOneOf(
