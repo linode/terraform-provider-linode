@@ -75,7 +75,7 @@ resource "linode_instance" "test_instance" {
     filesystem       = "ext4"
     authorized_users = ["zliang27"]
     root_pass        = "this_is_not_a_safe_password"
-    image            = "linode/ubuntu23.10"
+    image            = "linode/ubuntu22.04"
   }
 }
 ```

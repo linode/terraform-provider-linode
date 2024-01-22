@@ -36,7 +36,7 @@ resource "linode_instance" "my_instance" {
   count = 3
 
   label = "simple_instance-${count.index + 1}"
-  image = "linode/ubuntu23.10"
+  image = "linode/ubuntu22.04"
   region = "us-central"
   type = "g6-standard-1"
   root_pass = "terr4form-test"

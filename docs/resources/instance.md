@@ -22,7 +22,7 @@ The following example shows how one might use this resource to configure a Linod
 ```hcl
 resource "linode_instance" "web" {
   label           = "simple_instance"
-  image           = "linode/ubuntu23.10"
+  image           = "linode/ubuntu22.04"
   region          = "us-central"
   type            = "g6-standard-1"
   authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
@@ -42,7 +42,7 @@ You can add a VPC or VLAN interface directly to a Linode instance resource.
 ```hcl
 resource "linode_instance" "web" {
   label           = "simple_instance"
-  image           = "linode/ubuntu23.10"
+  image           = "linode/ubuntu22.04"
   region          = "us-central"
   type            = "g6-standard-1"
   authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
@@ -92,7 +92,7 @@ resource "linode_instance_disk" "boot_disk" {
   linode_id = linode_instance.web.id
 
   size  = 3000
-  image = "linode/ubuntu23.10"
+  image = "linode/ubuntu22.04"
 
   # Any of authorized_keys, authorized_users, and root_pass
   # can be used for provisioning.
@@ -178,7 +178,7 @@ Just as the Linode API provides, these fields are for the most common provisioni
 
 * `root_pass` - (Optional) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
-* `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu23.10`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://developers.linode.com/api/v4/images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
+* `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://developers.linode.com/api/v4/images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
 
 * `stackscript_id` - (Optional) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *This value can not be imported.* *Changing `stackscript_id` forces the creation of a new Linode Instance.*
 
@@ -214,7 +214,7 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 
   * `read_only` - (Optional) If true, this Disk is read-only.
 
-  * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu23.10`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/images). *Changing `image` forces the creation of a new Linode Instance.*
+  * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/images). *Changing `image` forces the creation of a new Linode Instance.*
 
   * `authorized_keys` - (Optional with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
 

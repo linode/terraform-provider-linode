@@ -18,7 +18,7 @@ Creating an image from an existing Linode Instance and deploying another instanc
 resource "linode_instance" "foo" {
     type = "g6-nanode-1"
     region = "us-central"
-    image = "linode/ubuntu23.10"
+    image = "linode/ubuntu22.04"
     root_pass = "insecure-p4ssw0rd!!"
 }
 
