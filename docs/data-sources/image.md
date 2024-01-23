@@ -14,7 +14,7 @@ The following example shows how one might use this data source to access informa
 
 ```hcl
 data "linode_image" "k8_master" {
-    id = "linode/debian8"
+    id = "linode/debian12"
 }
 ```
 
