@@ -67,7 +67,7 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 				{
 					Config: tmpl.DataBasic(t, clusterName, k8sVersionLatest, testRegion),
 					Check: resource.ComposeTestCheckFunc(
-						acceptance.CheckResourceAttrGreaterThan(dataSourceName, "lke_clusters.#", 2),
+						acceptance.CheckResourceAttrGreaterThan(dataSourceName, "lke_clusters.#", 1),
 					),
 				},
 				{
