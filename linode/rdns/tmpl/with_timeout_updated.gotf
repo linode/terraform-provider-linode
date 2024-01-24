@@ -1,0 +1,21 @@
+{{ define "rdns_with_timeout_updated" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    image = "linode/alpine3.19"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+}
+
+resource "linode_rdns" "foobar" {
+    address = "${linode_instance.foobar.ip_address}"
+    rdns    = "${replace(linode_instance.foobar.ip_address, ".", "-")}.nip.io"
+    wait_for_available = true
+
+    timeouts {
+        create = "{{ .CreateTimeout }}"
+        update = "{{ .UpdateTimeout }}"
+    }
+}
+
+{{ end }}
