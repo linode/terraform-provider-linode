@@ -17,7 +17,7 @@ Create a VPC:
 ```terraform
 resource "linode_vpc" "test" {
     label = "test-vpc"
-    region = "us-east"
+    region = "us-iad"
     description = "My first VPC."
 }
 ```
