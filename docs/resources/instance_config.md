@@ -43,7 +43,7 @@ resource "linode_instance" "my-instance" {
 }
 ```
 
-Creating a complex bootable Instance Configuration Profile:
+Creating a complex bootable Instance Configuration Profile with a VPC:
 
 ```hcl
 resource "linode_instance_config" "my-config" {
@@ -77,10 +77,10 @@ resource "linode_instance_config" "my-config" {
     ipam_address = "10.0.0.2/24"
   }
 
-  # VPC networking on eth1
+  # VPC networking on eth2
   interface {
     purpose = "vpc"
-    subnet_id = 123
+    subnet_id = linode_vpc_subnet.foobar.id
     ipv4 {
       vpc = "10.0.4.250"
     }
