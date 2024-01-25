@@ -1,0 +1,9 @@
+{{ define "lke_clusters_data_basic" }}
+
+{{ template "lke_clusters_data_base" . }}
+
+data "linode_lke_clusters" "test" {
+    depends_on = [linode_lke_cluster.test, linode_lke_cluster.test2]
+}
+
+{{ end }}

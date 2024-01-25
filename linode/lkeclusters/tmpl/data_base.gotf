@@ -1,0 +1,27 @@
+{{ define "lke_clusters_data_base" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{.K8sVersion}}"
+    tags        = ["test"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 3
+    }
+}
+
+resource "linode_lke_cluster" "test2" {
+    label       = "2-{{.Label}}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{.K8sVersion}}"
+    tags        = ["test-2"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 3
+    }
+}
+
+{{ end }}
