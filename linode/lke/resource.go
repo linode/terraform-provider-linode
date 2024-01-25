@@ -145,6 +145,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
+	ctx = tflog.SetField(ctx, "cluster_id", cluster.ID)
 	tflog.Debug(ctx, "Waiting for a single LKE cluster node to be ready")
 
 	// Sometimes the K8S API will raise an EOF error if polling immediately after
