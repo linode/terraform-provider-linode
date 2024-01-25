@@ -212,27 +212,39 @@ func ExpandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
 }
 
 func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
+	purpose := linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string))
 	result := linodego.InstanceConfigInterfaceCreateOptions{
-		Purpose:     linodego.ConfigInterfacePurpose(ifaceMap["purpose"].(string)),
-		Label:       ifaceMap["label"].(string),
-		IPAMAddress: ifaceMap["ipam_address"].(string),
-		Primary:     ifaceMap["primary"].(bool),
+		Purpose: purpose,
+		Primary: ifaceMap["primary"].(bool),
 	}
-	if ifaceMap["subnet_id"] != nil {
-		subnet_id := ifaceMap["subnet_id"].(int)
-		if subnet_id != 0 {
-			result.SubnetID = &subnet_id
+
+	if purpose == linodego.InterfacePurposeVLAN {
+		if ifaceMap["ipam_address"] != nil {
+			result.IPAMAddress = ifaceMap["ipam_address"].(string)
+		}
+
+		if ifaceMap["label"] != nil {
+			result.Label = ifaceMap["label"].(string)
 		}
 	}
 
-	if ifaceMap["ipv4"] != nil {
-		ipv4 := ifaceMap["ipv4"].([]any)
-		if len(ipv4) > 0 {
-			result.IPv4 = ExpandInterfaceIPv4(ipv4[0])
+	if purpose == linodego.InterfacePurposeVPC {
+		if ifaceMap["subnet_id"] != nil {
+			subnet_id := ifaceMap["subnet_id"].(int)
+			if subnet_id != 0 {
+				result.SubnetID = &subnet_id
+			}
 		}
-	}
-	if ifaceMap["ip_ranges"] != nil {
-		result.IPRanges = ExpandStringList(ifaceMap["ip_ranges"].([]interface{}))
+
+		if ifaceMap["ipv4"] != nil {
+			ipv4 := ifaceMap["ipv4"].([]any)
+			if len(ipv4) > 0 {
+				result.IPv4 = ExpandInterfaceIPv4(ipv4[0])
+			}
+		}
+		if ifaceMap["ip_ranges"] != nil {
+			result.IPRanges = ExpandStringList(ifaceMap["ip_ranges"].([]interface{}))
+		}
 	}
 
 	return result
