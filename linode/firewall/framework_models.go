@@ -87,7 +87,7 @@ func (data *FirewallModel) parseNonComputedAttributes(
 	data.Label = types.StringValue(firewall.Label)
 
 	if rules.Inbound != nil {
-		inBound, diags := parseFirewallRules(ctx, rules.Inbound)
+		inBound, diags := ParseFirewallRules(ctx, rules.Inbound)
 		if diags.HasError() {
 			return diags
 		}
@@ -95,7 +95,7 @@ func (data *FirewallModel) parseNonComputedAttributes(
 	}
 
 	if rules.Outbound != nil {
-		outBound, diags := parseFirewallRules(ctx, rules.Outbound)
+		outBound, diags := ParseFirewallRules(ctx, rules.Outbound)
 		if diags.HasError() {
 			return diags
 		}
@@ -105,7 +105,7 @@ func (data *FirewallModel) parseNonComputedAttributes(
 	return nil
 }
 
-func parseFirewallRules(
+func ParseFirewallRules(
 	ctx context.Context,
 	rules []linodego.FirewallRule,
 ) (*basetypes.ListValue, diag.Diagnostics) {
@@ -129,7 +129,7 @@ func parseFirewallRules(
 		}
 		spec["ipv6"] = ipv6
 
-		obj, diags := types.ObjectValue(datasourceRuleObjectType.AttrTypes, spec)
+		obj, diags := types.ObjectValue(DatasourceRuleObjectType.AttrTypes, spec)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -138,7 +138,7 @@ func parseFirewallRules(
 	}
 
 	result, diags := basetypes.NewListValue(
-		datasourceRuleObjectType,
+		DatasourceRuleObjectType,
 		specs,
 	)
 	if diags.HasError() {

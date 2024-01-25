@@ -43,7 +43,7 @@ var firewallDeviceObject = schema.NestedBlockObject{
 	},
 }
 
-var firewallRuleObject = schema.NestedBlockObject{
+var FirewallRuleObject = schema.NestedBlockObject{
 	Attributes: map[string]schema.Attribute{
 		"label": schema.StringAttribute{
 			Description: "The label of this rule for display purposes only.",
@@ -130,11 +130,11 @@ var firewallObject = schema.NestedBlockObject{
 	Blocks: map[string]schema.Block{
 		"inbound": schema.ListNestedBlock{
 			Description:  "A set of firewall rules that specify what inbound network traffic is allowed.",
-			NestedObject: firewallRuleObject,
+			NestedObject: FirewallRuleObject,
 		},
 		"outbound": schema.ListNestedBlock{
 			Description:  "A set of firewall rules that specify what outbound network traffic is allowed.",
-			NestedObject: firewallRuleObject,
+			NestedObject: FirewallRuleObject,
 		},
 		"devices": schema.ListNestedBlock{
 			Description:  "The devices associated with this firewall.",

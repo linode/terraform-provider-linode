@@ -1,6 +1,6 @@
 {{ define "nodebalancer_data_basic" }}
 
-{{ template "nodebalancer_basic" . }}
+{{ template "nodebalancer_firewall" . }}
 
 data "linode_nodebalancer" "foobar" {
     id = "${linode_nodebalancer.foobar.id}"
