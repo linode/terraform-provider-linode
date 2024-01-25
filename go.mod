@@ -22,7 +22,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.31.0
 	github.com/hashicorp/terraform-plugin-testing v1.6.0
-	github.com/linode/linodego v1.27.1
+	github.com/linode/linodego v1.28.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.18.0

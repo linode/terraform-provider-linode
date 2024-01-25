@@ -199,10 +199,16 @@ func ExpandInterfaceIPv4(ipv4 any) *linodego.VPCIPv4 {
 	if vpcAddress == "" && nat1To1 == "" {
 		return nil
 	}
-	return &linodego.VPCIPv4{
-		VPC:     vpcAddress,
-		NAT1To1: nat1To1,
+
+	result := &linodego.VPCIPv4{
+		VPC: vpcAddress,
 	}
+
+	if nat1To1 != "" {
+		result.NAT1To1 = &nat1To1
+	}
+
+	return result
 }
 
 func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceConfigInterfaceCreateOptions {
@@ -243,8 +249,8 @@ func ExpandInterfaces(ctx context.Context, ifaces []any) []linodego.InstanceConf
 	return result
 }
 
-func FlattenInterfaceIPv4(ipv4 linodego.VPCIPv4) []map[string]any {
-	if ipv4.NAT1To1 == "" && ipv4.VPC == "" {
+func FlattenInterfaceIPv4(ipv4 *linodego.VPCIPv4) []map[string]any {
+	if ipv4 == nil {
 		return nil
 	}
 	return []map[string]any{
