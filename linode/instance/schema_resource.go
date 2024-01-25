@@ -198,6 +198,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"provided, and must be an Image that is compatible with this StackScript.",
 		Optional:      true,
 		ForceNew:      true,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"stackscript_data": {
@@ -208,6 +209,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		Sensitive:     true,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"label": {
@@ -254,8 +256,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "If true, changes in Linode type will attempt to upsize or downsize implicitly created disks. " +
 			"This must be false if explicit disks are defined. This is an irreversible action as Linode disks cannot " +
 			"be automatically downsized.",
-		Optional: true,
-		Default:  false,
+		Optional:     true,
+		RequiredWith: []string{"image"},
+		Default:      false,
 	},
 	"migration_type": {
 		Type:        schema.TypeString,
@@ -312,6 +315,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"authorized_users": {
@@ -323,6 +327,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"root_pass": {
@@ -344,6 +349,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		Computed:      true,
 		Default:       nil,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"backups_enabled": {
@@ -552,6 +558,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"If an explicit config or disk is defined, interfaces must be declared in the config block.",
 		Optional:      true,
 		ConflictsWith: []string{"disk", "config"},
+		RequiredWith:  []string{"image"},
 		Elem:          InterfaceSchema,
 	},
 	"config": {
@@ -806,9 +813,10 @@ var resourceSchema = map[string]*schema.Schema{
 						// the API does not return this field for existing disks, so must be ignored for diffs/updates
 						return !d.HasChange("label")
 					},
-					Optional:  true,
-					ForceNew:  true,
-					StateFunc: sshKeyState,
+					RequiredWith: []string{"image"},
+					Optional:     true,
+					ForceNew:     true,
+					StateFunc:    sshKeyState,
 				},
 				"authorized_users": {
 					Type: schema.TypeList,
@@ -816,6 +824,7 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "A list of Linode usernames. If the usernames have associated SSH keys, " +
 						"the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. " +
 						"Only accepted if 'image' is provided.",
+					RequiredWith: []string{"image"},
 					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 						// the API does not return this field for existing disks, so must be ignored for diffs/updates
 						return !d.HasChange("label")
@@ -828,9 +837,10 @@ var resourceSchema = map[string]*schema.Schema{
 					Type: schema.TypeInt,
 					Description: "The StackScript to deploy to the newly created Linode. If provided, 'image' " +
 						"must also be provided, and must be an Image that is compatible with this StackScript.",
-					Computed: true,
-					Optional: true,
-					ForceNew: true,
+					Computed:     true,
+					Optional:     true,
+					ForceNew:     true,
+					RequiredWith: []string{"image"},
 					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 						// the API does not return this field for existing disks, so must be ignored for diffs/updates
 						return !d.HasChange("label")
@@ -842,10 +852,11 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "An object containing responses to any User Defined Fields present in the " +
 						"StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. " +
 						"The required values depend on the StackScript being deployed.",
-					Optional:  true,
-					Computed:  true,
-					ForceNew:  true,
-					Sensitive: true,
+					Optional:     true,
+					Computed:     true,
+					ForceNew:     true,
+					Sensitive:    true,
+					RequiredWith: []string{"image"},
 					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 						// the API does not return this field for existing disks, so must be ignored for diffs/updates
 						return !d.HasChange("label")
@@ -853,11 +864,12 @@ var resourceSchema = map[string]*schema.Schema{
 					Default: nil,
 				},
 				"root_pass": {
-					Type:        schema.TypeString,
-					Description: "The password that will be initialially assigned to the 'root' user account.",
-					Sensitive:   true,
-					Optional:    true,
-					ForceNew:    true,
+					Type:         schema.TypeString,
+					Description:  "The password that will be initialially assigned to the 'root' user account.",
+					Sensitive:    true,
+					Optional:     true,
+					ForceNew:     true,
+					RequiredWith: []string{"image"},
 					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 						// the API does not return this field for existing disks, so must be ignored for diffs/updates
 						return !d.HasChange("label")
