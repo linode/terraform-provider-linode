@@ -2202,7 +2202,6 @@ func TestAccResourceInstance_migration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rootPass := acctest.RandString(12)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
