@@ -3,9 +3,9 @@ package lke
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -29,7 +29,6 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_lke_cluster")
 
 	client := r.Meta.Client
 
@@ -44,6 +43,10 @@ func (r *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "Read data.linode_lke_cluster", map[string]any{
+		"cluster_id": clusterId,
+	})
 
 	cluster, err := client.GetLKECluster(ctx, clusterId)
 	if err != nil {
