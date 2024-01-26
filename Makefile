@@ -40,23 +40,24 @@ deps:
 	go generate -tags tools tools/tools.go
 
 .PHONY: format
-format: fmt vet errcheck imports
+format:
+	gofumpt -l -w .
 
-.PHONY: fmt vet errcheck imports
-fmt:
+.PHONY: fmt-check err-check imports-check vet
+fmt-check:
 	golangci-lint run --disable-all --enable gofumpt ./...
+err-check:
+	golangci-lint run --disable-all -E errcheck ./...
+imports-check:
+	golangci-lint run --disable-all --enable goimports ./...
 vet:
 	golangci-lint run --disable-all --enable govet ./...
-errcheck:
-	golangci-lint run --disable-all -E errcheck ./...
-imports:
-	golangci-lint run --disable-all --enable goimports ./...
 
 .PHONY: test
 test: format smoke-test unit-test int-test
 
 .PHONY: unit-test
-unit-test:
+unit-test: format
 	go test -v --tags=unit ./$(PKG_NAME)
 
 .PHONY: int-test
