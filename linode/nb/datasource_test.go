@@ -59,7 +59,7 @@ func TestAccDataSourceNodeBalancer_firewalls(t *testing.T) {
 		CheckDestroy:             checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),
+				Config: tmpl.DataFirewalls(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
