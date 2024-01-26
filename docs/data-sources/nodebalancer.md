@@ -48,6 +48,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `updated` – When this Linode NodeBalancer was last updated
 
+* [`firewalls`](#firewalls) - A list of Firewalls assigned to this NodeBalancer.
+
 ### transfer
 
 The following attributes are available on transfer:
@@ -57,3 +59,43 @@ The following attributes are available on transfer:
 * `out` - The total inbound transfer, in MB, used for this NodeBalancer for the current month
 
 * `total` - The total outbound transfer, in MB, used for this NodeBalancer for the current month
+
+### firewalls
+
+The following attributes are available on firewalls:
+
+* `id` - The Firewall's ID.
+
+* `label` - The label for the firewall.
+
+* `tags` - The tags applied to the firewall.
+
+* [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
+
+* `inbound_policy` - The default behavior for inbound traffic. (`ACCEPT`, `DROP`)
+
+* [`outbound`](#inbound-and-outbound) - A firewall rule that specifies what outbound network traffic is allowed.
+
+* `outbound_policy` - The default behavior for outbound traffic. (`ACCEPT`, `DROP`)
+
+* `status` - The status of the firewall. (`enabled`, `disabled`, `deleted`)
+
+* `created` - When this firewall was created.
+
+* `updated` - When this firewall was last updated.
+
+#### inboud and outbound
+
+The following arguments are supported in the inbound and outbound rule blocks:
+
+* `label` - Used to identify this rule. For display purposes only.
+
+* `action` - Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall’s inbound_policy if this is an inbound rule, or the outbound_policy if this is an outbound rule.
+
+* `protocol` - The network protocol this rule controls. (`TCP`, `UDP`, `ICMP`)
+
+* `ports` - A string representation of ports and/or port ranges (i.e. "443" or "80-90, 91").
+
+* `ipv4` - A list of IPv4 addresses or networks. Must be in IP/mask format.
+
+* `ipv6` - A list of IPv6 addresses or networks. Must be in IP/mask format.
