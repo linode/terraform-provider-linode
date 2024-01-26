@@ -32,8 +32,8 @@ var firewallObjType = types.ObjectType{
 		"status":          types.StringType,
 		"created":         types.StringType,
 		"updated":         types.StringType,
-		"inbound":         types.ListType{ElemType: firewall.DatasourceRuleObjectType},
-		"outbound":        types.ListType{ElemType: firewall.DatasourceRuleObjectType},
+		"inbound":         types.ListType{ElemType: firewall.RuleObjectType},
+		"outbound":        types.ListType{ElemType: firewall.RuleObjectType},
 	},
 }
 

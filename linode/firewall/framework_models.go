@@ -129,7 +129,7 @@ func ParseFirewallRules(
 		}
 		spec["ipv6"] = ipv6
 
-		obj, diags := types.ObjectValue(DatasourceRuleObjectType.AttrTypes, spec)
+		obj, diags := types.ObjectValue(RuleObjectType.AttrTypes, spec)
 		if diags.HasError() {
 			return nil, diags
 		}
@@ -138,7 +138,7 @@ func ParseFirewallRules(
 	}
 
 	result, diags := basetypes.NewListValue(
-		DatasourceRuleObjectType,
+		RuleObjectType,
 		specs,
 	)
 	if diags.HasError() {

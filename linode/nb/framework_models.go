@@ -186,6 +186,8 @@ func UpgradeResourceStateValue(val string) (basetypes.Float64Value, diag.Diagnos
 	return types.Float64Value(result), nil
 }
 
+// NodeBalancerDataSourceModel describes the Terraform data model to match the
+// data source schema.
 type NodeBalancerDataSourceModel struct {
 	ID                 types.Int64       `tfsdk:"id"`
 	Label              types.String      `tfsdk:"label"`

@@ -16,7 +16,7 @@ var deviceObjectType = types.ObjectType{
 	},
 }
 
-var DatasourceRuleObjectType = types.ObjectType{
+var RuleObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"label":    types.StringType,
 		"action":   types.StringType,
@@ -48,7 +48,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"inbound": schema.ListAttribute{
-			ElementType: DatasourceRuleObjectType,
+			ElementType: RuleObjectType,
 			Description: "A firewall rule that specifies what inbound network traffic is allowed.",
 			Computed:    true,
 		},
@@ -58,7 +58,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed: true,
 		},
 		"outbound": schema.ListAttribute{
-			ElementType: DatasourceRuleObjectType,
+			ElementType: RuleObjectType,
 			Description: "A firewall rule that specifies what outbound network traffic is allowed.",
 			Computed:    true,
 		},
