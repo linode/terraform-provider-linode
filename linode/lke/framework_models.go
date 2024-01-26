@@ -89,7 +89,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.Tags = tags
 
-	data.ControlPlane = []LKEControlPlane{parseControlPlane(cluster.ControlPlane)}
+	data.ControlPlane = []LKEControlPlane{ParseControlPlane(cluster.ControlPlane)}
 
 	parseLKEPools := func() ([]LKENodePool, diag.Diagnostics) {
 		lkePools := make([]LKENodePool, len(pools))
@@ -164,7 +164,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	return nil
 }
 
-func parseControlPlane(
+func ParseControlPlane(
 	controlPlane linodego.LKEClusterControlPlane,
 ) LKEControlPlane {
 	var cp LKEControlPlane
