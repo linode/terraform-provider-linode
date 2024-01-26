@@ -74,8 +74,8 @@ smoke-test: format
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
 
-.PHONY: docscheck
-docscheck:
+.PHONY: docs-check
+docs-check:
 	# markdown linter for the documents
 	docker run --rm \
 		-v $$(pwd):/markdown:ro \
