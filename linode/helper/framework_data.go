@@ -26,6 +26,8 @@ func KeepOrUpdateInt64Pointer(original types.Int64, updated *int64, preserveKnow
 }
 
 func KeepOrUpdateIntPointer(original types.Int64, updated *int, preserveKnown bool) types.Int64 {
+	// There is not a built in function in `types` library of the framework.
+	// Manually handle it here
 	if updated == nil {
 		return KeepOrUpdateValue(original, types.Int64Null(), preserveKnown)
 	}

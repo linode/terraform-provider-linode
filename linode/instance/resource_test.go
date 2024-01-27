@@ -2202,7 +2202,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
- 
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,

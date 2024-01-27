@@ -11,7 +11,7 @@ jobs:
       - run: go version
       - run: make deps
       - name: Check docs
-        run: make docscheck
+        run: make docs-check
       - name: Lint
         run: make lint
       - name: Unit tests

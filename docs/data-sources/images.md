@@ -16,7 +16,7 @@ Get information about all Linode images with a certain label and visibility:
 data "linode_images" "specific-images" {
   filter {
     name = "label"
-    values = ["Debian 11"]
+    values = ["Debian 12"]
   }
 
   filter {

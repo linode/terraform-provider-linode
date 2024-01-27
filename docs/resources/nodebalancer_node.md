@@ -19,7 +19,7 @@ The following example shows how one might use this resource to configure NodeBal
 resource "linode_instance" "web" {
     count = "3"
     label = "web-${count.index + 1}"
-    image = "linode/ubuntu18.04"
+    image = "linode/ubuntu22.04"
     region = "us-east"
     type = "g6-standard-1"
     authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]

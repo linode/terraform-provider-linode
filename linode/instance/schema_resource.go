@@ -327,7 +327,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"root_pass": {
 		Type:        schema.TypeString,
-		Description: "The password that will be initialially assigned to the 'root' user account.",
+		Description: "The password that will be initially assigned to the 'root' user account.",
 		Sensitive:   true,
 		Optional:    true,
 		ForceNew:    true,

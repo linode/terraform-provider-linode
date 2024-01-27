@@ -61,7 +61,7 @@ resource "linode_firewall" "my_firewall" {
 
 resource "linode_instance" "my_instance" {
   label      = "my_instance"
-  image      = "linode/ubuntu18.04"
+  image      = "linode/ubuntu22.04"
   region     = "us-southeast"
   type       = "g6-standard-1"
   root_pass  = "bogusPassword$"
