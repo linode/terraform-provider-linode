@@ -243,7 +243,13 @@ func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceCon
 			}
 		}
 		if ifaceMap["ip_ranges"] != nil {
-			result.IPRanges = ExpandStringList(ifaceMap["ip_ranges"].([]interface{}))
+			ranges := ifaceMap["ip_ranges"].([]interface{})
+
+			// this is for keep result.IPRanges as a nil value rather than a value of empty slice
+			// when there is not a range.
+			if len(ranges) > 0 {
+				result.IPRanges = ExpandStringList(ranges)
+			}
 		}
 	}
 
