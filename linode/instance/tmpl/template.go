@@ -653,3 +653,21 @@ func VPCInterface(t *testing.T, label, region string) string {
 			Image:  acceptance.TestImageLatest,
 		})
 }
+
+func VPCAndPublicInterfaces(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_vpc_public_interface", TemplateData{
+			Label:  label,
+			Region: region,
+			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func PublicAndVPCInterfaces(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_public_vpc_interface", TemplateData{
+			Label:  label,
+			Region: region,
+			Image:  acceptance.TestImageLatest,
+		})
+}
