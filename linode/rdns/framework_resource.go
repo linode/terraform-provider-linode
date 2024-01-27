@@ -4,11 +4,18 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+)
+
+const (
+	DefaultVolumeCreateTimeout = 15 * time.Minute
+	DefaultVolumeUpdateTimeout = 15 * time.Minute
 )
 
 func NewResource() resource.Resource {
@@ -18,6 +25,10 @@ func NewResource() resource.Resource {
 				Name:   "linode_rdns",
 				Schema: &frameworkResourceSchema,
 				IDType: types.StringType,
+				TimeoutOpts: &timeouts.Opts{
+					Update: true,
+					Create: true,
+				},
 			},
 		),
 	}
@@ -39,6 +50,15 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultVolumeCreateTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
 
 	ip, err := client.GetIPAddress(ctx, plan.Address.ValueString())
 	if err != nil {
@@ -136,6 +156,15 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	updateTimeout, diags := plan.Timeouts.Update(ctx, DefaultVolumeUpdateTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	defer cancel()
 
 	client := r.Meta.Client
 
