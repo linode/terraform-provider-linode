@@ -763,7 +763,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		// reboot won't be needed if we power off the Linode during update
 		rebootInstance = !powerOffRequired
 
-		tflog.Debug(ctx, "call update config API")
+		tflog.Debug(ctx, "call update config API", map[string]any{"interfaces": expandedInterfaces})
 		if _, err := client.UpdateInstanceConfig(
 			ctx, instance.ID, bootConfig, linodego.InstanceConfigUpdateOptions{
 				Interfaces: expandedInterfaces,
