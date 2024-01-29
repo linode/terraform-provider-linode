@@ -731,7 +731,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if powerOffRequired && meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
 			return diag.Errorf(
 				"add, remove, and reorder a Linode VPC interface requires implicit " +
-					"reboot of the Linode, please consider set 'skip_implicit_reboots' " +
+					"reboot of the Linode, please consider setting 'skip_implicit_reboots' " +
 					"to true in the Linode provider config.",
 			)
 		}
