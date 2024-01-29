@@ -47,7 +47,6 @@ func main() {
 		muxServer.ProviderServer,
 		serveOpts...,
 	)
-
 	if err != nil {
 		log.Fatal(err)
 	}
