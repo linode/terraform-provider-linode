@@ -216,7 +216,6 @@ func updateInstanceConfigs(
 				devices := tfcDevices[0].(map[string]interface{})
 
 				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
-
 				if err != nil {
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}

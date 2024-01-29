@@ -164,6 +164,44 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 	})
 }
 
+func TestAccResourceRDNS_waitForAvailableWithTimeout(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_rdns.foobar"
+	linodeLabel := acctest.RandomWithPrefix("tf_test")
+
+	createTimeout := "15m"
+	updateTimeout := "15m"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkRDNSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithTimeout(t, linodeLabel, testRegion, createTimeout, updateTimeout),
+				Check: resource.ComposeTestCheckFunc(
+					checkRDNSExists,
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`.nip.io$`)),
+				),
+			},
+			{
+				Config: tmpl.WithTimeoutUpdated(t, linodeLabel, testRegion, createTimeout, updateTimeout),
+				Check: resource.ComposeTestCheckFunc(
+					checkRDNSExists,
+					resource.TestMatchResourceAttr(resName, "rdns", regexp.MustCompile(`([0-9]{1,3}\-){3}[0-9]{1,3}.nip.io$`)),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_available"},
+			},
+		},
+	})
+}
+
 func checkRDNSExists(s *terraform.State) error {
 	client := acceptance.TestAccFrameworkProvider.Meta.Client
 
