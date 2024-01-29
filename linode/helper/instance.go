@@ -230,24 +230,20 @@ func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceCon
 
 	if purpose == linodego.InterfacePurposeVPC {
 		if ifaceMap["subnet_id"] != nil {
-			subnet_id := ifaceMap["subnet_id"].(int)
-			if subnet_id != 0 {
-				result.SubnetID = &subnet_id
+			if subnetId := ifaceMap["subnetId"].(int); subnetId != 0 {
+				result.SubnetID = &subnetId
 			}
 		}
 
 		if ifaceMap["ipv4"] != nil {
-			ipv4 := ifaceMap["ipv4"].([]any)
-			if len(ipv4) > 0 {
+			if ipv4 := ifaceMap["ipv4"].([]any); len(ipv4) > 0 {
 				result.IPv4 = ExpandInterfaceIPv4(ipv4[0])
 			}
 		}
 		if ifaceMap["ip_ranges"] != nil {
-			ranges := ifaceMap["ip_ranges"].([]interface{})
-
 			// this is for keep result.IPRanges as a nil value rather than a value of empty slice
 			// when there is not a range.
-			if len(ranges) > 0 {
+			if ranges := ifaceMap["ip_ranges"].([]interface{}); len(ranges) > 0 {
 				result.IPRanges = ExpandStringList(ranges)
 			}
 		}
