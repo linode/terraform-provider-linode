@@ -230,7 +230,7 @@ func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceCon
 
 	if purpose == linodego.InterfacePurposeVPC {
 		if ifaceMap["subnet_id"] != nil {
-			if subnetId := ifaceMap["subnetId"].(int); subnetId != 0 {
+			if subnetId := ifaceMap["subnet_id"].(int); subnetId != 0 {
 				result.SubnetID = &subnetId
 			}
 		}
