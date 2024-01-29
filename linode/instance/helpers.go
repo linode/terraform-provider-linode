@@ -243,7 +243,7 @@ func updateInstanceConfigs(
 				"body":      configUpdateOpts,
 				"config_id": existingConfig.ID,
 			})
-			tflog.Debug(ctx, "zhiwei debug", map[string]any{"value": configUpdateOpts.Interfaces})
+			tflog.Trace(ctx, "Config update options", map[string]any{"value": configUpdateOpts.Interfaces})
 			updatedConfig, err := client.UpdateInstanceConfig(ctx, instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
 				return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
