@@ -737,21 +737,22 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		if powerOffRequired {
+			tflog.Debug(ctx, "shutting down instance for applying VPC interface change")
+
+			if _, err := waitForRunningOrOfflineState(
+				ctx, instance.Status, &client, id,
+			); err != nil {
+				return diag.Errorf(
+					"failed waiting for instance %d to be in running or offline state: %s", id, err,
+				)
+			}
 			if instance.Status != linodego.InstanceOffline {
-				if err := client.ShutdownInstance(ctx, id); err != nil {
-					return diag.Errorf(
-						"failed to shutdown instance: %s", err,
-					)
+				if err := shutDownInstanceSync(
+					ctx, client, instance.ID, helper.GetDeadlineSeconds(ctx, d),
+				); err != nil {
+					return diag.Errorf("failed to shutdown instance: %s", err)
 				}
 			}
-
-			tflog.Debug(ctx, "waiting for Linode instance to be offline")
-			if _, err = client.WaitForInstanceStatus(
-				ctx, id, linodego.InstanceOffline, getDeadlineSeconds(ctx, d),
-			); err != nil {
-				return diag.Errorf("Timed-out waiting for Linode instance %d to shutdown: %s", id, err)
-			}
-
 		}
 
 		// we should power on Linode after updating of the interfaces if
@@ -777,18 +778,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("Error fetching data about the current linode: %s", err)
 		}
 		if shouldPowerOn {
-			tflog.Debug(ctx, "booting instance")
-			if err := client.BootInstance(ctx, id, bootConfig); err != nil {
-				return diag.Errorf(
-					"failed to boot instance after interfaces update: %s", err,
-				)
-			}
-
-			tflog.Debug(ctx, "waiting for Linode instance to be in running state")
-			if _, err = client.WaitForInstanceStatus(
-				ctx, instance.ID, linodego.InstanceRunning, getDeadlineSeconds(ctx, d),
+			tflog.Debug(ctx, "booting instance after VPC interface change applied")
+			if err := bootInstanceSync(
+				ctx, client, instance.ID, bootConfig, helper.GetDeadlineSeconds(ctx, d),
 			); err != nil {
-				return diag.Errorf("Timed-out waiting for Linode instance %d to boot: %s", instance.ID, err)
+				return diag.Errorf("failed to boot instance after VPC interface change applied: %s", err)
 			}
 		}
 
@@ -831,7 +825,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		})
 
 		err = client.RebootInstance(ctx, instance.ID, bootConfig)
-
 		if err != nil {
 			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}
