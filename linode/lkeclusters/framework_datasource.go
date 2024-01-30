@@ -3,6 +3,8 @@ package lkeclusters
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -26,6 +28,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_lke_clusters")
+
 	var data LKEClusterFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -57,6 +61,9 @@ func listLKEClusters(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
+	tflog.Trace(ctx, "client.ListLKEClusters(...)", map[string]any{
+		"filter": filter,
+	})
 	lkeClusters, err := client.ListLKEClusters(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

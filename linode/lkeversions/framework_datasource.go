@@ -65,6 +65,7 @@ func (d *DataSource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.ListLKEVersions(...)")
 	versions, err := client.ListLKEVersions(ctx, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
