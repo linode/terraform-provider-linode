@@ -30,6 +30,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_lke_cluster")
+
 	client := r.Meta.Client
 
 	var data LKEDataModel
@@ -45,8 +47,6 @@ func (r *DataSource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "cluster_id", clusterId)
-
-	tflog.Debug(ctx, "Read data.linode_lke_cluster")
 
 	tflog.Trace(ctx, "client.GetLKECluster(...)")
 
