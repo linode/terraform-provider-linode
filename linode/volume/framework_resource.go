@@ -127,7 +127,6 @@ func (r *Resource) CreateVolumeFromSource(
 	_, err = client.WaitForVolumeStatus(
 		ctx, clonedVolume.ID, linodego.VolumeActive, timeoutSeconds,
 	)
-
 	if err != nil {
 		diags.AddError(
 			"Failed to Wait for Volume Cloned to be Ready",

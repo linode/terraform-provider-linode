@@ -90,7 +90,12 @@ func (data *VolumeResourceModel) FlattenVolume(volume *linodego.Volume, preserve
 	data.Label = helper.KeepOrUpdateString(data.Label, volume.Label, preserveKnown)
 	data.Region = helper.KeepOrUpdateString(data.Region, volume.Region, preserveKnown)
 	data.Size = helper.KeepOrUpdateInt64(data.Size, int64(volume.Size), preserveKnown)
-	data.LinodeID = helper.KeepOrUpdateIntPointer(data.LinodeID, volume.LinodeID, preserveKnown)
+
+	// planned breaking change:
+	// 	data.LinodeID = helper.KeepOrUpdateIntPointer(data.LinodeID, volume.LinodeID, preserveKnown)
+	data.LinodeID = helper.KeepOrUpdateValue(
+		data.LinodeID, helper.IntPointerValueWithDefault(volume.LinodeID), preserveKnown,
+	)
 
 	data.FilesystemPath = helper.KeepOrUpdateString(data.FilesystemPath, volume.FilesystemPath, preserveKnown)
 
