@@ -30,7 +30,7 @@ func (r *DataSource) Read(
 ) {
 	client := r.Meta.Client
 
-	var data VolumeModel
+	var data VolumeDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if data.ID.IsNull() || data.ID.IsUnknown() {
