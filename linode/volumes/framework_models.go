@@ -15,7 +15,7 @@ type VolumeFilterModel struct {
 	Filters frameworkfilter.FiltersModelType `tfsdk:"filter"`
 	Order   types.String                     `tfsdk:"order"`
 	OrderBy types.String                     `tfsdk:"order_by"`
-	Volumes []volume.VolumeModel             `tfsdk:"volumes"`
+	Volumes []volume.VolumeDataSourceModel   `tfsdk:"volumes"`
 }
 
 func (data *VolumeFilterModel) parseVolumes(
@@ -23,9 +23,9 @@ func (data *VolumeFilterModel) parseVolumes(
 	client *linodego.Client,
 	volumes []linodego.Volume,
 ) diag.Diagnostics {
-	result := make([]volume.VolumeModel, len(volumes))
+	result := make([]volume.VolumeDataSourceModel, len(volumes))
 	for i := range volumes {
-		var mod volume.VolumeModel
+		var mod volume.VolumeDataSourceModel
 		diags := mod.ParseComputedAttributes(ctx, &volumes[i])
 		if diags.HasError() {
 			return diags

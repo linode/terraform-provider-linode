@@ -17,7 +17,7 @@ func TestVolumeModelParsing(t *testing.T) {
 	updatedTime := time.Date(2023, time.August, 18, 12, 0, 0, 0, time.UTC)
 	linodeId := 12346
 
-	data := &VolumeModel{}
+	data := &VolumeDataSourceModel{}
 	volumeData := &linodego.Volume{
 		ID:             12345,
 		Label:          "my-volume",
