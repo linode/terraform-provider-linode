@@ -2181,7 +2181,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 	})
 }
 
-func TestAccResourceInstance_VPCPublicInterfacesSwapping(t *testing.T) {
+func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -2193,6 +2193,17 @@ func TestAccResourceInstance_VPCPublicInterfacesSwapping(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
+			{
+				Config: tmpl.PublicInterface(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "public"),
+				),
+			},
 			{
 				Config: tmpl.PublicAndVPCInterfaces(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
@@ -2206,6 +2217,12 @@ func TestAccResourceInstance_VPCPublicInterfacesSwapping(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
+			},
+			{
 				Config: tmpl.VPCAndPublicInterfaces(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
@@ -2215,6 +2232,17 @@ func TestAccResourceInstance_VPCPublicInterfacesSwapping(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "config.0.interface.1.purpose", "public"),
+				),
+			},
+			{
+				Config: tmpl.PublicInterface(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "public"),
 				),
 			},
 			{
