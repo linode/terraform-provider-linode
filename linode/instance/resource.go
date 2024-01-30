@@ -714,9 +714,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			vpcInterfaceInvolved := newInterface.Purpose == linodego.InterfacePurposeVPC ||
 				(oldInterface != nil && oldInterface.Purpose == linodego.InterfacePurposeVPC)
 
-			interfacePurposeChanged := oldInterface == nil || oldInterface.Purpose != newInterface.Purpose
-
-			powerOffRequired = vpcInterfaceInvolved && interfacePurposeChanged
+			powerOffRequired = powerOffRequired || vpcInterfaceInvolved
 		}
 
 		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{
@@ -728,15 +726,15 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("Error fetching data about the current linode: %s", err)
 		}
 
-		if powerOffRequired && meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
-			return diag.Errorf(
-				"add, remove, and reorder a Linode VPC interface requires implicit " +
-					"reboot of the Linode, please consider setting 'skip_implicit_reboots' " +
-					"to true in the Linode provider config.",
-			)
-		}
-
 		if powerOffRequired {
+			if meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
+				return diag.Errorf(
+					"add, remove, and reorder a Linode VPC interface requires implicit " +
+						"reboot of the Linode, please consider setting 'skip_implicit_reboots' " +
+						"to true in the Linode provider config.",
+				)
+			}
+
 			tflog.Debug(ctx, "shutting down instance for applying VPC interface change")
 
 			if _, err := waitForRunningOrOfflineState(
