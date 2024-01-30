@@ -86,7 +86,6 @@ func rebootInstance(
 	}
 
 	err = client.RebootInstance(ctx, instance.ID, bootConfig)
-
 	if err != nil {
 		return fmt.Errorf("Error rebooting Instance [%d]: %s", instance.ID, err)
 	}

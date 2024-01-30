@@ -128,7 +128,6 @@ func init() {
 			return nil
 		},
 	)
-
 	if err != nil {
 		log.Fatalf("failed to load template files: %v", err)
 	}

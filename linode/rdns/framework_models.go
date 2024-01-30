@@ -1,6 +1,7 @@
 package rdns
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/customtypes"
@@ -11,6 +12,7 @@ type ResourceModel struct {
 	RDNS             types.String                  `tfsdk:"rdns"`
 	WaitForAvailable types.Bool                    `tfsdk:"wait_for_available"`
 	ID               types.String                  `tfsdk:"id"`
+	Timeouts         timeouts.Value                `tfsdk:"timeouts"`
 }
 
 func (rm *ResourceModel) parseConfiguredAttributes(ip *linodego.InstanceIP) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -28,6 +29,7 @@ type BaseResourceConfig struct {
 
 	// Optional
 	Schema        *schema.Schema
+	TimeoutOpts   *timeouts.Opts
 	IsEarlyAccess bool
 }
 
@@ -80,6 +82,13 @@ func (r *BaseResource) Schema(
 				"Please provide a Schema config attribute or implement, the Schema(...) function.",
 		)
 		return
+	}
+
+	if r.Config.TimeoutOpts != nil {
+		if r.Config.Schema.Blocks == nil {
+			r.Config.Schema.Blocks = make(map[string]schema.Block)
+		}
+		r.Config.Schema.Blocks["timeouts"] = timeouts.Block(ctx, *r.Config.TimeoutOpts)
 	}
 
 	resp.Schema = *r.Config.Schema

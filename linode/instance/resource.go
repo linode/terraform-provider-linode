@@ -749,7 +749,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		})
 
 		err = client.RebootInstance(ctx, instance.ID, bootConfig)
-
 		if err != nil {
 			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}
