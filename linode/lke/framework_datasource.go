@@ -3,6 +3,7 @@ package lke
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -29,7 +30,6 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-
 	client := r.Meta.Client
 
 	var data LKEDataModel
@@ -44,9 +44,11 @@ func (r *DataSource) Read(
 		return
 	}
 
-	tflog.Debug(ctx, "Read data.linode_lke_cluster", map[string]any{
-		"cluster_id": clusterId,
-	})
+	ctx = tflog.SetField(ctx, "cluster_id", clusterId)
+
+	tflog.Debug(ctx, "Read data.linode_lke_cluster")
+
+	tflog.Trace(ctx, "client.GetLKECluster(...)")
 
 	cluster, err := client.GetLKECluster(ctx, clusterId)
 	if err != nil {
@@ -57,6 +59,8 @@ func (r *DataSource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.ListLKENodePools(...)")
+
 	pools, err := client.ListLKENodePools(ctx, clusterId, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -65,6 +69,8 @@ func (r *DataSource) Read(
 		)
 		return
 	}
+
+	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
 
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, clusterId)
 	if err != nil {
@@ -75,6 +81,8 @@ func (r *DataSource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.ListLKEClusterAPIEndpoints(...)")
+
 	endpoints, err := client.ListLKEClusterAPIEndpoints(ctx, clusterId, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -83,6 +91,8 @@ func (r *DataSource) Read(
 		)
 		return
 	}
+
+	tflog.Trace(ctx, "client.GetLKEClusterDashboard(...)")
 
 	dashboard, err := client.GetLKEClusterDashboard(ctx, clusterId)
 	if err != nil {

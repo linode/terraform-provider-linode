@@ -54,6 +54,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to parse linode lke cluster pools: %d", id)
 	}
 
+	tflog.Trace(ctx, "client.GetLKECluster(...)")
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -64,16 +65,19 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get LKE cluster %d: %s", id, err)
 	}
 
+	tflog.Trace(ctx, "client.ListLKENodePools(...)")
 	pools, err := client.ListLKENodePools(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
 	}
 
+	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get kubeconfig for LKE cluster %d: %s", id, err)
 	}
 
+	tflog.Trace(ctx, "client.ListLKEClusterAPIEndpoints(...)")
 	endpoints, err := client.ListLKEClusterAPIEndpoints(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
@@ -81,6 +85,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane)
 
+	tflog.Trace(ctx, "client.GetLKEClusterDashboard(...)")
 	dashboard, err := client.GetLKEClusterDashboard(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
@@ -135,10 +140,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	tflog.Debug(ctx, "Creating LKE cluster", map[string]any{
-		"create_opts": createOpts,
+	tflog.Debug(ctx, "client.CreateLKECluster(...)", map[string]any{
+		"options": createOpts,
 	})
-
 	cluster, err := client.CreateLKECluster(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create LKE cluster: %s", err)
@@ -153,6 +157,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	// NOTE: This routine has a short retry period because we want to raise
 	// and meaningful errors quickly.
 	diag.FromErr(retry.RetryContext(ctx, time.Second*25, func() *retry.RetryError {
+		tflog.Trace(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
+			"condition": "ClusterHasReadyNode",
+		})
+
 		err := client.WaitForLKEClusterConditions(ctx, cluster.ID, linodego.LKEClusterPollOptions{
 			TimeoutSeconds: 15 * 60,
 		}, k8scondition.ClusterHasReadyNode)
@@ -202,14 +210,16 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.Tags = &tags
 	}
 	if d.HasChanges("label", "tags", "k8s_version", "control_plane") {
-		tflog.Debug(ctx, "Updating LKE cluster", map[string]any{
-			"update_opts": updateOpts,
+		tflog.Debug(ctx, "client.UpdateLKECluster(...)", map[string]any{
+			"options": updateOpts,
 		})
 
 		if _, err := client.UpdateLKECluster(ctx, id, updateOpts); err != nil {
 			return diag.Errorf("failed to update LKE Cluster %d: %s", id, err)
 		}
 	}
+
+	tflog.Trace(ctx, "client.ListLKENodePools(...)")
 
 	pools, err := client.ListLKENodePools(ctx, id, nil)
 	if err != nil {
@@ -234,9 +244,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	updatedIds := []int{}
 
 	for poolID, updateOpts := range updates.ToUpdate {
-		tflog.Debug(ctx, "Updating LKE cluster node pool", map[string]any{
+		tflog.Debug(ctx, "client.UpdateLKENodePool(...)", map[string]any{
 			"node_pool_id": poolID,
-			"update_opts":  updateOpts,
+			"options":      updateOpts,
 		})
 
 		if _, err := client.UpdateLKENodePool(ctx, id, poolID, updateOpts); err != nil {
@@ -247,10 +257,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	for _, createOpts := range updates.ToCreate {
-		tflog.Debug(ctx, "Creating LKE cluster node pool", map[string]any{
-			"update_opts": updateOpts,
+		tflog.Debug(ctx, "client.CreateLKENodePool(...)", map[string]any{
+			"options": updateOpts,
 		})
-
 		pool, err := client.CreateLKENodePool(ctx, id, createOpts)
 		if err != nil {
 			return diag.Errorf("failed to create LKE Cluster %d Pool: %s", id, err)
@@ -260,7 +269,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	for _, poolID := range updates.ToDelete {
-		tflog.Debug(ctx, "Deleting LKE cluster node pool", map[string]any{
+		tflog.Debug(ctx, "client.DeleteLKENodePool(...)", map[string]any{
 			"node_pool_id": poolID,
 		})
 
@@ -300,6 +309,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
 	}
 
+	tflog.Debug(ctx, "client.DeleteLKECluster(...)")
 	err = client.DeleteLKECluster(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to delete Linode LKE cluster %d: %s", id, err)
@@ -312,6 +322,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	tflog.Debug(ctx, "Deleted LKE cluster, waiting for all nodes deleted...")
+	tflog.Trace(ctx, "client.WaitForLKEClusterStatus(...)", map[string]any{
+		"status":  "not_ready",
+		"timeout": timeoutSeconds,
+	})
 
 	_, err = client.WaitForLKEClusterStatus(ctx, id, "not_ready", timeoutSeconds)
 	if err != nil {
