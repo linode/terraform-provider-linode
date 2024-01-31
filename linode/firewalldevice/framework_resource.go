@@ -35,6 +35,7 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 	tflog.Debug(ctx, "Create linode_firewall_device")
+
 	var plan FirewallDeviceModel
 	client := r.Meta.Client
 
@@ -60,6 +61,10 @@ func (r *Resource) Create(
 		Type: linodego.FirewallDeviceType(plan.EntityType.ValueString()),
 	}
 
+	tflog.Debug(ctx, "client.CreateFirewallDevice(...)", map[string]any{
+		"firewall_id": firewallID,
+		"options":     createOpts,
+	})
 	device, err := client.CreateFirewallDevice(ctx, firewallID, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -80,12 +85,18 @@ func (r *Resource) Read(
 	resp *resource.ReadResponse,
 ) {
 	tflog.Debug(ctx, "Read linode_firewall_device")
+
 	var state FirewallDeviceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"firewall_id": state.FirewallID.ValueInt64(),
+		"device_id":   state.ID.ValueInt64(),
+	})
 
 	client := r.Meta.Client
 
@@ -100,6 +111,8 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Trace(ctx, "client.GetFirewallDevice(...)")
 
 	device, err := client.GetFirewallDevice(ctx, firewallID, id)
 	if err != nil {
@@ -175,6 +188,11 @@ func (r *Resource) Delete(
 		return
 	}
 
+	tflog.Debug(ctx, "client.DeleteFirewallDevice(...)", map[string]any{
+		"firewall_id": firewallID,
+		"device_id":   id,
+	})
+
 	err := client.DeleteFirewallDevice(ctx, firewallID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -199,6 +217,8 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	tflog.Debug(ctx, "Import linode_firewall_device")
+
 	idParts := strings.Split(req.ID, ",")
 
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
