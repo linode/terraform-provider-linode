@@ -135,6 +135,8 @@ func ReconcileLKENodePoolSpecs(
 		}
 
 		updates.ToUpdate[request.PoolID] = linodego.LKENodePoolUpdateOptions{
+			// Count and Autoscaler will be implicitly excluded from the request
+			// body if 0 or nil.
 			Count:      request.Spec.Count,
 			Autoscaler: newAutoscaler,
 		}
@@ -160,8 +162,18 @@ func ReconcileLKENodePoolSpecs(
 			}
 		}
 
+		count := poolSpec.Count
+
+		// If the count is not explicitly defined,
+		// we should default it to the autoscaler minimum.
+		// NOTE: The autoscaler will always exist if this condition is true
+		// because of plan-time validation.
+		if count == 0 {
+			count = newAutoscaler.Min
+		}
+
 		updates.ToCreate = append(updates.ToCreate, linodego.LKENodePoolCreateOptions{
-			Count:      poolSpec.Count,
+			Count:      count,
 			Type:       poolSpec.Type,
 			Autoscaler: newAutoscaler,
 		})

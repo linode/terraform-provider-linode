@@ -2,6 +2,8 @@ package lke
 
 import (
 	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"log"
 	"strconv"
 	"time"
@@ -31,6 +33,9 @@ func Resource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: customdiff.All(
+			customDiffOptionalCount,
+		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(createLKETimeout),
 			Update: schema.DefaultTimeout(updateLKETimeout),
@@ -127,10 +132,27 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	for _, nodePool := range d.Get("pool").([]interface{}) {
 		poolSpec := nodePool.(map[string]interface{})
 
+		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(poolSpec)
+
+		// If the count is not explicitly defined,
+		// we should default it to the autoscaler minimum.
+		count := poolSpec["count"].(int)
+		if count == 0 {
+			// We have validation to prevent this, but just in-case!
+			if autoscaler == nil {
+				return diag.Errorf(
+					"Expected autoscaler for default node count, got nil. " +
+						"This is always a provider issue.",
+				)
+			}
+
+			count = autoscaler.Min
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
 			Type:       poolSpec["type"].(string),
-			Count:      poolSpec["count"].(int),
-			Autoscaler: expandLinodeLKEClusterAutoscalerFromPool(poolSpec),
+			Count:      count,
+			Autoscaler: autoscaler,
 		})
 	}
 
@@ -353,4 +375,36 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"cluster_id": d.Id(),
 	})
+}
+
+func customDiffOptionalCount(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	id := diff.Id()
+
+	declaredPools, ok := diff.Get("pool").([]any)
+	if !ok {
+		return fmt.Errorf("failed to parse linode lke node pools: %s", id)
+	}
+
+	for i := range declaredPools {
+		// If the user has defined a count, we don't need to do anything special here
+		if _, ok := diff.GetOk(fmt.Sprintf("pool.%d.count", i)); ok {
+			continue
+		}
+
+		// If the user hasn't defined a count but has defined an autoscaler,
+		// we can assume they're deferring the count to the autoscaler.
+		if _, ok := diff.GetOk(fmt.Sprintf("pool.%d.autoscaler", i)); ok {
+
+			// Just to double-check that a diff won't be triggered on
+			// count :)
+			diff.Clear(fmt.Sprintf("pool.%d.count", i))
+			continue
+		}
+
+		return fmt.Errorf(
+			"`count` is required when no autoscaler is defined for pool.%d",
+			i,
+		)
+	}
+	return nil
 }
