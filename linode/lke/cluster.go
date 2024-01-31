@@ -179,6 +179,7 @@ func ReconcileLKENodePoolSpecs(
 func waitForNodePoolReady(
 	ctx context.Context, client linodego.Client, pollMs, clusterID, poolID int,
 ) error {
+	ctx = tflog.SetField(ctx, "node_pool_id", poolID)
 	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
 
 	for {
@@ -187,6 +188,7 @@ func waitForNodePoolReady(
 			return fmt.Errorf("timed out waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
 
 		case <-eventTicker.C:
+			tflog.Trace(ctx, "client.GetLKENodePool(...)")
 			pool, err := client.GetLKENodePool(ctx, clusterID, poolID)
 			if err != nil {
 				return fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
@@ -254,6 +256,10 @@ func waitForNodesDeleted(
 	for {
 		select {
 		case <-ticker.C:
+			tflog.Trace(ctx, "client.ListEvents(...)", map[string]any{
+				"options": listOpts,
+			})
+
 			events, err := client.ListEvents(ctx, &listOpts)
 			if err != nil {
 				return fmt.Errorf("failed to list events: %w", err)
@@ -308,6 +314,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 	})
 
 	tflog.Info(ctx, "Recycling LKE cluster")
+	tflog.Trace(ctx, "client.RecycleLKEClusterNodes(...)")
 
 	if err := client.RecycleLKEClusterNodes(ctx, id); err != nil {
 		return fmt.Errorf("failed to recycle LKE Cluster (%d): %s", id, err)
