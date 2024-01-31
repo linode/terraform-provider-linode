@@ -3,6 +3,7 @@ package volume
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -38,25 +39,6 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
-}
-
-func WaitForVolumeActive(
-	ctx context.Context,
-	volumeID int,
-	client *linodego.Client,
-	timeoutSeconds int,
-	diags *diag.Diagnostics,
-) *linodego.Volume {
-	volume, err := client.WaitForVolumeStatus(
-		ctx, volumeID, linodego.VolumeActive, timeoutSeconds,
-	)
-	if err != nil {
-		diags.AddError(
-			"Failed to Wait for Volume be Active", err.Error(),
-		)
-	}
-
-	return volume
 }
 
 func cloneCheck(data *VolumeResourceModel, sourceVolume *linodego.Volume, diags *diag.Diagnostics) {
@@ -98,11 +80,16 @@ func cloneCheck(data *VolumeResourceModel, sourceVolume *linodego.Volume, diags 
 func (r *Resource) CreateVolumeFromSource(
 	ctx context.Context, data *VolumeResourceModel, diags *diag.Diagnostics, timeoutSeconds int,
 ) *linodego.Volume {
+	tflog.Debug(ctx, "Create volume from source")
+
 	client := r.Meta.Client
 	sourceVolumeID := helper.FrameworkSafeInt64ToInt(data.SourceVolumeID.ValueInt64(), diags)
 	if diags.HasError() {
 		return nil
 	}
+
+	ctx = tflog.SetField(ctx, "source_volume_id", sourceVolumeID)
+	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	sourceVolume, err := client.GetVolume(ctx, sourceVolumeID)
 	if err != nil {
@@ -115,6 +102,8 @@ func (r *Resource) CreateVolumeFromSource(
 		return nil
 	}
 
+	tflog.Trace(ctx, "client.CloneVolume(...)")
+
 	clonedVolume, err := client.CloneVolume(ctx, sourceVolumeID, data.Label.ValueString())
 	if err != nil {
 		diags.AddError(
@@ -123,6 +112,8 @@ func (r *Resource) CreateVolumeFromSource(
 		)
 		return clonedVolume
 	}
+
+	tflog.Trace(ctx, "client.WaitForVolumeStatus(...)")
 
 	_, err = client.WaitForVolumeStatus(
 		ctx, clonedVolume.ID, linodego.VolumeActive, timeoutSeconds,
@@ -142,6 +133,10 @@ func (r *Resource) CreateVolumeFromSource(
 		if diags.HasError() {
 			return clonedVolume
 		}
+
+		tflog.Debug(ctx, "Update cloned volume", map[string]interface{}{
+			"options": updateOpts,
+		})
 
 		updatedVolume, err := client.UpdateVolume(ctx, clonedVolume.ID, updateOpts)
 
@@ -179,6 +174,11 @@ func (r *Resource) CreateVolumeFromSource(
 		if diags.HasError() {
 			return clonedVolume
 		}
+
+		tflog.Debug(ctx, "client.AttachVolume(...)", map[string]interface{}{
+			"linode_id": linodeID,
+		})
+
 		attachedVolume, err := client.AttachVolume(
 			ctx, clonedVolume.ID, &linodego.VolumeAttachOptions{LinodeID: linodeID},
 		)
@@ -205,6 +205,8 @@ func (r *Resource) CreateVolumeFromSource(
 func (r *Resource) CreateVolume(
 	ctx context.Context, data *VolumeResourceModel, diags *diag.Diagnostics, timeoutSeconds int,
 ) *linodego.Volume {
+	tflog.Debug(ctx, "Create new volume")
+
 	client := r.Meta.Client
 
 	size := helper.FrameworkSafeInt64ToInt(data.Size.ValueInt64(), diags)
@@ -228,6 +230,10 @@ func (r *Resource) CreateVolume(
 		createOpts.LinodeID = linodeID
 	}
 
+	tflog.Debug(ctx, "client.CreateVolume(...)", map[string]interface{}{
+		"options": createOpts,
+	})
+
 	volume, err := client.CreateVolume(ctx, createOpts)
 	if err != nil {
 		diags.AddError("Failed to Create a Volume", err.Error())
@@ -235,7 +241,9 @@ func (r *Resource) CreateVolume(
 	}
 
 	if volume != nil {
-		volume, err = r.Meta.Client.WaitForVolumeStatus(
+		tflog.Trace(ctx, "client.WaitForVolumeStatus(...)")
+
+		volume, err = client.WaitForVolumeStatus(
 			ctx, volume.ID, linodego.VolumeActive, timeoutSeconds,
 		)
 		if err != nil {
@@ -250,6 +258,8 @@ func (r *Resource) CreateVolume(
 func (r *Resource) Create(
 	ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_volume")
+
 	var plan VolumeResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -290,6 +300,8 @@ func (r *Resource) Create(
 func (r *Resource) Read(
 	ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_volume")
+
 	var state VolumeResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -303,6 +315,10 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "volume_id", id)
+
+	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	volume, err := client.GetVolume(ctx, id)
 	if err != nil {
@@ -334,6 +350,12 @@ func HandleResize(
 	volumeID, newSize, timeoutSeconds int,
 	diags *diag.Diagnostics,
 ) *linodego.Volume {
+	tflog.Debug(ctx, "Resize volume", map[string]interface{}{
+		"volume_id": volumeID,
+		"new_size":  newSize,
+	})
+
+	tflog.Trace(ctx, "client.ResizeVolume(...)")
 	if err := client.ResizeVolume(ctx, volumeID, newSize); err != nil {
 		diags.AddError(
 			fmt.Sprintf("Failed to Resize Volume %d", volumeID),
@@ -341,6 +363,8 @@ func HandleResize(
 		)
 		return nil
 	}
+
+	tflog.Trace(ctx, "client.WaitForVolumeStatus(...)")
 	volume, err := client.WaitForVolumeStatus(ctx, volumeID, linodego.VolumeActive, timeoutSeconds)
 	if err != nil {
 		diags.AddError(
@@ -355,6 +379,8 @@ func HandleResize(
 func (r *Resource) Update(
 	ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_volume")
+
 	var plan, state VolumeResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -380,6 +406,8 @@ func (r *Resource) Update(
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "volume_id", id)
+
 	timeoutSeconds, err := helper.SafeFloat64ToInt(updateTimeout.Seconds())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -390,7 +418,6 @@ func (r *Resource) Update(
 	}
 
 	if !state.Size.Equal(plan.Size) {
-
 		volume := HandleResize(ctx, client, id, size, timeoutSeconds, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
@@ -422,6 +449,10 @@ func (r *Resource) Update(
 	}
 
 	if doUpdate {
+		tflog.Debug(ctx, "client.UpdateVolume(...)", map[string]interface{}{
+			"options": updateOpts,
+		})
+
 		volume, err := client.UpdateVolume(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -465,6 +496,11 @@ func (r *Resource) Update(
 				LinodeID: linodeID,
 				ConfigID: 0,
 			}
+
+			tflog.Debug(ctx, "client.AttachVolume(...)", map[string]interface{}{
+				"options": attachOptions,
+			})
+
 			_, err := client.AttachVolume(ctx, id, &attachOptions)
 			if err != nil {
 				resp.Diagnostics.AddError(
@@ -473,6 +509,8 @@ func (r *Resource) Update(
 				)
 				return
 			}
+
+			tflog.Trace(ctx, "client.WaitForVolumeLinodeID(...)")
 
 			volume, err := client.WaitForVolumeLinodeID(ctx, id, &linodeID, timeoutSeconds)
 			if err != nil {
@@ -500,6 +538,10 @@ func DetachVolumeAndWait(
 	id, timeoutSeconds int,
 	diags *diag.Diagnostics,
 ) *linodego.Volume {
+	tflog.Debug(ctx, "Detach volume and wait...")
+
+	tflog.Trace(ctx, "client.DetachVolume(...)")
+
 	if err := client.DetachVolume(ctx, id); err != nil {
 		diags.AddError(
 			fmt.Sprintf("Failed to Detach Volume %d", id),
@@ -507,6 +549,8 @@ func DetachVolumeAndWait(
 		)
 		return nil
 	}
+
+	tflog.Trace(ctx, "client.WaitForVolumeLinodeID(...)")
 
 	volume, err := client.WaitForVolumeLinodeID(ctx, id, nil, timeoutSeconds)
 	if err != nil {
@@ -522,6 +566,8 @@ func DetachVolumeAndWait(
 func (r *Resource) Delete(
 	ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_volume")
+
 	var state VolumeResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -545,6 +591,8 @@ func (r *Resource) Delete(
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "volume_id", id)
+
 	timeoutSeconds, err := helper.SafeFloat64ToInt(deleteTimeout.Seconds())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -560,6 +608,8 @@ func (r *Resource) Delete(
 			return
 		}
 	}
+
+	tflog.Trace(ctx, "client.DeleteVolume(...)")
 
 	err = client.DeleteVolume(ctx, id)
 	if err != nil {
