@@ -36,21 +36,15 @@ resource "linode_lke_cluster" "my-cluster" {
     tags        = ["prod"]
 
     pool {
+        # NOTE: If count is undefined, the initial node count will
+        # equal the minimum autoscaler node count.
         type  = "g6-standard-2"
-        count = 3
 
         autoscaler {
           min = 3
           max = 10
         }
     }
-
-  # Prevent the count field from overriding autoscaler-created nodes
-  lifecycle {
-    ignore_changes = [
-      pool.0.count
-    ]
-  }
 }
 ```
 
@@ -76,13 +70,11 @@ The following arguments are supported in the `pool` specification block:
 
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
-* `count` - (Required) The number of nodes in the Node Pool.
+* `count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
 ### autoscaler
-
-~> **NOTICE:** To prevent the `count` field from removing nodes created by the autoscaler, consider using the [ignore_changes](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) lifecycle argument.
 
 The following arguments are supported in the `autoscaler` specification block:
 
