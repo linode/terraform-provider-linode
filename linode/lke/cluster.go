@@ -379,11 +379,6 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 				continue
 			}
 
-			declaredCount := declaredPool["count"]
-			if declaredCount != 0 && pool.Count != declaredCount {
-				continue
-			}
-
 			result[i] = pool
 			delete(poolMap, key)
 			break
