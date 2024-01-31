@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"reflect"
 	"sort"
 	"time"
 
@@ -366,25 +367,70 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, declaredPools []interface{}) []linodego.LKENodePool {
 	result := make([]linodego.LKENodePool, len(declaredPools))
 
-	poolMap := make(map[int]linodego.LKENodePool, len(declaredPools))
+	poolMap := make(map[int]linodego.LKENodePool, len(pools))
 	for _, pool := range pools {
 		poolMap[pool.ID] = pool
 	}
 
+	// We split these up because we want to make sure
+	// pools with IDs stored in state are paired
+	// BEFORE pairing based on loose comparisons.
+	poolsWithIDs := make(map[int]map[string]any)
+	poolsWithoutIDs := make(map[int]map[string]any)
 	for i, declaredPool := range declaredPools {
-		declaredPool := declaredPool.(map[string]interface{})
+		declaredPool := declaredPool.(map[string]any)
 
-		for key, pool := range poolMap {
-			if pool.ID != declaredPool["id"] {
+		if declaredPool["id"] == nil || declaredPool["id"].(int) == 0 {
+			poolsWithoutIDs[i] = declaredPool
+		} else {
+			poolsWithIDs[i] = declaredPool
+		}
+	}
+
+	// First, let's match any pools in state with an ID
+	for i, declaredPool := range poolsWithIDs {
+		poolID, ok := declaredPool["id"].(int)
+		if !ok {
+			continue
+		}
+
+		pool, ok := poolMap[poolID]
+		if !ok {
+			continue
+		}
+
+		result[i] = pool
+		delete(poolMap, poolID)
+	}
+
+	// Second, let's match pools that have all matching attributes.
+	// This is necessary because declared pools will not be populated with
+	// an ID on first apply but still have matching node pools.
+	for i, declaredPool := range poolsWithoutIDs {
+		for _, pool := range poolMap {
+			declaredAutoscaler := expandLinodeLKEClusterAutoscalerFromPool(declaredPool)
+
+			if declaredPool["type"] != pool.Type {
+				continue
+			}
+
+			if declaredPool["count"] != 0 && declaredPool["count"] != pool.Count {
+				continue
+			}
+
+			if declaredAutoscaler != nil && !reflect.DeepEqual(
+				*declaredAutoscaler, pool.Autoscaler,
+			) {
 				continue
 			}
 
 			result[i] = pool
-			delete(poolMap, key)
+			delete(poolMap, pool.ID)
 			break
 		}
 	}
 
+	// Populate any additional pools
 	for _, pool := range poolMap {
 		//nolint:makezero
 		result = append(result, pool)
