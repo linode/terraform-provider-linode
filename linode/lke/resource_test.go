@@ -508,3 +508,57 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 		})
 	})
 }
+
+func TestAccResourceLKECluster_noCount(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.NoCount(t, clusterName, k8sVersionLatest, testRegion),
+				ExpectError: regexp.MustCompile("`count` is required when no autoscaler is defined for pool.*"),
+			},
+		},
+	})
+}
+
+func TestAccResourceLKECluster_implicitCount(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.AutoscalerNoCount(t, clusterName, k8sVersionLatest, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "2"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "4"),
+				),
+			},
+			{
+				Config: tmpl.AutoscalerNoCount(t, clusterName, k8sVersionLatest, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "2"),
+					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "4"),
+				),
+			},
+		},
+	})
+}
