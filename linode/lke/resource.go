@@ -105,7 +105,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
-	d.Set("pool", flattenLKENodePools(matchPoolsWithSchema(pools, declaredPools)))
+	d.Set("pool", flattenLKENodePools(matchPoolsWithSchema(ctx, pools, declaredPools)))
 	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})
 
 	return nil
