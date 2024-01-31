@@ -21,7 +21,7 @@ type FirewallRuleModel struct {
 	IPv6     []types.String `tfsdk:"ipv6"`
 }
 
-func (data *FirewallRuleModel) parseRule(rule linodego.FirewallRule) {
+func (data *FirewallRuleModel) ParseRule(rule linodego.FirewallRule) {
 	data.Label = types.StringValue(rule.Label)
 	data.Action = types.StringValue(rule.Action)
 	data.Protocol = types.StringValue(string(rule.Protocol))
@@ -100,14 +100,14 @@ func (data *FirewallModel) parseFirewall(
 	data.Inbound = make([]FirewallRuleModel, len(rules.Inbound))
 	for i, v := range rules.Inbound {
 		var rule FirewallRuleModel
-		rule.parseRule(v)
+		rule.ParseRule(v)
 		data.Inbound[i] = rule
 	}
 
 	data.Outbound = make([]FirewallRuleModel, len(rules.Outbound))
 	for i, v := range rules.Outbound {
 		var rule FirewallRuleModel
-		rule.parseRule(v)
+		rule.ParseRule(v)
 		data.Outbound[i] = rule
 	}
 
