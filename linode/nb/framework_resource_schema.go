@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -19,6 +21,21 @@ const (
 	NBLabelRegex        = "^[a-zA-Z0-9_-]*$"
 	NBLabelErrorMessage = "Labels may only contain letters, number, dashes, and underscores."
 )
+
+var firewallObjType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":              types.Int64Type,
+		"label":           types.StringType,
+		"tags":            types.SetType{ElemType: types.StringType},
+		"inbound_policy":  types.StringType,
+		"outbound_policy": types.StringType,
+		"status":          types.StringType,
+		"created":         types.StringType,
+		"updated":         types.StringType,
+		"inbound":         types.ListType{ElemType: firewall.RuleObjectType},
+		"outbound":        types.ListType{ElemType: firewall.RuleObjectType},
+	},
+}
 
 var frameworkResourceSchema = schema.Schema{
 	Version: 1,
@@ -99,6 +116,11 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Information about the amount of transfer this NodeBalancer has had so far this month.",
 			Computed:    true,
 			ElementType: TransferObjectType,
+		},
+		"firewalls": schema.ListAttribute{
+			Description: "A list of Firewalls assigned to this NodeBalancer.",
+			Computed:    true,
+			ElementType: firewallObjType,
 		},
 	},
 }
