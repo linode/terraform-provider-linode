@@ -3,10 +3,11 @@ package lke
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -394,10 +395,6 @@ func customDiffOptionalCount(ctx context.Context, diff *schema.ResourceDiff, met
 		// If the user hasn't defined a count but has defined an autoscaler,
 		// we can assume they're deferring the count to the autoscaler.
 		if _, ok := diff.GetOk(fmt.Sprintf("pool.%d.autoscaler", i)); ok {
-
-			// Just to double-check that a diff won't be triggered on
-			// count :)
-			diff.Clear(fmt.Sprintf("pool.%d.count", i))
 			continue
 		}
 

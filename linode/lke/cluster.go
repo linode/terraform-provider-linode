@@ -363,7 +363,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
-func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interface{}) []linodego.LKEClusterPool {
+func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interface{}) []linodego.LKENodePool {
 	result := make([]linodego.LKENodePool, len(declaredPools))
 
 	poolMap := make(map[int]linodego.LKENodePool, len(declaredPools))
@@ -375,7 +375,12 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 		declaredPool := declaredPool.(map[string]interface{})
 
 		for key, pool := range poolMap {
-			if pool.Count != declaredPool["count"] || pool.Type != declaredPool["type"] {
+			if pool.Type != declaredPool["type"] {
+				continue
+			}
+
+			declaredCount := declaredPool["count"]
+			if declaredCount != 0 && pool.Count != declaredCount {
 				continue
 			}
 

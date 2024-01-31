@@ -65,6 +65,7 @@ var resourceSchema = map[string]*schema.Schema{
 					ValidateFunc: validation.IntAtLeast(1),
 					Description:  "The number of nodes in the Node Pool.",
 					Optional:     true,
+					Computed:     true,
 				},
 				"type": {
 					Type:        schema.TypeString,
