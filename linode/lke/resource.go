@@ -384,6 +384,8 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	})
 }
 
+// This validation logic is implemented as a custom diff because
+// ValidateDiagFuncs are not currently supported directly on lists.
 func customDiffOptionalCount(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 	id := diff.Id()
 
