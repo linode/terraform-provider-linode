@@ -1,0 +1,9 @@
+{{ define "nodebalancer_data_firewalls" }}
+
+{{ template "nodebalancer_firewall" . }}
+
+data "linode_nodebalancer" "foobar" {
+    id = "${linode_nodebalancer.foobar.id}"
+}
+
+{{ end }}

@@ -62,7 +62,7 @@ func TestParseComputedAttrs(t *testing.T) {
 
 	nodeBalancerModel := &NodeBalancerModel{}
 
-	diags := nodeBalancerModel.ParseComputedAttrs(context.Background(), nodeBalancer)
+	diags := nodeBalancerModel.ParseComputedAttrs(context.Background(), nodeBalancer, nil)
 
 	assert.False(t, diags.HasError())
 
