@@ -286,77 +286,88 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
-func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, declaredPools []interface{}) []linodego.LKENodePool {
+func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interface{}) ([]linodego.LKENodePool, error) {
 	result := make([]linodego.LKENodePool, len(declaredPools))
 
-	poolMap := make(map[int]linodego.LKENodePool, len(pools))
+	// Contains all unpaired pools returned by the API
+	apiPools := make(map[int]linodego.LKENodePool, len(pools))
 	for _, pool := range pools {
-		poolMap[pool.ID] = pool
+		apiPools[pool.ID] = pool
 	}
 
-	declaredPoolMap := make(map[int]map[string]any)
-	for i, pool := range declaredPools {
-		declaredPoolMap[i] = pool.(map[string]any)
-	}
+	// Tracks which local pools have been processed
+	pairedDeclaredPools := make(map[int]bool)
 
-	// First, let's match any pools in state with an ID
-	// TODO: Fix use of undefined behavior
-	for i, declaredPool := range declaredPoolMap {
+	// First let's match any pools in state with an ID
+	for i, declaredPool := range declaredPools {
+		declaredPool := declaredPool.(map[string]any)
+
 		poolID, ok := declaredPool["id"].(int)
 		if !ok {
-			continue
+			return nil, fmt.Errorf("declared pool ID was not of type int")
 		}
 
-		pool, ok := poolMap[poolID]
+		apiPool, ok := apiPools[poolID]
 		if !ok {
 			continue
 		}
 
-		result[i] = pool
-		delete(poolMap, poolID)
-		delete(declaredPoolMap, i)
+		// Pair the found pool with the declared pool
+		result[i] = apiPool
+		delete(apiPools, poolID)
+		pairedDeclaredPools[i] = true
 	}
 
 	// Second, let's match pools that have all matching attributes.
 	// This is necessary because declared pools will not be populated with
 	// an ID on first apply but still have matching node pools.
-	for i, declaredPool := range declaredPoolMap {
-		for _, pool := range poolMap {
+	for i, declaredPool := range declaredPools {
+		declaredPool := declaredPool.(map[string]any)
+
+		if _, ok := pairedDeclaredPools[i]; ok {
+			// This apiPool has already been handled in the previous step,
+			// we can skip it
+			continue
+		}
+
+		for _, apiPool := range apiPools {
+			if declaredPool["type"] != apiPool.Type {
+				continue
+			}
+
+			if declaredPool["count"] != 0 && declaredPool["count"] != apiPool.Count {
+				continue
+			}
+
 			declaredAutoscaler := expandLinodeLKEClusterAutoscalerFromPool(declaredPool)
 
-			if declaredPool["type"] != pool.Type {
+			if declaredAutoscaler == nil {
+				declaredAutoscaler = &linodego.LKENodePoolAutoscaler{
+					Enabled: false,
+					Min:     0,
+					Max:     0,
+				}
+			}
+
+			if !reflect.DeepEqual(*declaredAutoscaler, apiPool.Autoscaler) {
 				continue
 			}
 
-			if declaredPool["count"] != 0 && declaredPool["count"] != pool.Count {
-				continue
-			}
-
-			// TODO: Make this less bad
-			autoScalerEnabled := declaredAutoscaler != nil && declaredAutoscaler.Enabled
-			if autoScalerEnabled != pool.Autoscaler.Enabled {
-				continue
-			}
-
-			if declaredAutoscaler != nil && !reflect.DeepEqual(
-				*declaredAutoscaler, pool.Autoscaler,
-			) {
-				continue
-			}
-
-			result[i] = pool
-			delete(poolMap, pool.ID)
+			// Pair the API pool with the declared pool
+			result[i] = apiPool
+			delete(apiPools, apiPool.ID)
 			break
 		}
 	}
 
-	// Populate any additional pools
-	for _, pool := range poolMap {
+	// Append any unresolved pools to the end
+	// These are typically pools planned to be deleted
+	for _, pool := range apiPools {
 		//nolint:makezero
 		result = append(result, pool)
 	}
 
-	return result
+	return result, nil
 }
 
 func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *linodego.LKENodePoolAutoscaler {

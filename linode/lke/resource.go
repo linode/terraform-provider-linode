@@ -105,7 +105,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 
-	p := flattenLKENodePools(matchPoolsWithSchema(ctx, pools, declaredPools))
+	matchedPools, err := matchPoolsWithSchema(pools, declaredPools)
+	if err != nil {
+		return diag.Errorf("failed to match api pools with schema: %s", err)
+	}
+
+	p := flattenLKENodePools(matchedPools)
 
 	d.Set("pool", p)
 	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})
