@@ -521,7 +521,7 @@ func TestAccResourceLKECluster_noCount(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.NoCount(t, clusterName, k8sVersionLatest, testRegion),
-				ExpectError: regexp.MustCompile("`count` is required when no autoscaler is defined for pool.*"),
+				ExpectError: regexp.MustCompile("pool.*: `count` must be defined when no autoscaler is defined"),
 			},
 		},
 	})

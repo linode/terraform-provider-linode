@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -34,7 +35,7 @@ func Resource() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		CustomizeDiff: customdiff.All(
-			customDiffOptionalCount,
+			customDiffValidateOptionalCount,
 		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(createLKETimeout),
@@ -393,32 +394,50 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	})
 }
 
+// customDiffValidateOptionalCount ensures an autoscaler must be
+// defined is count is undefined.
+//
 // This validation logic is implemented as a custom diff because
 // ValidateDiagFuncs are not currently supported directly on lists.
-func customDiffOptionalCount(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-	id := diff.Id()
+//
+// Additionally, this validation is implemented using cty so we
+// can ensure we're only validating on the user's config rather
+// than state. This will prevent any possible false-negatives
+// during updates.
+func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	invalidPools := make([]string, 0)
 
-	declaredPools, ok := diff.Get("pool").([]any)
-	if !ok {
-		return fmt.Errorf("failed to parse linode lke node pools: %s", id)
-	}
+	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
 
-	for i := range declaredPools {
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+
 		// If the user has defined a count, we don't need to do anything special here
-		if _, ok := diff.GetOk(fmt.Sprintf("pool.%d.count", i)); ok {
+		if !rawPool.GetAttr("count").IsNull() {
 			continue
 		}
 
 		// If the user hasn't defined a count but has defined an autoscaler,
 		// we can assume they're deferring the count to the autoscaler.
-		if _, ok := diff.GetOk(fmt.Sprintf("pool.%d.autoscaler", i)); ok {
+		autoscaler := rawPool.GetAttr("autoscaler")
+
+		if !autoscaler.IsNull() && autoscaler.LengthInt() > 0 {
 			continue
 		}
 
+		// We need to use AsBigFloat to extract a number
+		// value from a cty.Value
+		index, _ := rawKey.AsBigFloat().Int64()
+
+		invalidPools = append(invalidPools, fmt.Sprintf("pool.%d", index))
+	}
+
+	if len(invalidPools) > 0 {
 		return fmt.Errorf(
-			"`count` is required when no autoscaler is defined for pool.%d",
-			i,
+			"%s: `count` must be defined when no autoscaler is defined",
+			strings.Join(invalidPools, ", "),
 		)
 	}
+
 	return nil
 }

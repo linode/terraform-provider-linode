@@ -363,7 +363,7 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 				continue
 			}
 
-			// Only compare autoscalers if the declared autoscaler exists
+			// Only compare autoscalers if the declared autoscaler is enabled
 			if declaredAutoscaler != nil && !reflect.DeepEqual(
 				*declaredAutoscaler, apiPool.Autoscaler,
 			) {
