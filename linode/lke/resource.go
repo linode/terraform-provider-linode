@@ -266,11 +266,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	oldPools, newPools := d.GetChange("pool")
 
-	updates := ReconcileLKENodePoolSpecs(
+	updates, err := ReconcileLKENodePoolSpecs(
 		ctx,
 		expandLinodeLKENodePoolSpecs(oldPools.([]any), false),
 		expandLinodeLKENodePoolSpecs(newPools.([]any), true),
 	)
+	if err != nil {
+		return diag.Errorf("Failed to reconcile LKE cluster node pools: %s", err)
+	}
 
 	tflog.Trace(ctx, "Reconciled LKE cluster node pool updates", map[string]any{
 		"updates": updates,

@@ -28,16 +28,48 @@ type NodePoolUpdates struct {
 
 func ReconcileLKENodePoolSpecs(
 	ctx context.Context, oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec,
-) (updates NodePoolUpdates) {
-	updates.ToCreate = make([]linodego.LKENodePoolCreateOptions, 0)
-	updates.ToDelete = make([]int, 0)
-	updates.ToUpdate = make(map[int]linodego.LKENodePoolUpdateOptions)
+) (NodePoolUpdates, error) {
+	result := NodePoolUpdates{
+		ToCreate: make([]linodego.LKENodePoolCreateOptions, 0),
+		ToUpdate: make(map[int]linodego.LKENodePoolUpdateOptions),
+		ToDelete: make([]int, 0),
+	}
+
+	createPool := func(spec NodePoolSpec) error {
+		createOpts := linodego.LKENodePoolCreateOptions{
+			Count: spec.Count,
+			Type:  spec.Type,
+		}
+
+		if createOpts.Count == 0 {
+			if !spec.AutoScalerEnabled {
+				return fmt.Errorf("count was 0 without an autoscaler. This is always a provider issue")
+			}
+			createOpts.Count = spec.AutoScalerMin
+		}
+
+		if spec.AutoScalerEnabled {
+			createOpts.Autoscaler = &linodego.LKENodePoolAutoscaler{
+				Enabled: true,
+				Min:     spec.AutoScalerMin,
+				Max:     spec.AutoScalerMax,
+			}
+		}
+
+		result.ToCreate = append(result.ToCreate, createOpts)
+
+		return nil
+	}
+
+	deletePool := func(id int) {
+		result.ToDelete = append(result.ToDelete, id)
+	}
 
 	// If there are fewer node pools than expected
 	// we can assume the rest have been deleted
 	if len(newSpecs) < len(oldSpecs) {
 		for _, v := range oldSpecs[len(newSpecs):] {
-			updates.ToDelete = append(updates.ToDelete, v.ID)
+			deletePool(v.ID)
 		}
 	}
 
@@ -45,20 +77,9 @@ func ReconcileLKENodePoolSpecs(
 	// we can assume new ones have been created
 	if len(newSpecs) > len(oldSpecs) {
 		for _, v := range newSpecs[len(oldSpecs):] {
-			createOpts := linodego.LKENodePoolCreateOptions{
-				Count: v.Count,
-				Type:  v.Type,
+			if err := createPool(v); err != nil {
+				return result, err
 			}
-
-			if v.AutoScalerEnabled {
-				createOpts.Autoscaler = &linodego.LKENodePoolAutoscaler{
-					Enabled: true,
-					Min:     v.AutoScalerMin,
-					Max:     v.AutoScalerMax,
-				}
-			}
-
-			updates.ToCreate = append(updates.ToCreate, createOpts)
 		}
 	}
 
@@ -77,21 +98,11 @@ func ReconcileLKENodePoolSpecs(
 		// Types cannot be updated on node pools
 		// so we should delete the old one and create a new one
 		if newSpec.Type != oldSpec.Type {
-			createOpts := linodego.LKENodePoolCreateOptions{
-				Count: newSpec.Count,
-				Type:  newSpec.Type,
+			if err := createPool(newSpec); err != nil {
+				return result, err
 			}
 
-			if newSpec.AutoScalerEnabled {
-				createOpts.Autoscaler = &linodego.LKENodePoolAutoscaler{
-					Enabled: true,
-					Min:     newSpec.AutoScalerMin,
-					Max:     newSpec.AutoScalerMax,
-				}
-			}
-
-			updates.ToDelete = append(updates.ToDelete, oldSpec.ID)
-			updates.ToCreate = append(updates.ToCreate, createOpts)
+			deletePool(oldSpec.ID)
 			continue
 		}
 
@@ -105,10 +116,10 @@ func ReconcileLKENodePoolSpecs(
 			Max:     newSpec.AutoScalerMax,
 		}
 
-		updates.ToUpdate[oldSpec.ID] = updateOpts
+		result.ToUpdate[oldSpec.ID] = updateOpts
 	}
 
-	return
+	return result, nil
 }
 
 func waitForNodePoolReady(
@@ -323,6 +334,7 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 	// an ID on first apply but still have matching node pools.
 	for i, declaredPool := range declaredPools {
 		declaredPool := declaredPool.(map[string]any)
+		declaredAutoscaler := expandLinodeLKEClusterAutoscalerFromPool(declaredPool)
 
 		if _, ok := pairedDeclaredPools[i]; ok {
 			// This apiPool has already been handled in the previous step,
@@ -335,21 +347,26 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 				continue
 			}
 
-			if declaredPool["count"] != 0 && declaredPool["count"] != apiPool.Count {
+			declaredCount := declaredPool["count"].(int)
+			if declaredCount == 0 {
+				if declaredAutoscaler == nil {
+					return nil, fmt.Errorf("autoscaler is null when count is 0. This is always a provider issue")
+				}
+				declaredCount = declaredAutoscaler.Min
+			}
+
+			if declaredCount != apiPool.Count {
 				continue
 			}
 
-			declaredAutoscaler := expandLinodeLKEClusterAutoscalerFromPool(declaredPool)
-
-			if declaredAutoscaler == nil {
-				declaredAutoscaler = &linodego.LKENodePoolAutoscaler{
-					Enabled: false,
-					Min:     0,
-					Max:     0,
-				}
+			if (declaredAutoscaler != nil && declaredAutoscaler.Enabled) != apiPool.Autoscaler.Enabled {
+				continue
 			}
 
-			if !reflect.DeepEqual(*declaredAutoscaler, apiPool.Autoscaler) {
+			// Only compare autoscalers if the declared autoscaler exists
+			if declaredAutoscaler != nil && !reflect.DeepEqual(
+				*declaredAutoscaler, apiPool.Autoscaler,
+			) {
 				continue
 			}
 
