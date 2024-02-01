@@ -107,10 +107,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	p := flattenLKENodePools(matchPoolsWithSchema(ctx, pools, declaredPools))
 
-	tflog.Info(ctx, "SAVEFIELD", map[string]any{
-		"sdf": p,
-	})
-
 	d.Set("pool", p)
 	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})
 
@@ -263,8 +259,13 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	poolSpecs := expandLinodeLKENodePoolSpecs(d.Get("pool").([]interface{}))
-	updates := ReconcileLKENodePoolSpecs(poolSpecs, pools)
+	oldPools, newPools := d.GetChange("pool")
+
+	updates := ReconcileLKENodePoolSpecs(
+		ctx,
+		expandLinodeLKENodePoolSpecs(oldPools.([]any), false),
+		expandLinodeLKENodePoolSpecs(newPools.([]any), true),
+	)
 
 	tflog.Trace(ctx, "Reconciled LKE cluster node pool updates", map[string]any{
 		"updates": updates,
@@ -325,7 +326,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	return nil
+	return readResource(ctx, d, meta)
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
