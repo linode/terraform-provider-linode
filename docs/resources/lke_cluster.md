@@ -66,6 +66,10 @@ The following arguments are supported:
 
 ### pool
 
+~> **Notice** Due to limitations in Terraform, the order of pools in the `linode_lke_cluster` resource is treated as significant.
+For example, the removal of the first listed pool in a cluster may result in all other node pools
+being updated accordingly.
+
 The following arguments are supported in the `pool` specification block:
 
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
