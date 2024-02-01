@@ -27,7 +27,7 @@ type NodePoolUpdates struct {
 }
 
 func ReconcileLKENodePoolSpecs(
-	ctx context.Context, oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec,
+	oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec,
 ) (NodePoolUpdates, error) {
 	result := NodePoolUpdates{
 		ToCreate: make([]linodego.LKENodePoolCreateOptions, 0),
@@ -110,10 +110,16 @@ func ReconcileLKENodePoolSpecs(
 			Count: newSpec.Count,
 		}
 
-		updateOpts.Autoscaler = &linodego.LKENodePoolAutoscaler{
-			Enabled: newSpec.AutoScalerEnabled,
-			Min:     newSpec.AutoScalerMin,
-			Max:     newSpec.AutoScalerMax,
+		// Only include the autoscaler if the autoscaler has updated
+		// This isn't stricly necessary but it makes unit testing easier
+		if newSpec.AutoScalerEnabled != oldSpec.AutoScalerEnabled ||
+			newSpec.AutoScalerMin != oldSpec.AutoScalerMin ||
+			newSpec.AutoScalerMax != oldSpec.AutoScalerMax {
+			updateOpts.Autoscaler = &linodego.LKENodePoolAutoscaler{
+				Enabled: newSpec.AutoScalerEnabled,
+				Min:     newSpec.AutoScalerMin,
+				Max:     newSpec.AutoScalerMax,
+			}
 		}
 
 		result.ToUpdate[oldSpec.ID] = updateOpts

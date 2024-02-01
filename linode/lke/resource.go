@@ -268,7 +268,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	oldPools, newPools := d.GetChange("pool")
 
 	updates, err := ReconcileLKENodePoolSpecs(
-		ctx,
 		expandLinodeLKENodePoolSpecs(oldPools.([]any), false),
 		expandLinodeLKENodePoolSpecs(newPools.([]any), true),
 	)
