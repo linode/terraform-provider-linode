@@ -11,6 +11,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -38,8 +40,12 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_image")
+
 	client := meta.(*helper.ProviderMeta).Client
 
+	tflog.Trace(ctx, "client.GetImage(...)")
 	image, err := client.GetImage(ctx, d.Id())
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -86,6 +92,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func createResourceFromLinode(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_image")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	linodeID := d.Get("linode_id").(int)
@@ -115,12 +124,21 @@ func createResourceFromLinode(
 		CloudInit:   d.Get("cloud_init").(bool),
 	}
 
+	tflog.Trace(ctx, "client.CreateImage(...)", map[string]any{
+		"options": createOpts,
+	})
+
 	image, err := client.CreateImage(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("Error creating a Linode Image: %s", err)
 	}
 
 	d.SetId(image.ID)
+
+	ctx = tflog.SetField(ctx, "image_id", image.ID)
+	tflog.Debug(ctx, "Waiting for a single image to be ready")
+
+	tflog.Trace(ctx, "client.WaitForInstanceDiskStatus(...)")
 
 	if _, err := client.WaitForInstanceDiskStatus(
 		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
@@ -135,6 +153,9 @@ func createResourceFromLinode(
 func createResourceFromUpload(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_image_from_upload")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	region := d.Get("region").(string)
@@ -160,6 +181,10 @@ func createResourceFromUpload(
 		CloudInit:   cloudInit,
 	}
 
+	tflog.Trace(ctx, "client.CreateImageUpload(...)", map[string]any{
+		"options": createOpts,
+	})
+
 	image, uploadURL, err := client.CreateImageUpload(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create image upload %s: %v", label, err)
@@ -177,6 +202,12 @@ func createResourceFromUpload(
 			err,
 		)
 	}
+
+	ctx = tflog.SetField(ctx, "image_id", image.ID)
+	tflog.Debug(ctx, "Waiting for a single image to be ready")
+
+	tflog.Trace(ctx, "client.WaitForImageStatus(...)")
+
 	image, err = client.WaitForImageStatus(
 		ctx,
 		image.ID,
@@ -193,6 +224,9 @@ func createResourceFromUpload(
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_image")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	image, err := client.GetImage(ctx, d.Id())
@@ -212,6 +246,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChanges("label", "description") {
+		tflog.Debug(ctx, "client.UpdateImage(...)", map[string]any{
+			"options": updateOpts,
+		})
+
 		image, err = client.UpdateImage(ctx, d.Id(), updateOpts)
 		if err != nil {
 			return diag.Errorf("failed to update image: %v", err)
@@ -225,7 +263,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_image")
+
 	client := meta.(*helper.ProviderMeta).Client
+
+	tflog.Trace(ctx, "client.DeleteImage(...)")
 
 	err := client.DeleteImage(ctx, d.Id())
 	if err != nil {
@@ -270,4 +313,10 @@ func uploadImageAndStoreHash(
 	d.Set("file_hash", hex.EncodeToString(hash.Sum(nil)))
 
 	return nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"image_id": d.Id(),
+	})
 }
