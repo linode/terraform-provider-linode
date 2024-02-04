@@ -2,6 +2,7 @@ package images
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/linodego"
@@ -28,6 +29,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_images")
+
 	var data ImageFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -67,6 +70,10 @@ func listImages(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
+	tflog.Trace(ctx, "client.ListImages", map[string]any{
+		"filter": filter,
+	})
+
 	images, err := client.ListImages(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
