@@ -694,28 +694,13 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if d.HasChange("interface") {
 		interfaces := d.Get("interface").([]interface{})
 
-		powerOffRequired := false
-
-		expandedInterfaces := make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
+		expandedInterfaces := helper.ExpandConfigInterfaces(ctx, interfaces)
 		config, err := client.GetInstanceConfig(ctx, id, bootConfig)
 		if err != nil {
-			return diag.Errorf("failed to get the boot config: %s", err)
+			return diag.Errorf("failed to get config %d: %s", bootConfig, err)
 		}
 
-		for i, ni := range interfaces {
-			expandedInterfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
-
-			newInterface := expandedInterfaces[i]
-			var oldInterface *linodego.InstanceConfigInterface
-			if len(config.Interfaces) > i {
-				oldInterface = &config.Interfaces[i]
-			}
-
-			vpcInterfaceInvolved := newInterface.Purpose == linodego.InterfacePurposeVPC ||
-				(oldInterface != nil && oldInterface.Purpose == linodego.InterfacePurposeVPC)
-
-			powerOffRequired = powerOffRequired || vpcInterfaceInvolved
-		}
+		powerOffRequired := VPCInterfaceIncluded(config.Interfaces, expandedInterfaces)
 
 		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{
 			"config_id": bootConfig,
@@ -726,38 +711,19 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("Error fetching data about the current linode: %s", err)
 		}
 
-		if powerOffRequired {
-			if meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
-				return diag.Errorf(
-					"add, remove, and reorder a Linode VPC interface requires implicit " +
-						"reboot of the Linode, please consider setting 'skip_implicit_reboots' " +
-						"to true in the Linode provider config.",
-				)
-			}
-
-			tflog.Debug(ctx, "shutting down instance for applying VPC interface change")
-
-			if _, err := waitForRunningOrOfflineState(
-				ctx, instance.Status, &client, id,
-			); err != nil {
-				return diag.Errorf(
-					"failed waiting for instance %d to be in running or offline state: %s", id, err,
-				)
-			}
-			if instance.Status != linodego.InstanceOffline {
-				if err := shutDownInstanceSync(
-					ctx, client, instance.ID, helper.GetDeadlineSeconds(ctx, d),
-				); err != nil {
-					return diag.Errorf("failed to shutdown instance: %s", err)
-				}
-			}
-		}
-
 		// we should power on Linode after updating of the interfaces if
 		// it's currently on and booted attribute is unset by the user.
 		// Otherwise, it will stay off (if it's already off) or be handled by
 		// `handleBootedUpdate` (if booted is set to an explicit value)
 		shouldPowerOn := bootedNull && powerOffRequired && instance.Status == linodego.InstanceRunning
+
+		if powerOffRequired {
+			if diag := ShutdownInstanceForVPCInterfaceUpdate(
+				ctx, meta.(*helper.ProviderMeta), id, helper.GetDeadlineSeconds(ctx, d),
+			); diag != nil {
+				return diag
+			}
+		}
 
 		// reboot won't be needed if we power off the Linode during update
 		rebootInstance = !powerOffRequired
@@ -771,16 +737,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to set boot config interfaces: %s", err)
 		}
 
-		instance, err = client.GetInstance(ctx, id)
-		if err != nil {
-			return diag.Errorf("Error fetching data about the current linode: %s", err)
-		}
 		if shouldPowerOn {
-			tflog.Debug(ctx, "booting instance after VPC interface change applied")
-			if err := bootInstanceSync(
-				ctx, client, instance.ID, bootConfig, helper.GetDeadlineSeconds(ctx, d),
-			); err != nil {
-				return diag.Errorf("failed to boot instance after VPC interface change applied: %s", err)
+			if diag := BootInstanceAfterVPCInterfaceUpdate(
+				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d),
+			); diag != nil {
+				return diag
 			}
 		}
 
