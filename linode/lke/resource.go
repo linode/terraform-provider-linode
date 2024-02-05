@@ -2,12 +2,15 @@ package lke
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -31,6 +34,9 @@ func Resource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: customdiff.All(
+			customDiffValidateOptionalCount,
+		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(createLKETimeout),
 			Update: schema.DefaultTimeout(updateLKETimeout),
@@ -99,7 +105,15 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
-	d.Set("pool", flattenLKENodePools(matchPoolsWithSchema(pools, declaredPools)))
+
+	matchedPools, err := matchPoolsWithSchema(pools, declaredPools)
+	if err != nil {
+		return diag.Errorf("failed to match api pools with schema: %s", err)
+	}
+
+	p := flattenLKENodePools(matchedPools)
+
+	d.Set("pool", p)
 	d.Set("control_plane", []map[string]interface{}{flattenedControlPlane})
 
 	return nil
@@ -127,10 +141,27 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	for _, nodePool := range d.Get("pool").([]interface{}) {
 		poolSpec := nodePool.(map[string]interface{})
 
+		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(poolSpec)
+
+		// If the count is not explicitly defined,
+		// we should default it to the autoscaler minimum.
+		count := poolSpec["count"].(int)
+		if count == 0 {
+			// We have validation to prevent this, but just in-case!
+			if autoscaler == nil {
+				return diag.Errorf(
+					"Expected autoscaler for default node count, got nil. " +
+						"This is always a provider issue.",
+				)
+			}
+
+			count = autoscaler.Min
+		}
+
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
 			Type:       poolSpec["type"].(string),
-			Count:      poolSpec["count"].(int),
-			Autoscaler: expandLinodeLKEClusterAutoscalerFromPool(poolSpec),
+			Count:      count,
+			Autoscaler: autoscaler,
 		})
 	}
 
@@ -234,8 +265,15 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	poolSpecs := expandLinodeLKENodePoolSpecs(d.Get("pool").([]interface{}))
-	updates := ReconcileLKENodePoolSpecs(poolSpecs, pools)
+	oldPools, newPools := d.GetChange("pool")
+
+	updates, err := ReconcileLKENodePoolSpecs(
+		expandLinodeLKENodePoolSpecs(oldPools.([]any), false),
+		expandLinodeLKENodePoolSpecs(newPools.([]any), true),
+	)
+	if err != nil {
+		return diag.Errorf("Failed to reconcile LKE cluster node pools: %s", err)
+	}
 
 	tflog.Trace(ctx, "Reconciled LKE cluster node pool updates", map[string]any{
 		"updates": updates,
@@ -296,7 +334,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	return nil
+	return readResource(ctx, d, meta)
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -353,4 +391,52 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"cluster_id": d.Id(),
 	})
+}
+
+// customDiffValidateOptionalCount ensures an autoscaler must be
+// defined is count is undefined.
+//
+// This validation logic is implemented as a custom diff because
+// ValidateDiagFuncs are not currently supported directly on lists.
+//
+// Additionally, this validation is implemented using cty so we
+// can ensure we're only validating on the user's config rather
+// than state. This will prevent any possible false-negatives
+// during updates.
+func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	invalidPools := make([]string, 0)
+
+	poolIterator := diff.GetRawConfig().GetAttr("pool").ElementIterator()
+
+	for poolIterator.Next() {
+		rawKey, rawPool := poolIterator.Element()
+
+		// If the user has defined a count, we don't need to do anything special here
+		if !rawPool.GetAttr("count").IsNull() {
+			continue
+		}
+
+		// If the user hasn't defined a count but has defined an autoscaler,
+		// we can assume they're deferring the count to the autoscaler.
+		autoscaler := rawPool.GetAttr("autoscaler")
+
+		if !autoscaler.IsNull() && autoscaler.LengthInt() > 0 {
+			continue
+		}
+
+		// We need to use AsBigFloat to extract a number
+		// value from a cty.Value
+		index, _ := rawKey.AsBigFloat().Int64()
+
+		invalidPools = append(invalidPools, fmt.Sprintf("pool.%d", index))
+	}
+
+	if len(invalidPools) > 0 {
+		return fmt.Errorf(
+			"%s: `count` must be defined when no autoscaler is defined",
+			strings.Join(invalidPools, ", "),
+		)
+	}
+
+	return nil
 }

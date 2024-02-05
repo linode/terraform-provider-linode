@@ -1,0 +1,14 @@
+{{ define "lke_cluster_no_count" }}
+
+# This is expected to fail
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{.K8sVersion}}"
+
+    pool {
+        type  = "g6-standard-2"
+    }
+}
+
+{{ end }}
