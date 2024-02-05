@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -47,6 +48,13 @@ func (r *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "volume_id", volumeID)
+
+	tflog.Debug(ctx, "Read data.linode_volume")
+
+	tflog.Trace(ctx, "client.GetVolume(...)")
+
 	volume, err := client.GetVolume(ctx, volumeID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to get the volume.", err.Error())
