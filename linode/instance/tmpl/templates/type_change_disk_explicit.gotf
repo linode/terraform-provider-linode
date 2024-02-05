@@ -7,7 +7,7 @@ resource "linode_instance" "foobar" {
     region = "{{ .Region }}"
 
     # We expect this to fail as the user has defined their own disks
-    resize_disk = {{.ResizeDisk}}
+    {{ if .ResizeDisk }} resize_disk = {{.ResizeDisk}} {{ end }}
 
     disk {
         label = "disk"
