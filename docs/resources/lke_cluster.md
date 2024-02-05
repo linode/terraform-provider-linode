@@ -68,7 +68,7 @@ The following arguments are supported:
 
 ~> **Notice** Due to limitations in Terraform, the order of pools in the `linode_lke_cluster` resource is treated as significant.
 For example, the removal of the first listed pool in a cluster may result in all other node pools
-being updated accordingly.
+being updated accordingly. See the [Nested Node Pool Caveats](#nested-node-pool-caveats) section for more details.
 
 The following arguments are supported in the `pool` specification block:
 
@@ -129,3 +129,65 @@ LKE Clusters can be imported using the `id`, e.g.
 ```sh
 terraform import linode_lke_cluster.my_cluster 12345
 ```
+
+## Nested Node Pool Caveats
+
+Due to limitations in Terraform, there are some minor caveats that may cause unexpected behavior when updating
+nested `pool` blocks in this resource. 
+Primarily, the order of `pool` blocks is significant because the ID of each pool is resolved from
+the Terraform state.
+
+For example, updating the following configuration:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+  # ...
+  
+  pool {
+    type  = "g6-standard-1"
+    count = 2
+  }
+
+  pool {
+    type  = "g6-standard-2"
+    count = 3
+  }
+}
+```
+
+to this:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+  # ...
+
+  pool {
+    type  = "g6-standard-2"
+    count = 3
+  }
+}
+```
+
+will produce the following plan:
+
+```terraform
+~ resource "linode_lke_cluster" "my-cluster" {
+      ~ pool {
+            id = ... -> null
+          ~ count = 2 -> 3
+          ~ type  = "g6-standard-1" -> "g6-standard-2"
+        }
+      - pool {
+          - count = 3 -> null
+          - id    = ... -> null
+          - nodes = [
+              ...
+            ] -> null
+        }
+  }
+```
+
+In this case, the first node pool from the original configuration will be updated to match
+the second node pool.
+
+Although not ideal, this functionality guarantees that updates to nested node pools will be reliable and predictable.
