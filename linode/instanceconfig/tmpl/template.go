@@ -102,10 +102,43 @@ func VPCInterface(t *testing.T, label, region string, rootPass string) string {
 	)
 }
 
-func VPCInterfaceUpdates(t *testing.T, label, region string, rootPass string) string {
+func VPCInterfaceUpdated(t *testing.T, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"vpc_interface_update", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func VPCInterfaceRemoved(t *testing.T, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"vpc_interface_remove", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func VPCInterfaceSwapped(t *testing.T, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"vpc_interface_swap", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		},
+	)
+}
+
+func VPCInterfaceOnly(t *testing.T, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"vpc_interface_only", TemplateData{
 			Label:    label,
 			Region:   region,
 			RootPass: rootPass,
