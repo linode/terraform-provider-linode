@@ -1400,7 +1400,7 @@ func ShutdownInstanceForVPCInterfaceUpdate(ctx context.Context, meta *helper.Pro
 	client := &meta.Client
 	if meta.Config.SkipImplicitReboots {
 		return diag.Errorf(
-			"add, remove, and reorder a Linode VPC interface requires implicit " +
+			"Adding, removing, and reordering a Linode VPC interface requires the implicit " +
 				"reboot of the Linode, please consider setting 'skip_implicit_reboots' " +
 				"to true in the Linode provider config.",
 		)
