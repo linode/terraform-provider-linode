@@ -1,0 +1,25 @@
+{{ define "instance_public_interface" }}
+
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}"
+    ipv4 = "10.0.4.0/24"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image = "{{ .Image }}"
+
+    interface {
+        purpose = "public"
+    }
+}
+
+{{ end }}
