@@ -92,7 +92,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func createResourceFromLinode(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
-	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_image")
 
 	client := meta.(*helper.ProviderMeta).Client
@@ -135,7 +134,7 @@ func createResourceFromLinode(
 
 	d.SetId(image.ID)
 
-	ctx = tflog.SetField(ctx, "image_id", image.ID)
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Waiting for a single image to be ready")
 
 	tflog.Trace(ctx, "client.WaitForInstanceDiskStatus(...)")
@@ -153,7 +152,6 @@ func createResourceFromLinode(
 func createResourceFromUpload(
 	ctx context.Context, d *schema.ResourceData, meta interface{},
 ) diag.Diagnostics {
-	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_image_from_upload")
 
 	client := meta.(*helper.ProviderMeta).Client
