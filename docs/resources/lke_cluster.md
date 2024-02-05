@@ -133,7 +133,7 @@ terraform import linode_lke_cluster.my_cluster 12345
 ## Nested Node Pool Caveats
 
 Due to limitations in Terraform, there are some minor caveats that may cause unexpected behavior when updating
-nested `pool` blocks in this resource. 
+nested `pool` blocks in this resource.
 Primarily, the order of `pool` blocks is significant because the ID of each pool is resolved from
 the Terraform state.
 
@@ -188,6 +188,6 @@ will produce the following plan:
 ```
 
 In this case, the first node pool from the original configuration will be updated to match
-the second node pool.
+the second node pool's configuration.
 
 Although not ideal, this functionality guarantees that updates to nested node pools will be reliable and predictable.
