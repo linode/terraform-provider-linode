@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -32,6 +34,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_token")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -56,6 +60,9 @@ func (r *Resource) Create(
 		Expiry: expiry,
 	}
 
+	tflog.Debug(ctx, "client.CreateToken(...)", map[string]any{
+		"options": createOpts,
+	})
 	token, err := client.CreateToken(ctx, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -74,6 +81,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_token")
+
 	client := r.Meta.Client
 
 	var data ResourceModel
@@ -82,6 +91,8 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, data)
 
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
@@ -92,6 +103,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetToken(...)")
 	token, err := client.GetToken(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -125,10 +137,14 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_token")
+
 	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	ctx = populateLogAttributes(ctx, state)
 
 	if !state.Label.Equal(plan.Label) {
 		tokenIDString := state.ID.ValueString()
@@ -138,6 +154,8 @@ func (r *Resource) Update(
 		}
 
 		client := r.Meta.Client
+
+		tflog.Trace(ctx, "client.GetToken(...)")
 		token, err := client.GetToken(ctx, tokenID)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -150,6 +168,7 @@ func (r *Resource) Update(
 		updateOpts := token.GetUpdateOptions()
 		updateOpts.Label = plan.Label.ValueString()
 
+		tflog.Debug(ctx, "client.UpdateToken(...)")
 		_, err = client.UpdateToken(ctx, token.ID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -167,6 +186,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_token")
+
 	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -174,12 +195,17 @@ func (r *Resource) Delete(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+
 	tokenID := helper.StringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	client := r.Meta.Client
+
+	tflog.Debug(ctx, "client.DeleteToken(...)")
+
 	err := client.DeleteToken(ctx, tokenID)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
@@ -194,4 +220,10 @@ func (r *Resource) Delete(
 	// a settling cooldown to avoid expired tokens from being returned in listings
 	// may be switched to event poller later
 	time.Sleep(3 * time.Second)
+}
+
+func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"token_id": model.ID,
+	})
 }
