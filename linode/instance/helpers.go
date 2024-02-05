@@ -1370,20 +1370,24 @@ func instanceIPSliceToString(ips []*linodego.InstanceIP) []string {
 	return result
 }
 
-// Return whether a VPC interface is included in either slice
+// VPCInterfaceIncluded returns whether a VPC interface is included in either slice
 func VPCInterfaceIncluded(
 	interfaces1 []linodego.InstanceConfigInterface,
 	interfaces2 []linodego.InstanceConfigInterfaceCreateOptions,
-) (included bool) {
+) bool {
 	for _, ni := range interfaces1 {
-		included = included || ni.Purpose == linodego.InterfacePurposeVPC
+		if ni.Purpose == linodego.InterfacePurposeVPC {
+			return true
+		}
 	}
 
 	for _, ni := range interfaces2 {
-		included = included || ni.Purpose == linodego.InterfacePurposeVPC
+		if ni.Purpose == linodego.InterfacePurposeVPC {
+			return true
+		}
 	}
 
-	return included
+	return false
 }
 
 func BootInstanceAfterVPCInterfaceUpdate(ctx context.Context, meta *helper.ProviderMeta, instanceID, targetConfigID, deadlineSeconds int) diag.Diagnostics {
