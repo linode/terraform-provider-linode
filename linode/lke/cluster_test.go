@@ -1,4 +1,4 @@
-//go:build integration
+//go:build unit
 
 package lke_test
 
@@ -12,9 +12,9 @@ import (
 
 func TestReconcileLKENodePoolSpecs(t *testing.T) {
 	for _, tc := range []struct {
-		name             string
-		specs            []lke.NodePoolSpec
-		provisionedPools []linodego.LKENodePool
+		name     string
+		oldSpecs []lke.NodePoolSpec
+		newSpecs []lke.NodePoolSpec
 
 		expectedToDelete []int
 		expectedToCreate []linodego.LKENodePoolCreateOptions
@@ -22,33 +22,37 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 	}{
 		{
 			name: "no change",
-			provisionedPools: []linodego.LKENodePool{
+			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-1", Count: 2},
 			},
-			specs: []lke.NodePoolSpec{
-				{Type: "g6-standard-1", Count: 2},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-1", Count: 2},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
+			expectedToDelete: []int{},
 		},
 		{
 			name: "upsize a single pool",
-			provisionedPools: []linodego.LKENodePool{
+			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-1", Count: 2},
 			},
-			specs: []lke.NodePoolSpec{
-				{Type: "g6-standard-1", Count: 3},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-1", Count: 3},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
 				123: {Count: 3},
 			},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
+			expectedToDelete: []int{},
 		},
 		{
 			name: "change single pool type",
-			provisionedPools: []linodego.LKENodePool{
+			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-1", Count: 2},
 			},
-			specs: []lke.NodePoolSpec{
-				{Type: "g6-standard-2", Count: 2},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-2", Count: 2},
 			},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{
 				{Type: "g6-standard-2", Count: 2},
@@ -58,17 +62,17 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 		},
 		{
 			name: "reuse cluster for resize",
-			provisionedPools: []linodego.LKENodePool{
+			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-1", Count: 1},
 				{ID: 124, Type: "g6-standard-1", Count: 10},
 			},
-			specs: []lke.NodePoolSpec{
-				{Type: "g6-standard-1", Count: 9},  // bumped from 1 to 9
-				{Type: "g6-standard-2", Count: 10}, // type changed
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-1", Count: 9},  // bumped from 1 to 9
+				{ID: 124, Type: "g6-standard-2", Count: 10}, // type changed
 			},
-			expectedToDelete: []int{123},
+			expectedToDelete: []int{124},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				124: {Count: 9},
+				123: {Count: 9},
 			},
 			expectedToCreate: []linodego.LKENodePoolCreateOptions{
 				{Type: "g6-standard-2", Count: 10},
@@ -76,51 +80,75 @@ func TestReconcileLKENodePoolSpecs(t *testing.T) {
 		},
 		{
 			name: "competing resizes",
-			provisionedPools: []linodego.LKENodePool{
+			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-3", Count: 3},
 				{ID: 124, Type: "g6-standard-3", Count: 7},
 				{ID: 126, Type: "g6-standard-3", Count: 4},
 				{ID: 127, Type: "g6-standard-3", Count: 2},
 			},
-			specs: []lke.NodePoolSpec{
-				{Type: "g6-standard-3", Count: 2},
-				{Type: "g6-standard-3", Count: 9},
-				{Type: "g6-standard-3", Count: 8},
-				{Type: "g6-standard-3", Count: 2},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", Count: 2},
+				{ID: 124, Type: "g6-standard-3", Count: 9},
+				{ID: 126, Type: "g6-standard-3", Count: 8},
+				{ID: 127, Type: "g6-standard-3", Count: 2},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 2}, // -1
-				124: {Count: 8}, // +1
-				126: {Count: 9}, // +5
+				123: {Count: 2},
+				124: {Count: 9},
+				126: {Count: 8},
 			},
+			expectedToDelete: []int{},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
 		},
 		{
 			name: "scaler",
-			provisionedPools: []linodego.LKENodePool{
+			oldSpecs: []lke.NodePoolSpec{
 				{ID: 123, Type: "g6-standard-3", Count: 3},
 			},
-			specs: []lke.NodePoolSpec{
-				{Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 3, AutoScalerMax: 7},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 3, AutoScalerMax: 7},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 3, Max: 7}}, // -1
+				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 3, Max: 7}},
 			},
+			expectedToDelete: []int{},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
 		},
 		{
 			name: "scaler drop",
-			provisionedPools: []linodego.LKENodePool{
-				{ID: 123, Type: "g6-standard-3", Count: 3, Autoscaler: linodego.LKENodePoolAutoscaler{Enabled: true, Min: 3, Max: 7}},
+			oldSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 3, AutoScalerMax: 7},
 			},
-			specs: []lke.NodePoolSpec{
-				{Type: "g6-standard-3", Count: 3, AutoScalerEnabled: false},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: false},
 			},
 			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
-				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: false, Min: 3, Max: 3}}, // -1
+				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: false, Min: 0, Max: 0}},
 			},
+			expectedToDelete: []int{},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
+		},
+		{
+			name: "scaler update",
+			oldSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 3, AutoScalerMax: 7},
+			},
+			newSpecs: []lke.NodePoolSpec{
+				{ID: 123, Type: "g6-standard-3", Count: 3, AutoScalerEnabled: true, AutoScalerMin: 5, AutoScalerMax: 10},
+			},
+			expectedToUpdate: map[int]linodego.LKENodePoolUpdateOptions{
+				123: {Count: 3, Autoscaler: &linodego.LKENodePoolAutoscaler{Enabled: true, Min: 5, Max: 10}},
+			},
+			expectedToDelete: []int{},
+			expectedToCreate: []linodego.LKENodePoolCreateOptions{},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			updates := lke.ReconcileLKENodePoolSpecs(tc.specs, tc.provisionedPools)
+			updates, err := lke.ReconcileLKENodePoolSpecs(tc.oldSpecs, tc.newSpecs)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if !reflect.DeepEqual(tc.expectedToCreate, updates.ToCreate) {
 				t.Errorf("expected to create:\n%#v\ngot:\n%#v", tc.expectedToCreate, updates.ToCreate)
 			}
