@@ -136,11 +136,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	linodeID := d.Get("linode_id").(int)
 
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
-
 	createOpts := linodego.InstanceConfigCreateOptions{
 		Label:       d.Get("label").(string),
 		Comments:    d.Get("comments").(string),
@@ -181,7 +176,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	d.SetId(strconv.Itoa(cfg.ID))
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
-		if err := applyBootStatus(ctx, &client, inst, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
+		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
 			d.Get("booted").(bool)); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
@@ -209,11 +204,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	})
 
 	tflog.Debug(ctx, "Update resource")
-
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
 
 	putRequest := linodego.InstanceConfigUpdateOptions{}
 	shouldUpdate := false
@@ -294,6 +284,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	// We should not use `HasChange(...)` here because of possible mid-apply changes
 	managedBoot := !d.GetRawConfig().GetAttr("booted").IsNull()
 
+	inst, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
 	shouldPowerBackOn := !managedBoot && powerOffRequired && inst.Status == linodego.InstanceRunning
 
 	if shouldUpdate {
@@ -318,7 +313,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	if managedBoot {
-		if err := applyBootStatus(ctx, &client, inst, id, helper.GetDeadlineSeconds(ctx, d),
+		if err := applyBootStatus(ctx, &client, linodeID, id, helper.GetDeadlineSeconds(ctx, d),
 			d.Get("booted").(bool)); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
