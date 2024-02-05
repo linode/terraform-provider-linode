@@ -102,7 +102,7 @@ func (r *Resource) CreateVolumeFromSource(
 		return nil
 	}
 
-	tflog.Trace(ctx, "client.CloneVolume(...)")
+	tflog.Debug(ctx, "client.CloneVolume(...)")
 
 	clonedVolume, err := client.CloneVolume(ctx, sourceVolumeID, data.Label.ValueString())
 	if err != nil {
