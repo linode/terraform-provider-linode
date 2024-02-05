@@ -25,18 +25,20 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 
 	"authorized_keys": {
-		Type:     schema.TypeSet,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Optional: true,
-		ForceNew: true,
+		Type:         schema.TypeSet,
+		Elem:         &schema.Schema{Type: schema.TypeString},
+		Optional:     true,
+		ForceNew:     true,
+		RequiredWith: []string{"image"},
 		Description: "A list of public SSH keys that will be automatically appended to the root " +
 			"user’s ~/.ssh/authorized_keys file when deploying from an Image.",
 	},
 	"authorized_users": {
-		Type:     schema.TypeSet,
-		Elem:     &schema.Schema{Type: schema.TypeString},
-		Optional: true,
-		ForceNew: true,
+		Type:         schema.TypeSet,
+		Elem:         &schema.Schema{Type: schema.TypeString},
+		Optional:     true,
+		ForceNew:     true,
+		RequiredWith: []string{"image"},
 		Description: "A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the " +
 			"root users ~/.ssh/authorized_keys file automatically when deploying from an Image.",
 	},
@@ -70,16 +72,18 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "An object containing responses to any User Defined Fields present in the StackScript " +
 			"being deployed to this Disk. Only accepted if 'stackscript_id' is given. The required values depend " +
 			"on the StackScript being deployed.",
-		Optional:  true,
-		ForceNew:  true,
-		Sensitive: true,
+		Optional:     true,
+		ForceNew:     true,
+		Sensitive:    true,
+		RequiredWith: []string{"image"},
 	},
 	"stackscript_id": {
 		Type: schema.TypeInt,
 		Description: "A StackScript ID that will cause the referenced StackScript " +
 			"to be run during deployment of this Linode.",
-		Optional: true,
-		ForceNew: true,
+		Optional:     true,
+		ForceNew:     true,
+		RequiredWith: []string{"image"},
 	},
 
 	"created": {

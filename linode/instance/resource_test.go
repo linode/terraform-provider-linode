@@ -1702,7 +1702,7 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
-				Config: tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-nanode-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1712,7 +1712,7 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 			// Attempt to resize the instance and disk and expect an error
 			{
 				Config:      tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-standard-1", testRegion, true),
-				ExpectError: regexp.MustCompile("resize_disk requires that no explicit disks are defined"),
+				ExpectError: regexp.MustCompile("all of `image,resize_disk` must be specified"),
 			},
 			// Resize only the instance
 			{
@@ -1741,7 +1741,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
-				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1750,7 +1750,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 			},
 			// Attempt to resize the instance
 			{
-				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-standard-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-standard-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1759,7 +1759,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 			},
 			// Attempt to downsize the instance
 			{
-				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
