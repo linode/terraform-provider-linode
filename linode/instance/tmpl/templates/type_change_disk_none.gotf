@@ -5,7 +5,8 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     type = "{{.Type}}"
     region = "{{ .Region }}"
-    resize_disk = {{.ResizeDisk}}
+
+    {{ if .ResizeDisk }} resize_disk = {{.ResizeDisk}} {{ end }}
 }
 
 {{ end }}

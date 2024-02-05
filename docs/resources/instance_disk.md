@@ -67,19 +67,19 @@ The following arguments are supported:
 
 - - -
 
-* `authorized_keys` - (Optional) A list of public SSH keys that will be automatically appended to the root user’s ~/.ssh/authorized_keys file when deploying from an Image.
+* `authorized_keys` - (Optional) A list of public SSH keys that will be automatically appended to the root user’s ~/.ssh/authorized_keys file when deploying from an Image. (Requires `image`)
 
-* `authorized_users` - (Optional) A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the
+* `authorized_users` - (Optional) A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root user's ~/.ssh/authorized_keys file. (Requires `image`)
 
 * `filesystem` - (Optional) The filesystem of this disk. (`raw`, `swap`, `ext3`, `ext4`, `initrd`)
 
 * `image` - (Optional) An Image ID to deploy the Linode Disk from.
 
-* `root_pass` - (Optional) The root user’s password on a newly-created Linode Disk when deploying from an Image.
+* `root_pass` - (Optional) The root user’s password on a newly-created Linode Disk when deploying from an Image. (Requires `image`)
 
-* `stackscript_data` - (Optional) An object containing responses to any User Defined Fields present in the StackScript being deployed to this Disk. Only accepted if `stackscript_id` is given.
+* `stackscript_data` - (Optional) An object containing responses to any User Defined Fields present in the StackScript being deployed to this Disk. Only accepted if `stackscript_id` is given. (Requires `image`)
 
-* `stackscript_id` - (Optional) A StackScript ID that will cause the referenced StackScript to be run during deployment of this Disk.
+* `stackscript_id` - (Optional) A StackScript ID that will cause the referenced StackScript to be run during deployment of this Disk. (Requires `image`)
 
 ## Attributes Reference
 

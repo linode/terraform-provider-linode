@@ -6,12 +6,6 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     booted = {{.Booted}}
-
-    interface {
-        purpose = "vlan"
-        label = "cool"
-        ipam_address = "10.0.0.3/24"
-    }
 }
 
 {{ end }}
