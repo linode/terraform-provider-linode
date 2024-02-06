@@ -1,0 +1,32 @@
+{{ define "vpc_interface_remove" }}
+
+{{ template "instance_config_empty_instance" . }}
+
+{{ template "instance_config_disk" . }}
+
+{{ template "vpc_for_instance_config" . }}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "my-config-removed"
+  comments = "cool-removed"
+
+  device {
+    device_name = "sda"
+    disk_id = linode_instance_disk.foobar.id
+  }
+
+  interface {
+    purpose = "public"
+  }
+
+  kernel = "linode/grub2"
+  root_device = "/dev/sda"
+}
+
+data "linode_instance_networking" "foobar" {
+  depends_on = [linode_instance_config.foobar]
+  linode_id = linode_instance.foobar.id
+}
+
+{{ end }}

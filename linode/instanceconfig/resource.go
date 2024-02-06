@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	instancehelpers "github.com/linode/terraform-provider-linode/v2/linode/instance"
 )
 
 func Resource() *schema.Resource {
@@ -135,16 +136,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	linodeID := d.Get("linode_id").(int)
 
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
-
 	createOpts := linodego.InstanceConfigCreateOptions{
 		Label:       d.Get("label").(string),
 		Comments:    d.Get("comments").(string),
 		Helpers:     expandHelpers(d.Get("helpers")),
-		Interfaces:  helper.ExpandInterfaces(ctx, d.Get("interface").([]any)),
+		Interfaces:  helper.ExpandConfigInterfaces(ctx, d.Get("interface").([]any)),
 		MemoryLimit: d.Get("memory_limit").(int),
 		Kernel:      d.Get("kernel").(string),
 		RunLevel:    d.Get("run_level").(string),
@@ -180,7 +176,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	d.SetId(strconv.Itoa(cfg.ID))
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
-		if err := applyBootStatus(ctx, &client, inst, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
+		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
 			d.Get("booted").(bool)); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
@@ -208,11 +204,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	})
 
 	tflog.Debug(ctx, "Update resource")
-
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
 
 	putRequest := linodego.InstanceConfigUpdateOptions{}
 	shouldUpdate := false
@@ -271,23 +262,58 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		shouldUpdate = true
 	}
 
+	powerOffRequired := false
 	if d.HasChange("interface") {
-		putRequest.Interfaces = helper.ExpandInterfaces(ctx, d.Get("interface").([]any))
+		putRequest.Interfaces = helper.ExpandConfigInterfaces(ctx, d.Get("interface").([]any))
+		config, err := client.GetInstanceConfig(ctx, linodeID, id)
+		if err != nil {
+			return diag.Errorf("failed to get config %d: %s", id, err)
+		}
+
+		bootedConfigID, err := helper.GetCurrentBootedConfig(ctx, &client, linodeID)
+		if err != nil {
+			tflog.Warn(
+				ctx, fmt.Sprintf("failed to get current booted config of Linode %d", linodeID),
+			)
+		}
+
+		powerOffRequired = instancehelpers.VPCInterfaceIncluded(config.Interfaces, putRequest.Interfaces) && id == bootedConfigID
 		shouldUpdate = true
 	}
 
+	// We should not use `HasChange(...)` here because of possible mid-apply changes
+	managedBoot := !d.GetRawConfig().GetAttr("booted").IsNull()
+
+	inst, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
+	shouldPowerBackOn := !managedBoot && powerOffRequired && inst.Status == linodego.InstanceRunning
+
 	if shouldUpdate {
+		if powerOffRequired {
+			instancehelpers.ShutdownInstanceForVPCInterfaceUpdate(
+				ctx, meta.(*helper.ProviderMeta), linodeID, helper.GetDeadlineSeconds(ctx, d),
+			)
+		}
+
 		tflog.Debug(ctx, "Update detected, sending config PUT request to API", map[string]any{
 			"body": putRequest,
 		})
-		if _, err := client.UpdateInstanceConfig(ctx, linodeID, int(id), putRequest); err != nil {
+		if _, err := client.UpdateInstanceConfig(ctx, linodeID, id, putRequest); err != nil {
 			return diag.Errorf("failed to update instance config: %s", err)
+		}
+
+		if shouldPowerBackOn {
+			instancehelpers.BootInstanceAfterVPCInterfaceUpdate(
+				ctx, meta.(*helper.ProviderMeta), linodeID, id, helper.GetDeadlineSeconds(ctx, d),
+			)
 		}
 	}
 
-	// We should not use `HasChange(...)` here because of possible mid-apply changes
-	if !d.GetRawConfig().GetAttr("booted").IsNull() {
-		if err := applyBootStatus(ctx, &client, inst, id, helper.GetDeadlineSeconds(ctx, d),
+	if managedBoot {
+		if err := applyBootStatus(ctx, &client, linodeID, id, helper.GetDeadlineSeconds(ctx, d),
 			d.Get("booted").(bool)); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
