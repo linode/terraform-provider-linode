@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -31,6 +32,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_stackscript")
 	var data StackScriptModel
 	client := r.Meta.Client
 
@@ -55,6 +57,10 @@ func (r *Resource) Create(
 		Images:      images,
 	}
 
+	tflog.Debug(ctx, "client.CreateStackscript(...)", map[string]interface{}{
+		"options": createOpts,
+	})
+
 	stackscript, err := client.CreateStackscript(ctx, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -77,6 +83,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_stackscript")
+
 	client := r.Meta.Client
 
 	var data StackScriptModel
@@ -94,6 +102,10 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "stackscript_id", id)
+
+	tflog.Trace(ctx, "client.GetStackscript(...)")
 
 	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
@@ -132,6 +144,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_stackscript")
+
 	var state StackScriptModel
 	var plan StackScriptModel
 
@@ -147,6 +161,8 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "stackscript_id", stackScriptID)
 
 	// Check whether there were any changes
 	isUnchanged := state.Label.Equal(plan.Label) &&
@@ -167,7 +183,9 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_stackscript")
 	var data StackScriptModel
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -179,7 +197,10 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
+	ctx = tflog.SetField(ctx, "stackscript_id", stackscriptID)
+
+	tflog.Debug(ctx, "client.DeleteStackscript(...)")
+
 	err := client.DeleteStackscript(ctx, stackscriptID)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
@@ -212,6 +233,10 @@ func (r *Resource) updateStackScript(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "client.UpdateStackscript(...)", map[string]interface{}{
+		"options": updateOpts,
+	})
 
 	stackscript, err := client.UpdateStackscript(ctx, stackScriptID, updateOpts)
 	if err != nil {
