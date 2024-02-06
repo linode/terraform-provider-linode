@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -57,4 +58,54 @@ func AllString(values ...string) ([]any, diag.Diagnostics) {
 		result[i] = v
 	}
 	return result, nil
+}
+
+func ImportStateWithMultipleIDs(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+	IDsTypeConverter IDTypeConverter,
+	ImportIDNames ...string,
+) {
+	ImportStateWithMultipleCustomTypedIDs(ctx, req, resp, AllInt64, ImportIDNames...)
+}
+
+func ImportStateWithMultipleCustomTypedIDs(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+	IDsTypeConverter IDTypeConverter,
+	ImportIDNames ...string,
+) {
+	idParts := strings.Split(req.ID, ",")
+
+	unexpectedIDsErrorMsg := fmt.Sprintf(
+		"Expected import identifier with format: %s. Got: %q",
+		strings.Join(ImportIDNames, ","), req.ID,
+	)
+
+	if len(idParts) != len(ImportIDNames) {
+		resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
+		return
+	}
+
+	var IDs []string
+
+	for _, id := range idParts {
+		if id == "" {
+			resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
+			return
+		}
+		IDs = append(IDs, id)
+	}
+	CastedIDs, diags := IDsTypeConverter(IDs...)
+
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	for i, id := range CastedIDs {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(ImportIDNames[i]), id)...)
+	}
 }

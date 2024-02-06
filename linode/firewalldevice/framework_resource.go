@@ -210,3 +210,13 @@ func (r *Resource) Delete(
 		}
 	}
 }
+
+// func (r *Resource) ImportState(
+// 	ctx context.Context,
+// 	req resource.ImportStateRequest,
+// 	resp *resource.ImportStateResponse,
+// ) {
+// 	tflog.Debug(ctx, "Import linode_firewall_device")
+
+// 	helper.ImportStateWithMultipleIDs(ctx, req, resp, helper.AllInt64, "firewall_id", "id")
+// }
