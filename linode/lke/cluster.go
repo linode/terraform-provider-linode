@@ -176,7 +176,7 @@ func ReconcileLKENodePoolSpecs(
 	return
 }
 
-func waitForNodePoolReady(
+func WaitForNodePoolReady(
 	ctx context.Context, client linodego.Client, pollMs, clusterID, poolID int,
 ) error {
 	ctx = tflog.SetField(ctx, "node_pool_id", poolID)
@@ -339,7 +339,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 	// Wait for all node pools to be ready
 	for _, pool := range pools {
-		if err := waitForNodePoolReady(ctx, client, meta.Config.EventPollMilliseconds, id, pool.ID); err != nil {
+		if err := WaitForNodePoolReady(ctx, client, meta.Config.EventPollMilliseconds, id, pool.ID); err != nil {
 			return fmt.Errorf("failed to wait for pool %d ready: %w", pool.ID, err)
 		}
 	}
