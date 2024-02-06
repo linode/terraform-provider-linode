@@ -323,7 +323,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			"node_pool_id": poolID,
 		})
 
-		if err := waitForNodePoolReady(
+		if err := WaitForNodePoolReady(
 			ctx,
 			client,
 			providerMeta.Config.LKENodeReadyPollMilliseconds,

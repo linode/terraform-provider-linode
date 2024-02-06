@@ -46,6 +46,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/v2/linode/nodepool"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
@@ -172,6 +173,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instanceip.NewResource,
 		firewalldevice.NewResource,
 		volume.NewResource,
+		nodepool.NewResource,
 	}
 }
 
