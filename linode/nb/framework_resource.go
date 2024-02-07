@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -36,6 +38,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_nodebalancer")
 	var data NodeBalancerModel
 	client := r.Meta.Client
 
@@ -75,6 +78,10 @@ func (r *Resource) Create(
 		}
 	}
 
+	tflog.Debug(ctx, "client.CreateNodeBalancer(...)", map[string]any{
+		"options": createOpts,
+	})
+
 	nodebalancer, err := client.CreateNodeBalancer(ctx, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -105,6 +112,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_nodebalancer")
+
 	var data NodeBalancerModel
 	client := r.Meta.Client
 
@@ -122,6 +131,9 @@ func (r *Resource) Read(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+	tflog.Trace(ctx, "client.GetNodeBalancer(...)")
+
 	nodeBalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -137,6 +149,8 @@ func (r *Resource) Read(
 			err.Error(),
 		)
 	}
+
+	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
 
 	firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
 	if err != nil {
@@ -160,11 +174,16 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_nodebalancer")
+
 	var plan, state NodeBalancerModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	ctx = populateLogAttributes(ctx, state)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -195,6 +214,8 @@ func (r *Resource) Update(
 			return
 		}
 
+		tflog.Trace(ctx, "client.UpdateNodeBalancer(...)")
+
 		nodeBalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -203,6 +224,8 @@ func (r *Resource) Update(
 			)
 			return
 		}
+
+		tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
 
 		firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
 		if err != nil {
@@ -225,6 +248,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_nodebalancer")
+
 	var data NodeBalancerModel
 	client := r.Meta.Client
 
@@ -237,6 +262,9 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, data)
+	tflog.Debug(ctx, "client.DeleteNodeBalancer(...)")
 
 	err := client.DeleteNodeBalancer(ctx, id)
 	if err != nil {
@@ -333,4 +361,10 @@ func upgradeNodebalancerResourceStateV0toV1(
 	nbDataV1.Transfer = resultList
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &nbDataV1)...)
+}
+
+func populateLogAttributes(ctx context.Context, model NodeBalancerModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"nodebalancer_id": model.ID,
+	})
 }
