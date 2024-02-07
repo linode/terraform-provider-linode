@@ -79,3 +79,9 @@ There are a number of useful flags and variables to aid in debugging.
 - `TF_SCHEMA_PANIC_ON_ERROR` - This forces Terraform to panic if a Schema Set command failed.
 
 These values (along with `LINODE_TOKEN`) can be placed in a `.env` file in the repository root to avoid repeating them on the command line.
+
+To filter down to logs relevant to the Linode provider, the following command can be used:
+
+```bash
+terraform apply 2> >(grep '@module=linode' >&2)
+```
