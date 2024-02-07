@@ -34,7 +34,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_token")
+	tflog.Debug(ctx, "Create linode_token")
 
 	var data ResourceModel
 	client := r.Meta.Client
