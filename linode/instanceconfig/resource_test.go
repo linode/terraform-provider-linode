@@ -375,7 +375,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.VPCInterfaceUpdates(t, instanceName, testRegion, rootPass),
+				Config: tmpl.VPCInterfaceUpdated(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
@@ -385,6 +385,49 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.100/32"),
 
 					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.VPCInterfaceSwapped(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "public"),
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "vpc"),
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv4.0.vpc", "10.0.4.249"),
+					resource.TestCheckResourceAttr(resName, "interface.0.active", "false"),
+					resource.TestCheckResourceAttr(resName, "interface.0.ip_ranges.0", "10.0.4.100/32"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+			{
+				Config: tmpl.VPCInterfaceOnly(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "vpc"),
+					resource.TestCheckResourceAttr(resName, "interface.0.ipv4.0.vpc", "10.0.4.249"),
+					resource.TestCheckResourceAttr(resName, "interface.0.active", "false"),
+					resource.TestCheckResourceAttr(resName, "interface.0.ip_ranges.0", "10.0.4.100/32"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+			{
+				Config: tmpl.VPCInterfaceRemoved(t, instanceName, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					checkExists(resName, nil),
+					resource.TestCheckResourceAttr(resName, "interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
 				),
 			},
 			{

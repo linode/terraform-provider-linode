@@ -177,9 +177,14 @@ func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
 	}
 }
 
-func applyBootStatus(ctx context.Context, client *linodego.Client, instance *linodego.Instance, configID int,
+func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int, configID int,
 	timeoutSeconds int, booted bool,
 ) error {
+	instance, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return fmt.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
 	isBooted := helper.IsInstanceInBootedState(instance.Status)
 	currentConfig, err := helper.GetCurrentBootedConfig(ctx, client, instance.ID)
 	if err != nil {
