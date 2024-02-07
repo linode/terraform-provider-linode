@@ -132,7 +132,7 @@ func (r *Resource) Read(
 	}
 
 	ctx = populateLogAttributes(ctx, data)
-	tflog.Trace(ctx, "client.GetNodeBalancer(...)")
+	tflog.Debug(ctx, "client.GetNodeBalancer(...)")
 
 	nodeBalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {
@@ -214,7 +214,9 @@ func (r *Resource) Update(
 			return
 		}
 
-		tflog.Trace(ctx, "client.UpdateNodeBalancer(...)")
+		tflog.Debug(ctx, "client.UpdateNodeBalancer(...)", map[string]any{
+			"options": updateOpts,
+		})
 
 		nodeBalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
 		if err != nil {
