@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -12,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // NewBaseResource returns a new instance of the BaseResource
@@ -20,22 +18,6 @@ import (
 func NewBaseResource(cfg BaseResourceConfig) BaseResource {
 	return BaseResource{
 		Config: cfg,
-	}
-}
-
-func NewBaseResourceWithMultipleIDsImport(
-	cfg BaseResourceConfig, ImportIDNames ...string,
-) BaseResourceWithMultipleIDsImport {
-	return NewBaseResourceWithMultipleCustomTypedIDsImport(cfg, AllInt64, ImportIDNames...)
-}
-
-func NewBaseResourceWithMultipleCustomTypedIDsImport(
-	cfg BaseResourceConfig, IDsTypeConverter IDTypeConverter, ImportIDNames ...string,
-) BaseResourceWithMultipleIDsImport {
-	return BaseResourceWithMultipleIDsImport{
-		BaseResource:     NewBaseResource(cfg),
-		ImportIDNames:    ImportIDNames,
-		IDsTypeConverter: IDsTypeConverter,
 	}
 }
 
@@ -49,47 +31,6 @@ type BaseResourceConfig struct {
 	Schema        *schema.Schema
 	TimeoutOpts   *timeouts.Opts
 	IsEarlyAccess bool
-}
-
-type BaseResourceWithMultipleIDsImport struct {
-	BaseResource
-
-	ImportIDNames    []string
-	IDsTypeConverter IDTypeConverter
-}
-
-func (r *BaseResourceWithMultipleIDsImport) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	tflog.Debug(ctx, "Import "+r.BaseResource.Config.Name)
-
-	idParts := strings.Split(req.ID, ",")
-
-	unexpectedIDsErrorMsg := fmt.Sprintf(
-		"Expected import identifier with format: %s. Got: %q",
-		strings.Join(r.ImportIDNames, ","), req.ID,
-	)
-
-	if len(idParts) != len(r.ImportIDNames) {
-		resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
-		return
-	}
-
-	for i, IDName := range r.ImportIDNames {
-		if idParts[i] == "" {
-			resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
-			return
-		}
-
-		id := StringToInt64(idParts[i], &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(IDName), id)...)
-	}
 }
 
 // BaseResource contains various re-usable fields and methods
@@ -154,8 +95,7 @@ func (r *BaseResource) Schema(
 }
 
 // ImportState should be overridden for resources with
-// complex read logic or NewBaseResourceWithMultipleIDsImport
-// should be used instead (e.g. parent ID).
+// complex read logic (e.g. parent ID).
 func (r *BaseResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,

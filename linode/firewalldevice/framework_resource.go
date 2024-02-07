@@ -13,19 +13,18 @@ import (
 
 func NewResource() resource.Resource {
 	return &Resource{
-		BaseResourceWithMultipleIDsImport: helper.NewBaseResourceWithMultipleIDsImport(
+		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_firewall_device",
-				IDType: types.StringType,
+				IDType: types.Int64Type,
 				Schema: &frameworkResourceSchema,
 			},
-			"firewall_id", "id",
 		),
 	}
 }
 
 type Resource struct {
-	helper.BaseResourceWithMultipleIDsImport
+	helper.BaseResource
 }
 
 func (r *Resource) Create(
@@ -211,12 +210,14 @@ func (r *Resource) Delete(
 	}
 }
 
-// func (r *Resource) ImportState(
-// 	ctx context.Context,
-// 	req resource.ImportStateRequest,
-// 	resp *resource.ImportStateResponse,
-// ) {
-// 	tflog.Debug(ctx, "Import linode_firewall_device")
+func (r *Resource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	tflog.Debug(ctx, "Import linode_firewall_device")
 
-// 	helper.ImportStateWithMultipleIDs(ctx, req, resp, helper.AllInt64, "firewall_id", "id")
-// }
+	helper.ImportStateWithMultipleIDs(
+		ctx, req, resp, helper.AllInt64, "firewall_id", "id",
+	)
+}
