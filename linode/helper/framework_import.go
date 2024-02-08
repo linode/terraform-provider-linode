@@ -41,20 +41,12 @@ func ImportStatePassthroughInt64ID(
 
 type IDTypeConverter func(values ...string) ([]any, diag.Diagnostics)
 
-func AllInt64(values ...string) ([]any, diag.Diagnostics) {
+func IDTypeConverterInt64(values ...string) ([]any, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	result := make([]any, len(values))
 	for i, v := range values {
 		result[i] = StringToInt64(v, &diags)
-	}
-	return result, nil
-}
-
-func AllString(values ...string) ([]any, diag.Diagnostics) {
-	result := make([]any, len(values))
-	for i, v := range values {
-		result[i] = v
 	}
 	return result, nil
 }
@@ -66,7 +58,7 @@ func ImportStateWithMultipleIDs(
 	IDsTypeConverter IDTypeConverter,
 	ImportIDNames ...string,
 ) {
-	ImportStateWithMultipleCustomTypedIDs(ctx, req, resp, AllInt64, ImportIDNames...)
+	ImportStateWithMultipleCustomTypedIDs(ctx, req, resp, IDTypeConverterInt64, ImportIDNames...)
 }
 
 func ImportStateWithMultipleCustomTypedIDs(
@@ -97,14 +89,19 @@ func ImportStateWithMultipleCustomTypedIDs(
 		}
 		ids = append(ids, id)
 	}
-	castedIDs, diags := IDsTypeConverter(ids...)
 
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
+	var convertedIDs []any
+
+	if IDsTypeConverter != nil {
+		ids, diags := IDsTypeConverter(ids...)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		convertedIDs = ids
 	}
 
-	for i, id := range castedIDs {
+	for i, id := range convertedIDs {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(ImportIDNames[i]), id)...)
 	}
 }
