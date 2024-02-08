@@ -46,8 +46,7 @@ func AllInt64(values ...string) ([]any, diag.Diagnostics) {
 
 	result := make([]any, len(values))
 	for i, v := range values {
-		int64Val := StringToInt64(v, &diags)
-		result[i] = int64Val
+		result[i] = StringToInt64(v, &diags)
 	}
 	return result, nil
 }
