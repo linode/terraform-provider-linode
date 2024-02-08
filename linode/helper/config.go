@@ -114,9 +114,7 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 		userAgent = c.UAPrefix + " " + userAgent
 	}
 	client.SetUserAgent(userAgent)
-	client.AddRetryCondition(Database502Retry())
-	client.AddRetryCondition(LinodeInstance500Retry())
-	client.AddRetryCondition(ImageUpload500Retry())
+	ApplyAllRetryConditions(&client)
 
 	// We always want to disable resty debugging in favor
 	// of Terraform transport debugging.

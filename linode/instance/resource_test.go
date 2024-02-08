@@ -1702,7 +1702,7 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
-				Config: tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-nanode-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1712,7 +1712,7 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 			// Attempt to resize the instance and disk and expect an error
 			{
 				Config:      tmpl.TypeChangeDiskExplicit(t, instanceName, "g6-standard-1", testRegion, true),
-				ExpectError: regexp.MustCompile("resize_disk requires that no explicit disks are defined"),
+				ExpectError: regexp.MustCompile("all of `image,resize_disk` must be specified"),
 			},
 			// Resize only the instance
 			{
@@ -1741,7 +1741,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
-				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1750,7 +1750,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 			},
 			// Attempt to resize the instance
 			{
-				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-standard-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-standard-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -1759,7 +1759,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 			},
 			// Attempt to downsize the instance
 			{
-				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, true),
+				Config: tmpl.TypeChangeDiskNone(t, instanceName, "g6-nanode-1", testRegion, false),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2181,10 +2181,86 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.PublicInterface(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "public"),
+				),
+			},
+			{
+				Config: tmpl.PublicAndVPCInterfaces(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "public"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.1.purpose", "vpc"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
+			},
+			{
+				Config: tmpl.VPCAndPublicInterfaces(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "2"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vpc"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.1.purpose", "public"),
+				),
+			},
+			{
+				Config: tmpl.PublicInterface(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "public"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_migration(t *testing.T) {
 	acceptance.LongRunningTest(t)
 
 	t.Parallel()
+
+	rootPass := acctest.RandString(12)
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
@@ -2207,7 +2283,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion),
+				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),
@@ -2217,7 +2293,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, targetRegion),
+				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, targetRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", instanceName),

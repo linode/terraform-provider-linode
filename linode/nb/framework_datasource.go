@@ -52,7 +52,15 @@ func (d *DataSource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodeBalancer)...)
+	firewalls, err := client.ListNodeBalancerFirewalls(ctx, nodeBalancerID, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", nodeBalancerID),
+			err.Error(),
+		)
+	}
+
+	resp.Diagnostics.Append(data.flattenNodeBalancer(ctx, nodeBalancer, firewalls)...)
 
 	if resp.Diagnostics.HasError() {
 		return

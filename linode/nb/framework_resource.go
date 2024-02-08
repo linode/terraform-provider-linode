@@ -84,7 +84,15 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodebalancer)...)
+	firewalls, err := client.ListNodeBalancerFirewalls(ctx, nodebalancer.ID, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", nodebalancer.ID),
+			err.Error(),
+		)
+	}
+
+	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodebalancer, firewalls)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -130,7 +138,15 @@ func (r *Resource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodeBalancer)...)
+	firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", id),
+			err.Error(),
+		)
+	}
+
+	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodeBalancer, firewalls)...)
 	resp.Diagnostics.Append(data.ParseNonComputedAttrs(ctx, nodeBalancer)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -188,7 +204,15 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.ParseComputedAttrs(ctx, nodeBalancer)...)
+		firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", id),
+				err.Error(),
+			)
+		}
+
+		resp.Diagnostics.Append(plan.ParseComputedAttrs(ctx, nodeBalancer, firewalls)...)
 	} else {
 		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 		req.State.GetAttribute(ctx, path.Root("transfer"), &plan.Transfer)

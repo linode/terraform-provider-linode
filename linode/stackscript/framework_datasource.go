@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -41,6 +42,12 @@ func (r *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "stackscript_id", id)
+
+	tflog.Debug(ctx, "Read data.linode_stackscript")
+
+	tflog.Trace(ctx, "client.GetStackscript(...)")
 
 	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {

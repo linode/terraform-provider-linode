@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -27,6 +28,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_firewall")
+
 	var data FirewallModel
 	client := d.Meta.Client
 
@@ -40,6 +43,9 @@ func (d *DataSource) Read(
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "firewall_id", firewallID)
+
+	tflog.Trace(ctx, "client.GetFirewall(...)")
 	firewall, err := client.GetFirewall(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -48,6 +54,8 @@ func (d *DataSource) Read(
 		)
 		return
 	}
+
+	tflog.Trace(ctx, "client.GetFirewallRules(...)")
 	rules, err := client.GetFirewallRules(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -56,6 +64,8 @@ func (d *DataSource) Read(
 		)
 		return
 	}
+
+	tflog.Trace(ctx, "client.ListFirewallDevices(...)")
 	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -67,8 +77,10 @@ func (d *DataSource) Read(
 
 	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, firewall, rules, devices)...)
 	resp.Diagnostics.Append(data.parseNonComputedAttributes(ctx, firewall, rules, devices)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

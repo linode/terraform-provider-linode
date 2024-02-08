@@ -21,21 +21,52 @@ The following example shows how one might use this resource to configure a Linod
 
 ```hcl
 resource "linode_instance" "web" {
-    label = "simple_instance"
-    image = "linode/ubuntu18.04"
-    region = "us-central"
-    type = "g6-standard-1"
-    authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
-    root_pass = "terr4form-test"
+  label           = "simple_instance"
+  image           = "linode/ubuntu22.04"
+  region          = "us-central"
+  type            = "g6-standard-1"
+  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+  root_pass       = "this-is-not-a-safe-password"
 
-    group = "foo"
-    tags = [ "foo" ]
-    swap_size = 256
-    private_ip = true
+  tags       = ["foo"]
+  swap_size  = 256
+  private_ip = true
+}
+
+```
+
+### Linode Instance with Explicit Networking Interfaces
+
+You can add a VPC or VLAN interface directly to a Linode instance resource.
+
+```hcl
+resource "linode_instance" "web" {
+  label           = "simple_instance"
+  image           = "linode/ubuntu22.04"
+  region          = "us-central"
+  type            = "g6-standard-1"
+  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+  root_pass       = "this-is-not-a-safe-password"
+
+  interface {
+    purpose = "public"
+  }
+
+  interface {
+    purpose   = "vpc"
+    subnet_id = 123
+    ipv4 {
+      vpc = "10.0.4.250"
+    }
+  }
+
+  tags       = ["foo"]
+  swap_size  = 256
+  private_ip = true
 }
 ```
 
-### Linode Instance with explicit Configs and Disks
+### Linode Instance with Explicit Configs and Disks
 
 Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance. This can be used to provision multiple disks and volumes during Instance creation.
 
@@ -44,50 +75,51 @@ data "linode_profile" "me" {}
 
 resource "linode_instance" "web" {
   label      = "complex_instance"
-  group      = "foo"
-  tags = [ "foo" ]
+  tags       = ["foo"]
   region     = "us-central"
   type       = "g6-nanode-1"
   private_ip = true
 }
 
 resource "linode_volume" "web_volume" {
-  label = "web_volume"
-  size = 20
+  label  = "web_volume"
+  size   = 20
   region = "us-central"
 }
 
 resource "linode_instance_disk" "boot_disk" {
-  label = "boot"
+  label     = "boot"
   linode_id = linode_instance.web.id
 
-  size = 3000
-  image  = "linode/ubuntu18.04"
+  size  = 3000
+  image = "linode/ubuntu22.04"
 
   # Any of authorized_keys, authorized_users, and root_pass
   # can be used for provisioning.
-  authorized_keys = [ "ssh-rsa AAAA...Gw== user@example.local" ]
-  authorized_users = [ data.linode_profile.me.username ]
-  root_pass = "terr4form-test"
+  authorized_keys  = ["ssh-rsa AAAA...Gw== user@example.local"]
+  authorized_users = [data.linode_profile.me.username]
+  root_pass        = "terr4form-test"
 }
 
 resource "linode_instance_config" "boot_config" {
-  label = "boot_config"
+  label     = "boot_config"
   linode_id = linode_instance.web.id
-  
-  devices {
-    sda {
-      disk_id = linode_instance_disk.boot_disk.id
-    }
-    sdb {
-      volume_id = linode_volume.web_volume.id
-    }
+
+  device {
+    device_name = "sda"
+    disk_id     = linode_instance_disk.boot_disk.id
   }
-  
+
+  device {
+    device_name = "sdb"
+    volume_id   = linode_volume.web_volume.id
+  }
+
   root_device = "/dev/sda"
-  kernel = "linode/latest-64bit"
-  booted = true
+  kernel      = "linode/latest-64bit"
+  booted      = true
 }
+
 ```
 
 ## Argument Reference
@@ -101,8 +133,6 @@ The following arguments are supported:
 - - -
 
 * `label` - (Optional) The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned.
-
-* `group` - (Optional) The display group of the Linode instance.
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
 
@@ -134,25 +164,29 @@ The following arguments are supported:
 
 * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
 
+* `firewall_id` - (Optional) The ID of the Firewall to attach to the instance upon creation. *Changing `firewall_id` forces the creation of a new Linode Instance.*
+
+* `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
+
 ### Simplified Resource Arguments
 
 Just as the Linode API provides, these fields are for the most common provisioning use case, a single data disk, a single swap disk, and a single config.  These arguments are not compatible with `disk` and `config` fields, described later.
+
+* `backup_id` - (Optional) A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive. *This value can not be imported.* *Changing `backup_id` forces the creation of a new Linode Instance.*
+
+* `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://developers.linode.com/api/v4/images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
+
+* `root_pass` - (Required with `image`) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
 * `authorized_keys` - (Optional with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
 
 * `authorized_users` - (Optional with `image`) A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. *This value can not be imported.* *Changing `authorized_users` forces the creation of a new Linode Instance.*
 
-* `root_pass` - (Optional) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
+* `stackscript_id` - (Optional with `image`) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *This value can not be imported.* *Changing `stackscript_id` forces the creation of a new Linode Instance.*
 
-* `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://developers.linode.com/api/v4/images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
+* `stackscript_data` - (Optional with `image`) An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.  *This value can not be imported.* *Changing `stackscript_data` forces the creation of a new Linode Instance.*
 
-* `stackscript_id` - (Optional) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *This value can not be imported.* *Changing `stackscript_id` forces the creation of a new Linode Instance.*
-
-* `stackscript_data` - (Optional) An object containing responses to any User Defined Fields present in the StackScript being deployed to this Linode. Only accepted if 'stackscript_id' is given. The required values depend on the StackScript being deployed.  *This value can not be imported.* *Changing `stackscript_data` forces the creation of a new Linode Instance.*
-
-* `swap_size` - (Optional) When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.
-
-* `backup_id` - (Optional) A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive. *This value can not be imported.* *Changing `backup_id` forces the creation of a new Linode Instance.*
+* `swap_size` - (Optional with `image`) When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.
 
 ### Disk and Config Arguments
 
@@ -180,13 +214,13 @@ By specifying the `disk` and `config` fields for a Linode instance, it is possib
 
   * `read_only` - (Optional) If true, this Disk is read-only.
 
-  * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian9`, `linode/fedora28`, `linode/ubuntu16.04lts`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/images). *Changing `image` forces the creation of a new Linode Instance.*
+  * `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with private/. See /images for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/images). *Changing `image` forces the creation of a new Linode Instance.*
 
   * `authorized_keys` - (Optional with `image`) A list of SSH public keys to deploy for the root user on the newly created Linode. Only accepted if `image` is provided. *This value can not be imported.* *Changing `authorized_keys` forces the creation of a new Linode Instance.*
 
   * `authorized_users` - (Optional with `image`) A list of Linode usernames. If the usernames have associated SSH keys, the keys will be appended to the `root` user's `~/.ssh/authorized_keys` file automatically. *This value can not be imported.* *Changing `authorized_users` forces the creation of a new Linode Instance.*
 
-  * `root_pass` - (Optional with `image`) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
+  * `root_pass` - (Required with `image`) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
   * `stackscript_id` - (Optional with `image`) The StackScript to deploy to the newly created Linode. If provided, 'image' must also be provided, and must be an Image that is compatible with this StackScript. *This value can not be imported.* *Changing `stackscript_id` forces the creation of a new Linode Instance.*
 

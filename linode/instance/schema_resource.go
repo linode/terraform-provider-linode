@@ -198,6 +198,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"provided, and must be an Image that is compatible with this StackScript.",
 		Optional:      true,
 		ForceNew:      true,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"stackscript_data": {
@@ -208,6 +209,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		Sensitive:     true,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"label": {
@@ -221,6 +223,7 @@ var resourceSchema = map[string]*schema.Schema{
 	"group": {
 		Type:        schema.TypeString,
 		Description: "The display group of the Linode instance.",
+		Deprecated:  "Group label is deprecated. We recommend using tags instead.",
 		Optional:    true,
 	},
 	"tags": {
@@ -253,8 +256,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "If true, changes in Linode type will attempt to upsize or downsize implicitly created disks. " +
 			"This must be false if explicit disks are defined. This is an irreversible action as Linode disks cannot " +
 			"be automatically downsized.",
-		Optional: true,
-		Default:  false,
+		Optional:     true,
+		RequiredWith: []string{"image"},
+		Default:      false,
 	},
 	"migration_type": {
 		Type:        schema.TypeString,
@@ -311,6 +315,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"authorized_users": {
@@ -322,11 +327,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		ForceNew:      true,
 		StateFunc:     sshKeyState,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"root_pass": {
 		Type:        schema.TypeString,
-		Description: "The password that will be initialially assigned to the 'root' user account.",
+		Description: "The password that will be initially assigned to the 'root' user account.",
 		Sensitive:   true,
 		Optional:    true,
 		ForceNew:    true,
@@ -343,6 +349,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:      true,
 		Computed:      true,
 		Default:       nil,
+		RequiredWith:  []string{"image"},
 		ConflictsWith: []string{"disk", "config"},
 	},
 	"backups_enabled": {
@@ -551,6 +558,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"If an explicit config or disk is defined, interfaces must be declared in the config block.",
 		Optional:      true,
 		ConflictsWith: []string{"disk", "config"},
+		RequiredWith:  []string{"image"},
 		Elem:          InterfaceSchema,
 	},
 	"config": {

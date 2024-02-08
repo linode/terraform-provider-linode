@@ -688,25 +688,63 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		bootConfig = updatedConfigs[0].ID
 	}
 
+	booted := d.Get("booted").(bool)
+	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
+
 	if d.HasChange("interface") {
 		interfaces := d.Get("interface").([]interface{})
 
-		expandedInterfaces := make([]linodego.InstanceConfigInterfaceCreateOptions, len(interfaces))
-
-		for i, ni := range interfaces {
-			expandedInterfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
+		expandedInterfaces := helper.ExpandConfigInterfaces(ctx, interfaces)
+		config, err := client.GetInstanceConfig(ctx, id, bootConfig)
+		if err != nil {
+			return diag.Errorf("failed to get config %d: %s", bootConfig, err)
 		}
+
+		powerOffRequired := VPCInterfaceIncluded(config.Interfaces, expandedInterfaces)
 
 		tflog.Debug(ctx, "Updating instance config for interface changes", map[string]any{
 			"config_id": bootConfig,
 		})
 
-		if _, err := client.UpdateInstanceConfig(ctx, instance.ID, bootConfig, linodego.InstanceConfigUpdateOptions{
-			Interfaces: expandedInterfaces,
-		}); err != nil {
+		instance, err := client.GetInstance(ctx, id)
+		if err != nil {
+			return diag.Errorf("Error fetching data about the current linode: %s", err)
+		}
+
+		// we should power on Linode after updating of the interfaces if
+		// it's currently on and booted attribute is unset by the user.
+		// Otherwise, it will stay off (if it's already off) or be handled by
+		// `handleBootedUpdate` (if booted is set to an explicit value)
+		shouldPowerOn := bootedNull && powerOffRequired && instance.Status == linodego.InstanceRunning
+
+		if powerOffRequired {
+			if diag := ShutdownInstanceForVPCInterfaceUpdate(
+				ctx, meta.(*helper.ProviderMeta), id, helper.GetDeadlineSeconds(ctx, d),
+			); diag != nil {
+				return diag
+			}
+		}
+
+		// reboot won't be needed if we power off the Linode during update
+		rebootInstance = !powerOffRequired
+
+		tflog.Debug(ctx, "call update config API", map[string]any{"interfaces": expandedInterfaces})
+		if _, err := client.UpdateInstanceConfig(
+			ctx, instance.ID, bootConfig, linodego.InstanceConfigUpdateOptions{
+				Interfaces: expandedInterfaces,
+			},
+		); err != nil {
 			return diag.Errorf("failed to set boot config interfaces: %s", err)
 		}
-		rebootInstance = true
+
+		if shouldPowerOn {
+			if diag := BootInstanceAfterVPCInterfaceUpdate(
+				ctx, meta.(*helper.ProviderMeta), id, bootConfig, helper.GetDeadlineSeconds(ctx, d),
+			); diag != nil {
+				return diag
+			}
+		}
+
 	}
 
 	if d.HasChange("shared_ipv4") {
@@ -724,9 +762,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			return diag.Errorf("failed to share ipv4 addresses with instance: %s", err)
 		}
 	}
-
-	booted := d.Get("booted").(bool)
-	bootedNull := d.GetRawConfig().GetAttr("booted").IsNull()
 
 	// Don't reboot if the Linode should be powered off
 	if !bootedNull && !booted {
@@ -749,7 +784,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		})
 
 		err = client.RebootInstance(ctx, instance.ID, bootConfig)
-
 		if err != nil {
 			return diag.Errorf("Error rebooting Instance %d: %s", instance.ID, err)
 		}

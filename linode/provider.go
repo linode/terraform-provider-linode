@@ -29,7 +29,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/user"
-	"github.com/linode/terraform-provider-linode/v2/linode/volume"
 )
 
 // Provider creates and manages the resources in a Linode configuration.
@@ -121,7 +120,6 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"linode_database_mysql_backups": databasemysqlbackups.DataSource(),
 			"linode_instances":              instance.DataSource(),
-			"linode_lke_cluster":            lke.DataSource(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -142,7 +140,6 @@ func Provider() *schema.Provider {
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
 			"linode_user":                     user.Resource(),
-			"linode_volume":                   volume.Resource(),
 		},
 	}
 

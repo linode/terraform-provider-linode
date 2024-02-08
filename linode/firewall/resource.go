@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -37,11 +38,16 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_firewall")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
 	}
+
+	tflog.Trace(ctx, "client.GetFirewall(...)")
 	firewall, err := client.GetFirewall(ctx, id)
 	if err != nil {
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code == 404 {
@@ -52,11 +58,13 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("failed to get firewall %d: %s", id, err)
 	}
 
+	tflog.Trace(ctx, "client.GetFirewallRules(...)")
 	rules, err := client.GetFirewallRules(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get rules for firewall %d: %s", id, err)
 	}
 
+	tflog.Trace(ctx, "client.ListFirewallDevices(...)")
 	devices, err := client.ListFirewallDevices(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get devices for firewall %d: %s", id, err)
@@ -93,16 +101,28 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	createOpts.Rules.Outbound = expandFirewallRules(d.Get("outbound").([]any))
 	createOpts.Rules.OutboundPolicy = d.Get("outbound_policy").(string)
 
+	tflog.Debug(ctx, "client.CreateFirewall(...)", map[string]any{
+		"options": createOpts,
+	})
+
 	firewall, err := client.CreateFirewall(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create Firewall: %s", err)
 	}
 	d.SetId(strconv.Itoa(firewall.ID))
 
+	ctx = populateLogAttributes(ctx, d)
+
 	if d.Get("disabled").(bool) {
-		if _, err := client.UpdateFirewall(ctx, firewall.ID, linodego.FirewallUpdateOptions{
+		updateOpts := linodego.FirewallUpdateOptions{
 			Status: linodego.FirewallDisabled,
-		}); err != nil {
+		}
+
+		tflog.Debug(ctx, "client.UpdateFirewall(...)", map[string]any{
+			"options": updateOpts,
+		})
+
+		if _, err := client.UpdateFirewall(ctx, firewall.ID, updateOpts); err != nil {
 			return diag.Errorf("failed to disable firewall %d: %s", firewall.ID, err)
 		}
 	}
@@ -111,6 +131,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_firewall")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -130,6 +153,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			updateOpts.Status = expandFirewallStatus(d.Get("disabled"))
 		}
 
+		tflog.Debug(ctx, "client.UpdateFirewall(...)", map[string]any{
+			"options": updateOpts,
+		})
+
 		if _, err := client.UpdateFirewall(ctx, id, updateOpts); err != nil {
 			return diag.Errorf("failed to update firewall %d: %s", id, err)
 		}
@@ -143,6 +170,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		Outbound:       outboundRules,
 		OutboundPolicy: d.Get("outbound_policy").(string),
 	}
+
+	tflog.Debug(ctx, "client.UpdateFirewallRules(...)", map[string]any{
+		"rules": ruleSet,
+	})
 	if _, err := client.UpdateFirewallRules(ctx, id, ruleSet); err != nil {
 		return diag.Errorf("failed to update rules for firewall %d: %s", id, err)
 	}
@@ -167,6 +198,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			})
 		}
 
+		tflog.Debug(ctx, "Reconciling firewall device assignments")
 		if err := updateFirewallDevices(ctx, d, client, id, assignments); err != nil {
 			return diag.Errorf("failed to update firewall devices: %s", err)
 		}
@@ -176,12 +208,15 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
 	}
 
+	tflog.Debug(ctx, "ctx.DeleteFirewall(...)")
 	if err := client.DeleteFirewall(ctx, id); err != nil {
 		return diag.Errorf("failed to delete Firewall %d: %s", id, err)
 	}

@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/volume"
 	"github.com/linode/terraform-provider-linode/v2/linode/volume/tmpl"
 )
 
@@ -55,27 +54,6 @@ func sweep(prefix string) error {
 	}
 
 	return nil
-}
-
-func TestDetectVolumeIDChange(t *testing.T) {
-	t.Parallel()
-	var have, want *int
-	var one, two *int
-	oneValue, twoValue := 1, 2
-	one, two = &oneValue, &twoValue
-
-	if have, want = nil, nil; volume.DetectVolumeIDChange(have, want) {
-		t.Errorf("should not detect change when both are nil")
-	}
-	if have, want = nil, one; !volume.DetectVolumeIDChange(have, want) {
-		t.Errorf("should detect change when have is nil and want is not nil")
-	}
-	if have, want = one, nil; !volume.DetectVolumeIDChange(have, want) {
-		t.Errorf("should detect change when want is nil and have is not nil")
-	}
-	if have, want = one, two; !volume.DetectVolumeIDChange(have, want) {
-		t.Errorf("should detect change when values differ")
-	}
 }
 
 func TestAccResourceVolume_basic_smoke(t *testing.T) {
@@ -180,7 +158,6 @@ func TestAccResourceVolume_attached(t *testing.T) {
 
 	volumeName := acctest.RandomWithPrefix("tf_test")
 	volume := linodego.Volume{}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -203,10 +180,11 @@ func TestAccResourceVolume_attached(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "linode_volume.foobar",
-				ImportState:       true,
-				ImportStateVerify: true,
-				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
+				ResourceName:            "linode_volume.foobar",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"linode_id"},
+				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 		},
 	})
@@ -231,18 +209,15 @@ func TestAccResourceVolume_detached(t *testing.T) {
 				),
 			},
 			{
-				Config:            tmpl.Attached(t, volumeName, testRegion),
-				ResourceName:      "linode_volume.foobar",
-				ImportState:       true,
-				ImportStateVerify: true,
-				Check:             resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
-			},
-			{
-				Config:            tmpl.Attached(t, volumeName, testRegion),
-				ResourceName:      "linode_volume.foobar",
-				ImportState:       true,
-				ImportStateVerify: true,
-				Check:             resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
+				Config:                  tmpl.Attached(t, volumeName, testRegion),
+				ResourceName:            "linode_volume.foobar",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"linode_id"},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
+					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
+				),
 			},
 		},
 	})
@@ -278,14 +253,14 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
 			},
 			{
 				ResourceName:            "linode_instance.foobaz",
 				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
 			},
 		},
 	})

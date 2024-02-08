@@ -8,6 +8,8 @@ description: |-
 
 Provides a Linode Instance Config resource. This can be used to create, modify, and delete Linode Instance Configs.
 
+~> **NOTICE:** If a VPC interface is defined in your `linode_instance_config` resource and the config is currently booted with the Linode, then the Linode is required to be powered off during the update operation. The Terraform provider will try to implicitly shutdown you Linode instance during the update and restart it when it's finished. Unless you explicitly config the `booted` attribute in the resource or explicitly set `skip_implicit_reboots` to `false` in the Terraform provider config.
+
 **NOTE:** Deleting a config will shut down the attached instance if the config is in use.
 
 ## Example Usage
@@ -43,7 +45,7 @@ resource "linode_instance" "my-instance" {
 }
 ```
 
-Creating a complex bootable Instance Configuration Profile:
+Creating a complex bootable Instance Configuration Profile with a VPC:
 
 ```hcl
 resource "linode_instance_config" "my-config" {
@@ -77,10 +79,10 @@ resource "linode_instance_config" "my-config" {
     ipam_address = "10.0.0.2/24"
   }
 
-  # VPC networking on eth1
+  # VPC networking on eth2
   interface {
     purpose = "vpc"
-    subnet_id = 123
+    subnet_id = linode_vpc_subnet.foobar.id
     ipv4 {
       vpc = "10.0.4.250"
     }

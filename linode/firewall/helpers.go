@@ -3,6 +3,8 @@ package firewall
 import (
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -102,10 +104,16 @@ func updateFirewallDevices(
 		}
 
 		// Device doesn't exist, create a new one
-		_, err := client.CreateFirewallDevice(ctx, id, linodego.FirewallDeviceCreateOptions{
+		createOpts := linodego.FirewallDeviceCreateOptions{
 			ID:   device.ID,
 			Type: device.Type,
+		}
+
+		tflog.Debug(ctx, "client.CreateFirewallDevice(...)", map[string]any{
+			"options": createOpts,
 		})
+
+		_, err := client.CreateFirewallDevice(ctx, id, createOpts)
 		if err != nil {
 			return err
 		}
@@ -113,10 +121,20 @@ func updateFirewallDevices(
 
 	// Clean up remaining devices
 	for _, device := range deviceMap {
+		tflog.Debug(ctx, "client.DeleteFirewallDevice(...)", map[string]any{
+			"device_id": device.ID,
+		})
+
 		if err := client.DeleteFirewallDevice(ctx, id, device.ID); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"firewall_id": d.Id(),
+	})
 }

@@ -18,5 +18,8 @@ jobs:
 
       - run: go version
 
+      - name: Install deps
+        run: make deps
+
       - name: Run unit tests
-        run: make unittest
+        run: make unit-test

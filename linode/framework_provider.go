@@ -3,13 +3,12 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/account"
+	"github.com/linode/terraform-provider-linode/v2/linode/accountavailabilities"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountavailability"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogin"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogins"
@@ -22,6 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databases"
 	"github.com/linode/terraform-provider-linode/v2/linode/domain"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
+	"github.com/linode/terraform-provider-linode/v2/linode/domains"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainzonefile"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
@@ -34,8 +34,11 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/ipv6range"
+	"github.com/linode/terraform-provider-linode/v2/linode/ipv6ranges"
 	"github.com/linode/terraform-provider-linode/v2/linode/kernel"
 	"github.com/linode/terraform-provider-linode/v2/linode/kernels"
+	"github.com/linode/terraform-provider-linode/v2/linode/lke"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
@@ -168,6 +171,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		vpc.NewResource,
 		instanceip.NewResource,
 		firewalldevice.NewResource,
+		volume.NewResource,
 	}
 }
 
@@ -223,5 +227,9 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		volumes.NewDataSource,
 		accountavailability.NewDataSource,
 		nbconfigs.NewDataSource,
+		ipv6ranges.NewDataSource,
+		domains.NewDataSource,
+		lke.NewDataSource,
+		lkeclusters.NewDataSource,
 	}
 }

@@ -1,19 +1,26 @@
-SWEEP?="tf_test,tf-test"
+COUNT?=1
+PARALLEL?=10
 PKG_NAME=linode/...
+TIMEOUT?=240m
+RUN_LONG_TESTS?="false"
+SWEEP?="tf_test,tf-test"
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.28.1
 
-ACCTEST_COUNT?=1
-ACCTEST_PARALLELISM?=10
-ACCTEST_TIMEOUT?=240m
-RUN_LONG_TESTS?="false"
+.PHONY: default
+default: build
 
-.PHONY: build sweep test testacc vet fmt fmtcheck errcheck test-compile
+.PHONY: build
+build: format
+	# trying to copy .goreleaser.yaml
+	go build -a -ldflags '-s -extldflags "-static"'
 
-tooldeps:
-	go generate -tags tools tools/tools.go
+.PHONY: clean
+clean:
+	rm -f terraform-provider-linode
 
+.PHONY: lint
 lint:
 	# remove two disabled linters when their errors are addressed
 	golangci-lint run \
@@ -28,65 +35,56 @@ lint:
 		-R019=false \
 		./...
 
-docscheck:
+.PHONY: deps
+deps:
+	go generate -tags tools tools/tools.go
+
+.PHONY: format
+format:
+	gofumpt -l -w .
+
+.PHONY: fmt-check err-check imports-check vet
+fmt-check:
+	golangci-lint run --disable-all --enable gofumpt ./...
+err-check:
+	golangci-lint run --disable-all -E errcheck ./...
+imports-check:
+	golangci-lint run --disable-all --enable goimports ./...
+vet:
+	golangci-lint run --disable-all --enable govet ./...
+
+.PHONY: test
+test: fmt-check smoke-test unit-test int-test
+
+.PHONY: unit-test
+unit-test: fmt-check
+	go test -v --tags=unit ./$(PKG_NAME)
+
+.PHONY: int-test
+int-test: fmt-check
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
+	go test --tags=integration -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
+
+.PHONY: smoke-test
+smoke-test: fmt-check
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
+	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
+
+.PHONY: docs-check
+docs-check:
+	# markdown linter for the documents
 	docker run --rm \
 		-v $$(pwd):/markdown:ro \
 		$(MARKDOWNLINT_IMG):$(MARKDOWNLINT_TAG) \
 		--config .markdownlint.yml \
 		docs
 
+.PHONY: sweep
 sweep:
+	# sweep cleans the test infra from your account
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
-	go test -v ./$(PKG_NAME) -sweep=$(SWEEP) $(SWEEPARGS)
-
-default: build
-
-build: fmtcheck
-	# trying to copy .goreleaser.yaml
-	go build -a -ldflags '-s -extldflags "-static"'
-
-clean:
-	rm -f terraform-provider-linode
-
-test: fmtcheck
-	go test -i $(TEST) || exit 1
-	echo $(TEST) | \
-		xargs -t -n4 go test -parallel=2 -timeout=30s
-
-testacc: fmtcheck
-	TF_ACC=1 \
-	LINODE_API_VERSION="v4beta" \
-	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test --tags=integration -v ./$(PKG_NAME) -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(TESTARGS)
-
-smoketest: fmtcheck
-	TF_ACC=1 \
-	LINODE_API_VERSION="v4beta" \
-	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test -v -run smoke ./linode/... -count $(ACCTEST_COUNT) -timeout $(ACCTEST_TIMEOUT) -parallel=$(ACCTEST_PARALLELISM) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
-
-unittest:
-	go test -v --tags=unit ./$(PKG_NAME)
-
-vet:
-	golangci-lint run --disable-all --enable govet ./...
-
-fmt:
-	gofumpt -w -l .
-
-imports:
-	golangci-lint run --disable-all --enable goimports ./...
-
-fmtcheck:
-	golangci-lint run --disable-all --enable gofumpt ./...
-
-errcheck:
-	golangci-lint run --disable-all -E errcheck ./...
-
-test-compile:
-	@if [ "$(TEST)" = "./..." ]; then \
-		echo "ERROR: Set TEST to a specific package. For example,"; \
-		echo "  make test-compile TEST=./$(PKG_NAME)"; \
-		exit 1; \
-	fi
-	go test -c $(TEST) $(TESTARGS) -timeout 120m -parallel=2
+	go test -v ./$(PKG_NAME) -sweep=$(SWEEP) $(ARGS)

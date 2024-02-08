@@ -19,7 +19,7 @@ The following example shows how one might use this resource to configure NodeBal
 resource "linode_instance" "web" {
     count = "3"
     label = "web-${count.index + 1}"
-    image = "linode/ubuntu18.04"
+    image = "linode/ubuntu22.04"
     region = "us-east"
     type = "g6-standard-1"
     authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
@@ -53,6 +53,13 @@ resource "linode_nodebalancer_node" "foonode" {
     address = "${element(linode_instance.web.*.private_ip_address, count.index)}:80"
     label = "mynodebalancernode"
     weight = 50
+
+  lifecycle {
+    // Tell Terraform to implicitly recreate the NodeBalancer node when
+    // the target instance has been marked for recreation.
+    // See: https://github.com/linode/terraform-provider-linode/issues/1224
+    replace_triggered_by = [linode_instance.foo.id]
+  }
 }
 ```
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -28,6 +29,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_firewalls")
+
 	var data FirewallFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -69,6 +72,10 @@ func listFirewalls(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
+	tflog.Trace(ctx, "client.ListFirewalls", map[string]any{
+		"filter": filter,
+	})
+
 	firewalls, err := client.ListFirewalls(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

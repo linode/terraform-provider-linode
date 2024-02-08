@@ -15,7 +15,7 @@ Creating a basic LKE cluster:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.21"
+    k8s_version = "1.28"
     region      = "us-central"
     tags        = ["prod"]
 
@@ -31,26 +31,20 @@ Creating an LKE cluster with autoscaler:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.21"
+    k8s_version = "1.28"
     region      = "us-central"
     tags        = ["prod"]
 
     pool {
+        # NOTE: If count is undefined, the initial node count will
+        # equal the minimum autoscaler node count.
         type  = "g6-standard-2"
-        count = 3
 
         autoscaler {
           min = 3
           max = 10
         }
     }
-
-  # Prevent the count field from overriding autoscaler-created nodes
-  lifecycle {
-    ignore_changes = [
-      pool.0.count
-    ]
-  }
 }
 ```
 
@@ -72,17 +66,19 @@ The following arguments are supported:
 
 ### pool
 
+~> **Notice** Due to limitations in Terraform, the order of pools in the `linode_lke_cluster` resource is treated as significant.
+For example, the removal of the first listed pool in a cluster may result in all other node pools
+being updated accordingly. See the [Nested Node Pool Caveats](#nested-node-pool-caveats) section for more details.
+
 The following arguments are supported in the `pool` specification block:
 
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
-* `count` - (Required) The number of nodes in the Node Pool.
+* `count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
 ### autoscaler
-
-~> **NOTICE:** To prevent the `count` field from removing nodes created by the autoscaler, consider using the [ignore_changes](https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes) lifecycle argument.
 
 The following arguments are supported in the `autoscaler` specification block:
 
@@ -133,3 +129,65 @@ LKE Clusters can be imported using the `id`, e.g.
 ```sh
 terraform import linode_lke_cluster.my_cluster 12345
 ```
+
+## Nested Node Pool Caveats
+
+Due to limitations in Terraform, there are some minor caveats that may cause unexpected behavior when updating
+nested `pool` blocks in this resource.
+Primarily, the order of `pool` blocks is significant because the ID of each pool is resolved from
+the Terraform state.
+
+For example, updating the following configuration:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+  # ...
+  
+  pool {
+    type  = "g6-standard-1"
+    count = 2
+  }
+
+  pool {
+    type  = "g6-standard-2"
+    count = 3
+  }
+}
+```
+
+to this:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+  # ...
+
+  pool {
+    type  = "g6-standard-2"
+    count = 3
+  }
+}
+```
+
+will produce the following plan:
+
+```terraform
+~ resource "linode_lke_cluster" "my-cluster" {
+      ~ pool {
+            id = ... -> null
+          ~ count = 2 -> 3
+          ~ type  = "g6-standard-1" -> "g6-standard-2"
+        }
+      - pool {
+          - count = 3 -> null
+          - id    = ... -> null
+          - nodes = [
+              ...
+            ] -> null
+        }
+  }
+```
+
+In this case, the first node pool from the original configuration will be updated to match
+the second node pool's configuration.
+
+Although not ideal, this functionality guarantees that updates to nested node pools will be reliable and predictable.

@@ -1,6 +1,6 @@
 # Linode MySQL + Adminer Example
 
-This example launches two Alpine 3.13 instances connected to a VLAN and installs a Docker daemon onto both. One instance runs a publicly accessible Adminer instance, and the other runs a MySQL server only accessible from within the VLAN.
+This example launches two Alpine 3.19 instances connected to a VLAN and installs a Docker daemon onto both. One instance runs a publicly accessible Adminer instance, and the other runs a MySQL server only accessible from within the VLAN.
 
 These instances are both placed behind a Firewall, which only allows inbound traffic on port 80 (HTTP).
 

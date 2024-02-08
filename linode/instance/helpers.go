@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -211,12 +212,15 @@ func updateInstanceConfigs(
 
 			}
 
+			if reflect.DeepEqual(configUpdateOpts.Interfaces, existingConfig.GetUpdateOptions().Interfaces) {
+				configUpdateOpts.Interfaces = nil
+			}
+
 			tfcDevicesRaw, devicesFound := tfc["devices"]
 			if tfcDevices, ok := tfcDevicesRaw.([]interface{}); devicesFound && ok {
 				devices := tfcDevices[0].(map[string]interface{})
 
 				configUpdateOpts.Devices, err = expandInstanceConfigDeviceMap(devices, diskIDLabelMap)
-
 				if err != nil {
 					return rebootInstance, updatedConfigMap, updatedConfigs, err
 				}
@@ -239,6 +243,7 @@ func updateInstanceConfigs(
 				"body":      configUpdateOpts,
 				"config_id": existingConfig.ID,
 			})
+			tflog.Trace(ctx, "Config update options", map[string]any{"value": configUpdateOpts.Interfaces})
 			updatedConfig, err := client.UpdateInstanceConfig(ctx, instance.ID, existingConfig.ID, configUpdateOpts)
 			if err != nil {
 				return rebootInstance, updatedConfigMap, updatedConfigs, fmt.Errorf(
@@ -1156,39 +1161,9 @@ func handleBootedUpdate(
 		return err
 	}
 
-	instStatus := inst.Status
-
-	// Ensure the Linode reaches a running or offline state
-	// if in a transition state (shutting down, booting, rebooting)
-	// TODO: clean up this logic
-	switch inst.Status {
-
-	// These cases can be ignored
-	case linodego.InstanceRunning:
-	case linodego.InstanceOffline:
-
-	case linodego.InstanceShuttingDown:
-		tflog.Info(ctx, "Awaiting instance shutdown before continuing")
-
-		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, 120)
-		if err != nil {
-			return fmt.Errorf("failed to wait for instance offline: %s", err)
-		}
-
-		instStatus = linodego.InstanceOffline
-
-	case linodego.InstanceBooting, linodego.InstanceRebooting:
-		tflog.Info(ctx, "Awaiting instance boot before continuing")
-
-		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceRunning, 120)
-		if err != nil {
-			return fmt.Errorf("failed to wait for instance running: %s", err)
-		}
-
-		instStatus = linodego.InstanceRunning
-
-	default:
-		return fmt.Errorf("instance is in unhandled state %s", inst.Status)
+	instStatus, err := waitForRunningOrOfflineState(ctx, inst.Status, &client, instanceID)
+	if err != nil {
+		return err
 	}
 
 	// Boot or shutdown the instance if necessary
@@ -1205,6 +1180,44 @@ func handleBootedUpdate(
 	}
 
 	return nil
+}
+
+func waitForRunningOrOfflineState(
+	ctx context.Context, status linodego.InstanceStatus, client *linodego.Client, instanceID int,
+) (instStatus linodego.InstanceStatus, err error) {
+	// Ensure the Linode reaches a running or offline state
+	// if in a transition state (shutting down, booting, rebooting)
+	// TODO: clean up this logic
+	switch status {
+
+	// These cases can be ignored
+	case linodego.InstanceRunning:
+	case linodego.InstanceOffline:
+
+	case linodego.InstanceShuttingDown:
+		tflog.Info(ctx, "Awaiting instance shutdown before continuing")
+
+		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceOffline, 120)
+		if err != nil {
+			return "", fmt.Errorf("failed to wait for instance offline: %s", err)
+		}
+
+		instStatus = linodego.InstanceOffline
+
+	case linodego.InstanceBooting, linodego.InstanceRebooting:
+		tflog.Info(ctx, "Awaiting instance boot before continuing")
+
+		_, err = client.WaitForInstanceStatus(ctx, instanceID, linodego.InstanceRunning, 120)
+		if err != nil {
+			return "", fmt.Errorf("failed to wait for instance running: %s", err)
+		}
+
+		instStatus = linodego.InstanceRunning
+
+	default:
+		return "", fmt.Errorf("instance is in unhandled state %s", status)
+	}
+	return instStatus, nil
 }
 
 func shutDownInstanceSync(ctx context.Context, client linodego.Client, instanceID, deadlineSeconds int) error {
@@ -1355,4 +1368,68 @@ func instanceIPSliceToString(ips []*linodego.InstanceIP) []string {
 	}
 
 	return result
+}
+
+// VPCInterfaceIncluded returns whether a VPC interface is included in either slice
+func VPCInterfaceIncluded(
+	interfaces1 []linodego.InstanceConfigInterface,
+	interfaces2 []linodego.InstanceConfigInterfaceCreateOptions,
+) bool {
+	for _, ni := range interfaces1 {
+		if ni.Purpose == linodego.InterfacePurposeVPC {
+			return true
+		}
+	}
+
+	for _, ni := range interfaces2 {
+		if ni.Purpose == linodego.InterfacePurposeVPC {
+			return true
+		}
+	}
+
+	return false
+}
+
+func BootInstanceAfterVPCInterfaceUpdate(ctx context.Context, meta *helper.ProviderMeta, instanceID, targetConfigID, deadlineSeconds int) diag.Diagnostics {
+	tflog.Debug(ctx, "booting instance after VPC interface change applied")
+	if err := bootInstanceSync(
+		ctx, meta.Client, instanceID, targetConfigID, deadlineSeconds,
+	); err != nil {
+		return diag.Errorf("failed to boot instance after VPC interface change applied: %s", err)
+	}
+	return nil
+}
+
+func ShutdownInstanceForVPCInterfaceUpdate(ctx context.Context, meta *helper.ProviderMeta, instanceID, deadlineSeconds int) diag.Diagnostics {
+	client := &meta.Client
+	if meta.Config.SkipImplicitReboots {
+		return diag.Errorf(
+			"Adding, removing, and reordering a Linode VPC interface requires the implicit " +
+				"reboot of the Linode, please consider setting 'skip_implicit_reboots' " +
+				"to true in the Linode provider config.",
+		)
+	}
+
+	instance, err := client.GetInstance(ctx, instanceID)
+	if err != nil {
+		return diag.Errorf("failed to get instance %d: %s", instanceID, err)
+	}
+
+	tflog.Debug(ctx, "shutting down instance for applying VPC interface change")
+
+	if _, err := waitForRunningOrOfflineState(
+		ctx, instance.Status, client, instance.ID,
+	); err != nil {
+		return diag.Errorf(
+			"failed waiting for instance %d to be in running or offline state: %s", instance.ID, err,
+		)
+	}
+	if instance.Status != linodego.InstanceOffline {
+		if err := shutDownInstanceSync(
+			ctx, *client, instance.ID, deadlineSeconds,
+		); err != nil {
+			return diag.Errorf("failed to shutdown instance: %s", err)
+		}
+	}
+	return nil
 }

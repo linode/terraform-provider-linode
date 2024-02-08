@@ -3,8 +3,7 @@ package lke
 import (
 	"context"
 	"fmt"
-	"math"
-	"sort"
+	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -13,6 +12,7 @@ import (
 )
 
 type NodePoolSpec struct {
+	ID                int
 	Type              string
 	Count             int
 	AutoScalerEnabled bool
@@ -26,159 +26,112 @@ type NodePoolUpdates struct {
 	ToUpdate map[int]linodego.LKENodePoolUpdateOptions
 }
 
-type nodePoolAssignRequest struct {
-	Spec, State NodePoolSpec
-	PoolID      int
-	SpecIndex   int
-}
-
-func (r nodePoolAssignRequest) Diff() int {
-	return int(math.Abs(float64(r.State.Count - r.Spec.Count)))
-}
-
-func getLKENodePoolProvisionedSpecs(pools []linodego.LKENodePool) map[NodePoolSpec]map[int]struct{} {
-	provisioned := make(map[NodePoolSpec]map[int]struct{})
-	for _, pool := range pools {
-		spec := NodePoolSpec{
-			Type:              pool.Type,
-			Count:             pool.Count,
-			AutoScalerEnabled: pool.Autoscaler.Enabled,
-			AutoScalerMin:     pool.Autoscaler.Min,
-			AutoScalerMax:     pool.Autoscaler.Max,
-		}
-		if _, ok := provisioned[spec]; !ok {
-			provisioned[spec] = make(map[int]struct{})
-		}
-		provisioned[spec][pool.ID] = struct{}{}
-	}
-	return provisioned
-}
-
 func ReconcileLKENodePoolSpecs(
-	poolSpecs []NodePoolSpec, pools []linodego.LKENodePool,
-) (updates NodePoolUpdates) {
-	provisionedPools := getLKENodePoolProvisionedSpecs(pools)
-	poolSpecsToAssign := make(map[int]struct{})
-	assignedPools := make(map[int]struct{})
-	updates.ToUpdate = make(map[int]linodego.LKENodePoolUpdateOptions)
+	oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec,
+) (NodePoolUpdates, error) {
+	result := NodePoolUpdates{
+		ToCreate: make([]linodego.LKENodePoolCreateOptions, 0),
+		ToUpdate: make(map[int]linodego.LKENodePoolUpdateOptions),
+		ToDelete: make([]int, 0),
+	}
 
-	// find exact pool matches and filter out
-	for i, spec := range poolSpecs {
-		poolSpecsToAssign[i] = struct{}{}
-		if ids, ok := provisionedPools[spec]; ok {
-			for id := range ids {
-				assignedPools[i] = struct{}{}
-				delete(ids, id)
-				break
+	createPool := func(spec NodePoolSpec) error {
+		createOpts := linodego.LKENodePoolCreateOptions{
+			Count: spec.Count,
+			Type:  spec.Type,
+		}
+
+		if createOpts.Count == 0 {
+			if !spec.AutoScalerEnabled {
+				return fmt.Errorf("count was 0 without an autoscaler. This is always a provider issue")
 			}
+			createOpts.Count = spec.AutoScalerMin
+		}
 
-			if len(provisionedPools[spec]) == 0 {
-				delete(provisionedPools, spec)
+		if spec.AutoScalerEnabled {
+			createOpts.Autoscaler = &linodego.LKENodePoolAutoscaler{
+				Enabled: true,
+				Min:     spec.AutoScalerMin,
+				Max:     spec.AutoScalerMax,
 			}
+		}
 
-			delete(poolSpecsToAssign, i)
+		result.ToCreate = append(result.ToCreate, createOpts)
+
+		return nil
+	}
+
+	deletePool := func(id int) {
+		result.ToDelete = append(result.ToDelete, id)
+	}
+
+	// If there are fewer node pools than expected
+	// we can assume the rest have been deleted
+	if len(newSpecs) < len(oldSpecs) {
+		for _, v := range oldSpecs[len(newSpecs):] {
+			deletePool(v.ID)
 		}
 	}
 
-	// calculate diffs for assigning remaining provisioned pools to remaining pool specs
-	poolAssignRequests := []nodePoolAssignRequest{}
-	for i := range poolSpecsToAssign {
-		poolSpec := poolSpecs[i]
-		for pool := range provisionedPools {
-			if pool.Type != poolSpec.Type {
-				continue
-			}
-
-			for id := range provisionedPools[pool] {
-				poolAssignRequests = append(poolAssignRequests, nodePoolAssignRequest{
-					Spec:      poolSpec,
-					State:     pool,
-					PoolID:    id,
-					SpecIndex: i,
-				})
+	// If there are more node pools then there were previously
+	// we can assume new ones have been created
+	if len(newSpecs) > len(oldSpecs) {
+		for _, v := range newSpecs[len(oldSpecs):] {
+			if err := createPool(v); err != nil {
+				return result, err
 			}
 		}
 	}
 
-	// order poolAssignRequests by smallest diffs for smallest updates needed
-	sort.Slice(poolAssignRequests, func(x, y int) bool {
-		return poolAssignRequests[x].Diff() < poolAssignRequests[y].Diff()
-	})
+	maxUpdateIndex := len(oldSpecs)
+	if maxUpdateIndex > len(newSpecs) {
+		maxUpdateIndex = len(newSpecs)
+	}
 
-	for _, request := range poolAssignRequests {
-		if _, ok := poolSpecsToAssign[request.SpecIndex]; !ok {
-			// pool spec was already assigned to a provisioned pool
+	for i, newSpec := range newSpecs[:maxUpdateIndex] {
+		oldSpec := oldSpecs[i]
+
+		if reflect.DeepEqual(newSpec, oldSpec) {
 			continue
 		}
-		if _, ok := assignedPools[request.PoolID]; ok {
-			// pool was already assigned to a pool spec
+
+		// Types cannot be updated on node pools
+		// so we should delete the old one and create a new one
+		if newSpec.Type != oldSpec.Type {
+			if err := createPool(newSpec); err != nil {
+				return result, err
+			}
+
+			deletePool(oldSpec.ID)
 			continue
 		}
 
-		var newAutoscaler *linodego.LKENodePoolAutoscaler
+		updateOpts := linodego.LKENodePoolUpdateOptions{
+			Count: newSpec.Count,
+		}
 
-		if request.Spec.AutoScalerEnabled {
-			newAutoscaler = &linodego.LKENodePoolAutoscaler{
-				Enabled: request.Spec.AutoScalerEnabled,
-				Min:     request.Spec.AutoScalerMin,
-				Max:     request.Spec.AutoScalerMax,
+		// Only include the autoscaler if the autoscaler has updated
+		// This isn't stricly necessary but it makes unit testing easier
+		if newSpec.AutoScalerEnabled != oldSpec.AutoScalerEnabled ||
+			newSpec.AutoScalerMin != oldSpec.AutoScalerMin ||
+			newSpec.AutoScalerMax != oldSpec.AutoScalerMax {
+			updateOpts.Autoscaler = &linodego.LKENodePoolAutoscaler{
+				Enabled: newSpec.AutoScalerEnabled,
+				Min:     newSpec.AutoScalerMin,
+				Max:     newSpec.AutoScalerMax,
 			}
 		}
 
-		// Only disable if already enabled
-		if !request.Spec.AutoScalerEnabled && request.State.AutoScalerEnabled {
-			newAutoscaler = &linodego.LKENodePoolAutoscaler{
-				Enabled: request.Spec.AutoScalerEnabled,
-				Min:     request.Spec.Count,
-				Max:     request.Spec.Count,
-			}
-		}
-
-		updates.ToUpdate[request.PoolID] = linodego.LKENodePoolUpdateOptions{
-			Count:      request.Spec.Count,
-			Autoscaler: newAutoscaler,
-		}
-
-		assignedPools[request.PoolID] = struct{}{}
-		delete(poolSpecsToAssign, request.SpecIndex)
-		delete(provisionedPools[request.State], request.PoolID)
-		if len(provisionedPools[request.State]) == 0 {
-			delete(provisionedPools, request.State)
-		}
+		result.ToUpdate[oldSpec.ID] = updateOpts
 	}
 
-	for i := range poolSpecsToAssign {
-		poolSpec := poolSpecs[i]
-
-		var newAutoscaler *linodego.LKENodePoolAutoscaler
-
-		if poolSpec.AutoScalerEnabled {
-			newAutoscaler = &linodego.LKENodePoolAutoscaler{
-				Enabled: poolSpec.AutoScalerEnabled,
-				Min:     poolSpec.AutoScalerMin,
-				Max:     poolSpec.AutoScalerMax,
-			}
-		}
-
-		updates.ToCreate = append(updates.ToCreate, linodego.LKENodePoolCreateOptions{
-			Count:      poolSpec.Count,
-			Type:       poolSpec.Type,
-			Autoscaler: newAutoscaler,
-		})
-	}
-
-	for spec := range provisionedPools {
-		for id := range provisionedPools[spec] {
-			updates.ToDelete = append(updates.ToDelete, id)
-		}
-	}
-
-	return
+	return result, nil
 }
 
 func waitForNodePoolReady(
 	ctx context.Context, client linodego.Client, pollMs, clusterID, poolID int,
 ) error {
+	ctx = tflog.SetField(ctx, "node_pool_id", poolID)
 	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
 
 	for {
@@ -187,6 +140,7 @@ func waitForNodePoolReady(
 			return fmt.Errorf("timed out waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
 
 		case <-eventTicker.C:
+			tflog.Trace(ctx, "client.GetLKENodePool(...)")
 			pool, err := client.GetLKENodePool(ctx, clusterID, poolID)
 			if err != nil {
 				return fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
@@ -254,6 +208,10 @@ func waitForNodesDeleted(
 	for {
 		select {
 		case <-ticker.C:
+			tflog.Trace(ctx, "client.ListEvents(...)", map[string]any{
+				"options": listOpts,
+			})
+
 			events, err := client.ListEvents(ctx, &listOpts)
 			if err != nil {
 				return fmt.Errorf("failed to list events: %w", err)
@@ -308,6 +266,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 	})
 
 	tflog.Info(ctx, "Recycling LKE cluster")
+	tflog.Trace(ctx, "client.RecycleLKEClusterNodes(...)")
 
 	if err := client.RecycleLKEClusterNodes(ctx, id); err != nil {
 		return fmt.Errorf("failed to recycle LKE Cluster (%d): %s", id, err)
@@ -344,34 +303,94 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
-func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interface{}) []linodego.LKEClusterPool {
+func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interface{}) ([]linodego.LKENodePool, error) {
 	result := make([]linodego.LKENodePool, len(declaredPools))
 
-	poolMap := make(map[int]linodego.LKENodePool, len(declaredPools))
+	// Contains all unpaired pools returned by the API
+	apiPools := make(map[int]linodego.LKENodePool, len(pools))
 	for _, pool := range pools {
-		poolMap[pool.ID] = pool
+		apiPools[pool.ID] = pool
 	}
 
-	for i, declaredPool := range declaredPools {
-		declaredPool := declaredPool.(map[string]interface{})
+	// Tracks which local pools have been processed
+	pairedDeclaredPools := make(map[int]bool)
 
-		for key, pool := range poolMap {
-			if pool.Count != declaredPool["count"] || pool.Type != declaredPool["type"] {
+	// First let's match any pools in state with an ID
+	for i, declaredPool := range declaredPools {
+		declaredPool := declaredPool.(map[string]any)
+
+		poolID, ok := declaredPool["id"].(int)
+		if !ok {
+			return nil, fmt.Errorf("declared pool ID was not of type int")
+		}
+
+		apiPool, ok := apiPools[poolID]
+		if !ok {
+			continue
+		}
+
+		// Pair the found pool with the declared pool
+		result[i] = apiPool
+		delete(apiPools, poolID)
+		pairedDeclaredPools[i] = true
+	}
+
+	// Second, let's match pools that have all matching attributes.
+	// This is necessary because declared pools will not be populated with
+	// an ID on first apply but still have matching node pools.
+	for i, declaredPool := range declaredPools {
+		declaredPool := declaredPool.(map[string]any)
+		declaredAutoscaler := expandLinodeLKEClusterAutoscalerFromPool(declaredPool)
+
+		if _, ok := pairedDeclaredPools[i]; ok {
+			// This apiPool has already been handled in the previous step,
+			// we can skip it
+			continue
+		}
+
+		for _, apiPool := range apiPools {
+			if declaredPool["type"] != apiPool.Type {
 				continue
 			}
 
-			result[i] = pool
-			delete(poolMap, key)
+			declaredCount := declaredPool["count"].(int)
+			if declaredCount == 0 {
+				if declaredAutoscaler == nil {
+					return nil, fmt.Errorf("autoscaler is null when count is 0. This is always a provider issue")
+				}
+				declaredCount = declaredAutoscaler.Min
+			}
+
+			if declaredCount != apiPool.Count {
+				continue
+			}
+
+			if (declaredAutoscaler != nil && declaredAutoscaler.Enabled) != apiPool.Autoscaler.Enabled {
+				continue
+			}
+
+			// Only compare autoscalers if the declared autoscaler is enabled
+			if declaredAutoscaler != nil && !reflect.DeepEqual(
+				*declaredAutoscaler, apiPool.Autoscaler,
+			) {
+				continue
+			}
+
+			// Pair the API pool with the declared pool
+			result[i] = apiPool
+			delete(apiPools, apiPool.ID)
 			break
 		}
 	}
 
-	for _, pool := range poolMap {
+	// Append any unresolved pools to the end
+	// These are typically pools planned to be deleted
+	for _, pool := range apiPools {
 		//nolint:makezero
 		result = append(result, pool)
 	}
 
-	return result
+	return result, nil
 }
 
 func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *linodego.LKENodePoolAutoscaler {
@@ -390,7 +409,7 @@ func expandLinodeLKEClusterAutoscalerFromPool(pool map[string]interface{}) *lino
 	}
 }
 
-func expandLinodeLKENodePoolSpecs(pool []interface{}) (poolSpecs []NodePoolSpec) {
+func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (poolSpecs []NodePoolSpec) {
 	for _, spec := range pool {
 		specMap := spec.(map[string]interface{})
 		autoscaler := expandLinodeLKEClusterAutoscalerFromPool(specMap)
@@ -402,7 +421,12 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}) (poolSpecs []NodePoolSpec)
 			}
 		}
 
+		if !preserveNoTarget && specMap["id"].(int) == 0 {
+			continue
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
+			ID:                specMap["id"].(int),
 			Type:              specMap["type"].(string),
 			Count:             specMap["count"].(int),
 			AutoScalerEnabled: autoscaler.Enabled,
