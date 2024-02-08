@@ -3,9 +3,7 @@ package firewalldevice
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -18,7 +16,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_firewall_device",
-				IDType: types.StringType,
+				IDType: types.Int64Type,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -219,23 +217,7 @@ func (r *Resource) ImportState(
 ) {
 	tflog.Debug(ctx, "Import linode_firewall_device")
 
-	idParts := strings.Split(req.ID, ",")
-
-	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
-		resp.Diagnostics.AddError(
-			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: firewall_id,device_id. Got: %q", req.ID),
-		)
-		return
-	}
-
-	firewallID := helper.StringToInt64(idParts[0], &resp.Diagnostics)
-	deviceID := helper.StringToInt64(idParts[1], &resp.Diagnostics)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), deviceID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("firewall_id"), firewallID)...)
+	helper.ImportStateWithMultipleIDs(
+		ctx, req, resp, "firewall_id", "id",
+	)
 }

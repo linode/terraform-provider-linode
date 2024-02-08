@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -28,6 +30,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_user")
+
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -37,7 +41,12 @@ func (d *DataSource) Read(
 		return
 	}
 
-	user, err := client.GetUser(ctx, data.Username.ValueString())
+	username := data.Username.ValueString()
+
+	ctx = tflog.SetField(ctx, "username", username)
+	tflog.Trace(ctx, "client.GetUser(...)")
+
+	user, err := client.GetUser(ctx, username)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Linode User with username %s was not found", data.Username.ValueString()), err.Error(),
@@ -51,6 +60,8 @@ func (d *DataSource) Read(
 	}
 
 	if user.Restricted {
+		tflog.Trace(ctx, "client.GetUserGrants(...)")
+
 		grants, err := client.GetUserGrants(ctx, data.Username.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
