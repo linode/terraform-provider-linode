@@ -61,10 +61,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_user")
 
 	client := meta.(*helper.ProviderMeta).Client
-	ctx = populateLogAttributes(ctx, d)
 
 	username := d.Get("username").(string)
 
