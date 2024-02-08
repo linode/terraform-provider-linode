@@ -32,7 +32,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_volume")
+	tflog.Debug(ctx, "Read data.linode_domain")
 
 	var data DomainModel
 
