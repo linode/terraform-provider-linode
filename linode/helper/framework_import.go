@@ -48,7 +48,7 @@ func IDTypeConverterInt64(values ...string) ([]any, diag.Diagnostics) {
 	for i, v := range values {
 		result[i] = StringToInt64(v, &diags)
 	}
-	return result, nil
+	return result, diags
 }
 
 func ImportStateWithMultipleIDs(
@@ -83,7 +83,9 @@ func ImportStateWithMultipleCustomTypedIDs(
 
 	for _, id := range idParts {
 		if id == "" {
-			resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
+			resp.Diagnostics.AddError(
+				"Unexpected Import Identifier", unexpectedIDsErrorMsg,
+			)
 			return
 		}
 		ids = append(ids, id)
@@ -101,6 +103,8 @@ func ImportStateWithMultipleCustomTypedIDs(
 	}
 
 	for i, id := range convertedIDs {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(ImportIDNames[i]), id)...)
+		resp.Diagnostics.Append(
+			resp.State.SetAttribute(ctx, path.Root(ImportIDNames[i]), id)...,
+		)
 	}
 }
