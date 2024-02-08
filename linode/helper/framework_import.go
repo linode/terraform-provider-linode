@@ -55,7 +55,6 @@ func ImportStateWithMultipleIDs(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
-	IDsTypeConverter IDTypeConverter,
 	ImportIDNames ...string,
 ) {
 	ImportStateWithMultipleCustomTypedIDs(ctx, req, resp, IDTypeConverterInt64, ImportIDNames...)

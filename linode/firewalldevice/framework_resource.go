@@ -218,6 +218,6 @@ func (r *Resource) ImportState(
 	tflog.Debug(ctx, "Import linode_firewall_device")
 
 	helper.ImportStateWithMultipleIDs(
-		ctx, req, resp, helper.IDTypeConverterInt64, "firewall_id", "id",
+		ctx, req, resp, "firewall_id", "id",
 	)
 }
