@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -27,6 +29,8 @@ func Resource() *schema.Resource {
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "Create linode_user")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.UserCreateOptions{
@@ -35,10 +39,17 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Restricted: d.Get("restricted").(bool),
 	}
 
+	tflog.Debug(ctx, "client.CreateUser(...)", map[string]any{
+		"options": createOpts,
+	})
 	user, err := client.CreateUser(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create user: %s", err)
 	}
+
+	d.SetId(user.Username)
+
+	ctx = populateLogAttributes(ctx, d)
 
 	if userHasGrantsConfigured(d) {
 		if err := updateUserGrants(ctx, d, meta); err != nil {
@@ -46,15 +57,19 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	d.SetId(user.Username)
-
 	return readResource(ctx, d, meta)
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "Read linode_user")
+
 	client := meta.(*helper.ProviderMeta).Client
+	ctx = populateLogAttributes(ctx, d)
 
 	username := d.Get("username").(string)
+
+	tflog.Trace(ctx, "client.GetUser(...)")
+
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -66,6 +81,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 
 	if user.Restricted {
+		tflog.Trace(ctx, "client.GetUserGrants(...)")
+
 		grants, err := client.GetUserGrants(ctx, username)
 		if err != nil {
 			return diag.Errorf("failed to get user grants (%s): %s", username, err)
@@ -92,18 +109,29 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_user")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	id := d.Id()
 	username := d.Get("username").(string)
 	restricted := d.Get("restricted").(bool)
 
-	if _, err := client.UpdateUser(ctx, id, linodego.UserUpdateOptions{
+	updateOpts := linodego.UserUpdateOptions{
 		Username:   username,
 		Restricted: &restricted,
-	}); err != nil {
+	}
+
+	tflog.Debug(ctx, "client.UpdateUser(...)", map[string]any{
+		"options": updateOpts,
+	})
+
+	if _, err := client.UpdateUser(ctx, id, updateOpts); err != nil {
 		return diag.Errorf("failed to update user (%s): %s", id, err)
 	}
+
+	d.SetId(username)
 
 	if d.HasChanges(resourceLinodeUserGrantFields...) {
 		if err := updateUserGrants(ctx, d, meta); err != nil {
@@ -111,14 +139,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	d.SetId(username)
 	return readResource(ctx, d, meta)
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_user")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	username := d.Get("username").(string)
+
+	tflog.Debug(ctx, "client.DeleteUser(...)")
 	if err := client.DeleteUser(ctx, username); err != nil {
 		return diag.Errorf("failed to delete user (%s): %s", username, err)
 	}
@@ -131,6 +163,7 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	username := d.Get("username").(string)
 	restricted := d.Get("restricted").(bool)
 
+	// TODO: Implement this validation at plan-time
 	if !restricted {
 		return fmt.Errorf("user must be restricted in order to update grants")
 	}
@@ -150,6 +183,10 @@ func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interfac
 	updateOpts.NodeBalancer = expandGrantsEntities(d.Get("nodebalancer_grant").(*schema.Set).List())
 	updateOpts.StackScript = expandGrantsEntities(d.Get("stackscript_grant").(*schema.Set).List())
 	updateOpts.Volume = expandGrantsEntities(d.Get("volume_grant").(*schema.Set).List())
+
+	tflog.Debug(ctx, "client.UpdateUserGrants(...)", map[string]any{
+		"options": updateOpts,
+	})
 
 	if _, err := client.UpdateUserGrants(ctx, username, updateOpts); err != nil {
 		return err
@@ -214,4 +251,8 @@ func userHasGrantsConfigured(d *schema.ResourceData) bool {
 	}
 
 	return false
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return tflog.SetField(ctx, "username", d.Id())
 }
