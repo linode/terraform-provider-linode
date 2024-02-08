@@ -97,14 +97,14 @@ func ImportStateWithMultipleCustomTypedIDs(
 		}
 		ids = append(ids, id)
 	}
-	CastedIDs, diags := IDsTypeConverter(IDs...)
+	castedIDs, diags := IDsTypeConverter(IDs...)
 
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	for i, id := range CastedIDs {
+	for i, id := range castedIDs {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(ImportIDNames[i]), id)...)
 	}
 }
