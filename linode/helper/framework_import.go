@@ -88,14 +88,14 @@ func ImportStateWithMultipleCustomTypedIDs(
 		return
 	}
 
-	var IDs []string
+	var ids []string
 
 	for _, id := range idParts {
 		if id == "" {
 			resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
 			return
 		}
-		IDs = append(IDs, id)
+		ids = append(ids, id)
 	}
 	CastedIDs, diags := IDsTypeConverter(IDs...)
 
