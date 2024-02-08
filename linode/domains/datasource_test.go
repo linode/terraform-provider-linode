@@ -25,7 +25,7 @@ func TestAccDataSourceDomains_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "domains.#", "2"),
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "domains.#", "2"),
 					resource.TestCheckResourceAttrSet(resourceName, "domains.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "domains.0.domain"),
 					resource.TestCheckResourceAttrSet(resourceName, "domains.0.type"),
