@@ -5,15 +5,15 @@ resource "linode_domain" "foo" {
     type = "master"
     status = "active"
     soa_email = "example@{{.Domain}}"
-    description = "tf-testing"
-    tags = ["tf_test"]
+    description = "tf-testing-master"
+    tags = ["tf_test_master"]
 }
 
 resource "linode_domain" "bar" {
     domain = "slave-{{.Domain}}"
     type = "slave"
     soa_email = "example@{{.Domain}}"
-    description = "tf-testing"
+    description = "tf-testing-slave"
     tags = ["tf_test"]
     master_ips = ["12.34.56.78"]
 }

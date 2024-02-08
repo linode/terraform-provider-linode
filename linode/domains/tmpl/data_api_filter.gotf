@@ -4,11 +4,9 @@
 
 data "linode_domains" "foo" {
     filter {
-        name = "tags"
-        values = ["tf_test"]
+        name = "domain"
+        values = ["{{.Domain}}"]
     }
-    order_by = "domain"
-    order = "desc"
 }
 
 {{ end }}
