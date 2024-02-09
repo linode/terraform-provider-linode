@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -31,6 +33,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_sshkey")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -43,6 +47,10 @@ func (r *Resource) Create(
 		Label:  data.Label.ValueString(),
 		SSHKey: data.SSHKey.ValueString(),
 	}
+
+	tflog.Debug(ctx, "client.CreateSSHKey(...)", map[string]interface{}{
+		"options": createOpts,
+	})
 
 	key, err := client.CreateSSHKey(ctx, createOpts)
 	if err != nil {
@@ -62,9 +70,13 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_sshkey")
+
 	client := r.Meta.Client
 
 	var data ResourceModel
+
+	ctx = populateLogAttributes(ctx, data)
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -79,6 +91,8 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Trace(ctx, "client.GetSSHKey(...)")
 
 	key, err := client.GetSSHKey(ctx, id)
 	if err != nil {
@@ -111,6 +125,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_sshkey")
+
 	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -130,6 +146,10 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
+		tflog.Debug(ctx, "client.UpdateSSHKey(...)", map[string]any{
+			"options": updateOpts,
+		})
+
 		key, err := r.Meta.Client.UpdateSSHKey(
 			ctx,
 			id,
@@ -152,6 +172,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_sshkey")
+
 	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -165,6 +187,10 @@ func (r *Resource) Delete(
 	}
 
 	client := r.Meta.Client
+
+	populateLogAttributes(ctx, data)
+	tflog.Trace(ctx, "client.DeleteSSHKey(...)")
+
 	err := client.DeleteSSHKey(ctx, id)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
@@ -175,4 +201,10 @@ func (r *Resource) Delete(
 		}
 		return
 	}
+}
+
+func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"sshkey_id": model.ID,
+	})
 }
