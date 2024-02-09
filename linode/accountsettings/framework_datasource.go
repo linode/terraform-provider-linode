@@ -3,6 +3,8 @@ package accountsettings
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -27,6 +29,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_account_settings")
+
 	client := r.Meta.Client
 
 	var data AccountSettingsModel
@@ -45,6 +49,7 @@ func (r *DataSource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetAccountSettings(...)")
 	settings, err := client.GetAccountSettings(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
