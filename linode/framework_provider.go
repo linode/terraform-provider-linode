@@ -74,6 +74,17 @@ type FrameworkProvider struct {
 	Meta            *helper.FrameworkProviderMeta
 }
 
+func CreateFrameworkProviderWithMeta(version string, meta any) provider.ProviderWithValidateConfig {
+	castMeta := meta.(*helper.ProviderMeta)
+	return &FrameworkProvider{
+		ProviderVersion: version,
+		Meta: &helper.FrameworkProviderMeta{
+			Client: &castMeta.Client,
+			Config: helper.GetFrameworkProviderModelFromProviderConfig(castMeta.Config),
+		},
+	}
+}
+
 func CreateFrameworkProvider(version string) provider.ProviderWithValidateConfig {
 	return &FrameworkProvider{
 		ProviderVersion: version,
