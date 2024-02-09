@@ -100,6 +100,8 @@ func ImportStateWithMultipleCustomTypedIDs(
 			return
 		}
 		convertedIDs = ids
+	} else {
+		convertedIDs = TypedSliceToAny(ids)
 	}
 
 	for i, id := range convertedIDs {
