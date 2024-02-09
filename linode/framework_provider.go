@@ -31,6 +31,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/images"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/ipv6range"
@@ -172,6 +173,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instanceip.NewResource,
 		firewalldevice.NewResource,
 		volume.NewResource,
+		instancesharedips.NewResource,
 	}
 }
 

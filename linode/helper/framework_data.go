@@ -2,6 +2,7 @@ package helper
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -15,6 +16,19 @@ func KeepOrUpdateInt64(original types.Int64, updated int64, preserveKnown bool) 
 
 func KeepOrUpdateBool(original types.Bool, updated bool, preserveKnown bool) types.Bool {
 	return KeepOrUpdateValue(original, types.BoolValue(updated), preserveKnown)
+}
+
+func KeepOrUpdateSet(
+	original types.Set, updated []attr.Value, preserveKnown bool, diags *diag.Diagnostics,
+) types.Set {
+	setValue, newDiags := types.SetValue(types.StringType, updated)
+	diags.Append(newDiags...)
+
+	if diags.HasError() {
+		return setValue
+	}
+
+	return KeepOrUpdateValue(original, setValue, preserveKnown)
 }
 
 func KeepOrUpdateStringPointer(original types.String, updated *string, preserveKnown bool) types.String {

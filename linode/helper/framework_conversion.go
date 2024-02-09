@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -35,6 +36,22 @@ func StringSliceToFramework(val []string) []types.String {
 	}
 
 	result := make([]types.String, len(val))
+
+	for i, v := range val {
+		result[i] = types.StringValue(v)
+	}
+
+	return result
+}
+
+// StringSliceToFramework converts the given string slice
+// into a framework-compatible slice of attr.Value.
+func StringSliceToFrameworkGeneric(val []string) []attr.Value {
+	if val == nil {
+		return nil
+	}
+
+	result := make([]attr.Value, len(val))
 
 	for i, v := range val {
 		result[i] = types.StringValue(v)
