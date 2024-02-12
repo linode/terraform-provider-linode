@@ -64,9 +64,7 @@ The following arguments are supported in the `autoscaler` specification block:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The composite ID of the Node Pool in the format <cluster_id>:<pool_id>
-
-* `pool_id` - The ID of the Node Pool within LKE Cluster.
+* `id` - The ID of the Node Pool within LKE Cluster.
 
 * [`nodes`](#nodes) - The nodes in the Node Pool.
 
@@ -82,8 +80,8 @@ The following attributes are available on nodes:
 
 ## Import
 
-LKE Node Pools can be imported using the `id`, e.g.
+LKE Node Pools can be imported using the `cluster_id,id`, e.g.
 
 ```sh
-terraform import linode_nodepool.my_pool 150003:12345
+terraform import linode_nodepool.my_pool 150003,12345
 ```
