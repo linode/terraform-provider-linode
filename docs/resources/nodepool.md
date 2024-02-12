@@ -29,9 +29,8 @@ resource "linode_nodepool" "my-pool" {
 
     cluster_id  = 150003
     type  = "g6-standard-2"
-    node_count = 3
-
-    autoscaler = {
+  
+    autoscaler {
       min = 3
       max = 10
     }
@@ -46,7 +45,7 @@ The following arguments are supported:
 
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
-* `node_count` - (Required) The number of nodes in the Node Pool.
+* `node_count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
 * `tags` - (Optional) An array of tags applied to the Node Pool. Tags are for organizational purposes only.
 

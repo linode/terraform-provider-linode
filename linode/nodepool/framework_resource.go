@@ -17,7 +17,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_nodepool",
-				IDType: types.StringType,
+				IDType: types.Int64Type,
 				Schema: &resourceSchema,
 			},
 		),
@@ -41,6 +41,11 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"cluster_id": data.ClusterID.ValueInt64(),
+		"pool_id":    data.ID.ValueInt64(),
+	})
 
 	clusterID, poolID := data.ExtractClusterAndNodePoolIDs(&resp.Diagnostics)
 
@@ -105,7 +110,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	tflog.Trace(ctx, "client.CreateLKENodePool(...)")
+	tflog.Debug(ctx, "client.CreateLKENodePool(...)", map[string]any{
+		"cluster_id": clusterID,
+		"options":    createOpts,
+	})
 	pool, err := client.CreateLKENodePool(ctx, clusterID, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating Linode Node Pool", err.Error())
@@ -165,7 +173,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	tflog.Trace(ctx, "client.UpdateLKENodePool(...)")
+	tflog.Debug(ctx, "client.UpdateLKENodePool(...)", map[string]any{
+		"cluster_id": clusterID,
+		"options":    updateOpts,
+	})
 	pool, err := client.UpdateLKENodePool(ctx, clusterID, poolID, updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating a Linode Node Pool", err.Error())
@@ -208,7 +219,10 @@ func (r *Resource) Delete(
 
 	clusterID, poolID := data.ExtractClusterAndNodePoolIDs(&resp.Diagnostics)
 
-	tflog.Trace(ctx, "client.DeleteLKENodePool(...)")
+	tflog.Debug(ctx, "client.DeleteLKENodePool(...)", map[string]any{
+		"cluster_id": clusterID,
+		"pool_id":    poolID,
+	})
 	err := client.DeleteLKENodePool(ctx, clusterID, poolID)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -226,4 +240,16 @@ func (r *Resource) Delete(
 		return
 	}
 	tflog.Trace(ctx, "Delete linode_nodepool done")
+}
+
+func (r *Resource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	tflog.Debug(ctx, "Import linode_nodepool")
+
+	helper.ImportStateWithMultipleIDs(
+		ctx, req, resp, "cluster_id", "id",
+	)
 }

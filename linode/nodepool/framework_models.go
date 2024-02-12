@@ -2,7 +2,6 @@ package nodepool
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -14,8 +13,7 @@ import (
 )
 
 type NodePoolModel struct {
-	ID         types.String              `tfsdk:"id"`
-	PoolID     types.Int64               `tfsdk:"pool_id"`
+	ID         types.Int64               `tfsdk:"id"`
 	ClusterID  types.Int64               `tfsdk:"cluster_id"`
 	Count      types.Int64               `tfsdk:"node_count"`
 	Type       types.String              `tfsdk:"type"`
@@ -72,8 +70,7 @@ func parseNodeList(nodes []linodego.LKENodePoolLinode,
 }
 
 func (pool *NodePoolModel) ParseNodePool(ctx context.Context, clusterID int, p *linodego.LKENodePool, diags *diag.Diagnostics) {
-	pool.ID = types.StringValue(fmt.Sprintf("%d:%d", clusterID, p.ID))
-	pool.PoolID = types.Int64Value(int64(p.ID))
+	pool.ID = types.Int64Value(int64(p.ID))
 	pool.ClusterID = types.Int64Value(int64(clusterID))
 	pool.Count = types.Int64Value(int64(p.Count))
 	pool.Type = types.StringValue(p.Type)
@@ -109,6 +106,9 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(ctx context.Context, p *lino
 	}
 
 	p.Autoscaler = pool.getLKENodePoolAutoscaler(p.Count, diags)
+	if p.Autoscaler.Enabled && p.Count == 0 {
+		p.Count = p.Autoscaler.Min
+	}
 }
 
 func (pool *NodePoolModel) SetNodePoolUpdateOptions(ctx context.Context, p *linodego.LKENodePoolUpdateOptions, diags *diag.Diagnostics) {
@@ -128,11 +128,14 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(ctx context.Context, p *lino
 	}
 
 	p.Autoscaler = pool.getLKENodePoolAutoscaler(p.Count, diags)
+	if p.Autoscaler.Enabled && p.Count == 0 {
+		p.Count = p.Autoscaler.Min
+	}
 }
 
 func (pool *NodePoolModel) ExtractClusterAndNodePoolIDs(diags *diag.Diagnostics) (int, int) {
 	clusterID := helper.FrameworkSafeInt64ToInt(pool.ClusterID.ValueInt64(), diags)
-	poolID := helper.FrameworkSafeInt64ToInt(pool.PoolID.ValueInt64(), diags)
+	poolID := helper.FrameworkSafeInt64ToInt(pool.ID.ValueInt64(), diags)
 	return clusterID, poolID
 }
 

@@ -1,10 +1,11 @@
-//go:build integration
+////go:build integration
 
 package nodepool_test
 
 import (
 	"context"
 	"fmt"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v2/linode/acceptance/tmpl"
 	"log"
 	"os"
 	"sort"
@@ -15,8 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/nodepool"
-
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/nodepool/tmpl"
 
@@ -69,14 +68,6 @@ func init() {
 
 		testRegion = region
 	}
-}
-
-func createTemplateData() tmpl.TemplateData {
-	var data tmpl.TemplateData
-	data.ClusterID = clusterID
-	data.K8sVersion = k8sVersion
-	data.Region = testRegion
-	return data
 }
 
 func GetTestClient() (*linodego.Client, error) {
@@ -153,12 +144,11 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 	templateData.AutoscalerEnabled = true
 	templateData.AutoscalerMin = 1
 	templateData.AutoscalerMax = 2
-	templateData.NodeCount = 1
-	createConfig := tmpl.Generate(t, &templateData)
+	createConfig := createResourceConfig(t, &templateData)
 	templateData.AutoscalerMin = 2
 	templateData.AutoscalerMax = 3
 	templateData.NodeCount = 2
-	updateConfig := tmpl.Generate(t, &templateData)
+	updateConfig := createResourceConfig(t, &templateData)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -178,6 +168,12 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "autoscaler.0.max", "2"),
 					resource.TestCheckResourceAttr(resName, "node_count", "1"),
 				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
 			},
 			{
 				Config: updateConfig,
@@ -205,11 +201,10 @@ func TestAccResourceNodePool_disableAutoscaling(t *testing.T) {
 	templateData.AutoscalerEnabled = true
 	templateData.AutoscalerMin = 1
 	templateData.AutoscalerMax = 2
-	templateData.NodeCount = 1
-	createConfig := tmpl.Generate(t, &templateData)
+	createConfig := createResourceConfig(t, &templateData)
 	templateData.AutoscalerEnabled = false
 	templateData.NodeCount = 2
-	updateConfig := tmpl.Generate(t, &templateData)
+	updateConfig := createResourceConfig(t, &templateData)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -253,12 +248,11 @@ func TestAccResourceNodePool_enableAutoscaling(t *testing.T) {
 	templateData.PoolTag = poolTag
 	templateData.AutoscalerEnabled = false
 	templateData.NodeCount = 2
-	createConfig := tmpl.Generate(t, &templateData)
+	createConfig := createResourceConfig(t, &templateData)
 	templateData.AutoscalerEnabled = true
 	templateData.AutoscalerMin = 1
 	templateData.AutoscalerMax = 2
-	templateData.NodeCount = 1
-	updateConfig := tmpl.Generate(t, &templateData)
+	updateConfig := createResourceConfig(t, &templateData)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -293,48 +287,32 @@ func TestAccResourceNodePool_enableAutoscaling(t *testing.T) {
 
 func checkNodePoolExists(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_nodepool" {
-			continue
-		}
-
-		clusterID, poolID, err := nodepool.ParseNodePoolID(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		_, err = client.GetLKENodePool(context.Background(), clusterID, poolID)
-		if err != nil {
-			return fmt.Errorf("Error retrieving state of node pool %v: %v", rs.Primary.ID, err)
-		}
+	clusterID, poolID, err := extractIDs(s)
+	if err != nil {
+		return err
 	}
-
+	_, err = client.GetLKENodePool(context.Background(), clusterID, poolID)
+	if err != nil {
+		return fmt.Errorf("Error retrieving state of node pool %d: %v", poolID, err)
+	}
 	return nil
 }
 
 func checkNodePoolDestroy(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_nodepool" {
-			continue
-		}
+	clusterID, poolID, err := extractIDs(s)
+	if err != nil {
+		return err
+	}
+	_, err = client.GetLKENodePool(context.Background(), clusterID, poolID)
 
-		clusterID, poolID, err := nodepool.ParseNodePoolID(rs.Primary.ID)
-		if err != nil {
-			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
-		}
-
-		_, err = client.GetLKENodePool(context.Background(), clusterID, poolID)
-
-		if err == nil {
-			return fmt.Errorf("Node Pool with id %d still exists in cluster %d", poolID, clusterID)
-		}
-
-		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Error requesting Node Pool with id %d in cluster %d", poolID, clusterID)
-		}
+	if err == nil {
+		return fmt.Errorf("Node Pool with id %d still exists in cluster %d", poolID, clusterID)
 	}
 
+	if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+		return fmt.Errorf("Error requesting Node Pool with id %d in cluster %d", poolID, clusterID)
+	}
 	return nil
 }
 
@@ -345,4 +323,45 @@ func containsTagWithPrefix(pool linodego.LKENodePool, prefix string) bool {
 		}
 	}
 	return false
+}
+
+func createResourceConfig(t *testing.T, data *tmpl.TemplateData) string {
+	return acceptanceTmpl.ProviderNoPoll(t) + tmpl.Generate(t, data)
+}
+
+func createTemplateData() tmpl.TemplateData {
+	var data tmpl.TemplateData
+	data.ClusterID = clusterID
+	data.K8sVersion = k8sVersion
+	data.Region = testRegion
+	return data
+}
+
+func extractIDs(s *terraform.State) (int, int, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_nodepool" {
+			continue
+		}
+
+		id, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return 0, 0, fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+
+		clusterID, err := strconv.Atoi(rs.Primary.Attributes["cluster_id"])
+		if err != nil {
+			return 0, 0, fmt.Errorf("Error parsing cluster_id %v to int", rs.Primary.Attributes["cluster_id"])
+		}
+		return clusterID, id, nil
+	}
+
+	return 0, 0, fmt.Errorf("Error finding firewall_device")
+}
+
+func resourceImportStateID(s *terraform.State) (string, error) {
+	clusterID, id, err := extractIDs(s)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d,%d", clusterID, id), nil
 }

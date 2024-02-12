@@ -27,9 +27,10 @@ resource "linode_nodepool" "foobar" {
         min = {{.AutoscalerMin}}
         max = {{.AutoscalerMax}}
     }
+{{else}}
+    node_count = {{.NodeCount}}
 {{end}}
     type  = "g6-standard-4"
-    node_count = {{.NodeCount}}
     tags  = ["external", "{{.PoolTag}}"]
 }
 

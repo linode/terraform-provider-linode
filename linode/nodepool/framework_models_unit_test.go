@@ -40,9 +40,8 @@ func TestParseNodePool(t *testing.T) {
 	nodePoolModel.ParseNodePool(context.Background(), clusterID, &lkeNodePool, &diags)
 
 	assert.False(t, diags.HasError())
-	assert.Equal(t, "1:123", nodePoolModel.ID.ValueString())
+	assert.Equal(t, int64(123), nodePoolModel.ID.ValueInt64())
 	assert.Equal(t, int64(1), nodePoolModel.ClusterID.ValueInt64())
-	assert.Equal(t, int64(123), nodePoolModel.PoolID.ValueInt64())
 	assert.Equal(t, int64(3), nodePoolModel.Count.ValueInt64())
 	assert.Equal(t, "g6-standard-2", nodePoolModel.Type.ValueString())
 	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
@@ -56,8 +55,8 @@ func TestParseNodePool(t *testing.T) {
 
 	// Example of asserting autoscaler values
 	assert.NotNil(t, nodePoolModel.Autoscaler)
-	assert.Equal(t, int64(1), nodePoolModel.Autoscaler.Min.ValueInt64())
-	assert.Equal(t, int64(5), nodePoolModel.Autoscaler.Max.ValueInt64())
+	assert.Equal(t, int64(1), nodePoolModel.Autoscaler[0].Min.ValueInt64())
+	assert.Equal(t, int64(5), nodePoolModel.Autoscaler[0].Max.ValueInt64())
 }
 
 func TestSetNodePoolCreateOptions(t *testing.T) {
@@ -111,9 +110,11 @@ func createNodePoolModel() *NodePoolModel {
 		Type:      types.StringValue("g6-standard-2"),
 		Nodes:     *nodes,
 		Tags:      tags,
-		Autoscaler: &NodePoolAutoscalerModel{
-			Min: types.Int64Value(1),
-			Max: types.Int64Value(5),
+		Autoscaler: []NodePoolAutoscalerModel{
+			{
+				Min: types.Int64Value(1),
+				Max: types.Int64Value(5),
+			},
 		},
 	}
 	return &nodePoolModel

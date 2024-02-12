@@ -63,6 +63,9 @@ The following arguments are supported:
 * [`control_plane`](#control_plane) (Optional) Defines settings for the Kubernetes Control Plane.
 
 * `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
+ 
+* `external_pool_tags` - (Optional) An array of tags indicating that node pools having those tags are defined with a separate `linode_nodepool` resource, rather than inside the current cluster resource.
+
 
 ### pool
 

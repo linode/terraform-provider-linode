@@ -1,6 +1,7 @@
 package nodepool
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -12,12 +13,8 @@ import (
 var resourceSchema = schema.Schema{
 	Version: 1,
 	Attributes: map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			Description: "Compound ID of the Node Pool. The ID format is <clusterID>:<PoolID>.",
-			Computed:    true,
-		},
-		"pool_id": schema.Int64Attribute{
-			Description: "The ID of the Node Pool",
+		"id": schema.Int64Attribute{
+			Description: "ID of the Node Pool.",
 			Computed:    true,
 		},
 		"cluster_id": schema.Int64Attribute{
@@ -25,8 +22,12 @@ var resourceSchema = schema.Schema{
 			Required:    true,
 		},
 		"node_count": schema.Int64Attribute{
-			Description: "The number of nodes in the node pool.",
-			Required:    true,
+			Validators: []validator.Int64{
+				int64validator.AtLeast(1),
+			},
+			Description: "The number of nodes in the Node Pool.",
+			Optional:    true,
+			Computed:    true,
 		},
 		"type": schema.StringAttribute{
 			Description: "The type of node pool.",
