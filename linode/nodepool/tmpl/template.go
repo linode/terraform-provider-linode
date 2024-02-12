@@ -7,14 +7,17 @@ import (
 )
 
 type TemplateData struct {
-	ClusterID string
-	Tag       string
+	ClusterID         string
+	ClusterLabel      string
+	Region            string
+	K8sVersion        string
+	PoolTag           string
+	NodeCount         int
+	AutoscalerEnabled bool
+	AutoscalerMin     int
+	AutoscalerMax     int
 }
 
-func Basic(t *testing.T, clusterID string, tag string) string {
-	return acceptance.ExecuteTemplate(t,
-		"nodepool_basic", TemplateData{
-			ClusterID: clusterID,
-			Tag:       tag,
-		})
+func Generate(t *testing.T, data *TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "nodepool_template", *data)
 }

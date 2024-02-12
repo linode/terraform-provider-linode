@@ -45,9 +45,8 @@ func TestParseNodePool(t *testing.T) {
 	assert.Equal(t, int64(123), nodePoolModel.PoolID.ValueInt64())
 	assert.Equal(t, int64(3), nodePoolModel.Count.ValueInt64())
 	assert.Equal(t, "g6-standard-2", nodePoolModel.Type.ValueString())
-	assert.Len(t, nodePoolModel.Nodes, 3) // Asserting that there are 3 nodes
+	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
 
-	// Checking Tags - converting types.List to []string for assertion
 	tags := make([]string, len(nodePoolModel.Tags.Elements()))
 	for i, v := range nodePoolModel.Tags.Elements() {
 		tags[i] = v.(types.String).ValueString()
@@ -99,17 +98,19 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 }
 
 func createNodePoolModel() *NodePoolModel {
-	tags, _ := types.ListValueFrom(context.Background(), types.StringType, []string{"production", "web-server"})
+	tags, _ := types.SetValueFrom(context.Background(), types.StringType, []string{"production", "web-server"})
+	nodes, _ := parseNodeList([]linodego.LKENodePoolLinode{
+		{InstanceID: 1, ID: "linode123", Status: "running"},
+		{InstanceID: 2, ID: "linode124", Status: "running"},
+		{InstanceID: 3, ID: "linode125", Status: "running"},
+	})
+
 	nodePoolModel := NodePoolModel{
 		ClusterID: types.Int64Value(1),
 		Count:     types.Int64Value(3),
 		Type:      types.StringValue("g6-standard-2"),
-		Nodes: []NodePoolNodeModel{
-			{InstanceID: types.Int64Value(1), ID: types.StringValue("linode123"), Status: types.StringValue("running")},
-			{InstanceID: types.Int64Value(2), ID: types.StringValue("linode124"), Status: types.StringValue("running")},
-			{InstanceID: types.Int64Value(3), ID: types.StringValue("linode125"), Status: types.StringValue("running")},
-		},
-		Tags: tags,
+		Nodes:     *nodes,
+		Tags:      tags,
 		Autoscaler: &NodePoolAutoscalerModel{
 			Min: types.Int64Value(1),
 			Max: types.Int64Value(5),

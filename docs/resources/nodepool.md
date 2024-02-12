@@ -29,9 +29,9 @@ resource "linode_nodepool" "my-pool" {
 
     cluster_id  = 150003
     type  = "g6-standard-2"
-    count = 3
+    node_count = 3
 
-    autoscaler {
+    autoscaler = {
       min = 3
       max = 10
     }

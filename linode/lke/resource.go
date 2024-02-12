@@ -71,6 +71,11 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
 	}
 
+	externalPoolTags := getExternalPoolTags(d)
+	if len(externalPoolTags) > 0 && len(pools) > 0 {
+		pools = removeExternalPools(ctx, externalPoolTags, pools)
+	}
+
 	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, id)
 	if err != nil {
@@ -226,6 +231,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("failed to get Pools for LKE Cluster %d: %s", id, err)
 	}
 
+	externalPoolTags := getExternalPoolTags(d)
+	if len(externalPoolTags) > 0 && len(pools) > 0 {
+		pools = removeExternalPools(ctx, externalPoolTags, pools)
+	}
+
 	if d.HasChange("k8s_version") {
 		tflog.Debug(ctx, "Implicitly recycling LKE cluster to apply Kubernetes version upgrade")
 
@@ -285,7 +295,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			"node_pool_id": poolID,
 		})
 
-		if err := WaitForNodePoolReady(
+		if _, err := WaitForNodePoolReady(
 			ctx,
 			client,
 			providerMeta.Config.LKENodeReadyPollMilliseconds,
@@ -353,4 +363,14 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"cluster_id": d.Id(),
 	})
+}
+
+func getExternalPoolTags(d *schema.ResourceData) []string {
+	var externalPoolTags []string
+	if v, ok := d.GetOk("external_pool_tags"); ok {
+		for _, tag := range v.(*schema.Set).List() {
+			externalPoolTags = append(externalPoolTags, tag.(string))
+		}
+	}
+	return externalPoolTags
 }

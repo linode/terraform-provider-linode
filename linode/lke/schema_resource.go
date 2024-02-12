@@ -23,6 +23,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 	},
+	"external_pool_tags": {
+		Type:        schema.TypeSet,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Optional:    true,
+		Description: "An array of tags indicating that node pools having those tags are defined with a separate nodepool resource, rather than inside the current cluster resource.",
+	},
 	"region": {
 		Type:        schema.TypeString,
 		Required:    true,

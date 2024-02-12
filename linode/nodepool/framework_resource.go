@@ -3,6 +3,7 @@ package nodepool
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -112,17 +113,18 @@ func (r *Resource) Create(
 	}
 
 	tflog.Debug(ctx, "waiting for node pool to enter ready status")
-	if err := lke.WaitForNodePoolReady(
-		ctx,
+	readyPool, err := lke.WaitForNodePoolReady(ctx,
 		*client,
 		int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
 		clusterID,
 		pool.ID,
-	); err != nil {
-		resp.Diagnostics.AddWarning("Linode Node Pool is not ready after create", err.Error())
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("Linode Node Pool is not ready after create", err.Error())
+		return
 	}
 
-	data.ParseNodePool(ctx, clusterID, pool, &resp.Diagnostics)
+	data.ParseNodePool(ctx, clusterID, readyPool, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -138,10 +140,15 @@ func (r *Resource) Update(
 ) {
 	tflog.Debug(ctx, "Update linode_nodepool")
 	var plan NodePoolModel
+	var state NodePoolModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -153,8 +160,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	clusterID, poolID := plan.ExtractClusterAndNodePoolIDs(&resp.Diagnostics)
-
+	clusterID, poolID := state.ExtractClusterAndNodePoolIDs(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -167,17 +173,18 @@ func (r *Resource) Update(
 	}
 
 	tflog.Debug(ctx, "waiting for node pool to enter ready status")
-	if err := lke.WaitForNodePoolReady(
-		ctx,
+	readyPool, err := lke.WaitForNodePoolReady(ctx,
 		*client,
 		int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
 		clusterID,
 		pool.ID,
-	); err != nil {
-		resp.Diagnostics.AddWarning("Linode Node Pool is not ready after update", err.Error())
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("Linode Node Pool is not ready after update", err.Error())
+		return
 	}
 
-	plan.ParseNodePool(ctx, clusterID, pool, &resp.Diagnostics)
+	plan.ParseNodePool(ctx, clusterID, readyPool, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
