@@ -40,14 +40,6 @@ var resourceSchema = schema.Schema{
 			Default:     helper.EmptySetDefault(types.StringType),
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},
-		//"autoscaler": schema.ObjectAttribute{
-		//	Description: "When specified, the number of nodes autoscales within the defined minimum and maximum values.",
-		//	Optional:    true,
-		//	AttributeTypes: map[string]attr.Type{
-		//		"min": types.Int64Type,
-		//		"max": types.Int64Type,
-		//	},
-		//},
 		"nodes": schema.ListAttribute{
 			Description: "A list of nodes in the node pool.",
 			Computed:    true,
