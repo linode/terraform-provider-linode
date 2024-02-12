@@ -3,6 +3,8 @@ package nbconfigs
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -27,6 +29,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_nodebalancer_configs")
+
 	var data NodeBalancerConfigFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -64,6 +68,9 @@ func (data *NodeBalancerConfigFilterModel) listNodeBalancerConfigs(
 	if err != nil {
 		return nil, err
 	}
+
+	ctx = tflog.SetField(ctx, "nodebalancer_id", nbId)
+	tflog.Trace(ctx, "client.ListNodeBalancerConfigs(...)")
 
 	nbs, err := client.ListNodeBalancerConfigs(ctx, nbId, &linodego.ListOptions{
 		Filter: filter,
