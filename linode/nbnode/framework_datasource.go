@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -28,6 +30,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.nb_node")
+
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -46,6 +50,9 @@ func (d *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "node_id", id)
+	tflog.Trace(ctx, "client.GetNodeBalancerNode(...)")
 
 	node, err := client.GetNodeBalancerNode(ctx, nodeBalancerID, configID, id)
 	if err != nil {
