@@ -5,7 +5,7 @@ import (
 	"github.com/linode/linodego"
 )
 
-func GetFrameworkProviderModelFromProviderConfig(config *Config) *FrameworkProviderModel {
+func GetFrameworkProviderModelFromSDKv2ProviderConfig(config *Config) *FrameworkProviderModel {
 	return &FrameworkProviderModel{
 		AccessToken:                  types.StringValue(config.AccessToken),
 		APIURL:                       types.StringValue(config.APIURL),
