@@ -76,8 +76,6 @@ func (r *Resource) Read(
 
 	var data ResourceModel
 
-	ctx = tflog.SetField(ctx, "sshkey_id", id)
-
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -92,6 +90,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "sshkey_id", id)
 	tflog.Trace(ctx, "client.GetSSHKey(...)")
 
 	key, err := client.GetSSHKey(ctx, id)
@@ -188,7 +187,7 @@ func (r *Resource) Delete(
 
 	client := r.Meta.Client
 
-	populateLogAttributes(ctx, data)
+	ctx = tflog.SetField(ctx, "sshkey_id", id)
 	tflog.Trace(ctx, "client.DeleteSSHKey(...)")
 
 	err := client.DeleteSSHKey(ctx, id)
@@ -201,10 +200,4 @@ func (r *Resource) Delete(
 		}
 		return
 	}
-}
-
-func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
-	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"sshkey_id": model.ID,
-	})
 }

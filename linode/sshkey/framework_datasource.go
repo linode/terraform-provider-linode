@@ -78,6 +78,7 @@ func (d *DataSource) Read(
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "sshkey_label", data.Label.ValueString())
 	tflog.Trace(ctx, "client.ListSSHKeys(...)")
 
 	keys, err := client.ListSSHKeys(ctx, nil)
