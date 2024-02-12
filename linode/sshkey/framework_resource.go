@@ -76,7 +76,7 @@ func (r *Resource) Read(
 
 	var data ResourceModel
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = tflog.SetField(ctx, "sshkey_id", id)
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
