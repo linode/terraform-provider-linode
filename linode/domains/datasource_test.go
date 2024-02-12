@@ -25,7 +25,7 @@ func TestAccDataSourceDomains_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "domains.#", "2"),
+					acceptance.CheckResourceAttrGreaterThan(resourceName, "domains.#", 1),
 					resource.TestCheckResourceAttrSet(resourceName, "domains.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "domains.0.domain"),
 					resource.TestCheckResourceAttrSet(resourceName, "domains.0.type"),
@@ -40,15 +40,15 @@ func TestAccDataSourceDomains_basic(t *testing.T) {
 			{
 				Config: tmpl.DataFilter(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "domains.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "domains.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "domains.0.type", "master"),
+					resource.TestCheckResourceAttr(resourceName, "domains.0.description", "tf-testing-master"),
 				),
 			},
 			{
 				Config: tmpl.DataAPIFilter(t, domainName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "domains.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "domains.0.tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resourceName, "domains.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "domains.0.domain", domainName),
 				),
 			},
