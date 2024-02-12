@@ -251,7 +251,7 @@ func ExpandConfigInterface(ifaceMap map[string]interface{}) linodego.InstanceCon
 	return result
 }
 
-func ExpandInterfaces(ctx context.Context, ifaces []any) []linodego.InstanceConfigInterfaceCreateOptions {
+func ExpandConfigInterfaces(ctx context.Context, ifaces []any) []linodego.InstanceConfigInterfaceCreateOptions {
 	result := make([]linodego.InstanceConfigInterfaceCreateOptions, len(ifaces))
 
 	for i, iface := range ifaces {

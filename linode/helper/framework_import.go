@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
@@ -35,4 +37,74 @@ func ImportStatePassthroughInt64ID(
 	}
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, intID)...)
+}
+
+type IDTypeConverter func(values ...string) ([]any, diag.Diagnostics)
+
+func IDTypeConverterInt64(values ...string) ([]any, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	result := make([]any, len(values))
+	for i, v := range values {
+		result[i] = StringToInt64(v, &diags)
+	}
+	return result, diags
+}
+
+func ImportStateWithMultipleIDs(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+	ImportIDNames ...string,
+) {
+	ImportStateWithMultipleCustomTypedIDs(ctx, req, resp, IDTypeConverterInt64, ImportIDNames...)
+}
+
+func ImportStateWithMultipleCustomTypedIDs(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+	IDsTypeConverter IDTypeConverter,
+	ImportIDNames ...string,
+) {
+	idParts := strings.Split(req.ID, ",")
+
+	unexpectedIDsErrorMsg := fmt.Sprintf(
+		"Expected import identifier with format: %s. Got: %q",
+		strings.Join(ImportIDNames, ","), req.ID,
+	)
+
+	if len(idParts) != len(ImportIDNames) {
+		resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
+		return
+	}
+
+	var ids []string
+
+	for _, id := range idParts {
+		if id == "" {
+			resp.Diagnostics.AddError(
+				"Unexpected Import Identifier", unexpectedIDsErrorMsg,
+			)
+			return
+		}
+		ids = append(ids, id)
+	}
+
+	var convertedIDs []any
+
+	if IDsTypeConverter != nil {
+		ids, diags := IDsTypeConverter(ids...)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		convertedIDs = ids
+	}
+
+	for i, id := range convertedIDs {
+		resp.Diagnostics.Append(
+			resp.State.SetAttribute(ctx, path.Root(ImportIDNames[i]), id)...,
+		)
+	}
 }
