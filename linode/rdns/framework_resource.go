@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -43,6 +44,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_rdns")
+
 	var plan ResourceModel
 	client := r.Meta.Client
 
@@ -50,6 +53,8 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, plan)
 
 	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultVolumeCreateTimeout)
 	resp.Diagnostics.Append(diags...)
@@ -60,7 +65,13 @@ func (r *Resource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	ip, err := client.GetIPAddress(ctx, plan.Address.ValueString())
+	address := plan.Address.ValueString()
+
+	tflog.Trace(ctx, "client.GetIPAddress(...)", map[string]any{
+		"address": address,
+	})
+
+	ip, err := client.GetIPAddress(ctx, address)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get the ip address associated with this RDNS",
@@ -107,6 +118,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_rdns")
+
 	client := r.Meta.Client
 
 	var data ResourceModel
@@ -116,10 +129,13 @@ func (r *Resource) Read(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetIPAddress(...)")
 	ip, err := client.GetIPAddress(ctx, data.ID.ValueString())
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -149,6 +165,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_rdns")
+
 	var state, plan ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -156,6 +174,8 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, state)
 
 	updateTimeout, diags := plan.Timeouts.Update(ctx, DefaultVolumeUpdateTimeout)
 	resp.Diagnostics.Append(diags...)
@@ -203,6 +223,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_rdns")
+
 	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -216,6 +238,9 @@ func (r *Resource) Delete(
 		RDNS: nil,
 	}
 
+	tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{
+		"options": updateOpts,
+	})
 	_, err := client.UpdateIPAddress(ctx, data.Address.ValueString(), updateOpts)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -237,4 +262,10 @@ func (r *Resource) Delete(
 			),
 		)
 	}
+}
+
+func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"address": model.Address.ValueString(),
+	})
 }
