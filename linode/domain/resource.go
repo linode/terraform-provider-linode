@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -26,11 +27,16 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_domain")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
+
+	tflog.Trace(ctx, "client.GetDomain(...)")
 
 	domain, err := client.GetDomain(ctx, id)
 	if err != nil {
@@ -62,6 +68,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "Create linode_domain")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	createOpts := linodego.DomainCreateOptions{
@@ -100,16 +108,25 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
+	tflog.Debug(ctx, "client.CreateDomain(...)", map[string]interface{}{
+		"options": createOpts,
+	})
+
 	domain, err := client.CreateDomain(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("Error creating a Linode Domain: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%d", domain.ID))
 
+	ctx = populateLogAttributes(ctx, d)
+
 	return readResource(ctx, d, meta)
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_domain")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.Atoi(d.Id())
@@ -156,6 +173,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.Tags = tags
 	}
 
+	tflog.Debug(ctx, "client.UpdateDomain(...)", map[string]interface{}{
+		"options": updateOpts,
+	})
+
 	_, err = client.UpdateDomain(ctx, id, updateOpts)
 	if err != nil {
 		return diag.Errorf("Error updating Linode Domain %d: %s", id, err)
@@ -164,11 +185,17 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_domain")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Domain id %s as int", d.Id())
 	}
+
+	tflog.Debug(ctx, "client.DeleteDomain(...)")
+
 	err = client.DeleteDomain(ctx, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode Domain %d: %s", id, err)
@@ -176,4 +203,10 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.SetId("")
 
 	return nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"domain_id": d.Id(),
+	})
 }
