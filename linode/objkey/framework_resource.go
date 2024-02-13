@@ -77,7 +77,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseComputedAttributes(key)
+	data.FlattenObjectStorageKey(key, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -131,9 +131,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseComputedAttributes(key)
-	data.parseConfiguredAttributes(key)
-
+	data.FlattenObjectStorageKey(key, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -181,9 +179,10 @@ func (r *Resource) Update(
 			return
 		}
 
-		plan.parseComputedAttributes(key)
+		plan.FlattenObjectStorageKey(key, true)
 	}
 
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

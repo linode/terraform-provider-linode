@@ -27,7 +27,7 @@ func TestParseConfiguredAttributes(t *testing.T) {
 	}
 
 	data := ResourceModel{}
-	data.parseConfiguredAttributes(&key)
+	data.FlattenObjectStorageKey(&key, false)
 	// assert.Equal(t, types.Int64Value(123), data.ID)
 	// assert.Equal(t, types.StringValue("my-key"), data.Label)
 	// assert.Equal(t, types.StringValue("KVAKUTGBA4WTR2NSJQ81"), data.AccessKey)
@@ -52,7 +52,7 @@ func TestParseComputedAttributes(t *testing.T) {
 	}
 
 	rm := ResourceModel{}
-	rm.parseComputedAttributes(&key)
+	rm.FlattenObjectStorageKey(&key, false)
 
 	//assert.Equal(t, types.Int64Value(123), rm.ID)
 	//assert.Equal(t, types.StringValue("KVAKUTGBA4WTR2NSJQ81"), rm.AccessKey)

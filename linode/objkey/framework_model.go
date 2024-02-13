@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 type BucketAccessModelEntry struct {
@@ -24,43 +25,53 @@ type ResourceModel struct {
 	BucketAccess []BucketAccessModelEntry `tfsdk:"bucket_access"`
 }
 
-func (rm *ResourceModel) parseConfiguredAttributes(key *linodego.ObjectStorageKey) {
-	rm.Label = types.StringValue(key.Label)
-	// No access is configured; we can return here
-	if key.BucketAccess == nil {
-		rm.BucketAccess = nil
-		return
-	}
+func (rm *ResourceModel) FlattenObjectStorageKey(key *linodego.ObjectStorageKey, preserveKnown bool) {
+	rm.Label = helper.KeepOrUpdateString(rm.Label, key.Label, preserveKnown)
 
-	bucketAccess := make([]BucketAccessModelEntry, len(*key.BucketAccess))
-
-	keyBucketAccess := *key.BucketAccess
-
-	for i := range keyBucketAccess {
-		var entry BucketAccessModelEntry
-
-		entry.parseBucketAccess(&keyBucketAccess[i])
-
-		bucketAccess[i] = entry
-	}
-}
-
-func (rm *ResourceModel) parseComputedAttributes(key *linodego.ObjectStorageKey) {
-	rm.ID = types.StringValue(strconv.Itoa(key.ID))
-	rm.AccessKey = types.StringValue(key.AccessKey)
-	rm.Limited = types.BoolValue(key.Limited)
+	rm.ID = helper.KeepOrUpdateString(rm.ID, strconv.Itoa(key.ID), preserveKnown)
+	rm.AccessKey = helper.KeepOrUpdateString(rm.AccessKey, key.AccessKey, preserveKnown)
+	rm.Limited = helper.KeepOrUpdateBool(rm.Limited, key.Limited, preserveKnown)
 
 	// We only want to populate this field if a key is returned,
 	// else we should preserve the old value.
 	if key.SecretKey != "[REDACTED]" {
-		rm.SecretKey = types.StringValue(key.SecretKey)
+		rm.SecretKey = helper.KeepOrUpdateString(rm.SecretKey, key.SecretKey, preserveKnown)
+	}
+
+	// rm.BucketAccess should only be changed when known values are not preserved
+	if !preserveKnown {
+		// No access is configured; we can return here
+		if key.BucketAccess == nil {
+			rm.BucketAccess = nil
+			return
+		}
+
+		keyBucketAccess := *key.BucketAccess
+		bucketAccess := make([]BucketAccessModelEntry, len(keyBucketAccess))
+
+		for i := range keyBucketAccess {
+			var entry BucketAccessModelEntry
+			entry.FlattenBucketAccess(&keyBucketAccess[i], preserveKnown)
+			bucketAccess[i] = entry
+		}
 	}
 }
 
-func (b *BucketAccessModelEntry) parseBucketAccess(access *linodego.ObjectStorageKeyBucketAccess) {
-	b.BucketName = types.StringValue(access.BucketName)
-	b.Cluster = types.StringValue(access.Cluster)
-	b.Permissions = types.StringValue(access.Permissions)
+func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
+	rm.ID = helper.KeepOrUpdateValue(rm.ID, other.ID, preserveKnown)
+	rm.Label = helper.KeepOrUpdateValue(rm.Label, other.Label, preserveKnown)
+	rm.AccessKey = helper.KeepOrUpdateValue(rm.AccessKey, other.AccessKey, preserveKnown)
+	rm.SecretKey = helper.KeepOrUpdateValue(rm.SecretKey, other.SecretKey, preserveKnown)
+	rm.Limited = helper.KeepOrUpdateValue(rm.Limited, other.Limited, preserveKnown)
+	if !preserveKnown {
+		rm.BucketAccess = other.BucketAccess
+	}
+}
+
+func (b *BucketAccessModelEntry) FlattenBucketAccess(access *linodego.ObjectStorageKeyBucketAccess, preserveKnown bool) {
+	b.BucketName = helper.KeepOrUpdateString(b.BucketName, access.BucketName, preserveKnown)
+	b.Cluster = helper.KeepOrUpdateString(b.Cluster, access.Cluster, preserveKnown)
+	b.Permissions = helper.KeepOrUpdateString(b.Permissions, access.Permissions, preserveKnown)
 }
 
 func (b *BucketAccessModelEntry) toLinodeObject() linodego.ObjectStorageKeyBucketAccess {
