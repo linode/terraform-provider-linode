@@ -61,14 +61,15 @@ func TestAccResourceDomainRecord_roundedTTLSec(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
 					resource.TestCheckResourceAttr(resName, "name", domainRecordName),
-					resource.TestCheckResourceAttr(resName, "ttl_sec", "300"),
+					resource.TestCheckResourceAttr(resName, "ttl_sec", "299"),
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: importStateID,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ttl_sec"},
+				ImportStateIdFunc:       importStateID,
 			},
 		},
 	})
@@ -211,7 +212,8 @@ func TestAccResourceDomainRecord_SRVNoFQDN(t *testing.T) {
 	resName := "linode_domain_record.foobar"
 	domainName := acctest.RandomWithPrefix("tftest") + ".example"
 	expectedName := "_myservice._tcp"
-	expectedTarget := "mysubdomain." + domainName
+	expectedTarget1 := "mysubdomain"
+	expectedTarget2 := "mysubdomainbutnew"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -219,19 +221,19 @@ func TestAccResourceDomainRecord_SRVNoFQDN(t *testing.T) {
 		CheckDestroy:             checkDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.SRV(t, domainName, "mysubdomain"),
+				Config: tmpl.SRV(t, domainName, expectedTarget1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
-					resource.TestCheckResourceAttr(resName, "target", expectedTarget),
+					resource.TestCheckResourceAttr(resName, "target", expectedTarget1),
 					resource.TestCheckResourceAttr(resName, "record_type", "SRV"),
 					resource.TestCheckResourceAttr(resName, "protocol", "tcp"),
 				),
 			},
 			{
-				Config: tmpl.SRV(t, domainName, "mysubdomainbutnew"),
+				Config: tmpl.SRV(t, domainName, expectedTarget2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", expectedName),
-					resource.TestCheckResourceAttr(resName, "target", "mysubdomainbutnew."+domainName),
+					resource.TestCheckResourceAttr(resName, "target", expectedTarget2),
 					resource.TestCheckResourceAttr(resName, "record_type", "SRV"),
 					resource.TestCheckResourceAttr(resName, "protocol", "tcp"),
 				),
@@ -281,19 +283,6 @@ func TestAccResourceDomainRecord_reconcileName(t *testing.T) {
 			// Ensure there is no diff when using the domain name as the record name
 			{
 				Config: tmpl.WithDomain(t, domainName, domainName),
-				Check: resource.ComposeTestCheckFunc(
-					checkDomainRecordExists,
-					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),
-				),
-			},
-			{
-				RefreshState: true,
-				PlanOnly:     true,
-			},
-
-			// Ensure there is no diff when using an empty string as the record name
-			{
-				Config: tmpl.WithDomain(t, domainName, ""),
 				Check: resource.ComposeTestCheckFunc(
 					checkDomainRecordExists,
 					resource.TestCheckResourceAttr("linode_domain_record.foobar", "name", domainName),

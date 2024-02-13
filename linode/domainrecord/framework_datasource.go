@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -25,35 +24,6 @@ func NewDataSource() datasource.DataSource {
 
 type DataSource struct {
 	helper.BaseDataSource
-}
-
-func (data *DataSourceModel) parseDomainRecord(domainRecord *linodego.DomainRecord) {
-	data.ID = types.Int64Value(int64(domainRecord.ID))
-	data.Name = types.StringValue(domainRecord.Name)
-	data.Type = types.StringValue(string(domainRecord.Type))
-	data.TTLSec = types.Int64Value(int64(domainRecord.TTLSec))
-	data.Target = types.StringValue(domainRecord.Target)
-	data.Priority = types.Int64Value(int64(domainRecord.Priority))
-	data.Weight = types.Int64Value(int64(domainRecord.Weight))
-	data.Port = types.Int64Value(int64(domainRecord.Port))
-	data.Protocol = types.StringPointerValue(domainRecord.Protocol)
-	data.Service = types.StringPointerValue(domainRecord.Service)
-	data.Tag = types.StringPointerValue(domainRecord.Tag)
-}
-
-type DataSourceModel struct {
-	ID       types.Int64  `tfsdk:"id"`
-	Name     types.String `tfsdk:"name"`
-	DomainID types.Int64  `tfsdk:"domain_id"`
-	Type     types.String `tfsdk:"type"`
-	TTLSec   types.Int64  `tfsdk:"ttl_sec"`
-	Target   types.String `tfsdk:"target"`
-	Priority types.Int64  `tfsdk:"priority"`
-	Weight   types.Int64  `tfsdk:"weight"`
-	Port     types.Int64  `tfsdk:"port"`
-	Protocol types.String `tfsdk:"protocol"`
-	Service  types.String `tfsdk:"service"`
-	Tag      types.String `tfsdk:"tag"`
 }
 
 func (d *DataSource) Read(
@@ -130,7 +100,7 @@ func (d *DataSource) Read(
 	}
 
 	if record != nil {
-		data.parseDomainRecord(record)
+		data.FlattenDomainRecord(record)
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	} else {
 		resp.Diagnostics.AddError(fmt.Sprintf(`Domain record "%s" for domain %s was not found`,

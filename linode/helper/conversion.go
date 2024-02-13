@@ -62,6 +62,14 @@ func StringToInt(s string, diags *diag.Diagnostics) int {
 	return num
 }
 
+func FrameworkSafeInt64PointerToIntPointer(numberPtr *int64, diags *diag.Diagnostics) *int {
+	if numberPtr == nil {
+		return nil
+	}
+	result := FrameworkSafeInt64ToInt(*numberPtr, diags)
+	return &result
+}
+
 func FrameworkSafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
 	result, err := SafeInt64ToInt(number)
 	if err != nil {

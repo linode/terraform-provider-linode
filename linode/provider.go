@@ -15,7 +15,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlbackups"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v2/linode/domain"
-	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/image"
@@ -127,7 +126,6 @@ func Provider() *schema.Provider {
 			"linode_database_mysql":           databasemysql.Resource(),
 			"linode_database_postgresql":      databasepostgresql.Resource(),
 			"linode_domain":                   domain.Resource(),
-			"linode_domain_record":            domainrecord.Resource(),
 			"linode_firewall":                 firewall.Resource(),
 			"linode_image":                    image.Resource(),
 			"linode_instance":                 instance.Resource(),
