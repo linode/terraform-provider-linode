@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 type DataSourceModel struct {
@@ -51,25 +52,33 @@ func (data *DataSourceModel) parseIPv6RangeDataSource(
 	return nil
 }
 
-func (rData *ResourceModel) parseIPv6RangeResourceDataComputedAttrs(
+func (r *ResourceModel) FlattenIPv6Range(
 	ctx context.Context,
 	ipv6Range *linodego.IPv6Range,
+	preserveKnown bool,
 ) diag.Diagnostics {
 	linodes, diag := types.SetValueFrom(ctx, types.Int64Type, ipv6Range.Linodes)
 	if diag.HasError() {
 		return diag
 	}
 
-	rData.IsBGP = types.BoolValue(ipv6Range.IsBGP)
-	rData.Linodes = linodes
-	rData.Range = types.StringValue(ipv6Range.Range)
-	rData.Region = types.StringValue(ipv6Range.Region)
+	r.IsBGP = helper.KeepOrUpdateBool(r.IsBGP, ipv6Range.IsBGP, preserveKnown)
+	r.Linodes = helper.KeepOrUpdateValue(r.Linodes, linodes, preserveKnown)
+	r.Range = helper.KeepOrUpdateString(r.Range, ipv6Range.Range, preserveKnown)
+	r.Region = helper.KeepOrUpdateString(r.Region, ipv6Range.Region, preserveKnown)
+	r.PrefixLength = helper.KeepOrUpdateInt64(
+		r.PrefixLength, int64(ipv6Range.Prefix), preserveKnown,
+	)
 
 	return nil
 }
 
-func (rData *ResourceModel) parseIPv6RangeResourceDataNonComputedAttrs(
-	ipv6Range *linodego.IPv6Range,
-) {
-	rData.PrefixLength = types.Int64Value(int64(ipv6Range.Prefix))
+func (r *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
+	r.IsBGP = helper.KeepOrUpdateValue(r.IsBGP, other.IsBGP, preserveKnown)
+	r.Linodes = helper.KeepOrUpdateValue(r.Linodes, other.Linodes, preserveKnown)
+	r.Range = helper.KeepOrUpdateValue(r.Range, other.Range, preserveKnown)
+	r.Region = helper.KeepOrUpdateValue(r.Region, other.Region, preserveKnown)
+	r.PrefixLength = helper.KeepOrUpdateValue(
+		r.PrefixLength, other.PrefixLength, preserveKnown,
+	)
 }
