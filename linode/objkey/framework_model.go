@@ -49,11 +49,13 @@ func (rm *ResourceModel) FlattenObjectStorageKey(key *linodego.ObjectStorageKey,
 		keyBucketAccess := *key.BucketAccess
 		bucketAccess := make([]BucketAccessModelEntry, len(keyBucketAccess))
 
-		for i := range keyBucketAccess {
+		for i := range bucketAccess {
 			var entry BucketAccessModelEntry
 			entry.FlattenBucketAccess(&keyBucketAccess[i], preserveKnown)
 			bucketAccess[i] = entry
 		}
+
+		rm.BucketAccess = bucketAccess
 	}
 }
 
