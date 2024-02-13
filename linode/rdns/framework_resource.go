@@ -109,7 +109,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	plan.parseComputedAttributes(ip)
+	plan.FlattenInstanceIP(ip, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -155,8 +155,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseComputedAttributes(ip)
-	data.parseConfiguredAttributes(ip)
+	data.FlattenInstanceIP(ip, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -212,7 +211,7 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		plan.parseComputedAttributes(ip)
+		plan.FlattenInstanceIP(ip, true)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

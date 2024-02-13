@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/customtypes"
 )
 
@@ -15,14 +16,10 @@ type ResourceModel struct {
 	Timeouts         timeouts.Value                `tfsdk:"timeouts"`
 }
 
-func (rm *ResourceModel) parseConfiguredAttributes(ip *linodego.InstanceIP) {
-	rm.Address = customtypes.IPAddrValue(ip.Address)
-
-	if !rm.RDNS.Equal(types.StringValue(ip.RDNS)) {
-		rm.RDNS = types.StringValue(ip.RDNS)
-	}
-}
-
-func (rm *ResourceModel) parseComputedAttributes(ip *linodego.InstanceIP) {
-	rm.ID = types.StringValue(ip.Address)
+func (rm *ResourceModel) FlattenInstanceIP(ip *linodego.InstanceIP, preserveKnown bool) {
+	rm.Address = helper.KeepOrUpdateValue(
+		rm.Address, customtypes.IPAddrValue(ip.Address), preserveKnown,
+	)
+	rm.ID = helper.KeepOrUpdateString(rm.ID, ip.Address, preserveKnown)
+	rm.RDNS = helper.KeepOrUpdateString(rm.RDNS, ip.RDNS, preserveKnown)
 }
