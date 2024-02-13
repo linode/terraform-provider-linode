@@ -61,7 +61,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseComputedAttributes(key)
+	data.FlattenSSHKey(key, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -113,8 +113,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseComputedAttributes(key)
-	data.parseConfiguredAttributes(key)
+	data.FlattenSSHKey(key, false)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -160,9 +159,9 @@ func (r *Resource) Update(
 				err.Error())
 			return
 		}
-		plan.parseComputedAttributes(key)
+		plan.FlattenSSHKey(key, true)
 	}
-
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
