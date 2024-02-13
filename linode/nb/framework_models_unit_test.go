@@ -24,7 +24,7 @@ func TestParseNonComputedAttrs(t *testing.T) {
 
 	nodeBalancerModel := &NodeBalancerModel{}
 
-	diags := nodeBalancerModel.ParseNonComputedAttrs(context.Background(), nodeBalancer)
+	diags := nodeBalancerModel.FlattenNodeBalancer(context.Background(), nodeBalancer, nil, false)
 
 	assert.False(t, diags.HasError(), "Errors should be returned due to custom context error")
 	assert.Equal(t, types.StringValue("test-nodebalancer"), nodeBalancerModel.Label)
@@ -62,7 +62,7 @@ func TestParseComputedAttrs(t *testing.T) {
 
 	nodeBalancerModel := &NodeBalancerModel{}
 
-	diags := nodeBalancerModel.ParseComputedAttrs(context.Background(), nodeBalancer, nil)
+	diags := nodeBalancerModel.FlattenNodeBalancer(context.Background(), nodeBalancer, nil, false)
 
 	assert.False(t, diags.HasError())
 
@@ -70,8 +70,8 @@ func TestParseComputedAttrs(t *testing.T) {
 	assert.Equal(t, types.StringValue("us-east"), nodeBalancerModel.Region)
 	assert.Equal(t, types.Int64Value(10), nodeBalancerModel.ClientConnThrottle)
 	assert.Equal(t, types.StringPointerValue(&hostname), nodeBalancerModel.Hostname)
-	assert.Equal(t, types.StringPointerValue(&IPv4), nodeBalancerModel.Ipv4)
-	assert.Equal(t, types.StringPointerValue(&IPv6), nodeBalancerModel.Ipv6)
+	assert.Equal(t, types.StringPointerValue(&IPv4), nodeBalancerModel.IPv4)
+	assert.Equal(t, types.StringPointerValue(&IPv6), nodeBalancerModel.IPv6)
 
 	assert.NotNil(t, nodeBalancerModel.Created)
 	assert.NotNil(t, nodeBalancerModel.Updated)
