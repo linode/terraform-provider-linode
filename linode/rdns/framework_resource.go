@@ -213,7 +213,7 @@ func (r *Resource) Update(
 		}
 		plan.FlattenInstanceIP(ip, true)
 	}
-
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

@@ -23,3 +23,9 @@ func (rm *ResourceModel) FlattenInstanceIP(ip *linodego.InstanceIP, preserveKnow
 	rm.ID = helper.KeepOrUpdateString(rm.ID, ip.Address, preserveKnown)
 	rm.RDNS = helper.KeepOrUpdateString(rm.RDNS, ip.RDNS, preserveKnown)
 }
+
+func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
+	rm.Address = helper.KeepOrUpdateValue(rm.Address, other.Address, preserveKnown)
+	rm.ID = helper.KeepOrUpdateValue(rm.ID, other.ID, preserveKnown)
+	rm.RDNS = helper.KeepOrUpdateValue(rm.RDNS, other.RDNS, preserveKnown)
+}
