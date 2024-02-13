@@ -18,10 +18,18 @@ func KeepOrUpdateBool(original types.Bool, updated bool, preserveKnown bool) typ
 	return KeepOrUpdateValue(original, types.BoolValue(updated), preserveKnown)
 }
 
-func KeepOrUpdateSet(
-	original types.Set, updated []attr.Value, preserveKnown bool, diags *diag.Diagnostics,
+func KeepOrUpdateStringSet(
+	original types.Set, updated []string, preserveKnown bool, diags *diag.Diagnostics,
 ) types.Set {
-	setValue, newDiags := types.SetValue(types.StringType, updated)
+	return KeepOrUpdateSet(
+		types.StringType, original, StringSliceToFrameworkValueSlice(updated), preserveKnown, diags,
+	)
+}
+
+func KeepOrUpdateSet(
+	elementType attr.Type, original types.Set, updated []attr.Value, preserveKnown bool, diags *diag.Diagnostics,
+) types.Set {
+	setValue, newDiags := types.SetValue(elementType, updated)
 	diags.Append(newDiags...)
 
 	if diags.HasError() {

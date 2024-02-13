@@ -44,9 +44,9 @@ func StringSliceToFramework(val []string) []types.String {
 	return result
 }
 
-// StringSliceToFramework converts the given string slice
+// StringSliceToFrameworkValueSlice converts the given string slice
 // into a framework-compatible slice of attr.Value.
-func StringSliceToFrameworkGeneric(val []string) []attr.Value {
+func StringSliceToFrameworkValueSlice(val []string) []attr.Value {
 	if val == nil {
 		return nil
 	}

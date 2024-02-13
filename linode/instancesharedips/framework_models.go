@@ -17,9 +17,7 @@ func (data *ResourceModel) FlattenSharedIPs(
 ) {
 	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(linodeID), preserveKnown)
 	data.LinodeID = helper.KeepOrUpdateInt64(data.LinodeID, int64(linodeID), preserveKnown)
-	data.Addresses = helper.KeepOrUpdateSet(
-		data.Addresses, helper.StringSliceToFrameworkGeneric(sharedIPs), preserveKnown, diags,
-	)
+	data.Addresses = helper.KeepOrUpdateStringSet(data.Addresses, sharedIPs, preserveKnown, diags)
 }
 
 func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
