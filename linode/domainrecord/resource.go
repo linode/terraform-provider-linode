@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -61,12 +62,18 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_domain_record")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
 	}
 	domainID := d.Get("domain_id").(int)
+
+	tflog.Trace(ctx, "client.GetDomainRecord(...)")
+
 	record, err := client.GetDomainRecord(ctx, domainID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -131,6 +138,8 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, "Create linode_domain_record")
+
 	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
@@ -148,6 +157,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
+	tflog.Debug(ctx, "client.CreateDomainRecord(...)", map[string]interface{}{
+		"options": createOpts,
+	})
+
 	domainRecord, err := client.CreateDomainRecord(ctx, domainID, createOpts)
 	if err != nil {
 		return diag.Errorf("Error creating a Linode DomainRecord: %s", err)
@@ -155,10 +168,15 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	d.SetId(fmt.Sprintf("%d", domainRecord.ID))
 
+	ctx = populateLogAttributes(ctx, d)
+
 	return readResource(ctx, d, meta)
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_domain_record")
+
 	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
@@ -180,6 +198,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
+	tflog.Debug(ctx, "client.UpdateDomainRecord(...)", map[string]interface{}{
+		"options": updateOpts,
+	})
+
 	_, err = client.UpdateDomainRecord(ctx, domainID, id, updateOpts)
 	if err != nil {
 		return diag.Errorf("Error updating Domain Record: %s", err)
@@ -189,12 +211,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_domain_record")
+
 	client := meta.(*helper.ProviderMeta).Client
 	domainID := d.Get("domain_id").(int)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode DomainRecord id %s as int", d.Id())
 	}
+
+	tflog.Debug(ctx, "client.DeleteDomainRecord(...)")
+
 	err = client.DeleteDomainRecord(ctx, domainID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode DomainRecord %d: %s", id, err)
@@ -212,10 +240,14 @@ func domainRecordTargetSuppressor(k, provisioned, declared string, d *schema.Res
 // reconcileName handles cases where the user has specified their FQDN as a part of their
 // planned record name but the API trims the FQDN from the returned record name.
 func reconcileName(ctx context.Context, client linodego.Client, d *schema.ResourceData, apiName string) (string, error) {
+	tflog.Debug(ctx, "Reconcile record name")
+
 	plannedName, ok := d.GetOk("name")
 	if !ok {
 		return apiName, nil
 	}
+
+	tflog.Trace(ctx, "client.GetDomain(...)")
 
 	domain, err := client.GetDomain(ctx, d.Get("domain_id").(int))
 	if err != nil {
@@ -231,4 +263,11 @@ func reconcileName(ctx context.Context, client linodego.Client, d *schema.Resour
 	}
 
 	return apiName, nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"domain_record_id": d.Id(),
+		"domain_id":        d.Get("domain_id"),
+	})
 }

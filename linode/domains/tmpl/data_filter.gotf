@@ -4,9 +4,12 @@
 
 data "linode_domains" "foo" {
     filter {
-        name = "type"
-        values = ["master"]
+        name = "description"
+        values = ["tf-testing-"]
+        match_by = "substring"
     }
+    order_by = "domain"
+    order = "desc"
 }
 
 {{ end }}
