@@ -82,7 +82,7 @@ func TestAccInstanceSharedIPs_update(t *testing.T) {
 
 func checkInstanceSharedIPCount(name string, length int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := &acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
