@@ -74,6 +74,7 @@ type FrameworkProvider struct {
 	Meta            *helper.FrameworkProviderMeta
 }
 
+// CreateFrameworkProviderWithMeta is used by the crossplane provider
 func CreateFrameworkProviderWithMeta(version string, meta *helper.ProviderMeta) provider.ProviderWithValidateConfig {
 	return &FrameworkProvider{
 		ProviderVersion: version,

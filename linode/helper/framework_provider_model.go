@@ -5,6 +5,7 @@ import (
 	"github.com/linode/linodego"
 )
 
+// GetFrameworkProviderModelFromSDKv2ProviderConfig is used by crossplane-provider-linode to convert from SDKv2 to FrameworkModel
 func GetFrameworkProviderModelFromSDKv2ProviderConfig(config *Config) *FrameworkProviderModel {
 	return &FrameworkProviderModel{
 		AccessToken:                  types.StringValue(config.AccessToken),
