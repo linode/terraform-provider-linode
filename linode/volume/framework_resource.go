@@ -311,7 +311,7 @@ func (r *Resource) Read(
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -400,7 +400,7 @@ func (r *Resource) Update(
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -586,7 +586,7 @@ func (r *Resource) Delete(
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

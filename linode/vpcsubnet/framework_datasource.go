@@ -38,7 +38,7 @@ func (d *DataSource) Read(
 	}
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return

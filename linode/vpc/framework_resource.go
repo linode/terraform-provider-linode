@@ -72,7 +72,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -130,7 +130,7 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), resp.Diagnostics)
+		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -163,7 +163,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

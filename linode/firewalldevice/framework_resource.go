@@ -98,7 +98,7 @@ func (r *Resource) Read(
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -176,7 +176,7 @@ func (r *Resource) Delete(
 
 	id := helper.FrameworkSafeStringToInt(
 		state.ID.ValueString(),
-		resp.Diagnostics,
+		&resp.Diagnostics,
 	)
 	if resp.Diagnostics.HasError() {
 		return

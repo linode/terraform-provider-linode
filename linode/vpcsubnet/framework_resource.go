@@ -105,7 +105,7 @@ func (r *Resource) Read(
 	}
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -167,7 +167,7 @@ func (r *Resource) Update(
 			plan.VPCId.ValueInt64(),
 			&resp.Diagnostics,
 		)
-		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), resp.Diagnostics)
+		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 
 		if resp.Diagnostics.HasError() {
 			return
@@ -206,7 +206,7 @@ func (r *Resource) Delete(
 	}
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return

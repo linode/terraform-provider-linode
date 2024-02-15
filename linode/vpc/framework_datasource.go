@@ -37,7 +37,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
