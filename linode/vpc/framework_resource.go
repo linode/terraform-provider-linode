@@ -15,7 +15,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_vpc",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -72,7 +72,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -130,7 +130,7 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		id := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -163,7 +163,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -172,7 +172,7 @@ func (r *Resource) Delete(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the VPC (%d)", data.ID.ValueInt64()),
+				fmt.Sprintf("Failed to delete the VPC (%s)", data.ID.ValueString()),
 				err.Error(),
 			)
 		}

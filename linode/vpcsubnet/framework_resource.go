@@ -17,7 +17,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_vpc_subnet",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
