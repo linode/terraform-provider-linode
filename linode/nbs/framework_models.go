@@ -65,7 +65,7 @@ func (data *NodeBalancerModel) flattenNodeBalancer(
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 
-	transfer, diags := nb.ParseTransfer(ctx, nodebalancer.Transfer)
+	transfer, diags := nb.FlattenTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
 		return diags
 	}
