@@ -3,6 +3,7 @@ package stackscript
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -114,6 +115,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"created": schema.StringAttribute{
 			Description: "The date this StackScript was created.",
+			CustomType:  timetypes.RFC3339Type{},
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
@@ -121,6 +123,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"updated": schema.StringAttribute{
 			Description: "The date this StackScript was updated.",
+			CustomType:  timetypes.RFC3339Type{},
 			Computed:    true,
 		},
 
