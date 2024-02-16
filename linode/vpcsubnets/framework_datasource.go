@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,12 +33,15 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_vpc_subnets")
 	var data VPCSubnetFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, data)
 
 	id, d := filterConfig.GenerateID(data.Filters)
 	if d != nil {
@@ -76,6 +81,7 @@ func (data *VPCSubnetFilterModel) ListVPCSubnets(
 		}
 	}
 
+	tflog.Trace(ctx, "client.ListVPCSubnets(...)")
 	vpcs, err := client.ListVPCSubnets(ctx, vpcId, &linodego.ListOptions{
 		Filter: filter,
 	})
@@ -84,4 +90,11 @@ func (data *VPCSubnetFilterModel) ListVPCSubnets(
 	}
 
 	return helper.TypedSliceToAny(vpcs), nil
+}
+
+func populateLogAttributes(ctx context.Context, model VPCSubnetFilterModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"vpc_id":  model.VPCId,
+		"filters": model.Filters,
+	})
 }
