@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,6 +35,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_ipv6range")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -74,6 +78,11 @@ func (r *Resource) Create(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+	tflog.Debug(ctx, "client.CreateIPv6Range(...)", map[string]any{
+		"options": createOpts,
+	})
+
 	ipv6range, err := client.CreateIPv6Range(ctx, createOpts)
 	if err != nil {
 		if linodeIdConfigured {
@@ -98,6 +107,8 @@ func (r *Resource) Create(
 	// only returns two fields for the newly created range (range and route_target).
 	// We need to make a second call out to the GET endpoint to populate more
 	// computed fields (region, is_bgp, linodes).
+	tflog.Trace(ctx, "client.GetIPv6Range(...)")
+
 	ipv6rangeR, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -119,6 +130,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_ipv6range")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -130,6 +143,9 @@ func (r *Resource) Read(
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, data)
+	tflog.Debug(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
@@ -161,6 +177,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_ipv6range")
+
 	var plan, state ResourceModel
 	client := r.Meta.Client
 
@@ -169,6 +187,9 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, plan)
+	tflog.Debug(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, plan.ID.ValueString())
 	if err != nil {
@@ -187,6 +208,8 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+		tflog.Debug(ctx, "client.InstancesAssignIPs(...)")
+
 		err := client.InstancesAssignIPs(ctx, linodego.LinodesAssignIPsOptions{
 			Region: ipv6range.Region,
 			Assignments: []linodego.LinodeIPAssignment{
@@ -220,6 +243,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_ipv6range")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -227,6 +252,9 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	populateLogAttributes(ctx, data)
+	tflog.Debug(ctx, "client.DeleteIPv6Range(...)")
 
 	if err := client.DeleteIPv6Range(ctx, data.ID.ValueString()); err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
@@ -242,4 +270,10 @@ func (r *Resource) Delete(
 		)
 		return
 	}
+}
+
+func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"ipv6_id": model.ID,
+	})
 }
