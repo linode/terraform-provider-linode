@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -28,6 +30,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_vpc")
+
 	client := d.Meta.Client
 
 	var data VPCModel
@@ -37,11 +41,14 @@ func (d *DataSource) Read(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+
 	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetVPC(...)")
 	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(

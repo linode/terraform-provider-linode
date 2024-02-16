@@ -41,7 +41,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, data)
+	ctx = tflog.SetField(ctx, "vpc_id", data.VPCId)
 
 	id, d := filterConfig.GenerateID(data.Filters)
 	if d != nil {
@@ -81,7 +81,9 @@ func (data *VPCSubnetFilterModel) ListVPCSubnets(
 		}
 	}
 
-	tflog.Trace(ctx, "client.ListVPCSubnets(...)")
+	tflog.Trace(ctx, "client.ListVPCSubnets(...)", map[string]any{
+		"filter": filter,
+	})
 	vpcs, err := client.ListVPCSubnets(ctx, vpcId, &linodego.ListOptions{
 		Filter: filter,
 	})
@@ -90,11 +92,4 @@ func (data *VPCSubnetFilterModel) ListVPCSubnets(
 	}
 
 	return helper.TypedSliceToAny(vpcs), nil
-}
-
-func populateLogAttributes(ctx context.Context, model VPCSubnetFilterModel) context.Context {
-	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"vpc_id":  model.VPCId,
-		"filters": model.Filters,
-	})
 }
