@@ -2,6 +2,7 @@ package volume
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -66,7 +67,7 @@ func (data *VolumeDataSourceModel) ParseNonComputedAttributes(
 
 type VolumeResourceModel struct {
 	SourceVolumeID types.Int64    `tfsdk:"source_volume_id"`
-	ID             types.Int64    `tfsdk:"id"`
+	ID             types.String   `tfsdk:"id"`
 	Label          types.String   `tfsdk:"label"`
 	Region         types.String   `tfsdk:"region"`
 	Size           types.Int64    `tfsdk:"size"`
@@ -86,7 +87,7 @@ func (data *VolumeResourceModel) FlattenVolume(volume *linodego.Volume, preserve
 		)
 		return diags
 	}
-	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(volume.ID), preserveKnown)
+	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(volume.ID), preserveKnown)
 	data.Label = helper.KeepOrUpdateString(data.Label, volume.Label, preserveKnown)
 	data.Region = helper.KeepOrUpdateString(data.Region, volume.Region, preserveKnown)
 	data.Size = helper.KeepOrUpdateInt64(data.Size, int64(volume.Size), preserveKnown)

@@ -2,6 +2,7 @@ package vpcsubnet
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -12,7 +13,7 @@ import (
 )
 
 type VPCSubnetModel struct {
-	ID      types.Int64       `tfsdk:"id"`
+	ID      types.String      `tfsdk:"id"`
 	VPCId   types.Int64       `tfsdk:"vpc_id"`
 	Label   types.String      `tfsdk:"label"`
 	IPv4    types.String      `tfsdk:"ipv4"`
@@ -81,7 +82,7 @@ func (d *VPCSubnetModel) FlattenSubnet(
 	subnet *linodego.VPCSubnet,
 	preserveKnown bool,
 ) diag.Diagnostics {
-	d.ID = helper.KeepOrUpdateInt64(d.ID, int64(subnet.ID), preserveKnown)
+	d.ID = helper.KeepOrUpdateString(d.ID, strconv.Itoa(subnet.ID), preserveKnown)
 
 	linodesList, diags := FlattenSubnetLinodes(ctx, subnet.Linodes)
 	if diags.HasError() {

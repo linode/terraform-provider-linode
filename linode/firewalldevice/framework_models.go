@@ -1,6 +1,7 @@
 package firewalldevice
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -9,7 +10,7 @@ import (
 )
 
 type FirewallDeviceModel struct {
-	ID         types.Int64  `tfsdk:"id"`
+	ID         types.String `tfsdk:"id"`
 	FirewallID types.Int64  `tfsdk:"firewall_id"`
 	EntityID   types.Int64  `tfsdk:"entity_id"`
 	EntityType types.String `tfsdk:"entity_type"`
@@ -24,7 +25,7 @@ func (fdm *FirewallDeviceModel) FlattenFirewallDevice(
 	// firewall_id is always configured by the user and
 	// never appear in linodego.FirewallDevice
 
-	fdm.ID = helper.KeepOrUpdateInt64(fdm.ID, int64(device.ID), preserveKnown)
+	fdm.ID = helper.KeepOrUpdateString(fdm.ID, strconv.Itoa(device.ID), preserveKnown)
 	fdm.EntityID = helper.KeepOrUpdateInt64(
 		fdm.EntityID,
 		int64(device.Entity.ID),
