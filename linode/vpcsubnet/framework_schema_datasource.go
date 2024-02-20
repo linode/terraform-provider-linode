@@ -7,7 +7,7 @@ import (
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description: "The id of the VPC Subnet.",
 			Required:    true,
 		},

@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -10,7 +11,7 @@ import (
 )
 
 type VPCModel struct {
-	ID          types.Int64       `tfsdk:"id"`
+	ID          types.String      `tfsdk:"id"`
 	Label       types.String      `tfsdk:"label"`
 	Description types.String      `tfsdk:"description"`
 	Region      types.String      `tfsdk:"region"`
@@ -19,7 +20,7 @@ type VPCModel struct {
 }
 
 func (m *VPCModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) {
-	m.ID = helper.KeepOrUpdateInt64(m.ID, int64(vpc.ID), preserveKnown)
+	m.ID = helper.KeepOrUpdateString(m.ID, strconv.Itoa(vpc.ID), preserveKnown)
 	m.Description = helper.KeepOrUpdateString(m.Description, vpc.Description, preserveKnown)
 	m.Created = helper.KeepOrUpdateValue(
 		m.Created,

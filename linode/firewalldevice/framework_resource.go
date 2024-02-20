@@ -16,7 +16,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_firewall_device",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -93,15 +93,16 @@ func (r *Resource) Read(
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 		"firewall_id": state.FirewallID.ValueInt64(),
-		"device_id":   state.ID.ValueInt64(),
+		"device_id":   state.ID.ValueString(),
 	})
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeInt64ToInt(
-		state.ID.ValueInt64(),
-		&resp.Diagnostics,
-	)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	firewallID := helper.FrameworkSafeInt64ToInt(
 		state.FirewallID.ValueInt64(),
 		&resp.Diagnostics,
@@ -118,8 +119,8 @@ func (r *Resource) Read(
 			resp.Diagnostics.AddWarning(
 				"Firewall Device No Longer Exists",
 				fmt.Sprintf(
-					"Removing firewall device %d from state because it no longer exists",
-					state.ID.ValueInt64(),
+					"Removing firewall device %s from state because it no longer exists",
+					state.ID.String(),
 				),
 			)
 			resp.State.RemoveResource(ctx)
@@ -173,10 +174,14 @@ func (r *Resource) Delete(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeInt64ToInt(
-		state.ID.ValueInt64(),
+	id := helper.FrameworkSafeStringToInt(
+		state.ID.ValueString(),
 		&resp.Diagnostics,
 	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	firewallID := helper.FrameworkSafeInt64ToInt(
 		state.FirewallID.ValueInt64(),
 		&resp.Diagnostics,
@@ -218,6 +223,18 @@ func (r *Resource) ImportState(
 	tflog.Debug(ctx, "Import linode_firewall_device")
 
 	helper.ImportStateWithMultipleIDs(
-		ctx, req, resp, "firewall_id", "id",
+		ctx,
+		req,
+		resp,
+		[]helper.ImportableID{
+			{
+				Name:          "firewall_id",
+				TypeConverter: helper.IDTypeConverterInt64,
+			},
+			{
+				Name:          "id",
+				TypeConverter: helper.IDTypeConverterString,
+			},
+		},
 	)
 }

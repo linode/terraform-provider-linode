@@ -11,6 +11,26 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
+// IDTypeConverter represents a function that converts a given value into
+// a given type
+type IDTypeConverter func(value string) (any, diag.Diagnostics)
+
+// ImportableID represents a single ID attribute importable
+type ImportableID struct {
+	TypeConverter IDTypeConverter
+	Name          string
+}
+
+func IDTypeConverterString(value string) (any, diag.Diagnostics) {
+	return value, nil
+}
+
+func IDTypeConverterInt64(value string) (any, diag.Diagnostics) {
+	var d diag.Diagnostics
+	result := StringToInt64(value, &d)
+	return result, d
+}
+
 // ImportStatePassthroughInt64ID allows for the automatic importing of resources
 // through an int64 ID attribute. This is necessary as many Linode resources
 // use integers rather than strings as unique identifiers.
@@ -39,74 +59,53 @@ func ImportStatePassthroughInt64ID(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, intID)...)
 }
 
-type IDTypeConverter func(values ...string) ([]any, diag.Diagnostics)
-
-func IDTypeConverterInt64(values ...string) ([]any, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	result := make([]any, len(values))
-	for i, v := range values {
-		result[i] = StringToInt64(v, &diags)
-	}
-	return result, diags
-}
-
+// ImportStateWithMultipleIDs allows framework resources with multiple IDs
+// (e.g. `child_id, parent_id`) be imported.
 func ImportStateWithMultipleIDs(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
-	ImportIDNames ...string,
+	idFields []ImportableID,
 ) {
-	ImportStateWithMultipleCustomTypedIDs(ctx, req, resp, IDTypeConverterInt64, ImportIDNames...)
-}
-
-func ImportStateWithMultipleCustomTypedIDs(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-	IDsTypeConverter IDTypeConverter,
-	ImportIDNames ...string,
-) {
-	idParts := strings.Split(req.ID, ",")
+	// Compute a readable list of required IDs
+	idFieldNames := make([]string, len(idFields))
+	for i, field := range idFields {
+		idFieldNames[i] = field.Name
+	}
 
 	unexpectedIDsErrorMsg := fmt.Sprintf(
 		"Expected import identifier with format: %s. Got: %q",
-		strings.Join(ImportIDNames, ","), req.ID,
+		strings.Join(idFieldNames, ", "), req.ID,
 	)
 
-	if len(idParts) != len(ImportIDNames) {
+	// Make sure we support spaces in the ID just in case :)
+	fullID := strings.ReplaceAll(req.ID, " ", "")
+
+	idParts := strings.Split(fullID, ",")
+
+	if len(idParts) != len(idFields) {
 		resp.Diagnostics.AddError("Unexpected Import Identifier", unexpectedIDsErrorMsg)
 		return
 	}
 
-	var ids []string
-
-	for _, id := range idParts {
+	for i, id := range idParts {
 		if id == "" {
 			resp.Diagnostics.AddError(
 				"Unexpected Import Identifier", unexpectedIDsErrorMsg,
 			)
 			return
 		}
-		ids = append(ids, id)
-	}
 
-	var convertedIDs []any
+		field := idFields[i]
 
-	if IDsTypeConverter != nil {
-		ids, diags := IDsTypeConverter(ids...)
-		resp.Diagnostics.Append(diags...)
+		valueConverted, d := field.TypeConverter(id)
+		resp.Diagnostics.Append(d...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		convertedIDs = ids
-	} else {
-		convertedIDs = TypedSliceToAny(ids)
-	}
 
-	for i, id := range convertedIDs {
 		resp.Diagnostics.Append(
-			resp.State.SetAttribute(ctx, path.Root(ImportIDNames[i]), id)...,
+			resp.State.SetAttribute(ctx, path.Root(field.Name), valueConverted)...,
 		)
 	}
 }

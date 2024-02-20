@@ -20,11 +20,11 @@ const RequireReplacementWhenNewSourceVolumeIDIsNotNull = "When source_volume_id 
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description: "The id of the volume.",
 			Computed:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"source_volume_id": schema.Int64Attribute{
