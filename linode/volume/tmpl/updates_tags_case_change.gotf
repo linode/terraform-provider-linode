@@ -1,0 +1,9 @@
+{{ define "volume_updates_tags_case_change" }}
+
+resource "linode_volume" "foobar" {
+    label = "{{.Label}}_r"
+    region = "{{ .Region }}"
+    tags = ["tf_tEst", "tf_teST_2"]
+}
+
+{{ end }}
