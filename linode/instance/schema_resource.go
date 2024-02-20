@@ -231,6 +231,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Optional:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+
+		// Tags must be computed so the CustomizeDiff func can override the diff at plan-time
+		Computed: true,
 	},
 	"boot_config_label": {
 		Type:        schema.TypeString,
