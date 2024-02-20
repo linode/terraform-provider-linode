@@ -66,7 +66,7 @@ Each Linode image will be stored in the `firewalls` attribute and will export th
 
 * `label` - The label for the Firewall. For display purposes only. If no label is provided, a default will be assigned.
 
-* `tags` - An array of tags applied to this object. Tags are for organizational purposes only.
+* `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 * `disabled` - If true, the Firewall is inactive.
 

@@ -79,7 +79,7 @@ The following arguments are supported:
 
 * `linode_id` - (Optional) The ID of a Linode Instance where the Volume should be attached.
 
-* `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
+* `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 ### Timeouts
 

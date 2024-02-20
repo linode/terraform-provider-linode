@@ -57,7 +57,7 @@ Each LKE Cluster will be stored in the `lke_clusters` attribute and will export 
 
 * `k8s_version` - The Kubernetes version for this Kubernetes cluster in the format of `major.minor` (e.g. `1.17`).
 
-* `tags` - An array of tags applied to this object. Tags are for organizational purposes only.
+* `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 * `status` - The status of the cluster.
 
