@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// CaseInsensitiveSetPlanModifier ensures that a set does not trigger
+// CaseInsensitiveSet ensures that a set does not trigger
 // diffs on planned values with different cases.
 //
 // NOTE: This is not implemented as custom type because custom type semantic equality
 // checks do not have granular control over diffs.
-func CaseInsensitiveSetPlanModifier() planmodifier.Set {
+func CaseInsensitiveSet() planmodifier.Set {
 	return &caseInsensitiveSetPlanModifier{}
 }
 

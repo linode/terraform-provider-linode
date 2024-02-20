@@ -37,8 +37,8 @@ func Resource() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
-			linodediffs.CustomizeDiffComputedWithDefault("tags", []string{}),
-			linodediffs.CustomizeDiffCaseInsensitiveSet("tags"),
+			linodediffs.ComputedWithDefault("tags", []string{}),
+			linodediffs.CaseInsensitiveSet("tags"),
 		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(createLKETimeout),

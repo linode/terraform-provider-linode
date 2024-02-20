@@ -34,8 +34,8 @@ func Resource() *schema.Resource {
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
 		CustomizeDiff: customdiff.All(
-			linodediffs.CustomizeDiffComputedWithDefault("tags", []string{}),
-			linodediffs.CustomizeDiffCaseInsensitiveSet("tags"),
+			linodediffs.ComputedWithDefault("tags", []string{}),
+			linodediffs.CaseInsensitiveSet("tags"),
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,

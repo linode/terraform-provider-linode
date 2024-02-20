@@ -182,7 +182,7 @@ var resourceNodebalancerV0 = schema.Schema{
 			Computed:    true,
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 			PlanModifiers: []planmodifier.Set{
-				linodeplanmodifier.CaseInsensitiveSetPlanModifier(),
+				linodeplanmodifier.CaseInsensitiveSet(),
 			},
 		},
 		"transfer": schema.MapAttribute{

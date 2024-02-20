@@ -7,14 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// CustomizeDiffCaseInsensitiveSet allows us to ignore case diffs on case-insensitive
+// CaseInsensitiveSet allows us to ignore case diffs on case-insensitive
 // set values (e.g. tags).
 //
 // This function could not be implemented as a DiffSuppressFunc because DiffSuppressFuncs
 // are run per-entry rather than on the set as a whole.
 //
 // NOTE: The target field must be marked as computed.
-func CustomizeDiffCaseInsensitiveSet(field string) schema.CustomizeDiffFunc {
+func CaseInsensitiveSet(field string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 		if !diff.HasChange(field) {
 			return nil
@@ -48,20 +48,5 @@ func CustomizeDiffCaseInsensitiveSet(field string) schema.CustomizeDiffFunc {
 
 		// Apply the updated plan
 		return diff.SetNew(field, newEntriesSet)
-	}
-}
-
-// CustomizeDiffComputedWithDefault allows a computed field to have an explicit default if
-// it is not defined by the user.
-//
-// This is hacky but allows us to avoid a breaking change on fields using
-// CustomizeDiffCaseInsensitiveSet (computed) when not specifying a field.
-func CustomizeDiffComputedWithDefault[T any](field string, defaultValue T) schema.CustomizeDiffFunc {
-	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-		if !diff.GetRawConfig().GetAttr(field).IsNull() {
-			return nil
-		}
-
-		return diff.SetNew(field, defaultValue)
 	}
 }

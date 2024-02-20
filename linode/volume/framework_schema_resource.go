@@ -107,7 +107,7 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.Set{
-				linodeplanmodifiers.CaseInsensitiveSetPlanModifier(),
+				linodeplanmodifiers.CaseInsensitiveSet(),
 			},
 			Default: helper.EmptySetDefault(types.StringType),
 		},
