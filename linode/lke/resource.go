@@ -16,6 +16,7 @@ import (
 	"github.com/linode/linodego"
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
 const (
@@ -36,8 +37,8 @@ func Resource() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
-			helper.CustomizeDiffComputedWithDefault("tags", []string{}),
-			helper.CustomizeDiffCaseInsensitiveSet("tags"),
+			linodediffs.CustomizeDiffComputedWithDefault("tags", []string{}),
+			linodediffs.CustomizeDiffCaseInsensitiveSet("tags"),
 		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(createLKETimeout),

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
 const (
@@ -28,8 +29,8 @@ func Resource() *schema.Resource {
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
 		CustomizeDiff: customdiff.All(
-			helper.CustomizeDiffComputedWithDefault("tags", []string{}),
-			helper.CustomizeDiffCaseInsensitiveSet("tags"),
+			linodediffs.CustomizeDiffComputedWithDefault("tags", []string{}),
+			linodediffs.CustomizeDiffCaseInsensitiveSet("tags"),
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,

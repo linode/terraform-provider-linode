@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	linodeplanmodifier "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
 )
 
 const (
@@ -178,7 +179,11 @@ var resourceNodebalancerV0 = schema.Schema{
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
+			Computed:    true,
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
+			PlanModifiers: []planmodifier.Set{
+				linodeplanmodifier.CaseInsensitiveSetPlanModifier(),
+			},
 		},
 		"transfer": schema.MapAttribute{
 			ElementType: types.StringType,

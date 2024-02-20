@@ -1,4 +1,4 @@
-package helper
+package customdiffs
 
 import (
 	"context"
@@ -55,7 +55,7 @@ func CustomizeDiffCaseInsensitiveSet(field string) schema.CustomizeDiffFunc {
 // it is not defined by the user.
 //
 // This is hacky but allows us to avoid a breaking change on fields using
-// CustomizeDiffCaseInsensitiveSet (computed).
+// CustomizeDiffCaseInsensitiveSet (computed) when not specifying a field.
 func CustomizeDiffComputedWithDefault[T any](field string, defaultValue T) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 		if !diff.GetRawConfig().GetAttr(field).IsNull() {
