@@ -23,30 +23,38 @@ func CaseInsensitiveSet(field string) schema.CustomizeDiffFunc {
 		oldEntries, newEntries := diff.GetChange(field)
 		oldEntriesSet, newEntriesSet := oldEntries.(*schema.Set), newEntries.(*schema.Set)
 
-		// Map all lowered entries to their original case
-		oldEntriesMap := make(map[string]string)
-		for _, oldTag := range oldEntriesSet.List() {
-			oldTag := oldTag.(string)
-			oldEntriesMap[strings.ToLower(oldTag)] = oldTag
-		}
-
-		// Check if there is a corresponding old entry for the lowered
-		// version of each new entry
-		for _, newTag := range newEntriesSet.List() {
-			newTag := newTag.(string)
-
-			oldTagWithCase, ok := oldEntriesMap[strings.ToLower(newTag)]
-			if !ok {
-				continue
-			}
-
-			// If we found a match, update the entry in the
-			// plan to match the old case
-			newEntriesSet.Remove(newTag)
-			newEntriesSet.Add(oldTagWithCase)
-		}
-
 		// Apply the updated plan
-		return diff.SetNew(field, newEntriesSet)
+		return diff.SetNew(field, computeCaseInsensitivePlannedSet(oldEntriesSet, newEntriesSet))
 	}
+}
+
+// computeCaseInsensitivePlannedSet computes a new set to plan that ignores
+// any case changes made in the configuration.
+func computeCaseInsensitivePlannedSet(oldSet, newSet *schema.Set) *schema.Set {
+	result := schema.NewSet(newSet.F, []any{})
+
+	// Map all lowered entries to their original case
+	oldEntriesMap := make(map[string]string)
+	for _, oldTag := range oldSet.List() {
+		oldTag := oldTag.(string)
+		oldEntriesMap[strings.ToLower(oldTag)] = oldTag
+	}
+
+	// Check if there is a corresponding old entry for the lowered
+	// version of each new entry
+	for _, newTag := range newSet.List() {
+		newTag := newTag.(string)
+
+		oldTagWithCase, ok := oldEntriesMap[strings.ToLower(newTag)]
+		if !ok {
+			result.Add(newTag)
+			continue
+		}
+
+		// If we found a match, update the entry in the
+		// plan to match the old case
+		result.Add(oldTagWithCase)
+	}
+
+	return result
 }
