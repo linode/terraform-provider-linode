@@ -104,6 +104,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 

@@ -70,6 +70,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	tflog.Trace(ctx, "client.GetAccount(...)")
 	account, err := client.GetAccount(ctx)
 	if err != nil {

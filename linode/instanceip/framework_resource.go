@@ -125,11 +125,15 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_instance_ip")
+	tflog.Debug(ctx, "Read linode_instance_ip")
 	var state InstanceIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
 		return
 	}
 

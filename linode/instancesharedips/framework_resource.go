@@ -98,6 +98,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+		return
+	}
+
 	ctx = populateLogAttributes(ctx, state)
 
 	linodeID := helper.FrameworkSafeInt64ToInt(state.LinodeID.ValueInt64(), &resp.Diagnostics)

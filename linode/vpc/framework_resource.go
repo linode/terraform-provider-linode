@@ -72,6 +72,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return

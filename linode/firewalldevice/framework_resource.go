@@ -91,6 +91,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+		return
+	}
+
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 		"firewall_id": state.FirewallID.ValueInt64(),
 		"device_id":   state.ID.ValueString(),

@@ -309,6 +309,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+		return
+	}
+
 	client := r.Meta.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
