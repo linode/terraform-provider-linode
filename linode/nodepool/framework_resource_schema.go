@@ -11,7 +11,7 @@ import (
 )
 
 var resourceSchema = schema.Schema{
-	Version: 1,
+	Version: 0,
 	Attributes: map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
 			Description: "ID of the Node Pool.",

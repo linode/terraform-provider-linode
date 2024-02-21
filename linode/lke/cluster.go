@@ -510,7 +510,7 @@ func removeExternalPools(ctx context.Context, externalPoolTags []string, pools [
 			tflog.Info(ctx, "Excluding pool from management by this resource", map[string]interface{}{
 				"pool_id": pool.ID,
 				"tag":     tag,
-				"reason":  "Pool tagged to be managed by a separate linode_nodepool resource",
+				"reason":  "Pool tagged to be managed by a separate linode_lke_node_pool resource",
 			})
 		}
 	}

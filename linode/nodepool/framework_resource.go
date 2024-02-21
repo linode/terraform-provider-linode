@@ -16,7 +16,7 @@ func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
-				Name:   "linode_nodepool",
+				Name:   "linode_lke_node_pool",
 				IDType: types.Int64Type,
 				Schema: &resourceSchema,
 			},
@@ -33,7 +33,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_nodepool")
+	tflog.Debug(ctx, "Read linode_lke_node_pool")
 	var data NodePoolModel
 	client := r.Meta.Client
 
@@ -77,7 +77,7 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	tflog.Trace(ctx, "Read linode_nodepool done")
+	tflog.Trace(ctx, "Read linode_lke_node_pool done")
 }
 
 func (r *Resource) Create(
@@ -85,7 +85,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_nodepool")
+	tflog.Debug(ctx, "Create linode_lke_node_pool")
 	var data NodePoolModel
 	client := r.Meta.Client
 
@@ -138,7 +138,7 @@ func (r *Resource) Create(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	tflog.Trace(ctx, "Create linode_nodepool done")
+	tflog.Trace(ctx, "Create linode_lke_node_pool done")
 }
 
 func (r *Resource) Update(
@@ -146,7 +146,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_nodepool")
+	tflog.Debug(ctx, "Update linode_lke_node_pool")
 	var plan NodePoolModel
 	var state NodePoolModel
 	client := r.Meta.Client
@@ -200,7 +200,7 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Trace(ctx, "Update linode_nodepool done")
+	tflog.Trace(ctx, "Update linode_lke_node_pool done")
 }
 
 func (r *Resource) Delete(
@@ -208,7 +208,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_nodepool")
+	tflog.Debug(ctx, "Delete linode_lke_node_pool")
 	var data NodePoolModel
 	client := r.Meta.Client
 
@@ -239,7 +239,7 @@ func (r *Resource) Delete(
 		)
 		return
 	}
-	tflog.Trace(ctx, "Delete linode_nodepool done")
+	tflog.Trace(ctx, "Delete linode_lke_node_pool done")
 }
 
 func (r *Resource) ImportState(
@@ -247,7 +247,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	tflog.Debug(ctx, "Import linode_nodepool")
+	tflog.Debug(ctx, "Import linode_lke_node_pool")
 
 	helper.ImportStateWithMultipleIDs(
 		ctx, req, resp, "cluster_id", "id",

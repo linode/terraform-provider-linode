@@ -30,8 +30,8 @@ var (
 )
 
 func init() {
-	resource.AddTestSweepers("linode_nodepool", &resource.Sweeper{
-		Name: "linode_nodepool",
+	resource.AddTestSweepers("linode_lke_node_pool", &resource.Sweeper{
+		Name: "linode_lke_node_pool",
 		F:    sweep,
 	})
 
@@ -134,7 +134,7 @@ func sweep(prefix string) error {
 func TestAccResourceNodePool_basic(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_nodepool.foobar"
+	resName := "linode_lke_node_pool.foobar"
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
 	poolTag := acctest.RandomWithPrefix("tf_test_")
 
@@ -191,7 +191,7 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 func TestAccResourceNodePool_disableAutoscaling(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_nodepool.foobar"
+	resName := "linode_lke_node_pool.foobar"
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
 	poolTag := acctest.RandomWithPrefix("tf_test_")
 
@@ -239,7 +239,7 @@ func TestAccResourceNodePool_disableAutoscaling(t *testing.T) {
 func TestAccResourceNodePool_enableAutoscaling(t *testing.T) {
 	t.Parallel()
 
-	resName := "linode_nodepool.foobar"
+	resName := "linode_lke_node_pool.foobar"
 	clusterLabel := acctest.RandomWithPrefix("tf_test_")
 	poolTag := acctest.RandomWithPrefix("tf_test_")
 
@@ -339,7 +339,7 @@ func createTemplateData() tmpl.TemplateData {
 
 func extractIDs(s *terraform.State) (int, int, error) {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_nodepool" {
+		if rs.Type != "linode_lke_node_pool" {
 			continue
 		}
 
