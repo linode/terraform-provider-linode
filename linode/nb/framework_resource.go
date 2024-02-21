@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -99,7 +98,7 @@ func (r *Resource) Create(
 		)
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodebalancer, firewalls)...)
+	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodebalancer, firewalls, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -160,8 +159,7 @@ func (r *Resource) Read(
 		)
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttrs(ctx, nodeBalancer, firewalls)...)
-	resp.Diagnostics.Append(data.ParseNonComputedAttrs(ctx, nodeBalancer)...)
+	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -237,11 +235,9 @@ func (r *Resource) Update(
 			)
 		}
 
-		resp.Diagnostics.Append(plan.ParseComputedAttrs(ctx, nodeBalancer, firewalls)...)
-	} else {
-		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
-		req.State.GetAttribute(ctx, path.Root("transfer"), &plan.Transfer)
+		resp.Diagnostics.Append(plan.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, true)...)
 	}
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -313,8 +309,8 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Region:             nbDataV0.Region,
 		ClientConnThrottle: nbDataV0.ClientConnThrottle,
 		Hostname:           nbDataV0.Hostname,
-		Ipv4:               nbDataV0.Ipv4,
-		Ipv6:               nbDataV0.Ipv6,
+		IPv4:               nbDataV0.IPv4,
+		IPv6:               nbDataV0.IPv6,
 		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
 		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
 		Tags:               nbDataV0.Tags,

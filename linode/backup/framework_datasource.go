@@ -3,6 +3,8 @@ package backup
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -27,6 +29,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_instance_backups")
+
 	var data DataSourceModel
 	client := d.Meta.Client
 
@@ -42,6 +46,10 @@ func (d *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "linode_id", linodeID)
+	tflog.Trace(ctx, "client.GetInstanceBackups(...)")
+
 	backups, err := client.GetInstanceBackups(ctx, linodeID)
 	if err != nil {
 		resp.Diagnostics.AddError(

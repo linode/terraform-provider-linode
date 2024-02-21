@@ -59,10 +59,6 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.parseAccountSettings(
-		account.Email,
-		settings,
-	)
-
+	data.FlattenAccountSettings(account.Email, settings, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
