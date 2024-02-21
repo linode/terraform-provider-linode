@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -28,6 +29,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_kernels")
+
 	var data KernelFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -59,6 +62,10 @@ func listKernels(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
+	tflog.Debug(ctx, "client.ListKernels(...)", map[string]interface{}{
+		"body": filter,
+	})
+
 	kernels, err := client.ListKernels(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

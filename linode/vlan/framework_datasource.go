@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -29,6 +30,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_vlans")
+
 	var data VLANsFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -65,6 +68,10 @@ func listVLANs(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
+	tflog.Debug(ctx, "client.ListVLANs(...)", map[string]interface{}{
+		"body": filter,
+	})
+
 	vlans, err := client.ListVLANs(
 		ctx,
 		&linodego.ListOptions{Filter: filter},
