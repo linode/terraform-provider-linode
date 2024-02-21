@@ -2,7 +2,8 @@ package accountsettings
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -32,6 +33,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_account_settings")
+
 	var plan AccountSettingsModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -56,6 +59,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_account_settings")
+
 	client := r.Meta.Client
 
 	var data AccountSettingsModel
@@ -65,6 +70,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetAccount(...)")
 	account, err := client.GetAccount(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -74,6 +80,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetAccountSettings(...)")
 	settings, err := client.GetAccountSettings(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -83,11 +90,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseAccountSettings(
-		account.Email,
-		settings,
-	)
-
+	data.FlattenAccountSettings(account.Email, settings, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -96,9 +99,12 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var plan AccountSettingsModel
+	tflog.Debug(ctx, "Update linode_account_settings")
+
+	var plan, state AccountSettingsModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -111,6 +117,8 @@ func (r *Resource) Update(
 		return
 	}
 
+	plan.CopyFrom(state, true)
+
 	// Apply the state changes
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -120,6 +128,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_account_settings")
 }
 
 func (r *Resource) updateAccountSettings(
@@ -131,9 +140,15 @@ func (r *Resource) updateAccountSettings(
 
 	// Longview Plan update functionality has been moved
 	if !plan.LongviewSubscription.IsNull() {
-		_, err := client.UpdateLongviewPlan(ctx, linodego.LongviewPlanUpdateOptions{
+		options := linodego.LongviewPlanUpdateOptions{
 			LongviewSubscription: plan.LongviewSubscription.ValueString(),
+		}
+
+		tflog.Debug(ctx, "client.UpdateLongviewPlan(...)", map[string]any{
+			"options": options,
 		})
+
+		_, err := client.UpdateLongviewPlan(ctx, options)
 		if err != nil {
 			diagnostics.AddError(
 				"Failed to update Linode Longview Plan",
@@ -144,23 +159,20 @@ func (r *Resource) updateAccountSettings(
 	}
 
 	updateOpts := linodego.AccountSettingsUpdateOptions{
-		BackupsEnabled: plan.BackupsEnabed.ValueBoolPointer(),
+		BackupsEnabled: plan.BackupsEnabled.ValueBoolPointer(),
 		NetworkHelper:  plan.NetworkHelper.ValueBoolPointer(),
 	}
 
+	tflog.Debug(ctx, "client.UpdateAccountSettings(...)", map[string]any{
+		"options": updateOpts,
+	})
+
 	settings, err := client.UpdateAccountSettings(ctx, updateOpts)
 	if err != nil {
-		diagnostics.AddError(
-			fmt.Sprintf("Failed to update Linode Account Settings"),
-			err.Error(),
-		)
+		diagnostics.AddError("Failed to update Linode Account Settings", err.Error())
 		return diagnostics
 	}
 
-	plan.parseAccountSettings(
-		plan.ID.ValueString(),
-		settings,
-	)
-
+	plan.FlattenAccountSettings(plan.ID.ValueString(), settings, true)
 	return diagnostics
 }

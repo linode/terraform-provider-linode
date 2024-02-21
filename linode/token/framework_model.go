@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/customtypes"
 )
 
@@ -20,20 +21,36 @@ type ResourceModel struct {
 	ID      types.String                        `tfsdk:"id"`
 }
 
-func (rm *ResourceModel) parseToken(token *linodego.Token, refresh bool) {
-	rm.Created = timetypes.NewRFC3339TimePointerValue(token.Created)
+func (rm *ResourceModel) FlattenToken(token *linodego.Token, refresh, preserveKnown bool) {
+	rm.Label = helper.KeepOrUpdateString(rm.Label, token.Label, preserveKnown)
 
-	rm.Label = types.StringValue(token.Label)
-	rm.Expiry = timetypes.NewRFC3339TimePointerValue(token.Expiry)
+	rm.Created = helper.KeepOrUpdateValue(
+		rm.Created, timetypes.NewRFC3339TimePointerValue(token.Created), preserveKnown,
+	)
+	rm.Expiry = helper.KeepOrUpdateValue(
+		rm.Expiry, timetypes.NewRFC3339TimePointerValue(token.Expiry), preserveKnown,
+	)
 
-	rm.Scopes = customtypes.LinodeScopesStringValue{
-		StringValue: types.StringValue(token.Scopes),
-	}
+	rm.ID = helper.KeepOrUpdateString(rm.ID, strconv.Itoa(token.ID), preserveKnown)
 
-	// token is too sensitive and won't appear in a GET
-	// method response during a refresh of this resource.
+	rm.Scopes = helper.KeepOrUpdateValue(
+		rm.Scopes,
+		customtypes.LinodeScopesStringValue{
+			StringValue: types.StringValue(token.Scopes),
+		},
+		preserveKnown,
+	)
+
 	if !refresh {
-		rm.Token = types.StringValue(token.Token)
+		rm.Token = helper.KeepOrUpdateString(rm.Token, token.Token, preserveKnown)
 	}
-	rm.ID = types.StringValue(strconv.Itoa(token.ID))
+}
+
+func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
+	rm.Label = helper.KeepOrUpdateValue(rm.Label, other.Label, preserveKnown)
+	rm.Created = helper.KeepOrUpdateValue(rm.Created, other.Created, preserveKnown)
+	rm.Expiry = helper.KeepOrUpdateValue(rm.Expiry, other.Expiry, preserveKnown)
+	rm.ID = helper.KeepOrUpdateValue(rm.ID, other.ID, preserveKnown)
+	rm.Scopes = helper.KeepOrUpdateValue(rm.Scopes, other.Scopes, preserveKnown)
+	rm.Token = helper.KeepOrUpdateValue(rm.Token, other.Token, preserveKnown)
 }

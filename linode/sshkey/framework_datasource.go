@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -65,6 +67,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_sshkey")
+
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -73,6 +77,9 @@ func (d *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "sshkey_label", data.Label.ValueString())
+	tflog.Trace(ctx, "client.ListSSHKeys(...)")
 
 	keys, err := client.ListSSHKeys(ctx, nil)
 	if err != nil {

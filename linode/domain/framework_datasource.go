@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -31,6 +32,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_domain")
+
 	var data DomainModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -47,6 +50,9 @@ func (d *DataSource) Read(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
+		ctx = tflog.SetField(ctx, "domain_id", id)
+
 		domain, err = d.getDomainByID(ctx, id)
 	} else {
 		domain, err = d.getDomainByDomain(ctx, data.Domain.ValueString())
@@ -63,6 +69,8 @@ func (d *DataSource) Read(
 }
 
 func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domain, diag.Diagnostic) {
+	tflog.Trace(ctx, "client.GetDomain(...)")
+
 	domain, err := d.Meta.Client.GetDomain(ctx, id)
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(
@@ -75,7 +83,14 @@ func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domai
 }
 
 func (d *DataSource) getDomainByDomain(ctx context.Context, domain string) (*linodego.Domain, diag.Diagnostic) {
+	tflog.Debug(ctx, "Get domain by domain", map[string]interface{}{
+		"domain": domain,
+	})
+
 	filter, _ := json.Marshal(map[string]interface{}{"domain": domain})
+
+	tflog.Trace(ctx, "client.ListDomains(...)")
+
 	domains, err := d.Meta.Client.ListDomains(ctx, linodego.NewListOptions(0, string(filter)))
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(

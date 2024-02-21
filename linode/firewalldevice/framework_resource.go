@@ -3,9 +3,7 @@ package firewalldevice
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -95,15 +93,16 @@ func (r *Resource) Read(
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 		"firewall_id": state.FirewallID.ValueInt64(),
-		"device_id":   state.ID.ValueInt64(),
+		"device_id":   state.ID.ValueString(),
 	})
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeInt64ToInt(
-		state.ID.ValueInt64(),
-		&resp.Diagnostics,
-	)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	firewallID := helper.FrameworkSafeInt64ToInt(
 		state.FirewallID.ValueInt64(),
 		&resp.Diagnostics,
@@ -120,8 +119,8 @@ func (r *Resource) Read(
 			resp.Diagnostics.AddWarning(
 				"Firewall Device No Longer Exists",
 				fmt.Sprintf(
-					"Removing firewall device %d from state because it no longer exists",
-					state.ID.ValueInt64(),
+					"Removing firewall device %s from state because it no longer exists",
+					state.ID.String(),
 				),
 			)
 			resp.State.RemoveResource(ctx)
@@ -175,10 +174,14 @@ func (r *Resource) Delete(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeInt64ToInt(
-		state.ID.ValueInt64(),
+	id := helper.FrameworkSafeStringToInt(
+		state.ID.ValueString(),
 		&resp.Diagnostics,
 	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	firewallID := helper.FrameworkSafeInt64ToInt(
 		state.FirewallID.ValueInt64(),
 		&resp.Diagnostics,
@@ -219,23 +222,19 @@ func (r *Resource) ImportState(
 ) {
 	tflog.Debug(ctx, "Import linode_firewall_device")
 
-	idParts := strings.Split(req.ID, ",")
-
-	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
-		resp.Diagnostics.AddError(
-			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: firewall_id,device_id. Got: %q", req.ID),
-		)
-		return
-	}
-
-	firewallID := helper.StringToInt64(idParts[0], &resp.Diagnostics)
-	deviceID := helper.StringToInt64(idParts[1], &resp.Diagnostics)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), deviceID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("firewall_id"), firewallID)...)
+	helper.ImportStateWithMultipleIDs(
+		ctx,
+		req,
+		resp,
+		[]helper.ImportableID{
+			{
+				Name:          "firewall_id",
+				TypeConverter: helper.IDTypeConverterInt64,
+			},
+			{
+				Name:          "id",
+				TypeConverter: helper.IDTypeConverterString,
+			},
+		},
+	)
 }

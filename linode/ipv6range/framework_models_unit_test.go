@@ -32,7 +32,7 @@ func TestParseIPv6RangeDataSource(t *testing.T) {
 	assert.NotEmpty(t, dataSourceModel.ID)
 }
 
-func TestParseIPv6RangeResourceDataComputedAttrs(t *testing.T) {
+func TestFlattenIPv6Range(t *testing.T) {
 	ipRange := linodego.IPv6Range{
 		Range:       "2600:3c01::",
 		Region:      "us-east",
@@ -43,7 +43,7 @@ func TestParseIPv6RangeResourceDataComputedAttrs(t *testing.T) {
 	}
 
 	resourceModel := ResourceModel{}
-	diags := resourceModel.parseIPv6RangeResourceDataComputedAttrs(context.Background(), &ipRange)
+	diags := resourceModel.FlattenIPv6Range(context.Background(), &ipRange, false)
 
 	assert.Nil(t, diags)
 	assert.Equal(t, types.StringValue("2600:3c01::"), resourceModel.Range)

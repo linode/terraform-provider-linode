@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -70,6 +72,9 @@ func importResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_nodebalancer_config")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -79,6 +84,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if !ok {
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
+
+	tflog.Trace(ctx, "client.GetNodeBalancerConfig(...)")
 
 	config, err := client.GetNodeBalancerConfig(ctx, nodebalancerID, id)
 	if err != nil {
@@ -114,6 +121,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_nodebalancer_config")
+
 	client := meta.(*helper.ProviderMeta).Client
 
 	nodebalancerID := d.Get("nodebalancer_id").(int)
@@ -139,7 +149,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.CheckPassive = &checkPassive
 	}
 
+	tflog.Debug(ctx, "client.CreateNodeBalancerConfig(...)", map[string]any{
+		"options": createOpts,
+	})
+
 	config, err := client.CreateNodeBalancerConfig(ctx, nodebalancerID, createOpts)
+
+	ctx = tflog.SetField(ctx, "config_id", config.ID)
+
 	if err != nil {
 		return diag.Errorf("Error creating a Linode NodeBalancerConfig: %s", err)
 	}
@@ -150,6 +167,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_nodebalancer_config")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -181,6 +201,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.CheckPassive = &checkPassive
 	}
 
+	tflog.Debug(ctx, "client.UpdateNodeBalancerConfig(...)", map[string]any{
+		"options": updateOpts,
+	})
+
 	if _, err = client.UpdateNodeBalancerConfig(ctx, nodebalancerID, id, updateOpts); err != nil {
 		return diag.Errorf("Error updating Nodebalancer %d Config %d: %s", nodebalancerID, id, err)
 	}
@@ -189,6 +213,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_nodebalancer_config")
+
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -198,6 +225,9 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if !ok {
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
+
+	tflog.Debug(ctx, "ctx.DeleteNodeBalancerConfig(...)")
+
 	err = client.DeleteNodeBalancerConfig(ctx, nodebalancerID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode NodeBalancerConfig %d: %s", id, err)
@@ -252,4 +282,11 @@ func ResourceNodeBalancerConfigV0Upgrade(ctx context.Context,
 	}
 
 	return rawState, nil
+}
+
+func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"nodebalancer_id": d.Get("nodebalancer_id").(int),
+		"id":              d.Id(),
+	})
 }

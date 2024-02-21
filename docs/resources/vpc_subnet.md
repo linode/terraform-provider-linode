@@ -41,3 +41,13 @@ In addition to all the arguments above, the following attributes are exported.
 * `created` - The date and time when the VPC was created.
 
 * `updated` - The date and time when the VPC was last updated.
+
+## Import
+
+Linode Virtual Private Cloud (VPC) Subnet can be imported using the `vpc_id` followed by the subnet `id` separated by a comma, e.g.
+
+```sh
+terraform import linode_vpc_subnet.my_subnet_duplicated 1234567,7654321
+```
+
+The Linode Guide, [Import Existing Infrastructure to Terraform](https://www.linode.com/docs/applications/configuration-management/import-existing-infrastructure-to-terraform/), offers resource importing examples for various Linode resource types.

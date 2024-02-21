@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -28,6 +30,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_nodebalancer")
+
 	var data NodeBalancerDataSourceModel
 	client := d.Meta.Client
 
@@ -44,6 +48,9 @@ func (d *DataSource) Read(
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "nodebalancer_id", nodeBalancerID)
+	tflog.Trace(ctx, "client.GetNodeBalancer(...)")
+
 	nodeBalancer, err := client.GetNodeBalancer(ctx, nodeBalancerID)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -51,6 +58,8 @@ func (d *DataSource) Read(
 			err.Error(),
 		)
 	}
+
+	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
 
 	firewalls, err := client.ListNodeBalancerFirewalls(ctx, nodeBalancerID, nil)
 	if err != nil {

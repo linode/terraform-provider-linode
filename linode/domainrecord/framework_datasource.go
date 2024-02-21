@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -60,6 +61,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_domain_record")
+
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -89,6 +92,11 @@ func (d *DataSource) Read(
 			return
 		}
 
+		ctx = tflog.SetField(ctx, "domain_id", domainID)
+		ctx = tflog.SetField(ctx, "record_id", recordID)
+
+		tflog.Trace(ctx, "client.GetDomainRecord(...)")
+
 		rec, err := client.GetDomainRecord(ctx, domainID, recordID)
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching domain record: %v", err.Error())
@@ -104,6 +112,12 @@ func (d *DataSource) Read(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
+		ctx = tflog.SetField(ctx, "domain_id", domainID)
+		ctx = tflog.SetField(ctx, "record_name", data.Name.ValueString())
+
+		tflog.Trace(ctx, "client.ListDomainRecords(...)")
+
 		records, err := client.ListDomainRecords(ctx, domainID,
 			linodego.NewListOptions(0, string(filter)))
 		if err != nil {
