@@ -111,6 +111,9 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Default:     helper.EmptySetDefault(types.StringType),
 			Computed:    true,
+			PlanModifiers: []planmodifier.Set{
+				linodeplanmodifier.CaseInsensitiveSet(),
+			},
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		},
 		"transfer": schema.ListAttribute{
@@ -181,9 +184,6 @@ var resourceNodebalancerV0 = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
-			PlanModifiers: []planmodifier.Set{
-				linodeplanmodifier.CaseInsensitiveSet(),
-			},
 		},
 		"transfer": schema.MapAttribute{
 			ElementType: types.StringType,
