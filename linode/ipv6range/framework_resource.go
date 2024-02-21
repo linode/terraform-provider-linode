@@ -208,9 +208,8 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		tflog.Debug(ctx, "client.InstancesAssignIPs(...)")
 
-		err := client.InstancesAssignIPs(ctx, linodego.LinodesAssignIPsOptions{
+		updateOpts := linodego.LinodesAssignIPsOptions{
 			Region: ipv6range.Region,
 			Assignments: []linodego.LinodeIPAssignment{
 				{
@@ -218,7 +217,13 @@ func (r *Resource) Update(
 					Address:  fmt.Sprintf("%s/%d", ipv6range.Range, ipv6range.Prefix),
 				},
 			},
+		}
+
+		tflog.Debug(ctx, "client.InstancesAssignIPs(...)", map[string]any{
+			"options": updateOpts,
 		})
+
+		err := client.InstancesAssignIPs(ctx, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to assign ipv6 address to instance.",
