@@ -181,11 +181,20 @@ func GetCurrentBootedConfig(ctx context.Context, client *linodego.Client, instID
 	return int(events[0].SecondaryEntity.ID.(float64)), nil
 }
 
+func FrameworkCreateRandomRootPassword(diags *fwdiag.Diagnostics) string {
+	rootPass, err := CreateRandomRootPassword()
+	if err != nil {
+		diags.AddError("Failed to Generate Random Root Password", err.Error())
+		return ""
+	}
+	return rootPass
+}
+
 func CreateRandomRootPassword() (string, error) {
 	rawRootPass := make([]byte, 50)
 	_, err := rand.Read(rawRootPass)
 	if err != nil {
-		return "", fmt.Errorf("Failed to generate random password")
+		return "", fmt.Errorf("Failed to generate random password: %w", err)
 	}
 	rootPass := base64.StdEncoding.EncodeToString(rawRootPass)
 	return rootPass, nil

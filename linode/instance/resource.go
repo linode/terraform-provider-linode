@@ -510,6 +510,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	tflog.Debug(ctx, "Update linode_instance")
 
 	client := meta.(*helper.ProviderMeta).Client
+	skipImplicitReboots := meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int: %s", d.Id(), err)
@@ -719,10 +720,10 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		shouldPowerOn := bootedNull && powerOffRequired && instance.Status == linodego.InstanceRunning
 
 		if powerOffRequired {
-			if diag := ShutdownInstanceForVPCInterfaceUpdate(
-				ctx, meta.(*helper.ProviderMeta), id, helper.GetDeadlineSeconds(ctx, d),
-			); diag != nil {
-				return diag
+			if err := ShutdownInstanceForVPCInterfaceUpdate(
+				ctx, &client, skipImplicitReboots, id, helper.GetDeadlineSeconds(ctx, d),
+			); err != nil {
+				return diag.FromErr(err)
 			}
 		}
 
@@ -770,7 +771,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	// Only reboot the instance if implicit reboots are not skipped
-	if meta.(*helper.ProviderMeta).Config.SkipImplicitReboots {
+	if skipImplicitReboots {
 		rebootInstance = false
 	}
 
