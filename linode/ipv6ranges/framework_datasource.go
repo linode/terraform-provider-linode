@@ -32,7 +32,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_ipv6ranges")
+	tflog.Debug(ctx, "Read data.linode_ipv6_ranges")
 
 	client := r.Meta.Client
 

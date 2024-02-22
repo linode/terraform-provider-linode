@@ -31,7 +31,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_ipv6range")
+	tflog.Debug(ctx, "Read data.linode_ipv6_range")
 
 	client := d.Meta.Client
 
@@ -45,7 +45,7 @@ func (d *DataSource) Read(
 	rangeStrSplit := strings.Split(data.Range.ValueString(), "/")
 	rangeStr := rangeStrSplit[0]
 
-	ctx = tflog.SetField(ctx, "ipv6_range", data.Range.ValueString())
+	ctx = tflog.SetField(ctx, "ipv6_range", rangeStr)
 	tflog.Trace(ctx, "client.GetIPv6Range(...)")
 
 	rangeData, err := client.GetIPv6Range(ctx, rangeStr)

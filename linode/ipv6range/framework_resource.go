@@ -33,7 +33,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_ipv6range")
+	tflog.Debug(ctx, "Create linode_ipv6_range")
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -128,7 +128,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_ipv6range")
+	tflog.Debug(ctx, "Read linode_ipv6_range")
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -174,7 +174,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_ipv6range")
+	tflog.Debug(ctx, "Update linode_ipv6_range")
 
 	var plan, state ResourceModel
 	client := r.Meta.Client
@@ -244,7 +244,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_ipv6range")
+	tflog.Debug(ctx, "Delete linode_ipv6_range")
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -276,5 +276,6 @@ func (r *Resource) Delete(
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"ipv6_id": model.ID,
+		"range:":  model.Range,
 	})
 }
