@@ -24,8 +24,8 @@ type NodeBalancerModel struct {
 	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
 	FirewallID         types.Int64       `tfsdk:"firewall_id"`
 	Hostname           types.String      `tfsdk:"hostname"`
-	Ipv4               types.String      `tfsdk:"ipv4"`
-	Ipv6               types.String      `tfsdk:"ipv6"`
+	IPv4               types.String      `tfsdk:"ipv4"`
+	IPv6               types.String      `tfsdk:"ipv6"`
 	Created            timetypes.RFC3339 `tfsdk:"created"`
 	Updated            timetypes.RFC3339 `tfsdk:"updated"`
 	Transfer           types.List        `tfsdk:"transfer"`
@@ -39,59 +39,76 @@ type nbModelV0 struct {
 	Region             types.String `tfsdk:"region"`
 	ClientConnThrottle types.Int64  `tfsdk:"client_conn_throttle"`
 	Hostname           types.String `tfsdk:"hostname"`
-	Ipv4               types.String `tfsdk:"ipv4"`
-	Ipv6               types.String `tfsdk:"ipv6"`
+	IPv4               types.String `tfsdk:"ipv4"`
+	IPv6               types.String `tfsdk:"ipv6"`
 	Created            types.String `tfsdk:"created"`
 	Updated            types.String `tfsdk:"updated"`
 	Tags               types.Set    `tfsdk:"tags"`
 	Transfer           types.Map    `tfsdk:"transfer"`
 }
 
-func (data *NodeBalancerModel) ParseNonComputedAttrs(
+func (data *NodeBalancerModel) FlattenNodeBalancer(
 	ctx context.Context,
 	nodebalancer *linodego.NodeBalancer,
+	firewalls []linodego.Firewall,
+	preserveKnown bool,
 ) diag.Diagnostics {
-	data.ID = types.StringValue(strconv.Itoa(nodebalancer.ID))
-	data.Label = types.StringPointerValue(nodebalancer.Label)
+	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(nodebalancer.ID), preserveKnown)
+	data.Label = helper.KeepOrUpdateStringPointer(data.Label, nodebalancer.Label, preserveKnown)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, helper.StringSliceToFramework(nodebalancer.Tags))
 	if diags.HasError() {
 		return diags
 	}
-	data.Tags = tags
+	data.Tags = helper.KeepOrUpdateValue(data.Tags, tags, preserveKnown)
 
-	return nil
-}
+	data.Region = helper.KeepOrUpdateString(data.Region, nodebalancer.Region, preserveKnown)
+	data.ClientConnThrottle = helper.KeepOrUpdateInt64(
+		data.ClientConnThrottle, int64(nodebalancer.ClientConnThrottle), preserveKnown,
+	)
+	data.Hostname = helper.KeepOrUpdateStringPointer(data.Hostname, nodebalancer.Hostname, preserveKnown)
+	data.IPv4 = helper.KeepOrUpdateStringPointer(data.IPv4, nodebalancer.IPv4, preserveKnown)
+	data.IPv6 = helper.KeepOrUpdateStringPointer(data.IPv6, nodebalancer.IPv6, preserveKnown)
+	data.Created = helper.KeepOrUpdateValue(
+		data.Created, timetypes.NewRFC3339TimePointerValue(nodebalancer.Created), preserveKnown,
+	)
+	data.Updated = helper.KeepOrUpdateValue(
+		data.Updated, timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated), preserveKnown,
+	)
 
-func (data *NodeBalancerModel) ParseComputedAttrs(
-	ctx context.Context,
-	nodebalancer *linodego.NodeBalancer,
-	firewalls []linodego.Firewall,
-) diag.Diagnostics {
-	data.ID = types.StringValue(strconv.Itoa(nodebalancer.ID))
-	data.Region = types.StringValue(nodebalancer.Region)
-	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
-	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
-	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
-	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
-	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
-	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
-
-	transfer, diags := ParseTransfer(ctx, nodebalancer.Transfer)
+	transfer, diags := FlattenTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
 		return diags
 	}
 
-	data.Transfer = *transfer
+	data.Transfer = helper.KeepOrUpdateValue(data.Transfer, *transfer, preserveKnown)
 
 	fws, diags := parseNBFirewalls(ctx, firewalls)
 	if diags.HasError() {
 		return diags
 	}
 
-	data.Firewalls = *fws
+	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, *fws, preserveKnown)
 
 	return nil
+}
+
+func (data *NodeBalancerModel) CopyFrom(other NodeBalancerModel, preserveKnown bool) {
+	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
+	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
+	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
+	data.ClientConnThrottle = helper.KeepOrUpdateValue(
+		data.ClientConnThrottle, other.ClientConnThrottle, preserveKnown,
+	)
+	data.FirewallID = helper.KeepOrUpdateValue(data.FirewallID, other.FirewallID, preserveKnown)
+	data.Hostname = helper.KeepOrUpdateValue(data.Hostname, other.Hostname, preserveKnown)
+	data.IPv4 = helper.KeepOrUpdateValue(data.IPv4, other.IPv4, preserveKnown)
+	data.IPv6 = helper.KeepOrUpdateValue(data.IPv6, other.IPv6, preserveKnown)
+	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
+	data.Updated = helper.KeepOrUpdateValue(data.Updated, other.Updated, preserveKnown)
+	data.Transfer = helper.KeepOrUpdateValue(data.Transfer, other.Transfer, preserveKnown)
+	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
+	data.Firewalls = helper.KeepOrUpdateValue(data.Firewalls, other.Firewalls, preserveKnown)
 }
 
 func parseNBFirewalls(
@@ -148,7 +165,7 @@ func parseNBFirewalls(
 	return &result, nil
 }
 
-func ParseTransfer(
+func FlattenTransfer(
 	ctx context.Context,
 	transfer linodego.NodeBalancerTransfer,
 ) (*basetypes.ListValue, diag.Diagnostics) {
@@ -194,8 +211,8 @@ type NodeBalancerDataSourceModel struct {
 	Region             types.String      `tfsdk:"region"`
 	ClientConnThrottle types.Int64       `tfsdk:"client_conn_throttle"`
 	Hostname           types.String      `tfsdk:"hostname"`
-	Ipv4               types.String      `tfsdk:"ipv4"`
-	Ipv6               types.String      `tfsdk:"ipv6"`
+	IPv4               types.String      `tfsdk:"ipv4"`
+	IPv6               types.String      `tfsdk:"ipv6"`
 	Created            timetypes.RFC3339 `tfsdk:"created"`
 	Updated            timetypes.RFC3339 `tfsdk:"updated"`
 	Transfer           types.List        `tfsdk:"transfer"`
@@ -223,16 +240,15 @@ func (data *NodeBalancerDataSourceModel) flattenNodeBalancer(
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Label = types.StringPointerValue(nodebalancer.Label)
-	data.ID = types.Int64Value(int64(nodebalancer.ID))
 	data.Region = types.StringValue(nodebalancer.Region)
 	data.ClientConnThrottle = types.Int64Value(int64(nodebalancer.ClientConnThrottle))
 	data.Hostname = types.StringPointerValue(nodebalancer.Hostname)
-	data.Ipv4 = types.StringPointerValue(nodebalancer.IPv4)
-	data.Ipv6 = types.StringPointerValue(nodebalancer.IPv6)
+	data.IPv4 = types.StringPointerValue(nodebalancer.IPv4)
+	data.IPv6 = types.StringPointerValue(nodebalancer.IPv6)
 	data.Created = timetypes.NewRFC3339TimePointerValue(nodebalancer.Created)
 	data.Updated = timetypes.NewRFC3339TimePointerValue(nodebalancer.Updated)
 
-	transfer, diags := ParseTransfer(ctx, nodebalancer.Transfer)
+	transfer, diags := FlattenTransfer(ctx, nodebalancer.Transfer)
 	if diags.HasError() {
 		return diags
 	}
@@ -252,7 +268,7 @@ func (data *NodeBalancerDataSourceModel) flattenNodeBalancer(
 
 	for i := range firewalls {
 		var nbFirewall NBFirewallModel
-		nbFirewall.parseFirewall(&firewalls[i])
+		nbFirewall.FlattenFirewall(&firewalls[i], false)
 		nbFirewalls[i] = nbFirewall
 	}
 
@@ -261,7 +277,7 @@ func (data *NodeBalancerDataSourceModel) flattenNodeBalancer(
 	return nil
 }
 
-func (d *NBFirewallModel) parseFirewall(firewall *linodego.Firewall) {
+func (d *NBFirewallModel) FlattenFirewall(firewall *linodego.Firewall, preserveKnown bool) {
 	d.ID = types.Int64Value(int64(firewall.ID))
 	d.Label = types.StringValue(firewall.Label)
 	d.Tags = helper.StringSliceToFramework(firewall.Tags)

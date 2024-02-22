@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseToken(t *testing.T) {
+func TestFlattenToken(t *testing.T) {
 	createdTime := time.Date(2023, time.August, 17, 12, 0, 0, 0, time.UTC)
 	expiryDate := time.Date(2050, time.August, 17, 12, 0, 0, 0, time.UTC)
 
@@ -28,7 +28,7 @@ func TestParseToken(t *testing.T) {
 
 	model := &ResourceModel{}
 
-	model.parseToken(&sampleToken, false)
+	model.FlattenToken(&sampleToken, false, false)
 
 	assert.Equal(t, types.StringValue(sampleToken.Label), model.Label)
 	assert.Equal(t, customtypes.LinodeScopesStringValue{StringValue: types.StringValue(sampleToken.Scopes)}, model.Scopes)
@@ -36,7 +36,7 @@ func TestParseToken(t *testing.T) {
 	assert.Equal(t, types.StringValue(strconv.Itoa(sampleToken.ID)), model.ID)
 }
 
-func TestParseTokenRefreshTrue(t *testing.T) {
+func TestFlattenTokenRefreshTrue(t *testing.T) {
 	createdTime := time.Date(2023, time.August, 17, 12, 0, 0, 0, time.UTC)
 	expiryDate := time.Date(2050, time.August, 17, 12, 0, 0, 0, time.UTC)
 
@@ -51,7 +51,7 @@ func TestParseTokenRefreshTrue(t *testing.T) {
 
 	rm := &ResourceModel{}
 
-	rm.parseToken(&sampleToken, true)
+	rm.FlattenToken(&sampleToken, true, false)
 
 	assert.Empty(t, rm.Token)
 }

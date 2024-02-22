@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -118,7 +117,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseIPv6RangeResourceDataComputedAttrs(ctx, ipv6rangeR)...)
+	resp.Diagnostics.Append(data.FlattenIPv6Range(ctx, ipv6rangeR, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -164,8 +163,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseIPv6RangeResourceDataNonComputedAttrs(ipv6range)
-	resp.Diagnostics.Append(data.parseIPv6RangeResourceDataComputedAttrs(ctx, ipv6range)...)
+	resp.Diagnostics.Append(data.FlattenIPv6Range(ctx, ipv6range, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -232,14 +230,13 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.parseIPv6RangeResourceDataComputedAttrs(ctx, ipv6range)...)
+		resp.Diagnostics.Append(plan.FlattenIPv6Range(ctx, ipv6range, true)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-	} else {
-		req.State.GetAttribute(ctx, path.Root("is_bgp"), &plan.IsBGP)
-		req.State.GetAttribute(ctx, path.Root("linodes"), &plan.Linodes)
 	}
+
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
