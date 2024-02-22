@@ -3,13 +3,13 @@ package vpcsubnet
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"strconv"
 )
 
 func NewResource() resource.Resource {
@@ -87,6 +87,9 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// IDs need to always be set in the state (see #1085).
+	data.ID = types.StringValue(strconv.Itoa(subnet.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

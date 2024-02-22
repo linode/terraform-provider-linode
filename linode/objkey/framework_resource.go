@@ -3,6 +3,7 @@ package objkey
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -78,6 +79,10 @@ func (r *Resource) Create(
 	}
 
 	data.FlattenObjectStorageKey(key, true)
+
+	// IDs need to always be set in the state (see #1085).
+	data.ID = types.StringValue(strconv.Itoa(key.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

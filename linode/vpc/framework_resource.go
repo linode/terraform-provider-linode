@@ -3,11 +3,11 @@ package vpc
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"strconv"
 )
 
 func NewResource() resource.Resource {
@@ -56,6 +56,10 @@ func (r *Resource) Create(
 	}
 
 	data.FlattenVPC(ctx, vpc, true)
+
+	// IDs need to always be set in the state (see #1085).
+	data.ID = types.StringValue(strconv.Itoa(vpc.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

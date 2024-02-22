@@ -3,8 +3,8 @@ package instancesharedips
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -55,7 +55,11 @@ func CreateOrUpdateSharedIPs(
 		)
 		return
 	}
+
 	plan.FlattenSharedIPs(linodeID, createOpts.IPs, true, diags)
+
+	// IDs need to always be set in the state (see #1085).
+	plan.ID = types.StringValue(strconv.Itoa(linodeID))
 }
 
 func (r *Resource) Create(

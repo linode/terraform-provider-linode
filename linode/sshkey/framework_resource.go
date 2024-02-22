@@ -3,6 +3,7 @@ package sshkey
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -62,6 +63,10 @@ func (r *Resource) Create(
 	}
 
 	data.FlattenSSHKey(key, true)
+
+	// IDs need to always be set in the state (see #1085).
+	data.ID = types.StringValue(strconv.Itoa(key.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

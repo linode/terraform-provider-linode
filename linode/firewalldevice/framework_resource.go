@@ -3,6 +3,7 @@ package firewalldevice
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -73,6 +74,9 @@ func (r *Resource) Create(
 	}
 
 	plan.FlattenFirewallDevice(device, true)
+
+	// IDs need to always be set in the state (see #1085).
+	plan.ID = types.StringValue(strconv.Itoa(device.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -73,6 +74,10 @@ func (r *Resource) Create(
 	}
 
 	data.FlattenToken(token, false, true)
+
+	// IDs need to always be set in the state (see #1085).
+	data.ID = types.StringValue(strconv.Itoa(token.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
