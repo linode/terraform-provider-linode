@@ -3,6 +3,8 @@ package ipv6ranges
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -30,6 +32,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_ipv6_ranges")
+
 	client := r.Meta.Client
 
 	var data IPv6RangeFilterModel
@@ -67,6 +71,9 @@ func listRanges(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
+	ctx = tflog.SetField(ctx, "filter", filter)
+	tflog.Trace(ctx, "client.ListIPv6Ranges(...)")
+
 	ranges, err := client.ListIPv6Ranges(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
