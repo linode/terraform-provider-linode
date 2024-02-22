@@ -82,9 +82,12 @@ func (pool *NodePoolModel) ParseNodePool(ctx context.Context, clusterID int, p *
 	pool.Tags = tags
 
 	if p.Autoscaler.Enabled {
-		pool.Autoscaler = make([]NodePoolAutoscalerModel, 1)
-		pool.Autoscaler[0].Min = types.Int64Value(int64(p.Autoscaler.Min))
-		pool.Autoscaler[0].Max = types.Int64Value(int64(p.Autoscaler.Max))
+		pool.Autoscaler = []NodePoolAutoscalerModel{
+			{
+				Min: types.Int64Value(int64(p.Autoscaler.Min)),
+				Max: types.Int64Value(int64(p.Autoscaler.Max)),
+			},
+		}
 	}
 
 	nodes, errs := parseNodeList(p.Linodes)
