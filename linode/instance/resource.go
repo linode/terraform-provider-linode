@@ -537,7 +537,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		simpleUpdate = true
 	}
 	if d.HasChange("group") {
-		updateOpts.Group = d.Get("group").(string)
+		newGroup := d.Get("group").(string)
+		updateOpts.Group = &newGroup
 		simpleUpdate = true
 	}
 	if d.HasChange("tags") {
