@@ -72,7 +72,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseToken(token, false)
+	data.FlattenToken(token, false, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -127,7 +127,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseToken(token, true)
+	data.FlattenToken(token, true, false)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -177,7 +177,10 @@ func (r *Resource) Update(
 			)
 			return
 		}
+		plan.FlattenToken(token, true, true)
 	}
+
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

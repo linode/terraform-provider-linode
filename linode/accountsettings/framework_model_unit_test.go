@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestParseAccountSettings(t *testing.T) {
+func TestFlattenAccountSettings(t *testing.T) {
 	// Create mock AccountSettings data
 	mockEmail := "test@example.com"
 	longviewSubscriptionValue := "longview-3"
@@ -31,7 +31,7 @@ func TestParseAccountSettings(t *testing.T) {
 	model := &AccountSettingsModel{}
 
 	// Call the parseAccountSettings function
-	model.parseAccountSettings(mockEmail, mockSettings)
+	model.FlattenAccountSettings(mockEmail, mockSettings, false)
 
 	// Check if the fields in the model have been populated correctly
 	if model.ID != types.StringValue(mockEmail) {
@@ -46,8 +46,8 @@ func TestParseAccountSettings(t *testing.T) {
 		t.Errorf("Expected ObjectStorage to be %s, but got %s", "active", model.ObjectStorage)
 	}
 
-	if model.BackupsEnabed != types.BoolValue(true) {
-		t.Errorf("Expected BackupsEnabed to be %v, but got %v", true, model.BackupsEnabed)
+	if model.BackupsEnabled != types.BoolValue(true) {
+		t.Errorf("Expected BackupsEnabed to be %v, but got %v", true, model.BackupsEnabled)
 	}
 
 	if model.Managed != types.BoolValue(true) {

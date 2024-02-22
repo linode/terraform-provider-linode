@@ -3,11 +3,11 @@ package vpcsubnet
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -17,7 +17,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_vpc_subnet",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -33,25 +33,21 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	idParts := strings.Split(req.ID, ",")
-
-	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
-		resp.Diagnostics.AddError(
-			"Unexpected Import Identifier",
-			fmt.Sprintf("Expected import identifier with format: vpc_id,id. Got: %q", req.ID),
-		)
-		return
-	}
-
-	vpcID := helper.StringToInt64(idParts[0], &resp.Diagnostics)
-	id := helper.StringToInt64(idParts[1], &resp.Diagnostics)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("vpc_id"), vpcID)...)
+	tflog.Debug(ctx, "Import "+r.Config.Name)
+	helper.ImportStateWithMultipleIDs(
+		ctx,
+		req,
+		resp,
+		[]helper.ImportableID{
+			{
+				Name:          "vpc_id",
+				TypeConverter: helper.IDTypeConverterInt64,
+			},
+			{
+				Name:          "id",
+				TypeConverter: helper.IDTypeConverterString,
+			},
+		})
 }
 
 func (r *Resource) Create(
@@ -109,7 +105,7 @@ func (r *Resource) Read(
 	}
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -171,7 +167,7 @@ func (r *Resource) Update(
 			plan.VPCId.ValueInt64(),
 			&resp.Diagnostics,
 		)
-		id := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 
 		if resp.Diagnostics.HasError() {
 			return
@@ -210,7 +206,7 @@ func (r *Resource) Delete(
 	}
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -220,7 +216,7 @@ func (r *Resource) Delete(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the VPC subnet (%d)", data.ID.ValueInt64()),
+				fmt.Sprintf("Failed to delete the VPC subnet (%s)", data.ID.ValueString()),
 				err.Error(),
 			)
 		}

@@ -6,7 +6,7 @@ import (
 )
 
 var VPCAttrs = map[string]schema.Attribute{
-	"id": schema.Int64Attribute{
+	"id": schema.StringAttribute{
 		Description: "The id of the VPC.",
 		Required:    true,
 	},

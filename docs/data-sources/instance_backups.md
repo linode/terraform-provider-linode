@@ -12,7 +12,7 @@ Provides details about the backups of an Instance.
 
 ```terraform
 data "linode_instance_backups" "my-backups" {
-    id = 123
+    linode_id = 123
 }
 ```
 

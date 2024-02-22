@@ -5,6 +5,27 @@ import (
 	"github.com/linode/linodego"
 )
 
+// GetFrameworkProviderModelFromSDKv2ProviderConfig is used by crossplane-provider-linode to convert from SDKv2 to FrameworkModel
+func GetFrameworkProviderModelFromSDKv2ProviderConfig(config *Config) *FrameworkProviderModel {
+	return &FrameworkProviderModel{
+		AccessToken:                  types.StringValue(config.AccessToken),
+		APIURL:                       types.StringValue(config.APIURL),
+		APIVersion:                   types.StringValue(config.APIVersion),
+		UAPrefix:                     types.StringValue(config.UAPrefix),
+		ConfigPath:                   types.StringValue(config.ConfigPath),
+		ConfigProfile:                types.StringValue(config.ConfigProfile),
+		SkipInstanceReadyPoll:        types.BoolValue(config.SkipInstanceReadyPoll),
+		SkipInstanceDeletePoll:       types.BoolValue(config.SkipInstanceDeletePoll),
+		SkipImplicitReboots:          types.BoolValue(config.SkipImplicitReboots),
+		DisableInternalCache:         types.BoolValue(config.DisableInternalCache),
+		MinRetryDelayMilliseconds:    types.Int64Value(int64(config.MinRetryDelayMilliseconds)),
+		MaxRetryDelayMilliseconds:    types.Int64Value(int64(config.MaxRetryDelayMilliseconds)),
+		EventPollMilliseconds:        types.Int64Value(int64(config.EventPollMilliseconds)),
+		LKEEventPollMilliseconds:     types.Int64Value(int64(config.LKEEventPollMilliseconds)),
+		LKENodeReadyPollMilliseconds: types.Int64Value(int64(config.LKENodeReadyPollMilliseconds)),
+	}
+}
+
 type FrameworkProviderModel struct {
 	AccessToken types.String `tfsdk:"token"`
 	APIURL      types.String `tfsdk:"url"`

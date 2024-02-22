@@ -31,6 +31,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/images"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/ipv6range"
@@ -73,6 +74,17 @@ import (
 type FrameworkProvider struct {
 	ProviderVersion string
 	Meta            *helper.FrameworkProviderMeta
+}
+
+// CreateFrameworkProviderWithMeta is used by the crossplane provider
+func CreateFrameworkProviderWithMeta(version string, meta *helper.ProviderMeta) provider.ProviderWithValidateConfig {
+	return &FrameworkProvider{
+		ProviderVersion: version,
+		Meta: &helper.FrameworkProviderMeta{
+			Client: &meta.Client,
+			Config: helper.GetFrameworkProviderModelFromSDKv2ProviderConfig(meta.Config),
+		},
+	}
 }
 
 func CreateFrameworkProvider(version string) provider.ProviderWithValidateConfig {
@@ -173,6 +185,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instanceip.NewResource,
 		firewalldevice.NewResource,
 		volume.NewResource,
+		instancesharedips.NewResource,
 		nodepool.NewResource,
 	}
 }

@@ -13,26 +13,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseNonComputedAttrs(t *testing.T) {
+func TestFlattenNodeBalancerPreserveKnown(t *testing.T) {
 	label := "test-nodebalancer"
 
 	nodeBalancer := &linodego.NodeBalancer{
 		ID:    123,
 		Label: &label,
-		Tags:  []string{"tag1", "tag2"},
 	}
 
-	nodeBalancerModel := &NodeBalancerModel{}
+	nodeBalancerModel := &NodeBalancerModel{
+		ID:    types.StringUnknown(),
+		Label: types.StringValue("another" + label),
+	}
 
-	diags := nodeBalancerModel.ParseNonComputedAttrs(context.Background(), nodeBalancer)
+	diags := nodeBalancerModel.FlattenNodeBalancer(context.Background(), nodeBalancer, nil, true)
 
 	assert.False(t, diags.HasError(), "Errors should be returned due to custom context error")
-	assert.Equal(t, types.StringValue("test-nodebalancer"), nodeBalancerModel.Label)
-	assert.Contains(t, nodeBalancer.Tags, "tag1")
-	assert.Contains(t, nodeBalancer.Tags, "tag2")
+	assert.False(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
+	assert.True(t, types.StringValue("123").Equal(nodeBalancerModel.ID))
 }
 
-func TestParseComputedAttrs(t *testing.T) {
+func TestFlattenNodeBalancer(t *testing.T) {
 	hostname := "example.nodebalancer.linode.com"
 	IPv4 := "192.168.1.1"
 	IPv6 := "2001:db8::1"
@@ -44,8 +45,11 @@ func TestParseComputedAttrs(t *testing.T) {
 	transferOut := float64(200.0)
 	transferTotal := float64(300.0)
 
+	label := "test-nodebalancer"
+
 	nodeBalancer := &linodego.NodeBalancer{
 		ID:                 123,
+		Label:              &label,
 		Region:             "us-east",
 		ClientConnThrottle: 10,
 		Hostname:           &hostname,
@@ -62,7 +66,7 @@ func TestParseComputedAttrs(t *testing.T) {
 
 	nodeBalancerModel := &NodeBalancerModel{}
 
-	diags := nodeBalancerModel.ParseComputedAttrs(context.Background(), nodeBalancer, nil)
+	diags := nodeBalancerModel.FlattenNodeBalancer(context.Background(), nodeBalancer, nil, false)
 
 	assert.False(t, diags.HasError())
 
@@ -70,8 +74,8 @@ func TestParseComputedAttrs(t *testing.T) {
 	assert.Equal(t, types.StringValue("us-east"), nodeBalancerModel.Region)
 	assert.Equal(t, types.Int64Value(10), nodeBalancerModel.ClientConnThrottle)
 	assert.Equal(t, types.StringPointerValue(&hostname), nodeBalancerModel.Hostname)
-	assert.Equal(t, types.StringPointerValue(&IPv4), nodeBalancerModel.Ipv4)
-	assert.Equal(t, types.StringPointerValue(&IPv6), nodeBalancerModel.Ipv6)
+	assert.Equal(t, types.StringPointerValue(&IPv4), nodeBalancerModel.IPv4)
+	assert.Equal(t, types.StringPointerValue(&IPv6), nodeBalancerModel.IPv6)
 
 	assert.NotNil(t, nodeBalancerModel.Created)
 	assert.NotNil(t, nodeBalancerModel.Updated)
@@ -79,6 +83,8 @@ func TestParseComputedAttrs(t *testing.T) {
 	assert.Contains(t, nodeBalancerModel.Transfer.String(), "100.0")
 	assert.Contains(t, nodeBalancerModel.Transfer.String(), "200.0")
 	assert.Contains(t, nodeBalancerModel.Transfer.String(), "300.0")
+
+	assert.True(t, types.StringValue(label).Equal(nodeBalancerModel.Label))
 }
 
 func TestUpgradeResourceStateValue(t *testing.T) {
