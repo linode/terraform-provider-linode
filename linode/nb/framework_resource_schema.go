@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -105,6 +106,9 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "When this NodeBalancer was last updated.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
@@ -120,11 +124,17 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Information about the amount of transfer this NodeBalancer has had so far this month.",
 			Computed:    true,
 			ElementType: TransferObjectType,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"firewalls": schema.ListAttribute{
 			Description: "A list of Firewalls assigned to this NodeBalancer.",
 			Computed:    true,
 			ElementType: firewallObjType,
+			PlanModifiers: []planmodifier.List{
+				listplanmodifier.UseStateForUnknown(),
+			},
 		},
 	},
 }
