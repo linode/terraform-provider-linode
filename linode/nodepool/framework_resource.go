@@ -17,7 +17,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_lke_node_pool",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &resourceSchema,
 			},
 		),
@@ -44,7 +44,7 @@ func (r *Resource) Read(
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 		"cluster_id": data.ClusterID.ValueInt64(),
-		"pool_id":    data.ID.ValueInt64(),
+		"pool_id":    data.ID.ValueString(),
 	})
 
 	clusterID, poolID := data.ExtractClusterAndNodePoolIDs(&resp.Diagnostics)
@@ -250,6 +250,17 @@ func (r *Resource) ImportState(
 	tflog.Debug(ctx, "Import linode_lke_node_pool")
 
 	helper.ImportStateWithMultipleIDs(
-		ctx, req, resp, "cluster_id", "id",
-	)
+		ctx,
+		req,
+		resp,
+		[]helper.ImportableID{
+			{
+				Name:          "cluster_id",
+				TypeConverter: helper.IDTypeConverterInt64,
+			},
+			{
+				Name:          "id",
+				TypeConverter: helper.IDTypeConverterString,
+			},
+		})
 }

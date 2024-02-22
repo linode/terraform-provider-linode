@@ -13,7 +13,7 @@ import (
 var resourceSchema = schema.Schema{
 	Version: 0,
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description: "ID of the Node Pool.",
 			Computed:    true,
 		},

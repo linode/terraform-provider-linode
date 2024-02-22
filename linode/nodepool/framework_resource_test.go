@@ -1,4 +1,4 @@
-////go:build integration
+//go:build integration
 
 package nodepool_test
 
@@ -70,33 +70,8 @@ func init() {
 	}
 }
 
-func GetTestClient() (*linodego.Client, error) {
-	token := os.Getenv("LINODE_TOKEN")
-	if token == "" {
-		return nil, fmt.Errorf("LINODE_TOKEN must be set for acceptance tests")
-	}
-
-	apiVersion := os.Getenv("LINODE_API_VERSION")
-	if apiVersion == "" {
-		apiVersion = "v4beta"
-	}
-
-	config := &helper.Config{
-		AccessToken: token,
-		APIVersion:  apiVersion,
-		APIURL:      os.Getenv("LINODE_URL"),
-	}
-
-	client, err := config.Client(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
-}
-
 func sweep(prefix string) error {
-	client, err := GetTestClient()
+	client, err := acceptance.GetTestClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}

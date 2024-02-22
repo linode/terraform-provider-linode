@@ -2,6 +2,7 @@ package nodepool
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -13,7 +14,7 @@ import (
 )
 
 type NodePoolModel struct {
-	ID         types.Int64               `tfsdk:"id"`
+	ID         types.String              `tfsdk:"id"`
 	ClusterID  types.Int64               `tfsdk:"cluster_id"`
 	Count      types.Int64               `tfsdk:"node_count"`
 	Type       types.String              `tfsdk:"type"`
@@ -70,7 +71,7 @@ func parseNodeList(nodes []linodego.LKENodePoolLinode,
 }
 
 func (pool *NodePoolModel) ParseNodePool(ctx context.Context, clusterID int, p *linodego.LKENodePool, diags *diag.Diagnostics) {
-	pool.ID = types.Int64Value(int64(p.ID))
+	pool.ID = types.StringValue(strconv.Itoa(p.ID))
 	pool.ClusterID = types.Int64Value(int64(clusterID))
 	pool.Count = types.Int64Value(int64(p.Count))
 	pool.Type = types.StringValue(p.Type)
@@ -138,7 +139,10 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(ctx context.Context, p *lino
 
 func (pool *NodePoolModel) ExtractClusterAndNodePoolIDs(diags *diag.Diagnostics) (int, int) {
 	clusterID := helper.FrameworkSafeInt64ToInt(pool.ClusterID.ValueInt64(), diags)
-	poolID := helper.FrameworkSafeInt64ToInt(pool.ID.ValueInt64(), diags)
+	poolID, err := strconv.Atoi(pool.ID.ValueString())
+	if err != nil {
+		diags.AddError("Failed to parse poolID", err.Error())
+	}
 	return clusterID, poolID
 }
 

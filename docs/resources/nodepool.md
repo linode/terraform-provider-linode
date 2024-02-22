@@ -1,5 +1,5 @@
 ---
-page_title: "Linode: linode_nodepool"
+page_title: "Linode: linode_lke_node_pool"
 description: |-
   Manages a Linode Node Pool.
 ---
@@ -13,7 +13,7 @@ Manages an LKE Node Pool.
 Creating a basic LKE Node Pool:
 
 ```terraform
-resource "linode_nodepool" "my-pool" {
+resource "linode_lke_node_pool" "my-pool" {
   
     cluster_id  = 150003
     type  = "g6-standard-2"
@@ -25,7 +25,7 @@ resource "linode_nodepool" "my-pool" {
 Creating an LKE Node Pool with autoscaler:
 
 ```terraform
-resource "linode_nodepool" "my-pool" {
+resource "linode_lke_node_pool" "my-pool" {
 
     cluster_id  = 150003
     type  = "g6-standard-2"
@@ -83,5 +83,5 @@ The following attributes are available on nodes:
 LKE Node Pools can be imported using the `cluster_id,id`, e.g.
 
 ```sh
-terraform import linode_nodepool.my_pool 150003,12345
+terraform import linode_lke_node_pool.my_pool 150003,12345
 ```

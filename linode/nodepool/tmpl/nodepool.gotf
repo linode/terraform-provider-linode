@@ -15,7 +15,7 @@ resource "linode_lke_cluster" "nodepool_test_cluster" {
 }
 {{end}}
 
-resource "linode_nodepool" "foobar" {
+resource "linode_lke_node_pool" "foobar" {
 {{if .ClusterID }}
     cluster_id = "{{.ClusterID}}"
 {{else}}

@@ -77,7 +77,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
 	}
 
-	externalPoolTags := getExternalPoolTags(d)
+	externalPoolTags := helper.ExpandStringSet(d.Get("external_pool_tags").(*schema.Set))
 	if len(externalPoolTags) > 0 && len(pools) > 0 {
 		pools = removeExternalPools(ctx, externalPoolTags, pools)
 	}
@@ -444,14 +444,4 @@ func customDiffValidateOptionalCount(ctx context.Context, diff *schema.ResourceD
 	}
 
 	return nil
-}
-
-func getExternalPoolTags(d *schema.ResourceData) []string {
-	var externalPoolTags []string
-	if v, ok := d.GetOk("external_pool_tags"); ok {
-		for _, tag := range v.(*schema.Set).List() {
-			externalPoolTags = append(externalPoolTags, tag.(string))
-		}
-	}
-	return externalPoolTags
 }
