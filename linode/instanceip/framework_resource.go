@@ -95,6 +95,7 @@ func (r *Resource) Create(
 	}
 
 	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
 	plan.ID = types.StringValue(ip.Address)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

@@ -97,6 +97,7 @@ func (r *Resource) Read(
 	data.FlattenAccountSettings(account.Email, settings, false)
 
 	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
 	data.ID = types.StringValue(account.Email)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

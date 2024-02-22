@@ -81,6 +81,7 @@ func (r *Resource) Create(
 	data.FlattenObjectStorageKey(key, true)
 
 	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
 	data.ID = types.StringValue(strconv.Itoa(key.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

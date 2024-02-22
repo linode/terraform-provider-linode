@@ -59,6 +59,7 @@ func (r *Resource) Create(
 	data.FlattenVPC(ctx, vpc, true)
 
 	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
 	data.ID = types.StringValue(strconv.Itoa(vpc.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

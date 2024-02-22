@@ -60,6 +60,7 @@ func CreateOrUpdateSharedIPs(
 	plan.FlattenSharedIPs(linodeID, createOpts.IPs, true, diags)
 
 	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
 	plan.ID = types.StringValue(strconv.Itoa(linodeID))
 }
 
