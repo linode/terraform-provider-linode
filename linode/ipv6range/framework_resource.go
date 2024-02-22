@@ -111,7 +111,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	// IDs need to always be set in the state (see #1085).
+	// IDs should always be overridden during creation (see #1085)
 	data.ID = types.StringValue(ipv6rangeR.Range)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

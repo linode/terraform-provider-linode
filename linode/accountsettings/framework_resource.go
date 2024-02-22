@@ -96,7 +96,7 @@ func (r *Resource) Read(
 
 	data.FlattenAccountSettings(account.Email, settings, false)
 
-	// IDs need to always be set in the state (see #1085).
+	// IDs should always be overridden during creation (see #1085)
 	data.ID = types.StringValue(account.Email)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

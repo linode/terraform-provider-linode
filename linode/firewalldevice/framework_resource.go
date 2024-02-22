@@ -75,7 +75,7 @@ func (r *Resource) Create(
 
 	plan.FlattenFirewallDevice(device, true)
 
-	// IDs need to always be set in the state (see #1085).
+	// IDs should always be overridden during creation (see #1085)
 	plan.ID = types.StringValue(strconv.Itoa(device.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
