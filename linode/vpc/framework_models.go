@@ -21,6 +21,7 @@ type VPCModel struct {
 
 func (m *VPCModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateString(m.ID, strconv.Itoa(vpc.ID), preserveKnown)
+
 	m.Description = helper.KeepOrUpdateString(m.Description, vpc.Description, preserveKnown)
 	m.Created = helper.KeepOrUpdateValue(
 		m.Created,
@@ -38,6 +39,7 @@ func (m *VPCModel) FlattenVPC(ctx context.Context, vpc *linodego.VPC, preserveKn
 
 func (m *VPCModel) CopyFrom(ctx context.Context, other VPCModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
+
 	m.Description = helper.KeepOrUpdateValue(m.Description, other.Description, preserveKnown)
 	m.Created = helper.KeepOrUpdateValue(m.Created, other.Created, preserveKnown)
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
