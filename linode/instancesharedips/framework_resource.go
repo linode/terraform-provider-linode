@@ -3,6 +3,7 @@ package instancesharedips
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -55,7 +56,12 @@ func CreateOrUpdateSharedIPs(
 		)
 		return
 	}
+
 	plan.FlattenSharedIPs(linodeID, createOpts.IPs, true, diags)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	plan.ID = types.StringValue(strconv.Itoa(linodeID))
 }
 
 func (r *Resource) Create(
@@ -95,6 +101,10 @@ func (r *Resource) Read(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
 		return
 	}
 

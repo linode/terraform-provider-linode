@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -56,6 +57,11 @@ func (r *Resource) Create(
 	}
 
 	data.FlattenVPC(ctx, vpc, true)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(vpc.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -69,6 +75,10 @@ func (r *Resource) Read(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}
 
