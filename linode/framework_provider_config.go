@@ -289,7 +289,7 @@ func (fp *FrameworkProvider) terraformUserAgent(
 		fmt.Sprintf(
 			"HashiCorp Terraform/%s (+https://www.terraform.io) "+
 				"Terraform-Plugin-Framework/%s terraform-provider-linode/%s",
-			helper.GetFrameworkVersion(), tfVersion, fp.ProviderVersion,
+			tfVersion, helper.GetFrameworkVersion(), fp.ProviderVersion,
 		),
 	)
 
