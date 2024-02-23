@@ -69,7 +69,7 @@ func listVLANs(
 	filter string,
 ) ([]any, error) {
 	tflog.Debug(ctx, "client.ListVLANs(...)", map[string]interface{}{
-		"body": filter,
+		"filter": filter,
 	})
 
 	vlans, err := client.ListVLANs(
