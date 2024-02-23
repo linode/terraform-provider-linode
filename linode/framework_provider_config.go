@@ -288,9 +288,9 @@ func (fp *FrameworkProvider) terraformUserAgent(
 	userAgent := strings.TrimSpace(
 		fmt.Sprintf(
 			"HashiCorp Terraform/%s (+https://www.terraform.io) "+
-				"Terraform-Plugin-SDK/terraform-plugin-framework terraform-provider-linode/%s",
-			tfVersion,
-			fp.ProviderVersion,
+				"Terraform-Plugin-Framework/%s terraform-provider-linode/%s",
+			strings.TrimLeft(helper.GetFrameworkVersion(), "v"),
+			tfVersion, fp.ProviderVersion,
 		),
 	)
 

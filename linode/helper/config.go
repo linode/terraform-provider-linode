@@ -123,7 +123,7 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 }
 
 func terraformUserAgent(version string) string {
-	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
+	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform-Plugin-SDK/%s",
 		version, strings.TrimLeft(GetSDKv2Version(), "v"))
 
 	if add := os.Getenv(UAEnvVar); add != "" {
