@@ -63,7 +63,7 @@ func listKernels(
 	filter string,
 ) ([]any, error) {
 	tflog.Debug(ctx, "client.ListKernels(...)", map[string]interface{}{
-		"body": filter,
+		"filter": filter,
 	})
 
 	kernels, err := client.ListKernels(ctx, &linodego.ListOptions{
