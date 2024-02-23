@@ -18,7 +18,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_instance_shared_ips",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -218,6 +218,6 @@ func GetSharedIPsForLinode(ctx context.Context, client *linodego.Client, linodeI
 func populateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"linode_id": data.LinodeID.ValueInt64(),
-		"id":        data.ID.ValueInt64(),
+		"id":        data.ID.ValueString(),
 	})
 }
