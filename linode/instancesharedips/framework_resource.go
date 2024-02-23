@@ -42,7 +42,10 @@ func CreateOrUpdateSharedIPs(
 		LinodeID: linodeID,
 	}
 
-	plan.Addresses.ElementsAs(ctx, &createOpts.IPs, false)
+	diags.Append(plan.Addresses.ElementsAs(ctx, &createOpts.IPs, false)...)
+	if diags.HasError() {
+		return
+	}
 
 	tflog.Debug(ctx, "client.ShareIPAddresses(...)", map[string]interface{}{
 		"options": createOpts,
@@ -228,6 +231,5 @@ func GetSharedIPsForLinode(ctx context.Context, client *linodego.Client, linodeI
 func populateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"linode_id": data.LinodeID.ValueInt64(),
-		"id":        data.ID.ValueString(),
 	})
 }
