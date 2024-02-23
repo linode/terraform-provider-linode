@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"runtime/debug"
+	"strings"
 )
 
 func getDepVersion(depPath string) string {
@@ -15,7 +16,7 @@ func getDepVersion(depPath string) string {
 
 	for _, dep := range info.Deps {
 		if dep.Path == depPath {
-			return dep.Version
+			return strings.TrimLeft(dep.Version, "v")
 		}
 	}
 
