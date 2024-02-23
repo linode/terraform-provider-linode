@@ -21,7 +21,7 @@ data "linode_ipv6_ranges" "filtered-ranges" {
 }
 
 output "ranges" {
-  value = data.linode_ipv4_ranges.filtered-ranges.ranges
+  value = data.linode_ipv6_ranges.filtered-ranges
 }
 ```
 
