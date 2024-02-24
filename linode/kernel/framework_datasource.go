@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -27,6 +28,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_kernel")
+
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -35,6 +38,9 @@ func (d *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = tflog.SetField(ctx, "kernel_id", data.ID.ValueString())
+	tflog.Trace(ctx, "client.GetKernel(...)")
 
 	kernel, err := client.GetKernel(ctx, data.ID.ValueString())
 	if err != nil {

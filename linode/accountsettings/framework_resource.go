@@ -70,6 +70,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	tflog.Trace(ctx, "client.GetAccount(...)")
 	account, err := client.GetAccount(ctx)
 	if err != nil {
@@ -91,6 +95,11 @@ func (r *Resource) Read(
 	}
 
 	data.FlattenAccountSettings(account.Email, settings, false)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(account.Email)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

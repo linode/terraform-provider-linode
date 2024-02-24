@@ -3,7 +3,6 @@
 package stackscript
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseNonComputedAttributes(t *testing.T) {
+func TestFlattenStackScript(t *testing.T) {
 	createdTime := time.Date(2023, time.August, 17, 12, 0, 0, 0, time.UTC)
 	updatedTime := time.Date(2023, time.August, 17, 14, 0, 0, 0, time.UTC)
 
@@ -43,7 +42,7 @@ func TestParseNonComputedAttributes(t *testing.T) {
 	}
 
 	model := &StackScriptModel{}
-	diagnostics := model.ParseNonComputedAttributes(context.Background(), stackscriptData)
+	diagnostics := model.FlattenStackScript(stackscriptData, false)
 
 	assert.False(t, diagnostics.HasError(), "No errors should occur during parsing")
 
@@ -58,7 +57,7 @@ func TestParseNonComputedAttributes(t *testing.T) {
 	}
 }
 
-func TestParseComputedAttributes(t *testing.T) {
+func TestFlattenStackScriptPreservingKnown(t *testing.T) {
 	createdTime := time.Date(2023, time.August, 17, 12, 0, 0, 0, time.UTC)
 	updatedTime := time.Date(2023, time.August, 17, 14, 0, 0, 0, time.UTC)
 
@@ -89,22 +88,14 @@ func TestParseComputedAttributes(t *testing.T) {
 		UserGravatarID: "a445b305abda30ebc766bc7fda037c37",
 	}
 
-	model := &StackScriptModel{}
-	diagnostics := model.ParseComputedAttributes(context.Background(), stackscriptData)
+	model := &StackScriptModel{
+		RevNote:          types.StringValue("Set up PostgreSQL"),
+		DeploymentsActive: types.Int64Unknown(),
+	}
 
-	assert.False(t, diagnostics.HasError(), "No errors should occur during parsing")
+	diags := model.FlattenStackScript(stackscriptData, true)
+	assert.False(t, diags.HasError())
 
-	assert.Equal(t, types.StringValue("10079"), model.ID)
-	assert.Equal(t, types.Int64Value(1), model.DeploymentsActive)
-	assert.Equal(t, types.StringValue("a445b305abda30ebc766bc7fda037c37"), model.UserGravatarID)
-	assert.Equal(t, types.Int64Value(12), model.DeploymentsTotal)
-	assert.Equal(t, types.StringValue("myuser"), model.Username)
-
-	assert.NotNil(t, model.Created)
-	assert.NotNil(t, model.Updated)
-
-	udfs := model.UserDefinedFields
-	assert.Contains(t, udfs.String(), "Enter the password")
-	assert.Contains(t, udfs.String(), "DB_PASSWORD")
-	assert.Contains(t, udfs.String(), "avalue,anothervalue,thirdvalue")
+	assert.True(t, model.DeploymentsActive.Equal(types.Int64Value(int64(stackscriptData.DeploymentsActive))))
+	assert.False(t, model.RevNote.Equal(types.StringValue(stackscriptData.RevNote)))
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -83,6 +84,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_profile")
+
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -92,6 +95,7 @@ func (d *DataSource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetProfile(...)")
 	profile, err := client.GetProfile(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(

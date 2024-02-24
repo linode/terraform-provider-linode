@@ -11,7 +11,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/version"
 )
@@ -124,8 +123,10 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 }
 
 func terraformUserAgent(version string) string {
-	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io) Terraform Plugin SDK/%s",
-		version, meta.SDKVersionString())
+	ua := fmt.Sprintf(
+		"HashiCorp Terraform/%s (+https://www.terraform.io) Terraform-Plugin-SDK/%s",
+		version, GetSDKv2Version(),
+	)
 
 	if add := os.Getenv(UAEnvVar); add != "" {
 		add = strings.TrimSpace(add)
