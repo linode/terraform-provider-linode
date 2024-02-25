@@ -1,0 +1,13 @@
+{{ define "object_website_config_basic" }}
+
+{{ template "object_website_config_basic_dependency" . }}
+
+resource "linode_object_storage_website_config" "foobar" {
+    cluster        = linode_object_storage_bucket.foobar.cluster
+    bucket         = linode_object_storage_bucket.foobar.label
+    access_key     = linode_object_storage_key.foobar.access_key
+    secret_key     = linode_object_storage_key.foobar.secret_key
+    index_document = "index.html"
+}
+
+{{ end }}

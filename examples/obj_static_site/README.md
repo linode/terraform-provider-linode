@@ -6,8 +6,6 @@ To run this example, first configure your Linode provider as described in <https
 
 ## Prerequisites
 
-In order to run this example, `s3cmd` must be installed locally.
-
 Personal Access Tokens can be generated at <https://cloud.linode.com/profile/tokens> by clicking "Add a Personal Access Token".
 
 You will need to export your Linode Personal Access Token as an environment variable:

@@ -1,0 +1,6 @@
+{{ define "object_website_config_basic_dependency" }}
+
+{{ template "object_bucket_basic" .Bucket }}
+{{ template "object_key_basic" .Key }}
+
+{{ end }}
