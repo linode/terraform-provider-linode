@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -32,6 +34,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_vpc")
+
 	var data VPCModel
 	client := r.Meta.Client
 
@@ -47,6 +51,9 @@ func (r *Resource) Create(
 		Description: data.Description.ValueString(),
 	}
 
+	tflog.Debug(ctx, "client.CreateVPC(...)", map[string]any{
+		"options": vpcCreateOpts,
+	})
 	vpc, err := client.CreateVPC(ctx, vpcCreateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -70,6 +77,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_vpc")
+
 	var data VPCModel
 	client := r.Meta.Client
 
@@ -77,6 +86,8 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, data)
 
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
@@ -87,6 +98,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetVPC(...)")
 	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -116,6 +128,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_vpc")
+
 	client := r.Meta.Client
 	var plan, state VPCModel
 
@@ -125,6 +139,8 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, state)
 
 	var updateOpts linodego.VPCUpdateOptions
 	shouldUpdate := false
@@ -145,6 +161,9 @@ func (r *Resource) Update(
 			return
 		}
 
+		tflog.Debug(ctx, "client.UpdateVPC(...)", map[string]any{
+			"options": updateOpts,
+		})
 		vpc, err := client.UpdateVPC(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -165,6 +184,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_vpc")
+
 	client := r.Meta.Client
 	var data VPCModel
 
@@ -173,11 +194,14 @@ func (r *Resource) Delete(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	tflog.Debug(ctx, "client.DeleteVPC(...)")
 	err := client.DeleteVPC(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
@@ -188,4 +212,8 @@ func (r *Resource) Delete(
 		}
 		return
 	}
+}
+
+func populateLogAttributes(ctx context.Context, data VPCModel) context.Context {
+	return tflog.SetField(ctx, "id", data.ID)
 }
