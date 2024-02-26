@@ -3,7 +3,6 @@
 package stackscripts
 
 import (
-	"context"
 	"strconv"
 	"testing"
 	"time"
@@ -46,7 +45,7 @@ func TestParseStackscripts(t *testing.T) {
 	}
 
 	model := &StackscriptFilterModel{}
-	diagnostics := model.parseStackscripts(context.Background(), stackscriptsData)
+	diagnostics := model.parseStackscripts(stackscriptsData)
 
 	assert.False(t, diagnostics.HasError(), "No errors should occur during parsing")
 

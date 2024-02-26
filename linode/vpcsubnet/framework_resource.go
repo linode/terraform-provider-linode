@@ -3,6 +3,7 @@ package vpcsubnet
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -17,7 +18,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_vpc_subnet",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -34,7 +35,20 @@ func (r *Resource) ImportState(
 	resp *resource.ImportStateResponse,
 ) {
 	tflog.Debug(ctx, "Import "+r.Config.Name)
-	helper.ImportStateWithMultipleIDs(ctx, req, resp, "vpc_id", "id")
+	helper.ImportStateWithMultipleIDs(
+		ctx,
+		req,
+		resp,
+		[]helper.ImportableID{
+			{
+				Name:          "vpc_id",
+				TypeConverter: helper.IDTypeConverterInt64,
+			},
+			{
+				Name:          "id",
+				TypeConverter: helper.IDTypeConverterString,
+			},
+		})
 }
 
 func (r *Resource) Create(
@@ -82,6 +96,10 @@ func (r *Resource) Create(
 		return
 	}
 
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(subnet.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -101,9 +119,12 @@ func (r *Resource) Read(
 	}
 
 	ctx = populateLogAttributes(ctx, data)
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -170,7 +191,7 @@ func (r *Resource) Update(
 			plan.VPCId.ValueInt64(),
 			&resp.Diagnostics,
 		)
-		id := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 
 		if resp.Diagnostics.HasError() {
 			return
@@ -216,7 +237,7 @@ func (r *Resource) Delete(
 	ctx = populateLogAttributes(ctx, data)
 
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -227,7 +248,7 @@ func (r *Resource) Delete(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the VPC subnet (%d)", data.ID.ValueInt64()),
+				fmt.Sprintf("Failed to delete the VPC subnet (%s)", data.ID.ValueString()),
 				err.Error(),
 			)
 		}

@@ -3,6 +3,7 @@ package nb
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -102,6 +103,10 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(nodebalancer.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

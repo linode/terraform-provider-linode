@@ -43,7 +43,7 @@ func (d *DataSource) Read(
 
 	ctx = populateLogAttributes(ctx, data)
 
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

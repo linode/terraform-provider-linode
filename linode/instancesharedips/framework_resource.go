@@ -3,6 +3,7 @@ package instancesharedips
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -18,7 +19,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_instance_shared_ips",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -41,7 +42,10 @@ func CreateOrUpdateSharedIPs(
 		LinodeID: linodeID,
 	}
 
-	plan.Addresses.ElementsAs(ctx, &createOpts.IPs, false)
+	diags.Append(plan.Addresses.ElementsAs(ctx, &createOpts.IPs, false)...)
+	if diags.HasError() {
+		return
+	}
 
 	tflog.Debug(ctx, "client.ShareIPAddresses(...)", map[string]interface{}{
 		"options": createOpts,
@@ -55,7 +59,12 @@ func CreateOrUpdateSharedIPs(
 		)
 		return
 	}
+
 	plan.FlattenSharedIPs(linodeID, createOpts.IPs, true, diags)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	plan.ID = types.StringValue(strconv.Itoa(linodeID))
 }
 
 func (r *Resource) Create(
@@ -95,6 +104,10 @@ func (r *Resource) Read(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
 		return
 	}
 
@@ -218,6 +231,5 @@ func GetSharedIPsForLinode(ctx context.Context, client *linodego.Client, linodeI
 func populateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"linode_id": data.LinodeID.ValueInt64(),
-		"id":        data.ID.ValueInt64(),
 	})
 }

@@ -100,3 +100,16 @@ func StringValue(v *string) string {
 	}
 	return ""
 }
+
+func FrameworkSafeStringToInt(val string, d *diag.Diagnostics) int {
+	result, err := strconv.Atoi(val)
+	if err != nil {
+		d.Append(diag.NewErrorDiagnostic(
+			"Failed to convert string to int",
+			err.Error(),
+		))
+		return 0
+	}
+
+	return result
+}
