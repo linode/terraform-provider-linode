@@ -2,6 +2,7 @@ package domainrecord
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -9,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/customtypes"
 )
 
 type DataSourceModel struct {
@@ -42,20 +42,23 @@ func (data *DataSourceModel) FlattenDomainRecord(domainRecord *linodego.DomainRe
 }
 
 type ResourceModel struct {
-	ID         types.Int64                         `tfsdk:"id"`
-	Name       types.String                        `tfsdk:"name"`
-	DomainID   types.Int64                         `tfsdk:"domain_id"`
-	RecordType types.String                        `tfsdk:"record_type"`
-	TTLSec     customtypes.DomainRecordTTLValue    `tfsdk:"ttl_sec"`
-	Target     customtypes.DomainRecordTargetValue `tfsdk:"target"`
-	Priority   types.Int64                         `tfsdk:"priority"`
-	Weight     types.Int64                         `tfsdk:"weight"`
-	Port       types.Int64                         `tfsdk:"port"`
-	Protocol   types.String                        `tfsdk:"protocol"`
-	Service    types.String                        `tfsdk:"service"`
-	Tag        types.String                        `tfsdk:"tag"`
+	ID         types.String `tfsdk:"id"`
+	Name       types.String `tfsdk:"name"`
+	DomainID   types.Int64  `tfsdk:"domain_id"`
+	RecordType types.String `tfsdk:"record_type"`
+	TTLSec     types.Int64  `tfsdk:"ttl_sec"`
+	Target     types.String `tfsdk:"target"`
+	Priority   types.Int64  `tfsdk:"priority"`
+	Weight     types.Int64  `tfsdk:"weight"`
+	Port       types.Int64  `tfsdk:"port"`
+	Protocol   types.String `tfsdk:"protocol"`
+	Service    types.String `tfsdk:"service"`
+	Tag        types.String `tfsdk:"tag"`
 }
 
+// Implemented DomainRecordNameSemanticEquals function here
+// because semantic equality check in CustomType can't access
+// linodego client.
 func (data *ResourceModel) DomainRecordNameSemanticEquals(
 	ctx context.Context,
 	client *linodego.Client,
@@ -81,7 +84,7 @@ func (data *ResourceModel) FlattenDomainRecord(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	data.ID = helper.KeepOrUpdateInt64(data.ID, int64(domainRecord.ID), preserveKnown)
+	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(domainRecord.ID), preserveKnown)
 
 	domainID := helper.FrameworkSafeInt64ToInt(data.DomainID.ValueInt64(), &diags)
 	if diags.HasError() {
@@ -102,22 +105,8 @@ func (data *ResourceModel) FlattenDomainRecord(
 
 	data.RecordType = helper.KeepOrUpdateString(data.RecordType, string(domainRecord.Type), preserveKnown)
 
-	data.TTLSec = helper.KeepOrUpdateValue(
-		data.TTLSec,
-		customtypes.DomainRecordTTLValue{
-			Int64Value: types.Int64Value(int64(domainRecord.TTLSec)),
-		},
-		preserveKnown,
-	)
-
-	data.Target = helper.KeepOrUpdateValue(
-		data.Target,
-		customtypes.DomainRecordTargetValue{
-			StringValue: types.StringValue(domainRecord.Target),
-		},
-		preserveKnown,
-	)
-
+	data.TTLSec = helper.KeepOrUpdateInt64(data.TTLSec, int64(domainRecord.TTLSec), preserveKnown)
+	data.Target = helper.KeepOrUpdateString(data.Target, domainRecord.Target, preserveKnown)
 	data.Priority = helper.KeepOrUpdateInt64(data.Priority, int64(domainRecord.Priority), preserveKnown)
 	data.Weight = helper.KeepOrUpdateInt64(data.Weight, int64(domainRecord.Weight), preserveKnown)
 	data.Port = helper.KeepOrUpdateInt64(data.Port, int64(domainRecord.Port), preserveKnown)

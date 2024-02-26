@@ -185,6 +185,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		firewalldevice.NewResource,
 		volume.NewResource,
 		instancesharedips.NewResource,
+		domainrecord.NewResource,
 	}
 }
 

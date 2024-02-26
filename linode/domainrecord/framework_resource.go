@@ -76,6 +76,7 @@ func (r *Resource) Create(
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Error creating a Linode DomainRecord: %s", err), err.Error(),
 		)
+		return
 	}
 	resp.Diagnostics.Append(plan.FlattenDomainRecord(ctx, client, domainRecord, true)...)
 	if resp.Diagnostics.HasError() {
@@ -226,7 +227,6 @@ func (r *Resource) Delete(
 			fmt.Sprintf("Error deleting Linode DomainRecord %d", domainRecordID),
 			err.Error(),
 		)
-
 		return
 	}
 }
@@ -237,12 +237,22 @@ func (r *Resource) ImportState(
 	resp *resource.ImportStateResponse,
 ) {
 	tflog.Debug(ctx, "Import "+r.Config.Name)
-	helper.ImportStateWithMultipleIDs(ctx, req, resp, "domain_id", "id")
+	helper.ImportStateWithMultipleIDs(ctx, req, resp,
+		[]helper.ImportableID{
+			{
+				Name:          "domain_id",
+				TypeConverter: helper.IDTypeConverterInt64,
+			},
+			{
+				Name:          "id",
+				TypeConverter: helper.IDTypeConverterString,
+			},
+		})
 }
 
 func populateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"domain_record_id": data.ID.ValueInt64(),
+		"domain_record_id": data.ID.ValueString(),
 		"domain_id":        data.DomainID.ValueInt64(),
 	})
 }
@@ -251,8 +261,8 @@ func getDomainAndRecordIDs(data ResourceModel, diags *diag.Diagnostics) (int, in
 	domainID := helper.FrameworkSafeInt64ToInt(
 		data.DomainID.ValueInt64(), diags,
 	)
-	domainRecordID := helper.FrameworkSafeInt64ToInt(
-		data.ID.ValueInt64(), diags,
+	domainRecordID := helper.FrameworkSafeStringToInt(
+		data.ID.ValueString(), diags,
 	)
 	return domainID, domainRecordID
 }

@@ -43,9 +43,11 @@ var frameworkResourceSchema = schema.Schema{
 	Version: 1,
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Description:   "The unique ID of the Linode NodeBalancer.",
-			Computed:      true,
-			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			Description: "The unique ID of the Linode NodeBalancer.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"label": schema.StringAttribute{
 			Description: "The label of the Linode NodeBalancer.",
