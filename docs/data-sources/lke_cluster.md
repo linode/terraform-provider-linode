@@ -30,7 +30,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `region` - This Kubernetes cluster's location.
 
-* `tags` - The tags applied to the cluster.
+* `tags` - The tags applied to the cluster. Tags are case-insensitive and are for organizational purposes only.
 
 * `status` - The status of the cluster.
 
@@ -54,7 +54,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `count` - The number of nodes in the Node Pool.
 
-  * `tags` - An array of tags applied to this object. Tags are for organizational purposes only.
+  * `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
   * `nodes` - The nodes in the Node Pool.
 

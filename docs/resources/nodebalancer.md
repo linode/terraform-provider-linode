@@ -36,7 +36,7 @@ The following arguments are supported:
 
 * `client_conn_throttle` - (Optional) Throttle connections per second (0-20). Set to 0 (default) to disable throttling.
 
-* `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
+* `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 ## Attributes Reference
 
@@ -74,7 +74,7 @@ The following attributes are available on firewalls:
 
 * `label` - The label for the firewall.
 
-* `tags` - The tags applied to the firewall.
+* `tags` - The tags applied to the firewall. Tags are case-insensitive and are for organizational purposes only.
 
 * [`inbound`](#inbound-and-outbound) - A firewall rule that specifies what inbound network traffic is allowed.
 

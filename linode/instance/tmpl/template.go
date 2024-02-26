@@ -240,6 +240,15 @@ func TagUpdate(t *testing.T, label, region string) string {
 		})
 }
 
+func TagUpdateCaseChange(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_tag_update_case_change", TemplateData{
+			Label:  label,
+			Image:  acceptance.TestImageLatest,
+			Region: region,
+		})
+}
+
 func TagVolume(t *testing.T, label, tag, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag_volume", TemplateData{

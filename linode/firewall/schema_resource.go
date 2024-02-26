@@ -101,6 +101,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Optional:    true,
+		Computed:    true,
 		Set:         schema.HashString,
 	},
 	"disabled": {

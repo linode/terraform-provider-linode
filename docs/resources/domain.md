@@ -61,7 +61,7 @@ The following arguments are supported:
 
 * `axfr_ips` - (Optional) The list of IPs that may perform a zone transfer for this Domain. This is potentially dangerous, and should be set to an empty list unless you intend to use it.
 
-* `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
+* `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 ## Attributes Reference
 
