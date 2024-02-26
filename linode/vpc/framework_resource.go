@@ -87,8 +87,8 @@ func (r *Resource) Read(
 		return
 	}
 
-  ctx = populateLogAttributes(ctx, data)
-  
+	ctx = populateLogAttributes(ctx, data)
+
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}

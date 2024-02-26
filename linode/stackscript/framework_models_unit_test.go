@@ -89,7 +89,7 @@ func TestFlattenStackScriptPreservingKnown(t *testing.T) {
 	}
 
 	model := &StackScriptModel{
-		RevNote:          types.StringValue("Set up PostgreSQL"),
+		RevNote:           types.StringValue("Set up PostgreSQL"),
 		DeploymentsActive: types.Int64Unknown(),
 	}
 
