@@ -3,6 +3,7 @@ package volume
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -25,7 +26,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_volume",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 				TimeoutOpts: &timeouts.Opts{
 					Update: true,
@@ -293,6 +294,11 @@ func (r *Resource) Create(
 		// We should always set the created resource into state even if there is an error
 		// to prevent untracked resources created on the cloud
 		plan.FlattenVolume(volume, true)
+
+		// IDs should always be overridden during creation (see #1085)
+		// TODO: Remove when Crossplane empty string ID issue is resolved
+		plan.ID = types.StringValue(strconv.Itoa(volume.ID))
+
 		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
 }
@@ -309,9 +315,13 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+		return
+	}
+
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeInt64ToInt(state.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -400,7 +410,7 @@ func (r *Resource) Update(
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -586,7 +596,7 @@ func (r *Resource) Delete(
 
 	client := r.Meta.Client
 
-	id := helper.FrameworkSafeInt64ToInt(state.ID.ValueInt64(), &resp.Diagnostics)
+	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}

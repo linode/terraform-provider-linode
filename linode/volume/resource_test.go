@@ -119,6 +119,11 @@ func TestAccResourceVolume_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
 				),
 			},
+			{
+				// Expect no changes on tags case changed
+				Config:   tmpl.UpdatesTagsCaseChange(t, volumeName, testRegion),
+				PlanOnly: true,
+			},
 		},
 	})
 }

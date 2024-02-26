@@ -3,6 +3,7 @@ package objkey
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -77,7 +78,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseComputedAttributes(key)
+	data.FlattenObjectStorageKey(key, true)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(key.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -131,9 +137,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseComputedAttributes(key)
-	data.parseConfiguredAttributes(key)
-
+	data.FlattenObjectStorageKey(key, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -181,9 +185,10 @@ func (r *Resource) Update(
 			return
 		}
 
-		plan.parseComputedAttributes(key)
+		plan.FlattenObjectStorageKey(key, true)
 	}
 
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

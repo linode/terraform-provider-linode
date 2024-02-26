@@ -3,6 +3,9 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,7 +18,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_vpc",
-				IDType: types.Int64Type,
+				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
 		),
@@ -31,6 +34,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_vpc")
+
 	var data VPCModel
 	client := r.Meta.Client
 
@@ -46,6 +51,9 @@ func (r *Resource) Create(
 		Description: data.Description.ValueString(),
 	}
 
+	tflog.Debug(ctx, "client.CreateVPC(...)", map[string]any{
+		"options": vpcCreateOpts,
+	})
 	vpc, err := client.CreateVPC(ctx, vpcCreateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -56,6 +64,11 @@ func (r *Resource) Create(
 	}
 
 	data.FlattenVPC(ctx, vpc, true)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(vpc.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -64,6 +77,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_vpc")
+
 	var data VPCModel
 	client := r.Meta.Client
 
@@ -72,11 +87,18 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	ctx = populateLogAttributes(ctx, data)
+
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetVPC(...)")
 	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -106,6 +128,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_vpc")
+
 	client := r.Meta.Client
 	var plan, state VPCModel
 
@@ -115,6 +139,8 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, state)
 
 	var updateOpts linodego.VPCUpdateOptions
 	shouldUpdate := false
@@ -130,11 +156,14 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		id := helper.FrameworkSafeInt64ToInt(plan.ID.ValueInt64(), &resp.Diagnostics)
+		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
+		tflog.Debug(ctx, "client.UpdateVPC(...)", map[string]any{
+			"options": updateOpts,
+		})
 		vpc, err := client.UpdateVPC(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -155,6 +184,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_vpc")
+
 	client := r.Meta.Client
 	var data VPCModel
 
@@ -163,19 +194,26 @@ func (r *Resource) Delete(
 		return
 	}
 
-	id := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
+	ctx = populateLogAttributes(ctx, data)
+
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	tflog.Debug(ctx, "client.DeleteVPC(...)")
 	err := client.DeleteVPC(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the VPC (%d)", data.ID.ValueInt64()),
+				fmt.Sprintf("Failed to delete the VPC (%s)", data.ID.ValueString()),
 				err.Error(),
 			)
 		}
 		return
 	}
+}
+
+func populateLogAttributes(ctx context.Context, data VPCModel) context.Context {
+	return tflog.SetField(ctx, "id", data.ID)
 }

@@ -14,17 +14,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
 )
 
 const RequireReplacementWhenNewSourceVolumeIDIsNotNull = "When source_volume_id is set to a non-null new value, a replacement will be required."
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.Int64Attribute{
+		"id": schema.StringAttribute{
 			Description: "The id of the volume.",
 			Computed:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"source_volume_id": schema.Int64Attribute{
@@ -88,6 +89,9 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The Linode ID where the Volume should be attached.",
 			Optional:    true,
 			Computed:    true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
 		},
 		"filesystem_path": schema.StringAttribute{
 			Description: "The full filesystem path for the Volume based on the Volume's label. Path is " +
@@ -102,7 +106,10 @@ var frameworkResourceSchema = schema.Schema{
 			ElementType: types.StringType,
 			Optional:    true,
 			Computed:    true,
-			Default:     helper.EmptySetDefault(types.StringType),
+			PlanModifiers: []planmodifier.Set{
+				linodeplanmodifiers.CaseInsensitiveSet(),
+			},
+			Default: helper.EmptySetDefault(types.StringType),
 		},
 	},
 }

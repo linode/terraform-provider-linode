@@ -28,7 +28,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `label` - The label for the firewall.
 
-* `tags` - The tags applied to the firewall.
+* `tags` - The tags applied to the firewall. Tags are case-insensitive and are for organizational purposes only.
 
 * `disabled` - If true, the firewall is inactive.
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -33,6 +33,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Create linode_ipv6_range")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -74,6 +76,11 @@ func (r *Resource) Create(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+	tflog.Debug(ctx, "client.CreateIPv6Range(...)", map[string]any{
+		"options": createOpts,
+	})
+
 	ipv6range, err := client.CreateIPv6Range(ctx, createOpts)
 	if err != nil {
 		if linodeIdConfigured {
@@ -98,6 +105,8 @@ func (r *Resource) Create(
 	// only returns two fields for the newly created range (range and route_target).
 	// We need to make a second call out to the GET endpoint to populate more
 	// computed fields (region, is_bgp, linodes).
+	tflog.Trace(ctx, "client.GetIPv6Range(...)")
+
 	ipv6rangeR, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -107,10 +116,15 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseIPv6RangeResourceDataComputedAttrs(ctx, ipv6rangeR)...)
+	resp.Diagnostics.Append(data.FlattenIPv6Range(ctx, ipv6rangeR, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(ipv6rangeR.Range)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -119,6 +133,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_ipv6_range")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -130,6 +146,9 @@ func (r *Resource) Read(
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, data)
+	tflog.Debug(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
@@ -148,8 +167,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseIPv6RangeResourceDataNonComputedAttrs(ipv6range)
-	resp.Diagnostics.Append(data.parseIPv6RangeResourceDataComputedAttrs(ctx, ipv6range)...)
+	resp.Diagnostics.Append(data.FlattenIPv6Range(ctx, ipv6range, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -161,6 +179,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_ipv6_range")
+
 	var plan, state ResourceModel
 	client := r.Meta.Client
 
@@ -169,6 +189,9 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, plan)
+	tflog.Debug(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, plan.ID.ValueString())
 	if err != nil {
@@ -187,7 +210,8 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		err := client.InstancesAssignIPs(ctx, linodego.LinodesAssignIPsOptions{
+
+		updateOpts := linodego.LinodesAssignIPsOptions{
 			Region: ipv6range.Region,
 			Assignments: []linodego.LinodeIPAssignment{
 				{
@@ -195,7 +219,13 @@ func (r *Resource) Update(
 					Address:  fmt.Sprintf("%s/%d", ipv6range.Range, ipv6range.Prefix),
 				},
 			},
+		}
+
+		tflog.Debug(ctx, "client.InstancesAssignIPs(...)", map[string]any{
+			"options": updateOpts,
 		})
+
+		err := client.InstancesAssignIPs(ctx, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to assign ipv6 address to instance.",
@@ -204,14 +234,13 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.parseIPv6RangeResourceDataComputedAttrs(ctx, ipv6range)...)
+		resp.Diagnostics.Append(plan.FlattenIPv6Range(ctx, ipv6range, true)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-	} else {
-		req.State.GetAttribute(ctx, path.Root("is_bgp"), &plan.IsBGP)
-		req.State.GetAttribute(ctx, path.Root("linodes"), &plan.Linodes)
 	}
+
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -220,6 +249,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_ipv6_range")
+
 	var data ResourceModel
 	client := r.Meta.Client
 
@@ -227,6 +258,9 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	populateLogAttributes(ctx, data)
+	tflog.Debug(ctx, "client.DeleteIPv6Range(...)")
 
 	if err := client.DeleteIPv6Range(ctx, data.ID.ValueString()); err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && (lerr.Code == 404 || lerr.Code == 405) {
@@ -242,4 +276,11 @@ func (r *Resource) Delete(
 		)
 		return
 	}
+}
+
+func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"ipv6_id": model.ID,
+		"range:":  model.Range,
+	})
 }

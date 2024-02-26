@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -76,6 +77,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_account_login")
 	client := d.client
 
 	var data DatasourceModel
@@ -89,6 +91,9 @@ func (d *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	tflog.Trace(ctx, "client.GetLogin(...)", map[string]any{
+		"loginID": loginID,
+	})
 	accountlogin, err := client.GetLogin(ctx, loginID)
 	if err != nil {
 		resp.Diagnostics.AddError(

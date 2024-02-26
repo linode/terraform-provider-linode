@@ -22,6 +22,11 @@ func Updates(t *testing.T, volume, region string) string {
 		"volume_updates", TemplateData{Label: volume, Region: region})
 }
 
+func UpdatesTagsCaseChange(t *testing.T, volume, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"volume_updates_tags_case_change", TemplateData{Label: volume, Region: region})
+}
+
 func Resized(t *testing.T, volume, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"volume_resized", TemplateData{Label: volume, Region: region})

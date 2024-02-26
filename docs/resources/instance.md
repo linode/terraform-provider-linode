@@ -134,7 +134,7 @@ The following arguments are supported:
 
 * `label` - (Optional) The Linode's label is for display purposes only. If no label is provided for a Linode, a default will be assigned.
 
-* `tags` - (Optional) A list of tags applied to this object. Tags are for organizational purposes only.
+* `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 * `private_ip` - (Optional) If true, the created Linode will have private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region. It can be enabled on an existing Linode but it can't be disabled.
 

@@ -1,8 +1,6 @@
 package stackscripts
 
 import (
-	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -22,19 +20,13 @@ type StackscriptFilterModel struct {
 }
 
 func (data *StackscriptFilterModel) parseStackscripts(
-	ctx context.Context,
 	stackscripts []linodego.Stackscript,
 ) diag.Diagnostics {
 	result := make([]stackscript.StackScriptModel, len(stackscripts))
 
 	for i := range stackscripts {
 		var stackscript stackscript.StackScriptModel
-		diags := stackscript.ParseComputedAttributes(ctx, &stackscripts[i])
-		if diags != nil {
-			return diags
-		}
-
-		diags = stackscript.ParseNonComputedAttributes(ctx, &stackscripts[i])
+		diags := stackscript.FlattenStackScript(&stackscripts[i], false)
 		if diags != nil {
 			return diags
 		}

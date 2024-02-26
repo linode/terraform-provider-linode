@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -29,6 +30,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_account_logins")
 	var data AccountLoginFilterModel
 
 	client := r.Meta.Client
@@ -59,6 +61,9 @@ func (r *DataSource) Read(
 }
 
 func listLogins(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	tflog.Trace(ctx, "client.ListLogins(...)", map[string]any{
+		"filter": filter,
+	})
 	logins, err := client.ListLogins(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

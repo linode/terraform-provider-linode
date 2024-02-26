@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -72,7 +73,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseToken(token, false)
+	data.FlattenToken(token, false, true)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(token.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -127,7 +133,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseToken(token, true)
+	data.FlattenToken(token, true, false)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -177,7 +183,10 @@ func (r *Resource) Update(
 			)
 			return
 		}
+		plan.FlattenToken(token, true, true)
 	}
+
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

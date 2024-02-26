@@ -3,6 +3,7 @@ package sshkey
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -61,7 +62,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.parseComputedAttributes(key)
+	data.FlattenSSHKey(key, true)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(key.ID))
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -113,8 +119,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseComputedAttributes(key)
-	data.parseConfiguredAttributes(key)
+	data.FlattenSSHKey(key, false)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -160,9 +165,9 @@ func (r *Resource) Update(
 				err.Error())
 			return
 		}
-		plan.parseComputedAttributes(key)
+		plan.FlattenSSHKey(key, true)
 	}
-
+	plan.CopyFrom(state, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

@@ -8,9 +8,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
 const (
@@ -26,7 +28,10 @@ func Resource() *schema.Resource {
 		CreateContext: createResource,
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
-
+		CustomizeDiff: customdiff.All(
+			linodediffs.ComputedWithDefault("tags", []string{}),
+			linodediffs.CaseInsensitiveSet("tags"),
+		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -532,14 +537,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		simpleUpdate = true
 	}
 	if d.HasChange("group") {
-		updateOpts.Group = d.Get("group").(string)
+		newGroup := d.Get("group").(string)
+		updateOpts.Group = &newGroup
 		simpleUpdate = true
 	}
 	if d.HasChange("tags") {
-		var tags []string
-		for _, tag := range d.Get("tags").(*schema.Set).List() {
-			tags = append(tags, tag.(string))
-		}
+		tags := helper.ExpandStringSet(d.Get("tags").(*schema.Set))
 		updateOpts.Tags = &tags
 		simpleUpdate = true
 	}

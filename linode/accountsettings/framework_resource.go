@@ -2,7 +2,6 @@ package accountsettings
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -71,6 +70,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	tflog.Trace(ctx, "client.GetAccount(...)")
 	account, err := client.GetAccount(ctx)
 	if err != nil {
@@ -91,10 +94,11 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.parseAccountSettings(
-		account.Email,
-		settings,
-	)
+	data.FlattenAccountSettings(account.Email, settings, false)
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(account.Email)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -106,9 +110,10 @@ func (r *Resource) Update(
 ) {
 	tflog.Debug(ctx, "Update linode_account_settings")
 
-	var plan AccountSettingsModel
+	var plan, state AccountSettingsModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -120,6 +125,8 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	plan.CopyFrom(state, true)
 
 	// Apply the state changes
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -161,7 +168,7 @@ func (r *Resource) updateAccountSettings(
 	}
 
 	updateOpts := linodego.AccountSettingsUpdateOptions{
-		BackupsEnabled: plan.BackupsEnabed.ValueBoolPointer(),
+		BackupsEnabled: plan.BackupsEnabled.ValueBoolPointer(),
 		NetworkHelper:  plan.NetworkHelper.ValueBoolPointer(),
 	}
 
@@ -171,17 +178,10 @@ func (r *Resource) updateAccountSettings(
 
 	settings, err := client.UpdateAccountSettings(ctx, updateOpts)
 	if err != nil {
-		diagnostics.AddError(
-			fmt.Sprintf("Failed to update Linode Account Settings"),
-			err.Error(),
-		)
+		diagnostics.AddError("Failed to update Linode Account Settings", err.Error())
 		return diagnostics
 	}
 
-	plan.parseAccountSettings(
-		plan.ID.ValueString(),
-		settings,
-	)
-
+	plan.FlattenAccountSettings(plan.ID.ValueString(), settings, true)
 	return diagnostics
 }

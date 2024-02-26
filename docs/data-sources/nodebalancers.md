@@ -60,7 +60,7 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached
 
-* `tags` - A list of tags applied to this object. Tags are for organizational purposes only.
+* `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 * `hostname` - This NodeBalancer's hostname, ending with .ip.linodeusercontent.com
 
