@@ -110,9 +110,25 @@ func (data *ResourceModel) FlattenDomainRecord(
 	data.Priority = helper.KeepOrUpdateInt64(data.Priority, int64(domainRecord.Priority), preserveKnown)
 	data.Weight = helper.KeepOrUpdateInt64(data.Weight, int64(domainRecord.Weight), preserveKnown)
 	data.Port = helper.KeepOrUpdateInt64(data.Port, int64(domainRecord.Port), preserveKnown)
-	data.Protocol = helper.KeepOrUpdateStringPointer(data.Protocol, domainRecord.Protocol, preserveKnown)
-	data.Service = helper.KeepOrUpdateStringPointer(data.Service, domainRecord.Service, preserveKnown)
-	data.Tag = helper.KeepOrUpdateStringPointer(data.Tag, domainRecord.Tag, preserveKnown)
+
+	// Scheduled breaking change: helper.StringPointerValueWithDefault call will be removed, and
+	// pointers will be set via helper.KeepOrUpdateStringPointer, which will cause nil pointer to be
+	// null value in the model, instead of the zero value (e.g. "" for string or 0 for int)
+	data.Protocol = helper.KeepOrUpdateValue(
+		data.Protocol, helper.StringPointerValueWithDefault(domainRecord.Protocol), preserveKnown,
+	)
+	data.Service = helper.KeepOrUpdateValue(
+		data.Service, helper.StringPointerValueWithDefault(domainRecord.Service), preserveKnown,
+	)
+	data.Tag = helper.KeepOrUpdateValue(
+		data.Tag, helper.StringPointerValueWithDefault(domainRecord.Tag), preserveKnown,
+	)
+	// TODO:
+	// data.Protocol = helper.KeepOrUpdateStringPointer(data.Protocol, domainRecord.Protocol, preserveKnown)
+	// data.Service = helper.KeepOrUpdateStringPointer(data.Service, domainRecord.Service, preserveKnown)
+	// data.Tag = helper.KeepOrUpdateStringPointer(data.Tag, domainRecord.Tag, preserveKnown)
+
+	// scheduled breaking change block ended
 
 	return diags
 }

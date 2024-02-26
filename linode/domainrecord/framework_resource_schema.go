@@ -90,15 +90,33 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The protocol this Record's service communicates with. " +
 				"Only valid for SRV records.",
 			Optional: true,
+
+			// TODO: Make it non-computed in v3
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"service": schema.StringAttribute{
 			Description: "The service this Record identified. Only valid for SRV records.",
 			Optional:    true,
+
+			// TODO: Make it non-computed in v3
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"tag": schema.StringAttribute{
 			Description: "The tag portion of a CAA record. " +
 				"It is invalid to set this on other record types.",
 			Optional: true,
+
+			// TODO: Make it non-computed in v3
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"port": schema.Int64Attribute{
 			Description: "The port this Record points to.",

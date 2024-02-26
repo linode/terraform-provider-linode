@@ -52,6 +52,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	// TODO: replace ValueStringPointerWithNilForUnknownAndEmptyString with ValueStringPointer in v3
 	createOpts := linodego.DomainRecordCreateOptions{
 		Type:     linodego.DomainRecordType(plan.RecordType.ValueString()),
 		Name:     plan.Name.ValueString(),
@@ -59,10 +60,10 @@ func (r *Resource) Create(
 		Priority: priority,
 		Weight:   weight,
 		Port:     port,
-		Service:  plan.Service.ValueStringPointer(),
-		Protocol: plan.Protocol.ValueStringPointer(),
+		Service:  helper.ValueStringPointerWithNilForUnknownAndEmptyString(plan.Service),
+		Protocol: helper.ValueStringPointerWithNilForUnknownAndEmptyString(plan.Protocol),
 		TTLSec:   ttlSec,
-		Tag:      plan.Tag.ValueStringPointer(),
+		Tag:      helper.ValueStringPointerWithNilForUnknownAndEmptyString(plan.Tag),
 	}
 
 	client := r.Meta.Client
@@ -165,6 +166,7 @@ func (r *Resource) Update(
 	port := helper.FrameworkSafeInt64PointerToIntPointer(plan.Port.ValueInt64Pointer(), &resp.Diagnostics)
 	ttlSec := helper.FrameworkSafeInt64ToInt(plan.TTLSec.ValueInt64(), &resp.Diagnostics)
 
+	// TODO: replace ValueStringPointerWithNilForUnknownAndEmptyString with ValueStringPointer in v3
 	updateOpts := linodego.DomainRecordUpdateOptions{
 		Type:     linodego.DomainRecordType(plan.RecordType.ValueString()),
 		Name:     plan.Name.ValueString(),
@@ -172,10 +174,10 @@ func (r *Resource) Update(
 		Priority: priority,
 		Weight:   weight,
 		Port:     port,
-		Service:  plan.Service.ValueStringPointer(),
-		Protocol: plan.Protocol.ValueStringPointer(),
+		Service:  helper.ValueStringPointerWithNilForUnknownAndEmptyString(plan.Service),
+		Protocol: helper.ValueStringPointerWithNilForUnknownAndEmptyString(plan.Protocol),
 		TTLSec:   ttlSec,
-		Tag:      plan.Tag.ValueStringPointer(),
+		Tag:      helper.ValueStringPointerWithNilForUnknownAndEmptyString(plan.Tag),
 	}
 
 	tflog.Debug(ctx, "client.UpdateDomainRecord(...)", map[string]interface{}{
