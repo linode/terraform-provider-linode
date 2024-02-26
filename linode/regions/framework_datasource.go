@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -29,6 +30,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_regions")
+
 	var data RegionFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -59,6 +62,10 @@ func (r *DataSource) Read(
 }
 
 func listRegions(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	tflog.Debug(ctx, "client.ListRegions(...)", map[string]interface{}{
+		"body": filter,
+	})
+
 	regions, err := client.ListRegions(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
