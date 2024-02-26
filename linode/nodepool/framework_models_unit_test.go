@@ -40,7 +40,7 @@ func TestParseNodePool(t *testing.T) {
 	nodePoolModel.ParseNodePool(context.Background(), clusterID, &lkeNodePool, &diags)
 
 	assert.False(t, diags.HasError())
-	assert.Equal(t, int64(123), nodePoolModel.ID.ValueInt64())
+	assert.Equal(t, "123", nodePoolModel.ID.ValueString())
 	assert.Equal(t, int64(1), nodePoolModel.ClusterID.ValueInt64())
 	assert.Equal(t, int64(3), nodePoolModel.Count.ValueInt64())
 	assert.Equal(t, "g6-standard-2", nodePoolModel.Type.ValueString())

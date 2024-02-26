@@ -51,14 +51,13 @@ The following arguments are supported:
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
-
 ### autoscaler
+
 The following arguments are supported in the `autoscaler` specification block:
 
 * `min` - (Required) The minimum number of nodes to autoscale to.
 
 * `max` - (Required) The maximum number of nodes to autoscale to.
-
 
 ## Attributes Reference
 
