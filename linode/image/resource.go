@@ -1,7 +1,6 @@
 package image
 
 import (
-	"bytes"
 	"context"
 	"crypto/md5" // #nosec G501 -- endpoint expecting md5
 	"encoding/hex"
@@ -295,16 +294,10 @@ func uploadImageAndStoreHash(
 ) error {
 	client := meta.(*helper.ProviderMeta).Client
 
-	var buf bytes.Buffer
-	tee := io.TeeReader(image, &buf)
+	hash := md5.New() // #nosec G401 -- endpoint expecting md5
+	tee := io.TeeReader(image, hash)
 
 	if err := client.UploadImageToURL(ctx, uploadURL, tee); err != nil {
-		return err
-	}
-
-	hash := md5.New() // #nosec G401 -- endpoint expecting md5
-
-	if _, err := io.Copy(hash, &buf); err != nil {
 		return err
 	}
 
