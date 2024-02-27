@@ -58,7 +58,7 @@ func (d *DataSource) Read(
 		}
 	}
 
-	resp.Diagnostics.Append(data.parseStackscripts(ctx, helper.AnySliceToTyped[linodego.Stackscript](result))...)
+	resp.Diagnostics.Append(data.parseStackscripts(helper.AnySliceToTyped[linodego.Stackscript](result))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

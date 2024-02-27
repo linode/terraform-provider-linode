@@ -1,6 +1,7 @@
 package stackscript
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -55,10 +56,12 @@ var StackscriptAttributes = map[string]schema.Attribute{
 	},
 	"created": schema.StringAttribute{
 		Description: "The date this StackScript was created.",
+		CustomType:  timetypes.RFC3339Type{},
 		Computed:    true,
 	},
 	"updated": schema.StringAttribute{
 		Description: "The date this StackScript was updated.",
+		CustomType:  timetypes.RFC3339Type{},
 		Computed:    true,
 	},
 	"user_defined_fields": schema.ListAttribute{

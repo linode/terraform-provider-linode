@@ -1080,6 +1080,20 @@ func TestAccResourceInstance_tag(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
 				),
 			},
+			// Reapply with different case, expect no planned changes
+			{
+				Config:   tmpl.TagUpdateCaseChange(t, instanceName, testRegion),
+				PlanOnly: true,
+			},
+			// Update the tags again, expect changes
+			{
+				Config: tmpl.Tag(t, instanceName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+				),
+			},
 		},
 	})
 }

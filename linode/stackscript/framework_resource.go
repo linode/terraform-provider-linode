@@ -3,6 +3,7 @@ package stackscript
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -70,10 +71,14 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.FlattenStackScript(stackscript, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(stackscript.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -130,8 +135,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.ParseComputedAttributes(ctx, stackscript)...)
-	resp.Diagnostics.Append(data.ParseNonComputedAttributes(ctx, stackscript)...)
+	resp.Diagnostics.Append(data.FlattenStackScript(stackscript, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -174,8 +178,11 @@ func (r *Resource) Update(
 
 	// Apply the change if necessary
 	if !isUnchanged {
-		r.updateStackScript(ctx, resp, plan, stackScriptID)
+		r.updateStackScript(ctx, resp, &plan, stackScriptID)
 	}
+
+	plan.CopyFrom(state, true)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(
@@ -215,7 +222,7 @@ func (r *Resource) Delete(
 func (r *Resource) updateStackScript(
 	ctx context.Context,
 	resp *resource.UpdateResponse,
-	plan StackScriptModel,
+	plan *StackScriptModel,
 	stackScriptID int,
 ) {
 	client := r.Meta.Client
@@ -247,10 +254,5 @@ func (r *Resource) updateStackScript(
 		return
 	}
 
-	resp.Diagnostics.Append(plan.ParseComputedAttributes(ctx, stackscript)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(plan.FlattenStackScript(stackscript, true)...)
 }

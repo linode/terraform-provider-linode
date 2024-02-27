@@ -16,6 +16,7 @@ import (
 	"github.com/linode/linodego"
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
 const (
@@ -36,6 +37,8 @@ func Resource() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.All(
 			customDiffValidateOptionalCount,
+			linodediffs.ComputedWithDefault("tags", []string{}),
+			linodediffs.CaseInsensitiveSet("tags"),
 		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(createLKETimeout),
@@ -166,9 +169,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
-		for _, tag := range tagsRaw.(*schema.Set).List() {
-			createOpts.Tags = append(createOpts.Tags, tag.(string))
-		}
+		tags := helper.ExpandStringSet(tagsRaw.(*schema.Set))
+		createOpts.Tags = tags
 	}
 
 	tflog.Debug(ctx, "client.CreateLKECluster(...)", map[string]any{
@@ -233,11 +235,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("tags") {
-		tags := []string{}
-		for _, tag := range d.Get("tags").(*schema.Set).List() {
-			tags = append(tags, tag.(string))
-		}
-
+		tags := helper.ExpandStringSet(d.Get("tags").(*schema.Set))
 		updateOpts.Tags = &tags
 	}
 	if d.HasChanges("label", "tags", "k8s_version", "control_plane") {

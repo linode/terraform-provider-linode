@@ -62,7 +62,7 @@ The following arguments are supported:
 
 * [`control_plane`](#control_plane) (Optional) Defines settings for the Kubernetes Control Plane.
 
-* `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
+* `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are case-insensitive and are for organizational purposes only.
 
 ### pool
 

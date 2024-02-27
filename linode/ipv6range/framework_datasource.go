@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -29,6 +31,8 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_ipv6_range")
+
 	client := d.Meta.Client
 
 	var data DataSourceModel
@@ -40,6 +44,9 @@ func (d *DataSource) Read(
 
 	rangeStrSplit := strings.Split(data.Range.ValueString(), "/")
 	rangeStr := rangeStrSplit[0]
+
+	ctx = tflog.SetField(ctx, "ipv6_range", rangeStr)
+	tflog.Trace(ctx, "client.GetIPv6Range(...)")
 
 	rangeData, err := client.GetIPv6Range(ctx, rangeStr)
 	if err != nil {

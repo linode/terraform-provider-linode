@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -28,6 +29,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_region")
+
 	client := r.Meta.Client
 
 	var data RegionModel
@@ -38,6 +41,9 @@ func (r *DataSource) Read(
 	}
 
 	id := data.ID.ValueString()
+
+	ctx = tflog.SetField(ctx, "region_id", id)
+	tflog.Trace(ctx, "client.GetRegion(...)")
 
 	region, err := client.GetRegion(ctx, id)
 	if err != nil {
