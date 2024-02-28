@@ -276,10 +276,12 @@ func (r *Resource) Update(
 	// get latest status of the disk
 	tflog.Trace(ctx, "client.GetInstanceDisk(...)")
 	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
-	resp.Diagnostics.AddError(
-		fmt.Sprintf("Failed to Find the Disk (%d)", id),
-		err.Error(),
-	)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to Find the Disk (%d)", id),
+			err.Error(),
+		)
+	}
 
 	plan.FlattenDisk(disk, true)
 
