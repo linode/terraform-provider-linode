@@ -34,7 +34,7 @@ type NodePoolNodeModel struct {
 	Status     types.String `tfsdk:"status"`
 }
 
-func flattenLKENodePoolLinode(node *linodego.LKENodePoolLinode) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenLKENodePoolLinode(node linodego.LKENodePoolLinode) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
 
 	result["id"] = types.StringValue(node.ID)
@@ -52,7 +52,7 @@ func parseNodeList(nodes []linodego.LKENodePoolLinode,
 ) (*basetypes.ListValue, diag.Diagnostics) {
 	resultList := make([]attr.Value, len(nodes))
 	for i, node := range nodes {
-		result, errors := flattenLKENodePoolLinode(&node)
+		result, errors := flattenLKENodePoolLinode(node)
 		if errors.HasError() {
 			return nil, errors
 		}

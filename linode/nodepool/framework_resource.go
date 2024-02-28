@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/lke"
 )
 
 func NewResource() resource.Resource {
@@ -121,7 +120,7 @@ func (r *Resource) Create(
 	}
 
 	tflog.Debug(ctx, "waiting for node pool to enter ready status")
-	readyPool, err := lke.WaitForNodePoolReady(ctx,
+	readyPool, err := WaitForNodePoolReady(ctx,
 		*client,
 		int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
 		clusterID,
@@ -184,7 +183,7 @@ func (r *Resource) Update(
 	}
 
 	tflog.Debug(ctx, "waiting for node pool to enter ready status")
-	readyPool, err := lke.WaitForNodePoolReady(ctx,
+	readyPool, err := WaitForNodePoolReady(ctx,
 		*client,
 		int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
 		clusterID,

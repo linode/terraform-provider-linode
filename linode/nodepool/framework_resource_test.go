@@ -5,13 +5,14 @@ package nodepool_test
 import (
 	"context"
 	"fmt"
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v2/linode/acceptance/tmpl"
 	"log"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"testing"
+
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v2/linode/acceptance/tmpl"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -330,7 +331,7 @@ func extractIDs(s *terraform.State) (int, int, error) {
 		return clusterID, id, nil
 	}
 
-	return 0, 0, fmt.Errorf("Error finding firewall_device")
+	return 0, 0, fmt.Errorf("Error finding lke_node_pool")
 }
 
 func resourceImportStateID(s *terraform.State) (string, error) {

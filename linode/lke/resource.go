@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/nodepool"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -79,7 +81,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	externalPoolTags := helper.ExpandStringSet(d.Get("external_pool_tags").(*schema.Set))
 	if len(externalPoolTags) > 0 && len(pools) > 0 {
-		pools = removeExternalPools(ctx, externalPoolTags, pools)
+		pools = filterExternalPools(ctx, externalPoolTags, pools)
 	}
 
 	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
@@ -328,7 +330,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			"node_pool_id": poolID,
 		})
 
-		if _, err := WaitForNodePoolReady(
+		if _, err := nodepool.WaitForNodePoolReady(
 			ctx,
 			client,
 			providerMeta.Config.LKENodeReadyPollMilliseconds,
