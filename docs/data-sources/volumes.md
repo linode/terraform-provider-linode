@@ -51,7 +51,7 @@ Each Linode volume will be stored in the `volumes` attribute and will export the
 
 * `label` - This Volume's label is for display purposes only.
 
-* `tags` - An array of tags applied to this object.
+* `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
 * `size` - The Volume's size, in GiB.
 

@@ -56,6 +56,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_vpc_subnet")
+
 	var data VPCSubnetModel
 	client := r.Meta.Client
 
@@ -63,6 +65,8 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, data)
 
 	createOpts := linodego.VPCSubnetCreateOptions{
 		Label: data.Label.ValueString(),
@@ -75,6 +79,9 @@ func (r *Resource) Create(
 		return
 	}
 
+	tflog.Debug(ctx, "client.CreateVPCSubnet(...)", map[string]any{
+		"options": createOpts,
+	})
 	subnet, err := client.CreateVPCSubnet(ctx, createOpts, vpcId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -101,6 +108,8 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read linode_vpc_subnet")
+
 	client := r.Meta.Client
 	var data VPCSubnetModel
 
@@ -109,6 +118,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}
@@ -120,6 +130,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetVPCSubnet(...)")
 	subnet, err := client.GetVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -153,6 +164,8 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update linode_vpc_subnet")
+
 	var plan, state VPCSubnetModel
 	client := r.Meta.Client
 
@@ -162,6 +175,8 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx = populateLogAttributes(ctx, state)
 
 	var updateOpts linodego.VPCSubnetUpdateOptions
 	shouldUpdate := false
@@ -182,6 +197,9 @@ func (r *Resource) Update(
 			return
 		}
 
+		tflog.Debug(ctx, "client.UpdateVPCSubnet(...)", map[string]any{
+			"options": updateOpts,
+		})
 		subnet, err := client.UpdateVPCSubnet(ctx, vpcId, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -206,6 +224,8 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete linode_vpc_subnet")
+
 	var data VPCSubnetModel
 	client := r.Meta.Client
 
@@ -214,6 +234,8 @@ func (r *Resource) Delete(
 		return
 	}
 
+	ctx = populateLogAttributes(ctx, data)
+
 	vpcId := helper.FrameworkSafeInt64ToInt(data.VPCId.ValueInt64(), &resp.Diagnostics)
 	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), &resp.Diagnostics)
 
@@ -221,6 +243,7 @@ func (r *Resource) Delete(
 		return
 	}
 
+	tflog.Debug(ctx, "client.DeleteVPCSubnet(...)")
 	err := client.DeleteVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
@@ -231,4 +254,11 @@ func (r *Resource) Delete(
 		}
 		return
 	}
+}
+
+func populateLogAttributes(ctx context.Context, data VPCSubnetModel) context.Context {
+	return helper.SetLogFieldBulk(ctx, map[string]any{
+		"vpc_id": data.VPCId,
+		"id":     data.ID,
+	})
 }

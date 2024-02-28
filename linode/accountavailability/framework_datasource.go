@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -28,6 +29,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_account_availability")
 	var data AccountAvailabilityModel
 	client := d.Meta.Client
 
@@ -36,6 +38,9 @@ func (d *DataSource) Read(
 		return
 	}
 
+	tflog.Trace(ctx, "client.GetAccountAvailability(...)", map[string]any{
+		"region": data.Region.ValueString(),
+	})
 	availability, err := client.GetAccountAvailability(ctx, data.Region.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -21,6 +21,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Optional:    true,
+		Computed:    true,
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 	},
 	"region": {

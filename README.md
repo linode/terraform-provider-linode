@@ -2,7 +2,7 @@
 
 [![Release](https://img.shields.io/github/v/release/linode/terraform-provider-linode)](https://github.com/linode/terraform-provider-linode/releases/latest)
 [![GoDoc](https://godoc.org/github.com/linode/terraform-provider-linode?status.svg)](https://godoc.org/github.com/linode/terraform-provider-linode)
-[![Go Report Card](https://goreportcard.com/badge/github.com/linode/terraform-provider-linode)](https://goreportcard.com/report/github.com/linode/linodego)
+[![Go Report Card](https://goreportcard.com/badge/github.com/linode/terraform-provider-linode)](https://goreportcard.com/report/github.com/linode/terraform-provider-linode)
 [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 
 
