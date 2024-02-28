@@ -26,6 +26,9 @@ var testImageBytes = []byte{
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 }
 
+// MD5 digest of testImageBytes
+const testImageMD5 = "0cf442194905e7be019a11660df8164f"
+
 var testImageBytesNew = []byte{
 	0x1f, 0x8b, 0x08, 0x08, 0x53, 0x13, 0x94, 0x60,
 	0x00, 0x03, 0x74, 0x65, 0x73, 0x74, 0x2e, 0x69, 0x6d, 0x67, 0x00, 0xcb, 0xc8,
@@ -183,7 +186,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "manual"),
 					resource.TestCheckResourceAttr(resName, "is_public", "false"),
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
-					resource.TestCheckResourceAttrSet(resName, "file_hash"),
+					resource.TestCheckResourceAttr(resName, "file_hash", testImageMD5),
 					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),
 				),
 			},
