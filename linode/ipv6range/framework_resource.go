@@ -116,23 +116,9 @@ func (r *Resource) Create(
 		return
 	}
 
-	// when user configured linode_id, populate route_target implicitly
+	// If user configured linode_id, populate route_target implicitly.
 	if linodeIdConfigured {
-		ranges, err := client.ListIPv6Ranges(ctx, nil)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to list ipv6 ranges when create.",
-				err.Error(),
-			)
-			return
-		}
-
-		for _, r := range ranges {
-			if r.Range == data.ID.ValueString() {
-				data.RouteTarget = types.StringValue(r.RouteTarget)
-				break
-			}
-		}
+		data.RouteTarget = types.StringValue(ipv6range.RouteTarget)
 	}
 
 	resp.Diagnostics.Append(data.FlattenIPv6Range(ctx, ipv6rangeR, true)...)
