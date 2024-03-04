@@ -32,6 +32,7 @@ var frameworkResourceSchema = schema.Schema{
 		"route_target": schema.StringAttribute{
 			Description:   "The IPv6 SLAAC address to assign this range to.",
 			Optional:      true,
+			Computed:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			Validators: []validator.String{
 				stringvalidator.ConflictsWith(path.Expressions{
