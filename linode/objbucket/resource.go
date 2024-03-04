@@ -54,6 +54,7 @@ func readResource(
 	populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "reading linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
+	config := meta.(*helper.ProviderMeta).Config
 
 	cluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
@@ -84,8 +85,20 @@ func readResource(
 	}
 
 	// Functionality requiring direct S3 API access
-	accessKey := d.Get("access_key").(string)
-	secretKey := d.Get("secret_key").(string)
+	var accessKey, secretKey string
+
+	if v, ok := d.GetOk("access_key"); ok {
+		accessKey = v.(string)
+	} else {
+		accessKey = config.ObjAccessKey
+	}
+
+	if v, ok := d.GetOk("secret_key"); ok {
+		secretKey = v.(string)
+	} else {
+		secretKey = config.ObjSecretKey
+	}
+
 	endpoint := helper.ComputeS3EndpointFromBucket(ctx, *bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
@@ -123,6 +136,8 @@ func readResource(
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
 	d.Set("endpoint", endpoint)
+	d.Set("access_key", accessKey)
+	d.Set("secret_key", secretKey)
 
 	return nil
 }

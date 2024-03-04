@@ -4,14 +4,18 @@ import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 var resourceSchema = map[string]*schema.Schema{
 	"secret_key": {
-		Type:        schema.TypeString,
-		Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning)",
-		Optional:    true,
+		Type: schema.TypeString,
+		Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning). " +
+			"If not specified with the resource, the value will be read from provider-level obj_secret_key.",
+		Optional: true,
+		Computed: true,
 	},
 	"access_key": {
-		Type:        schema.TypeString,
-		Description: "The S3 access key to use for this resource. (Required for lifecycle_rule and versioning)",
-		Optional:    true,
+		Type: schema.TypeString,
+		Description: "The S3 access key to use for this resource. (Required for lifecycle_rule and versioning). " +
+			"If not specified with the resource, the value will be read from provider-level obj_access_key.",
+		Optional: true,
+		Computed: true,
 	},
 	"cluster": {
 		Type:        schema.TypeString,
@@ -43,11 +47,10 @@ var resourceSchema = map[string]*schema.Schema{
 		Default:     true,
 	},
 	"lifecycle_rule": {
-		Type:         schema.TypeList,
-		Description:  "Lifecycle rules to be applied to the bucket.",
-		Optional:     true,
-		RequiredWith: []string{"access_key", "secret_key"},
-		Elem:         resourceLifeCycle(),
+		Type:        schema.TypeList,
+		Description: "Lifecycle rules to be applied to the bucket.",
+		Optional:    true,
+		Elem:        resourceLifeCycle(),
 	},
 	"hostname": {
 		Type: schema.TypeString,
@@ -56,11 +59,10 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed: true,
 	},
 	"versioning": {
-		Type:         schema.TypeBool,
-		Description:  "Whether to enable versioning.",
-		Optional:     true,
-		RequiredWith: []string{"access_key", "secret_key"},
-		Computed:     true,
+		Type:        schema.TypeBool,
+		Description: "Whether to enable versioning.",
+		Optional:    true,
+		Computed:    true,
 	},
 	"cert": {
 		Type:        schema.TypeList,

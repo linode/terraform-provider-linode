@@ -32,16 +32,6 @@ func init() {
 func TestAccResourceObject_basic(t *testing.T) {
 	t.Parallel()
 
-	validateObject := func(resourceName, key, content string) resource.TestCheckFunc {
-		var object s3.GetObjectOutput
-
-		return resource.ComposeTestCheckFunc(
-			checkObjectExists(resourceName, &object),
-			checkObjectBodyContains(&object, content),
-			resource.TestCheckResourceAttr(resourceName, "key", key),
-		)
-	}
-
 	validateObjectUpdates := func(resourceName, key, content string) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			validateObject(resourceName, key, content),
@@ -87,6 +77,31 @@ func TestAccResourceObject_basic(t *testing.T) {
 						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
 						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
 						validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceObject_credsConfiged(t *testing.T) {
+	t.Parallel()
+
+	content := "test_creds_configed"
+
+	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+		bucketName := acctest.RandomWithPrefix("tf-test")
+		keyName := acctest.RandomWithPrefix("tf_test")
+
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkObjectDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.CredsConfiged(t, bucketName, testCluster, keyName, content),
+					Check: resource.ComposeTestCheckFunc(
+						validateObject(getObjectResourceName("creds_configed"), "test_creds_configed", content),
 					),
 				},
 			},
@@ -169,4 +184,14 @@ func checkObjectBodyContains(obj *s3.GetObjectOutput, expected string) resource.
 
 func getObjectResourceName(name string) string {
 	return fmt.Sprintf("linode_object_storage_object.%s", name)
+}
+
+func validateObject(resourceName, key, content string) resource.TestCheckFunc {
+	var object s3.GetObjectOutput
+
+	return resource.ComposeTestCheckFunc(
+		checkObjectExists(resourceName, &object),
+		checkObjectBodyContains(&object, content),
+		resource.TestCheckResourceAttr(resourceName, "key", key),
+	)
 }

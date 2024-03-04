@@ -53,8 +53,25 @@ func S3ConnectionFromData(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 	}
 
-	accessKey := d.Get("access_key").(string)
-	secretKey := d.Get("secret_key").(string)
+	config := meta.(*ProviderMeta).Config
+
+	var accessKey, secretKey string
+
+	if v, ok := d.GetOk("access_key"); ok {
+		accessKey = v.(string)
+	} else {
+		accessKey = config.ObjAccessKey
+	}
+
+	if v, ok := d.GetOk("secret_key"); ok {
+		secretKey = v.(string)
+	} else {
+		secretKey = config.ObjSecretKey
+	}
+
+	if accessKey == "" || secretKey == "" {
+		return nil, errors.New("access_key and secret_key are required to establish S3 connection")
+	}
 
 	return S3Connection(ctx, endpoint, accessKey, secretKey)
 }
