@@ -44,6 +44,7 @@ func TestAccIPv6Range_basic(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resName, "range"),
 						resource.TestCheckResourceAttrSet(resName, "linode_id"),
 						resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+						resource.TestCheckResourceAttrSet(resName, "route_target"),
 					),
 				},
 				{
@@ -141,6 +142,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resName, "range"),
 						resource.TestCheckResourceAttrSet(resName, "linode_id"),
 						resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+						resource.TestCheckResourceAttrSet(resName, "route_target"),
 					),
 				},
 				{
@@ -157,6 +159,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resName, "range"),
 						resource.TestCheckResourceAttrSet(resName, "linode_id"),
 						resource.TestCheckResourceAttrSet(resName, "linodes.0"),
+						resource.TestCheckResourceAttrSet(resName, "route_target"),
 					),
 				},
 				{

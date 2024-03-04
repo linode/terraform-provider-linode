@@ -82,4 +82,5 @@ func (r *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	r.PrefixLength = helper.KeepOrUpdateValue(
 		r.PrefixLength, other.PrefixLength, preserveKnown,
 	)
+	r.RouteTarget = helper.KeepOrUpdateValue(r.RouteTarget, other.RouteTarget, preserveKnown)
 }
