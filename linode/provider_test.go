@@ -34,7 +34,7 @@ api_version = v4beta
 		SkipInstanceReadyPoll: false,
 		ConfigPath:            file.Name(),
 		ObjAccessKey:          "abcd",
-		ObjSecretKey:          "edfs",
+		ObjSecretKey:          "efgh",
 	}
 
 	client, err := config.Client(context.Background())
