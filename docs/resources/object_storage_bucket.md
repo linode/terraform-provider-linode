@@ -53,6 +53,7 @@ resource "linode_object_storage_bucket" "mybucket" {
 ```
 
 Creating an Object Storage Bucket with Lifecycle rules using provider-level object credentials
+
 ```hcl
 provider "linode" {
     obj_access_key = ${your-access-key}

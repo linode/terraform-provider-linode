@@ -45,6 +45,7 @@ resource "linode_object_storage_object" "object" {
 ```
 
 ### Creating an object using provider-level object credentials
+
 ```hcl
 provider "linode" {
     obj_access_key = ${your-access-key}
