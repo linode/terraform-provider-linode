@@ -41,6 +41,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
+		return
+	}
+
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
 		"cluster_id": data.ClusterID.ValueInt64(),
 		"pool_id":    data.ID.ValueString(),
