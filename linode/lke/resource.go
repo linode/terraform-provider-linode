@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/nodepool"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -19,6 +17,7 @@ import (
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 )
 
 const (
@@ -328,7 +327,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			"node_pool_id": poolID,
 		})
 
-		if _, err := nodepool.WaitForNodePoolReady(
+		if _, err := lkenodepool.WaitForNodePoolReady(
 			ctx,
 			client,
 			providerMeta.Config.LKENodeReadyPollMilliseconds,

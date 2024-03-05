@@ -6,11 +6,10 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/nodepool"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 )
 
 type NodePoolSpec struct {
@@ -250,7 +249,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 	// Wait for all node pools to be ready
 	for _, pool := range pools {
-		if _, err := nodepool.WaitForNodePoolReady(ctx, client, meta.Config.EventPollMilliseconds, id, pool.ID); err != nil {
+		if _, err := lkenodepool.WaitForNodePoolReady(ctx, client, meta.Config.EventPollMilliseconds, id, pool.ID); err != nil {
 			return fmt.Errorf("failed to wait for pool %d ready: %w", pool.ID, err)
 		}
 	}

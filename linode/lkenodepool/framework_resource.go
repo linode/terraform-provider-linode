@@ -1,4 +1,4 @@
-package nodepool
+package lkenodepool
 
 import (
 	"context"
@@ -74,7 +74,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.ParseNodePool(ctx, clusterID, nodePool, &resp.Diagnostics)
+	data.FlattenLKENodePool(ctx, clusterID, nodePool, false, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,7 +135,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.ParseNodePool(ctx, clusterID, readyPool, &resp.Diagnostics)
+	data.FlattenLKENodePool(ctx, clusterID, readyPool, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -198,7 +198,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	plan.ParseNodePool(ctx, clusterID, readyPool, &resp.Diagnostics)
+	plan.FlattenLKENodePool(ctx, clusterID, readyPool, true, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
