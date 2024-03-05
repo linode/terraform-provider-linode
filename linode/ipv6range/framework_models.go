@@ -62,6 +62,7 @@ func (r *ResourceModel) FlattenIPv6Range(
 		return diag
 	}
 
+	r.ID = helper.KeepOrUpdateString(r.Range, ipv6Range.Range, preserveKnown)
 	r.IsBGP = helper.KeepOrUpdateBool(r.IsBGP, ipv6Range.IsBGP, preserveKnown)
 	r.Linodes = helper.KeepOrUpdateValue(r.Linodes, linodes, preserveKnown)
 	r.Range = helper.KeepOrUpdateString(r.Range, ipv6Range.Range, preserveKnown)
@@ -81,4 +82,5 @@ func (r *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	r.PrefixLength = helper.KeepOrUpdateValue(
 		r.PrefixLength, other.PrefixLength, preserveKnown,
 	)
+	r.RouteTarget = helper.KeepOrUpdateValue(r.RouteTarget, other.RouteTarget, preserveKnown)
 }

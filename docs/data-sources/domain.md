@@ -60,4 +60,4 @@ The Linode Domain resource exports the following attributes:
 
 * `soa_email` - Start of Authority email address.
 
-* `tags` - An array of tags applied to this object.
+* `tags` - An array of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.

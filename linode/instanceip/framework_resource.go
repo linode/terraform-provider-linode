@@ -94,6 +94,10 @@ func (r *Resource) Create(
 		return
 	}
 
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	plan.ID = types.StringValue(ip.Address)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -125,11 +129,15 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_instance_ip")
+	tflog.Debug(ctx, "Read linode_instance_ip")
 	var state InstanceIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
 		return
 	}
 
