@@ -52,6 +52,24 @@ resource "linode_object_storage_bucket" "mybucket" {
 }
 ```
 
+Creating an Object Storage Bucket with Lifecycle rules using provider-level object credentials
+```hcl
+provider "linode" {
+    obj_access_key = ${your-access-key}
+    obj_secret_key = ${your-secret-key}
+}
+
+resource "linode_object_storage_bucket" "mybucket" {
+  # no need to specify the keys with the resource
+  cluster = "us-east-1"
+  label   = "mybucket"
+
+  lifecycle_rule {
+    # ... details of the lifecycle
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
