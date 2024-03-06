@@ -172,6 +172,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+		return
+	}
+
 	ctx = populateLogAttributes(ctx, state)
 
 	linodeID, id := getLinodeIDAndDiskID(state, &resp.Diagnostics)
