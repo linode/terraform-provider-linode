@@ -116,6 +116,11 @@ func (r *Resource) Create(
 		return
 	}
 
+	// If user configured linode_id, populate route_target implicitly.
+	if linodeIdConfigured {
+		data.RouteTarget = types.StringValue(ipv6range.RouteTarget)
+	}
+
 	resp.Diagnostics.Append(data.FlattenIPv6Range(ctx, ipv6rangeR, true)...)
 	if resp.Diagnostics.HasError() {
 		return
