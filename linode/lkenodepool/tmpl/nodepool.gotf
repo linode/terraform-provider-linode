@@ -9,7 +9,7 @@ resource "linode_lke_cluster" "nodepool_test_cluster" {
   external_pool_tags  = ["external"]
 
   pool {
-      type  = "g6-standard-2"
+      type  = "g6-standard-1"
       count = 1
   }
 }
@@ -30,7 +30,7 @@ resource "linode_lke_node_pool" "foobar" {
 {{else}}
     node_count = {{.NodeCount}}
 {{end}}
-    type  = "g6-standard-4"
+    type  = "g6-standard-1"
     tags  = ["external", "{{.PoolTag}}"]
 }
 

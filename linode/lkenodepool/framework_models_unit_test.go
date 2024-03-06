@@ -1,6 +1,6 @@
 //go:build unit
 
-package nodepool
+package lkenodepool
 
 import (
 	"context"
@@ -37,7 +37,7 @@ func TestParseNodePool(t *testing.T) {
 	nodePoolModel := NodePoolModel{}
 	var diags diag.Diagnostics
 
-	nodePoolModel.ParseNodePool(context.Background(), clusterID, &lkeNodePool, &diags)
+	nodePoolModel.FlattenLKENodePool(context.Background(), clusterID, &lkeNodePool, false, &diags)
 
 	assert.False(t, diags.HasError())
 	assert.Equal(t, "123", nodePoolModel.ID.ValueString())
@@ -98,7 +98,7 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 
 func createNodePoolModel() *NodePoolModel {
 	tags, _ := types.SetValueFrom(context.Background(), types.StringType, []string{"production", "web-server"})
-	nodes, _ := parseNodeList([]linodego.LKENodePoolLinode{
+	nodes, _ := flattenLKENodePoolLinodeList([]linodego.LKENodePoolLinode{
 		{InstanceID: 1, ID: "linode123", Status: "running"},
 		{InstanceID: 2, ID: "linode124", Status: "running"},
 		{InstanceID: 3, ID: "linode125", Status: "running"},

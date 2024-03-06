@@ -1,4 +1,4 @@
-package nodepool
+package lkenodepool
 
 import (
 	"context"

@@ -1,6 +1,6 @@
 //go:build integration
 
-package nodepool_test
+package lkenodepool_test
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/nodepool/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool/tmpl"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"

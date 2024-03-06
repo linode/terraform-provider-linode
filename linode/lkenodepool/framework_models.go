@@ -1,4 +1,4 @@
-package nodepool
+package lkenodepool
 
 import (
 	"context"
@@ -48,7 +48,7 @@ func flattenLKENodePoolLinode(node linodego.LKENodePoolLinode) (*basetypes.Objec
 	return &obj, nil
 }
 
-func parseNodeList(nodes []linodego.LKENodePoolLinode,
+func flattenLKENodePoolLinodeList(nodes []linodego.LKENodePoolLinode,
 ) (*basetypes.ListValue, diag.Diagnostics) {
 	resultList := make([]attr.Value, len(nodes))
 	for i, node := range nodes {
@@ -70,19 +70,19 @@ func parseNodeList(nodes []linodego.LKENodePoolLinode,
 	return &result, nil
 }
 
-func (pool *NodePoolModel) ParseNodePool(ctx context.Context, clusterID int, p *linodego.LKENodePool, diags *diag.Diagnostics) {
-	pool.ID = types.StringValue(strconv.Itoa(p.ID))
-	pool.ClusterID = types.Int64Value(int64(clusterID))
-	pool.Count = types.Int64Value(int64(p.Count))
-	pool.Type = types.StringValue(p.Type)
-	tags, d := types.SetValueFrom(ctx, types.StringType, p.Tags)
-	if d != nil {
-		diags.Append(d...)
+func (pool *NodePoolModel) FlattenLKENodePool(
+	ctx context.Context, clusterID int, p *linodego.LKENodePool, preserveKnown bool, diags *diag.Diagnostics,
+) {
+	pool.ID = helper.KeepOrUpdateString(pool.ID, strconv.Itoa(p.ID), preserveKnown)
+	pool.ClusterID = helper.KeepOrUpdateInt64(pool.ClusterID, int64(clusterID), preserveKnown)
+	pool.Count = helper.KeepOrUpdateInt64(pool.Count, int64(p.Count), preserveKnown)
+	pool.Type = helper.KeepOrUpdateString(pool.Type, p.Type, preserveKnown)
+	pool.Tags = helper.KeepOrUpdateStringSet(pool.Tags, p.Tags, preserveKnown, diags)
+	if diags.HasError() {
 		return
 	}
-	pool.Tags = tags
 
-	if p.Autoscaler.Enabled {
+	if !preserveKnown && p.Autoscaler.Enabled {
 		pool.Autoscaler = []NodePoolAutoscalerModel{
 			{
 				Min: types.Int64Value(int64(p.Autoscaler.Min)),
@@ -91,11 +91,11 @@ func (pool *NodePoolModel) ParseNodePool(ctx context.Context, clusterID int, p *
 		}
 	}
 
-	nodes, errs := parseNodeList(p.Linodes)
+	nodePoolLinodes, errs := flattenLKENodePoolLinodeList(p.Linodes)
 	if errs != nil {
 		diags.Append(errs...)
 	}
-	pool.Nodes = *nodes
+	pool.Nodes = helper.KeepOrUpdateValue(pool.Nodes, *nodePoolLinodes, preserveKnown)
 }
 
 func (pool *NodePoolModel) SetNodePoolCreateOptions(ctx context.Context, p *linodego.LKENodePoolCreateOptions, diags *diag.Diagnostics) {

@@ -40,6 +40,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/kernels"
 	"github.com/linode/terraform-provider-linode/v2/linode/lke"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
@@ -47,7 +48,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
-	"github.com/linode/terraform-provider-linode/v2/linode/nodepool"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
@@ -186,7 +186,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		firewalldevice.NewResource,
 		volume.NewResource,
 		instancesharedips.NewResource,
-		nodepool.NewResource,
+		lkenodepool.NewResource,
 	}
 }
 
