@@ -29,6 +29,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/image"
 	"github.com/linode/terraform-provider-linode/v2/linode/images"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
@@ -98,7 +99,7 @@ func (p *FrameworkProvider) Metadata(
 	req provider.MetadataRequest,
 	resp *provider.MetadataResponse,
 ) {
-	resp.TypeName = "linodecloud"
+	resp.TypeName = "linode"
 }
 
 func (p *FrameworkProvider) Schema(
@@ -186,6 +187,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		firewalldevice.NewResource,
 		volume.NewResource,
 		instancesharedips.NewResource,
+		instancedisk.NewResource,
 		lkenodepool.NewResource,
 	}
 }
