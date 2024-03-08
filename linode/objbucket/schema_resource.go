@@ -7,8 +7,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeString,
 		Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning). " +
 			"If not specified with the resource, the value will be read from provider-level obj_secret_key.",
-		Optional: true,
-		Computed: true,
+		Optional:  true,
+		Computed:  true,
+		Sensitive: true,
 	},
 	"access_key": {
 		Type: schema.TypeString,

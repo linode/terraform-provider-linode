@@ -124,6 +124,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The secret key to be used in linode_object_storage_bucket and linode_object_storage_object.",
+				Sensitive:   true,
 			},
 		},
 
