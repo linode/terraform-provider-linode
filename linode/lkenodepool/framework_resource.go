@@ -3,6 +3,7 @@ package lkenodepool
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -123,7 +124,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	tflog.Debug(ctx, "waiting for node pool to enter ready status")
+	tflog.Debug(ctx, "waiting for node pool to enter reaFlattenSSHKeydy status")
 	readyPool, err := WaitForNodePoolReady(ctx,
 		*client,
 		int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
@@ -139,6 +140,10 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// IDs should always be overridden during creation (see #1085)
+	// TODO: Remove when Crossplane empty string ID issue is resolved
+	data.ID = types.StringValue(strconv.Itoa(readyPool.ID))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	tflog.Trace(ctx, "Create linode_lke_node_pool done")
