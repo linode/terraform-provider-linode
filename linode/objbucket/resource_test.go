@@ -488,8 +488,6 @@ func TestAccResourceBucket_credsConfiged(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
-						resource.TestCheckResourceAttrSet(resName, "access_key"),
-						resource.TestCheckResourceAttrSet(resName, "secret_key"),
 					),
 				},
 			},

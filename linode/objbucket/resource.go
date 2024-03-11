@@ -136,8 +136,6 @@ func readResource(
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
 	d.Set("endpoint", endpoint)
-	d.Set("access_key", accessKey)
-	d.Set("secret_key", secretKey)
 
 	return nil
 }

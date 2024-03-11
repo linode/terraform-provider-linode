@@ -8,11 +8,13 @@ import (
 	"io"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/obj/tmpl"
@@ -116,6 +118,36 @@ func getObject(ctx context.Context, rs *terraform.ResourceState) (*s3.GetObjectO
 	accessKey := rs.Primary.Attributes["access_key"]
 	secretKey := rs.Primary.Attributes["secret_key"]
 	endpoint := rs.Primary.Attributes["endpoint"]
+
+	if accessKey == "" || secretKey == "" {
+		client, err := acceptance.GetTestClient()
+		if err != nil {
+			return nil, fmt.Errorf("Error getting client: %s", err)
+		}
+
+		createOpts := linodego.ObjectStorageKeyCreateOptions{
+			Label: fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
+			BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
+				BucketName:  bucket,
+				Cluster:     rs.Primary.Attributes["cluster"],
+				Permissions: "read_write",
+			}},
+		}
+
+		key, err := client.CreateObjectStorageKey(ctx, createOpts)
+		if err != nil {
+			return nil, err
+		}
+
+		accessKey = key.AccessKey
+		secretKey = key.SecretKey
+
+		defer func() {
+			if err := client.DeleteObjectStorageKey(ctx, key.ID); err != nil {
+				log.Printf("[WARN] Failed to clean up temporary object storage keys: %s\n", err)
+			}
+		}()
+	}
 
 	s3client, err := helper.S3Connection(ctx, endpoint, accessKey, secretKey)
 	if err != nil {

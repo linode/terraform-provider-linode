@@ -91,16 +91,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		d.Set("endpoint", endpoint)
 	}
 
-	// Compute object access credentials from provider metadata when they're not configured explicitly
-	config := meta.(*helper.ProviderMeta).Config
-	if _, ok := d.GetOk("access_key"); !ok {
-		d.Set("access_key", config.ObjAccessKey)
-	}
-
-	if _, ok := d.GetOk("secret_key"); !ok {
-		d.Set("secret_key", config.ObjSecretKey)
-	}
-
 	return nil
 }
 
