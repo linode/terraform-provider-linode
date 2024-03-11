@@ -33,15 +33,13 @@ func TestParseNodePool(t *testing.T) {
 		},
 	}
 
-	clusterID := 1
 	nodePoolModel := NodePoolModel{}
 	var diags diag.Diagnostics
 
-	nodePoolModel.FlattenLKENodePool(clusterID, &lkeNodePool, false, &diags)
+	nodePoolModel.FlattenLKENodePool(&lkeNodePool, false, &diags)
 
 	assert.False(t, diags.HasError())
 	assert.Equal(t, "123", nodePoolModel.ID.ValueString())
-	assert.Equal(t, int64(1), nodePoolModel.ClusterID.ValueInt64())
 	assert.Equal(t, int64(3), nodePoolModel.Count.ValueInt64())
 	assert.Equal(t, "g6-standard-2", nodePoolModel.Type.ValueString())
 	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
