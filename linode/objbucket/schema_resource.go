@@ -43,11 +43,10 @@ var resourceSchema = map[string]*schema.Schema{
 		Default:     true,
 	},
 	"lifecycle_rule": {
-		Type:         schema.TypeList,
-		Description:  "Lifecycle rules to be applied to the bucket.",
-		Optional:     true,
-		RequiredWith: []string{"access_key", "secret_key"},
-		Elem:         resourceLifeCycle(),
+		Type:        schema.TypeList,
+		Description: "Lifecycle rules to be applied to the bucket.",
+		Optional:    true,
+		Elem:        resourceLifeCycle(),
 	},
 	"hostname": {
 		Type: schema.TypeString,
@@ -56,11 +55,10 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed: true,
 	},
 	"versioning": {
-		Type:         schema.TypeBool,
-		Description:  "Whether to enable versioning.",
-		Optional:     true,
-		RequiredWith: []string{"access_key", "secret_key"},
-		Computed:     true,
+		Type:        schema.TypeBool,
+		Description: "Whether to enable versioning.",
+		Optional:    true,
+		Computed:    true,
 	},
 	"cert": {
 		Type:        schema.TypeList,

@@ -28,12 +28,13 @@ var resourceSchema = map[string]*schema.Schema{
 	"secret_key": {
 		Type:        schema.TypeString,
 		Description: "The S3 secret key with access to the target bucket.",
-		Required:    true,
+		Optional:    true,
+		Sensitive:   true,
 	},
 	"access_key": {
 		Type:        schema.TypeString,
 		Description: "The S3 access key with access to the target bucket.",
-		Required:    true,
+		Optional:    true,
 	},
 	"content": {
 		Type:         schema.TypeString,

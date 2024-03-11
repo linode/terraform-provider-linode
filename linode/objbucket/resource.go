@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 )
 
 func resourceLifecycleExpiration() *schema.Resource {
@@ -81,6 +82,18 @@ func readResource(
 	access, err := client.GetObjectStorageBucketAccess(ctx, cluster, label)
 	if err != nil {
 		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
+	}
+
+	config := meta.(*helper.ProviderMeta).Config
+
+	// Implicitly create temporary object storage keys
+	if !obj.CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
+		tempKeyId, diag := obj.CreateTempKeys(ctx, d, client, bucket.Label, cluster, "read_only")
+		if diag != nil {
+			return diag
+		}
+
+		defer obj.CleanUpTempKeys(ctx, d, client, tempKeyId)
 	}
 
 	// Functionality requiring direct S3 API access
@@ -187,6 +200,25 @@ func updateResource(
 			"versioningChanged": versioningChanged,
 			"lifecycleChanged":  lifecycleChanged,
 		})
+
+		config := meta.(*helper.ProviderMeta).Config
+		cluster := d.Get("cluster").(string)
+		bucket := d.Get("label").(string)
+
+		// Implicitly create temporary object storage keys
+		if !obj.CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
+			tempKeyId, diag := obj.CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+			if diag != nil {
+				return diag
+			}
+
+			defer obj.CleanUpTempKeys(ctx, d, client, tempKeyId)
+		}
+
+		if !obj.CheckObjKeysConfiged(d) {
+			return diag.Errorf("access_key and secret_key are required to update linode_object_storage_bucket")
+		}
+
 		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)

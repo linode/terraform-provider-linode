@@ -96,6 +96,15 @@ func LifeCycleRemoved(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
+func TempKeys(t *testing.T, label, cluster, keyName string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_temp_keys", TemplateData{
+			Key:     objkey.TemplateData{Label: keyName},
+			Label:   label,
+			Cluster: cluster,
+		})
+}
+
 func ClusterDataBasic(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cluster_data_basic", TemplateData{

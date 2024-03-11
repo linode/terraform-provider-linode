@@ -42,13 +42,31 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "reading linode_object_storage_object")
+
+	config := meta.(*helper.ProviderMeta).Config
+	client := meta.(*helper.ProviderMeta).Client
+	cluster := d.Get("cluster").(string)
+	bucket := d.Get("bucket").(string)
+	key := d.Get("key").(string)
+
+	// Implicitly create temporary object storage keys
+	if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
+		tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_only")
+		if diag != nil {
+			return diag
+		}
+
+		defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+	}
+
+	if !CheckObjKeysConfiged(d) {
+		return diag.Errorf("access_key and secret_key are required to read linode_object_storage_object")
+	}
+
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
 
 	headObjectInput := &s3.HeadObjectInput{
 		Bucket: &bucket,
@@ -104,11 +122,29 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return putObject(ctx, d, meta)
 	}
 
+	cluster := d.Get("cluster").(string)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	acl := s3types.ObjectCannedACL(d.Get("acl").(string))
 
 	if d.HasChange("acl") {
+		config := meta.(*helper.ProviderMeta).Config
+		client := meta.(*helper.ProviderMeta).Client
+
+		// Implicitly create temporary object storage keys
+		if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
+			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+			if diag != nil {
+				return diag
+			}
+
+			defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+		}
+
+		if !CheckObjKeysConfiged(d) {
+			return diag.Errorf("access_key and secret_key are required to update linode_object_storage_object")
+		}
+
 		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)
@@ -137,14 +173,32 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "deleting linode_object_storage_object")
+
+	config := meta.(*helper.ProviderMeta).Config
+	client := meta.(*helper.ProviderMeta).Client
+	cluster := d.Get("cluster").(string)
+	bucket := d.Get("bucket").(string)
+	key := d.Get("key").(string)
+	force := d.Get("force_destroy").(bool)
+
+	// Implicitly create temporary object storage keys
+	if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
+		tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+		if diag != nil {
+			return diag
+		}
+
+		defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+	}
+
+	if !CheckObjKeysConfiged(d) {
+		return diag.Errorf("access_key and secret_key are required to delete linode_object_storage_object")
+	}
+
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
-	force := d.Get("force_destroy").(bool)
 
 	if _, ok := d.GetOk("version_id"); ok {
 		tflog.Debug(ctx, "versioning was enabled for this object, deleting all versions and delete markers")
@@ -171,13 +225,31 @@ func diffResource(
 // readResource.
 func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tflog.Debug(ctx, "entered 'putObject' function")
+
+	config := meta.(*helper.ProviderMeta).Config
+	client := meta.(*helper.ProviderMeta).Client
+	cluster := d.Get("cluster").(string)
+	bucket := d.Get("bucket").(string)
+	key := d.Get("key").(string)
+
+	// Implicitly create temporary object storage keys
+	if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
+		tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+		if diag != nil {
+			return diag
+		}
+
+		defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+	}
+
+	if !CheckObjKeysConfiged(d) {
+		return diag.Errorf("access_key and secret_key are required to create linode_object_storage_object")
+	}
+
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
 
 	tflog.Debug(ctx, "getting object body from resource data")
 	body, err := objectBodyFromResourceData(d)

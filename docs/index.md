@@ -84,6 +84,8 @@ The following keys can be used to configure the provider.
 
 * `max_retry_delay_ms` - (Optional) Maximum delay in milliseconds before retrying a request.
 
+* `obj_use_temp_keys` - (Optional) If true, temporary object keys will be created implicitly at apply-time for the [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md) resource to use.
+
 ## Early Access
 
 Some resources are made available before the feature reaches general availability. These resources are subject to change, and may not be available to all customers in all regions. Early access features can be accessed by configuring the provider to use a different version of the API.

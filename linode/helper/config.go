@@ -46,6 +46,8 @@ type Config struct {
 	EventPollMilliseconds        int
 	LKEEventPollMilliseconds     int
 	LKENodeReadyPollMilliseconds int
+
+	ObjUseTempKeys bool
 }
 
 // Client returns a fully initialized Linode client.

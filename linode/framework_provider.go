@@ -166,6 +166,11 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
 			},
+			"obj_use_temp_keys": schema.BoolAttribute{
+				Optional: true,
+				Description: "If true, temporary object keys will be created implicitly at apply-time " +
+					"for the linode_object_storage_object and linode_object_sorage_bucket resource.",
+			},
 		},
 	}
 }

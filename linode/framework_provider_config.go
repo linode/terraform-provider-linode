@@ -188,6 +188,10 @@ func (fp *FrameworkProvider) HandleDefaults(
 	if lpm.LKENodeReadyPollMilliseconds.IsNull() {
 		lpm.LKENodeReadyPollMilliseconds = types.Int64Value(3000)
 	}
+
+	if lpm.ObjUseTempKeys.IsNull() {
+		lpm.ObjUseTempKeys = types.BoolValue(false)
+	}
 }
 
 func (fp *FrameworkProvider) InitProvider(

@@ -1,0 +1,23 @@
+{{ define "object_bucket_temp_keys" }}
+
+provider "linode" {
+    obj_use_temp_keys = true
+}
+
+resource "linode_object_storage_bucket" "foobar" {
+    cluster = "{{ .Cluster }}"
+    label = "{{.Label}}"
+
+    lifecycle_rule {
+        prefix = "tf"
+        enabled = true
+
+        abort_incomplete_multipart_upload_days = 5
+
+        expiration {
+            date = "2021-06-21"
+        }
+    }
+}
+
+{{ end }}

@@ -113,6 +113,12 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
 			},
+			"obj_use_temp_keys": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Description: "If true, temporary object keys will be created implicitly at apply-time " +
+					"for the linode_object_storage_object and linode_object_sorage_bucket resource.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -232,6 +238,8 @@ func providerConfigure(
 
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
+
+		ObjUseTempKeys: d.Get("obj_use_temp_keys").(bool),
 	}
 
 	handleDefault(config, d)
