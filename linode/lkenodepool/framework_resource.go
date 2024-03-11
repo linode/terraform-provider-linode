@@ -74,7 +74,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.FlattenLKENodePool(ctx, clusterID, nodePool, false, &resp.Diagnostics)
+	data.FlattenLKENodePool(clusterID, nodePool, false, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,7 +135,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.FlattenLKENodePool(ctx, clusterID, readyPool, true, &resp.Diagnostics)
+	data.FlattenLKENodePool(clusterID, readyPool, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -198,7 +198,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	plan.FlattenLKENodePool(ctx, clusterID, readyPool, true, &resp.Diagnostics)
+	plan.FlattenLKENodePool(clusterID, readyPool, true, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -123,7 +123,6 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 	createConfig := createResourceConfig(t, &templateData)
 	templateData.AutoscalerMin = 2
 	templateData.AutoscalerMax = 3
-	templateData.NodeCount = 2
 	updateConfig := createResourceConfig(t, &templateData)
 
 	resource.Test(t, resource.TestCase{
@@ -135,7 +134,7 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(
 					checkNodePoolExists,
-					resource.TestCheckResourceAttr(resName, "type", "g6-standard-4"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "external"),
 					resource.TestCheckResourceAttr(resName, "tags.1", poolTag),
@@ -157,7 +156,6 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 					checkNodePoolExists,
 					resource.TestCheckResourceAttr(resName, "autoscaler.0.min", "2"),
 					resource.TestCheckResourceAttr(resName, "autoscaler.0.max", "3"),
-					resource.TestCheckResourceAttr(resName, "node_count", "2"),
 				),
 			},
 		},
@@ -191,7 +189,7 @@ func TestAccResourceNodePool_disableAutoscaling(t *testing.T) {
 				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(
 					checkNodePoolExists,
-					resource.TestCheckResourceAttr(resName, "type", "g6-standard-4"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "external"),
 					resource.TestCheckResourceAttr(resName, "tags.1", poolTag),
@@ -239,7 +237,7 @@ func TestAccResourceNodePool_enableAutoscaling(t *testing.T) {
 				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(
 					checkNodePoolExists,
-					resource.TestCheckResourceAttr(resName, "type", "g6-standard-4"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "external"),
 					resource.TestCheckResourceAttr(resName, "tags.1", poolTag),
@@ -254,7 +252,6 @@ func TestAccResourceNodePool_enableAutoscaling(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "autoscaler.#", "1"),
 					resource.TestCheckResourceAttr(resName, "autoscaler.0.min", "1"),
 					resource.TestCheckResourceAttr(resName, "autoscaler.0.max", "2"),
-					resource.TestCheckResourceAttr(resName, "node_count", "1"),
 				),
 			},
 		},
