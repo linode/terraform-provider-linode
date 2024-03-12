@@ -70,9 +70,10 @@ func flattenLKENodePoolLinodeList(nodes []linodego.LKENodePoolLinode,
 	return &result, nil
 }
 
-func (pool *NodePoolModel) FlattenLKENodePool(clusterID int, p *linodego.LKENodePool, preserveKnown bool, diags *diag.Diagnostics) {
+func (pool *NodePoolModel) FlattenLKENodePool(
+	p *linodego.LKENodePool, preserveKnown bool, diags *diag.Diagnostics,
+) {
 	pool.ID = helper.KeepOrUpdateString(pool.ID, strconv.Itoa(p.ID), preserveKnown)
-	pool.ClusterID = helper.KeepOrUpdateInt64(pool.ClusterID, int64(clusterID), preserveKnown)
 	pool.Count = helper.KeepOrUpdateInt64(pool.Count, int64(p.Count), preserveKnown)
 	pool.Type = helper.KeepOrUpdateString(pool.Type, p.Type, preserveKnown)
 	pool.Tags = helper.KeepOrUpdateStringSet(pool.Tags, p.Tags, preserveKnown, diags)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -75,7 +76,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.FlattenLKENodePool(clusterID, nodePool, false, &resp.Diagnostics)
+	data.FlattenLKENodePool(nodePool, false, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -90,23 +91,23 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 	tflog.Debug(ctx, "Create linode_lke_node_pool")
-	var data NodePoolModel
+	var plan NodePoolModel
 	client := r.Meta.Client
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	var createOpts linodego.LKENodePoolCreateOptions
 
-	data.SetNodePoolCreateOptions(ctx, &createOpts, &resp.Diagnostics)
+	plan.SetNodePoolCreateOptions(ctx, &createOpts, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	clusterID := helper.FrameworkSafeInt64ToInt(
-		data.ClusterID.ValueInt64(),
+		plan.ClusterID.ValueInt64(),
 		&resp.Diagnostics,
 	)
 
@@ -124,7 +125,11 @@ func (r *Resource) Create(
 		return
 	}
 
-	tflog.Debug(ctx, "waiting for node pool to enter reaFlattenSSHKeydy status")
+	// set cluster ID and pool ID right after pool creation to
+	// prevent resource leak when the waiting fails
+	AddPoolResource(ctx, pool, resp, plan)
+
+	tflog.Debug(ctx, "waiting for node pool to enter ready status")
 	readyPool, err := WaitForNodePoolReady(ctx,
 		*client,
 		int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
@@ -136,16 +141,16 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.FlattenLKENodePool(clusterID, readyPool, true, &resp.Diagnostics)
+	plan.FlattenLKENodePool(readyPool, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
-	data.ID = types.StringValue(strconv.Itoa(readyPool.ID))
+	plan.ID = types.StringValue(strconv.Itoa(readyPool.ID))
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	tflog.Trace(ctx, "Create linode_lke_node_pool done")
 }
 
@@ -155,8 +160,7 @@ func (r *Resource) Update(
 	resp *resource.UpdateResponse,
 ) {
 	tflog.Debug(ctx, "Update linode_lke_node_pool")
-	var plan NodePoolModel
-	var state NodePoolModel
+	var state, plan NodePoolModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -203,7 +207,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	plan.FlattenLKENodePool(clusterID, readyPool, true, &resp.Diagnostics)
+	plan.FlattenLKENodePool(readyPool, true, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -271,4 +275,11 @@ func (r *Resource) ImportState(
 				TypeConverter: helper.IDTypeConverterString,
 			},
 		})
+}
+
+func AddPoolResource(
+	ctx context.Context, p *linodego.LKENodePool, resp *resource.CreateResponse, plan NodePoolModel,
+) {
+	resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(strconv.Itoa(p.ID)))
+	resp.State.SetAttribute(ctx, path.Root("cluster_id"), plan.ClusterID)
 }
