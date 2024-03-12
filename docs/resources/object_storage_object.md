@@ -61,6 +61,7 @@ resource "linode_object_storage_object" "object" {
 }
 ```
 
+<<<<<<< HEAD
 ### Creating an object using implicitly created object credentials
 
 ```hcl
@@ -77,6 +78,8 @@ resource "linode_object_storage_object" "object" {
 }
 ```
 
+=======
+>>>>>>> dev
 ## Argument Reference
 
 -> **Note:** If you specify `content_encoding` you are responsible for encoding the body appropriately. `source`, `content`, and `content_base64` all expect already encoded/compressed bytes.

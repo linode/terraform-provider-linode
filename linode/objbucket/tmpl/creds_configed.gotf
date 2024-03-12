@@ -1,0 +1,29 @@
+{{ define "object_bucket_creds_configed" }}
+
+{{ template "object_key_basic" .Key }}
+
+provider "linode" {
+    alias = "creds_configed"
+    obj_access_key = linode_object_storage_key.foobar.access_key
+    obj_secret_key = linode_object_storage_key.foobar.secret_key
+}
+
+resource "linode_object_storage_bucket" "foobar" {
+    provider = linode.creds_configed
+
+    cluster = "{{ .Cluster }}"
+    label = "{{.Label}}"
+
+    lifecycle_rule {
+        prefix = "tf"
+        enabled = true
+
+        abort_incomplete_multipart_upload_days = 5
+
+        expiration {
+            date = "2021-06-21"
+        }
+    }
+}
+
+{{ end }}
