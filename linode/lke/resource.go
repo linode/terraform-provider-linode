@@ -17,6 +17,7 @@ import (
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 )
 
 const (
@@ -78,6 +79,11 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	pools, err := client.ListLKENodePools(ctx, id, nil)
 	if err != nil {
 		return diag.Errorf("failed to get pools for LKE cluster %d: %s", id, err)
+	}
+
+	externalPoolTags := helper.ExpandStringSet(d.Get("external_pool_tags").(*schema.Set))
+	if len(externalPoolTags) > 0 && len(pools) > 0 {
+		pools = filterExternalPools(ctx, externalPoolTags, pools)
 	}
 
 	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
@@ -321,7 +327,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			"node_pool_id": poolID,
 		})
 
-		if err := waitForNodePoolReady(
+		if _, err := lkenodepool.WaitForNodePoolReady(
 			ctx,
 			client,
 			providerMeta.Config.LKENodeReadyPollMilliseconds,

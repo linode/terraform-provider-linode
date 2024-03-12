@@ -1,0 +1,37 @@
+{{ define "nodepool_template" }}
+
+{{if not .ClusterID }}
+resource "linode_lke_cluster" "nodepool_test_cluster" {
+  label       = "{{.ClusterLabel}}"
+  region      = "{{ .Region }}"
+  k8s_version = "{{.K8sVersion}}"
+  tags        = ["nodepool_test_cluster"]
+  external_pool_tags  = ["external"]
+
+  pool {
+      type  = "g6-standard-1"
+      count = 1
+  }
+}
+{{end}}
+
+resource "linode_lke_node_pool" "foobar" {
+{{if .ClusterID }}
+    cluster_id = "{{.ClusterID}}"
+{{else}}
+    cluster_id = linode_lke_cluster.nodepool_test_cluster.id
+{{end}}
+
+{{if .AutoscalerEnabled }}
+    autoscaler {
+        min = {{.AutoscalerMin}}
+        max = {{.AutoscalerMax}}
+    }
+{{else}}
+    node_count = {{.NodeCount}}
+{{end}}
+    type  = "g6-standard-1"
+    tags  = ["external", "{{.PoolTag}}"]
+}
+
+{{ end }}

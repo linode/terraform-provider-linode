@@ -41,6 +41,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/kernels"
 	"github.com/linode/terraform-provider-linode/v2/linode/lke"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
@@ -187,6 +188,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		volume.NewResource,
 		instancesharedips.NewResource,
 		instancedisk.NewResource,
+		lkenodepool.NewResource,
 	}
 }
 
