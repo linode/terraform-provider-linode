@@ -41,6 +41,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/kernels"
 	"github.com/linode/terraform-provider-linode/v2/linode/lke"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
@@ -166,6 +167,15 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
 			},
+			"obj_access_key": schema.StringAttribute{
+				Optional:    true,
+				Description: "The access key to be used in linode_object_storage_bucket and linode_object_storage_object.",
+			},
+			"obj_secret_key": schema.StringAttribute{
+				Optional:    true,
+				Description: "The secret key to be used in linode_object_storage_bucket and linode_object_storage_object.",
+				Sensitive:   true,
+			},
 			"obj_use_temp_keys": schema.BoolAttribute{
 				Optional: true,
 				Description: "If true, temporary object keys will be created implicitly at apply-time " +
@@ -192,6 +202,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		volume.NewResource,
 		instancesharedips.NewResource,
 		instancedisk.NewResource,
+		lkenodepool.NewResource,
 	}
 }
 

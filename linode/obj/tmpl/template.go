@@ -39,6 +39,16 @@ func Updates(t *testing.T, name, cluster, keyName, content, source string) strin
 		})
 }
 
+func CredsConfiged(t *testing.T, name, cluster, keyName, content string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_object_creds_configed", TemplateData{
+			Bucket:  objectbucket.TemplateData{Label: name, Cluster: cluster},
+			Key:     objectkey.TemplateData{Label: keyName},
+			Content: content,
+			Cluster: cluster,
+		})
+}
+
 func TempKeys(t *testing.T, name, cluster, keyName, content string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_temp_keys", TemplateData{

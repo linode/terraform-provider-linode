@@ -4,14 +4,17 @@ import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 var resourceSchema = map[string]*schema.Schema{
 	"secret_key": {
-		Type:        schema.TypeString,
-		Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning)",
-		Optional:    true,
+		Type: schema.TypeString,
+		Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning). " +
+			"If not specified with the resource, the value will be read from provider-level obj_secret_key.",
+		Optional:  true,
+		Sensitive: true,
 	},
 	"access_key": {
-		Type:        schema.TypeString,
-		Description: "The S3 access key to use for this resource. (Required for lifecycle_rule and versioning)",
-		Optional:    true,
+		Type: schema.TypeString,
+		Description: "The S3 access key to use for this resource. (Required for lifecycle_rule and versioning). " +
+			"If not specified with the resource, the value will be read from provider-level obj_access_key.",
+		Optional: true,
 	},
 	"cluster": {
 		Type:        schema.TypeString,

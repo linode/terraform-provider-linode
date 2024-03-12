@@ -47,6 +47,8 @@ type Config struct {
 	LKEEventPollMilliseconds     int
 	LKENodeReadyPollMilliseconds int
 
+	ObjAccessKey   string
+	ObjSecretKey   string
 	ObjUseTempKeys bool
 }
 

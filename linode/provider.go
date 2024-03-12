@@ -107,11 +107,21 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "The rate in milliseconds to poll for LKE events.",
 			},
-
 			"lke_node_ready_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The rate in milliseconds to poll for an LKE node to be ready.",
+			},
+			"obj_access_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The access key to be used in linode_object_storage_bucket and linode_object_storage_object.",
+			},
+			"obj_secret_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The secret key to be used in linode_object_storage_bucket and linode_object_storage_object.",
+				Sensitive:   true,
 			},
 			"obj_use_temp_keys": {
 				Type:     schema.TypeBool,
@@ -221,6 +231,18 @@ func handleDefault(config *helper.Config, d *schema.ResourceData) diag.Diagnosti
 		config.LKENodeReadyPollMilliseconds = v.(int)
 	} else {
 		config.LKENodeReadyPollMilliseconds = 3000
+	}
+
+	if v, ok := d.GetOk("obj_access_key"); ok {
+		config.ObjAccessKey = v.(string)
+	} else {
+		config.ObjAccessKey = os.Getenv("LINODE_OBJ_ACCESS_KEY")
+	}
+
+	if v, ok := d.GetOk("obj_secret_key"); ok {
+		config.ObjSecretKey = v.(string)
+	} else {
+		config.ObjSecretKey = os.Getenv("LINODE_OBJ_SECRET_KEY")
 	}
 
 	return nil

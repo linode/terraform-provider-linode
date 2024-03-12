@@ -23,6 +23,8 @@ func GetFrameworkProviderModelFromSDKv2ProviderConfig(config *Config) *Framework
 		EventPollMilliseconds:        types.Int64Value(int64(config.EventPollMilliseconds)),
 		LKEEventPollMilliseconds:     types.Int64Value(int64(config.LKEEventPollMilliseconds)),
 		LKENodeReadyPollMilliseconds: types.Int64Value(int64(config.LKENodeReadyPollMilliseconds)),
+		ObjAccessKey:                 types.StringValue(config.ObjAccessKey),
+		ObjSecretKey:                 types.StringValue(config.ObjSecretKey),
 		ObjUseTempKeys:               types.BoolValue(config.ObjUseTempKeys),
 	}
 }
@@ -51,7 +53,9 @@ type FrameworkProviderModel struct {
 
 	LKENodeReadyPollMilliseconds types.Int64 `tfsdk:"lke_node_ready_poll_ms"`
 
-	ObjUseTempKeys types.Bool `tfsdk:"obj_use_temp_keys"`
+	ObjAccessKey   types.String `tfsdk:"obj_access_key"`
+	ObjSecretKey   types.String `tfsdk:"obj_secret_key"`
+	ObjUseTempKeys types.Bool   `tfsdk:"obj_use_temp_keys"`
 }
 
 type FrameworkProviderMeta struct {

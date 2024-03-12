@@ -55,6 +55,7 @@ func readResource(
 	populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "reading linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
+	config := meta.(*helper.ProviderMeta).Config
 
 	cluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
@@ -84,21 +85,7 @@ func readResource(
 		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
 
-	config := meta.(*helper.ProviderMeta).Config
-
-	// Implicitly create temporary object storage keys
-	if !obj.CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
-		tempKeyId, diag := obj.CreateTempKeys(ctx, d, client, bucket.Label, cluster, "read_only")
-		if diag != nil {
-			return diag
-		}
-
-		defer obj.CleanUpTempKeys(ctx, d, client, tempKeyId)
-	}
-
 	// Functionality requiring direct S3 API access
-	accessKey := d.Get("access_key").(string)
-	secretKey := d.Get("secret_key").(string)
 	endpoint := helper.ComputeS3EndpointFromBucket(ctx, *bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
@@ -109,6 +96,24 @@ func readResource(
 			"versioningPresent": versioningPresent,
 			"lifecyclePresent":  lifecyclePresent,
 		})
+
+		if !obj.CheckObjKeysConfiged(d) {
+			// If object keys don't exist in the plan, firstly look for the keys from provider configuration
+			if !obj.GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+				// Implicitly create temporary object storage keys
+				tempKeyId, diag := obj.CreateTempKeys(ctx, d, client, bucket.Label, cluster, "read_only")
+				if diag != nil {
+					return diag
+				}
+
+				defer obj.CleanUpTempKeys(ctx, client, tempKeyId)
+			}
+			defer obj.CleanUpKeysFromSchema(d)
+		}
+
+		accessKey := d.Get("access_key").(string)
+		secretKey := d.Get("secret_key").(string)
+
 		if accessKey == "" || secretKey == "" {
 			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
 		}
@@ -205,14 +210,18 @@ func updateResource(
 		cluster := d.Get("cluster").(string)
 		bucket := d.Get("label").(string)
 
-		// Implicitly create temporary object storage keys
-		if !obj.CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
-			tempKeyId, diag := obj.CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
-			if diag != nil {
-				return diag
-			}
+		if !obj.CheckObjKeysConfiged(d) {
+			// If object keys don't exist in the plan, firstly look for the keys from provider configuration
+			if !obj.GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+				// Implicitly create temporary object storage keys
+				tempKeyId, diag := obj.CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+				if diag != nil {
+					return diag
+				}
 
-			defer obj.CleanUpTempKeys(ctx, d, client, tempKeyId)
+				defer obj.CleanUpTempKeys(ctx, client, tempKeyId)
+			}
+			defer obj.CleanUpKeysFromSchema(d)
 		}
 
 		if !obj.CheckObjKeysConfiged(d) {

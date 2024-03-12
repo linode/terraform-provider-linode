@@ -64,12 +64,6 @@ func (r *Resource) Create(
 		"createOpts": createOpts,
 	})
 	key, err := client.CreateObjectStorageKey(ctx, createOpts)
-
-	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
-		"key_id": key.ID,
-		"label":  key.Label,
-	})
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Object Storage Key",
@@ -77,6 +71,11 @@ func (r *Resource) Create(
 		)
 		return
 	}
+
+	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
+		"key_id": key.ID,
+		"label":  key.Label,
+	})
 
 	data.FlattenObjectStorageKey(key, true)
 

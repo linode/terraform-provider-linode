@@ -49,14 +49,18 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	// Implicitly create temporary object storage keys
-	if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
-		tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_only")
-		if diag != nil {
-			return diag
-		}
+	if !CheckObjKeysConfiged(d) {
+		// If object keys don't exist in the plan, firstly look for the keys from provider configuration
+		if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+			// Implicitly create temporary object storage keys
+			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_only")
+			if diag != nil {
+				return diag
+			}
 
-		defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+			defer CleanUpTempKeys(ctx, client, tempKeyId)
+		}
+		defer CleanUpKeysFromSchema(d)
 	}
 
 	if !CheckObjKeysConfiged(d) {
@@ -131,14 +135,18 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		config := meta.(*helper.ProviderMeta).Config
 		client := meta.(*helper.ProviderMeta).Client
 
-		// Implicitly create temporary object storage keys
-		if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
-			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
-			if diag != nil {
-				return diag
-			}
+		if !CheckObjKeysConfiged(d) {
+			// If object keys don't exist in the plan, firstly look for the keys from provider configuration
+			if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+				// Implicitly create temporary object storage keys
+				tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+				if diag != nil {
+					return diag
+				}
 
-			defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+				defer CleanUpTempKeys(ctx, client, tempKeyId)
+			}
+			defer CleanUpKeysFromSchema(d)
 		}
 
 		if !CheckObjKeysConfiged(d) {
@@ -181,14 +189,18 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
 
-	// Implicitly create temporary object storage keys
-	if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
-		tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
-		if diag != nil {
-			return diag
-		}
+	if !CheckObjKeysConfiged(d) {
+		// If object keys don't exist in the plan, firstly look for the keys from provider configuration
+		if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+			// Implicitly create temporary object storage keys
+			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+			if diag != nil {
+				return diag
+			}
 
-		defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+			defer CleanUpTempKeys(ctx, client, tempKeyId)
+		}
+		defer CleanUpKeysFromSchema(d)
 	}
 
 	if !CheckObjKeysConfiged(d) {
@@ -232,14 +244,18 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	// Implicitly create temporary object storage keys
-	if !CheckObjKeysConfiged(d) && config.ObjUseTempKeys {
-		tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
-		if diag != nil {
-			return diag
-		}
+	if !CheckObjKeysConfiged(d) {
+		// If object keys don't exist in the plan, firstly look for the keys from provider configuration
+		if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+			// Implicitly create temporary object storage keys
+			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+			if diag != nil {
+				return diag
+			}
 
-		defer CleanUpTempKeys(ctx, d, client, tempKeyId)
+			defer CleanUpTempKeys(ctx, client, tempKeyId)
+		}
+		defer CleanUpKeysFromSchema(d)
 	}
 
 	if !CheckObjKeysConfiged(d) {
