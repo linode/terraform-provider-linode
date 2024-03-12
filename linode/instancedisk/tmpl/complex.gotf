@@ -14,7 +14,7 @@ resource "linode_stackscript" "foo" {
 # <UDF name="cool" label="a really cool arg" example="cool value" default="">
 echo $COOL
 EOF
-  images = ["linode/alpine3.15"]
+  images = ["linode/debian12"]
 }
 
 resource "linode_instance_disk" "foobar" {
@@ -26,7 +26,7 @@ resource "linode_instance_disk" "foobar" {
     "{{ .PubKey }}"
   ]
   filesystem = "ext4"
-  image = "linode/alpine3.15"
+  image = "linode/debian12"
   root_pass = "{{ .RootPass }}"
 
   stackscript_id = linode_stackscript.foo.id

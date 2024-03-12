@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 )
 
 type NodePoolSpec struct {
@@ -126,49 +127,6 @@ func ReconcileLKENodePoolSpecs(
 	}
 
 	return result, nil
-}
-
-func waitForNodePoolReady(
-	ctx context.Context, client linodego.Client, pollMs, clusterID, poolID int,
-) error {
-	ctx = tflog.SetField(ctx, "node_pool_id", poolID)
-	eventTicker := time.NewTicker(time.Duration(pollMs) * time.Millisecond)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("timed out waiting for LKE Cluster (%d) Pool (%d) to be ready", clusterID, poolID)
-
-		case <-eventTicker.C:
-			tflog.Trace(ctx, "client.GetLKENodePool(...)")
-			pool, err := client.GetLKENodePool(ctx, clusterID, poolID)
-			if err != nil {
-				return fmt.Errorf("failed to get LKE Cluster (%d) Pool (%d): %w", clusterID, poolID, err)
-			}
-
-			allNodesReady := true
-
-			for _, instance := range pool.Linodes {
-				if instance.Status == linodego.LKELinodeNotReady {
-					allNodesReady = false
-					tflog.Trace(ctx, "Node detected as unready", map[string]any{
-						"node_id":     instance.ID,
-						"instance_id": instance.InstanceID,
-					})
-					break
-				}
-			}
-
-			if !allNodesReady {
-				continue
-			}
-
-			// We're finished!
-			tflog.Trace(ctx, "All nodes ready!")
-
-			return nil
-		}
-	}
 }
 
 func waitForNodesDeleted(
@@ -291,7 +249,7 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 	// Wait for all node pools to be ready
 	for _, pool := range pools {
-		if err := waitForNodePoolReady(ctx, client, meta.Config.EventPollMilliseconds, id, pool.ID); err != nil {
+		if _, err := lkenodepool.WaitForNodePoolReady(ctx, client, meta.Config.EventPollMilliseconds, id, pool.ID); err != nil {
 			return fmt.Errorf("failed to wait for pool %d ready: %w", pool.ID, err)
 		}
 	}
@@ -488,4 +446,38 @@ func expandLKEClusterControlPlane(controlPlane map[string]interface{}) linodego.
 	}
 
 	return result
+}
+
+func filterExternalPools(ctx context.Context, externalPoolTags []string, pools []linodego.LKENodePool) []linodego.LKENodePool {
+	var filteredPools []linodego.LKENodePool
+	if len(externalPoolTags) == 0 {
+		return pools
+	}
+	tagSet := make(map[string]bool, len(externalPoolTags))
+	for _, tag := range externalPoolTags {
+		tagSet[tag] = true
+	}
+	for _, pool := range pools {
+		tag := poolHasAnyOfTags(pool, tagSet)
+		if tag != nil {
+			tflog.Info(ctx, "Excluding pool from management by this resource", map[string]interface{}{
+				"pool_id": pool.ID,
+				"tag":     tag,
+				"reason":  "Pool tagged to be managed by a separate linode_lke_node_pool resource",
+			})
+			continue
+		}
+		filteredPools = append(filteredPools, pool)
+	}
+	return filteredPools
+}
+
+func poolHasAnyOfTags(pool linodego.LKENodePool, tagSet map[string]bool) *string {
+	for _, poolTag := range pool.Tags {
+		if _, exists := tagSet[poolTag]; exists {
+			result := poolTag
+			return &result
+		}
+	}
+	return nil
 }

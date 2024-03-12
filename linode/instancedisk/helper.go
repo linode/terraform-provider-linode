@@ -3,25 +3,34 @@ package instancedisk
 import (
 	"context"
 	"fmt"
+	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-func expandStackScriptData(data any) map[string]string {
-	dataMap := data.(map[string]any)
-	result := make(map[string]string, len(dataMap))
-
-	for k, v := range dataMap {
-		result[k] = v.(string)
-	}
-
-	return result
+func AddDiskResource(ctx context.Context, disk linodego.InstanceDisk, resp *resource.CreateResponse, plan ResourceModel) {
+	resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(strconv.Itoa(disk.ID)))
+	resp.State.SetAttribute(ctx, path.Root("linode_id"), plan.LinodeID)
 }
 
-func handleDiskResize(ctx context.Context, client linodego.Client, instID, diskID, newSize, timeoutSeconds int) error {
-	configID, err := helper.GetCurrentBootedConfig(ctx, &client, instID)
+func getLinodeIDAndDiskID(data ResourceModel, diags *diag.Diagnostics) (int, int) {
+	id := helper.FrameworkSafeStringToInt(data.ID.ValueString(), diags)
+	linodeID := helper.FrameworkSafeInt64ToInt(data.LinodeID.ValueInt64(), diags)
+	return linodeID, id
+}
+
+func handleDiskResize(
+	ctx context.Context, client *linodego.Client, instID, diskID, newSize, timeoutSeconds int,
+) error {
+	tflog.Trace(ctx, "Enter handleDiskResize function")
+
+	configID, err := helper.GetCurrentBootedConfig(ctx, client, instID)
 	if err != nil {
 		return err
 	}
