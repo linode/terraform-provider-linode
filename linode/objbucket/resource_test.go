@@ -469,6 +469,32 @@ func TestAccResourceBucket_update(t *testing.T) {
 	})
 }
 
+func TestAccResourceBucket_credsConfiged(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_bucket.foobar"
+	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
+
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.CredsConfiged(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
+					),
+				},
+			},
+		})
+	})
+}
+
 func checkBucketExists(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
