@@ -60,7 +60,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 			defer CleanUpTempKeys(ctx, client, tempKeyId)
 		}
-		defer CleanUpKeysFromSchema(d)
+		defer CleanUpKeysFromSchema(ctx, d)
 	}
 
 	if !CheckObjKeysConfiged(d) {
@@ -146,7 +146,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 				defer CleanUpTempKeys(ctx, client, tempKeyId)
 			}
-			defer CleanUpKeysFromSchema(d)
+			defer CleanUpKeysFromSchema(ctx, d)
 		}
 
 		if !CheckObjKeysConfiged(d) {
@@ -200,7 +200,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 			defer CleanUpTempKeys(ctx, client, tempKeyId)
 		}
-		defer CleanUpKeysFromSchema(d)
+		defer CleanUpKeysFromSchema(ctx, d)
 	}
 
 	if !CheckObjKeysConfiged(d) {
@@ -255,7 +255,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 			defer CleanUpTempKeys(ctx, client, tempKeyId)
 		}
-		defer CleanUpKeysFromSchema(d)
+		defer CleanUpKeysFromSchema(ctx, d)
 	}
 
 	if !CheckObjKeysConfiged(d) {

@@ -3,7 +3,6 @@ package obj
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -87,11 +86,27 @@ func CleanUpTempKeys(
 	})
 
 	if err := client.DeleteObjectStorageKey(ctx, keyId); err != nil {
-		log.Printf("[WARN] Failed to clean up temporary object storage keys: %s\n", err)
+		tflog.Warn(ctx, "Failed to clean up temporary object storage keys", map[string]interface{}{
+			"details": err,
+		})
 	}
 }
 
-func CleanUpKeysFromSchema(d *schema.ResourceData) {
-	d.Set("access_key", "")
-	d.Set("secret_key", "")
+func CleanUpKeysFromSchema(
+	ctx context.Context,
+	d *schema.ResourceData,
+) {
+	err := d.Set("access_key", "")
+	if err != nil {
+		tflog.Error(ctx, "Failed to clean up access_key from schema", map[string]interface{}{
+			"error": err,
+		})
+	}
+
+	err = d.Set("secret_key", "")
+	if err != nil {
+		tflog.Error(ctx, "Failed to clean up secret_key from schema", map[string]interface{}{
+			"error": err,
+		})
+	}
 }

@@ -108,7 +108,7 @@ func readResource(
 
 				defer obj.CleanUpTempKeys(ctx, client, tempKeyId)
 			}
-			defer obj.CleanUpKeysFromSchema(d)
+			defer obj.CleanUpKeysFromSchema(ctx, d)
 		}
 
 		accessKey := d.Get("access_key").(string)
@@ -221,7 +221,7 @@ func updateResource(
 
 				defer obj.CleanUpTempKeys(ctx, client, tempKeyId)
 			}
-			defer obj.CleanUpKeysFromSchema(d)
+			defer obj.CleanUpKeysFromSchema(ctx, d)
 		}
 
 		if !obj.CheckObjKeysConfiged(d) {
