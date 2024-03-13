@@ -71,7 +71,6 @@ resource "linode_object_storage_bucket" "mybucket" {
 }
 ```
 
-<<<<<<< HEAD
 Creating an Object Storage Bucket with Lifecycle rules using implicitly created object credentials
 
 ```hcl
@@ -90,8 +89,6 @@ resource "linode_object_storage_bucket" "mybucket" {
 }
 ```
 
-=======
->>>>>>> dev
 ## Argument Reference
 
 The following arguments are supported:
