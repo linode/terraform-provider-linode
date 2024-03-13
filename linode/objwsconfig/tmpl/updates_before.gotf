@@ -1,0 +1,21 @@
+{{ define "object_website_config_updates_before" }}
+
+{{ template "object_website_config_update_dependency" . }}
+
+resource "linode_object_storage_website_config" "update" {
+    cluster        = linode_object_storage_bucket.foobar.cluster
+    bucket         = linode_object_storage_bucket.foobar.label
+    access_key     = linode_object_storage_key.foobar.access_key
+    secret_key     = linode_object_storage_key.foobar.secret_key
+    index_document = "index.html"
+}
+
+resource "linode_object_storage_website_config" "replace" {
+    cluster        = linode_object_storage_bucket.foobar_2.cluster
+    bucket         = linode_object_storage_bucket.foobar_2.label
+    access_key     = linode_object_storage_key.foobar.access_key
+    secret_key     = linode_object_storage_key.foobar.secret_key
+    index_document = "index.html"
+}
+
+{{ end }}
