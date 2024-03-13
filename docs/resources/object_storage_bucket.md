@@ -52,6 +52,25 @@ resource "linode_object_storage_bucket" "mybucket" {
 }
 ```
 
+Creating an Object Storage Bucket with Lifecycle rules using provider-level object credentials
+
+```hcl
+provider "linode" {
+    obj_access_key = ${your-access-key}
+    obj_secret_key = ${your-secret-key}
+}
+
+resource "linode_object_storage_bucket" "mybucket" {
+  # no need to specify the keys with the resource
+  cluster = "us-east-1"
+  label   = "mybucket"
+
+  lifecycle_rule {
+    # ... details of the lifecycle
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -62,9 +81,9 @@ The following arguments are supported:
 
 * `acl` - (Optional) The Access Control Level of the bucket using a canned ACL string. See all ACL strings [in the Linode API v4 documentation](https://linode.com/docs/api/object-storage/#object-storage-bucket-access-update__request-body-schema).
 
-* `access_key` - (Optional) The access key to authenticate with.
+* `access_key` - (Optional) The access key to authenticate with. If not specified with the resource, the value of [`obj_access_key`](../index.md#configuration-reference) from provider-level will be used.
 
-* `secret_key` - (Optional) The secret key to authenticate with.
+* `secret_key` - (Optional) The secret key to authenticate with. If not specified with the resource, the value of [`obj_secret_key`](../index.md#configuration-reference) from provider-level will be used.
 
 * `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
 

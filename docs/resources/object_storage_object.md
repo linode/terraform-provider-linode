@@ -44,6 +44,23 @@ resource "linode_object_storage_object" "object" {
 
 ```
 
+### Creating an object using provider-level object credentials
+
+```hcl
+provider "linode" {
+    obj_access_key = ${your-access-key}
+    obj_secret_key = ${your-secret-key}
+}
+
+resource "linode_object_storage_object" "object" {
+    # no need to specify the keys with the resource
+    bucket  = "my-bucket"
+    cluster = "us-east-1"
+    key     = "my-object"
+    source = pathexpand("~/files/log.txt")
+}
+```
+
 ## Argument Reference
 
 -> **Note:** If you specify `content_encoding` you are responsible for encoding the body appropriately. `source`, `content`, and `content_base64` all expect already encoded/compressed bytes.
@@ -56,9 +73,9 @@ The following arguments are supported:
 
 * `key` - (Required) They name of the object once it is in the bucket.
 
-* `secret_key` - (Required) The secret key to authenitcate with.
+* `secret_key` - (Required) The secret key to authenticate with. You can also specify the value at provider-level using [`obj_secret_key`](../index.md#configuration-reference).
 
-* `access_key` - (Required) The access key to authenticate with.
+* `access_key` - (Required) The access key to authenticate with. You can also specify the value at provider-level using [`obj_access_key`](../index.md#configuration-reference).
 
 * `source` - (Optional, conflicts with `content` and `content_base64`) The path to a file that will be read and uploaded as raw bytes for the object content. The path must either be relative to the root module or absolute.
 
