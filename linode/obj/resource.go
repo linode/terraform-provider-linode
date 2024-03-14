@@ -49,25 +49,33 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	if !CheckObjKeysConfiged(d) {
-		// If object keys don't exist in the plan, firstly look for the keys from provider configuration
-		if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+	var objKeys ObjectKeys
+	objKeys.AccessKey = d.Get("access_key").(string)
+	objKeys.SecretKey = d.Get("secret_key").(string)
+
+	if !CheckObjKeysConfiged(objKeys) {
+		// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
+		if providerKeys, ok := GetObjKeysFromProvider(objKeys, config); ok {
+			objKeys = providerKeys
+		} else if config.ObjUseTempKeys {
 			// Implicitly create temporary object storage keys
-			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_only")
+			keys, diag := CreateTempKeys(ctx, client, bucket, cluster, "read_only")
 			if diag != nil {
 				return diag
 			}
 
-			defer CleanUpTempKeys(ctx, client, tempKeyId)
+			objKeys.AccessKey = keys.AccessKey
+			objKeys.SecretKey = keys.SecretKey
+
+			defer CleanUpTempKeys(ctx, client, keys.ID)
 		}
-		defer CleanUpKeysFromSchema(ctx, d)
 	}
 
-	if !CheckObjKeysConfiged(d) {
+	if !CheckObjKeysConfiged(objKeys) {
 		return diag.Errorf("access_key and secret_key are required to read linode_object_storage_object")
 	}
 
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,25 +143,33 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		config := meta.(*helper.ProviderMeta).Config
 		client := meta.(*helper.ProviderMeta).Client
 
-		if !CheckObjKeysConfiged(d) {
-			// If object keys don't exist in the plan, firstly look for the keys from provider configuration
-			if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+		var objKeys ObjectKeys
+		objKeys.AccessKey = d.Get("access_key").(string)
+		objKeys.SecretKey = d.Get("secret_key").(string)
+
+		if !CheckObjKeysConfiged(objKeys) {
+			// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
+			if providerKeys, ok := GetObjKeysFromProvider(objKeys, config); ok {
+				objKeys = providerKeys
+			} else if config.ObjUseTempKeys {
 				// Implicitly create temporary object storage keys
-				tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+				keys, diag := CreateTempKeys(ctx, client, bucket, cluster, "read_write")
 				if diag != nil {
 					return diag
 				}
 
-				defer CleanUpTempKeys(ctx, client, tempKeyId)
+				objKeys.AccessKey = keys.AccessKey
+				objKeys.SecretKey = keys.SecretKey
+
+				defer CleanUpTempKeys(ctx, client, keys.ID)
 			}
-			defer CleanUpKeysFromSchema(ctx, d)
 		}
 
-		if !CheckObjKeysConfiged(d) {
+		if !CheckObjKeysConfiged(objKeys) {
 			return diag.Errorf("access_key and secret_key are required to update linode_object_storage_object")
 		}
 
-		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -189,25 +205,33 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
 
-	if !CheckObjKeysConfiged(d) {
-		// If object keys don't exist in the plan, firstly look for the keys from provider configuration
-		if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+	var objKeys ObjectKeys
+	objKeys.AccessKey = d.Get("access_key").(string)
+	objKeys.SecretKey = d.Get("secret_key").(string)
+
+	if !CheckObjKeysConfiged(objKeys) {
+		// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
+		if providerKeys, ok := GetObjKeysFromProvider(objKeys, config); ok {
+			objKeys = providerKeys
+		} else if config.ObjUseTempKeys {
 			// Implicitly create temporary object storage keys
-			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+			keys, diag := CreateTempKeys(ctx, client, bucket, cluster, "read_write")
 			if diag != nil {
 				return diag
 			}
 
-			defer CleanUpTempKeys(ctx, client, tempKeyId)
+			objKeys.AccessKey = keys.AccessKey
+			objKeys.SecretKey = keys.SecretKey
+
+			defer CleanUpTempKeys(ctx, client, keys.ID)
 		}
-		defer CleanUpKeysFromSchema(ctx, d)
 	}
 
-	if !CheckObjKeysConfiged(d) {
+	if !CheckObjKeysConfiged(objKeys) {
 		return diag.Errorf("access_key and secret_key are required to delete linode_object_storage_object")
 	}
 
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -244,25 +268,33 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	if !CheckObjKeysConfiged(d) {
-		// If object keys don't exist in the plan, firstly look for the keys from provider configuration
-		if !GetObjKeysFromProvider(d, config) && config.ObjUseTempKeys {
+	var objKeys ObjectKeys
+	objKeys.AccessKey = d.Get("access_key").(string)
+	objKeys.SecretKey = d.Get("secret_key").(string)
+
+	if !CheckObjKeysConfiged(objKeys) {
+		// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
+		if providerKeys, ok := GetObjKeysFromProvider(objKeys, config); ok {
+			objKeys = providerKeys
+		} else if config.ObjUseTempKeys {
 			// Implicitly create temporary object storage keys
-			tempKeyId, diag := CreateTempKeys(ctx, d, client, bucket, cluster, "read_write")
+			keys, diag := CreateTempKeys(ctx, client, bucket, cluster, "read_write")
 			if diag != nil {
 				return diag
 			}
 
-			defer CleanUpTempKeys(ctx, client, tempKeyId)
+			objKeys.AccessKey = keys.AccessKey
+			objKeys.SecretKey = keys.SecretKey
+
+			defer CleanUpTempKeys(ctx, client, keys.ID)
 		}
-		defer CleanUpKeysFromSchema(ctx, d)
 	}
 
-	if !CheckObjKeysConfiged(d) {
+	if !CheckObjKeysConfiged(objKeys) {
 		return diag.Errorf("access_key and secret_key are required to create linode_object_storage_object")
 	}
 
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 	if err != nil {
 		return diag.FromErr(err)
 	}

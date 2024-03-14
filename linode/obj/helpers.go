@@ -12,6 +12,11 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+type ObjectKeys struct {
+	AccessKey string
+	SecretKey string
+}
+
 func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"bucket":     d.Get("bucket"),
@@ -20,16 +25,16 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	})
 }
 
-// GetObjKeysFromProvider gets object access_key and secret_key from provider configuration.
+// GetObjKeysFromProvider gets obj_access_key and obj_secret_key from provider configuration.
 // Return whether both of the keys exist.
 func GetObjKeysFromProvider(
-	d *schema.ResourceData,
+	keys ObjectKeys,
 	config *helper.Config,
-) bool {
-	d.Set("access_key", config.ObjAccessKey)
-	d.Set("secret_key", config.ObjSecretKey)
+) (ObjectKeys, bool) {
+	keys.AccessKey = config.ObjAccessKey
+	keys.SecretKey = config.ObjSecretKey
 
-	return CheckObjKeysConfiged(d)
+	return keys, CheckObjKeysConfiged(keys)
 }
 
 // CreateTempKeys creates temporary Object Storage Keys to use.
@@ -37,10 +42,9 @@ func GetObjKeysFromProvider(
 // Keys only exist for the duration of the apply time.
 func CreateTempKeys(
 	ctx context.Context,
-	d *schema.ResourceData,
 	client linodego.Client,
 	bucket, cluster, permissions string,
-) (int, diag.Diagnostics) {
+) (*linodego.ObjectStorageKey, diag.Diagnostics) {
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
@@ -56,26 +60,20 @@ func CreateTempKeys(
 		"options": createOpts,
 	})
 
-	key, err := client.CreateObjectStorageKey(ctx, createOpts)
+	keys, err := client.CreateObjectStorageKey(ctx, createOpts)
 	if err != nil {
-		return 0, diag.FromErr(err)
+		return nil, diag.FromErr(err)
 	}
 
-	d.Set("access_key", key.AccessKey)
-	d.Set("secret_key", key.SecretKey)
-
-	return key.ID, nil
+	return keys, nil
 }
 
-// CheckObjKeysConfiged checks whether access_key and secret_key both exist in the schema.
-func CheckObjKeysConfiged(d *schema.ResourceData) bool {
-	_, accessKeyConfiged := d.GetOk("access_key")
-	_, secretKeyConfiged := d.GetOk("secret_key")
-
-	return accessKeyConfiged && secretKeyConfiged
+// CheckObjKeysConfiged checks whether AccessKey and SecretKey both exist.
+func CheckObjKeysConfiged(keys ObjectKeys) bool {
+	return keys.AccessKey != "" && keys.SecretKey != ""
 }
 
-// CleanUpTempKeys deleted the temporarily created object keys
+// CleanUpTempKeys deleted the temporarily created object keys.
 func CleanUpTempKeys(
 	ctx context.Context,
 	client linodego.Client,
@@ -88,25 +86,6 @@ func CleanUpTempKeys(
 	if err := client.DeleteObjectStorageKey(ctx, keyId); err != nil {
 		tflog.Warn(ctx, "Failed to clean up temporary object storage keys", map[string]interface{}{
 			"details": err,
-		})
-	}
-}
-
-func CleanUpKeysFromSchema(
-	ctx context.Context,
-	d *schema.ResourceData,
-) {
-	err := d.Set("access_key", "")
-	if err != nil {
-		tflog.Error(ctx, "Failed to clean up access_key from schema", map[string]interface{}{
-			"error": err,
-		})
-	}
-
-	err = d.Set("secret_key", "")
-	if err != nil {
-		tflog.Error(ctx, "Failed to clean up secret_key from schema", map[string]interface{}{
-			"error": err,
 		})
 	}
 }
