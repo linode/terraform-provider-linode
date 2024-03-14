@@ -100,12 +100,12 @@ The following arguments are supported:
 * `acl` - (Optional) The Access Control Level of the bucket using a canned ACL string. See all ACL strings [in the Linode API v4 documentation](https://linode.com/docs/api/object-storage/#object-storage-bucket-access-update__request-body-schema).
 
 * `access_key` - (Optional) The access key to authenticate with. If not specified with the resource, its value can be
-  * configured by [`obj_access_key`](../index.md#configuration-reference) from provider-level;
-  * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) from provider-level is set.
+  * configured by [`obj_access_key`](../index.md#configuration-reference) in the provider configuration;
+  * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level is set.
 
 * `secret_key` - (Optional) The secret key to authenticate with. If not specified with the resource, its value can be
-  * configured by [`obj_secret_key`](../index.md#configuration-reference) from provider-level;
-  * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) from provider-level is set.
+  * configured by [`obj_secret_key`](../index.md#configuration-reference) in the provider configuration;
+  * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level is set.
 
 * `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
 

@@ -90,12 +90,12 @@ The following arguments are supported:
 * `key` - (Required) They name of the object once it is in the bucket.
 
 * `secret_key` - (Optional) The REQUIRED secret key to authenticate with. If it's not specified with the resource, you must provide its value by
-  * configuring the [`obj_secret_key`](../index.md#configuration-reference) from provider-level;
-  * or, opting-in generating it implicitly at apply-time using [`obj_use_temp_keys`](../index.md#configuration-reference) from provider-level.
+  * configuring the [`obj_secret_key`](../index.md#configuration-reference) in the provider configuration;
+  * or, opting-in generating it implicitly at apply-time using [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level.
 
 * `access_key` - (Optional) The REQUIRED access key to authenticate with. If it's not specified with the resource, you must provide its value by
-  * configuring the [`obj_access_key`](../index.md#configuration-reference) from provider-level;
-  * or, opting-in generating it implicitly at apply-time using [`obj_use_temp_keys`](../index.md#configuration-reference) from provider-level.
+  * configuring the [`obj_access_key`](../index.md#configuration-reference) in the provider configuration;
+  * or, opting-in generating it implicitly at apply-time using [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level.
 
 * `source` - (Optional, conflicts with `content` and `content_base64`) The path to a file that will be read and uploaded as raw bytes for the object content. The path must either be relative to the root module or absolute.
 
