@@ -471,7 +471,7 @@ func (r *Resource) ImportState(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"linode_id": model.LinodeID,
-		"disk_id":   model.ID,
+		"linode_id": model.LinodeID.ValueInt64(),
+		"disk_id":   model.ID.ValueString(),
 	})
 }

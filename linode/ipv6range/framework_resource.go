@@ -285,7 +285,7 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"ipv6_id": model.ID,
-		"range:":  model.Range,
+		"ipv6_id": model.ID.ValueString(),
+		"range:":  model.Range.ValueString(),
 	})
 }
