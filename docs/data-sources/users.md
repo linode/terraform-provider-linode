@@ -123,6 +123,8 @@ Each Linode user will be stored in the `users` attribute and will export the fol
 
 * `restricted`
 
+* `user_type`
+
 * `password_created`
 
 * `tfa_enabled`
