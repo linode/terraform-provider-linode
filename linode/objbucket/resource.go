@@ -97,30 +97,13 @@ func readResource(
 			"lifecyclePresent":  lifecyclePresent,
 		})
 
-		var objKeys obj.ObjectKeys
-		objKeys.AccessKey = d.Get("access_key").(string)
-		objKeys.SecretKey = d.Get("secret_key").(string)
-
-		if !obj.CheckObjKeysConfiged(objKeys) {
-			// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
-			if providerKeys, ok := obj.GetObjKeysFromProvider(objKeys, config); ok {
-				objKeys = providerKeys
-			} else if config.ObjUseTempKeys {
-				// Implicitly create temporary object storage keys
-				keys, diag := obj.CreateTempKeys(ctx, client, bucket.Label, cluster, "read_only")
-				if diag != nil {
-					return diag
-				}
-
-				objKeys.AccessKey = keys.AccessKey
-				objKeys.SecretKey = keys.SecretKey
-
-				defer obj.CleanUpTempKeys(ctx, client, keys.ID)
-			}
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, cluster, "read_only")
+		if diags != nil {
+			return diags
 		}
 
-		if !obj.CheckObjKeysConfiged(objKeys) {
-			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
 		}
 
 		s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
@@ -215,30 +198,13 @@ func updateResource(
 		cluster := d.Get("cluster").(string)
 		bucket := d.Get("label").(string)
 
-		var objKeys obj.ObjectKeys
-		objKeys.AccessKey = d.Get("access_key").(string)
-		objKeys.SecretKey = d.Get("secret_key").(string)
-
-		if !obj.CheckObjKeysConfiged(objKeys) {
-			// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
-			if providerKeys, ok := obj.GetObjKeysFromProvider(objKeys, config); ok {
-				objKeys = providerKeys
-			} else if config.ObjUseTempKeys {
-				// Implicitly create temporary object storage keys
-				keys, diag := obj.CreateTempKeys(ctx, client, bucket, cluster, "read_write")
-				if diag != nil {
-					return diag
-				}
-
-				objKeys.AccessKey = keys.AccessKey
-				objKeys.SecretKey = keys.SecretKey
-
-				defer obj.CleanUpTempKeys(ctx, client, keys.ID)
-			}
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+		if diags != nil {
+			return diags
 		}
 
-		if !obj.CheckObjKeysConfiged(objKeys) {
-			return diag.Errorf("access_key and secret_key are required to update linode_object_storage_bucket")
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
 		}
 
 		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)

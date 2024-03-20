@@ -25,22 +25,22 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 	})
 }
 
-// GetObjKeysFromProvider gets obj_access_key and obj_secret_key from provider configuration.
+// getObjKeysFromProvider gets obj_access_key and obj_secret_key from provider configuration.
 // Return whether both of the keys exist.
-func GetObjKeysFromProvider(
+func getObjKeysFromProvider(
 	keys ObjectKeys,
 	config *helper.Config,
 ) (ObjectKeys, bool) {
 	keys.AccessKey = config.ObjAccessKey
 	keys.SecretKey = config.ObjSecretKey
 
-	return keys, CheckObjKeysConfiged(keys)
+	return keys, checkObjKeysConfiged(keys)
 }
 
-// CreateTempKeys creates temporary Object Storage Keys to use.
+// createTempKeys creates temporary Object Storage Keys to use.
 // The temporary keys are scoped only to the target cluster and bucket with limited permissions.
 // Keys only exist for the duration of the apply time.
-func CreateTempKeys(
+func createTempKeys(
 	ctx context.Context,
 	client linodego.Client,
 	bucket, cluster, permissions string,
@@ -68,13 +68,13 @@ func CreateTempKeys(
 	return keys, nil
 }
 
-// CheckObjKeysConfiged checks whether AccessKey and SecretKey both exist.
-func CheckObjKeysConfiged(keys ObjectKeys) bool {
+// checkObjKeysConfiged checks whether AccessKey and SecretKey both exist.
+func checkObjKeysConfiged(keys ObjectKeys) bool {
 	return keys.AccessKey != "" && keys.SecretKey != ""
 }
 
-// CleanUpTempKeys deleted the temporarily created object keys.
-func CleanUpTempKeys(
+// cleanUpTempKeys deleted the temporarily created object keys.
+func cleanUpTempKeys(
 	ctx context.Context,
 	client linodego.Client,
 	keyId int,
@@ -88,4 +88,48 @@ func CleanUpTempKeys(
 			"details": err,
 		})
 	}
+}
+
+// GetObjKeys gets object access_key and secret_key in the following order:
+// 1) Whether the keys are specified in the resource configuration;
+// 2) Whether the provider-level object keys exist;
+// 3) Whether user opts-in temporary keys generation.
+func GetObjKeys(
+	ctx context.Context,
+	d *schema.ResourceData,
+	config *helper.Config,
+	client linodego.Client,
+	bucket, cluster, permission string,
+) (ObjectKeys, diag.Diagnostics, func()) {
+	objKeys := ObjectKeys{
+		AccessKey: d.Get("access_key").(string),
+		SecretKey: d.Get("secret_key").(string),
+	}
+
+	var teardownTempKeysCleanUp func() = nil
+
+	if !checkObjKeysConfiged(objKeys) {
+		// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
+		if providerKeys, ok := getObjKeysFromProvider(objKeys, config); ok {
+			objKeys = providerKeys
+		} else if config.ObjUseTempKeys {
+			// Implicitly create temporary object storage keys
+			keys, diag := createTempKeys(ctx, client, bucket, cluster, permission)
+			if diag != nil {
+				return objKeys, diag, nil
+			}
+
+			objKeys.AccessKey = keys.AccessKey
+			objKeys.SecretKey = keys.SecretKey
+			teardownTempKeysCleanUp = func() { cleanUpTempKeys(ctx, client, keys.ID) }
+		}
+	}
+
+	if !checkObjKeysConfiged(objKeys) {
+		return objKeys, diag.Errorf(
+			"access_key and secret_key are required.",
+		), nil
+	}
+
+	return objKeys, nil, teardownTempKeysCleanUp
 }
