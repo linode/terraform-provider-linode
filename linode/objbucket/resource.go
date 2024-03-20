@@ -51,7 +51,7 @@ func Resource() *schema.Resource {
 func readResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "reading linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 	config := meta.(*helper.ProviderMeta).Config
@@ -143,7 +143,7 @@ func readResource(
 func createResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "creating linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -174,7 +174,7 @@ func createResource(
 func updateResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "updating linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
@@ -227,7 +227,7 @@ func updateResource(
 func deleteResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
+	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "deleting linode_object_storage_bucket")
 
 	client := meta.(*helper.ProviderMeta).Client
