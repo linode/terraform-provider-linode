@@ -17,6 +17,9 @@ func (model *ChildAccountFilterModel) parseAccounts(accounts []linodego.ChildAcc
 	result := make([]account.DataSourceModel, len(accounts))
 
 	for i, childAccount := range accounts {
+		// Shadow to avoid implicit memory aliasing
+		childAccount := childAccount
+
 		result[i].ParseAccount(&childAccount)
 	}
 
