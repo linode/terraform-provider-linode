@@ -58,9 +58,9 @@ resource "linode_lke_cluster" "my-cluster" {
     # node pools with the tag `external`, preventing
     # externally managed node pools from being deleted.
     external_pool_tags = [local.external_pool_tag]
-    
-    # Due to Terraform/LkE limitations, the cluster must be
-    # defined with at least one node pool.
+
+  # Due to certain restrictions in Terraform and LKE, 
+  # the cluster must be defined with at least one node pool.
     pool {
         type  = "g6-standard-1"
         count = 1
@@ -78,7 +78,7 @@ The following arguments are supported:
 
 * `node_count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
-* `tags` - (Optional) An array of tags applied to the Node Pool. Tags are for organizational purposes only.
+* `tags` - (Optional) An array of tags applied to the Node Pool. Tags can be used to flag node pools as externally managed, see [Externally Managed Node Pools](lke_cluster.md#externally-managed-node-pools).
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 

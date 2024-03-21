@@ -219,8 +219,8 @@ resource "linode_lke_cluster" "my-cluster" {
     # externally managed node pools from being deleted.
     external_pool_tags = [local.external_pool_tag]
     
-    # Due to Terraform/LkE limitations, the cluster must be
-    # defined with at least one node pool.
+    # Due to certain restrictions in Terraform and LKE, 
+    # the cluster must be defined with at least one node pool.
     pool {
         type  = "g6-standard-1"
         count = 1
