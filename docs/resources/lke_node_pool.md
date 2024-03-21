@@ -1,10 +1,10 @@
 ---
 page_title: "Linode: linode_lke_node_pool"
 description: |-
-  Manages a Linode Node Pool.
+  Manages an LKE Node Pool.
 ---
 
-# linode\_nodepool
+# linode\_lke\_node\_pool
 
 Manages an LKE Node Pool.
 
@@ -14,11 +14,9 @@ Creating a basic LKE Node Pool:
 
 ```terraform
 resource "linode_lke_node_pool" "my-pool" {
-  
     cluster_id  = 150003
     type  = "g6-standard-2"
     node_count = 3
-  
 }
 ```
 
@@ -26,7 +24,6 @@ Creating an LKE Node Pool with autoscaler:
 
 ```terraform
 resource "linode_lke_node_pool" "my-pool" {
-
     cluster_id  = 150003
     type  = "g6-standard-2"
   
@@ -37,13 +34,47 @@ resource "linode_lke_node_pool" "my-pool" {
 }
 ```
 
+Creating an LKE Node Pool for a Terraform-managed LKE cluster:
+
+```terraform
+locals {
+  external_pool_tag = "external"
+}
+
+resource "linode_lke_node_pool" "my-pool" {
+    cluster_id  = linode_lke_cluster.my-cluster.id
+    type        = "g6-standard-2"
+    node_count  = 3
+  
+    tags = [local.external_pool_tag]
+}
+
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.28"
+    region      = "us-mia"
+    
+    # This tells the Linode provider to ignore 
+    # node pools with the tag `external`, preventing
+    # externally managed node pools from being deleted.
+    external_pool_tags = [local.external_pool_tag]
+    
+    # Due to Terraform/LkE limitations, the cluster must be
+    # defined with at least one node pool.
+    pool {
+        type  = "g6-standard-1"
+        count = 1
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `cluster_id` - ID of the LKE Cluster where to create the current Node Pool.
 
-* `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
+* `type` - (Required) A Linode Type for all nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
 * `node_count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
