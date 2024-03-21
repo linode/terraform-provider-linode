@@ -258,7 +258,7 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, data VPCSubnetModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"vpc_id": data.VPCId,
-		"id":     data.ID,
+		"vpc_id": data.VPCId.ValueInt64(),
+		"id":     data.ID.ValueString(),
 	})
 }

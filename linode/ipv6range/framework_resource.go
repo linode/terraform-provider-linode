@@ -264,7 +264,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	populateLogAttributes(ctx, data)
+	ctx = populateLogAttributes(ctx, data)
 	tflog.Debug(ctx, "client.DeleteIPv6Range(...)")
 
 	if err := client.DeleteIPv6Range(ctx, data.ID.ValueString()); err != nil {
@@ -285,7 +285,7 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"ipv6_id": model.ID,
-		"range:":  model.Range,
+		"ipv6_id": model.ID.ValueString(),
+		"range:":  model.Range.ValueString(),
 	})
 }
