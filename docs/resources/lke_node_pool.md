@@ -78,7 +78,7 @@ The following arguments are supported:
 
 * `node_count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
 
-* `tags` - (Optional) An array of tags applied to the Node Pool. Tags can be used to flag node pools as externally managed, see [Externally Managed Node Pools](lke_cluster.md#externally-managed-node-pools).
+* `tags` - (Optional) An array of tags applied to the Node Pool. Tags can be used to flag node pools as externally managed, see [Externally Managed Node Pools](lke_cluster.md#externally-managed-node-pools) for more details.
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
