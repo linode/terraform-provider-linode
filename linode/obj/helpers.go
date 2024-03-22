@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -34,7 +35,7 @@ func getObjKeysFromProvider(
 	keys.AccessKey = config.ObjAccessKey
 	keys.SecretKey = config.ObjSecretKey
 
-	return keys, checkObjKeysConfiged(keys)
+	return keys, checkObjKeysConfigured(keys)
 }
 
 // createTempKeys creates temporary Object Storage Keys to use.
@@ -68,8 +69,8 @@ func createTempKeys(
 	return keys, nil
 }
 
-// checkObjKeysConfiged checks whether AccessKey and SecretKey both exist.
-func checkObjKeysConfiged(keys ObjectKeys) bool {
+// checkObjKeysConfigured checks whether AccessKey and SecretKey both exist.
+func checkObjKeysConfigured(keys ObjectKeys) bool {
 	return keys.AccessKey != "" && keys.SecretKey != ""
 }
 
@@ -101,14 +102,14 @@ func GetObjKeys(
 	client linodego.Client,
 	bucket, cluster, permission string,
 ) (ObjectKeys, diag.Diagnostics, func()) {
+	var teardownTempKeysCleanUp func() = nil
+
 	objKeys := ObjectKeys{
 		AccessKey: d.Get("access_key").(string),
 		SecretKey: d.Get("secret_key").(string),
 	}
 
-	var teardownTempKeysCleanUp func() = nil
-
-	if !checkObjKeysConfiged(objKeys) {
+	if !checkObjKeysConfigured(objKeys) {
 		// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
 		if providerKeys, ok := getObjKeysFromProvider(objKeys, config); ok {
 			objKeys = providerKeys
@@ -118,18 +119,54 @@ func GetObjKeys(
 			if diag != nil {
 				return objKeys, diag, nil
 			}
-
 			objKeys.AccessKey = keys.AccessKey
 			objKeys.SecretKey = keys.SecretKey
 			teardownTempKeysCleanUp = func() { cleanUpTempKeys(ctx, client, keys.ID) }
+		} else {
+			return objKeys, diag.Errorf(
+				"access_key and secret_key are required.",
+			), nil
 		}
 	}
 
-	if !checkObjKeysConfiged(objKeys) {
-		return objKeys, diag.Errorf(
-			"access_key and secret_key are required.",
-		), nil
-	}
-
 	return objKeys, nil, teardownTempKeysCleanUp
+}
+
+func putObjectWithRetries(
+	ctx context.Context,
+	s3client *s3.Client,
+	putInput *s3.PutObjectInput,
+	retryDuration time.Duration,
+) error {
+	tflog.Debug(ctx, "Attempting to put object with retries")
+
+	ticker := time.NewTicker(retryDuration)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			tflog.Debug(ctx, "putting the object", map[string]any{
+				"PutObjectInput": putInput,
+			})
+
+			if _, err := s3client.PutObject(ctx, putInput); err != nil {
+				tflog.Debug(ctx,
+					fmt.Sprintf(
+						"Failed to put Bucket (%v) Object (%v): %s. Retrying...",
+						putInput.Bucket,
+						putInput.Key,
+						err.Error(),
+					),
+				)
+				continue
+			}
+
+			return nil
+
+		case <-ctx.Done():
+			// The timeout for this context will implicitly be handled by Terraform
+			return fmt.Errorf("failed to put the object: %s", ctx.Err())
+		}
+	}
 }

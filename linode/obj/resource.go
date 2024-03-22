@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -267,9 +268,9 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		tflog.Debug(ctx, fmt.Sprintf("got Metadata: %v", putInput.Metadata))
 	}
 
-	tflog.Debug(ctx, "putting the object", map[string]any{"PutObjectInput": putInput})
-	if _, err := s3client.PutObject(ctx, putInput); err != nil {
-		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
+	errs := putObjectWithRetries(ctx, s3client, putInput, time.Second*5)
+	if errs != nil {
+		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, errs)
 	}
 
 	d.SetId(helper.BuildObjectStorageObjectID(d))
