@@ -21,13 +21,13 @@ func RunBatch(toExecute ...BatchFunction) error {
 	for _, f := range toExecute {
 		// Shadow the function so it can be used in the goroutine
 		f := f
+		wg.Add(1)
 		go func() {
 			if err := f(); err != nil {
 				errCh <- err
 			}
 			wg.Done()
 		}()
-		wg.Add(1)
 	}
 
 	// Routine to wait for all functions to complete
