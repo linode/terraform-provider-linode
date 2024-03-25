@@ -82,6 +82,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 			return
 		},
 	)
+	if err != nil {
+		return diag.Errorf("failed to read instance: %v", err)
+	}
 
 	var ips []string
 	for _, ip := range instance.IPv4 {
