@@ -64,10 +64,24 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error finding the specified Linode instance: %s", err)
 	}
 
-	instanceNetwork, err := client.GetInstanceIPAddresses(ctx, id)
-	if err != nil {
-		return diag.Errorf("Error getting the IPs for Linode instance %s: %s", d.Id(), err)
-	}
+	var instanceNetwork *linodego.InstanceIPAddressResponse
+	var instanceDisks []linodego.InstanceDisk
+	var instanceConfigs []linodego.InstanceConfig
+
+	err = helper.RunBatch(
+		func() (err error) {
+			instanceNetwork, err = client.GetInstanceIPAddresses(ctx, id)
+			return
+		},
+		func() (err error) {
+			instanceDisks, err = client.ListInstanceDisks(ctx, id, nil)
+			return
+		},
+		func() (err error) {
+			instanceConfigs, err = client.ListInstanceConfigs(ctx, id, nil)
+			return
+		},
+	)
 
 	var ips []string
 	for _, ip := range instance.IPv4 {
@@ -116,19 +130,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
-	instanceDisks, err := client.ListInstanceDisks(ctx, id, nil)
-	if err != nil {
-		return diag.Errorf("Error getting the disks for the Linode instance %d: %s", id, err)
-	}
-
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 	d.Set("disk", disks)
 	d.Set("swap_size", swapSize)
 
-	instanceConfigs, err := client.ListInstanceConfigs(ctx, id, nil)
-	if err != nil {
-		return diag.Errorf("Error getting the config for Linode instance %d (%s): %s", instance.ID, instance.Label, err)
-	}
 	diskLabelIDMap := make(map[int]string, len(instanceDisks))
 	for _, disk := range instanceDisks {
 		diskLabelIDMap[disk.ID] = disk.Label
