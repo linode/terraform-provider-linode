@@ -202,6 +202,10 @@ func (fp *FrameworkProvider) HandleDefaults(
 			types.StringNull(),
 		)
 	}
+
+	if lpm.ObjUseTempKeys.IsNull() {
+		lpm.ObjUseTempKeys = types.BoolValue(false)
+	}
 }
 
 func (fp *FrameworkProvider) InitProvider(

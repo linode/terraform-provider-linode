@@ -1,0 +1,16 @@
+{{ define "object_object_temp_keys" }}
+
+{{ template "object_bucket_basic" .Bucket }}
+
+provider "linode" {
+    obj_use_temp_keys = true
+}
+
+resource "linode_object_storage_object" "temp_keys" {
+    bucket     = linode_object_storage_bucket.foobar.label
+    cluster    = "{{ .Cluster }}"
+    key        = "test_temp_keys"
+    content    = "{{.Content}}"
+}
+
+{{ end }}

@@ -27,15 +27,17 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"secret_key": {
 		Type: schema.TypeString,
-		Description: "The required S3 secret key with access to the target bucket. " +
-			"If not specified with the resource, the value of obj_secret_key from provider-level will be used.",
+		Description: "The REQUIRED S3 secret key with access to the target bucket. " +
+			"If not specified with the resource, you must provide its value by configuring the obj_secret_key, " +
+			"or, opting-in generating it implicitly at apply-time using obj_use_temp_keys at provider-level.",
 		Optional:  true,
 		Sensitive: true,
 	},
 	"access_key": {
 		Type: schema.TypeString,
-		Description: "The required S3 access key with access to the target bucket. " +
-			"If not specified with the resource, the value of obj_access_key from provider-level will be used.",
+		Description: "The REQUIRED S3 access key with access to the target bucket. " +
+			"If not specified with the resource, you must provide its value by configuring the obj_access_key, " +
+			"or, opting-in generating it implicitly at apply-time using obj_use_temp_keys at provider-level.",
 		Optional: true,
 	},
 	"content": {

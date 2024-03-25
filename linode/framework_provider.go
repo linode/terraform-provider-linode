@@ -176,6 +176,11 @@ func (p *FrameworkProvider) Schema(
 				Description: "The secret key to be used in linode_object_storage_bucket and linode_object_storage_object.",
 				Sensitive:   true,
 			},
+			"obj_use_temp_keys": schema.BoolAttribute{
+				Optional: true,
+				Description: "If true, temporary object keys will be created implicitly at apply-time " +
+					"for the linode_object_storage_object and linode_object_sorage_bucket resource.",
+			},
 		},
 	}
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 )
 
 func resourceLifecycleExpiration() *schema.Resource {
@@ -85,20 +86,6 @@ func readResource(
 	}
 
 	// Functionality requiring direct S3 API access
-	var accessKey, secretKey string
-
-	if v, ok := d.GetOk("access_key"); ok {
-		accessKey = v.(string)
-	} else {
-		accessKey = config.ObjAccessKey
-	}
-
-	if v, ok := d.GetOk("secret_key"); ok {
-		secretKey = v.(string)
-	} else {
-		secretKey = config.ObjSecretKey
-	}
-
 	endpoint := helper.ComputeS3EndpointFromBucket(ctx, *bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
@@ -109,11 +96,17 @@ func readResource(
 			"versioningPresent": versioningPresent,
 			"lifecyclePresent":  lifecyclePresent,
 		})
-		if accessKey == "" || secretKey == "" {
-			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
+
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, cluster, "read_only")
+		if diags != nil {
+			return diags
 		}
 
-		s3Client, err := helper.S3Connection(ctx, endpoint, accessKey, secretKey)
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
+		}
+
+		s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -200,7 +193,21 @@ func updateResource(
 			"versioningChanged": versioningChanged,
 			"lifecycleChanged":  lifecycleChanged,
 		})
-		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+
+		config := meta.(*helper.ProviderMeta).Config
+		cluster := d.Get("cluster").(string)
+		bucket := d.Get("label").(string)
+
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+		if diags != nil {
+			return diags
+		}
+
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
+		}
+
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
