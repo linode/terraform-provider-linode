@@ -34,6 +34,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - This region’s current operational status (ok or outage).
 
+* `site_type` - The type of this region.
+
 * [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
 
 ### Resolvers
