@@ -7,7 +7,7 @@ resource "linode_instance" "{{.ID}}" {
     region = "{{ .Region }}"
     disk {
         label = "disk"
-        image = "linode/alpine3.15"
+        image = "linode/debian12"
         root_pass = "{{ .RootPass }}"
         authorized_keys = ["{{.PubKey}}"]
         size = 3000

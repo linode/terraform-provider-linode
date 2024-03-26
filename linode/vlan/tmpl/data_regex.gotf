@@ -2,8 +2,8 @@
 
 resource "linode_instance" "fooinst" {
     label = "{{.InstLabel}}"
-    type = "g6-standard-1"
-    image = "linode/alpine3.15"
+    type = "g6-nanode-1"
+    image = "linode/debian12"
     region = "{{ .Region }}"
 
     interface {
