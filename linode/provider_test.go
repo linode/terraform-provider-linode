@@ -33,6 +33,8 @@ api_version = v4beta
 		APIVersion:            "v4beta",
 		SkipInstanceReadyPoll: false,
 		ConfigPath:            file.Name(),
+		ObjAccessKey:          "abcd",
+		ObjSecretKey:          "efgh",
 	}
 
 	client, err := config.Client(context.Background())

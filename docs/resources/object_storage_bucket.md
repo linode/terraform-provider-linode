@@ -52,6 +52,43 @@ resource "linode_object_storage_bucket" "mybucket" {
 }
 ```
 
+Creating an Object Storage Bucket with Lifecycle rules using provider-level object credentials
+
+```hcl
+provider "linode" {
+    obj_access_key = ${your-access-key}
+    obj_secret_key = ${your-secret-key}
+}
+
+resource "linode_object_storage_bucket" "mybucket" {
+  # no need to specify the keys with the resource
+  cluster = "us-east-1"
+  label   = "mybucket"
+
+  lifecycle_rule {
+    # ... details of the lifecycle
+  }
+}
+```
+
+Creating an Object Storage Bucket with Lifecycle rules using implicitly created object credentials
+
+```hcl
+provider "linode" {
+    obj_use_temp_keys = true
+}
+
+resource "linode_object_storage_bucket" "mybucket" {
+  # no need to specify the keys with the resource
+  cluster = "us-east-1"
+  label   = "mybucket"
+
+  lifecycle_rule {
+    # ... details of the lifecycle
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -62,9 +99,13 @@ The following arguments are supported:
 
 * `acl` - (Optional) The Access Control Level of the bucket using a canned ACL string. See all ACL strings [in the Linode API v4 documentation](https://linode.com/docs/api/object-storage/#object-storage-bucket-access-update__request-body-schema).
 
-* `access_key` - (Optional) The access key to authenticate with.
+* `access_key` - (Optional) The access key to authenticate with. If not specified with the resource, its value can be
+  * configured by [`obj_access_key`](../index.md#configuration-reference) in the provider configuration;
+  * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level is set.
 
-* `secret_key` - (Optional) The secret key to authenticate with.
+* `secret_key` - (Optional) The secret key to authenticate with. If not specified with the resource, its value can be
+  * configured by [`obj_secret_key`](../index.md#configuration-reference) in the provider configuration;
+  * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level is set.
 
 * `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
 

@@ -233,6 +233,6 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"token_id": model.ID,
+		"token_id": model.ID.ValueString(),
 	})
 }
