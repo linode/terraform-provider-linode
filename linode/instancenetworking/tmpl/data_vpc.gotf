@@ -1,0 +1,25 @@
+{{ define "instance_networking_data_vpc" }}
+
+{{ template "vpc_subnet_basic" . }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image = "linode/debian12"
+
+    interface {
+        purpose   = "vpc"
+        subnet_id = linode_vpc_subnet.foobar.id
+        ipv4 {
+            vpc     = "{{ .InterfaceIPv4 }}"
+            nat_1_1 = "any"
+        }
+    }
+}
+
+data "linode_instance_networking" "test" {
+    linode_id = linode_instance.foobar.id
+}
+
+{{ end }}
