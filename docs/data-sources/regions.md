@@ -52,6 +52,8 @@ Each Linode region will be stored in the `regions` attribute and will export the
 
 * `status` - This region’s current operational status (ok or outage).
 
+* `site_type` - The type of this region.
+
 * [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
 
 ### Resolvers
@@ -67,3 +69,5 @@ Each Linode region will be stored in the `regions` attribute and will export the
 * `country`
 
 * `capabilities`
+
+* `site_type`

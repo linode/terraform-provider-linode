@@ -19,6 +19,10 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "Detailed location information for this Region, including city, state or region, and country.",
 			Computed:    true,
 		},
+		"site_type": schema.StringAttribute{
+			Description: "The type of this Region.",
+			Computed:    true,
+		},
 		"capabilities": schema.SetAttribute{
 			Description: "A list of capabilities of this region.",
 			Computed:    true,
