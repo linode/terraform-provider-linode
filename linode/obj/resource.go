@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -42,13 +43,26 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "reading linode_object_storage_object")
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+
+	config := meta.(*helper.ProviderMeta).Config
+	client := meta.(*helper.ProviderMeta).Client
+	cluster := d.Get("cluster").(string)
+	bucket := d.Get("bucket").(string)
+	key := d.Get("key").(string)
+
+	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_only")
+	if diags != nil {
+		return diags
+	}
+
+	if teardownKeysCleanUp != nil {
+		defer teardownKeysCleanUp()
+	}
+
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
 
 	headObjectInput := &s3.HeadObjectInput{
 		Bucket: &bucket,
@@ -104,12 +118,25 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return putObject(ctx, d, meta)
 	}
 
+	cluster := d.Get("cluster").(string)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	acl := s3types.ObjectCannedACL(d.Get("acl").(string))
 
 	if d.HasChange("acl") {
-		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+		config := meta.(*helper.ProviderMeta).Config
+		client := meta.(*helper.ProviderMeta).Client
+
+		objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+		if diags != nil {
+			return diags
+		}
+
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
+		}
+
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -137,14 +164,27 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "deleting linode_object_storage_object")
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
+	config := meta.(*helper.ProviderMeta).Config
+	client := meta.(*helper.ProviderMeta).Client
+	cluster := d.Get("cluster").(string)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
+
+	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+	if diags != nil {
+		return diags
+	}
+
+	if teardownKeysCleanUp != nil {
+		defer teardownKeysCleanUp()
+	}
+
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if _, ok := d.GetOk("version_id"); ok {
 		tflog.Debug(ctx, "versioning was enabled for this object, deleting all versions and delete markers")
@@ -171,13 +211,26 @@ func diffResource(
 // readResource.
 func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tflog.Debug(ctx, "entered 'putObject' function")
-	s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+
+	config := meta.(*helper.ProviderMeta).Config
+	client := meta.(*helper.ProviderMeta).Client
+	cluster := d.Get("cluster").(string)
+	bucket := d.Get("bucket").(string)
+	key := d.Get("key").(string)
+
+	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+	if diags != nil {
+		return diags
+	}
+
+	if teardownKeysCleanUp != nil {
+		defer teardownKeysCleanUp()
+	}
+
+	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
 
 	tflog.Debug(ctx, "getting object body from resource data")
 	body, err := objectBodyFromResourceData(d)
@@ -215,9 +268,9 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		tflog.Debug(ctx, fmt.Sprintf("got Metadata: %v", putInput.Metadata))
 	}
 
-	tflog.Debug(ctx, "putting the object", map[string]any{"PutObjectInput": putInput})
-	if _, err := s3client.PutObject(ctx, putInput); err != nil {
-		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, err)
+	errs := putObjectWithRetries(ctx, s3client, putInput, time.Second*5)
+	if errs != nil {
+		return diag.Errorf("failed to put Bucket (%s) Object (%s): %s", bucket, key, errs)
 	}
 
 	d.SetId(helper.BuildObjectStorageObjectID(d))

@@ -280,7 +280,7 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, data *InstanceIPModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"linode_id": data.LinodeID,
-		"id":        data.ID,
+		"linode_id": data.LinodeID.ValueInt64(),
+		"id":        data.ID.ValueString(),
 	})
 }

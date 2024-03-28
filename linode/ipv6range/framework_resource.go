@@ -116,6 +116,11 @@ func (r *Resource) Create(
 		return
 	}
 
+	// If user configured linode_id, populate route_target implicitly.
+	if linodeIdConfigured {
+		data.RouteTarget = types.StringValue(ipv6range.RouteTarget)
+	}
+
 	resp.Diagnostics.Append(data.FlattenIPv6Range(ctx, ipv6rangeR, true)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -259,7 +264,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	populateLogAttributes(ctx, data)
+	ctx = populateLogAttributes(ctx, data)
 	tflog.Debug(ctx, "client.DeleteIPv6Range(...)")
 
 	if err := client.DeleteIPv6Range(ctx, data.ID.ValueString()); err != nil {
@@ -280,7 +285,7 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"ipv6_id": model.ID,
-		"range:":  model.Range,
+		"ipv6_id": model.ID.ValueString(),
+		"range:":  model.Range.ValueString(),
 	})
 }

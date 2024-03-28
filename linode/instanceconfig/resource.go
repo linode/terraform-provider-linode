@@ -295,9 +295,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if shouldUpdate {
 		if powerOffRequired {
-			instancehelpers.ShutdownInstanceForVPCInterfaceUpdate(
-				ctx, meta.(*helper.ProviderMeta), linodeID, helper.GetDeadlineSeconds(ctx, d),
-			)
+			if err := instancehelpers.ShutdownInstanceForVPCInterfaceUpdate(
+				ctx, &client, meta.(*helper.ProviderMeta).Config.SkipImplicitReboots, linodeID, helper.GetDeadlineSeconds(ctx, d),
+			); err != nil {
+				return diag.Errorf("failed to shutdown linode instance for VPC interface update: %s", err)
+			}
 		}
 
 		tflog.Debug(ctx, "Update detected, sending config PUT request to API", map[string]any{

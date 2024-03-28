@@ -188,6 +188,24 @@ func (fp *FrameworkProvider) HandleDefaults(
 	if lpm.LKENodeReadyPollMilliseconds.IsNull() {
 		lpm.LKENodeReadyPollMilliseconds = types.Int64Value(3000)
 	}
+
+	if lpm.ObjAccessKey.IsNull() {
+		lpm.ObjAccessKey = GetStringFromEnv(
+			"LINODE_OBJ_ACCESS_KEY",
+			types.StringNull(),
+		)
+	}
+
+	if lpm.ObjSecretKey.IsNull() {
+		lpm.ObjSecretKey = GetStringFromEnv(
+			"LINODE_OBJ_SECRET_KEY",
+			types.StringNull(),
+		)
+	}
+
+	if lpm.ObjUseTempKeys.IsNull() {
+		lpm.ObjUseTempKeys = types.BoolValue(false)
+	}
 }
 
 func (fp *FrameworkProvider) InitProvider(

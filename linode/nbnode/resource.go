@@ -129,12 +129,12 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	})
 
 	node, err := client.CreateNodeBalancerNode(ctx, nodebalancerID, configID, createOpts)
-
-	ctx = tflog.SetField(ctx, "node_id", node.ID)
-
 	if err != nil {
 		return diag.Errorf("Error creating a Linode NodeBalancerNode: %s", err)
 	}
+
+	ctx = tflog.SetField(ctx, "node_id", node.ID)
+
 	d.SetId(fmt.Sprintf("%d", node.ID))
 	d.Set("config_id", configID)
 	d.Set("nodebalancer_id", nodebalancerID)

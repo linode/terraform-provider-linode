@@ -73,6 +73,17 @@ func FrameworkSafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
 	return result
 }
 
+func FrameworkSafeFloat64ToInt(number float64, diags *diag.Diagnostics) int {
+	result, err := SafeFloat64ToInt(number)
+	if err != nil {
+		diags.AddError(
+			"Failed float64 to int conversion",
+			err.Error(),
+		)
+	}
+	return result
+}
+
 func SafeInt64ToInt(number int64) (int, error) {
 	if number > math.MaxInt || number < math.MinInt {
 		return 0, fmt.Errorf("int64 value %v is out of range for int", number)

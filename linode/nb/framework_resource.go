@@ -368,6 +368,6 @@ func upgradeNodebalancerResourceStateV0toV1(
 
 func populateLogAttributes(ctx context.Context, model NodeBalancerModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"nodebalancer_id": model.ID,
+		"nodebalancer_id": model.ID.ValueString(),
 	})
 }
