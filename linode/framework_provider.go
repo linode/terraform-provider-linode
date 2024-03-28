@@ -203,6 +203,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instancesharedips.NewResource,
 		instancedisk.NewResource,
 		lkenodepool.NewResource,
+		image.NewResource,
 	}
 }
 
