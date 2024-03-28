@@ -74,25 +74,43 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	linodeID := d.Get("linode_id").(int)
 
-	cfg, err := client.GetInstanceConfig(ctx, linodeID, id)
+	var cfg *linodego.InstanceConfig
+	var inst *linodego.Instance
+	var instNetworking *linodego.InstanceIPAddressResponse
+
+	err = helper.RunBatch(
+		func() (err error) {
+			cfg, err = client.GetInstanceConfig(ctx, linodeID, id)
+			if err != nil {
+				err = fmt.Errorf("failed to get instance config: %w", err)
+			}
+
+			return
+		},
+		func() (err error) {
+			inst, err = client.GetInstance(ctx, linodeID)
+			if err != nil {
+				err = fmt.Errorf("failed to get instance: %w", err)
+			}
+			return
+		},
+		func() (err error) {
+			// We want to guarantee that we're resolving a public IPv4 address
+			instNetworking, err = client.GetInstanceIPAddresses(ctx, linodeID)
+			if err != nil {
+				err = fmt.Errorf("failed to get instance networking: %w", err)
+			}
+			return
+		},
+	)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.ErrHasStatus(err, 404) {
 			log.Printf("[WARN] removing Instance Config ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
+
 		return diag.Errorf("Error finding the specified Linode Instance Config: %s", err)
-	}
-
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
-
-	// We want to guarantee that we're resolving a public IPv4 address
-	instNetworking, err := client.GetInstanceIPAddresses(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("failed to get instance networking: %s", err)
 	}
 
 	configBooted, err := isConfigBooted(ctx, &client, inst, cfg.ID)
