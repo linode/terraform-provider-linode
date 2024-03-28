@@ -3,6 +3,9 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/childaccount"
+	"github.com/linode/terraform-provider-linode/v2/linode/childaccounts"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -257,5 +260,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domains.NewDataSource,
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
+		childaccount.NewDataSource,
+		childaccounts.NewDataSource,
 	}
 }

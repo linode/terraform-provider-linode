@@ -3,6 +3,8 @@ package account
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -18,7 +20,8 @@ type DataSource struct {
 	client *linodego.Client
 }
 
-func (data *DataSourceModel) parseAccount(account *linodego.Account) {
+func (data *DataSourceModel) ParseAccount(account *linodego.Account) {
+	data.EUUID = types.StringValue(account.EUUID)
 	data.Email = types.StringValue(account.Email)
 	data.FirstName = types.StringValue(account.FirstName)
 	data.LastName = types.StringValue(account.LastName)
@@ -31,6 +34,8 @@ func (data *DataSourceModel) parseAccount(account *linodego.Account) {
 	data.Country = types.StringValue(account.Country)
 	data.Zip = types.StringValue(account.Zip)
 	data.Balance = types.Float64Value(float64(account.Balance))
+	data.Capabilities = helper.StringSliceToFramework(account.Capabilities)
+	data.ActiveSince = timetypes.NewRFC3339TimePointerValue(account.ActiveSince)
 	data.ID = types.StringValue(account.Email)
 }
 
@@ -53,19 +58,22 @@ func (d *DataSource) Configure(
 }
 
 type DataSourceModel struct {
-	Email     types.String  `tfsdk:"email"`
-	FirstName types.String  `tfsdk:"first_name"`
-	LastName  types.String  `tfsdk:"last_name"`
-	Company   types.String  `tfsdk:"company"`
-	Address1  types.String  `tfsdk:"address_1"`
-	Address2  types.String  `tfsdk:"address_2"`
-	Phone     types.String  `tfsdk:"phone"`
-	City      types.String  `tfsdk:"city"`
-	State     types.String  `tfsdk:"state"`
-	Country   types.String  `tfsdk:"country"`
-	Zip       types.String  `tfsdk:"zip"`
-	Balance   types.Float64 `tfsdk:"balance"`
-	ID        types.String  `tfsdk:"id"`
+	EUUID        types.String      `tfsdk:"euuid"`
+	Email        types.String      `tfsdk:"email"`
+	FirstName    types.String      `tfsdk:"first_name"`
+	LastName     types.String      `tfsdk:"last_name"`
+	Company      types.String      `tfsdk:"company"`
+	Address1     types.String      `tfsdk:"address_1"`
+	Address2     types.String      `tfsdk:"address_2"`
+	Phone        types.String      `tfsdk:"phone"`
+	City         types.String      `tfsdk:"city"`
+	State        types.String      `tfsdk:"state"`
+	Country      types.String      `tfsdk:"country"`
+	Zip          types.String      `tfsdk:"zip"`
+	Balance      types.Float64     `tfsdk:"balance"`
+	Capabilities []types.String    `tfsdk:"capabilities"`
+	ActiveSince  timetypes.RFC3339 `tfsdk:"active_since"`
+	ID           types.String      `tfsdk:"id"`
 }
 
 func (d *DataSource) Metadata(
@@ -81,7 +89,7 @@ func (d *DataSource) Schema(
 	req datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = frameworkDatasourceSchema
+	resp.Schema = DataSourceSchema()
 }
 
 func (d *DataSource) Read(
@@ -104,6 +112,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.parseAccount(account)
+	data.ParseAccount(account)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
