@@ -55,7 +55,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseInstanceIPAddressResponse(ctx, netInfo)...)
+	data.parseInstanceIPAddressResponse(netInfo, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
