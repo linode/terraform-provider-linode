@@ -90,6 +90,8 @@ The following keys can be used to configure the provider.
 * `obj_secret_key` - (Optional) The secret key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
   The Object Secret Key can also be specified using the `LINODE_OBJ_SECRET_KEY` shell environment variable.
 
+* `obj_use_temp_keys` - (Optional) If true, temporary object keys will be created implicitly at apply-time for the [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md) resource to use.
+
 ## Early Access
 
 Some resources are made available before the feature reaches general availability. These resources are subject to change, and may not be available to all customers in all regions. Early access features can be accessed by configuring the provider to use a different version of the API.

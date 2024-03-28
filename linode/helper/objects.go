@@ -41,9 +41,14 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 	return s3.NewFromConfig(awsSDKConfig), nil
 }
 
-// S3ConnectionFromDataV1 requires endpoint, access_key and secret_key in the data.
-// if endpoint is empty a bucket and cluster are required
-func S3ConnectionFromData(ctx context.Context, d *schema.ResourceData, meta interface{}) (*s3.Client, error) {
+// S3ConnectionFromData requires endpoint in the data.
+// If endpoint is empty a bucket and cluster are required.
+func S3ConnectionFromData(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+	accessKey, secretKey string,
+) (*s3.Client, error) {
 	tflog.Debug(ctx, "creating object storage client from resource data")
 	endpoint := d.Get("endpoint").(string)
 	if endpoint == "" {
@@ -51,26 +56,6 @@ func S3ConnectionFromData(ctx context.Context, d *schema.ResourceData, meta inte
 		if endpoint, err = ComputeS3Endpoint(ctx, d, meta); err != nil {
 			return nil, err
 		}
-	}
-
-	config := meta.(*ProviderMeta).Config
-
-	var accessKey, secretKey string
-
-	if v, ok := d.GetOk("access_key"); ok {
-		accessKey = v.(string)
-	} else {
-		accessKey = config.ObjAccessKey
-	}
-
-	if v, ok := d.GetOk("secret_key"); ok {
-		secretKey = v.(string)
-	} else {
-		secretKey = config.ObjSecretKey
-	}
-
-	if accessKey == "" || secretKey == "" {
-		return nil, errors.New("access_key and secret_key are required to establish S3 connection")
 	}
 
 	return S3Connection(ctx, endpoint, accessKey, secretKey)

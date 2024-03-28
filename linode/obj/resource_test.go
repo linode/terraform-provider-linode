@@ -111,6 +111,31 @@ func TestAccResourceObject_credsConfiged(t *testing.T) {
 	})
 }
 
+func TestAccResourceObject_tempKeys(t *testing.T) {
+	t.Parallel()
+
+	content := "test_temp_keys"
+
+	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+		bucketName := acctest.RandomWithPrefix("tf-test")
+		keyName := acctest.RandomWithPrefix("tf_test")
+
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkObjectDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.TempKeys(t, bucketName, testCluster, keyName, content),
+					Check: resource.ComposeTestCheckFunc(
+						validateObject(getObjectResourceName("temp_keys"), "test_temp_keys", content),
+					),
+				},
+			},
+		})
+	})
+}
+
 func getObject(ctx context.Context, rs *terraform.ResourceState) (*s3.GetObjectOutput, error) {
 	bucket := rs.Primary.Attributes["bucket"]
 	key := rs.Primary.Attributes["key"]

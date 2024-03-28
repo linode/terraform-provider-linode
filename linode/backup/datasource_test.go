@@ -98,7 +98,7 @@ func resourceInstanceBasic(label, region string, rootPass string) string {
 resource "linode_instance" "foobar" {
 	label = "%s"
 	type = "g6-nanode-1"
-	image = "linode/alpine3.15"
+	image = "linode/ubuntu22.04"
 	region = "%s"
 	root_pass = "%s"
 	swap_size = 256

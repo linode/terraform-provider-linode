@@ -195,7 +195,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
 		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
-			d.Get("booted").(bool)); err != nil {
+			d.Get("booted").(bool), false); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}
@@ -280,6 +280,20 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		shouldUpdate = true
 	}
 
+	inst, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
+	bootedConfigID, err := helper.GetCurrentBootedConfig(ctx, &client, linodeID)
+	if err != nil {
+		tflog.Warn(
+			ctx, fmt.Sprintf("failed to get current booted config of Linode %d", linodeID),
+		)
+	}
+
+	isBootedConfig := bootedConfigID == id && inst.Status == linodego.InstanceRunning
+
 	powerOffRequired := false
 	if d.HasChange("interface") {
 		putRequest.Interfaces = helper.ExpandConfigInterfaces(ctx, d.Get("interface").([]any))
@@ -288,26 +302,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to get config %d: %s", id, err)
 		}
 
-		bootedConfigID, err := helper.GetCurrentBootedConfig(ctx, &client, linodeID)
-		if err != nil {
-			tflog.Warn(
-				ctx, fmt.Sprintf("failed to get current booted config of Linode %d", linodeID),
-			)
-		}
-
-		powerOffRequired = instancehelpers.VPCInterfaceIncluded(config.Interfaces, putRequest.Interfaces) && id == bootedConfigID
+		powerOffRequired = instancehelpers.VPCInterfaceIncluded(config.Interfaces, putRequest.Interfaces) && isBootedConfig
 		shouldUpdate = true
 	}
 
 	// We should not use `HasChange(...)` here because of possible mid-apply changes
 	managedBoot := !d.GetRawConfig().GetAttr("booted").IsNull()
 
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
-
-	shouldPowerBackOn := !managedBoot && powerOffRequired && inst.Status == linodego.InstanceRunning
+	shouldPowerBackOn := !managedBoot && powerOffRequired
 
 	if shouldUpdate {
 		if powerOffRequired {
@@ -332,9 +334,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
+	shouldReboot := isBootedConfig && shouldUpdate && !powerOffRequired && !meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
 	if managedBoot {
-		if err := applyBootStatus(ctx, &client, linodeID, id, helper.GetDeadlineSeconds(ctx, d),
-			d.Get("booted").(bool)); err != nil {
+		if err := applyBootStatus(ctx, &client, linodeID, id,
+			helper.GetDeadlineSeconds(ctx, d),
+			d.Get("booted").(bool),
+			shouldReboot); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}
