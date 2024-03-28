@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || nbs) && !optional && !long_running
 
 package nbs_test
 

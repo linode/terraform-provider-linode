@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration && !optional && !long_running
 
 package linode_test
 

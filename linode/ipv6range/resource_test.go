@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || ipv6range) && !optional && !long_running
 
 package ipv6range_test
 

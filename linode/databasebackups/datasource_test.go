@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && long_running) || databasebackups
 
 package databasebackups_test
 
@@ -43,7 +43,6 @@ func init() {
 }
 
 func TestAccDataSourcePostgresBackups_basic(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	var db linodego.PostgresDatabase

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && optional) || account
 
 package account_test
 
@@ -11,8 +11,6 @@ import (
 )
 
 func TestAccDataSourceAccount_basic_smoke(t *testing.T) {
-	acceptance.OptInTest(t)
-
 	t.Parallel()
 
 	resourceName := "data.linode_account.foo"

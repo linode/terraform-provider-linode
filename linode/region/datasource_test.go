@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || region) && !optional && !long_running
 
 package region_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && long_running) || databaseaccesscontrols
 
 package databaseaccesscontrols_test
 
@@ -53,7 +53,6 @@ func init() {
 }
 
 func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"
@@ -90,7 +89,6 @@ func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
 }
 
 func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"

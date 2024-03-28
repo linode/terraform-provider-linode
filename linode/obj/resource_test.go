@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || obj) && !optional && !long_running
 
 package obj_test
 

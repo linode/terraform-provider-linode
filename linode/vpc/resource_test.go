@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || vpc) && !optional && !long_running
 
 package vpc_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || kernels) && !optional && !long_running
 
 package kernels_test
 

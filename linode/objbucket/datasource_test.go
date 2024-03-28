@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || objbucket) && !optional && !long_running
 
 package objbucket_test
 

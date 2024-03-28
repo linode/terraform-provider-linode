@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || instancenetworking) && !optional && !long_running
 
 package instancenetworking_test
 

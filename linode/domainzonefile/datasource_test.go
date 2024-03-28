@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || domainzonefile) && !optional && !long_running
 
 package domainzonefile_test
 

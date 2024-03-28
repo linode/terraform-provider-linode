@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && optional) || accountsettings
 
 package accountsettings_test
 
@@ -13,7 +13,6 @@ import (
 )
 
 func TestAccDataSourceLinodeAccountSettings_basic(t *testing.T) {
-	acceptance.OptInTest(t)
 
 	t.Parallel()
 

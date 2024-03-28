@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || instancedisk) && !optional && !long_running
 
 package instancedisk_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || stackscript) && !optional && !long_running
 
 package stackscript_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && long_running) || databasepostgresql
 
 package databasepostgresql_test
 
@@ -76,8 +76,6 @@ func sweep(prefix string) error {
 }
 
 func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
-	acceptance.LongRunningTest(t)
-
 	t.Parallel()
 
 	resName := "linode_database_postgresql.foobar"
@@ -125,8 +123,6 @@ func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
 }
 
 func TestAccResourceDatabasePostgres_complex(t *testing.T) {
-	acceptance.LongRunningTest(t)
-
 	t.Parallel()
 
 	resName := "linode_database_postgresql.foobar"

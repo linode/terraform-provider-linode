@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || instanceip) && !optional && !long_running
 
 package instanceip_test
 

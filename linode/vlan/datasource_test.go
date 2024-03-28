@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || vlan) && !optional && !long_running
 
 package vlan_test
 

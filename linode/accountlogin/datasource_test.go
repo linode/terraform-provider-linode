@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && optional) || accountlogin
 
 package accountlogin_test
 
@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccDataSourceLinodeAccountLogin_basic(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_account_login.foobar"

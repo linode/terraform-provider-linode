@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || backup) && !optional && !long_running
 
 package backup_test
 

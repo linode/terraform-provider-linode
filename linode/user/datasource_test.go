@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || user) && !optional && !long_running
 
 package user_test
 

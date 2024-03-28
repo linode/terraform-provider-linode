@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || firewalldevice) && !optional && !long_running
 
 package firewalldevice_test
 

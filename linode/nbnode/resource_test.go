@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || nbnode) && !optional && !long_running
 
 package nbnode_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || lkenodepool) && !optional && !long_running
 
 package lkenodepool_test
 

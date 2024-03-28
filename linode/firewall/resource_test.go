@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || firewall) && !optional && !long_running
 
 package firewall_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || instance) && !optional && !long_running
 
 package instance_test
 
@@ -2264,64 +2264,6 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
-			},
-		},
-	})
-}
-
-func TestAccResourceInstance_migration(t *testing.T) {
-	acceptance.LongRunningTest(t)
-
-	t.Parallel()
-
-	rootPass := acctest.RandString(12)
-
-	resName := "linode_instance.foobar"
-	var instance linodego.Instance
-	instanceName := acctest.RandomWithPrefix("tf_test")
-
-	// Resolve a region to migrate to
-	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes"},
-		func(v linodego.Region) bool {
-			return v.ID != testRegion
-		},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "region", testRegion),
-				),
-			},
-			{
-				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, targetRegion, rootPass),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "region", targetRegion),
-				),
-			},
-			// TODO: Add logic for testing warm migrations once possible
-			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type"},
 			},
 		},
 	})

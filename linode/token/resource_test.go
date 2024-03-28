@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || token) && !optional && !long_running
 
 package token_test
 

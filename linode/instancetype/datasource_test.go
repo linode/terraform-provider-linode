@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || instancetype) && !optional && !long_running
 
 package instancetype_test
 

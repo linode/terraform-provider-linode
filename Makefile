@@ -2,8 +2,8 @@ COUNT?=1
 PARALLEL?=10
 PKG_NAME=linode/...
 TIMEOUT?=240m
-RUN_LONG_TESTS?="false"
 SWEEP?="tf_test,tf-test"
+TEST_TAGS=integration
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.28.1
@@ -64,15 +64,31 @@ unit-test: fmt-check
 int-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
-	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test --tags=integration -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
+	go test --tags=$(TEST_TAGS) -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
 
 .PHONY: smoke-test
 smoke-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
-	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
+
+.PHONY: opt-test
+opt-test: fmt-check
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	go test --tags='integration optional' -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
+
+.PHONY: long-test
+long-test: fmt-check
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	go test --tags='integration long_running' -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
+
+.PHONY: all-test
+all-test: fmt-check
+	TF_ACC=1 \
+	LINODE_API_VERSION="v4beta" \
+	go test --tags='integration optional long_running' -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
 
 .PHONY: docs-check
 docs-check:

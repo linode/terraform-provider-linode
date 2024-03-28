@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || databasemysqlbackups) && !optional && !long_running
 
 package databasemysqlbackups_test
 
@@ -42,7 +42,6 @@ func init() {
 }
 
 func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	var db linodego.MySQLDatabase

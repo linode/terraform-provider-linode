@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || profile) && !optional && !long_running
 
 package profile_test
 

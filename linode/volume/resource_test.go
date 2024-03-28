@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || volume) && !optional && !long_running
 
 package volume_test
 

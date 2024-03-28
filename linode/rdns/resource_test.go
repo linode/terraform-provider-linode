@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || rdns) && !optional && !long_running
 
 package rdns_test
 

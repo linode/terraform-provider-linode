@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || instanceconfig) && !optional && !long_running
 
 package instanceconfig_test
 

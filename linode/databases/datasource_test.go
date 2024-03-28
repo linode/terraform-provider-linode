@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && long_running) || databases
 
 package databases_test
 
@@ -41,7 +41,6 @@ func init() {
 }
 
 func TestAccDataSourceDatabases_byAttr(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_databases.foobar"

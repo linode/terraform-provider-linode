@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || instancesharedips) && !optional && !long_running
 
 package instancesharedips_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && optional) || accountlogins
 
 package accountlogins_test
 
@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccDataSourceAccountLogins_basic(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_account_logins.foobar"
@@ -40,7 +39,6 @@ func TestAccDataSourceAccountLogins_basic(t *testing.T) {
 }
 
 func TestAccDataSourceAccountLogins_filterByRestricted(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_account_logins.foobar"
@@ -90,7 +88,6 @@ func TestAccDataSourceAccountLogins_filterByRestricted(t *testing.T) {
 }
 
 func TestAccDataSourceAccountLogins_filterByUsername(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_account_logins.foobar"
@@ -140,7 +137,6 @@ func TestAccDataSourceAccountLogins_filterByUsername(t *testing.T) {
 }
 
 func TestAccDataSourceAccountLogins_filterByIP(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_account_logins.foobar"
@@ -190,7 +186,6 @@ func TestAccDataSourceAccountLogins_filterByIP(t *testing.T) {
 }
 
 func TestAccDataSourceAccountLogins_filterByStatus(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	resourceName := "data.linode_account_logins.foobar"

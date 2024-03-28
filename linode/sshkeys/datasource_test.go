@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || sshkeys) && !optional && !long_running
 
 package sshkeys_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || nbconfig) && !optional && !long_running
 
 package nbconfig_test
 

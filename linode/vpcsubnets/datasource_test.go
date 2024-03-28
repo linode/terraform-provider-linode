@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || vpcsubnets) && !optional && !long_running
 
 package vpcsubnets_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && long_running) || databasemysql
 
 package databasemysql_test
 
@@ -13,7 +13,6 @@ import (
 )
 
 func TestAccDataSourceDatabaseMySQL_basic(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "data.linode_database_mysql.foobar"

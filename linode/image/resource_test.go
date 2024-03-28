@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || image) && !optional && !long_running
 
 package image_test
 

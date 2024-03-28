@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || lke) && !optional && !long_running
 
 package lke_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || databaseengines) && !optional && !long_running
 
 package databaseengines_test
 

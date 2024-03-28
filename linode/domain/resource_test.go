@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || domain) && !optional && !long_running
 
 package domain_test
 

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || accountavailabilities) && !optional && !long_running
 
 package accountavailabilities_test
 

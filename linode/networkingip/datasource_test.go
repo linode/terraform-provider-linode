@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || networkingip) && !optional && !long_running
 
 package networkingip_test
 

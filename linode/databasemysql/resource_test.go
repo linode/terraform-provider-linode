@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && long_running) || databasemysql
 
 package databasemysql_test
 
@@ -6,12 +6,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -77,29 +75,7 @@ func sweep(prefix string) error {
 	return nil
 }
 
-func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
-	data := linodego.MySQLDatabaseMaintenanceWindow{
-		DayOfWeek: linodego.DatabaseMaintenanceDayWednesday,
-		Duration:  1,
-		Frequency: linodego.DatabaseMaintenanceFrequencyWeekly,
-		HourOfDay: 5,
-	}
-
-	dataFlattened := helper.FlattenMaintenanceWindow(data)
-
-	dataExpanded, err := helper.ExpandMaintenanceWindow(dataFlattened)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !reflect.DeepEqual(dataExpanded, data) {
-		t.Fatalf("maintenance window mismatch: %s", cmp.Diff(dataExpanded, data))
-	}
-}
-
 func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
-	acceptance.LongRunningTest(t)
-
 	t.Parallel()
 
 	resName := "linode_database_mysql.foobar"
@@ -147,7 +123,6 @@ func TestAccResourceDatabaseMySQL_basic(t *testing.T) {
 }
 
 func TestAccResourceDatabaseMySQL_complex(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_mysql.foobar"

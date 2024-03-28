@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration && optional) || accountsettings
 
 package accountsettings_test
 
@@ -13,8 +13,6 @@ import (
 )
 
 func TestAccResourceAccountSettings_basic(t *testing.T) {
-	acceptance.OptInTest(t)
-
 	resourceName := "linode_account_settings.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -35,8 +33,6 @@ func TestAccResourceAccountSettings_basic(t *testing.T) {
 }
 
 func TestAccResourceAccountSettings_update(t *testing.T) {
-	acceptance.OptInTest(t)
-
 	resourceName := "linode_account_settings.foobar"
 
 	client, err := acceptance.GetTestClient()
