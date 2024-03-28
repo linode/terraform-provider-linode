@@ -50,8 +50,6 @@ func (data *ResourceModel) FlattenImage(image *linodego.Image, preserveKnown boo
 	}
 
 	data.Capabilities = helper.KeepOrUpdateValue(data.Capabilities, newCapabilities, preserveKnown)
-	// TODO: should we do slice in model? Will it work? need more exploration here
-
 	data.Created = helper.KeepOrUpdateValue(
 		data.Created, timetypes.NewRFC3339TimePointerValue(image.Created), preserveKnown,
 	)
