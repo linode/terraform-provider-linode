@@ -186,7 +186,6 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// meta.Config.SkipImplicitReboots
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_instance_config")
 

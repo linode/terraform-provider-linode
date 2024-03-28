@@ -197,7 +197,7 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 			return nil
 		}
 
-		// Instance is booted into the wrong config
+		// Instance is booted into the wrong config or the booted config requires reboot
 		if isBooted && (currentConfig != configID || reboot) {
 			tflog.Debug(ctx, "Waiting for instance to enter running status")
 			if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
