@@ -117,7 +117,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Id()
+	id := d.Id()
+	username := d.Get("username").(string)
 	restricted := d.Get("restricted").(bool)
 
 	updateOpts := linodego.UserUpdateOptions{
@@ -129,8 +130,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		"options": updateOpts,
 	})
 
-	if _, err := client.UpdateUser(ctx, username, updateOpts); err != nil {
-		return diag.Errorf("failed to update user (%s): %s", username, err)
+	if _, err := client.UpdateUser(ctx, id, updateOpts); err != nil {
+		return diag.Errorf("failed to update user (%s): %s", id, err)
 	}
 
 	d.SetId(username)
