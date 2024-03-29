@@ -237,6 +237,10 @@ func (r *Resource) Read(
 		return
 	}
 
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+		return
+	}
+
 	imageID := state.ID.ValueString()
 
 	ctx = populateLogAttributes(ctx, imageID)
