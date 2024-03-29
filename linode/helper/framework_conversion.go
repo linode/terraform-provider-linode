@@ -48,9 +48,7 @@ func StringSliceToFramework(val []string) []types.String {
 // StringSliceToFrameworkValueSlice converts the given string slice
 // into a framework-compatible slice of attr.Value.
 func StringSliceToFrameworkValueSlice(val []string) []attr.Value {
-	return GenericSliceToFramework(val, func(v string) attr.Value {
-		return types.StringValue(v)
-	})
+	return GenericSliceToFramework(val, GetBaseSafeFwValueConverter(types.StringValue))
 }
 
 type (
@@ -85,8 +83,8 @@ func GetBaseFwValueConverter[T any, U attr.Value](c FwValueConverter[T, U]) FwVa
 
 // Returns a converter that cast the result of the passed in converter to
 // be base framework value (aka attr.Value) without diags.Diagnostics support
-func GetBaseSafeFwValueConverter[T any, U attr.Value](c FwValueConverter[T, U]) FwValueConverter[T, attr.Value] {
-	return func(v T) (attr.Value, diag.Diagnostics) {
+func GetBaseSafeFwValueConverter[T any, U attr.Value](c SafeFwValueConverter[T, U]) SafeFwValueConverter[T, attr.Value] {
+	return func(v T) attr.Value {
 		return c(v)
 	}
 }
@@ -136,8 +134,8 @@ func GenericSliceToFrameworkWithDiags[T any, U attr.Value](
 
 // GenericSliceToList converts the given generic slice
 // into a framework-compatible value of types.List with a FwValueConverter.
-func GenericSliceToList[T any, V attr.Value](
-	val []T, elementType attr.Type, converter FwValueConverter[T, V], diags *diag.Diagnostics,
+func GenericSliceToList[T any, U attr.Value](
+	val []T, elementType attr.Type, converter FwValueConverter[T, U], diags *diag.Diagnostics,
 ) types.List {
 	if val == nil {
 		return types.ListNull(elementType)
