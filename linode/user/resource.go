@@ -25,6 +25,9 @@ func Resource() *schema.Resource {
 		CreateContext: createResource,
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
@@ -66,7 +69,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Get("username").(string)
+	username := d.Id()
 
 	tflog.Trace(ctx, "client.GetUser(...)")
 
@@ -114,8 +117,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	id := d.Id()
-	username := d.Get("username").(string)
+	username := d.Id()
 	restricted := d.Get("restricted").(bool)
 
 	updateOpts := linodego.UserUpdateOptions{
@@ -127,15 +129,15 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		"options": updateOpts,
 	})
 
-	if _, err := client.UpdateUser(ctx, id, updateOpts); err != nil {
-		return diag.Errorf("failed to update user (%s): %s", id, err)
+	if _, err := client.UpdateUser(ctx, username, updateOpts); err != nil {
+		return diag.Errorf("failed to update user (%s): %s", username, err)
 	}
 
 	d.SetId(username)
 
 	if d.HasChanges(resourceLinodeUserGrantFields...) {
 		if err := updateUserGrants(ctx, d, meta); err != nil {
-			return diag.Errorf("failed to update user grants (%s): %s", id, err)
+			return diag.Errorf("failed to update user grants (%s): %s", username, err)
 		}
 	}
 
@@ -148,7 +150,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Get("username").(string)
+	username := d.Id()
 
 	tflog.Debug(ctx, "client.DeleteUser(...)")
 	if err := client.DeleteUser(ctx, username); err != nil {
@@ -160,7 +162,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Get("username").(string)
+	username := d.Id()
 	restricted := d.Get("restricted").(bool)
 
 	// TODO: Implement this validation at plan-time
