@@ -127,6 +127,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance_config.foobar"
+	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(12)
 
@@ -139,6 +140,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				Config: tmpl.Complex(t, instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
+					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
 					resource.TestCheckResourceAttr(resName, "label", "my-config"),
 					resource.TestCheckResourceAttr(resName, "comments", "cool"),
 
@@ -161,7 +163,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.ComplexUpdates(t, instanceName, testRegion, rootPass),
+				Config: tmpl.ComplexUpdates(t, instanceName, testRegion, rootPass, true),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", "my-config-updated"),
@@ -182,10 +184,14 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "root_device", "/dev/sdb"),
 					resource.TestCheckResourceAttr(resName, "virt_mode", "fullvirt"),
 
-					resource.TestCheckResourceAttr(resName, "booted", "false"),
+					resource.TestCheckResourceAttr(resName, "booted", "true"),
 
 					resource.TestCheckResourceAttrSet(resName, "devices.0.sdb.0.disk_id"),
 				),
+			},
+			{
+				PreConfig: acceptance.AssertInstanceReboot(t, true, &instance),
+				Config:    tmpl.ComplexUpdates(t, instanceName, testRegion, rootPass, true),
 			},
 			{
 				ResourceName:      resName,
@@ -485,7 +491,7 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 						t.Fatalf("failed to wait for instance to boot into rescue mode: %v", err)
 					}
 				},
-				Config: tmpl.ComplexUpdates(t, instanceName, testRegion, rootPass),
+				Config: tmpl.ComplexUpdates(t, instanceName, testRegion, rootPass, false),
 				Check: resource.ComposeTestCheckFunc(
 					checkExists(resName, nil),
 					acceptance.CheckInstanceExists(instanceResName, &instance),
