@@ -178,7 +178,7 @@ func expandHelpers(helpersRaw any) *linodego.InstanceConfigHelpers {
 }
 
 func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int, configID int,
-	timeoutSeconds int, booted bool,
+	timeoutSeconds int, booted bool, reboot bool,
 ) error {
 	instance, err := client.GetInstance(ctx, linodeID)
 	if err != nil {
@@ -193,12 +193,12 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 
 	bootedTrue := func() error {
 		// Instance is already in desired state
-		if currentConfig == configID && isBooted {
+		if currentConfig == configID && isBooted && !reboot {
 			return nil
 		}
 
-		// Instance is booted into the wrong config
-		if isBooted && currentConfig != configID {
+		// Instance is booted into the wrong config or the booted config requires reboot
+		if isBooted && (currentConfig != configID || reboot) {
 			tflog.Debug(ctx, "Waiting for instance to enter running status")
 			if _, err := client.WaitForInstanceStatus(ctx, instance.ID, linodego.InstanceRunning, timeoutSeconds); err != nil {
 				return fmt.Errorf("failed to wait for instance running: %s", err)
@@ -209,9 +209,16 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 				return fmt.Errorf("failed to poll for events: %s", err)
 			}
 
-			tflog.Info(ctx, "Wrong config booted; rebooting into correct config", map[string]any{
-				"current_config_id": currentConfig,
-			})
+			if currentConfig != configID {
+				tflog.Info(ctx, "Wrong config booted; rebooting into correct config", map[string]any{
+					"current_config_id": currentConfig,
+				})
+			}
+			if reboot {
+				tflog.Info(ctx, "Current config updated; rebooting to adopt changes", map[string]any{
+					"current_config_id": currentConfig,
+				})
+			}
 
 			if err := client.RebootInstance(ctx, instance.ID, configID); err != nil {
 				return fmt.Errorf("failed to reboot instance %d: %s", instance.ID, err)

@@ -31,12 +31,13 @@ func Complex(t *testing.T, label, region string, rootPass string) string {
 		})
 }
 
-func ComplexUpdates(t *testing.T, label, region string, rootPass string) string {
+func ComplexUpdates(t *testing.T, label, region string, rootPass string, booted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_complex_updates", TemplateData{
 			Label:    label,
 			Region:   region,
 			RootPass: rootPass,
+			Booted:   booted,
 		})
 }
 
