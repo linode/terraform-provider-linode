@@ -49,7 +49,7 @@ func (r *Resource) Create(
 		SSHKey: data.SSHKey.ValueString(),
 	}
 
-	tflog.Debug(ctx, "client.CreateSSHKey(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateSSHKey(...)", map[string]any{
 		"options": createOpts,
 	})
 

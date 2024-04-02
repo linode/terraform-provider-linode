@@ -178,7 +178,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	tflog.Debug(ctx, "client.UpdateFirewallRules(...)", map[string]any{
-		"rules": ruleSet,
+		"options": ruleSet,
 	})
 	if _, err := client.UpdateFirewallRules(ctx, id, ruleSet); err != nil {
 		return diag.Errorf("failed to update rules for firewall %d: %s", id, err)

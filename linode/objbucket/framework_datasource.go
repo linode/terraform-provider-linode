@@ -70,8 +70,6 @@ func (d *DataSource) Read(
 		"bucket":  bucketLabel,
 	})
 
-	tflog.Debug(ctx, "Fetching the object storage bucket")
-
 	bucket, err := client.GetObjectStorageBucket(ctx, cluster, bucketLabel)
 	if err != nil {
 		resp.Diagnostics.AddError(

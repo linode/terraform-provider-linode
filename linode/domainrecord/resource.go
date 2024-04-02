@@ -157,7 +157,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
-	tflog.Debug(ctx, "client.CreateDomainRecord(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateDomainRecord(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -198,7 +198,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Tag:      resourceDataStringOrNil(d, "tag"),
 	}
 
-	tflog.Debug(ctx, "client.UpdateDomainRecord(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.UpdateDomainRecord(...)", map[string]any{
 		"options": updateOpts,
 	})
 
@@ -240,16 +240,20 @@ func domainRecordTargetSuppressor(k, provisioned, declared string, d *schema.Res
 // reconcileName handles cases where the user has specified their FQDN as a part of their
 // planned record name but the API trims the FQDN from the returned record name.
 func reconcileName(ctx context.Context, client linodego.Client, d *schema.ResourceData, apiName string) (string, error) {
-	tflog.Debug(ctx, "Reconcile record name")
+	tflog.Trace(ctx, "Reconcile record name")
 
 	plannedName, ok := d.GetOk("name")
 	if !ok {
 		return apiName, nil
 	}
 
-	tflog.Trace(ctx, "client.GetDomain(...)")
+	domainId := d.Get("domain_id").(int)
 
-	domain, err := client.GetDomain(ctx, d.Get("domain_id").(int))
+	tflog.Trace(ctx, "client.GetDomain(...)", map[string]any{
+		"domain_id": domainId,
+	})
+
+	domain, err := client.GetDomain(ctx, domainId)
 	if err != nil {
 		return "", fmt.Errorf("failed to get parent domain: %w", err)
 	}
