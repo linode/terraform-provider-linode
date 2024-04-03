@@ -58,6 +58,7 @@ func flattenIPv4(network *linodego.InstanceIPv4Response, diags *diag.Diagnostics
 	}
 
 	result["reserved"] = helper.GenericSliceToList(network.Reserved, networkObjectType, flattenIP, diags)
+
 	if diags.HasError() {
 		return nil
 	}
@@ -141,32 +142,6 @@ func FlattenIPVPCNAT1To1(data *linodego.InstanceIPNAT1To1) (basetypes.ObjectValu
 	}
 
 	return obj, nil
-}
-
-func flattenVPCIP(vpc *linodego.VPCIP) (*basetypes.ObjectValue, diag.Diagnostics) {
-	result := make(map[string]attr.Value)
-
-	result["address"] = types.StringPointerValue(vpc.Address)
-	result["address_range"] = types.StringPointerValue(vpc.AddressRange)
-	result["active"] = types.BoolValue(vpc.Active)
-	result["vpc_id"] = types.Int64Value(int64(vpc.VPCID))
-	result["subnet_id"] = types.Int64Value(int64(vpc.SubnetID))
-	result["config_id"] = types.Int64Value(int64(vpc.ConfigID))
-	result["interface_id"] = types.Int64Value(int64(vpc.ConfigID))
-
-	result["gateway"] = types.StringValue(vpc.Gateway)
-	result["prefix"] = types.Int64Value(int64(vpc.Prefix))
-	result["region"] = types.StringValue(vpc.Region)
-	result["subnet_mask"] = types.StringValue(vpc.SubnetMask)
-	result["linode_id"] = types.Int64Value(int64(vpc.LinodeID))
-	result["nat_1_1"] = types.StringPointerValue(vpc.NAT1To1)
-
-	obj, d := types.ObjectValue(vpcNetworkObjectType.AttrTypes, result)
-	if d.HasError() {
-		return nil, d
-	}
-
-	return &obj, nil
 }
 
 func flattenIP(network *linodego.InstanceIP) (
