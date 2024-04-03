@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || databaseaccesscontrols
 
 package databaseaccesscontrols_test
 

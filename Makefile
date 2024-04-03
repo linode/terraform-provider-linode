@@ -4,6 +4,7 @@ PKG_NAME=linode/...
 TIMEOUT?=240m
 RUN_LONG_TESTS?="false"
 SWEEP?="tf_test,tf-test"
+TEST_TAGS="integration"
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.28.1
@@ -65,7 +66,7 @@ int-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test --tags=integration -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
+	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS) | grep -v "\[no test files\]"
 
 .PHONY: smoke-test
 smoke-test: fmt-check

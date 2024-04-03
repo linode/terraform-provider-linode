@@ -1,4 +1,4 @@
-//go:build integration
+//go:build (integration || objcluster) && !optional && !long_running
 
 package objcluster_test
 

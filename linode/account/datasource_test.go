@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || account
 
 package account_test
 

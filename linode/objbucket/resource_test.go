@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || objbucket
 
 package objbucket_test
 

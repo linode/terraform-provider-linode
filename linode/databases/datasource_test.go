@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || databases
 
 package databases_test
 

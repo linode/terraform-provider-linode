@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || accountavailabilities
 
 package accountavailabilities_test
 
