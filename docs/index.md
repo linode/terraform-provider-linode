@@ -56,7 +56,7 @@ The following keys can be used to configure the provider.
 
 ### Basic Configuration
 
-This section outlines commonly used provider configuration options. 
+This section outlines commonly used provider configuration options.
 
 * `config_path` - (Optional) The path to the Linode config file to use. (default `~/.config/linode`)
 
