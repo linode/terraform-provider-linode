@@ -59,7 +59,7 @@ test: fmt-check smoke-test unit-test int-test
 
 .PHONY: unit-test
 unit-test: fmt-check
-	go test -v --tags=unit ./$(PKG_NAME)
+	go test -v --tags=unit ./$(PKG_NAME) | grep -v "\[no test files\]"
 
 .PHONY: int-test
 int-test: fmt-check
@@ -73,7 +73,7 @@ smoke-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
+	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" | grep -v "\[no test files\]"
 
 .PHONY: docs-check
 docs-check:
