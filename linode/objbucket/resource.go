@@ -234,7 +234,7 @@ func deleteResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
-	tflog.Debug(ctx, "deleting linode_object_storage_bucket")
+	tflog.Debug(ctx, "Delete linode_object_storage_bucket")
 
 	client := meta.(*helper.ProviderMeta).Client
 	cluster, label, err := DecodeBucketID(ctx, d.Id())
@@ -242,7 +242,7 @@ func deleteResource(
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
 
-	tflog.Debug(ctx, "calling bucket deleting API")
+	tflog.Debug(ctx, "client.DeleteObjectStorageBucket(...)")
 	err = client.DeleteObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
@@ -251,10 +251,9 @@ func deleteResource(
 }
 
 func readBucketVersioning(ctx context.Context, d *schema.ResourceData, client *s3.Client) error {
-	tflog.Debug(ctx, "entering readBucketVersioning")
+	tflog.Trace(ctx, "entering readBucketVersioning")
 	label := d.Get("label").(string)
 
-	tflog.Debug(ctx, "getting bucket versioning info from the API")
 	versioningOutput, err := client.GetBucketVersioning(
 		ctx,
 		&s3.GetBucketVersioningInput{Bucket: &label},
@@ -387,7 +386,7 @@ func updateBucketAccess(
 		newCorsBool := d.Get("cors_enabled").(bool)
 		updateOpts.CorsEnabled = &newCorsBool
 	}
-	tflog.Debug(ctx, "updating bucket access", map[string]any{"updateOpts": updateOpts})
+	tflog.Debug(ctx, "client.UpdateObjectStorageBucketAccess(...)", map[string]any{"options": updateOpts})
 	if err := client.UpdateObjectStorageBucketAccess(ctx, cluster, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
@@ -405,6 +404,8 @@ func updateBucketCert(
 	hasOldCert := len(oldCert.([]any)) != 0
 
 	if hasOldCert {
+		tflog.Debug(ctx, "client.DeleteObjectStorageBucketCert(...)")
+
 		if err := client.DeleteObjectStorageBucketCert(ctx, cluster, label); err != nil {
 			return fmt.Errorf("failed to delete old bucket cert: %s", err)
 		}

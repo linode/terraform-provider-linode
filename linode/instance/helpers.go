@@ -111,7 +111,7 @@ func createInstanceConfigsFromSet(
 			return configIDMap, err
 		}
 
-		tflog.Info(ctx, "Creating instance config", map[string]any{
+		tflog.Debug(ctx, "client.CreateInstanceConfig(...)", map[string]any{
 			"options": configOpts,
 		})
 

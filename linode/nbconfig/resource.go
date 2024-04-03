@@ -226,7 +226,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("nodebalancer_id"))
 	}
 
-	tflog.Debug(ctx, "ctx.DeleteNodeBalancerConfig(...)")
+	tflog.Debug(ctx, "client.DeleteNodeBalancerConfig(...)")
 
 	err = client.DeleteNodeBalancerConfig(ctx, nodebalancerID, id)
 	if err != nil {
