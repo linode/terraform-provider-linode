@@ -1,3 +1,9 @@
+---
+page_title: "Linode: Migrating Away From Nested Configs and Disks"
+description: |-
+  Outlines the process of migrating an existing Terraform configuration away from nested Instance configs and disks.
+---
+
 # How to Migrate Embedded Attributes to Terraform-Managed Resources
 
 In this guide, we demonstrate how to migrate the `config` and `disk`
