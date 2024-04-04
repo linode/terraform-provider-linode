@@ -1,4 +1,4 @@
-//go:build integration || databasebackups
+//go:build integration || databasebackups || dbaas
 
 package databasebackups_test
 
@@ -29,7 +29,7 @@ func init() {
 
 	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "postgresql")
 	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
+		log.Fatalf("failed to get db engine version: %s", err)
 	}
 
 	engineVersion = v.ID

@@ -1,4 +1,4 @@
-//go:build integration || databaseaccesscontrols
+//go:build integration || databaseaccesscontrols || dbaas
 
 package databaseaccesscontrols_test
 

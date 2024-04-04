@@ -1,4 +1,4 @@
-//go:build integration || databaseengines
+//go:build integration || databaseengines || dbaas
 
 package databaseengines_test
 

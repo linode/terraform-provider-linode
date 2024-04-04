@@ -2,7 +2,7 @@ COUNT?=1
 PARALLEL?=10
 PKG_NAME=linode/...
 TIMEOUT?=240m
-RUN_LONG_TESTS?="false"
+RUN_LONG_TESTS?=False
 SWEEP?="tf_test,tf-test"
 TEST_TAGS="integration"
 

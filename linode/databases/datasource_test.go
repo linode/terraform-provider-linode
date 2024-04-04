@@ -1,4 +1,4 @@
-//go:build integration || databases
+//go:build integration || databases || dbaas
 
 package databases_test
 
