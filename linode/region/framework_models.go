@@ -17,8 +17,9 @@ type RegionModel struct {
 	Country      types.String           `tfsdk:"country"`
 	ID           types.String           `tfsdk:"id"`
 	Label        types.String           `tfsdk:"label"`
-	Capabilities []types.String         `tfsdk:"capabilities"`
+	SiteType     types.String           `tfsdk:"site_type"`
 	Status       types.String           `tfsdk:"status"`
+	Capabilities []types.String         `tfsdk:"capabilities"`
 	Resolvers    []RegionResolversModel `tfsdk:"resolvers"`
 }
 
@@ -27,6 +28,7 @@ func (m *RegionModel) parseRegion(region *linodego.Region) {
 	m.Label = types.StringValue(region.Label)
 	m.Status = types.StringValue(region.Status)
 	m.Country = types.StringValue(region.Country)
+	m.SiteType = types.StringValue(region.SiteType)
 
 	m.Capabilities = helper.StringSliceToFramework(region.Capabilities)
 
