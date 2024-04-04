@@ -1,4 +1,4 @@
-//go:build integration || databasepostgresql || dbaas
+//go:build integration || databasepostgresql || dbaas_tests
 
 package databasepostgresql_test
 

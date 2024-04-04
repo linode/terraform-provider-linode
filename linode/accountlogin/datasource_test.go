@@ -1,4 +1,4 @@
-//go:build integration || accountlogin
+//go:build integration || accountlogin || act_tests
 
 package accountlogin_test
 

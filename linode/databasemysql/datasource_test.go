@@ -1,4 +1,4 @@
-//go:build integration || databasemysql || dbaas
+//go:build integration || databasemysql || dbaas_tests
 
 package databasemysql_test
 
