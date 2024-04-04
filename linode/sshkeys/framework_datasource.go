@@ -65,8 +65,6 @@ func listSSHKeys(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
-	tflog.Trace(ctx, "client.ListSSHKeys(...)")
-
 	sshkeys, err := client.ListSSHKeys(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

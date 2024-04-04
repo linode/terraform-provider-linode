@@ -62,7 +62,7 @@ func listKernels(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
-	tflog.Debug(ctx, "client.ListKernels(...)", map[string]interface{}{
+	tflog.Trace(ctx, "client.ListKernels(...)", map[string]interface{}{
 		"filter": filter,
 	})
 

@@ -174,7 +174,9 @@ func (r *Resource) Update(
 		updateOpts := token.GetUpdateOptions()
 		updateOpts.Label = plan.Label.ValueString()
 
-		tflog.Debug(ctx, "client.UpdateToken(...)")
+		tflog.Debug(ctx, "client.UpdateToken(...)", map[string]any{
+			"options": updateOpts,
+		})
 		_, err = client.UpdateToken(ctx, token.ID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(

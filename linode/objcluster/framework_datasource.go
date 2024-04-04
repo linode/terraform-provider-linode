@@ -62,7 +62,6 @@ func (d *DataSource) Read(
 		"cluster_id": cluster_id,
 	})
 
-	tflog.Debug(ctx, "Fetching object storage cluster")
 	cluster, err := client.GetObjectStorageCluster(ctx, cluster_id)
 	if err != nil {
 		resp.Diagnostics.AddError(

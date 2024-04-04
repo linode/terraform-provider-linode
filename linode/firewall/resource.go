@@ -178,7 +178,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	tflog.Debug(ctx, "client.UpdateFirewallRules(...)", map[string]any{
-		"rules": ruleSet,
+		"options": ruleSet,
 	})
 	if _, err := client.UpdateFirewallRules(ctx, id, ruleSet); err != nil {
 		return diag.Errorf("failed to update rules for firewall %d: %s", id, err)
@@ -222,7 +222,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
 	}
 
-	tflog.Debug(ctx, "ctx.DeleteFirewall(...)")
+	tflog.Debug(ctx, "client.DeleteFirewall(...)")
 	if err := client.DeleteFirewall(ctx, id); err != nil {
 		return diag.Errorf("failed to delete Firewall %d: %s", id, err)
 	}
