@@ -3,11 +3,12 @@
 package helper_test
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"reflect"
-	"testing"
 )
 
 func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
