@@ -29,6 +29,8 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
+	tflog.Debug(ctx, "Read data.linode_volume")
+
 	client := r.Meta.Client
 
 	var data VolumeDataSourceModel
@@ -48,12 +50,6 @@ func (r *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	ctx = tflog.SetField(ctx, "volume_id", volumeID)
-
-	tflog.Debug(ctx, "Read data.linode_volume")
-
-	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	volume, err := client.GetVolume(ctx, volumeID)
 	if err != nil {

@@ -16,6 +16,7 @@ func TestParseRegion(t *testing.T) {
 		Country:      "us",
 		Capabilities: []string{"Linodes", "NodeBalancers", "Block Storage", "Object Storage"},
 		Status:       "ok",
+		SiteType:     "core",
 		Resolvers: linodego.RegionResolvers{
 			IPv4: "192.0.2.0,192.0.2.1",
 			IPv6: "2001:0db8::,2001:0db8::1",
@@ -31,6 +32,7 @@ func TestParseRegion(t *testing.T) {
 	assert.Equal(t, types.StringValue("Newark, NJ, USA"), model.Label)
 	assert.Equal(t, types.StringValue("ok"), model.Status)
 	assert.Equal(t, types.StringValue("us"), model.Country)
+	assert.Equal(t, types.StringValue("core"), model.SiteType)
 
 	for i, capability := range region.Capabilities {
 		assert.Equal(t, types.StringValue(capability), model.Capabilities[i])

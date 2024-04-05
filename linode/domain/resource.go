@@ -114,7 +114,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	tflog.Debug(ctx, "client.CreateDomain(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateDomain(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -175,7 +175,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.Tags = tags
 	}
 
-	tflog.Debug(ctx, "client.UpdateDomain(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.UpdateDomain(...)", map[string]any{
 		"options": updateOpts,
 	})
 

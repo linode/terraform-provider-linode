@@ -93,7 +93,9 @@ func createResourceFromUpload(
 	}
 
 	tflog.Debug(ctx, "Waiting for a single image to be ready")
-	tflog.Trace(ctx, "client.WaitForImageStatus(...)")
+	tflog.Trace(ctx, "client.WaitForImageStatus(...)", map[string]any{
+		"status": linodego.ImageStatusAvailable,
+	})
 
 	image, err = client.WaitForImageStatus(
 		ctx,
@@ -155,7 +157,9 @@ func createResourceFromLinode(
 	ctx = populateLogAttributes(ctx, image.ID)
 	tflog.Debug(ctx, "Waiting for a single image to be ready")
 
-	tflog.Trace(ctx, "client.WaitForInstanceDiskStatus(...)")
+	tflog.Trace(ctx, "client.WaitForInstanceDiskStatus(...)", map[string]any{
+		"status": "ready",
+	})
 
 	if _, err := client.WaitForInstanceDiskStatus(
 		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
@@ -364,7 +368,7 @@ func addImageResource(
 func refreshImage(
 	ctx context.Context, image *linodego.Image, client *linodego.Client, diags *diag.Diagnostics,
 ) *linodego.Image {
-	tflog.Debug(ctx, "Enter refreshImage")
+	tflog.Trace(ctx, "Enter refreshImage")
 	if image == nil {
 		diags.AddError(
 			"Can't Refresh the Image",
@@ -403,7 +407,7 @@ func uploadImageAndStoreHash(
 	tee := io.TeeReader(image, hash)
 
 	tflog.Debug(ctx, "client.UploadImageToURL(...)", map[string]any{
-		"uploadURL": uploadURL,
+		"upload_url": uploadURL,
 	})
 
 	if err := client.UploadImageToURL(ctx, uploadURL, tee); err != nil {

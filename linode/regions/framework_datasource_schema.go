@@ -7,6 +7,7 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
+	"site_type":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"capabilities": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"country":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"status":       {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
@@ -36,8 +37,12 @@ var frameworkDataSourceSchema = schema.Schema{
 						Description: "Detailed location information for this Region, including city, state or region, and country.",
 						Computed:    true,
 					},
+					"site_type": schema.StringAttribute{
+						Description: "The type of this Region.",
+						Computed:    true,
+					},
 					"capabilities": schema.SetAttribute{
-						Description: "A list of capabilities of this region.",
+						Description: "A list of capabilities of this Region.",
 						Computed:    true,
 						ElementType: types.StringType,
 					},

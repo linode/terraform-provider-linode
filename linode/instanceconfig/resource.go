@@ -180,8 +180,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.Devices = *devices
 	}
 
-	tflog.Debug(ctx, "Sending config creation API request", map[string]any{
-		"body": createOpts,
+	tflog.Debug(ctx, "client.CreateInstanceConfig(...)", map[string]any{
+		"options": createOpts,
 	})
 
 	cfg, err := client.CreateInstanceConfig(ctx, linodeID, createOpts)
@@ -220,9 +220,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		"id":        id,
 		"linode_id": linodeID,
 	})
-
-	tflog.Debug(ctx, "Update resource")
-
 	putRequest := linodego.InstanceConfigUpdateOptions{}
 	shouldUpdate := false
 
@@ -320,8 +317,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			}
 		}
 
-		tflog.Debug(ctx, "Update detected, sending config PUT request to API", map[string]any{
-			"body": putRequest,
+		tflog.Debug(ctx, "client.UpdateInstanceConfig(...)", map[string]any{
+			"options": putRequest,
 		})
 		if _, err := client.UpdateInstanceConfig(ctx, linodeID, id, putRequest); err != nil {
 			return diag.Errorf("failed to update instance config: %s", err)
@@ -376,9 +373,12 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to poll for events: %s", err)
 		}
 
+		tflog.Debug(ctx, "client.ShutdownInstance(...)")
 		if err := client.ShutdownInstance(ctx, inst.ID); err != nil {
 			return diag.Errorf("failed to shutdown instance: %s", err)
 		}
+
+		tflog.Trace(ctx, "Waiting for instance shutdown to finish")
 
 		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
@@ -386,7 +386,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		tflog.Debug(ctx, "Instance shutdown complete")
 	}
 
-	tflog.Debug(ctx, "Deleting instance config")
+	tflog.Debug(ctx, "client.DeleteInstanceConfig(...)")
 
 	err = client.DeleteInstanceConfig(ctx, linodeID, id)
 	if err != nil {
