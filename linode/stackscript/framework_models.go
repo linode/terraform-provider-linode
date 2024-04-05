@@ -11,6 +11,26 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+// StackScriptModel describes the older Terraform resource data model to match the
+// resource schema of Terraform Provider for Linode v1.
+// The only difference is the format of time for created and updated attributes
+type StackScriptModelV0 struct {
+	ID                types.String `tfsdk:"id"`
+	Label             types.String `tfsdk:"label"`
+	Script            types.String `tfsdk:"script"`
+	Description       types.String `tfsdk:"description"`
+	RevNote           types.String `tfsdk:"rev_note"`
+	IsPublic          types.Bool   `tfsdk:"is_public"`
+	Images            types.Set    `tfsdk:"images"`
+	DeploymentsActive types.Int64  `tfsdk:"deployments_active"`
+	UserGravatarID    types.String `tfsdk:"user_gravatar_id"`
+	DeploymentsTotal  types.Int64  `tfsdk:"deployments_total"`
+	Username          types.String `tfsdk:"username"`
+	Created           types.String `tfsdk:"created"`
+	Updated           types.String `tfsdk:"updated"`
+	UserDefinedFields types.List   `tfsdk:"user_defined_fields"`
+}
+
 // StackScriptModel describes the Terraform resource data model to match the
 // resource schema.
 type StackScriptModel struct {
