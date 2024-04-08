@@ -38,12 +38,14 @@ func Provider() *schema.Provider {
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The path to the Linode config file to use. (default `~/.config/linode`)",
 			},
 			"config_profile": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Linode config profile to use. (default `default`)",
 			},
 			"url": {
 				Type:         schema.TypeString,
