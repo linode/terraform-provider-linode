@@ -6,6 +6,14 @@ description: |-
 
 # linode\_lke\_node\_pool
 
+~> **Notice** To prevent the node pools created by the `linode_lke_node_pool` resource
+from being managed by the `linode_lke_cluster` resource, you must configure the
+`external_pool_tags` attribute of the `linode_lke_cluster` resource and the `tags`
+attribute of the `linode_lke_node_pool` resource. Failure to configure these attributes
+may lead to recreation of the node pools in order to fix them. Please carefully review
+[Externally Managed Node Pools](lke_cluster.md#externally-managed-node-pools) before
+proceeding to create `linode_lke_node_pool` resources with a `linode_lke_cluster` resource.
+
 Manages an LKE Node Pool.
 
 ## Example Usage
