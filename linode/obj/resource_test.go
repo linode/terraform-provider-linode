@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || obj
 
 package obj_test
 

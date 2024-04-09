@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || instanceconfig
 
 package instanceconfig_test
 

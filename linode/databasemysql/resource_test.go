@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || databasemysql || dbaas_tests
 
 package databasemysql_test
 
@@ -6,12 +6,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -39,7 +37,7 @@ func init() {
 
 	v, err := helper.ResolveValidDBEngine(context.Background(), *client, "mysql")
 	if err != nil {
-		log.Fatalf("failde to get db engine version: %s", err)
+		log.Fatalf("failed to get db engine version: %s", err)
 	}
 
 	engineVersion = v.ID
@@ -75,26 +73,6 @@ func sweep(prefix string) error {
 	}
 
 	return nil
-}
-
-func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {
-	data := linodego.MySQLDatabaseMaintenanceWindow{
-		DayOfWeek: linodego.DatabaseMaintenanceDayWednesday,
-		Duration:  1,
-		Frequency: linodego.DatabaseMaintenanceFrequencyWeekly,
-		HourOfDay: 5,
-	}
-
-	dataFlattened := helper.FlattenMaintenanceWindow(data)
-
-	dataExpanded, err := helper.ExpandMaintenanceWindow(dataFlattened)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !reflect.DeepEqual(dataExpanded, data) {
-		t.Fatalf("maintenance window mismatch: %s", cmp.Diff(dataExpanded, data))
-	}
 }
 
 func TestAccResourceDatabaseMySQL_basic(t *testing.T) {

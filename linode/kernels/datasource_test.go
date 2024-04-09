@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || kernels
 
 package kernels_test
 
