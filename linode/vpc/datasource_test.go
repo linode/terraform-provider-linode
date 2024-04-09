@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || vpc
 
 package vpc_test
 

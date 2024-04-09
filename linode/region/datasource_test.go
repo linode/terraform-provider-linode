@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || region
 
 package region_test
 

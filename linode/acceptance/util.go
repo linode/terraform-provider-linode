@@ -32,7 +32,7 @@ const (
 	optInTestsEnvVar         = "ACC_OPT_IN_TESTS"
 	SkipInstanceReadyPollKey = "skip_instance_ready_poll"
 
-	runLongTestsEnvVar  = "RUN_LONG_TEST"
+	runLongTestsEnvVar  = "RUN_LONG_TESTS"
 	skipLongTestMessage = "This test has been marked as a long-running test and is skipped by default. " +
 		"If you would like to run this test, please set the RUN_LONG_TEST environment variable to true."
 )

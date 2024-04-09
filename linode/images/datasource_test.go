@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || images
 
 package images_test
 
