@@ -18,4 +18,3 @@ func UpgradeTimeFormatToRFC3339(oldTime string) (timetypes.RFC3339, error) {
 
 	return timetypes.NewRFC3339TimeValue(newTime), nil
 }
-
