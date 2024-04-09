@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper/stateupgrade"
 )
 
 func NewResource() resource.Resource {
@@ -60,13 +61,13 @@ func upgradeStackScriptStateV0toV1(ctx context.Context, req resource.UpgradeStat
 		UserDefinedFields: stateV0.UserDefinedFields,
 	}
 
-	newCreated, err := UpgradeTimeFormatToRFC3339(stateV0.Created.ValueString())
+	newCreated, err := stateupgrade.UpgradeTimeFormatToRFC3339(stateV0.Created.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to Upgrade Time Format", err.Error())
 		return
 	}
 
-	newUpdated, err := UpgradeTimeFormatToRFC3339(stateV0.Updated.ValueString())
+	newUpdated, err := stateupgrade.UpgradeTimeFormatToRFC3339(stateV0.Updated.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to Upgrade Time Format", err.Error())
 		return

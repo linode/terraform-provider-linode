@@ -1,12 +1,12 @@
 //go:build unit
 
-package stackscript_test
+package stateupgrade_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/stackscript"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper/stateupgrade"
 )
 
 func TestStackScriptUpgradeTimeFormat(t *testing.T) {
@@ -20,7 +20,7 @@ func TestStackScriptUpgradeTimeFormat(t *testing.T) {
 func testTimeUpgrader(t *testing.T, trueTime time.Time, timeString string) {
 	t.Helper()
 
-	upgradedRFC3339Time, err := stackscript.UpgradeTimeFormatToRFC3339(timeString)
+	upgradedRFC3339Time, err := stateupgrade.UpgradeTimeFormatToRFC3339(timeString)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,3 +34,4 @@ func testTimeUpgrader(t *testing.T, trueTime time.Time, timeString string) {
 		t.Fatal("time value not matched")
 	}
 }
+
