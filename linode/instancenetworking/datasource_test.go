@@ -62,7 +62,6 @@ func TestAccDataSourceInstanceNetworking_vpc(t *testing.T) {
 
 	instanceVPCIP := "10.0.0.3"
 	name := acctest.RandomWithPrefix("tf-test")
-	t.Log(name)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
