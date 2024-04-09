@@ -29,12 +29,31 @@ var networkObjectType = types.ObjectType{
 	},
 }
 
+var vpcNetworkObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"address":       types.StringType,
+		"address_range": types.StringType,
+		"active":        types.BoolType,
+		"vpc_id":        types.Int64Type,
+		"subnet_id":     types.Int64Type,
+		"config_id":     types.Int64Type,
+		"interface_id":  types.Int64Type,
+		"gateway":       types.StringType,
+		"prefix":        types.Int64Type,
+		"region":        types.StringType,
+		"subnet_mask":   types.StringType,
+		"linode_id":     types.Int64Type,
+		"nat_1_1":       types.StringType,
+	},
+}
+
 var ipv4ObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"private":  types.ListType{ElemType: networkObjectType},
 		"public":   types.ListType{ElemType: networkObjectType},
 		"reserved": types.ListType{ElemType: networkObjectType},
 		"shared":   types.ListType{ElemType: networkObjectType},
+		"vpc":      types.ListType{ElemType: vpcNetworkObjectType},
 	},
 }
 
@@ -62,12 +81,12 @@ var frameworkDatasourceSchema = schema.Schema{
 			Required:    true,
 		},
 		"ipv4": schema.ListAttribute{
-			Description: "Information about this Linode’s IPv4 addresses.",
+			Description: "Information about this Linode's IPv4 addresses.",
 			Computed:    true,
 			ElementType: ipv4ObjectType,
 		},
 		"ipv6": schema.ListAttribute{
-			Description: "Information about this Linode’s IPv6 addresses.",
+			Description: "Information about this Linode's IPv6 addresses.",
 			Computed:    true,
 			ElementType: ipv6ObjectType,
 		},
