@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || vpcs
 
 package vpcs_test
 

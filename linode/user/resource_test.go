@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || user
 
 package user_test
 
@@ -38,11 +38,6 @@ func TestAccResourceUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(testUserResName, "tfa_enabled", "false"),
 				),
 			},
-			{
-				ResourceName:      testUserResName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 		},
 	})
 }
@@ -77,11 +72,6 @@ func TestAccResourceUser_updates(t *testing.T) {
 					resource.TestCheckResourceAttr(testUserResName, "ssh_keys.#", "0"),
 					resource.TestCheckResourceAttr(testUserResName, "tfa_enabled", "false"),
 				),
-			},
-			{
-				ResourceName:      testUserResName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -135,11 +125,6 @@ func TestAccResourceUser_grants(t *testing.T) {
 					resource.TestCheckResourceAttr(testUserResName, "linode_grant.#", "1"),
 					resource.TestCheckResourceAttr(testUserResName, "linode_grant.0.permissions", "read_write"),
 				),
-			},
-			{
-				ResourceName:      testUserResName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})

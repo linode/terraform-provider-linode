@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || nbconfig
 
 package nbconfig_test
 
