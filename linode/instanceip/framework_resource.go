@@ -42,7 +42,6 @@ func (r *Resource) Create(
 	}
 
 	ctx = populateLogAttributes(ctx, &plan)
-	tflog.Debug(ctx, "got plan data", map[string]any{"plan": plan})
 
 	linodeID := helper.FrameworkSafeInt64ToInt(
 		plan.LinodeID.ValueInt64(),
@@ -66,9 +65,16 @@ func (r *Resource) Create(
 
 	if plan.RDNS.IsNull() && plan.RDNS.IsUnknown() {
 		rdns := plan.RDNS.ValueString()
-		if _, err := client.UpdateIPAddress(ctx, ip.Address, linodego.IPAddressUpdateOptions{
+
+		options := linodego.IPAddressUpdateOptions{
 			RDNS: &rdns,
-		}); err != nil {
+		}
+
+		tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{
+			"options": options,
+		})
+
+		if _, err := client.UpdateIPAddress(ctx, ip.Address, options); err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf(
 					"failed to set RDNS for instance (%d) ip (%s)",
@@ -78,10 +84,6 @@ func (r *Resource) Create(
 			)
 			return
 		}
-
-		tflog.Info(ctx, "Updated RDNS for IP address", map[string]any{
-			"rdns": rdns,
-		})
 	}
 
 	if ip == nil {
@@ -104,7 +106,7 @@ func (r *Resource) Create(
 	}
 
 	if plan.ApplyImmediately.ValueBool() {
-		tflog.Debug(ctx, "attempting apply_immediately")
+		tflog.Debug(ctx, "Attempting apply_immediately")
 
 		instance, err := client.GetInstance(ctx, linodeID)
 		if err != nil {
@@ -118,9 +120,8 @@ func (r *Resource) Create(
 			resp.Diagnostics.Append(helper.FrameworkRebootInstance(ctx, linodeID, client, 0)...)
 			cancel()
 		} else {
-			tflog.Info(ctx, "detected instance not in running status, can't perform a reboot.")
+			tflog.Info(ctx, "Detected instance not in running status, can't perform a reboot.")
 		}
-
 	}
 }
 
@@ -142,7 +143,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = populateLogAttributes(ctx, &state)
-	tflog.Debug(ctx, "got state data", map[string]any{"state": state})
 
 	client := r.Meta.Client
 	address := state.Address.ValueString()
@@ -207,12 +207,14 @@ func (r *Resource) Update(
 			RDNS: rdns,
 		}
 
-		tflog.Info(ctx, "Updating RDNS for IP", map[string]any{
-			"rdns": rdns,
-		})
 		client := r.Meta.Client
 		address := plan.Address.ValueString()
 		linodeID := plan.LinodeID.ValueInt64()
+
+		tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{
+			"options": updateOptions,
+		})
+
 		ip, err := client.UpdateIPAddress(ctx, address, updateOptions)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -265,6 +267,8 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "client.DeleteInstanceIPAddress(...)")
 	if err := client.DeleteInstanceIPAddress(ctx, linodeID, address); err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
@@ -281,6 +285,6 @@ func (r *Resource) Delete(
 func populateLogAttributes(ctx context.Context, data *InstanceIPModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
 		"linode_id": data.LinodeID.ValueInt64(),
-		"id":        data.ID.ValueString(),
+		"address":   data.ID.ValueString(),
 	})
 }

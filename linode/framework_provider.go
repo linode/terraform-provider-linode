@@ -114,10 +114,12 @@ func (p *FrameworkProvider) Schema(
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "The path to the Linode config file to use. (default `~/.config/linode`)",
 			},
 			"config_profile": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "The Linode config profile to use. (default `default`)",
 			},
 			"url": schema.StringAttribute{
 				Optional:    true,
@@ -203,6 +205,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instancesharedips.NewResource,
 		instancedisk.NewResource,
 		lkenodepool.NewResource,
+		image.NewResource,
 	}
 }
 

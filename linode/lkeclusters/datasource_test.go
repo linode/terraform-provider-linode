@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || lkeclusters
 
 package lkeclusters_test
 

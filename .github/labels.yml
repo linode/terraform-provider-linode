@@ -1,28 +1,38 @@
-- name: added-feature
+# PR Labels
+- name: new-feature
   description: for new features in the changelog.
-  color: a2eeef
-- name: changed
-  description: for changes in existing functionality in the changelog.
-  color: a2eeef
-- name: deprecated
-  description: for soon-to-be removed features in the changelog.
-  color: e4e669
-- name: removed
-  description: for now removed features in the changelog.
-  color: e4e669
+  color: 225fee
+- name: improvement
+  description: for improvements in existing functionality in the changelog.
+  color: 22ee47
+- name: repo-ci-improvement
+  description: for improvements in the repository or CI workflow in the changelog.
+  color: c922ee
 - name: bugfix
   description: for any bug fixes in the changelog.
-  color: d73a4a
-- name: security
-  description: for vulnerabilities in the changelog.
-  color: dd4739
-- name: bug
-  description: Something isn't working in this issue.
-  color: d73a4a
+  color: ed8e21
+- name: documentation
+  description: for updates to the documentation in the changelog.
+  color: d3e1e6
+- name: dependencies
+  description: dependency updates usually from dependabot
+  color: 5c9dff
+- name: testing
+  description: for updates to the testing suite in the changelog.
+  color: 933ac9
+- name: breaking-change
+  description: for breaking changes in the changelog.
+  color: ff0000
+- name: ignore-for-release
+  description: PRs you do not want to render in the changelog
+  color: 7b8eac
+- name: do-not-merge
+  description: PRs that should not be merged until the commented issue is resolved
+  color: eb1515
+# Issue Labels
 - name: enhancement
-  description: New feature request in this issue.
-  color: a2eeef
-- name: good first issue
-  description: Low hanging fruit.
-  color: 7057ff
-
+  description: issues that request a enhancement
+  color: 22ee47
+- name: bug
+  description: issues that report a bug
+  color: ed8e21

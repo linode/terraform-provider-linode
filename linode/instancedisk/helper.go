@@ -28,8 +28,6 @@ func getLinodeIDAndDiskID(data ResourceModel, diags *diag.Diagnostics) (int, int
 func handleDiskResize(
 	ctx context.Context, client *linodego.Client, instID, diskID, newSize, timeoutSeconds int,
 ) error {
-	tflog.Trace(ctx, "Enter handleDiskResize function")
-
 	configID, err := helper.GetCurrentBootedConfig(ctx, client, instID)
 	if err != nil {
 		return err
@@ -44,6 +42,8 @@ func handleDiskResize(
 		if err != nil {
 			return fmt.Errorf("failed to poll for events: %s", err)
 		}
+
+		tflog.Debug(ctx, "client.ShutdownInstance(...)")
 
 		if err := client.ShutdownInstance(ctx, instID); err != nil {
 			return fmt.Errorf("failed to shutdown instance: %s", err)
@@ -63,6 +63,11 @@ func handleDiskResize(
 		return fmt.Errorf("failed to get instance disk: %s", err)
 	}
 
+	tflog.Info(ctx, "Resizing Instance disk", map[string]any{
+		"old_size": disk.Size,
+		"new_size": newSize,
+	})
+
 	p, err := client.NewEventPollerWithSecondary(
 		ctx,
 		instID,
@@ -73,11 +78,9 @@ func handleDiskResize(
 		return fmt.Errorf("failed to poll for events: %s", err)
 	}
 
-	tflog.Info(ctx, "Resizing Instance disk", map[string]any{
-		"old_size": disk.Size,
+	tflog.Debug(ctx, "client.ResizeInstanceDisk(...)", map[string]any{
 		"new_size": newSize,
 	})
-
 	if err := client.ResizeInstanceDisk(ctx, instID, diskID, newSize); err != nil {
 		return fmt.Errorf("failed to resize disk: %s", err)
 	}
@@ -107,6 +110,9 @@ func handleDiskResize(
 			return fmt.Errorf("failed to poll for events: %s", err)
 		}
 
+		tflog.Debug(ctx, "client.BootInstance(...)", map[string]any{
+			"config_id": configID,
+		})
 		if err := client.BootInstance(ctx, instID, configID); err != nil {
 			return fmt.Errorf("failed to boot instance %d %d: %s", instID, configID, err)
 		}

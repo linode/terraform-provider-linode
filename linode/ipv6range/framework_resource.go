@@ -153,7 +153,7 @@ func (r *Resource) Read(
 	}
 
 	ctx = populateLogAttributes(ctx, data)
-	tflog.Debug(ctx, "client.GetIPv6Range(...)")
+	tflog.Trace(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
@@ -196,7 +196,7 @@ func (r *Resource) Update(
 	}
 
 	ctx = populateLogAttributes(ctx, plan)
-	tflog.Debug(ctx, "client.GetIPv6Range(...)")
+	tflog.Trace(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, plan.ID.ValueString())
 	if err != nil {

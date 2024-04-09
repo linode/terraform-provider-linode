@@ -62,8 +62,8 @@ func (r *DataSource) Read(
 }
 
 func listRegions(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-	tflog.Debug(ctx, "client.ListRegions(...)", map[string]interface{}{
-		"body": filter,
+	tflog.Trace(ctx, "client.ListRegions(...)", map[string]interface{}{
+		"filter": filter,
 	})
 
 	regions, err := client.ListRegions(ctx, &linodego.ListOptions{

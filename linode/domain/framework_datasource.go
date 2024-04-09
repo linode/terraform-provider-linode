@@ -83,13 +83,17 @@ func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domai
 }
 
 func (d *DataSource) getDomainByDomain(ctx context.Context, domain string) (*linodego.Domain, diag.Diagnostic) {
-	tflog.Debug(ctx, "Get domain by domain", map[string]interface{}{
+	tflog.Trace(ctx, "Get domain by domain", map[string]any{
 		"domain": domain,
 	})
 
-	filter, _ := json.Marshal(map[string]interface{}{"domain": domain})
-
-	tflog.Trace(ctx, "client.ListDomains(...)")
+	filter, err := json.Marshal(map[string]interface{}{"domain": domain})
+	if err != nil {
+		return nil, diag.NewErrorDiagnostic(
+			"Failed to marshal domain filter",
+			err.Error(),
+		)
+	}
 
 	domains, err := d.Meta.Client.ListDomains(ctx, linodego.NewListOptions(0, string(filter)))
 	if err != nil {

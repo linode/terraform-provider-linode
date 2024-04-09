@@ -74,25 +74,43 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	linodeID := d.Get("linode_id").(int)
 
-	cfg, err := client.GetInstanceConfig(ctx, linodeID, id)
+	var cfg *linodego.InstanceConfig
+	var inst *linodego.Instance
+	var instNetworking *linodego.InstanceIPAddressResponse
+
+	err = helper.RunBatch(
+		func() (err error) {
+			cfg, err = client.GetInstanceConfig(ctx, linodeID, id)
+			if err != nil {
+				err = fmt.Errorf("failed to get instance config: %w", err)
+			}
+
+			return
+		},
+		func() (err error) {
+			inst, err = client.GetInstance(ctx, linodeID)
+			if err != nil {
+				err = fmt.Errorf("failed to get instance: %w", err)
+			}
+			return
+		},
+		func() (err error) {
+			// We want to guarantee that we're resolving a public IPv4 address
+			instNetworking, err = client.GetInstanceIPAddresses(ctx, linodeID)
+			if err != nil {
+				err = fmt.Errorf("failed to get instance networking: %w", err)
+			}
+			return
+		},
+	)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.ErrHasStatus(err, 404) {
 			log.Printf("[WARN] removing Instance Config ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil
 		}
+
 		return diag.Errorf("Error finding the specified Linode Instance Config: %s", err)
-	}
-
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
-
-	// We want to guarantee that we're resolving a public IPv4 address
-	instNetworking, err := client.GetInstanceIPAddresses(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("failed to get instance networking: %s", err)
 	}
 
 	configBooted, err := isConfigBooted(ctx, &client, inst, cfg.ID)
@@ -162,8 +180,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		createOpts.Devices = *devices
 	}
 
-	tflog.Debug(ctx, "Sending config creation API request", map[string]any{
-		"body": createOpts,
+	tflog.Debug(ctx, "client.CreateInstanceConfig(...)", map[string]any{
+		"options": createOpts,
 	})
 
 	cfg, err := client.CreateInstanceConfig(ctx, linodeID, createOpts)
@@ -177,7 +195,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if !d.GetRawConfig().GetAttr("booted").IsNull() {
 		if err := applyBootStatus(ctx, &client, linodeID, cfg.ID, helper.GetDeadlineSeconds(ctx, d),
-			d.Get("booted").(bool)); err != nil {
+			d.Get("booted").(bool), false); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}
@@ -202,9 +220,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		"id":        id,
 		"linode_id": linodeID,
 	})
-
-	tflog.Debug(ctx, "Update resource")
-
 	putRequest := linodego.InstanceConfigUpdateOptions{}
 	shouldUpdate := false
 
@@ -262,6 +277,20 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		shouldUpdate = true
 	}
 
+	inst, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
+	}
+
+	bootedConfigID, err := helper.GetCurrentBootedConfig(ctx, &client, linodeID)
+	if err != nil {
+		tflog.Warn(
+			ctx, fmt.Sprintf("failed to get current booted config of Linode %d", linodeID),
+		)
+	}
+
+	isBootedConfig := bootedConfigID == id && inst.Status == linodego.InstanceRunning
+
 	powerOffRequired := false
 	if d.HasChange("interface") {
 		putRequest.Interfaces = helper.ExpandConfigInterfaces(ctx, d.Get("interface").([]any))
@@ -270,26 +299,14 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to get config %d: %s", id, err)
 		}
 
-		bootedConfigID, err := helper.GetCurrentBootedConfig(ctx, &client, linodeID)
-		if err != nil {
-			tflog.Warn(
-				ctx, fmt.Sprintf("failed to get current booted config of Linode %d", linodeID),
-			)
-		}
-
-		powerOffRequired = instancehelpers.VPCInterfaceIncluded(config.Interfaces, putRequest.Interfaces) && id == bootedConfigID
+		powerOffRequired = instancehelpers.VPCInterfaceIncluded(config.Interfaces, putRequest.Interfaces) && isBootedConfig
 		shouldUpdate = true
 	}
 
 	// We should not use `HasChange(...)` here because of possible mid-apply changes
 	managedBoot := !d.GetRawConfig().GetAttr("booted").IsNull()
 
-	inst, err := client.GetInstance(ctx, linodeID)
-	if err != nil {
-		return diag.Errorf("Error finding the specified Linode Instance: %s", err)
-	}
-
-	shouldPowerBackOn := !managedBoot && powerOffRequired && inst.Status == linodego.InstanceRunning
+	shouldPowerBackOn := !managedBoot && powerOffRequired
 
 	if shouldUpdate {
 		if powerOffRequired {
@@ -300,8 +317,8 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			}
 		}
 
-		tflog.Debug(ctx, "Update detected, sending config PUT request to API", map[string]any{
-			"body": putRequest,
+		tflog.Debug(ctx, "client.UpdateInstanceConfig(...)", map[string]any{
+			"options": putRequest,
 		})
 		if _, err := client.UpdateInstanceConfig(ctx, linodeID, id, putRequest); err != nil {
 			return diag.Errorf("failed to update instance config: %s", err)
@@ -314,9 +331,12 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
+	shouldReboot := isBootedConfig && shouldUpdate && !powerOffRequired && !meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
 	if managedBoot {
-		if err := applyBootStatus(ctx, &client, linodeID, id, helper.GetDeadlineSeconds(ctx, d),
-			d.Get("booted").(bool)); err != nil {
+		if err := applyBootStatus(ctx, &client, linodeID, id,
+			helper.GetDeadlineSeconds(ctx, d),
+			d.Get("booted").(bool),
+			shouldReboot); err != nil {
 			return diag.Errorf("failed to update boot status: %s", err)
 		}
 	}
@@ -353,9 +373,12 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.Errorf("failed to poll for events: %s", err)
 		}
 
+		tflog.Debug(ctx, "client.ShutdownInstance(...)")
 		if err := client.ShutdownInstance(ctx, inst.ID); err != nil {
 			return diag.Errorf("failed to shutdown instance: %s", err)
 		}
+
+		tflog.Trace(ctx, "Waiting for instance shutdown to finish")
 
 		if _, err := p.WaitForFinished(ctx, helper.GetDeadlineSeconds(ctx, d)); err != nil {
 			return diag.Errorf("failed to wait for instance shutdown: %s", err)
@@ -363,7 +386,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		tflog.Debug(ctx, "Instance shutdown complete")
 	}
 
-	tflog.Debug(ctx, "Deleting instance config")
+	tflog.Debug(ctx, "client.DeleteInstanceConfig(...)")
 
 	err = client.DeleteInstanceConfig(ctx, linodeID, id)
 	if err != nil {

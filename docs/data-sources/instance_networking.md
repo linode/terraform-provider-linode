@@ -42,6 +42,8 @@ The following attributes are available for each Linode’s IPv4 addresses:
 
 * [`shared`] (#shared)- A list of shared IP Address objects assigned to this Linode.
 
+* [`vpc`] (#vpc)- A list of VPC IP Address objects assigned to this Linode.
+
 ### IPv6
 
 The following attributes are available for each Linode’s IPv6 addresses:
@@ -96,6 +98,11 @@ A list of public IP Address objects belonging to this Linode.
 
 * `type` - The type of address this is.
 
+* `vpc_nat_1_1` - IPv4 address configured as a 1:1 NAT for this Interface.
+  * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
+  * `subnet_id` - The `id` of the VPC Subnet for this Interface.
+  * `vpc_id` - The `id` of the VPC configured for this Interface.
+
 ### Reserved
 
 A list of reserved IP Address objects belonging to this Linode.
@@ -118,6 +125,11 @@ A list of reserved IP Address objects belonging to this Linode.
 
 * `type` - The type of address this is.
 
+* `vpc_nat_1_1` - IPv4 address configured as a 1:1 NAT for this Interface.
+  * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
+  * `subnet_id` - The `id` of the VPC Subnet for this Interface.
+  * `vpc_id` - The `id` of the VPC configured for this Interface.
+
 ### Shared
 
 A list of shared IP Address objects assigned to this Linode.
@@ -139,6 +151,41 @@ A list of shared IP Address objects assigned to this Linode.
 * `subnet_mask` - The mask that separates host bits from network bits for this address.
 
 * `type` - The type of address this is.
+
+* `vpc_nat_1_1` - IPv4 address configured as a 1:1 NAT for this Interface.
+  * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
+  * `subnet_id` - The `id` of the VPC Subnet for this Interface.
+  * `vpc_id` - The `id` of the VPC configured for this Interface.
+
+### VPC
+
+A list of VPC IP Address objects assigned to this Linode.
+
+* `address` - An IPv4 address configured for this VPC interface. It will be `null` if it's an `address_range`.
+
+* `address_range` - A range of IPv4 addresses configured for this VPC interface. it will be `null` if it's a single `address`.
+
+* `active` - Returns `true` if the VPC interface is in use, meaning that the Linode was powered on using the `config_id` to which the interface belongs. Otherwise returns `false`.
+
+* `vpc_id` - The unique globally general API entity identifier for the VPC.
+
+* `subnet_id` - The unique globally general API entity identifier for the VPC subnet.
+
+* `config_id` - The globally general entity identifier for the Linode configuration profile where the VPC is included.
+
+* `interface_id` - The globally general API entity identifier for the Linode interface.
+
+* `gateway` - The default gateway for the VPC subnet that the IP or IP range belongs to.
+
+* `prefix` - The number of bits set in the `subnet_mask`.
+
+* `region` - The region of the VPC.
+
+* `subnet_mask` - The mask that separates host bits from network bits for the `address` or `address_range`.
+
+* `linode_id` - The identifier for the Linode the VPC interface currently belongs to.
+
+* `nat_1_1` - The public IP address used for NAT 1:1 with the VPC. This is `null` if the VPC interface uses an `address_range` or NAT 1:1 isn't used.
 
 ### Global
 

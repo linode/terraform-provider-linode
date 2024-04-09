@@ -289,7 +289,7 @@ func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version s
 		deleteObjectInput.VersionId = &version
 	}
 
-	tflog.Debug(ctx, "DeleteObjectInput", map[string]any{"DeleteObjectInput": deleteObjectInput})
+	tflog.Debug(ctx, "client.DeleteObject(...)", map[string]any{"options": deleteObjectInput})
 	_, err := client.DeleteObject(ctx, deleteObjectInput)
 	if err != nil {
 		msg := fmt.Sprintf("failed to delete object version (%s): %s", version, err)

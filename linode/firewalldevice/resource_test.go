@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || firewalldevice
 
 package firewalldevice_test
 

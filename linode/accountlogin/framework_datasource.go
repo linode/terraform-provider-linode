@@ -92,7 +92,7 @@ func (d *DataSource) Read(
 		return
 	}
 	tflog.Trace(ctx, "client.GetLogin(...)", map[string]any{
-		"loginID": loginID,
+		"login_id": loginID,
 	})
 	accountlogin, err := client.GetLogin(ctx, loginID)
 	if err != nil {

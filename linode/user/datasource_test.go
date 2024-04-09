@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || user
 
 package user_test
 

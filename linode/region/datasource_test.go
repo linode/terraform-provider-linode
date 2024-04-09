@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || region
 
 package region_test
 
@@ -56,6 +56,7 @@ func TestAccDataSourceRegion_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "id", regionID),
 					resource.TestCheckResourceAttr(resourceName, "label", label),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
+					resource.TestCheckResourceAttrSet(resourceName, "site_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "resolvers.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "resolvers.0.ipv6"),
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "capabilities.#", 0),

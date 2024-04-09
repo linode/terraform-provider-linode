@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || domainrecord
 
 package domainrecord_test
 
