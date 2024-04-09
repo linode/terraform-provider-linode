@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper/stateupgrade"
 )
 
 func NewResource() resource.Resource {
@@ -18,7 +19,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_stackscript",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: &frameworkResourceSchemaV1,
 			},
 		),
 	}
@@ -26,6 +27,56 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
+}
+
+func (r *Resource) UpgradeState(context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema:   &frameworkResourceSchemaV0,
+			StateUpgrader: upgradeStackScriptStateV0toV1,
+		},
+	}
+}
+
+func upgradeStackScriptStateV0toV1(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+	var stateV0 StackScriptModelV0
+	var stateV1 StackScriptModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateV0)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	stateV1 = StackScriptModel{
+		ID:                stateV0.ID,
+		Label:             stateV0.Label,
+		Script:            stateV0.Script,
+		Description:       stateV0.Description,
+		RevNote:           stateV0.RevNote,
+		IsPublic:          stateV0.IsPublic,
+		Images:            stateV0.Images,
+		DeploymentsActive: stateV0.DeploymentsActive,
+		UserGravatarID:    stateV0.UserGravatarID,
+		DeploymentsTotal:  stateV0.DeploymentsTotal,
+		Username:          stateV0.Username,
+		UserDefinedFields: stateV0.UserDefinedFields,
+	}
+
+	newCreated, err := stateupgrade.UpgradeTimeFormatToRFC3339(stateV0.Created.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to Upgrade Time Format", err.Error())
+		return
+	}
+
+	newUpdated, err := stateupgrade.UpgradeTimeFormatToRFC3339(stateV0.Updated.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to Upgrade Time Format", err.Error())
+		return
+	}
+
+	stateV1.Created = newCreated
+	stateV1.Updated = newUpdated
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &stateV1)...)
 }
 
 func (r *Resource) Create(
