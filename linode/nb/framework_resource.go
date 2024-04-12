@@ -319,6 +319,7 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
 		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
 		Tags:               nbDataV0.Tags,
+		Firewalls:          types.ListNull(firewallObjType),
 	}
 
 	var transferMap map[string]string
