@@ -73,14 +73,7 @@ func flattenIPv4(network *linodego.InstanceIPv4Response, diags *diag.Diagnostics
 		return nil
 	}
 
-	resultList := helper.GenericSliceToList(
-		[]map[string]attr.Value{result},
-		ipv4ObjectType,
-		func(v map[string]attr.Value) (types.Object, diag.Diagnostics) {
-			return types.ObjectValue(ipv4ObjectType.AttrTypes, result)
-		},
-		diags,
-	)
+	resultList := helper.GetListOfSingleObjectValueFromMap(ipv4ObjectType, result, diags)
 	if diags.HasError() {
 		return nil
 	}

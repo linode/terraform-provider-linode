@@ -6,10 +6,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -182,58 +183,84 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 func TestLinodeNodeBalancerConfig_UpgradeV0(t *testing.T) {
 	t.Parallel()
 
-	oldState := map[string]interface{}{
-		"node_status": map[string]interface{}{
-			"down": "13",
-			"up":   "37",
-		},
+	ctx := context.Background()
+
+	desiredDown := 13
+	desiredUp := 37
+
+	oldNodesStatus := map[string]attr.Value{
+		"down": types.StringValue(strconv.Itoa(desiredDown)),
+		"up":   types.StringValue(strconv.Itoa(desiredUp)),
 	}
 
-	desiredState := map[string]interface{}{
-		"node_status": []map[string]interface{}{
-			{
-				"down": 13,
-				"up":   37,
-			},
-		},
+	oldNodesStatusMapValue, diags := types.MapValueFrom(
+		ctx, nbconfig.NodeStatusTypeV0, oldNodesStatus,
+	)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
 	}
 
-	newState, err := nbconfig.ResourceNodeBalancerConfigV0Upgrade(context.Background(), oldState, nil)
-	if err != nil {
-		t.Fatalf("error migrating state: %v", err)
+	oldData := nbconfig.ResourceModelV0{
+		NodesStatus: oldNodesStatusMapValue,
+	}
+	var newData nbconfig.ResourceModelV1
+
+	diags = newData.UpgradeFromV0(ctx, oldData)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
 	}
 
-	if !reflect.DeepEqual(desiredState, newState) {
-		t.Fatalf("expected %v, got %v", desiredState, newState)
+	newDown := newData.NodesStatus.Elements()[0].(types.Object).Attributes()["down"].(types.Int64).ValueInt64()
+	newUp := newData.NodesStatus.Elements()[0].(types.Object).Attributes()["up"].(types.Int64).ValueInt64()
+
+	if !(newDown == int64(desiredDown)) {
+		t.Fatalf("expected %v, got %v", desiredDown, desiredDown)
+	}
+
+	if !(newUp == int64(desiredUp)) {
+		t.Fatalf("expected %v, got %v", desiredUp, desiredUp)
 	}
 }
 
 func TestLinodeNodeBalancerConfig_UpgradeV0Empty(t *testing.T) {
 	t.Parallel()
 
-	oldState := map[string]interface{}{
-		"node_status": map[string]interface{}{
-			"down": "",
-			"up":   "",
-		},
+	ctx := context.Background()
+
+	desiredDown := 0
+	desiredUp := 0
+
+	oldNodesStatus := map[string]attr.Value{
+		"down": types.StringValue(""),
+		"up":   types.StringValue(""),
 	}
 
-	desiredState := map[string]interface{}{
-		"node_status": []map[string]interface{}{
-			{
-				"down": 0,
-				"up":   0,
-			},
-		},
+	oldNodesStatusMapValue, diags := types.MapValueFrom(
+		ctx, nbconfig.NodeStatusTypeV0, oldNodesStatus,
+	)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
 	}
 
-	newState, err := nbconfig.ResourceNodeBalancerConfigV0Upgrade(context.Background(), oldState, nil)
-	if err != nil {
-		t.Fatalf("error migrating state: %v", err)
+	oldData := nbconfig.ResourceModelV0{
+		NodesStatus: oldNodesStatusMapValue,
+	}
+	var newData nbconfig.ResourceModelV1
+
+	diags = newData.UpgradeFromV0(ctx, oldData)
+	if diags.HasError() {
+		t.Fatal(diags.Errors())
 	}
 
-	if !reflect.DeepEqual(desiredState, newState) {
-		t.Fatalf("expected %v, got %v", desiredState, newState)
+	newDown := newData.NodesStatus.Elements()[0].(types.Object).Attributes()["down"].(types.Int64).ValueInt64()
+	newUp := newData.NodesStatus.Elements()[0].(types.Object).Attributes()["up"].(types.Int64).ValueInt64()
+
+	if !(newDown == int64(desiredDown)) {
+		t.Fatalf("expected %v, got %v", desiredDown, desiredDown)
+	}
+
+	if !(newUp == int64(desiredUp)) {
+		t.Fatalf("expected %v, got %v", desiredUp, desiredUp)
 	}
 }
 

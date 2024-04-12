@@ -40,7 +40,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	nodeBalancerID := helper.FrameworkSafeInt64ToInt(data.NodebalancerId.ValueInt64(), &resp.Diagnostics)
+	nodeBalancerID := helper.FrameworkSafeInt64ToInt(data.NodeBalancerID.ValueInt64(), &resp.Diagnostics)
 	configID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
