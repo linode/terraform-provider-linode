@@ -94,7 +94,7 @@ func (r *Resource) Create(
 	firewalls, err := client.ListNodeBalancerFirewalls(ctx, nodebalancer.ID, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", nodebalancer.ID),
+			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodebalancer.ID),
 			err.Error(),
 		)
 	}
@@ -142,16 +142,17 @@ func (r *Resource) Read(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
-				"Nodebalancer",
-				fmt.Sprintf("removing Linode NodeBalancer ID %v from state because it no longer exists", id),
+				"NodeBalancer No Longer Exists",
+				fmt.Sprintf("Removing Linode NodeBalancer ID %v from state because it no longer exists", id),
 			)
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get nodebalancer %v", id),
+			fmt.Sprintf("Failed to Get NodeBalancer %v", id),
 			err.Error(),
 		)
+		return
 	}
 
 	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
@@ -159,7 +160,7 @@ func (r *Resource) Read(
 	firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", id),
+			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
 			err.Error(),
 		)
 	}
@@ -224,7 +225,7 @@ func (r *Resource) Update(
 		nodeBalancer, err := client.UpdateNodeBalancer(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update Nodebalancer %v", id),
+				fmt.Sprintf("Failed to Update NodeBalancer %v", id),
 				err.Error(),
 			)
 			return
@@ -235,7 +236,7 @@ func (r *Resource) Update(
 		firewalls, err := client.ListNodeBalancerFirewalls(ctx, id, nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", id),
+				fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
 				err.Error(),
 			)
 		}
@@ -273,14 +274,14 @@ func (r *Resource) Delete(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
-				"Nodebalancer does not exist.",
-				fmt.Sprintf("Nodebalancer %v does not exist, removing from state.", id),
+				"NodeBalancer No Longer Exists",
+				fmt.Sprintf("NodeBalancer %v does not exist, removing it from state.", id),
 			)
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError(
-			"Failed to delete Nodebalancer",
+			"Failed to Delete NodeBalancer",
 			err.Error(),
 		)
 		return
@@ -319,6 +320,7 @@ func upgradeNodebalancerResourceStateV0toV1(
 		Created:            timetypes.RFC3339{StringValue: nbDataV0.Created},
 		Updated:            timetypes.RFC3339{StringValue: nbDataV0.Updated},
 		Tags:               nbDataV0.Tags,
+		Firewalls:          types.ListNull(firewallObjType),
 	}
 
 	var transferMap map[string]string
