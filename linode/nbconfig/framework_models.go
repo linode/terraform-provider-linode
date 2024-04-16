@@ -71,7 +71,7 @@ func flattenNodeStatus(
 	result["up"] = types.Int64Value(int64(nodesStatus.Up))
 	result["down"] = types.Int64Value(int64(nodesStatus.Down))
 
-	resultList := helper.GetListOfSingleObjectValueFromMap(statusObjectType, result, &diags)
+	resultList := helper.MapToSingleObjList(statusObjectType, result, &diags)
 	return &resultList, diags
 }
 
@@ -239,7 +239,7 @@ func (v1 *ResourceModelV1) UpgradeFromV0(
 		nodesStatusV1["up"] = types.Int64Value(0)
 	}
 
-	v1.NodesStatus = helper.GetListOfSingleObjectValueFromMap(
+	v1.NodesStatus = helper.MapToSingleObjList(
 		NodeStatusTypeV1, nodesStatusV1, &diags,
 	)
 

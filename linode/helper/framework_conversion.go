@@ -114,7 +114,8 @@ func GenericSliceToList[T any, U attr.Value](
 	return listResult
 }
 
-func GetListOfSingleObjectValueFromMap(
+// Given a map, returning a Terraform List value containing a single Terraform Object value.
+func MapToSingleObjList(
 	objectType types.ObjectType, valuesMap map[string]attr.Value, diags *diag.Diagnostics,
 ) types.List {
 	return GenericSliceToList(
