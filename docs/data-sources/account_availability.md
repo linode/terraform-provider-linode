@@ -1,12 +1,12 @@
 ---
 page_title: "Linode: linode_account_availability"
 description: |-
-  Provides details about resource availability in a region to an account specifically. 
+  Provides details about service availability in a region to an account specifically. 
 ---
 
 # linode\_account\_availability
 
-Provides details about resource availability in a region to an account specifically.
+Provides details about service availability in a region to an account specifically.
 
 ## Example Usage
 
@@ -30,4 +30,6 @@ The Linode Account Availability data source exports the following attributes:
 
 * `region` - The region ID.
 
-* `unavailable` - A list of resources which are NOT available to the account in a region.
+* `unavailable` - A set of services which are unavailable to the account in a region.
+
+* `available` - A set of services which are available to the account in a region.

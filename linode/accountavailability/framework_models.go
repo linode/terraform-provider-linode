@@ -11,6 +11,7 @@ import (
 type AccountAvailabilityModel struct {
 	Region      types.String `tfsdk:"region"`
 	Unavailable types.Set    `tfsdk:"unavailable"`
+	Available   types.Set    `tfsdk:"available"`
 }
 
 func (d *AccountAvailabilityModel) ParseAvailability(
@@ -24,6 +25,12 @@ func (d *AccountAvailabilityModel) ParseAvailability(
 		return diags
 	}
 	d.Unavailable = unavailable
+
+	available, diags := types.SetValueFrom(ctx, types.StringType, availability.Available)
+	if diags != nil {
+		return diags
+	}
+	d.Available = available
 
 	return nil
 }
