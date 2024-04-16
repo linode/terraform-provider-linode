@@ -259,7 +259,7 @@ func TestLinodeNodeBalancerConfig_UpgradeV0Empty(t *testing.T) {
 		t.Fatalf("expected %v, got %v", desiredDown, desiredDown)
 	}
 
-	if !(newUp == int64(desiredUp)) {
+	if newUp != int64(desiredUp) {
 		t.Fatalf("expected %v, got %v", desiredUp, desiredUp)
 	}
 }
