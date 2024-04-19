@@ -35,7 +35,7 @@ func RunBatch(toExecute ...BatchFunction) error {
 		close(errCh)
 	}()
 
-	allErrors := []error{}
+	allErrors := make([]error, 0)
 
 	for {
 		select {
