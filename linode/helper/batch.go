@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"fmt"
+	"errors"
 	"sync"
 )
 
@@ -11,22 +11,19 @@ type BatchFunction func() error
 // This is handy for running certain non-sequential API requests in parallel.
 func RunBatch(toExecute ...BatchFunction) error {
 	var wg sync.WaitGroup
+	wg.Add(len(toExecute))
 
 	errCh := make(chan error)
-	defer close(errCh)
-
 	doneCh := make(chan bool)
-	defer close(doneCh)
 
 	for _, f := range toExecute {
 		// Shadow the function so it can be used in the goroutine
 		f := f
-		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			if err := f(); err != nil {
 				errCh <- err
 			}
-			wg.Done()
 		}()
 	}
 
@@ -34,12 +31,18 @@ func RunBatch(toExecute ...BatchFunction) error {
 	go func() {
 		wg.Wait()
 		doneCh <- true
+		close(doneCh)
+		close(errCh)
 	}()
 
-	select {
-	case <-doneCh:
-		return nil
-	case err := <-errCh:
-		return fmt.Errorf("encountered error when running batch function: %w", err)
+	allErrors := []error{}
+
+	for {
+		select {
+		case <-doneCh:
+			return errors.Join(allErrors...)
+		case err := <-errCh:
+			allErrors = append(allErrors, err)
+		}
 	}
 }
