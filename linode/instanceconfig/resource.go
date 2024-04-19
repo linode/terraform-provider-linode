@@ -3,7 +3,6 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -105,7 +104,9 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	)
 	if err != nil {
 		if linodego.IsNotFound(err) {
-			log.Printf("[WARN] removing Instance Config ID %q from state because it no longer exists", d.Id())
+			tflog.Warn(ctx, fmt.Sprintf(
+				"removing Instance Config ID %q from state because it no longer exists", d.Id(),
+			))
 			d.SetId("")
 			return nil
 		}
