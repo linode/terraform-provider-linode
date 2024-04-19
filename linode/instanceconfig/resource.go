@@ -104,7 +104,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		},
 	)
 	if err != nil {
-		if linodego.ErrHasStatus(err, 404) {
+		if linodego.IsNotFound(err) {
 			log.Printf("[WARN] removing Instance Config ID %q from state because it no longer exists", d.Id())
 			d.SetId("")
 			return nil

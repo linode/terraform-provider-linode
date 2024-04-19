@@ -90,7 +90,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	)
 	if err != nil {
 		// We can assume a 404 from any of these endpoints implies a deleted instance
-		if linodego.ErrHasStatus(err, 404) {
+		if linodego.IsNotFound(err) {
 			tflog.Warn(ctx, "removing Linode Instance ID %q from state because it no longer exists")
 			d.SetId("")
 			return nil
