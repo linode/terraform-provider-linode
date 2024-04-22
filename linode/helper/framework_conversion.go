@@ -114,6 +114,20 @@ func GenericSliceToList[T any, U attr.Value](
 	return listResult
 }
 
+// Given a map, returning a Terraform List value containing a single Terraform Object value.
+func MapToSingleObjList(
+	objectType types.ObjectType, valuesMap map[string]attr.Value, diags *diag.Diagnostics,
+) types.List {
+	return GenericSliceToList(
+		[]map[string]attr.Value{valuesMap},
+		objectType,
+		func(v map[string]attr.Value) (types.Object, diag.Diagnostics) {
+			return types.ObjectValue(objectType.AttrTypes, valuesMap)
+		},
+		diags,
+	)
+}
+
 // FrameworkSliceToString converts the given Framework slice
 // into a slice of strings.
 func FrameworkSliceToString(val []types.String) []string {

@@ -206,6 +206,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instancedisk.NewResource,
 		lkenodepool.NewResource,
 		image.NewResource,
+		nbconfig.NewResource,
 	}
 }
 

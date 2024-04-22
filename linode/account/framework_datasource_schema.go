@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-var frameworkDatasourceSchema = schema.Schema{
+var frameworkDataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"email": schema.StringAttribute{
 			Description: "The email address for this Account, for account management communications, " +

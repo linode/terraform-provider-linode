@@ -21,7 +21,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/instance"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/v2/linode/lke"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
@@ -148,7 +147,6 @@ func Provider() *schema.Provider {
 			"linode_instance_config":          instanceconfig.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
 			"linode_nodebalancer_node":        nbnode.Resource(),
-			"linode_nodebalancer_config":      nbconfig.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
 			"linode_user":                     user.Resource(),
