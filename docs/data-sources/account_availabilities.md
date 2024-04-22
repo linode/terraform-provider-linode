@@ -1,12 +1,12 @@
 ---
 page_title: "Linode: linode_account_availabilities"
 description: |-
-  Provides information about services which are unavailable for the current Linode account.
+  Provides information about services availabilities for the current Linode account.
 ---
 
 # linode\_account\_availabilities
 
-Provides information about services which are unavailable for the current Linode account.
+Provides information about services availabilities for the current Linode account.
 
 ## Example Usage
 
@@ -47,8 +47,12 @@ Each Linode account availability will be stored in the `availabilities` attribut
 
 * `unavailable` - A set of services that are unavailable for the given region.
 
+* `available` - A set of services which are available for the given region.
+
 ## Filterable Fields
 
 * `region`
 
 * `unavailable`
+
+* `available`
