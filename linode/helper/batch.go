@@ -1,45 +1,26 @@
 package helper
 
 import (
-	"fmt"
-	"sync"
+	"context"
+
+	"golang.org/x/sync/errgroup"
 )
 
-type BatchFunction func() error
+type BatchFunction func(ctx context.Context) error
 
 // RunBatch is intended to simplify executing functions concurrently.
 // This is handy for running certain non-sequential API requests in parallel.
-func RunBatch(toExecute ...BatchFunction) error {
-	var wg sync.WaitGroup
-
-	errCh := make(chan error)
-	defer close(errCh)
-
-	doneCh := make(chan bool)
-	defer close(doneCh)
+func RunBatch(ctx context.Context, toExecute ...BatchFunction) error {
+	eg, ctx := errgroup.WithContext(ctx)
 
 	for _, f := range toExecute {
 		// Shadow the function so it can be used in the goroutine
 		f := f
-		wg.Add(1)
-		go func() {
-			if err := f(); err != nil {
-				errCh <- err
-			}
-			wg.Done()
-		}()
+		eg.Go(func() error { return f(ctx) })
 	}
 
-	// Routine to wait for all functions to complete
-	go func() {
-		wg.Wait()
-		doneCh <- true
-	}()
-
-	select {
-	case <-doneCh:
-		return nil
-	case err := <-errCh:
-		return fmt.Errorf("encountered error when running batch function: %w", err)
+	if err := eg.Wait(); err != nil {
+		return err
 	}
+	return nil
 }
