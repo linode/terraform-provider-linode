@@ -25,7 +25,8 @@ data "linode_kernels" "kernels" {
     
     filter {
         name = "label"
-        values = ["Latest 64 bit (6.2.9-x86_64-linode160)"]
+        values = ["Latest 64 bit"]
+        match_by="substring"
     }
 
     filter {
@@ -33,15 +34,6 @@ data "linode_kernels" "kernels" {
         values = [true]
     }
 
-    filter {
-        name = "version"
-        values = ["6.2.9"]
-    }
-
-    filter {
-        name = "xen"
-        values = ["false"]
-    }
 }
 
 {{ end }}

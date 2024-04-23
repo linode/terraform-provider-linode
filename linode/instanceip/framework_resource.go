@@ -63,7 +63,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if plan.RDNS.IsNull() && plan.RDNS.IsUnknown() {
+	if !plan.RDNS.IsNull() && !plan.RDNS.IsUnknown() {
 		rdns := plan.RDNS.ValueString()
 
 		options := linodego.IPAddressUpdateOptions{

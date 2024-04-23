@@ -31,6 +31,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resourceName, "region", region),
 					resource.TestCheckResourceAttrSet(resourceName, "unavailable.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "available.#"),
 				),
 			},
 		},

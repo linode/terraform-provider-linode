@@ -42,10 +42,8 @@ func TestAccDataSourceKernels_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kernels.0.architecture", "x86_64"),
 					resource.TestCheckResourceAttr(resourceName, "kernels.0.deprecated", "false"),
 					resource.TestCheckResourceAttr(resourceName, "kernels.0.kvm", "true"),
-					resource.TestCheckResourceAttr(resourceName, "kernels.0.label", "Latest 64 bit (6.2.9-x86_64-linode160)"),
 					resource.TestCheckResourceAttr(resourceName, "kernels.0.pvops", "true"),
-					resource.TestCheckResourceAttr(resourceName, "kernels.0.version", "6.2.9"),
-					resource.TestCheckResourceAttr(resourceName, "kernels.0.xen", "false"),
+					acceptance.CheckResourceAttrContains(resourceName, "kernels.0.label", "Latest 64 bit"),
 				),
 			},
 			{

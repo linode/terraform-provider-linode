@@ -36,3 +36,9 @@
 - name: bug
   description: issues that report a bug
   color: ed8e21
+- name: keep
+  description: prevent github from closing issue
+  color: 9c5186
+- name: stale
+  description: github will close this issue soon
+  color: ab4f5c

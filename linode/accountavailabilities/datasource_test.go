@@ -24,6 +24,7 @@ func TestAccDataSourceAccountAvailabilities_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "availabilities.0.region"),
 					resource.TestCheckResourceAttrSet(resourceName, "availabilities.0.unavailable.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "availabilities.0.available.#"),
 				),
 			},
 			{

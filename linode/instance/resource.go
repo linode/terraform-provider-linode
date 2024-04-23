@@ -58,29 +58,29 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	var instanceDisks []linodego.InstanceDisk
 	var instanceConfigs []linodego.InstanceConfig
 
-	err = helper.RunBatch(
-		func() (err error) {
+	err = helper.RunBatch(ctx,
+		func(ctx context.Context) (err error) {
 			instance, err = client.GetInstance(ctx, id)
 			if err != nil {
 				err = fmt.Errorf("failed to get instance: %w", err)
 			}
 			return
 		},
-		func() (err error) {
+		func(ctx context.Context) (err error) {
 			instanceNetwork, err = client.GetInstanceIPAddresses(ctx, id)
 			if err != nil {
 				err = fmt.Errorf("failed to get instance networking: %w", err)
 			}
 			return
 		},
-		func() (err error) {
+		func(ctx context.Context) (err error) {
 			instanceDisks, err = client.ListInstanceDisks(ctx, id, nil)
 			if err != nil {
 				err = fmt.Errorf("failed to get instance disks: %w", err)
 			}
 			return
 		},
-		func() (err error) {
+		func(ctx context.Context) (err error) {
 			instanceConfigs, err = client.ListInstanceConfigs(ctx, id, nil)
 			if err != nil {
 				err = fmt.Errorf("failed to get instance configs: %w", err)
@@ -90,7 +90,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	)
 	if err != nil {
 		// We can assume a 404 from any of these endpoints implies a deleted instance
-		if linodego.ErrHasStatus(err, 404) {
+		if linodego.IsNotFound(err) {
 			tflog.Warn(ctx, "removing Linode Instance ID %q from state because it no longer exists")
 			d.SetId("")
 			return nil

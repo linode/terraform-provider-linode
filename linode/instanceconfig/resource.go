@@ -3,7 +3,6 @@ package instanceconfig
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -78,8 +77,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	var inst *linodego.Instance
 	var instNetworking *linodego.InstanceIPAddressResponse
 
-	err = helper.RunBatch(
-		func() (err error) {
+	err = helper.RunBatch(ctx,
+		func(ctx context.Context) (err error) {
 			cfg, err = client.GetInstanceConfig(ctx, linodeID, id)
 			if err != nil {
 				err = fmt.Errorf("failed to get instance config: %w", err)
@@ -87,14 +86,14 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 			return
 		},
-		func() (err error) {
+		func(ctx context.Context) (err error) {
 			inst, err = client.GetInstance(ctx, linodeID)
 			if err != nil {
 				err = fmt.Errorf("failed to get instance: %w", err)
 			}
 			return
 		},
-		func() (err error) {
+		func(ctx context.Context) (err error) {
 			// We want to guarantee that we're resolving a public IPv4 address
 			instNetworking, err = client.GetInstanceIPAddresses(ctx, linodeID)
 			if err != nil {
@@ -104,8 +103,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		},
 	)
 	if err != nil {
-		if linodego.ErrHasStatus(err, 404) {
-			log.Printf("[WARN] removing Instance Config ID %q from state because it no longer exists", d.Id())
+		if linodego.IsNotFound(err) {
+			tflog.Warn(ctx, fmt.Sprintf(
+				"removing Instance Config ID %q from state because it no longer exists", d.Id(),
+			))
 			d.SetId("")
 			return nil
 		}

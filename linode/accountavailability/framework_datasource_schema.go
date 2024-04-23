@@ -19,4 +19,9 @@ var AccountAvailabilityAttributes = map[string]schema.Attribute{
 		Description: "A set of unavailable services for the current account in this region.",
 		Computed:    true,
 	},
+	"available": schema.SetAttribute{
+		ElementType: types.StringType,
+		Description: "A set of available services for the current account in this region.",
+		Computed:    true,
+	},
 }
