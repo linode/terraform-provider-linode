@@ -19,13 +19,17 @@ func (m *PlacementGroupMemberModel) FlattenPlacementGroupMember(member *linodego
 }
 
 type PlacementGroupModel struct {
-	ID           types.String                `tfsdk:"id"`
-	Label        types.String                `tfsdk:"label"`
-	Region       types.String                `tfsdk:"region"`
-	AffinityType types.String                `tfsdk:"affinity_type"`
-	IsStrict     types.Bool                  `tfsdk:"is_strict"`
-	IsCompliant  types.Bool                  `tfsdk:"is_compliant"`
-	Members      []PlacementGroupMemberModel `tfsdk:"members"`
+	ID           types.String `tfsdk:"id"`
+	Label        types.String `tfsdk:"label"`
+	Region       types.String `tfsdk:"region"`
+	AffinityType types.String `tfsdk:"affinity_type"`
+	IsStrict     types.Bool   `tfsdk:"is_strict"`
+	IsCompliant  types.Bool   `tfsdk:"is_compliant"`
+
+	// This is not implemented as a set because it is a fully computed value,
+	// so this implementation can be a bit more simple.
+	// Terraform will still ultimately interpret this value as a set.
+	Members []PlacementGroupMemberModel `tfsdk:"members"`
 }
 
 func (m *PlacementGroupModel) FlattenPlacementGroup(
