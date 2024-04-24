@@ -21,8 +21,9 @@ const UAEnvVar = "TF_APPEND_USER_AGENT"
 const DefaultLinodeURL = "https://api.linode.com"
 
 type ProviderMeta struct {
-	Client linodego.Client
-	Config *Config
+	ProviderUserAgent string
+	Client            linodego.Client
+	Config            *Config
 }
 
 // Config represents the Linode provider configuration.
@@ -53,7 +54,7 @@ type Config struct {
 }
 
 // Client returns a fully initialized Linode client.
-func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
+func (c *Config) Client(ctx context.Context, meta *ProviderMeta) (*linodego.Client, error) {
 	loggingTransport := NewAPILoggerTransport(
 		logging.NewSubsystemLoggingHTTPTransport(
 			APILoggerSubsystem,
@@ -117,6 +118,10 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 		userAgent = c.UAPrefix + " " + userAgent
 	}
 	client.SetUserAgent(userAgent)
+	if meta != nil {
+		meta.ProviderUserAgent = userAgent
+	}
+
 	ApplyAllRetryConditions(&client)
 
 	// We always want to disable resty debugging in favor
