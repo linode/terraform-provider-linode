@@ -1,0 +1,10 @@
+{{ define "placement_group_basic" }}
+
+resource "linode_placement_group" "foobar" {
+    label = "{{.Label}}"
+    region = "{{.Region}}"
+    affinity_type = "{{.AffinityType}}"
+    is_strict = {{.IsStrict}}
+}
+
+{{ end }}
