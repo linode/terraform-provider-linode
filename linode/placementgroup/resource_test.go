@@ -91,7 +91,7 @@ func checkPGExists(s *terraform.State) error {
 			return fmt.Errorf("Error parsing %v to int", rs.Primary.ID)
 		}
 
-		_, err = client.GetVPC(context.Background(), id)
+		_, err = client.GetPlacementGroup(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf("Error retrieving state of Placement Group %s: %s", rs.Primary.Attributes["label"], err)
 		}

@@ -40,6 +40,7 @@ var frameworkResourceSchema = schema.Schema{
 		"is_strict": schema.BoolAttribute{
 			Description: "Whether this Placement Group has a strict compliance policy.",
 			Optional:    true,
+			Computed:    true,
 			Default:     booldefault.StaticBool(false),
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
@@ -48,12 +49,14 @@ var frameworkResourceSchema = schema.Schema{
 
 		// TODO: Add optional `linodes` field
 
-		"is_complaint": schema.BoolAttribute{
+		"is_compliant": schema.BoolAttribute{
 			Description: "Whether all Linodes in this Placement Group are currently compliant.",
 			Computed:    true,
 		},
-		"members": schema.SetNestedAttribute{
-			NestedObject: schema.NestedAttributeObject{
+	},
+	Blocks: map[string]schema.Block{
+		"members": schema.SetNestedBlock{
+			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
 					"linode_id": schema.Int64Attribute{
 						Computed:    true,
@@ -66,7 +69,6 @@ var frameworkResourceSchema = schema.Schema{
 					},
 				},
 			},
-			Computed: true,
 		},
 	},
 }

@@ -2,6 +2,7 @@ package linode
 
 import (
 	"context"
+
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
