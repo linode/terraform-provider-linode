@@ -49,6 +49,9 @@ func (m *PlacementGroupModel) FlattenPlacementGroup(
 
 	members := make([]PlacementGroupMemberModel, len(pg.Members))
 	for i, member := range pg.Members {
+		// Shadow to prevent implicit memory aliasing
+		member := member
+
 		memberModel := PlacementGroupMemberModel{}
 		memberModel.FlattenPlacementGroupMember(&member)
 		members[i] = memberModel
