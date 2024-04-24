@@ -13,9 +13,12 @@ type PlacementGroupMemberModel struct {
 	IsCompliant types.Bool  `tfsdk:"is_compliant"`
 }
 
-func (m *PlacementGroupMemberModel) FlattenPlacementGroupMember(member *linodego.PlacementGroupMember, preserveKnown bool) {
-	m.LinodeID = helper.KeepOrUpdateInt64(m.LinodeID, int64(member.LinodeID), preserveKnown)
-	m.IsCompliant = helper.KeepOrUpdateBool(m.IsCompliant, member.IsCompliant, preserveKnown)
+func (m *PlacementGroupMemberModel) FlattenPlacementGroupMember(member *linodego.PlacementGroupMember) {
+	// This object is always computed so we don't need to respect preserveKnown here.
+	// It may still be good practice to respect preserveKnown here though, so definitely
+	// change it if so.
+	m.LinodeID = types.Int64Value(int64(member.LinodeID))
+	m.IsCompliant = types.BoolValue(member.IsCompliant)
 }
 
 type PlacementGroupModel struct {
@@ -28,7 +31,7 @@ type PlacementGroupModel struct {
 
 	// This is not implemented as a set because it is a fully computed value,
 	// so this implementation can be a bit more simple.
-	// Terraform will still ultimately interpret this value as a set.
+	// Terraform will still interpret this value as a set at plan-time.
 	Members []PlacementGroupMemberModel `tfsdk:"members"`
 }
 
@@ -47,7 +50,7 @@ func (m *PlacementGroupModel) FlattenPlacementGroup(
 	members := make([]PlacementGroupMemberModel, len(pg.Members))
 	for i, member := range pg.Members {
 		memberModel := PlacementGroupMemberModel{}
-		memberModel.FlattenPlacementGroupMember(&member, preserveKnown)
+		memberModel.FlattenPlacementGroupMember(&member)
 		members[i] = memberModel
 	}
 
