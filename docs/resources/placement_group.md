@@ -30,7 +30,7 @@ The following arguments are supported:
 
 * `affinity_type` - (Required) The affinity policy to use when placing Linodes in this group.
 
-* `is_strict` - (Optional) Whether Linodes must be able to become compliant during assignment.
+* `is_strict` - (Optional) Whether Linodes must be able to become compliant during assignment. (Default `true`)
 
 ## Attributes Reference
 

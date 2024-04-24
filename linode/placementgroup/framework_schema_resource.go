@@ -41,7 +41,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Whether this Placement Group has a strict compliance policy.",
 			Optional:    true,
 			Computed:    true,
-			Default:     booldefault.StaticBool(false),
+			Default:     booldefault.StaticBool(true),
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
 			},
