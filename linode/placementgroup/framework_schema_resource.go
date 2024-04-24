@@ -47,8 +47,6 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 
-		// TODO: Add optional `linodes` field
-
 		"is_compliant": schema.BoolAttribute{
 			Description: "Whether all Linodes in this Placement Group are currently compliant.",
 			Computed:    true,
