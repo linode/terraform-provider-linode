@@ -14,6 +14,8 @@ import (
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
+const resourceUserAgentComment = "linode_firewall resource"
+
 func resourceFirewallRules() *schema.Resource {
 	return &schema.Resource{
 		Schema: resourceRuleSchema,
@@ -47,7 +49,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_firewall")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
@@ -93,7 +95,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	createOpts := linodego.FirewallCreateOptions{
 		Label: d.Get("label").(string),
@@ -140,7 +142,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_firewall")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
@@ -216,7 +218,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)

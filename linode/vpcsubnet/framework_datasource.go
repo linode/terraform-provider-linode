@@ -31,7 +31,7 @@ func (d *DataSource) Read(
 	resp *datasource.ReadResponse,
 ) {
 	tflog.Trace(ctx, "Read data.linode_vpc_subnet")
-	client := d.Meta.Client
+	client := d.Client
 
 	var data VPCSubnetModel
 

@@ -61,7 +61,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_account_settings")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var data AccountSettingsModel
 
@@ -144,7 +144,7 @@ func (r *Resource) updateAccountSettings(
 	ctx context.Context,
 	plan *AccountSettingsModel,
 ) diag.Diagnostics {
-	client := r.Meta.Client
+	client := r.Client
 	var diagnostics diag.Diagnostics
 
 	// Longview Plan update functionality has been moved

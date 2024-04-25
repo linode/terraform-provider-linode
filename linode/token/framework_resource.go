@@ -38,7 +38,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create linode_token")
 
 	var data ResourceModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -89,7 +89,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_token")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var data ResourceModel
 
@@ -159,7 +159,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		client := r.Meta.Client
+		client := r.Client
 
 		tflog.Trace(ctx, "client.GetToken(...)")
 		token, err := client.GetToken(ctx, tokenID)
@@ -213,7 +213,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 
 	tflog.Debug(ctx, "client.DeleteToken(...)")
 

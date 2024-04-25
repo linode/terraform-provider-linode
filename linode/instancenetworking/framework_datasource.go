@@ -30,7 +30,7 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_instance_networking")
 
-	client := d.Meta.Client
+	client := d.Client
 
 	var data DataSourceModel
 

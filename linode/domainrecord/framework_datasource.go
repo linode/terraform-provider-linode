@@ -63,7 +63,7 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_domain_record")
 
-	client := d.Meta.Client
+	client := d.Client
 
 	var data DataSourceModel
 

@@ -64,7 +64,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan ResourceModelV1
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -114,7 +114,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 
-	client := r.Meta.Client
+	client := r.Client
 	var state ResourceModelV1
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -174,7 +174,7 @@ func (r *Resource) Update(
 	var state ResourceModelV1
 	var plan ResourceModelV1
 
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -219,7 +219,7 @@ func (r *Resource) Delete(
 ) {
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var state ResourceModelV1
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

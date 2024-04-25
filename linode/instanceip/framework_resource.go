@@ -53,7 +53,7 @@ func (r *Resource) Create(
 
 	isPublic := plan.Public.ValueBool()
 
-	client := r.Meta.Client
+	client := r.Client
 	ip, err := client.AddInstanceIPAddress(ctx, linodeID, isPublic)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -144,7 +144,7 @@ func (r *Resource) Read(
 
 	ctx = populateLogAttributes(ctx, &state)
 
-	client := r.Meta.Client
+	client := r.Client
 	address := state.Address.ValueString()
 	linodeID := helper.FrameworkSafeInt64ToInt(
 		state.LinodeID.ValueInt64(),
@@ -207,7 +207,7 @@ func (r *Resource) Update(
 			RDNS: rdns,
 		}
 
-		client := r.Meta.Client
+		client := r.Client
 		address := plan.Address.ValueString()
 		linodeID := plan.LinodeID.ValueInt64()
 
@@ -258,7 +258,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 	address := state.Address.ValueString()
 	linodeID := helper.FrameworkSafeInt64ToInt(
 		state.LinodeID.ValueInt64(),

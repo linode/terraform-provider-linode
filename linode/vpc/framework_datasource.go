@@ -32,7 +32,7 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_vpc")
 
-	client := d.Meta.Client
+	client := d.Client
 
 	var data VPCModel
 

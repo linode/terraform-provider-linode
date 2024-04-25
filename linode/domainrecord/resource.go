@@ -14,6 +14,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+const resourceUserAgentComment = "linode_domain_record resource"
+
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        resourceSchema,
@@ -65,7 +67,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_domain_record")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode DomainRecord ID %s as int: %s", d.Id(), err)
@@ -140,7 +142,7 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_domain_record")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 
@@ -177,7 +179,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_domain_record")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	domainID := d.Get("domain_id").(int)
 	rec := domainRecordFromResourceData(d)
 
@@ -214,7 +216,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_domain_record")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	domainID := d.Get("domain_id").(int)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {

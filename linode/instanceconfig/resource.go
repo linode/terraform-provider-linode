@@ -14,6 +14,8 @@ import (
 	instancehelpers "github.com/linode/terraform-provider-linode/v2/linode/instance"
 )
 
+const resourceUserAgentComment = "linode_instance_config resource"
+
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        resourceSchema,
@@ -64,7 +66,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_instance_config")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -151,7 +153,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_instance_config")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	linodeID := d.Get("linode_id").(int)
 
@@ -208,7 +210,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_instance_config")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -349,7 +351,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_instance_config")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {

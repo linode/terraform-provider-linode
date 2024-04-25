@@ -24,6 +24,8 @@ const (
 	createLKETimeout = 35 * time.Minute
 	updateLKETimeout = 40 * time.Minute
 	deleteLKETimeout = 15 * time.Minute
+
+	resourceUserAgentComment = "linode_lke_cluster resource"
 )
 
 func Resource() *schema.Resource {
@@ -53,7 +55,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_lke_cluster")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode LKE Cluster ID: %s", err)
@@ -132,7 +134,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_lke_cluster")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	controlPlane := d.Get("control_plane").([]interface{})
 
@@ -218,7 +220,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	tflog.Debug(ctx, "Update linode_lke_cluster")
 
 	providerMeta := meta.(*helper.ProviderMeta)
-	client := providerMeta.Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, providerMeta)
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)
@@ -345,7 +347,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_lke_cluster")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("failed parsing Linode LKE Cluster ID: %s", err)

@@ -31,7 +31,7 @@ func (d *DataSource) Read(
 	tflog.Debug(ctx, "Read data.linode_firewall")
 
 	var data FirewallModel
-	client := d.Meta.Client
+	client := d.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

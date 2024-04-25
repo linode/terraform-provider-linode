@@ -75,7 +75,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan ResourceModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -98,7 +98,7 @@ func (r *Resource) Read(
 	resp *resource.ReadResponse,
 ) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
-	client := r.Meta.Client
+	client := r.Client
 
 	var state ResourceModel
 
@@ -148,7 +148,7 @@ func (r *Resource) Update(
 
 	ctx = populateLogAttributes(ctx, plan)
 
-	client := r.Meta.Client
+	client := r.Client
 
 	if !plan.Addresses.Equal(state.Addresses) {
 		CreateOrUpdateSharedIPs(ctx, client, &plan, &resp.Diagnostics)
@@ -181,7 +181,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 
 	options := linodego.IPAddressesShareOptions{
 		LinodeID: linodeID,

@@ -33,7 +33,7 @@ func (d *DataSource) Read(
 	tflog.Debug(ctx, "Read data.linode_nodebalancer")
 
 	var data NodeBalancerDataSourceModel
-	client := d.Meta.Client
+	client := d.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

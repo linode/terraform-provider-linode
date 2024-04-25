@@ -31,7 +31,7 @@ func (r *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_volume")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var data VolumeDataSourceModel
 

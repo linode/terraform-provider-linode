@@ -36,7 +36,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create linode_firewall_device")
 
 	var plan FirewallDeviceModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -105,7 +105,7 @@ func (r *Resource) Read(
 		"device_id":   state.ID.ValueString(),
 	})
 
-	client := r.Meta.Client
+	client := r.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -181,7 +181,7 @@ func (r *Resource) Delete(
 	var state FirewallDeviceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	client := r.Meta.Client
+	client := r.Client
 
 	id := helper.FrameworkSafeStringToInt(
 		state.ID.ValueString(),

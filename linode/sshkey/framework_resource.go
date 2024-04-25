@@ -37,7 +37,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create linode_sshkey")
 
 	var data ResourceModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -78,7 +78,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Create linode_sshkey")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var data ResourceModel
 
@@ -154,7 +154,7 @@ func (r *Resource) Update(
 			"options": updateOpts,
 		})
 
-		key, err := r.Meta.Client.UpdateSSHKey(
+		key, err := r.Client.UpdateSSHKey(
 			ctx,
 			id,
 			updateOpts,
@@ -190,7 +190,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 
 	ctx = tflog.SetField(ctx, "sshkey_id", id)
 	tflog.Trace(ctx, "client.DeleteSSHKey(...)")
