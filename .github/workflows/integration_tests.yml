@@ -1,16 +1,15 @@
 name: Integration tests
+
 on:
   workflow_dispatch: null
   push:
     branches:
       - main
       - dev
-jobs:
-  integration_tests:
-    name: Run integration tests
-    runs-on: ubuntu-latest
-    env:
-      EXIT_STATUS: 0
+
+# Define reusable steps
+defaults:
+  run-integration-tests: &run-integration-tests
     steps:
       - name: Clone Repository
         uses: actions/checkout@v4
@@ -42,39 +41,110 @@ jobs:
       - name: Install go-junit-report
         run: go install github.com/jstemmer/go-junit-report/v2@latest
 
-      - name: Run Integration Tests
+# Define jobs using templates
+jobs:
+  integration_tests:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        user:
+          - USER_1
+          - USER_2
+          - USER_3
+          - USER_4
+    env:
+      EXIT_STATUS: 0
+      LINODE_TOKEN: ${{ secrets.LINODE_TOKEN_USER_${{ matrix.user }} }}
+
+    # Job for each user
+    steps:
+      - name: Set report filename
+        id: set-report-filename
+        run: echo "REPORT_FILENAME_{{ matrix.user }}=$(date +'%Y%m%d%H%M')_terraform_test_report_{{ matrix.user }}.xml" >> $GITHUB_ENV
+
+      - name: Determine test tags
+        id: determine-test-tags
         run: |
-          timestamp=$(date +'%Y%m%d%H%M')
-          report_filename="${timestamp}_terraform_test_report.xml"
-          if ! make int-test | go-junit-report -set-exit-code > "$report_filename"; then
+          if [[ "${{ matrix.user }}" == "USER_1" ]]; then
+            echo "acceptance,backup,domain,domainrecord,domains,domainzonefile,firewall,firewalldevice,firewalls,helper,image,images,instance,instanceconfig,instancedisk,instanceip"
+          elif [[ "${{ matrix.user }}" == "USER_2" ]]; then
+            echo "instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lke,lkeclusters,lkenodepool,lkeversions"
+          elif [[ "${{ matrix.user }}" == "USER_3" ]]; then
+            echo "nb,nbconfig,nbconfigs,nbnode,nbs,networkingip,obj,objbucket,objcluster,objkey,profile,rdns"
+          elif [[ "${{ matrix.user }}" == "USER_4" ]]; then
+            echo "region,regions,sshkey,sshkeys,stackscript,stackscripts,token,user,users,vlan,volume,volumes,vpc,vpcs"
+          else
+            echo ""
+          fi
+        shell: bash
+        env:
+          TEST_TAGS: ${{ steps.determine-test-tags.outputs.stdout }}
+
+      - name: Run Integration Tests for User {{ matrix.user }}
+        run: |
+          if ! make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code > "$REPORT_FILENAME_{{ matrix.user }}"; then
             echo "EXIT_STATUS=1" >> $GITHUB_ENV
           fi
-          cat "$report_filename"
+          cat "$REPORT_FILENAME_{{ matrix.user }}"
         env:
-          LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
-      - name: Add additional information to XML report
-        run: |
-          filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$')
-          python tod_scripts/add_to_xml_test_report.py \
-          --branch_name "${GITHUB_REF#refs/*/}" \
-          --gha_run_id "$GITHUB_RUN_ID" \
-          --gha_run_number "$GITHUB_RUN_NUMBER" \
-          --xmlfile "${filename}"
 
-      - name: Upload test results to bucket
-        run: |
-          report_filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$')
-          python3 tod_scripts/test_report_upload_script.py "${report_filename}"
-        env:
-          LINODE_CLI_OBJ_ACCESS_KEY: ${{ secrets.LINODE_CLI_OBJ_ACCESS_KEY }}
-          LINODE_CLI_OBJ_SECRET_KEY: ${{ secrets.LINODE_CLI_OBJ_SECRET_KEY }}
+      - name: Upload test report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-file
+          path: "${{ env.REPORT_FILENAME_{{ matrix.user }} }}"
 
-      - name: Test Execution Status Handler
-        run: |
-          if [[ "$EXIT_STATUS" != 0 ]]; then
-            echo "Test execution contains failure(s)"
-            exit $EXIT_STATUS
-          else
-            echo "Tests passed!"
-          fi
+# Final processing steps
+process-upload-report:
+  runs-on: ubuntu-latest
+  needs: [integration_tests]
+
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: 'recursive'
+
+    - name: Download test report
+      uses: actions/download-artifact@v4
+      with:
+        name: test-report-file
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Merge all test xmls in output directory
+      run: |
+        python tod_scripts/merge_terraform_results.py
+
+    - name: Add additional information to XML report
+      run: |
+        filename=$(ls | grep -E '^[0-9]{12}_terraform_test_report\.xml$')
+        python tod_scripts/add_to_xml_test_report.py \
+        --branch_name "${GITHUB_REF#refs/*/}" \
+        --gha_run_id "$GITHUB_RUN_ID" \
+        --gha_run_number "$GITHUB_RUN_NUMBER" \
+        --xmlfile "${filename}"
+
+    - name: Upload test results to bucket
+      run: |
+        report_filename=$(ls | grep -E '^[0-9]{12}_terraform_merged_report\.xml$')
+        python3 tod_scripts/test_report_upload_script.py "${report_filename}"
+      env:
+        LINODE_CLI_OBJ_ACCESS_KEY: ${{ secrets.LINODE_CLI_OBJ_ACCESS_KEY }}
+        LINODE_CLI_OBJ_SECRET_KEY: ${{ secrets.LINODE_CLI_OBJ_SECRET_KEY }}
+
+    - name: Test Execution Status Handler
+      run: |
+        if [[ "$EXIT_STATUS" != 0 ]]; then
+          echo "Test execution contains failure(s)"
+          exit $EXIT_STATUS
+        else
+          echo "Tests passed!"
+        fi
