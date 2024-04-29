@@ -8,8 +8,22 @@ on:
       - dev
 
 # Define reusable steps
-defaults:
-  run-integration-tests: &run-integration-tests
+jobs:
+  integration_tests:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        user:
+          - USER_1
+          - USER_2
+          - USER_3
+          - USER_4
+    env:
+      EXIT_STATUS: 0
+
+    # Job for each user
     steps:
       - name: Clone Repository
         uses: actions/checkout@v4
@@ -41,31 +55,10 @@ defaults:
       - name: Install go-junit-report
         run: go install github.com/jstemmer/go-junit-report/v2@latest
 
-# Define jobs using templates
-jobs:
-  integration_tests:
-    name: Run integration tests
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        user:
-          - USER_1
-          - USER_2
-          - USER_3
-          - USER_4
-    env:
-      EXIT_STATUS: 0
-      LINODE_TOKEN: ${{ secrets.LINODE_TOKEN_USER_${{ matrix.user }} }}
-
-    # Job for each user
-    steps:
       - name: Set report filename
-        id: set-report-filename
-        run: echo "REPORT_FILENAME_{{ matrix.user }}=$(date +'%Y%m%d%H%M')_terraform_test_report_{{ matrix.user }}.xml" >> $GITHUB_ENV
+        run: echo "REPORT_FILENAME_${{ matrix.user }}=$(date +'%Y%m%d%H%M')_terraform_test_report_${{ matrix.user }}.xml" >> $GITHUB_ENV
 
       - name: Determine test tags
-        id: determine-test-tags
         run: |
           if [[ "${{ matrix.user }}" == "USER_1" ]]; then
             echo "acceptance,backup,domain,domainrecord,domains,domainzonefile,firewall,firewalldevice,firewalls,helper,image,images,instance,instanceconfig,instancedisk,instanceip"
@@ -82,20 +75,18 @@ jobs:
         env:
           TEST_TAGS: ${{ steps.determine-test-tags.outputs.stdout }}
 
-      - name: Run Integration Tests for User {{ matrix.user }}
+      - name: Run Integration Tests for User ${{ matrix.user }}
         run: |
-          if ! make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code > "$REPORT_FILENAME_{{ matrix.user }}"; then
+          if ! make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code > "$REPORT_FILENAME_${{ matrix.user }}"; then
             echo "EXIT_STATUS=1" >> $GITHUB_ENV
           fi
-          cat "$REPORT_FILENAME_{{ matrix.user }}"
-        env:
-
+          cat "$REPORT_FILENAME_${{ matrix.user }}"
 
       - name: Upload test report as artifact
         uses: actions/upload-artifact@v4
         with:
           name: test-report-file
-          path: "${{ env.REPORT_FILENAME_{{ matrix.user }} }}"
+          path: "${{ env.REPORT_FILENAME_${{ matrix.user }} }}"
 
 # Final processing steps
 process-upload-report:
