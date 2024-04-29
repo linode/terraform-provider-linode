@@ -8,6 +8,7 @@ on:
       - dev
 
 # Define reusable steps
+
 jobs:
   integration_tests:
     name: Run integration tests
@@ -74,6 +75,7 @@ jobs:
         shell: bash
         env:
           TEST_TAGS: ${{ steps.determine-test-tags.outputs.stdout }}
+          LINODE_TOKEN: ${{ secrets.LINODE_TOKEN_USER_${{ matrix.user }} }}
 
       - name: Run Integration Tests for User ${{ matrix.user }}
         run: |
