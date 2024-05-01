@@ -1,0 +1,7 @@
+{{ define "placement_group_data_basic" }}
+
+data "linode_placement_group" "test" {
+    id = 12345
+}
+
+{{ end }}
