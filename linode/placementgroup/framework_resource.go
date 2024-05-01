@@ -100,7 +100,7 @@ func (r *Resource) Read(
 
 	pg, err := client.GetPlacementGroup(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				"Placement Group no longer exists.",
 				fmt.Sprintf(
@@ -198,13 +198,14 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "client.DeletePlacementGroup(...)")
 	err := client.DeletePlacementGroup(ctx, id)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the Placement Group (%s)", data.ID.ValueString()),
-				err.Error(),
-			)
+		if linodego.IsNotFound(err) {
+			return
 		}
-		return
+
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to delete the Placement Group (%s)", data.ID.ValueString()),
+			err.Error(),
+		)
 	}
 }
 
