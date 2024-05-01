@@ -11,7 +11,7 @@ func GetFwClientWithUserAgent(
 	meta *FrameworkProviderMeta,
 ) *linodego.Client {
 	client := meta.Client
-	client.SetUserAgent(generate(meta.ProviderUserAgent, resourceOrDataSourceUAComment))
+	client.SetUserAgent(generateUserAgent(meta.ProviderUserAgent, resourceOrDataSourceUAComment))
 
 	return &client
 }
@@ -21,12 +21,12 @@ func GetSDKClientWithUserAgent(
 	meta *ProviderMeta,
 ) linodego.Client {
 	client := meta.Client
-	client.SetUserAgent(generate(meta.ProviderUserAgent, resourceOrDataSourceUAComment))
+	client.SetUserAgent(generateUserAgent(meta.ProviderUserAgent, resourceOrDataSourceUAComment))
 
 	return client
 }
 
-func generate(providerUserAgent, resourceOrDataSourceUAComment string) string {
+func generateUserAgent(providerUserAgent, resourceOrDataSourceUAComment string) string {
 	if resourceOrDataSourceUAComment == "" {
 		return providerUserAgent
 	}

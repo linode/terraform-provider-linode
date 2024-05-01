@@ -50,7 +50,7 @@ func (r *BaseDataSource) Configure(
 		return
 	}
 
-	r.Client = GetFwClientWithUserAgent(r.Config.Name+" data source", r.Meta)
+	r.Client = GetFwClientWithUserAgent("data."+r.Config.Name, r.Meta)
 
 	if r.Config.IsEarlyAccess {
 		resp.Diagnostics.Append(

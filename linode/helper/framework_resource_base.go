@@ -59,7 +59,7 @@ func (r *BaseResource) Configure(
 		return
 	}
 
-	r.Client = GetFwClientWithUserAgent(r.Config.Name+" resource", r.Meta)
+	r.Client = GetFwClientWithUserAgent(r.Config.Name, r.Meta)
 
 	if r.Config.IsEarlyAccess {
 		resp.Diagnostics.Append(
