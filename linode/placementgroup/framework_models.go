@@ -1,9 +1,9 @@
 package placementgroup
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -22,7 +22,18 @@ type PlacementGroupModel struct {
 	Members types.Set `tfsdk:"members"`
 }
 
+type PlacementGroupMemberModel struct {
+	LinodeID    types.Int64 `tfsdk:"linode_id"`
+	IsCompliant types.Bool  `tfsdk:"is_compliant"`
+}
+
+func (m *PlacementGroupMemberModel) FlattenMember(member linodego.PlacementGroupMember) {
+	m.LinodeID = types.Int64Value(int64(member.LinodeID))
+	m.IsCompliant = types.BoolValue(member.IsCompliant)
+}
+
 func (m *PlacementGroupModel) FlattenPlacementGroup(
+	ctx context.Context,
 	pg *linodego.PlacementGroup,
 	preserveKnown bool,
 ) (resultDiags diag.Diagnostics) {
@@ -34,25 +45,20 @@ func (m *PlacementGroupModel) FlattenPlacementGroup(
 	m.IsStrict = helper.KeepOrUpdateBool(m.IsStrict, pg.IsStrict, preserveKnown)
 	m.IsCompliant = helper.KeepOrUpdateBool(m.IsCompliant, pg.IsCompliant, preserveKnown)
 
-	members := make([]attr.Value, len(pg.Members))
+	members := make([]PlacementGroupMemberModel, len(pg.Members))
 	for i, member := range pg.Members {
-		flattenedMember, d := flattenPlacementGroupMember(member)
-		resultDiags.Append(d...)
-
-		if resultDiags.HasError() {
-			return
-		}
-
-		members[i] = flattenedMember
+		memberModel := PlacementGroupMemberModel{}
+		memberModel.FlattenMember(member)
+		members[i] = memberModel
 	}
 
-	m.Members = helper.KeepOrUpdateSet(
-		pgMemberObjectType,
-		m.Members,
-		members,
-		preserveKnown,
-		&resultDiags,
-	)
+	membersSet, diags := types.SetValueFrom(ctx, pgMemberObjectType, members)
+	resultDiags.Append(diags...)
+	if resultDiags.HasError() {
+		return
+	}
+
+	m.Members = membersSet
 	return
 }
 
@@ -66,14 +72,4 @@ func (m *PlacementGroupModel) CopyFrom(other PlacementGroupModel, preserveKnown 
 	m.IsCompliant = helper.KeepOrUpdateValue(m.IsCompliant, other.IsCompliant, preserveKnown)
 
 	m.Members = other.Members
-}
-
-func flattenPlacementGroupMember(member linodego.PlacementGroupMember) (types.Object, diag.Diagnostics) {
-	return types.ObjectValue(
-		pgMemberObjectType.AttrTypes,
-		map[string]attr.Value{
-			"linode_id":    types.Int64Value(int64(member.LinodeID)),
-			"is_compliant": types.BoolValue(member.IsCompliant),
-		},
-	)
 }

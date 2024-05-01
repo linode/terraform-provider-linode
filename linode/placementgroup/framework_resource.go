@@ -63,7 +63,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenPlacementGroup(pg, true)...)
+	resp.Diagnostics.Append(data.FlattenPlacementGroup(ctx, pg, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -121,7 +121,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.FlattenPlacementGroup(pg, false)...)
+	resp.Diagnostics.Append(data.FlattenPlacementGroup(ctx, pg, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -175,7 +175,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		resp.Diagnostics.Append(plan.FlattenPlacementGroup(pg, false)...)
+		resp.Diagnostics.Append(plan.FlattenPlacementGroup(ctx, pg, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
