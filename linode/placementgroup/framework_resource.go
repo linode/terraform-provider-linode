@@ -63,7 +63,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.FlattenPlacementGroup(pg, true)
+	resp.Diagnostics.Append(data.FlattenPlacementGroup(pg, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
@@ -118,7 +121,11 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.FlattenPlacementGroup(pg, false)
+	resp.Diagnostics.Append(data.FlattenPlacementGroup(pg, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -158,6 +165,7 @@ func (r *Resource) Update(
 		tflog.Debug(ctx, "client.UpdatePlacementGroup(...)", map[string]any{
 			"options": updateOpts,
 		})
+
 		pg, err := client.UpdatePlacementGroup(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -166,7 +174,11 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		plan.FlattenPlacementGroup(pg, false)
+
+		resp.Diagnostics.Append(plan.FlattenPlacementGroup(pg, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 	plan.CopyFrom(state, true)
 

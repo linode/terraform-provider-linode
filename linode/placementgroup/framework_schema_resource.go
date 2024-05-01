@@ -1,12 +1,21 @@
 package placementgroup
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+var pgMemberObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"linode_id":    types.Int64Type,
+		"is_compliant": types.BoolType,
+	},
+}
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -51,22 +60,10 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "Whether all Linodes in this Placement Group are currently compliant.",
 			Computed:    true,
 		},
-	},
-	Blocks: map[string]schema.Block{
-		"members": schema.SetNestedBlock{
-			NestedObject: schema.NestedBlockObject{
-				Attributes: map[string]schema.Attribute{
-					"linode_id": schema.Int64Attribute{
-						Computed:    true,
-						Description: "The ID of this member.",
-					},
-					"is_compliant": schema.BoolAttribute{
-						Computed: true,
-						Description: "Whether this member is currently compliant with the " +
-							"Placement Group's affinity policy.",
-					},
-				},
-			},
+		"members": schema.SetAttribute{
+			Description: "A set of Linodes currently assigned to this Placement Group.",
+			Computed:    true,
+			ElementType: pgMemberObjectType,
 		},
 	},
 }

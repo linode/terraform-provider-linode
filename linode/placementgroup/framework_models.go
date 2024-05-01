@@ -3,23 +3,13 @@ package placementgroup
 import (
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
-
-type PlacementGroupMemberModel struct {
-	LinodeID    types.Int64 `tfsdk:"linode_id"`
-	IsCompliant types.Bool  `tfsdk:"is_compliant"`
-}
-
-func (m *PlacementGroupMemberModel) FlattenPlacementGroupMember(member *linodego.PlacementGroupMember) {
-	// This object is always computed so we don't need to respect preserveKnown here.
-	// It may still be good practice to respect preserveKnown here though, so definitely
-	// change it if so.
-	m.LinodeID = types.Int64Value(int64(member.LinodeID))
-	m.IsCompliant = types.BoolValue(member.IsCompliant)
-}
 
 type PlacementGroupModel struct {
 	ID           types.String `tfsdk:"id"`
@@ -29,16 +19,13 @@ type PlacementGroupModel struct {
 	IsStrict     types.Bool   `tfsdk:"is_strict"`
 	IsCompliant  types.Bool   `tfsdk:"is_compliant"`
 
-	// This is not implemented as a set because it is a fully computed value,
-	// so this implementation can be a bit more simple.
-	// Terraform will still interpret this value as a set at plan-time.
-	Members []PlacementGroupMemberModel `tfsdk:"members"`
+	Members types.Set `tfsdk:"members"`
 }
 
 func (m *PlacementGroupModel) FlattenPlacementGroup(
 	pg *linodego.PlacementGroup,
 	preserveKnown bool,
-) {
+) (resultDiags diag.Diagnostics) {
 	m.ID = helper.KeepOrUpdateString(m.ID, strconv.Itoa(pg.ID), preserveKnown)
 
 	m.Label = helper.KeepOrUpdateString(m.Label, pg.Label, preserveKnown)
@@ -47,17 +34,26 @@ func (m *PlacementGroupModel) FlattenPlacementGroup(
 	m.IsStrict = helper.KeepOrUpdateBool(m.IsStrict, pg.IsStrict, preserveKnown)
 	m.IsCompliant = helper.KeepOrUpdateBool(m.IsCompliant, pg.IsCompliant, preserveKnown)
 
-	members := make([]PlacementGroupMemberModel, len(pg.Members))
+	members := make([]attr.Value, len(pg.Members))
 	for i, member := range pg.Members {
-		// Shadow to prevent implicit memory aliasing
-		member := member
+		flattenedMember, d := flattenPlacementGroupMember(member)
+		resultDiags.Append(d...)
 
-		memberModel := PlacementGroupMemberModel{}
-		memberModel.FlattenPlacementGroupMember(&member)
-		members[i] = memberModel
+		if resultDiags.HasError() {
+			return
+		}
+
+		members[i] = flattenedMember
 	}
 
-	m.Members = members
+	m.Members = helper.KeepOrUpdateSet(
+		pgMemberObjectType,
+		m.Members,
+		members,
+		preserveKnown,
+		&resultDiags,
+	)
+	return
 }
 
 func (m *PlacementGroupModel) CopyFrom(other PlacementGroupModel, preserveKnown bool) {
@@ -70,4 +66,14 @@ func (m *PlacementGroupModel) CopyFrom(other PlacementGroupModel, preserveKnown 
 	m.IsCompliant = helper.KeepOrUpdateValue(m.IsCompliant, other.IsCompliant, preserveKnown)
 
 	m.Members = other.Members
+}
+
+func flattenPlacementGroupMember(member linodego.PlacementGroupMember) (types.Object, diag.Diagnostics) {
+	return types.ObjectValue(
+		pgMemberObjectType.AttrTypes,
+		map[string]attr.Value{
+			"linode_id":    types.Int64Value(int64(member.LinodeID)),
+			"is_compliant": types.BoolValue(member.IsCompliant),
+		},
+	)
 }
