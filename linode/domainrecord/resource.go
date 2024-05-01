@@ -14,7 +14,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-const resourceUserAgentComment = "linode_domain_record resource"
+const resourceUserAgentComment = "linode_domain_record"
 
 func Resource() *schema.Resource {
 	return &schema.Resource{

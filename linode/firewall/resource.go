@@ -14,7 +14,7 @@ import (
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
-const resourceUserAgentComment = "linode_firewall resource"
+const resourceUserAgentComment = "linode_firewall"
 
 func resourceFirewallRules() *schema.Resource {
 	return &schema.Resource{

@@ -14,7 +14,7 @@ import (
 	instancehelpers "github.com/linode/terraform-provider-linode/v2/linode/instance"
 )
 
-const resourceUserAgentComment = "linode_instance_config resource"
+const resourceUserAgentComment = "linode_instance_config"
 
 func Resource() *schema.Resource {
 	return &schema.Resource{

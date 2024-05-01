@@ -15,7 +15,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-const resourceUserAgentComment = "linode_nb_node resource"
+const resourceUserAgentComment = "linode_nb_node"
 
 func Resource() *schema.Resource {
 	return &schema.Resource{

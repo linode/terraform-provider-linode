@@ -50,7 +50,9 @@ func DataSource() *schema.Resource {
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Read data.linode_instances")
 
-	client := helper.GetSDKClientWithUserAgent("linode_instance data source", meta.(*helper.ProviderMeta))
+	client := helper.GetSDKClientWithUserAgent(
+		"data.linode_instance", meta.(*helper.ProviderMeta),
+	)
 
 	filterID, err := filterConfig.GetFilterID(d)
 	if err != nil {

@@ -21,7 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-const resourceUserAgentComment = "linode_object_storage_object resource"
+const resourceUserAgentComment = "linode_object_storage_object"
 
 func Resource() *schema.Resource {
 	return &schema.Resource{

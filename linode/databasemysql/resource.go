@@ -20,7 +20,7 @@ const (
 	updateDBTimeout = 5 * time.Minute
 	deleteDBTimeout = 5 * time.Minute
 
-	resourceUserAgentComment = "linode_database_access_controls resource"
+	resourceUserAgentComment = "linode_database_access_controls"
 )
 
 func Resource() *schema.Resource {

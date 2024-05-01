@@ -15,7 +15,7 @@ import (
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
-const resourceUserAgentComment = "linode_domain resource"
+const resourceUserAgentComment = "linode_domain"
 
 func Resource() *schema.Resource {
 	return &schema.Resource{

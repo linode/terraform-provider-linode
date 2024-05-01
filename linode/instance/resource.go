@@ -20,7 +20,7 @@ const (
 	LinodeInstanceUpdateTimeout = time.Hour
 	LinodeInstanceDeleteTimeout = 10 * time.Minute
 
-	resourceUserAgentComment = "linode_instance resource"
+	resourceUserAgentComment = "linode_instance"
 )
 
 func Resource() *schema.Resource {

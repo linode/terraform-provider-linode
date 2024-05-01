@@ -18,7 +18,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 )
 
-const resourceUserAgentComment = "linode_object_storage_bucket resource"
+const resourceUserAgentComment = "linode_object_storage_bucket"
 
 func resourceLifecycleExpiration() *schema.Resource {
 	return &schema.Resource{

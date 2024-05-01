@@ -13,7 +13,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-const resourceUserAgentComment = "linode_user resource"
+const resourceUserAgentComment = "linode_user"
 
 var resourceLinodeUserGrantFields = []string{
 	"global_grants", "domain_grant", "firewall_grant", "image_grant",

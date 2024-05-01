@@ -25,7 +25,7 @@ const (
 	updateLKETimeout = 40 * time.Minute
 	deleteLKETimeout = 15 * time.Minute
 
-	resourceUserAgentComment = "linode_lke_cluster resource"
+	resourceUserAgentComment = "linode_lke_cluster"
 )
 
 func Resource() *schema.Resource {

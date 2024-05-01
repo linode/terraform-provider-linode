@@ -14,7 +14,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-const resourceUserAgentComment = "linode_database_access_controls resource"
+const resourceUserAgentComment = "linode_database_access_controls"
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
