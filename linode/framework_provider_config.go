@@ -290,7 +290,7 @@ func (fp *FrameworkProvider) InitProvider(
 		client.SetRetryMaxWaitTime(time.Duration(maxRetryDelayMilliseconds) * time.Millisecond)
 	}
 
-	userAgent := fp.fwProviderUserAgent(tfVersion, UAPrefix)
+	userAgent := fp.userAgent(tfVersion, UAPrefix)
 	client.SetUserAgent(userAgent)
 	fp.Meta.ProviderUserAgent = userAgent
 
@@ -300,7 +300,7 @@ func (fp *FrameworkProvider) InitProvider(
 	fp.Meta.Client = client
 }
 
-func (fp *FrameworkProvider) fwProviderUserAgent(
+func (fp *FrameworkProvider) userAgent(
 	tfVersion string,
 	UAPrefix string,
 ) string {
