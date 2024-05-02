@@ -14,6 +14,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+const resourceUserAgentComment = "linode_database_access_controls"
+
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        resourceSchema,
@@ -28,7 +30,7 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	dbID, dbType, err := parseID(d.Id())
 	if err != nil {
@@ -63,7 +65,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	dbID, dbType, err := parseID(d.Id())
 	if err != nil {
@@ -82,7 +84,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	dbID, dbType, err := parseID(d.Id())
 	if err != nil {

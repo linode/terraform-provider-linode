@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func DataSource() *schema.Resource {
@@ -17,7 +18,10 @@ func DataSource() *schema.Resource {
 }
 
 func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	results, err := filterConfig.FilterDataSource(ctx, d, meta, listBackups, flattenBackup)
+	client := helper.GetSDKClientWithUserAgent(
+		"data.linode_database_mysql_backups", meta.(*helper.ProviderMeta),
+	)
+	results, err := filterConfig.FilterDataSource(ctx, d, &client, listBackups, flattenBackup)
 	if err != nil {
 		return nil
 	}

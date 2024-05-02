@@ -36,7 +36,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create linode_object_storage_key")
 	var data ResourceModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -92,7 +92,7 @@ func (r *Resource) Read(
 	resp *resource.ReadResponse,
 ) {
 	tflog.Debug(ctx, "Read linode_object_storage_key")
-	client := r.Meta.Client
+	client := r.Client
 	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -176,7 +176,7 @@ func (r *Resource) Update(
 		tflog.Debug(ctx, "client.UpdateObjectStorageKey(...)", map[string]any{
 			"options": updateOpts,
 		})
-		key, err := r.Meta.Client.UpdateObjectStorageKey(ctx, id, updateOpts)
+		key, err := r.Client.UpdateObjectStorageKey(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to update Object Storage Key (%d)", id),
@@ -222,7 +222,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 	tflog.Debug(ctx, "client.DeleteObjectStorageKey(...)")
 	err := client.DeleteObjectStorageKey(ctx, id)
 	if err != nil {

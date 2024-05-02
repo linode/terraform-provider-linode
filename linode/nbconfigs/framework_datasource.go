@@ -46,7 +46,7 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.Meta.Client, data.Filters, data.listNodeBalancerConfigs,
+		ctx, d.Client, data.Filters, data.listNodeBalancerConfigs,
 		// There are no API filterable fields, so we don't need to provide
 		// order and order_by.
 		types.StringNull(), types.StringNull())

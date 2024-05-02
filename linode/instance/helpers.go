@@ -1169,7 +1169,7 @@ func validateBooted(ctx context.Context, d *schema.ResourceData) error {
 func handleBootedUpdate(
 	ctx context.Context, d *schema.ResourceData, meta interface{}, instanceID, configID int,
 ) error {
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	deadlineSeconds := getDeadlineSeconds(ctx, d)
 

@@ -13,6 +13,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+const resourceUserAgentComment = "linode_user"
+
 var resourceLinodeUserGrantFields = []string{
 	"global_grants", "domain_grant", "firewall_grant", "image_grant",
 	"linode_grant", "longview_grant", "nodebalancer_grant", "stackscript_grant", "volume_grant",
@@ -34,7 +36,7 @@ func Resource() *schema.Resource {
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_user")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	createOpts := linodego.UserCreateOptions{
 		Email:      d.Get("email").(string),
@@ -67,7 +69,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_user")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	username := d.Id()
 
@@ -115,7 +117,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_user")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	id := d.Id()
 	username := d.Get("username").(string)
@@ -149,7 +151,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_user")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	username := d.Id()
 
@@ -161,7 +163,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	username := d.Id()
 	restricted := d.Get("restricted").(bool)

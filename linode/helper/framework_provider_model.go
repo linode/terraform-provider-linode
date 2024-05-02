@@ -59,6 +59,7 @@ type FrameworkProviderModel struct {
 }
 
 type FrameworkProviderMeta struct {
-	Client *linodego.Client
-	Config *FrameworkProviderModel
+	ProviderUserAgent string
+	Client            linodego.Client
+	Config            *FrameworkProviderModel
 }

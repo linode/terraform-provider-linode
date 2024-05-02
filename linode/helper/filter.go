@@ -202,12 +202,10 @@ func (f FilterConfig) FilterResults(
 func (f FilterConfig) FilterDataSource(
 	ctx context.Context,
 	d *schema.ResourceData,
-	meta interface{},
+	client *linodego.Client,
 	listFunc FilterListFunc,
 	flattenFunc FilterFlattenFunc,
 ) ([]map[string]interface{}, error) {
-	client := meta.(*ProviderMeta).Client
-
 	filterID, err := f.GetFilterID(d)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate filter id: %s", err)
@@ -223,7 +221,7 @@ func (f FilterConfig) FilterDataSource(
 		"filter": filter,
 	})
 
-	items, err := listFunc(ctx, d, &client, &linodego.ListOptions{
+	items, err := listFunc(ctx, d, client, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {
