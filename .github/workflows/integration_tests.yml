@@ -27,38 +27,33 @@ jobs:
         with:
           go-version: '1.x'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
       - name: Install Dependencies
         run: |
           make deps
           sudo apt-get update -y
           sudo apt-get install -y build-essential
-          pip install requests wheel boto3
 
       - name: Install go-junit-report
         run: go install github.com/jstemmer/go-junit-report/v2@latest
 
-      - name: Set Environment Variables
+      # Note: test tags are not in alphabetical order, it was divided to optimize test execution time
+      - name: Set Test Scope for each Account
         run: |
-          case "${{ matrix.user }}" in
+          case "${{ matrix.user }}" in 
             "USER_1")
-              echo "TEST_TAGS=acceptance,backup,domain,domainrecord,domains,domainzonefile,firewall,firewalldevice,firewalls,helper,image,images,instance,instanceconfig,instancedisk,instanceip" >> $GITHUB_ENV
+              echo "TEST_TAGS=acceptance,backup,domain,domainrecord,domains,domainzonefile,firewall,firewalldevice,firewalls,helper,instance" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_TAGS=instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lke,lkeclusters" >> $GITHUB_ENV
+              echo "TEST_TAGS=instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lke" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
-              echo "TEST_TAGS=nb,nbconfig,nbconfigs,nbnode,nbs,networkingip,obj,objbucket,objcluster,objkey,profile,rdns" >> $GITHUB_ENV
+              echo "TEST_TAGS=instanceconfig,instancedisk,instanceip,nb,nbconfig,nbconfigs,nbnode,nbs,networkingip,obj,objbucket,objcluster,objkey,profile,rdns" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
-              echo "TEST_TAGS=lkenodepool,lkeversions,region,regions,sshkey,sshkeys,stackscript,stackscripts,token,user,users,vlan,volume,volumes,vpc,vpcs" >> $GITHUB_ENV
+              echo "TEST_TAGS=image,images,lkeclusters,lkenodepool,lkeversions,region,regions,sshkey,sshkeys,stackscript,stackscripts,token,user,users,vlan,volume,volumes,vpc,vpcs" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_4 }}" >> $GITHUB_ENV
               ;;
           esac
@@ -77,10 +72,12 @@ jobs:
           LINODE_TOKEN: ${{ env.LINODE_TOKEN }}
 
       - name: Upload Test Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: test-report
+          name: test-report-${{ matrix.user }}
+          if-no-files-found: ignore
           path: '*.xml'
+          retention-days: 1
 
       - name: Test Execution Status Handler
         run: |
@@ -104,17 +101,25 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - name: Download test report
-        uses: actions/download-artifact@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          name: test-report
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip3 install requests wheel boto3
+
+      - name: Download test report
+        uses: actions/download-artifact@v3
+
+      - name: Get .xml reports from separate Artifacts into root folder
+        run: rsync -av test-report-USER_*/* .
 
       - name: Merge Test Reports
         run: python tod_scripts/merge_terraform_results.py
 
       - name: Add Information to XML Report
         run: |
-          ls -l *.xml
           filename=$(ls | grep -E '^[0-9]{12}_terraform_merged_report.xml$') 
           python tod_scripts/add_to_xml_test_report.py --branch_name "${GITHUB_REF#refs/*/}" --gha_run_id "${GITHUB_RUN_ID}" --gha_run_number "${GITHUB_RUN_NUMBER}" --xmlfile "${filename}"
 
