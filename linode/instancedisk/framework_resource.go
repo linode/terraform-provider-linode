@@ -67,7 +67,7 @@ func (r *Resource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	client := r.Meta.Client
+	client := r.Client
 
 	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
 	linodeID := helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), &resp.Diagnostics)
@@ -183,7 +183,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 
 	tflog.Trace(ctx, "client.GetInstanceDisk(...)")
 	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
@@ -238,7 +238,7 @@ func (r *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	client := r.Meta.Client
+	client := r.Client
 	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -290,6 +290,14 @@ func (r *Resource) Update(
 	plan.FlattenDisk(disk, true)
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -306,7 +314,7 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	client := r.Meta.Client
+	client := r.Client
 
 	linodeID, id := getLinodeIDAndDiskID(state, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {

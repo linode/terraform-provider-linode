@@ -86,7 +86,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create linode_stackscript")
 	var data StackScriptModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -141,7 +141,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_stackscript")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var data StackScriptModel
 
@@ -233,6 +233,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -243,7 +251,7 @@ func (r *Resource) Delete(
 ) {
 	tflog.Debug(ctx, "Delete linode_stackscript")
 	var data StackScriptModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -276,7 +284,7 @@ func (r *Resource) updateStackScript(
 	plan *StackScriptModel,
 	stackScriptID int,
 ) {
-	client := r.Meta.Client
+	client := r.Client
 
 	updateOpts := linodego.StackscriptUpdateOptions{
 		Label:       plan.Label.ValueString(),

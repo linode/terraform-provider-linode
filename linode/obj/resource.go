@@ -21,6 +21,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+const resourceUserAgentComment = "linode_object_storage_object"
+
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema: resourceSchema,
@@ -45,7 +47,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	tflog.Debug(ctx, "reading linode_object_storage_object")
 
 	config := meta.(*helper.ProviderMeta).Config
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	cluster := d.Get("cluster").(string)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
@@ -125,7 +127,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("acl") {
 		config := meta.(*helper.ProviderMeta).Config
-		client := meta.(*helper.ProviderMeta).Client
+		client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 		objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
 		if diags != nil {
@@ -166,7 +168,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	tflog.Debug(ctx, "deleting linode_object_storage_object")
 
 	config := meta.(*helper.ProviderMeta).Config
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	cluster := d.Get("cluster").(string)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
@@ -213,7 +215,7 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	tflog.Debug(ctx, "entered 'putObject' function")
 
 	config := meta.(*helper.ProviderMeta).Config
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	cluster := d.Get("cluster").(string)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)

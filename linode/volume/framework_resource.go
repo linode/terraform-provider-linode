@@ -83,7 +83,7 @@ func (r *Resource) CreateVolumeFromSource(
 ) *linodego.Volume {
 	tflog.Debug(ctx, "Create volume from source")
 
-	client := r.Meta.Client
+	client := r.Client
 	sourceVolumeID := helper.FrameworkSafeInt64ToInt(data.SourceVolumeID.ValueInt64(), diags)
 	if diags.HasError() {
 		return nil
@@ -212,7 +212,7 @@ func (r *Resource) CreateVolume(
 ) *linodego.Volume {
 	tflog.Debug(ctx, "Create new volume")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	size := helper.FrameworkSafeInt64ToInt(data.Size.ValueInt64(), diags)
 
@@ -323,7 +323,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -412,7 +412,7 @@ func (r *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	client := r.Meta.Client
+	client := r.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
@@ -543,6 +543,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -598,7 +606,7 @@ func (r *Resource) Delete(
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	client := r.Meta.Client
+	client := r.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {

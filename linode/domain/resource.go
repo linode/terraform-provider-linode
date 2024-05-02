@@ -15,6 +15,8 @@ import (
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
+const resourceUserAgentComment = "linode_domain"
+
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        resourceSchema,
@@ -36,7 +38,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_domain")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
@@ -76,7 +78,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_domain")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	createOpts := linodego.DomainCreateOptions{
 		Domain:      d.Get("domain").(string),
@@ -133,7 +135,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_domain")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -190,7 +192,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_domain")
 
-	client := meta.(*helper.ProviderMeta).Client
+	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Domain id %s as int", d.Id())

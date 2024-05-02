@@ -59,7 +59,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Read linode_vpc_subnet")
 
 	var data VPCSubnetModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -110,7 +110,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_vpc_subnet")
 
-	client := r.Meta.Client
+	client := r.Client
 	var data VPCSubnetModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -167,7 +167,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update linode_vpc_subnet")
 
 	var plan, state VPCSubnetModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -216,6 +216,13 @@ func (r *Resource) Update(
 		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
 	}
 
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -227,7 +234,7 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete linode_vpc_subnet")
 
 	var data VPCSubnetModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

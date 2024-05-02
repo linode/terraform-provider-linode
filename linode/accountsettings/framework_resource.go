@@ -61,7 +61,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_account_settings")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var data AccountSettingsModel
 
@@ -128,6 +128,13 @@ func (r *Resource) Update(
 
 	plan.CopyFrom(state, true)
 
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	// Apply the state changes
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -144,7 +151,7 @@ func (r *Resource) updateAccountSettings(
 	ctx context.Context,
 	plan *AccountSettingsModel,
 ) diag.Diagnostics {
-	client := r.Meta.Client
+	client := r.Client
 	var diagnostics diag.Diagnostics
 
 	// Longview Plan update functionality has been moved

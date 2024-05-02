@@ -45,7 +45,7 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.Meta.Client, data.Filters, listLKEClusters,
+		ctx, d.Client, data.Filters, listLKEClusters,
 		data.Order, data.OrderBy)
 	if diag != nil {
 		resp.Diagnostics.Append(diag)

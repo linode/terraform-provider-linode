@@ -43,7 +43,7 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.Meta.Client, data.Filters, listStackscripts,
+		ctx, d.Client, data.Filters, listStackscripts,
 		data.Order, data.OrderBy)
 	if diag != nil {
 		resp.Diagnostics.Append(diag)

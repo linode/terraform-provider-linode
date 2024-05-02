@@ -36,7 +36,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_lke_node_pool")
 	var data NodePoolModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -92,7 +92,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create linode_lke_node_pool")
 	var plan NodePoolModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -161,7 +161,7 @@ func (r *Resource) Update(
 ) {
 	tflog.Debug(ctx, "Update linode_lke_node_pool")
 	var state, plan NodePoolModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -208,6 +208,14 @@ func (r *Resource) Update(
 	}
 
 	plan.FlattenLKENodePool(readyPool, true, &resp.Diagnostics)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -222,7 +230,7 @@ func (r *Resource) Delete(
 ) {
 	tflog.Debug(ctx, "Delete linode_lke_node_pool")
 	var data NodePoolModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

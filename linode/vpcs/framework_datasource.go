@@ -48,7 +48,7 @@ func (r *DataSource) Read(
 	data.ID = id
 
 	result, d := filterConfig.GetAndFilter(
-		ctx, r.Meta.Client, data.Filters, ListVPCs,
+		ctx, r.Client, data.Filters, ListVPCs,
 		// There are no API filterable fields so we don't need to provide
 		// order and order_by.
 		types.StringNull(), types.StringNull())

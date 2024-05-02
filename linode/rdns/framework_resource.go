@@ -47,7 +47,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create linode_rdns")
 
 	var plan ResourceModel
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -120,7 +120,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_rdns")
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var data ResourceModel
 
@@ -185,7 +185,7 @@ func (r *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	client := r.Meta.Client
+	client := r.Client
 
 	var updateOpts linodego.IPAddressUpdateOptions
 
@@ -213,7 +213,16 @@ func (r *Resource) Update(
 		}
 		plan.FlattenInstanceIP(ip, true)
 	}
+
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -231,7 +240,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Meta.Client
+	client := r.Client
 
 	updateOpts := linodego.IPAddressUpdateOptions{
 		RDNS: nil,

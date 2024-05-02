@@ -262,10 +262,14 @@ func providerConfigure(
 		ObjUseTempKeys: d.Get("obj_use_temp_keys").(bool),
 	}
 
+	meta := helper.ProviderMeta{
+		Config: config,
+	}
+
 	handleDefault(config, d)
 
 	config.TerraformVersion = terraformVersion
-	client, err := config.Client(ctx)
+	client, err := config.Client(ctx, &meta)
 	if err != nil {
 		return nil, diag.Errorf("failed to initialize client: %s", err)
 	}
@@ -274,8 +278,7 @@ func providerConfigure(
 	if _, err := client.ListTypes(ctx, linodego.NewListOptions(100, "")); err != nil {
 		return nil, diag.Errorf("Error connecting to the Linode API: %s", err)
 	}
-	return &helper.ProviderMeta{
-		Client: *client,
-		Config: config,
-	}, nil
+	meta.Client = *client
+
+	return &meta, nil
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 )
 
 // NewBaseResource returns a new instance of the BaseResource
@@ -38,6 +39,9 @@ type BaseResourceConfig struct {
 type BaseResource struct {
 	Config BaseResourceConfig
 	Meta   *FrameworkProviderMeta
+
+	// Resource level linodego Client containing specific configurations.
+	Client *linodego.Client
 }
 
 func (r *BaseResource) Configure(
@@ -54,6 +58,8 @@ func (r *BaseResource) Configure(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	r.Client = GetFwClientWithUserAgent(r.Config.Name, r.Meta)
 
 	if r.Config.IsEarlyAccess {
 		resp.Diagnostics.Append(

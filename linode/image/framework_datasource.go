@@ -31,7 +31,7 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_image")
 
-	client := d.Meta.Client
+	client := d.Client
 	var data ImageModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

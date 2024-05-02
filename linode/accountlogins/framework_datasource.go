@@ -33,7 +33,7 @@ func (r *DataSource) Read(
 	tflog.Debug(ctx, "Read data.linode_account_logins")
 	var data AccountLoginFilterModel
 
-	client := r.Meta.Client
+	client := r.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
