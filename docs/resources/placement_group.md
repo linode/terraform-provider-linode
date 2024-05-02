@@ -38,9 +38,9 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `id` - The ID of the Placement Group.
 
-* `is_compliant` - (Optional) Whether all Linodes in this group are currently compliant with the group's affinity policy.
+* `is_compliant` - Whether all Linodes in this group are currently compliant with the group's affinity policy.
 
-* `members` - A set of Linodes currently assigned to this Placement Group.
+* [`members`](#members) - A set of Linodes currently assigned to this Placement Group.
 
 ### Members
 
@@ -49,3 +49,11 @@ Represents a single Linode assigned to a Placement Group.
 * `linode_id` - The ID of the Linode.
 
 * `is_compliant` - Whether this Linode is currently compliant with the group's affinity policy.
+
+## Import
+
+Placement Groups be imported using their unique `id`, e.g.
+
+```sh
+terraform import linode_placement_group.mygroup 1234567
+```
