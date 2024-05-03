@@ -59,34 +59,22 @@ jobs:
           esac
 
       - name: Set report filename
-        id: set-report-filename
         run: echo "REPORT_FILENAME=$(date +'%Y%m%d%H%M')_terraform_test_report_${{ matrix.user }}.xml" >> $GITHUB_ENV
 
       - name: Run Integration Tests
         run: |
-          if ! make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code > $REPORT_FILENAME; then
-            echo "EXIT_STATUS=1" >> $GITHUB_ENV
-          fi
-          cat $REPORT_FILENAME
+          make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code > $REPORT_FILENAME
         env:
           LINODE_TOKEN: ${{ env.LINODE_TOKEN }}
 
       - name: Upload Test Report
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: test-report-${{ matrix.user }}
           if-no-files-found: ignore
           path: '*.xml'
           retention-days: 1
-
-      - name: Test Execution Status Handler
-        run: |
-          if [[ "$EXIT_STATUS" != 0 ]]; then
-            echo "Test execution contains failure(s), check Run Integration Tests step above"
-            exit $EXIT_STATUS 
-          else
-            echo "Tests Passed!"
-          fi
 
 
   process-upload-report:
