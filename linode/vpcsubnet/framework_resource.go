@@ -59,7 +59,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Read linode_vpc_subnet")
 
 	var data VPCSubnetModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -110,7 +110,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_vpc_subnet")
 
-	client := r.Client
+	client := r.Meta.Client
 	var data VPCSubnetModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -167,7 +167,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update linode_vpc_subnet")
 
 	var plan, state VPCSubnetModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -234,7 +234,7 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete linode_vpc_subnet")
 
 	var data VPCSubnetModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

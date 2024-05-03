@@ -67,7 +67,7 @@ func (r *Resource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	client := r.Client
+	client := r.Meta.Client
 
 	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
 	linodeID := helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), &resp.Diagnostics)
@@ -183,7 +183,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	client := r.Client
+	client := r.Meta.Client
 
 	tflog.Trace(ctx, "client.GetInstanceDisk(...)")
 	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
@@ -238,7 +238,7 @@ func (r *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	client := r.Client
+	client := r.Meta.Client
 	timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -314,7 +314,7 @@ func (r *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	client := r.Client
+	client := r.Meta.Client
 
 	linodeID, id := getLinodeIDAndDiskID(state, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {

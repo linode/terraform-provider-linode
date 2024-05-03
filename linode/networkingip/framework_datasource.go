@@ -73,7 +73,7 @@ func (d *DataSource) Read(
 	ctx = tflog.SetField(ctx, "address", data.Address.ValueString())
 	tflog.Trace(ctx, "client.GetIPAddress(...)")
 
-	ip, err := d.Client.GetIPAddress(ctx, data.Address.ValueString())
+	ip, err := d.Meta.Client.GetIPAddress(ctx, data.Address.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get IP Address: %s", err.Error(),

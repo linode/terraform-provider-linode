@@ -44,14 +44,14 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.Client, data.Filters, listUsers,
+		ctx, d.Meta.Client, data.Filters, listUsers,
 		data.Order, data.OrderBy)
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseUsers(ctx, d.Client, helper.AnySliceToTyped[linodego.User](result))...)
+	resp.Diagnostics.Append(data.parseUsers(ctx, d.Meta.Client, helper.AnySliceToTyped[linodego.User](result))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -19,8 +19,6 @@ const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
 	LinodeInstanceUpdateTimeout = time.Hour
 	LinodeInstanceDeleteTimeout = 10 * time.Minute
-
-	resourceUserAgentComment = "linode_instance"
 )
 
 func Resource() *schema.Resource {
@@ -49,7 +47,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_instance")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode instance ID %s as int: %s", d.Id(), err)
@@ -158,7 +156,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_instance")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 
 	if err := validateBooted(ctx, d); err != nil {
 		return diag.Errorf("failed to validate: %v", err)
@@ -517,7 +515,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_instance")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	skipImplicitReboots := meta.(*helper.ProviderMeta).Config.SkipImplicitReboots
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -836,7 +834,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_instance")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode Instance ID %s as int", d.Id())

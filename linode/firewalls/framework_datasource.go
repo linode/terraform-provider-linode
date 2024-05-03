@@ -46,7 +46,7 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.Client, data.Filters, listFirewalls,
+		ctx, d.Meta.Client, data.Filters, listFirewalls,
 		data.Order, data.OrderBy)
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -56,7 +56,7 @@ func (d *DataSource) Read(
 	resp.Diagnostics.Append(
 		data.parseFirewalls(
 			ctx,
-			d.Client,
+			d.Meta.Client,
 			helper.AnySliceToTyped[linodego.Firewall](result),
 		)...,
 	)

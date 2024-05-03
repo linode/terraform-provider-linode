@@ -83,7 +83,7 @@ func (r *Resource) CreateVolumeFromSource(
 ) *linodego.Volume {
 	tflog.Debug(ctx, "Create volume from source")
 
-	client := r.Client
+	client := r.Meta.Client
 	sourceVolumeID := helper.FrameworkSafeInt64ToInt(data.SourceVolumeID.ValueInt64(), diags)
 	if diags.HasError() {
 		return nil
@@ -212,7 +212,7 @@ func (r *Resource) CreateVolume(
 ) *linodego.Volume {
 	tflog.Debug(ctx, "Create new volume")
 
-	client := r.Client
+	client := r.Meta.Client
 
 	size := helper.FrameworkSafeInt64ToInt(data.Size.ValueInt64(), diags)
 
@@ -323,7 +323,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	client := r.Client
+	client := r.Meta.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -412,7 +412,7 @@ func (r *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	client := r.Client
+	client := r.Meta.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	size := helper.FrameworkSafeInt64ToInt(plan.Size.ValueInt64(), &resp.Diagnostics)
@@ -606,7 +606,7 @@ func (r *Resource) Delete(
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	client := r.Client
+	client := r.Meta.Client
 
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {

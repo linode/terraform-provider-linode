@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/linodego"
 )
 
 // NewBaseDataSource returns a new instance of the BaseDataSource
@@ -30,9 +29,6 @@ type BaseDataSourceConfig struct {
 type BaseDataSource struct {
 	Config BaseDataSourceConfig
 	Meta   *FrameworkProviderMeta
-
-	// Data source level linodego Client containing specific configurations.
-	Client *linodego.Client
 }
 
 func (r *BaseDataSource) Configure(
@@ -49,8 +45,6 @@ func (r *BaseDataSource) Configure(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	r.Client = GetFwClientWithUserAgent("data."+r.Config.Name, r.Meta)
 
 	if r.Config.IsEarlyAccess {
 		resp.Diagnostics.Append(

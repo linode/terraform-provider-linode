@@ -32,7 +32,7 @@ func (r *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_lke_cluster")
 
-	client := r.Client
+	client := r.Meta.Client
 
 	var data LKEDataModel
 

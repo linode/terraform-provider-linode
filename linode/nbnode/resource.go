@@ -15,8 +15,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-const resourceUserAgentComment = "linode_nb_node"
-
 func Resource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        resourceSchema,
@@ -34,7 +32,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_nb_node")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerNode ID %s as int: %s", d.Id(), err)
@@ -108,7 +106,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_nb_node")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 
 	nodebalancerID, ok := d.Get("nodebalancer_id").(int)
 	if !ok {
@@ -148,7 +146,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_nb_node")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -186,7 +184,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_nb_node")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode NodeBalancerConfig ID %s as int: %s", d.Id(), err)

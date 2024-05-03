@@ -32,7 +32,7 @@ func (d *DataSource) Read(
 	tflog.Debug(ctx, "Read data.linode_instance_backups")
 
 	var data DataSourceModel
-	client := d.Client
+	client := d.Meta.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
