@@ -86,7 +86,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create linode_stackscript")
 	var data StackScriptModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -141,7 +141,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_stackscript")
 
-	client := r.Client
+	client := r.Meta.Client
 
 	var data StackScriptModel
 
@@ -251,7 +251,7 @@ func (r *Resource) Delete(
 ) {
 	tflog.Debug(ctx, "Delete linode_stackscript")
 	var data StackScriptModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -284,7 +284,7 @@ func (r *Resource) updateStackScript(
 	plan *StackScriptModel,
 	stackScriptID int,
 ) {
-	client := r.Client
+	client := r.Meta.Client
 
 	updateOpts := linodego.StackscriptUpdateOptions{
 		Label:       plan.Label.ValueString(),

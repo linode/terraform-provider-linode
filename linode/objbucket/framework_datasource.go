@@ -53,7 +53,7 @@ func (d *DataSource) Read(
 	resp *datasource.ReadResponse,
 ) {
 	tflog.Debug(ctx, "Read linode_object_storage_bucket")
-	client := d.Client
+	client := d.Meta.Client
 
 	var data DataSourceModel
 

@@ -47,7 +47,7 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "Create linode_rdns")
 
 	var plan ResourceModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -120,7 +120,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_rdns")
 
-	client := r.Client
+	client := r.Meta.Client
 
 	var data ResourceModel
 
@@ -185,7 +185,7 @@ func (r *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	client := r.Client
+	client := r.Meta.Client
 
 	var updateOpts linodego.IPAddressUpdateOptions
 
@@ -240,7 +240,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	client := r.Client
+	client := r.Meta.Client
 
 	updateOpts := linodego.IPAddressUpdateOptions{
 		RDNS: nil,

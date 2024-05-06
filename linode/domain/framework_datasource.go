@@ -71,7 +71,7 @@ func (d *DataSource) Read(
 func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domain, diag.Diagnostic) {
 	tflog.Trace(ctx, "client.GetDomain(...)")
 
-	domain, err := d.Client.GetDomain(ctx, id)
+	domain, err := d.Meta.Client.GetDomain(ctx, id)
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(
 			fmt.Sprintf("Failed to get Domain with id %d", id),
@@ -95,7 +95,7 @@ func (d *DataSource) getDomainByDomain(ctx context.Context, domain string) (*lin
 		)
 	}
 
-	domains, err := d.Client.ListDomains(ctx, linodego.NewListOptions(0, string(filter)))
+	domains, err := d.Meta.Client.ListDomains(ctx, linodego.NewListOptions(0, string(filter)))
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(
 			"Failed to list matching domains",

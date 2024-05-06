@@ -18,8 +18,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 )
 
-const resourceUserAgentComment = "linode_object_storage_bucket"
-
 func resourceLifecycleExpiration() *schema.Resource {
 	return &schema.Resource{
 		Schema: resourceSchemaExpiration,
@@ -56,7 +54,7 @@ func readResource(
 ) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Read linode_object_storage_bucket")
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	config := meta.(*helper.ProviderMeta).Config
 
 	cluster, label, err := DecodeBucketID(ctx, d.Id())
@@ -139,7 +137,7 @@ func createResource(
 ) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Create linode_object_storage_bucket")
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
@@ -170,7 +168,7 @@ func updateResource(
 ) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_object_storage_bucket")
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 
 	if d.HasChanges("acl", "cors_enabled") {
 		tflog.Debug(ctx, "'acl' changes detected, will update bucket access")
@@ -238,7 +236,7 @@ func deleteResource(
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_object_storage_bucket")
 
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	cluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())

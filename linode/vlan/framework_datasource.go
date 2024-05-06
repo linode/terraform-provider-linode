@@ -47,7 +47,7 @@ func (d *DataSource) Read(
 	data.ID = id
 
 	results, diag := filterConfig.GetAndFilter(
-		ctx, d.Client,
+		ctx, d.Meta.Client,
 		data.Filters,
 		listVLANs,
 		data.Order,

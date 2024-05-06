@@ -34,7 +34,7 @@ func (r *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_ipv6_ranges")
 
-	client := r.Client
+	client := r.Meta.Client
 
 	var data IPv6RangeFilterModel
 

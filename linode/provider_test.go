@@ -37,7 +37,7 @@ api_version = v4beta
 		ObjSecretKey:          "efgh",
 	}
 
-	client, err := config.Client(context.Background(), nil)
+	client, err := config.Client(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ api_version = v4beta
 	config.APIURL = ""
 	config.APIVersion = ""
 
-	client, err = config.Client(context.Background(), nil)
+	client, err = config.Client(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +63,7 @@ api_version = v4beta
 	}
 
 	config.ConfigProfile = "cool"
-	client, err = config.Client(context.Background(), nil)
+	client, err = config.Client(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

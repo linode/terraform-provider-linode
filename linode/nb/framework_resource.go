@@ -40,7 +40,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create linode_nodebalancer")
 	var data NodeBalancerModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -119,7 +119,7 @@ func (r *Resource) Read(
 	tflog.Debug(ctx, "Read linode_nodebalancer")
 
 	var data NodeBalancerModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -181,7 +181,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update linode_nodebalancer")
 
 	var plan, state NodeBalancerModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -264,7 +264,7 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete linode_nodebalancer")
 
 	var data NodeBalancerModel
-	client := r.Client
+	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
