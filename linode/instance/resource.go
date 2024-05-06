@@ -146,7 +146,12 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
-	d.Set("placement_group", flattenInstancePlacementGroup(instance.PlacementGroup))
+	d.Set("placement_group",
+		flattenInstancePlacementGroup(
+			instance.PlacementGroup,
+			helper.SDKv2UnwrapOptionalAttr[bool](d, "placement_group.0.compliant_only"),
+		),
+	)
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 	d.Set("disk", disks)

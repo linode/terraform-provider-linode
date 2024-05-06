@@ -221,17 +221,18 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	return result, nil
 }
 
-func flattenInstancePlacementGroup(pg *linodego.InstancePlacementGroup) []map[string]any {
+func flattenInstancePlacementGroup(pg *linodego.InstancePlacementGroup, oldCompliantOnly *bool) []map[string]any {
 	if pg == nil {
 		return nil
 	}
 
 	return []map[string]any{
 		{
-			"id":            pg.ID,
-			"label":         pg.Label,
-			"affinity_type": string(pg.AffinityType),
-			"is_strict":     pg.IsStrict,
+			"id":             pg.ID,
+			"label":          pg.Label,
+			"affinity_type":  string(pg.AffinityType),
+			"is_strict":      pg.IsStrict,
+			"compliant_only": oldCompliantOnly,
 		},
 	}
 }
