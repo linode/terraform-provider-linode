@@ -63,13 +63,13 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code > $REPORT_FILENAME
+          make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code -iocopy -out $REPORT_FILENAME
         env:
           LINODE_TOKEN: ${{ env.LINODE_TOKEN }}
 
-      - name: Upload Test Report
+      - name: Upload Test Report as Artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-report-${{ matrix.user }}
           if-no-files-found: ignore
@@ -98,7 +98,7 @@ jobs:
         run: pip3 install requests wheel boto3
 
       - name: Download test report
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Get .xml reports from separate Artifacts into root folder
         run: rsync -av test-report-USER_*/* .
