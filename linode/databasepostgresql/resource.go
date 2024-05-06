@@ -19,8 +19,6 @@ const (
 	createDBTimeout = 75 * time.Minute
 	updateDBTimeout = 5 * time.Minute
 	deleteDBTimeout = 5 * time.Minute
-
-	resourceUserAgentComment = "linode_database_postgresql"
 )
 
 func Resource() *schema.Resource {
@@ -42,7 +40,7 @@ func Resource() *schema.Resource {
 }
 
 func readResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode PostgreSQL database ID %s as int: %s", d.Id(), err)
@@ -96,7 +94,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 
 	p, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
 	if err != nil {
@@ -177,7 +175,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -239,7 +237,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := helper.GetSDKClientWithUserAgent(resourceUserAgentComment, meta.(*helper.ProviderMeta))
+	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode PostgreSQL database ID %s as int: %s", d.Id(), err)

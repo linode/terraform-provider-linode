@@ -27,10 +27,7 @@ func (fp *FrameworkProvider) Configure(
 	resp *provider.ConfigureResponse,
 ) {
 	var data helper.FrameworkProviderModel
-
-	if fp.Meta == nil {
-		fp.Meta = &helper.FrameworkProviderMeta{}
-	}
+	var meta helper.FrameworkProviderMeta
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -42,13 +39,15 @@ func (fp *FrameworkProvider) Configure(
 		return
 	}
 
-	fp.InitProvider(ctx, &data, req.TerraformVersion, &resp.Diagnostics)
+	fp.InitProvider(ctx, &data, req.TerraformVersion, &resp.Diagnostics, &meta)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.ResourceData = fp.Meta
-	resp.DataSourceData = fp.Meta
+	resp.ResourceData = &meta
+	resp.DataSourceData = &meta
+
+	fp.Meta = &meta
 }
 
 // We should replace this with an official validator if
@@ -214,6 +213,7 @@ func (fp *FrameworkProvider) InitProvider(
 	lpm *helper.FrameworkProviderModel,
 	tfVersion string,
 	diags *diag.Diagnostics,
+	meta *helper.FrameworkProviderMeta,
 ) {
 	loggingTransport := helper.NewAPILoggerTransport(
 		logging.NewSubsystemLoggingHTTPTransport(
@@ -290,17 +290,16 @@ func (fp *FrameworkProvider) InitProvider(
 		client.SetRetryMaxWaitTime(time.Duration(maxRetryDelayMilliseconds) * time.Millisecond)
 	}
 
-	userAgent := fp.userAgent(tfVersion, UAPrefix)
+	userAgent := fp.terraformUserAgent(tfVersion, UAPrefix)
 	client.SetUserAgent(userAgent)
-	fp.Meta.ProviderUserAgent = userAgent
 
 	helper.ApplyAllRetryConditions(&client)
 
-	fp.Meta.Config = lpm
-	fp.Meta.Client = client
+	meta.Config = lpm
+	meta.Client = &client
 }
 
-func (fp *FrameworkProvider) userAgent(
+func (fp *FrameworkProvider) terraformUserAgent(
 	tfVersion string,
 	UAPrefix string,
 ) string {

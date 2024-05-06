@@ -27,7 +27,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := d.Client
+	client := d.Meta.Client
 
 	var data DataSourceModel
 

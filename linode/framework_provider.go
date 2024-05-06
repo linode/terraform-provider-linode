@@ -82,7 +82,7 @@ func CreateFrameworkProviderWithMeta(version string, meta *helper.ProviderMeta) 
 	return &FrameworkProvider{
 		ProviderVersion: version,
 		Meta: &helper.FrameworkProviderMeta{
-			Client: meta.Client,
+			Client: &meta.Client,
 			Config: helper.GetFrameworkProviderModelFromSDKv2ProviderConfig(meta.Config),
 		},
 	}

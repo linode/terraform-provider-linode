@@ -49,7 +49,7 @@ func (d *DataSource) Read(
 	ctx = tflog.SetField(ctx, "sshkey_filter_id", data.ID.ValueString())
 
 	result, diag := filterConfig.GetAndFilter(
-		ctx, d.Client, data.Filters, listSSHKeys,
+		ctx, d.Meta.Client, data.Filters, listSSHKeys,
 		data.Order, data.OrderBy)
 	if diag != nil {
 		resp.Diagnostics.Append(diag)

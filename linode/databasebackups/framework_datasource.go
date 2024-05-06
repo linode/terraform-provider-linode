@@ -57,7 +57,7 @@ func (r *DataSource) Read(
 		}
 
 		result, d := filterConfig.GetAndFilter(
-			ctx, r.Client, data.Filters, listMySQLBackups, data.Order, data.OrderBy)
+			ctx, r.Meta.Client, data.Filters, listMySQLBackups, data.Order, data.OrderBy)
 		if d != nil {
 			resp.Diagnostics.Append(d)
 			return
@@ -86,7 +86,7 @@ func (r *DataSource) Read(
 		}
 
 		result, d := filterConfig.GetAndFilter(
-			ctx, r.Client, data.Filters, listPostgresSQLBackups, data.Order, data.OrderBy)
+			ctx, r.Meta.Client, data.Filters, listPostgresSQLBackups, data.Order, data.OrderBy)
 		if d != nil {
 			resp.Diagnostics.Append(d)
 			return

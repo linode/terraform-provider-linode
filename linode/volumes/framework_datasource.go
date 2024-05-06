@@ -28,7 +28,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	client := r.Client
+	client := r.Meta.Client
 
 	var data VolumeFilterModel
 
