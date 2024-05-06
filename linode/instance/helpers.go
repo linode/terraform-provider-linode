@@ -1553,9 +1553,9 @@ func reassignPlacementGroup(
 
 // expandInstancePlacementGroup expands the user-defined `placement_group` block into the
 // linodego InstanceCreatePlacementGroupOptions struct.
-func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData) (*linodego.InstanceCreatePlacementGroupOptions, error) {
+func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData) *linodego.InstanceCreatePlacementGroupOptions {
 	if _, ok := d.GetOk("placement_group.0"); !ok {
-		return nil, nil
+		return nil
 	}
 
 	pgOptions := linodego.InstanceCreatePlacementGroupOptions{
@@ -1569,5 +1569,5 @@ func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData)
 		),
 	}
 
-	return &pgOptions, nil
+	return &pgOptions
 }

@@ -224,12 +224,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.Metadata = &metadata
 	}
 
-	pgCreateOpts, err := getPlacementGroupCreateOptions(ctx, d)
-	if err != nil {
-		return diag.Errorf("failed to get placement group create options: %s", err)
-	}
-
-	createOpts.PlacementGroup = pgCreateOpts
+	createOpts.PlacementGroup = getPlacementGroupCreateOptions(ctx, d)
 
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
