@@ -41,9 +41,6 @@ func resourcePlacementGroup() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Computed: true,
-				DefaultFunc: func() (interface{}, error) {
-					return nil, nil
-				},
 			},
 
 			"label": {
