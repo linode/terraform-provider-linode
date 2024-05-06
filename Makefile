@@ -62,7 +62,7 @@ unit-test: fmt-check
 	go test -v --tags=unit ./$(PKG_NAME) | grep -v "\[no test files\]"
 
 .PHONY: int-test
-int-test:
+int-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
