@@ -32,7 +32,7 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 	},
 	Blocks: map[string]schema.Block{
-		"members": schema.ListNestedBlock{
+		"members": schema.SetNestedBlock{
 			Description: "A list of Linodes assigned to a placement group.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{

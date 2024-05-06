@@ -33,7 +33,7 @@ func (d *DataSource) Read(
 
 	client := d.Meta.Client
 
-	var data PlacementGroupModel
+	var data PlacementGroupDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
