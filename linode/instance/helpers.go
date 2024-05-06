@@ -1476,3 +1476,97 @@ func SafeShutdownInstance(ctx context.Context, client *linodego.Client, instance
 	tflog.Debug(ctx, "Linode instance shutdown finished")
 	return nil
 }
+
+// reassignPlacementGroup reassigns the given Linode from an old Placement Group
+// to a new Placement Group.
+func reassignPlacementGroup(
+	ctx context.Context,
+	client linodego.Client,
+	instID,
+	oldPGID,
+	newPGID int,
+	compliantOnly *bool,
+) error {
+	attemptUnassign := func() error {
+		if oldPGID == 0 {
+			// Nothing to do here
+			return nil
+		}
+
+		opts := linodego.PlacementGroupUnAssignOptions{
+			Linodes: []int{instID},
+		}
+
+		tflog.Debug(ctx, "client.UnassignPlacementGroupLinodes(...)", map[string]any{
+			"pg_id":   oldPGID,
+			"options": opts,
+		})
+		_, err := client.UnassignPlacementGroupLinodes(
+			ctx,
+			oldPGID,
+			opts,
+		)
+
+		// We shouldn't really encounter this
+		// since PGs must be empty before they can be deleted,
+		// but we'll skip 404s just in case
+		if linodego.IsNotFound(err) {
+			return nil
+		}
+
+		return err
+	}
+
+	attemptAssign := func() error {
+		if newPGID == 0 {
+			// Nothing to do here
+			return nil
+		}
+
+		opts := linodego.PlacementGroupAssignOptions{
+			Linodes: []int{
+				instID,
+			},
+			CompliantOnly: compliantOnly,
+		}
+
+		tflog.Debug(ctx, "client.AssignPlacementGroupLinodes(...)", map[string]any{
+			"pg_id":   oldPGID,
+			"options": opts,
+		})
+
+		_, err := client.AssignPlacementGroupLinodes(ctx, newPGID, opts)
+
+		return err
+	}
+
+	if err := attemptUnassign(); err != nil {
+		return fmt.Errorf("failed to unassign Linode from Placement Group: %w", err)
+	}
+
+	if err := attemptAssign(); err != nil {
+		return fmt.Errorf("failed to unassign Linode from Placement Group: %w", err)
+	}
+
+	return nil
+}
+
+// expandInstancePlacementGroup expands the user-defined `placement_group` block into the
+// linodego InstanceCreatePlacementGroupOptions struct.
+func getPlacementGroupCreateOptions(d *schema.ResourceData) *linodego.InstanceCreatePlacementGroupOptions {
+	if _, ok := d.GetOk("placement_group.0"); !ok {
+		return nil
+	}
+
+	pgOptions := linodego.InstanceCreatePlacementGroupOptions{
+		// ID is required when the block is defined, so we don't
+		// need to do an OK check here
+		ID: d.Get("placement_group.0.id").(int),
+		CompliantOnly: helper.SDKv2UnwrapOptionalAttr[bool](
+			d,
+			"placement_group.0.compliant_only",
+		),
+	}
+
+	return &pgOptions
+}
