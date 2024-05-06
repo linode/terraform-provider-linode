@@ -1545,7 +1545,7 @@ func reassignPlacementGroup(
 	}
 
 	if err := attemptAssign(); err != nil {
-		return fmt.Errorf("failed to unassign Linode from Placement Group: %w", err)
+		return fmt.Errorf("failed to assign Linode to Placement Group: %w", err)
 	}
 
 	return nil
