@@ -40,7 +40,6 @@ func resourcePlacementGroup() *schema.Resource {
 			"compliant_only": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Computed: true,
 			},
 
 			"label": {
