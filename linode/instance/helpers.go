@@ -1553,20 +1553,21 @@ func reassignPlacementGroup(
 
 // expandInstancePlacementGroup expands the user-defined `placement_group` block into the
 // linodego InstanceCreatePlacementGroupOptions struct.
-func getPlacementGroupCreateOptions(d *schema.ResourceData) *linodego.InstanceCreatePlacementGroupOptions {
+func getPlacementGroupCreateOptions(ctx context.Context, d *schema.ResourceData) (*linodego.InstanceCreatePlacementGroupOptions, error) {
 	if _, ok := d.GetOk("placement_group.0"); !ok {
-		return nil
+		return nil, nil
 	}
 
 	pgOptions := linodego.InstanceCreatePlacementGroupOptions{
 		// ID is required when the block is defined, so we don't
 		// need to do an OK check here
 		ID: d.Get("placement_group.0.id").(int),
-		CompliantOnly: helper.SDKv2UnwrapOptionalAttr[bool](
+		CompliantOnly: helper.SDKv2UnwrapOptionalConfigAttr[bool](
+			ctx,
 			d,
 			"placement_group.0.compliant_only",
 		),
 	}
 
-	return &pgOptions
+	return &pgOptions, nil
 }

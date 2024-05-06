@@ -146,12 +146,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
-	d.Set("placement_group",
-		flattenInstancePlacementGroup(
-			instance.PlacementGroup,
-			helper.SDKv2UnwrapOptionalAttr[bool](d, "placement_group.0.compliant_only"),
-		),
-	)
+	d.Set("placement_group", flattenInstancePlacementGroup(d, instance.PlacementGroup))
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 	d.Set("disk", disks)
@@ -229,7 +224,12 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.Metadata = &metadata
 	}
 
-	createOpts.PlacementGroup = getPlacementGroupCreateOptions(d)
+	pgCreateOpts, err := getPlacementGroupCreateOptions(ctx, d)
+	if err != nil {
+		return diag.Errorf("failed to get placement group create options: %s", err)
+	}
+
+	createOpts.PlacementGroup = pgCreateOpts
 
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
@@ -606,7 +606,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			instance.ID,
 			oldPGID.(int),
 			newPGID.(int),
-			helper.SDKv2UnwrapOptionalAttr[bool](d, "placement_group.0.compliant_only"),
+			helper.SDKv2UnwrapOptionalConfigAttr[bool](ctx, d, "placement_group.0.compliant_only"),
 		); err != nil {
 			return diag.Errorf("failed to update Linode Placement Group: %s", err)
 		}

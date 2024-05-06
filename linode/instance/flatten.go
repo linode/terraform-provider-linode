@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -221,18 +223,24 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	return result, nil
 }
 
-func flattenInstancePlacementGroup(pg *linodego.InstancePlacementGroup, oldCompliantOnly *bool) []map[string]any {
+// NOTE: The ResourceData needs to be passed down here because compliant_only is NOT returned
+// by the API and instead needs to be carried over from the old state.
+func flattenInstancePlacementGroup(d *schema.ResourceData, pg *linodego.InstancePlacementGroup) []map[string]any {
 	if pg == nil {
 		return nil
 	}
 
-	return []map[string]any{
-		{
-			"id":             pg.ID,
-			"label":          pg.Label,
-			"affinity_type":  string(pg.AffinityType),
-			"is_strict":      pg.IsStrict,
-			"compliant_only": oldCompliantOnly,
-		},
+	result := map[string]any{
+		"id":            pg.ID,
+		"label":         pg.Label,
+		"affinity_type": string(pg.AffinityType),
+		"is_strict":     pg.IsStrict,
 	}
+
+	// Inherit compliant_only if it already exists in state
+	if compliantOnly, ok := d.GetOk("placement_group.0.compliant_only"); ok {
+		result["compliant_only"] = compliantOnly.(bool)
+	}
+
+	return []map[string]any{result}
 }
