@@ -19,7 +19,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_object_storage_key",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 			},
 		),
 	}

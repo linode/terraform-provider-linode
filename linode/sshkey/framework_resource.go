@@ -19,7 +19,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_sshkey",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 			},
 		),
 	}

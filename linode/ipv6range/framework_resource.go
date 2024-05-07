@@ -18,7 +18,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_ipv6_range",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 			},
 		),
 	}

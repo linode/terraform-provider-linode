@@ -19,7 +19,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_stackscript",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchemaV1,
+				Schema: frameworkResourceSchemaV1,
 			},
 		),
 	}

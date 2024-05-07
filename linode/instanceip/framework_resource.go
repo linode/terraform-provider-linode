@@ -18,7 +18,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_instance_ip",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 			},
 		),
 	}

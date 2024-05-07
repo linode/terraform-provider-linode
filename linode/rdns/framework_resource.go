@@ -24,7 +24,7 @@ func NewResource() resource.Resource {
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
 				Name:   "linode_rdns",
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 				IDType: types.StringType,
 				TimeoutOpts: &timeouts.Opts{
 					Update: true,

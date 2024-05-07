@@ -30,7 +30,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_image",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 				TimeoutOpts: &timeouts.Opts{
 					Create: true,
 				},

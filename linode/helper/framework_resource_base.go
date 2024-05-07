@@ -28,7 +28,7 @@ type BaseResourceConfig struct {
 	IDType attr.Type
 
 	// Optional
-	Schema        *schema.Schema
+	Schema        schema.Schema
 	TimeoutOpts   *timeouts.Opts
 	IsEarlyAccess bool
 }
@@ -75,15 +75,6 @@ func (r *BaseResource) Schema(
 	req resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	if r.Config.Schema == nil {
-		resp.Diagnostics.AddError(
-			"Missing Schema",
-			"Base resource was not provided a schema. "+
-				"Please provide a Schema config attribute or implement, the Schema(...) function.",
-		)
-		return
-	}
-
 	if r.Config.TimeoutOpts != nil {
 		if r.Config.Schema.Blocks == nil {
 			r.Config.Schema.Blocks = make(map[string]schema.Block)
@@ -91,7 +82,7 @@ func (r *BaseResource) Schema(
 		r.Config.Schema.Blocks["timeouts"] = timeouts.Block(ctx, *r.Config.TimeoutOpts)
 	}
 
-	resp.Schema = *r.Config.Schema
+	resp.Schema = r.Config.Schema
 }
 
 // ImportState should be overridden for resources with

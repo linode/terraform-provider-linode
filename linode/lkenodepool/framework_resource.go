@@ -19,7 +19,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_lke_node_pool",
 				IDType: types.StringType,
-				Schema: &resourceSchema,
+				Schema: frameworkResourceSchema,
 			},
 		),
 	}

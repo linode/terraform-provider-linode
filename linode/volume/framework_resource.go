@@ -27,7 +27,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_volume",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 				TimeoutOpts: &timeouts.Opts{
 					Update: true,
 					Create: true,

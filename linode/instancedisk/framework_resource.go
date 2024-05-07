@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 			helper.BaseResourceConfig{
 				Name:   "linode_instance_disk",
 				IDType: types.StringType,
-				Schema: &frameworkResourceSchema,
+				Schema: frameworkResourceSchema,
 				TimeoutOpts: &timeouts.Opts{
 					Update: true,
 					Create: true,

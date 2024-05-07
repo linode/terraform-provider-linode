@@ -15,7 +15,7 @@ import (
 	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
 )
 
-var resourceSchema = schema.Schema{
+var frameworkResourceSchema = schema.Schema{
 	Version: 0,
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
