@@ -26,15 +26,15 @@ data "linode_placement_group" "pg" {
 
 In addition to all arguments above, the following attributes are exported:
 
-* `label` - (Required) The label of the Placement Group. This field can only contain ASCII letters, digits and dashes.
+* `label` - The label of the Placement Group. This field can only contain ASCII letters, digits and dashes.
 
-* `region` - (Required) The region of the Placement Group.
+* `region` - The region of the Placement Group.
 
-* `affinity_type` - (Required) The affinity policy to use when placing Linodes in this group.
+* `affinity_type` - The affinity policy to use when placing Linodes in this group.
 
-* `is_strict` - (Optional) Whether Linodes must be able to become compliant during assignment. (Default `true`)
+* `is_strict` - Whether Linodes must be able to become compliant during assignment. (Default `true`)
 
-* `is_compliant` - (Optional) Whether all Linodes in this group are currently compliant with the group's affinity policy.
+* `is_compliant` - Whether all Linodes in this group are currently compliant with the group's affinity policy.
 
 * `members` - A set of Linodes currently assigned to this Placement Group.
 
