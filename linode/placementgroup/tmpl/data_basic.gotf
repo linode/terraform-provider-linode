@@ -1,7 +1,9 @@
 {{ define "placement_group_data_basic" }}
 
+{{ template "placement_group_basic" .}}
+
 data "linode_placement_group" "test" {
-    id = 12345
+    id = linode_placement_group.foobar.id
 }
 
 {{ end }}

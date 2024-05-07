@@ -13,9 +13,14 @@ type TemplateData struct {
 	IsStrict     bool
 }
 
-func DataBasic(t *testing.T) string {
+func DataBasic(t *testing.T, label, region, affinityType string, isStrict bool) string {
 	return acceptance.ExecuteTemplate(t,
-		"placement_group_data_basic", nil)
+		"placement_group_data_basic", TemplateData{
+			Label:        label,
+			Region:       region,
+			AffinityType: affinityType,
+			IsStrict:     isStrict,
+		})
 }
 
 func Basic(t *testing.T, label, region, affinityType string, isStrict bool) string {
