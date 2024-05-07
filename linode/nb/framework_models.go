@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
@@ -31,6 +30,19 @@ type NodeBalancerModel struct {
 	Transfer           types.List        `tfsdk:"transfer"`
 	Tags               types.Set         `tfsdk:"tags"`
 	Firewalls          types.List        `tfsdk:"firewalls"`
+}
+
+type FirewallModel struct {
+	ID             types.Int64          `tfsdk:"id"`
+	Label          types.String         `tfsdk:"label"`
+	Tags           types.Set            `tfsdk:"tags"`
+	InboundPolicy  types.String         `tfsdk:"inbound_policy"`
+	OutboundPolicy types.String         `tfsdk:"outbound_policy"`
+	Status         types.String         `tfsdk:"status"`
+	Created        types.String         `tfsdk:"created"`
+	Updated        types.String         `tfsdk:"updated"`
+	Inbound        []firewall.RuleModel `tfsdk:"inbound"`
+	Outbound       []firewall.RuleModel `tfsdk:"outbound"`
 }
 
 type nbModelV0 struct {
@@ -115,49 +127,41 @@ func parseNBFirewalls(
 	ctx context.Context,
 	firewalls []linodego.Firewall,
 ) (*types.List, diag.Diagnostics) {
-	nbFirewalls := make([]attr.Value, len(firewalls))
+	nbFirewalls := make([]FirewallModel, len(firewalls))
 
 	for i, fw := range firewalls {
-		f := make(map[string]attr.Value)
-		f["id"] = types.Int64Value(int64(fw.ID))
-		f["label"] = types.StringValue(fw.Label)
-		f["inbound_policy"] = types.StringValue(fw.Rules.InboundPolicy)
-		f["outbound_policy"] = types.StringValue(fw.Rules.OutboundPolicy)
-		f["status"] = types.StringValue(string(fw.Status))
-		f["created"] = timetypes.NewRFC3339TimePointerValue(fw.Created).StringValue
-		f["updated"] = timetypes.NewRFC3339TimePointerValue(fw.Updated).StringValue
+		nbFirewalls[i].ID = types.Int64Value(int64(fw.ID))
+		nbFirewalls[i].Label = types.StringValue(fw.Label)
+		nbFirewalls[i].InboundPolicy = types.StringValue(fw.Rules.InboundPolicy)
+		nbFirewalls[i].OutboundPolicy = types.StringValue(fw.Rules.OutboundPolicy)
+		nbFirewalls[i].Status = types.StringValue(string(fw.Status))
+		nbFirewalls[i].Created = timetypes.NewRFC3339TimePointerValue(fw.Created).StringValue
+		nbFirewalls[i].Updated = timetypes.NewRFC3339TimePointerValue(fw.Updated).StringValue
 
 		tags, diags := types.SetValueFrom(ctx, types.StringType, fw.Tags)
 		if diags.HasError() {
 			return nil, diags
 		}
-		f["tags"] = tags
+		nbFirewalls[i].Tags = tags
 
 		if fw.Rules.Inbound != nil {
-			inBound, diags := firewall.ParseFirewallRules(ctx, fw.Rules.Inbound)
+			inBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Inbound)
 			if diags.HasError() {
 				return nil, diags
 			}
-			f["inbound"] = *inBound
+			nbFirewalls[i].Inbound = inBound
 		}
 
 		if fw.Rules.Outbound != nil {
-			outBound, diags := firewall.ParseFirewallRules(ctx, fw.Rules.Outbound)
+			outBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Outbound)
 			if diags.HasError() {
 				return nil, diags
 			}
-			f["outbound"] = *outBound
+			nbFirewalls[i].Outbound = outBound
 		}
-
-		obj, diags := types.ObjectValue(firewallObjType.AttrTypes, f)
-		if diags.HasError() {
-			return nil, diags
-		}
-
-		nbFirewalls[i] = obj
 	}
 
-	result, diags := types.ListValue(firewallObjType, nbFirewalls)
+	result, diags := types.ListValueFrom(ctx, firewallObjType, nbFirewalls)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -168,7 +172,7 @@ func parseNBFirewalls(
 func FlattenTransfer(
 	ctx context.Context,
 	transfer linodego.NodeBalancerTransfer,
-) (*basetypes.ListValue, diag.Diagnostics) {
+) (*types.List, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
 
 	result["in"] = helper.Float64PointerValueWithDefault(transfer.In)
@@ -189,7 +193,7 @@ func FlattenTransfer(
 	return &resultList, nil
 }
 
-func UpgradeResourceStateValue(val string) (basetypes.Float64Value, diag.Diagnostic) {
+func UpgradeResourceStateValue(val string) (types.Float64, diag.Diagnostic) {
 	if val == "" {
 		return types.Float64Value(0), nil
 	}
