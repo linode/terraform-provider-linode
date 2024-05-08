@@ -36,7 +36,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create linode_placement_group")
 
-	var data PlacementGroupModel
+	var data PlacementGroupResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -82,7 +82,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_placement_group")
 
-	var data PlacementGroupModel
+	var data PlacementGroupResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -137,7 +137,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update linode_placement_group")
 
 	client := r.Meta.Client
-	var plan, state PlacementGroupModel
+	var plan, state PlacementGroupResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -193,7 +193,7 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete linode_placement_group")
 
 	client := r.Meta.Client
-	var data PlacementGroupModel
+	var data PlacementGroupResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -221,6 +221,6 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, data PlacementGroupModel) context.Context {
+func populateLogAttributes(ctx context.Context, data PlacementGroupResourceModel) context.Context {
 	return tflog.SetField(ctx, "id", data.ID)
 }

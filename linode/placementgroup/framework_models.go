@@ -11,7 +11,17 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-type PlacementGroupModel struct {
+type PlacementGroupDataSourceModel struct {
+	ID           types.Int64                 `tfsdk:"id"`
+	Label        types.String                `tfsdk:"label"`
+	Region       types.String                `tfsdk:"region"`
+	AffinityType types.String                `tfsdk:"affinity_type"`
+	IsCompliant  types.Bool                  `tfsdk:"is_compliant"`
+	IsStrict     types.Bool                  `tfsdk:"is_strict"`
+	Members      []PlacementGroupMemberModel `tfsdk:"members"`
+}
+
+type PlacementGroupResourceModel struct {
 	ID           types.String `tfsdk:"id"`
 	Label        types.String `tfsdk:"label"`
 	Region       types.String `tfsdk:"region"`
@@ -27,12 +37,32 @@ type PlacementGroupMemberModel struct {
 	IsCompliant types.Bool  `tfsdk:"is_compliant"`
 }
 
+func (data *PlacementGroupDataSourceModel) parsePlacementGroup(
+	pg *linodego.PlacementGroup,
+) {
+	data.Label = types.StringValue(pg.Label)
+	data.Region = types.StringValue(pg.Region)
+	data.AffinityType = types.StringValue(string(pg.AffinityType))
+	data.IsCompliant = types.BoolValue(pg.IsCompliant)
+	data.IsStrict = types.BoolValue(pg.IsStrict)
+
+	members := make([]PlacementGroupMemberModel, len(pg.Members))
+
+	for i, member := range pg.Members {
+		var m PlacementGroupMemberModel
+		m.FlattenMember(member)
+		members[i] = m
+	}
+
+	data.Members = members
+}
+
 func (m *PlacementGroupMemberModel) FlattenMember(member linodego.PlacementGroupMember) {
 	m.LinodeID = types.Int64Value(int64(member.LinodeID))
 	m.IsCompliant = types.BoolValue(member.IsCompliant)
 }
 
-func (m *PlacementGroupModel) FlattenPlacementGroup(
+func (m *PlacementGroupResourceModel) FlattenPlacementGroup(
 	ctx context.Context,
 	pg *linodego.PlacementGroup,
 	preserveKnown bool,
@@ -62,7 +92,7 @@ func (m *PlacementGroupModel) FlattenPlacementGroup(
 	return
 }
 
-func (m *PlacementGroupModel) CopyFrom(other PlacementGroupModel, preserveKnown bool) {
+func (m *PlacementGroupResourceModel) CopyFrom(other PlacementGroupResourceModel, preserveKnown bool) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
