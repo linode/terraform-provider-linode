@@ -53,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
+	"github.com/linode/terraform-provider-linode/v2/linode/placementgroups"
 	"github.com/linode/terraform-provider-linode/v2/linode/profile"
 	"github.com/linode/terraform-provider-linode/v2/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v2/linode/region"
@@ -269,5 +270,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
 		placementgroup.NewDataSource,
+		placementgroups.NewDataSource,
 	}
 }

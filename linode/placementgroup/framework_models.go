@@ -37,7 +37,7 @@ type PlacementGroupMemberModel struct {
 	IsCompliant types.Bool  `tfsdk:"is_compliant"`
 }
 
-func (data *PlacementGroupDataSourceModel) parsePlacementGroup(
+func (data *PlacementGroupDataSourceModel) ParsePlacementGroup(
 	pg *linodego.PlacementGroup,
 ) {
 	data.Label = types.StringValue(pg.Label)

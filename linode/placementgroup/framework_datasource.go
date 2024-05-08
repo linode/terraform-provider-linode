@@ -14,7 +14,7 @@ func NewDataSource() datasource.DataSource {
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
 				Name:   "linode_placement_group",
-				Schema: &frameworkDatasourceSchema,
+				Schema: &DataSourceSchema,
 			},
 		),
 	}
@@ -59,6 +59,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.parsePlacementGroup(pg)
+	data.ParsePlacementGroup(pg)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
