@@ -1,4 +1,4 @@
-//go:build integration || vpcs
+//go:build integration || placement_groups
 
 package placementgroups_test
 
