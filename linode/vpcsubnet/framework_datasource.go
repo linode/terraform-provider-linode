@@ -49,7 +49,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetVPCSubnet(...)")
 	vpcSubnet, err := client.GetVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		resp.Diagnostics.AddError(

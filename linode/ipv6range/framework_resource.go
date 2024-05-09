@@ -105,8 +105,6 @@ func (r *Resource) Create(
 	// only returns two fields for the newly created range (range and route_target).
 	// We need to make a second call out to the GET endpoint to populate more
 	// computed fields (region, is_bgp, linodes).
-	tflog.Trace(ctx, "client.GetIPv6Range(...)")
-
 	ipv6rangeR, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -153,7 +151,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = populateLogAttributes(ctx, data)
-	tflog.Trace(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
@@ -196,7 +193,6 @@ func (r *Resource) Update(
 	}
 
 	ctx = populateLogAttributes(ctx, plan)
-	tflog.Trace(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, plan.ID.ValueString())
 	if err != nil {
