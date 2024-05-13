@@ -30,7 +30,7 @@ func TestFlattenPGModel(t *testing.T) {
 		},
 	}
 
-	model := PlacementGroupModel{}
+	model := PlacementGroupResourceModel{}
 	model.FlattenPlacementGroup(context.Background(), &pg, false)
 
 	require.Equal(t, "123", model.ID.ValueString())
