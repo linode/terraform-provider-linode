@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/linode/linodego"
-	"github.com/stretchr/testify/assert"
 )
 
 // Assertion helpers
@@ -35,129 +34,11 @@ func TestExpandFirewallStatus(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := expandFirewallStatus(tc.disabled)
+			result := expandFirewallStatus(tc.disabled.(bool))
 			if result != tc.expected {
 				t.Errorf("Expected %v, but got %v", tc.expected, result)
 			}
 		})
-	}
-}
-
-func TestExpandFirewallRules(t *testing.T) {
-	testCases := []struct {
-		name      string
-		ruleSpecs []interface{}
-		expected  []linodego.FirewallRule
-	}{
-		{
-			"Expand Firewall Rule Test 1",
-			[]interface{}{
-				map[string]interface{}{
-					"label":    "Rule 1",
-					"action":   "allow",
-					"protocol": "SSH",
-					"ports":    "22",
-					"ipv4":     []interface{}{"192.168.1.1/24"},
-					"ipv6":     []interface{}{},
-				},
-			},
-			[]linodego.FirewallRule{
-				{
-					Action:      "allow",
-					Label:       "Rule 1",
-					Description: "Allow SSH connections",
-					Ports:       "22",
-					Protocol:    "SSH",
-					Addresses: linodego.NetworkAddresses{
-						IPv4: &[]string{"192.168.1.1/24"},
-						IPv6: &[]string{},
-					},
-				},
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := expandFirewallRules(tc.ruleSpecs)
-			if len(result) != len(tc.expected) {
-				t.Errorf("Expected %d rules, but got %d", len(tc.expected), len(result))
-			}
-			for i, expectedRule := range tc.expected {
-				assert.Equal(t, result[i].Label, expectedRule.Label)
-				assert.Equal(t, result[i].Action, expectedRule.Action)
-				assert.Equal(t, result[i].Protocol, expectedRule.Protocol)
-				assert.Equal(t, result[i].Addresses.IPv4, expectedRule.Addresses.IPv4)
-			}
-		})
-	}
-}
-
-func TestFlattenFirewallRules(t *testing.T) {
-	rule1 := linodego.FirewallRule{
-		Action:      "allow",
-		Label:       "SSH",
-		Description: "Allow SSH connections",
-		Ports:       "22",
-		Protocol:    "TCP",
-		Addresses: linodego.NetworkAddresses{
-			IPv4: &[]string{"192.168.0.2"},
-			IPv6: &[]string{},
-		},
-	}
-
-	rule2 := linodego.FirewallRule{
-		Action:      "deny",
-		Label:       "Block ICMP",
-		Description: "Block ICMP traffic",
-		Ports:       "",
-		Protocol:    "ICMP",
-		Addresses: linodego.NetworkAddresses{
-			IPv4: &[]string{"192.168.0.0/24"},
-			IPv6: &[]string{"2001:db8::/64"},
-		},
-	}
-
-	cases := []struct {
-		rules    []linodego.FirewallRule
-		expected []map[string]interface{}
-	}{
-		{
-			rules: []linodego.FirewallRule{
-				rule1, rule2,
-			},
-
-			expected: []map[string]interface{}{
-				{
-					"action":   "allow",
-					"label":    "SSH",
-					"ipv4":     &[]string{"192.168.0.2"},
-					"ipv6":     &[]string{},
-					"ports":    "22",
-					"protocol": "TCP",
-				},
-				{
-					"action":   "deny",
-					"label":    "Block ICMP",
-					"ipv4":     &[]string{"192.168.0.0/24"},
-					"ipv6":     &[]string{"2001:db8::/64"},
-					"ports":    "",
-					"protocol": "ICMP",
-				},
-			},
-		},
-	}
-
-	for _, c := range cases {
-		out := flattenFirewallRules(c.rules)
-
-		for i, rule := range out {
-			if i < len(c.expected) {
-				compareRule(rule, c.expected[i])
-			} else {
-				break
-			}
-		}
 	}
 }
 

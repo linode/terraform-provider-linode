@@ -100,6 +100,7 @@ func (r *Resource) Read(
 
 	ctx = populateLogAttributes(ctx, data)
 
+	// TODO: cleanup when Crossplane fixes it
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}

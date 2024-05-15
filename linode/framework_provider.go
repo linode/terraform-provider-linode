@@ -207,6 +207,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		lkenodepool.NewResource,
 		image.NewResource,
 		nbconfig.NewResource,
+		firewall.NewResource,
 	}
 }
 
