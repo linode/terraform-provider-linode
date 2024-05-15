@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-var frameworkDatasourceSchema = schema.Schema{
+var DataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
 			Description: "The ID of the placement group.",

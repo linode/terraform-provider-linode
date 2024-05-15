@@ -37,6 +37,7 @@ func TestFlattenPGModel(t *testing.T) {
 		ID:    types.StringValue("123"),
 		Label: types.StringValue(label),
 	}
+
 	model.FlattenPlacementGroup(context.Background(), &pg, false)
 
 	require.Equal(t, "123", model.ID.ValueString())
