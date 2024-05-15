@@ -21,20 +21,6 @@ func expandFirewallStatus(disabled bool) linodego.FirewallStatus {
 	}[disabled]
 }
 
-func flattenFirewallDevices(devices []linodego.FirewallDevice) []map[string]interface{} {
-	governedDevices := make([]map[string]interface{}, len(devices))
-	for i, device := range devices {
-		governedDevices[i] = map[string]interface{}{
-			"id":        device.ID,
-			"entity_id": device.Entity.ID,
-			"type":      device.Entity.Type,
-			"label":     device.Entity.Label,
-			"url":       device.Entity.URL,
-		}
-	}
-	return governedDevices
-}
-
 func fwUpdateFirewallDevices(
 	ctx context.Context,
 	client linodego.Client,
