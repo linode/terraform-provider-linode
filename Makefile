@@ -59,21 +59,21 @@ test: fmt-check smoke-test unit-test int-test
 
 .PHONY: unit-test
 unit-test: fmt-check
-	go test -v --tags=unit ./$(PKG_NAME) | grep -v "\[no test files\]"
+	go test -v --tags=unit ./$(PKG_NAME)
 
 .PHONY: int-test
 int-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS) | grep -v "\[no test files\]"
+	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS)
 
 .PHONY: smoke-test
 smoke-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" | grep -v "\[no test files\]"
+	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
 
 .PHONY: docs-check
 docs-check:

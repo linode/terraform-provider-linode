@@ -40,7 +40,7 @@ func TestFlattenPGModel(t *testing.T) {
 	model.FlattenPlacementGroup(context.Background(), &pg, false)
 
 	require.Equal(t, "123", model.ID.ValueString())
-	require.Equal(t, "test-pgmodel", model.Label.ValueString())
+	require.Equal(t, label, model.Label.ValueString())
 	require.Equal(t, "us-mia", model.Region.ValueString())
 	require.Equal(t, string(linodego.AffinityTypeAntiAffinityLocal), model.AffinityType.ValueString())
 	require.Equal(t, false, model.IsStrict.ValueBool())
