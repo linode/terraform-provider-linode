@@ -6,14 +6,17 @@ import (
 	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFlattenPGModel(t *testing.T) {
+	label := "test-pgmodel"
+
 	pg := linodego.PlacementGroup{
 		ID:           123,
-		Label:        "test",
+		Label:        "test-pgmodel",
 		Region:       "us-mia",
 		AffinityType: linodego.AffinityTypeAntiAffinityLocal,
 		IsStrict:     false,
@@ -30,11 +33,15 @@ func TestFlattenPGModel(t *testing.T) {
 		},
 	}
 
-	model := PlacementGroupResourceModel{}
+	model := &PlacementGroupResourceModel{
+		ID:    types.StringValue("123"),
+		Label: types.StringValue(label),
+	}
+
 	model.FlattenPlacementGroup(context.Background(), &pg, false)
 
 	require.Equal(t, "123", model.ID.ValueString())
-	require.Equal(t, "test", model.Label.ValueString())
+	require.Equal(t, label, model.Label.ValueString())
 	require.Equal(t, "us-mia", model.Region.ValueString())
 	require.Equal(t, string(linodego.AffinityTypeAntiAffinityLocal), model.AffinityType.ValueString())
 	require.Equal(t, false, model.IsStrict.ValueBool())
