@@ -48,7 +48,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetVPC(...)")
 	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -53,7 +53,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("failed to parse Firewall %s as int: %s", d.Id(), err)
 	}
 
-	tflog.Trace(ctx, "client.GetFirewall(...)")
 	firewall, err := client.GetFirewall(ctx, id)
 	if err != nil {
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code == 404 {
@@ -64,7 +63,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		return diag.Errorf("failed to get firewall %d: %s", id, err)
 	}
 
-	tflog.Trace(ctx, "client.GetFirewallRules(...)")
 	rules, err := client.GetFirewallRules(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get rules for firewall %d: %s", id, err)

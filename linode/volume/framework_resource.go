@@ -90,7 +90,6 @@ func (r *Resource) CreateVolumeFromSource(
 	}
 
 	ctx = tflog.SetField(ctx, "source_volume_id", sourceVolumeID)
-	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	sourceVolume, err := client.GetVolume(ctx, sourceVolumeID)
 	if err != nil {
@@ -331,8 +330,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "volume_id", id)
-
-	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	volume, err := client.GetVolume(ctx, id)
 	if err != nil {

@@ -64,7 +64,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to parse linode lke cluster pools: %d", id)
 	}
 
-	tflog.Trace(ctx, "client.GetLKECluster(...)")
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -86,7 +85,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		pools = filterExternalPools(ctx, externalPoolTags, pools)
 	}
 
-	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get kubeconfig for LKE cluster %d: %s", id, err)
@@ -100,7 +98,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane)
 
-	tflog.Trace(ctx, "client.GetLKEClusterDashboard(...)")
 	dashboard, err := client.GetLKEClusterDashboard(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
