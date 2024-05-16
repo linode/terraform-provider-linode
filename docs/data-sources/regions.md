@@ -56,11 +56,20 @@ Each Linode region will be stored in the `regions` attribute and will export the
 
 * [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
 
+
+* [`placement_group_limits`] (#placement-group-limits) - An object representing the limits relating to placement groups in this region.
+
 ### Resolvers
 
 * `ipv4` - The IPv4 addresses for this region’s DNS resolvers, separated by commas.
 
 * `ipv6` - The IPv6 addresses for this region’s DNS resolvers, separated by commas.
+
+### Placement Group Limits
+
+* `maximum_pgs_per_customer` - The maximum number of placement groups allowed for the current user in this region.
+
+* `maximum_linodes_per_pg` - The maximum number of Linodes allowed to be assigned to a placement group in this region.
 
 ## Filterable Fields
 
