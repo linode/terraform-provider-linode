@@ -20,6 +20,7 @@ func (model *RegionFilterModel) parseRegions(regions []linodego.Region) {
 	result := make([]regionResource.RegionModel, len(regions))
 
 	for i, region := range regions {
+		region := region
 		model := regionResource.RegionModel{}
 		model.ParseRegion(&region)
 		result[i] = model
