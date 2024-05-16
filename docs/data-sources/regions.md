@@ -56,7 +56,6 @@ Each Linode region will be stored in the `regions` attribute and will export the
 
 * [`resolvers`] (#resolvers) - An object representing the IP addresses for this region's DNS resolvers.
 
-
 * [`placement_group_limits`] (#placement-group-limits) - An object representing the limits relating to placement groups in this region.
 
 ### Resolvers
