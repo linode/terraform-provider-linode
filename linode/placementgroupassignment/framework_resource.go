@@ -247,4 +247,26 @@ func (r *Resource) ImportState(
 			},
 		},
 	)
+
+	// Manually populate the ID attribute
+	var state PGAssignmentModel
+	resp.Diagnostics.Append(resp.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	state.ID = types.StringValue(
+		buildID(
+			idFormat{
+				PGID:     helper.FrameworkSafeInt64ToInt(state.PlacementGroupID.ValueInt64(), &resp.Diagnostics),
+				LinodeID: helper.FrameworkSafeInt64ToInt(state.LinodeID.ValueInt64(), &resp.Diagnostics),
+			},
+			&resp.Diagnostics,
+		),
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

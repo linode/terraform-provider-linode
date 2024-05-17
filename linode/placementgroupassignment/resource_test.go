@@ -3,7 +3,10 @@
 package placementgroupassignment_test
 
 import (
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"log"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -56,6 +59,13 @@ func TestAccResourcePlacementGroupAssignment_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(pgName, "members.#", "1"),
 				),
 			},
+			// Attempt to import the assignment resource
+			{
+				ResourceName:      assignmentName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
 			// Drop the assignment resource
 			{
 				Config: tmpl.Basic(t, label, testRegion, false),
@@ -71,23 +81,24 @@ func TestAccResourcePlacementGroupAssignment_basic(t *testing.T) {
 	})
 }
 
-//func resourceImportStateID(s *terraform.State) (string, error) {
-//	for _, rs := range s.RootModule().Resources {
-//		if rs.Type != "linode_firewall_device" {
-//			continue
-//		}
-//
-//		id, err := strconv.Atoi(rs.Primary.ID)
-//		if err != nil {
-//			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
-//		}
-//
-//		firewallID, err := strconv.Atoi(rs.Primary.Attributes["firewall_id"])
-//		if err != nil {
-//			return "", fmt.Errorf("Error parsing firewall_id %v to int", rs.Primary.Attributes["firewall_id"])
-//		}
-//		return fmt.Sprintf("%d,%d", firewallID, id), nil
-//	}
-//
-//	return "", fmt.Errorf("Error finding firewall_device")
-//}
+func resourceImportStateID(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "linode_placement_group_assignment" {
+			continue
+		}
+
+		pgID, err := strconv.Atoi(rs.Primary.Attributes["placement_group_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+
+		linodeID, err := strconv.Atoi(rs.Primary.Attributes["linode_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+
+		return fmt.Sprintf("%d,%d", pgID, linodeID), nil
+	}
+
+	return "", fmt.Errorf("Error finding linode_placement_group_assignment")
+}
