@@ -42,15 +42,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	pgID := helper.FrameworkSafeInt64ToInt(
-		plan.PlacementGroupID.ValueInt64(),
-		&resp.Diagnostics,
-	)
-
-	linodeID := helper.FrameworkSafeInt64ToInt(
-		plan.LinodeID.ValueInt64(),
-		&resp.Diagnostics,
-	)
+	pgID, linodeID := plan.GetIDComponents(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -82,10 +74,8 @@ func (r *Resource) Create(
 	// TODO: Remove when Crossplane empty string ID issue is resolved
 	plan.ID = types.StringValue(
 		buildID(
-			idFormat{
-				PGID:     pgID,
-				LinodeID: linodeID,
-			},
+			pgID,
+			linodeID,
 			&resp.Diagnostics,
 		),
 	)
@@ -114,19 +104,19 @@ func (r *Resource) Read(
 		return
 	}
 
-	idData := parseID(state.ID.ValueString(), &resp.Diagnostics)
+	pgID, linodeID := state.GetIDComponents(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
-		"pg_id":     idData.PGID,
-		"linode_id": idData.LinodeID,
+		"placement_group_id": pgID,
+		"linode_id":          linodeID,
 	})
 
 	client := r.Meta.Client
 
-	pg, err := client.GetPlacementGroup(ctx, idData.PGID)
+	pg, err := client.GetPlacementGroup(ctx, pgID)
 	if err != nil {
 		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
@@ -138,6 +128,7 @@ func (r *Resource) Read(
 				),
 			)
 			resp.State.RemoveResource(ctx)
+			return
 		}
 
 		resp.Diagnostics.AddError(
@@ -147,7 +138,22 @@ func (r *Resource) Read(
 		return
 	}
 
-	state.Flatten(*pg, idData.LinodeID, false, &resp.Diagnostics)
+	// If the Linode doesn't exist in the PG due to external modification,
+	// we should mark this assignment for recreation
+	if !pgHasID(*pg, linodeID) {
+		resp.Diagnostics.AddWarning(
+			"Marking Assignment for Recreation",
+			fmt.Sprintf(
+				"Linode (%d) is no longer assigned to target Placement Group (%d).",
+				pg.ID,
+				linodeID,
+			),
+		)
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	state.Flatten(*pg, linodeID, false, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -192,25 +198,25 @@ func (r *Resource) Delete(
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	client := r.Meta.Client
 
-	idData := parseID(state.ID.ValueString(), &resp.Diagnostics)
+	pgID, linodeID := state.GetIDComponents(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	tflog.Debug(ctx, "client.UnassignPlacementGroupLinodes(...)", map[string]any{
-		"placement_group_id": idData.PGID,
-		"linode_id":          idData.LinodeID,
+		"placement_group_id": pgID,
+		"linode_id":          linodeID,
 	})
 
-	_, err := client.UnassignPlacementGroupLinodes(ctx, idData.PGID, linodego.PlacementGroupUnAssignOptions{
-		Linodes: []int{idData.LinodeID},
+	_, err := client.UnassignPlacementGroupLinodes(ctx, pgID, linodego.PlacementGroupUnAssignOptions{
+		Linodes: []int{linodeID},
 	})
 	if err != nil {
 		if linodego.IsNotFound(err) {
 			resp.Diagnostics.AddWarning(
 				fmt.Sprintf(
 					"Attempted to delete PG assignment to Linode %d but the resource was not found",
-					idData.LinodeID,
+					linodeID,
 				),
 				err.Error(),
 			)
@@ -218,7 +224,7 @@ func (r *Resource) Delete(
 			// Nothing to do here, we can assume the Linode isn't attached to the PG
 		} else {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Error deleting PG assignment to Linode %d", idData.LinodeID),
+				fmt.Sprintf("Error deleting PG assignment to Linode %d", linodeID),
 				err.Error(),
 			)
 		}
@@ -248,25 +254,25 @@ func (r *Resource) ImportState(
 		},
 	)
 
-	// Manually populate the ID attribute
 	var state PGAssignmentModel
+
 	resp.Diagnostics.Append(resp.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	state.ID = types.StringValue(
-		buildID(
-			idFormat{
-				PGID:     helper.FrameworkSafeInt64ToInt(state.PlacementGroupID.ValueInt64(), &resp.Diagnostics),
-				LinodeID: helper.FrameworkSafeInt64ToInt(state.LinodeID.ValueInt64(), &resp.Diagnostics),
-			},
-			&resp.Diagnostics,
-		),
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	pgID, linodeID := state.GetIDComponents(&resp.Diagnostics)
+	state.ID = types.StringValue(buildID(pgID, linodeID, &resp.Diagnostics))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func pgHasID(pg linodego.PlacementGroup, id int) bool {
+	for _, member := range pg.Members {
+		if member.LinodeID == id {
+			return true
+		}
+	}
+
+	return false
 }

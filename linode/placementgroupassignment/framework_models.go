@@ -10,11 +10,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-type idFormat struct {
-	PGID     int `json:"pg_id"`
-	LinodeID int `json:"linode_ids"`
-}
-
 type PGAssignmentModel struct {
 	ID               types.String `tfsdk:"id"`
 	PlacementGroupID types.Int64  `tfsdk:"placement_group_id"`
@@ -28,19 +23,9 @@ func (m *PGAssignmentModel) Flatten(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	idData := idFormat{
-		PGID:     pg.ID,
-		LinodeID: expectedLinodeID,
-	}
-
-	m.ID = helper.KeepOrUpdateString(m.ID, buildID(idData, diags), preserveKnown)
+	m.ID = helper.KeepOrUpdateString(m.ID, buildID(pg.ID, expectedLinodeID, diags), preserveKnown)
 	m.PlacementGroupID = helper.KeepOrUpdateInt64(m.PlacementGroupID, int64(pg.ID), preserveKnown)
-
-	if pgHasID(pg, expectedLinodeID) {
-		m.LinodeID = helper.KeepOrUpdateInt64(m.LinodeID, int64(expectedLinodeID), preserveKnown)
-	} else {
-		m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, types.Int64Null(), preserveKnown)
-	}
+	m.LinodeID = helper.KeepOrUpdateInt64(m.LinodeID, int64(expectedLinodeID), preserveKnown)
 }
 
 func (m *PGAssignmentModel) CopyFrom(
@@ -52,8 +37,22 @@ func (m *PGAssignmentModel) CopyFrom(
 	m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, other.LinodeID, preserveKnown)
 }
 
-func buildID(idData idFormat, diags *diag.Diagnostics) string {
-	renderedJSON, err := json.Marshal(idData)
+func (m *PGAssignmentModel) GetIDComponents(diags *diag.Diagnostics) (pgID int, linodeID int) {
+	pgID = helper.FrameworkSafeInt64ToInt(m.PlacementGroupID.ValueInt64(), diags)
+	linodeID = helper.FrameworkSafeInt64ToInt(m.LinodeID.ValueInt64(), diags)
+	return
+}
+
+func buildID(pgID, linodeID int, diags *diag.Diagnostics) string {
+	renderedJSON, err := json.Marshal(
+		struct {
+			PGID     int `json:"pg_id"`
+			LinodeID int `json:"linode_id"`
+		}{
+			PGID:     pgID,
+			LinodeID: linodeID,
+		},
+	)
 	if err != nil {
 		diags.AddError(
 			"Failed to marshal JSON for ID",
@@ -63,36 +62,4 @@ func buildID(idData idFormat, diags *diag.Diagnostics) string {
 	}
 
 	return base64.StdEncoding.EncodeToString(renderedJSON)
-}
-
-func parseID(idStr string, diags *diag.Diagnostics) idFormat {
-	var idData idFormat
-
-	idStrDecoded, err := base64.StdEncoding.DecodeString(idStr)
-	if err != nil {
-		diags.AddError(
-			"Failed to decode ID base64",
-			err.Error(),
-		)
-		return idData
-	}
-
-	if err := json.Unmarshal(idStrDecoded, &idData); err != nil {
-		diags.AddError(
-			"Failed to marshal JSON for ID",
-			err.Error(),
-		)
-	}
-
-	return idData
-}
-
-func pgHasID(pg linodego.PlacementGroup, id int) bool {
-	for _, member := range pg.Members {
-		if member.LinodeID == id {
-			return true
-		}
-	}
-
-	return false
 }
