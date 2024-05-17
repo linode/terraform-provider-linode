@@ -1,12 +1,23 @@
-{{ define "firewall_device_basic" }}
+{{ define "placement_group_assignment_basic" }}
 
-{{ template "firewall_device_firewall" . }}
+{{ if .AssignmentExists }}
+resource "linode_placement_group_assignment" "test" {
+    placement_group_id = linode_placement_group.test.id
+    linode_id = linode_instance.test.id
+}
+{{ end }}
 
-{{ template "firewall_device_instance" . }}
+resource "linode_instance" "test" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+    type = "g6-nanode-1"
+    placement_group_externally_managed = true
+}
 
-resource "linode_firewall_device" "foobar" {
-    firewall_id = linode_firewall.foobar.id
-    entity_id = linode_instance.foobar.id
+resource "linode_placement_group" "test" {
+    label = "{{ .Label }}"
+    region = "{{ .Region }}"
+    affinity_type = "anti_affinity:local"
 }
 
 {{ end }}

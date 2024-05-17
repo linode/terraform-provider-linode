@@ -128,6 +128,18 @@ func (r *Resource) Read(
 
 	pg, err := client.GetPlacementGroup(ctx, idData.PGID)
 	if err != nil {
+		if linodego.IsNotFound(err) {
+			resp.Diagnostics.AddWarning(
+				"Placement Group No Longer Exists",
+				fmt.Sprintf(
+					"Removing Placement Group assignment %s from state because the "+
+						"target Placement Group no longer exists",
+					state.ID.String(),
+				),
+			)
+			resp.State.RemoveResource(ctx)
+		}
+
 		resp.Diagnostics.AddError(
 			"Failed to get Placement Group",
 			err.Error(),
