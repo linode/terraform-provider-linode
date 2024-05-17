@@ -3,6 +3,7 @@ package placementgroupassignment
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -220,7 +221,9 @@ func (r *Resource) Delete(
 				),
 				err.Error(),
 			)
-		} else if linodego.ErrHasStatus(err, 400) {
+		} else if lErr, ok := err.(*linodego.Error); ok &&
+			lErr.Code == 400 &&
+			strings.Contains(lErr.Message, "does not belong to Placement Group") {
 			// Nothing to do here, we can assume the Linode isn't attached to the PG
 		} else {
 			resp.Diagnostics.AddError(
