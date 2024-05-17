@@ -254,6 +254,9 @@ func (r *Resource) ImportState(
 		},
 	)
 
+	// We need to manually set the ID in state
+	// because it is not implicitly populated by one of the
+	// ID attributes above
 	var state PGAssignmentModel
 
 	resp.Diagnostics.Append(resp.State.Get(ctx, &state)...)

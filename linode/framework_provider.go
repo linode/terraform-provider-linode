@@ -3,8 +3,6 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -55,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
+	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroups"
 	"github.com/linode/terraform-provider-linode/v2/linode/profile"
 	"github.com/linode/terraform-provider-linode/v2/linode/rdns"
