@@ -1,0 +1,11 @@
+# Template instance for use with firewall devices
+
+{{ define "firewall_device_instance" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+}
+
+{{ end }}

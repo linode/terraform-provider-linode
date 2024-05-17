@@ -454,6 +454,19 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "Fields related to the Placement Group this instance is assigned to.",
 		Optional:    true,
 		MaxItems:    1,
+		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+			return d.Get("placement_group_externally_managed").(bool)
+		},
+	},
+	"placement_group_externally_managed": {
+		Type: schema.TypeBool,
+		Description: "If true, this placement group's assignment is externally managed and will " +
+			"NOT be updated by this resource.",
+		Optional: true,
+		Default:  false,
+		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+			return true
+		},
 	},
 	"has_user_data": {
 		Type:        schema.TypeBool,

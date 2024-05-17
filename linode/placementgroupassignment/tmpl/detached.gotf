@@ -1,0 +1,7 @@
+{{ define "firewall_device_detached" }}
+
+{{ template "firewall_device_firewall" . }}
+
+{{ template "firewall_device_instance" . }}
+
+{{ end }}
