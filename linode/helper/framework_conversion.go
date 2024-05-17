@@ -144,27 +144,6 @@ func FrameworkSliceToString(val []types.String) []string {
 	return result
 }
 
-// FrameworkSliceToString converts the given Framework slice
-// into a slice of strings.
-func FrameworkSliceToInt(val []types.Int64, diags *diag.Diagnostics) []int {
-	if val == nil {
-		return nil
-	}
-
-	result := make([]int, len(val))
-
-	for i, v := range val {
-		value := FrameworkSafeInt64ToInt(v.ValueInt64(), diags)
-		if diags.HasError() {
-			return nil
-		}
-
-		result[i] = value
-	}
-
-	return result
-}
-
 // IntSliceToFramework converts the given int slice
 // into a framework-compatible slice of types.String.
 func IntSliceToFramework(val []int) []types.Int64 {
