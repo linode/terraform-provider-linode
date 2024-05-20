@@ -101,7 +101,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.Tags = tags
 
-	cp, diags := parseControlPlane(ctx, cluster.ControlPlane, acl.ACL)
+	cp, diags := parseControlPlane(ctx, cluster.ControlPlane, acl)
 	if diags.HasError() {
 		return diags
 	}
@@ -184,29 +184,35 @@ func (data *LKEDataModel) parseLKEAttributes(
 func parseControlPlane(
 	ctx context.Context,
 	controlPlane linodego.LKEClusterControlPlane,
-	acl linodego.LKEClusterControlPlaneACL,
+	aclResp *linodego.LKEClusterControlPlaneACLResponse,
 ) (LKEControlPlane, diag.Diagnostics) {
 	var cp LKEControlPlane
-	var aclAddresses LKEControlPlaneACLAddresses
 
-	ipv4, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
-	if diags.HasError() {
-		return cp, diags
+	if aclResp != nil {
+		acl := aclResp.ACL
+		var aclAddresses LKEControlPlaneACLAddresses
+
+		ipv4, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
+		if diags.HasError() {
+			return cp, diags
+		}
+		aclAddresses.IPv4 = ipv4
+
+		ipv6, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
+		if diags.HasError() {
+			return cp, diags
+		}
+		aclAddresses.IPv6 = ipv6
+
+		var cpACL LKEControlPlaneACL
+		cpACL.Enabled = types.BoolValue(acl.Enabled)
+		cpACL.Addresses = []LKEControlPlaneACLAddresses{aclAddresses}
+		cp.ACL = []LKEControlPlaneACL{cpACL}
+	} else {
+		cp.ACL = []LKEControlPlaneACL{}
 	}
-	aclAddresses.IPv4 = ipv4
-
-	ipv6, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
-	if diags.HasError() {
-		return cp, diags
-	}
-	aclAddresses.IPv6 = ipv6
-
-	var cpACL LKEControlPlaneACL
-	cpACL.Enabled = types.BoolValue(acl.Enabled)
-	cpACL.Addresses = []LKEControlPlaneACLAddresses{aclAddresses}
 
 	cp.HighAvailability = types.BoolValue(controlPlane.HighAvailability)
-	cp.ACL = []LKEControlPlaneACL{cpACL}
 
 	return cp, nil
 }

@@ -49,12 +49,13 @@ resource "linode_lke_cluster" "my-cluster" {
 ```
 
 Creating an LKE cluster with control plane:
+
 ```terraform
 resource "linode_lke_cluster" "test" {
-    label       = "{{.Label}}"
-    region      = "{{ .Region }}"
-    k8s_version = "{{.K8sVersion}}"
-    tags        = ["test"]
+    label       = "my-cluster"     
+    k8s_version = "1.28"           
+    region      = "us-central"     
+    tags        = ["prod"]         
 
     control_plane {
         high_availability = true

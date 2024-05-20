@@ -430,23 +430,25 @@ func flattenLKENodePools(pools []linodego.LKEClusterPool) []map[string]interface
 	return flattened
 }
 
-func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, acl linodego.LKEClusterControlPlaneACL) map[string]interface{} {
+func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]interface{} {
 	flattened := make(map[string]interface{})
+	if aclResp != nil {
+		acl := aclResp.ACL
+		flattenACL := func() []map[string]interface{} {
+			flattenedAddresses := make(map[string]interface{})
+			flattenedAddresses["ipv4"] = acl.Addresses.IPv4
+			flattenedAddresses["ipv6"] = acl.Addresses.IPv6
 
-	flattenACL := func() []map[string]interface{} {
-		flattenedAddresses := make(map[string]interface{})
-		flattenedAddresses["ipv4"] = acl.Addresses.IPv4
-		flattenedAddresses["ipv6"] = acl.Addresses.IPv6
+			flattenedACL := make(map[string]interface{})
+			flattenedACL["enabled"] = acl.Enabled
+			flattenedACL["addresses"] = []map[string]interface{}{flattenedAddresses}
 
-		flattenedACL := make(map[string]interface{})
-		flattenedACL["enabled"] = acl.Enabled
-		flattenedACL["addresses"] = []map[string]interface{}{flattenedAddresses}
-
-		return []map[string]interface{}{flattenedACL}
+			return []map[string]interface{}{flattenedACL}
+		}
+		flattened["acl"] = flattenACL()
 	}
 
 	flattened["high_availability"] = controlPlane.HighAvailability
-	flattened["acl"] = flattenACL()
 
 	return flattened
 }

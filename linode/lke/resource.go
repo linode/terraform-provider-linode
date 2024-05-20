@@ -98,10 +98,16 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	acl, err := client.GetLKEClusterControlPlaneACL(ctx, id)
 	if err != nil {
-		return diag.Errorf("failed to get control plane ACL for LKE cluster %d: %s", id, err)
+		if lerr, ok := err.(*linodego.Error); ok &&
+			lerr.Code == 400 && strings.Contains(lerr.Message, "Cluster does not support Control Plane ACL") {
+			// The cluster does not have a Gateway
+			tflog.Warn(ctx, fmt.Sprintf("This cluster does not have a Control Plane ACL. %v", err.Error()))
+		} else {
+			return diag.Errorf("failed to get control plane ACL for LKE cluster %d: %s", id, err)
+		}
 	}
 
-	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl.ACL)
+	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
 
 	dashboard, err := client.GetLKEClusterDashboard(ctx, id)
 	if err != nil {

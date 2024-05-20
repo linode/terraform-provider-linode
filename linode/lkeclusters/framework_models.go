@@ -72,16 +72,14 @@ func (data *LKEClusterModel) parseLKECluster(
 	}
 	data.Tags = tags
 
-	data.ControlPlane = parseControlPlane(cluster.ControlPlane)
+	parseControlPlane := func() LKEControlPlane {
+		var cp LKEControlPlane
+		cp.HighAvailability = types.BoolValue(cluster.ControlPlane.HighAvailability)
+
+		return cp
+	}
+
+	data.ControlPlane = parseControlPlane()
 
 	return nil
-}
-
-func parseControlPlane(
-	controlPlane linodego.LKEClusterControlPlane,
-) LKEControlPlane {
-	var cp LKEControlPlane
-	cp.HighAvailability = types.BoolValue(controlPlane.HighAvailability)
-
-	return cp
 }
