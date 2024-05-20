@@ -97,7 +97,16 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, dashboard)...)
+	acl, err := client.GetLKEClusterControlPlaneACL(ctx, clusterId)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Failed to get Control Plane ACL for LKE cluster %d", clusterId),
+			err.Error(),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, dashboard, acl)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

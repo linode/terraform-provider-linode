@@ -66,6 +66,38 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 					},
 				},
+				Blocks: map[string]schema.Block{
+					"acl": schema.ListNestedBlock{
+						Description: "The ACL configuration for an LKE cluster's control plane.",
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"enabled": schema.BoolAttribute{
+									Description: "The default policy. A value of true means a default policy of DENY. A value of false means default policy of ALLOW.",
+									Computed:    true,
+								},
+							},
+							Blocks: map[string]schema.Block{
+								"addresses": schema.ListNestedBlock{
+									Description: "A list of ip addresses allowed.",
+									NestedObject: schema.NestedBlockObject{
+										Attributes: map[string]schema.Attribute{
+											"ipv4": schema.ListAttribute{
+												Description: "A list of individual ipv4 addresses or CIDRs allowed.",
+												Computed:    true,
+												ElementType: types.StringType,
+											},
+											"ipv6": schema.ListAttribute{
+												Description: "A list of individual ipv6 addresses or CIDRs allowed.",
+												Computed:    true,
+												ElementType: types.StringType,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 		"pools": schema.ListNestedBlock{

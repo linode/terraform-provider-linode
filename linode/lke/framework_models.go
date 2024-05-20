@@ -38,7 +38,18 @@ type LKEDataModel struct {
 }
 
 type LKEControlPlane struct {
-	HighAvailability types.Bool `tfsdk:"high_availability"`
+	HighAvailability types.Bool           `tfsdk:"high_availability"`
+	ACL              []LKEControlPlaneACL `tfsdk:"acl"`
+}
+
+type LKEControlPlaneACL struct {
+	Enabled   types.Bool                    `tfsdk:"enabled"`
+	Addresses []LKEControlPlaneACLAddresses `tfsdk:"addresses"`
+}
+
+type LKEControlPlaneACLAddresses struct {
+	IPv4 types.List `tfsdk:"ipv4"`
+	IPv6 types.List `tfsdk:"ipv6"`
 }
 
 type LKENodePool struct {
@@ -75,6 +86,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	kubeconfig *linodego.LKEClusterKubeconfig,
 	endpoints []linodego.LKEClusterAPIEndpoint,
 	dashboard *linodego.LKEClusterDashboard,
+	acl *linodego.LKEClusterControlPlaneACLResponse,
 ) diag.Diagnostics {
 	data.Created = types.StringValue(cluster.Created.Format(helper.TIME_FORMAT))
 	data.Updated = types.StringValue(cluster.Updated.Format(helper.TIME_FORMAT))
@@ -89,7 +101,12 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.Tags = tags
 
-	data.ControlPlane = []LKEControlPlane{ParseControlPlane(cluster.ControlPlane)}
+	cp, diags := parseControlPlane(ctx, cluster.ControlPlane, acl.ACL)
+	if diags.HasError() {
+		return diags
+	}
+
+	data.ControlPlane = []LKEControlPlane{cp}
 
 	parseLKEPools := func() ([]LKENodePool, diag.Diagnostics) {
 		lkePools := make([]LKENodePool, len(pools))
@@ -164,11 +181,32 @@ func (data *LKEDataModel) parseLKEAttributes(
 	return nil
 }
 
-func ParseControlPlane(
+func parseControlPlane(
+	ctx context.Context,
 	controlPlane linodego.LKEClusterControlPlane,
-) LKEControlPlane {
+	acl linodego.LKEClusterControlPlaneACL,
+) (LKEControlPlane, diag.Diagnostics) {
 	var cp LKEControlPlane
-	cp.HighAvailability = types.BoolValue(controlPlane.HighAvailability)
+	var aclAddresses LKEControlPlaneACLAddresses
 
-	return cp
+	ipv4, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
+	if diags.HasError() {
+		return cp, diags
+	}
+	aclAddresses.IPv4 = ipv4
+
+	ipv6, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
+	if diags.HasError() {
+		return cp, diags
+	}
+	aclAddresses.IPv6 = ipv6
+
+	var cpACL LKEControlPlaneACL
+	cpACL.Enabled = types.BoolValue(acl.Enabled)
+	cpACL.Addresses = []LKEControlPlaneACLAddresses{aclAddresses}
+
+	cp.HighAvailability = types.BoolValue(controlPlane.HighAvailability)
+	cp.ACL = []LKEControlPlaneACL{cpACL}
+
+	return cp, nil
 }
