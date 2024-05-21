@@ -12,7 +12,7 @@ require (
 	github.com/go-resty/resty/v2 v2.13.1
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
-	github.com/hashicorp/go-hclog v1.6.2
+	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/terraform-plugin-framework v1.8.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.4.1
@@ -22,7 +22,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.16.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
-	github.com/hashicorp/terraform-plugin-testing v1.7.0
+	github.com/hashicorp/terraform-plugin-testing v1.8.0
 	github.com/linode/linodego v1.33.1
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.9.0
