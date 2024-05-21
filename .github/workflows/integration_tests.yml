@@ -1,6 +1,7 @@
 name: Integration Tests
 
 on:
+  workflow_dispatch: null
   push:
     branches:
       - main
@@ -45,15 +46,15 @@ jobs:
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_TAGS=instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lke" >> $GITHUB_ENV
+              echo "TEST_TAGS=instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lke,sshkey,sshkeys" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
-              echo "TEST_TAGS=instanceconfig,instancedisk,instanceip,nb,nbconfig,nbconfigs,nbnode,nbs,networkingip,obj,objbucket,objcluster,objkey,profile,rdns" >> $GITHUB_ENV
+              echo "TEST_TAGS=instanceconfig,instancedisk,instanceip,networkingip,obj,objbucket,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
-              echo "TEST_TAGS=image,images,lkeclusters,lkenodepool,lkeversions,region,regions,sshkey,sshkeys,stackscript,stackscripts,token,user,users,vlan,volume,volumes,vpc,vpcs" >> $GITHUB_ENV
+              echo "TEST_TAGS=image,images,lkeclusters,lkenodepool,lkeversions,nb,nbconfig,nbconfigs,nbnode,nbs,token,user,users,vlan,volume,volumes,vpc,vpcs" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_4 }}" >> $GITHUB_ENV
               ;;
           esac
