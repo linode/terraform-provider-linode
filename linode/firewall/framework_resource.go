@@ -37,6 +37,7 @@ func refreshDevices(
 	firewallID int,
 	data *FirewallResourceModel,
 	diags *diag.Diagnostics,
+	preserveKnown bool,
 ) {
 	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
 	if err != nil {
@@ -44,7 +45,27 @@ func refreshDevices(
 		return
 	}
 
-	data.flattenDevices(ctx, devices, false, diags)
+	data.flattenDevices(ctx, devices, preserveKnown, diags)
+	if diags.HasError() {
+		return
+	}
+}
+
+func refreshRules(
+	ctx context.Context,
+	client *linodego.Client,
+	firewallID int,
+	data *FirewallResourceModel,
+	diags *diag.Diagnostics,
+	preserveKnown bool,
+) {
+	rules, err := client.GetFirewallRules(ctx, firewallID)
+	if err != nil {
+		diags.AddError(fmt.Sprintf("Failed to Get Rules for Firewall %d", firewallID), err.Error())
+		return
+	}
+
+	data.flattenRules(ctx, rules, preserveKnown, diags)
 	if diags.HasError() {
 		return
 	}
@@ -106,7 +127,8 @@ func (r *Resource) Create(
 		return
 	}
 
-	refreshDevices(ctx, client, firewall.ID, &plan, &resp.Diagnostics)
+	refreshDevices(ctx, client, firewall.ID, &plan, &resp.Diagnostics, true)
+	refreshRules(ctx, client, firewall.ID, &plan, &resp.Diagnostics, true)
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
@@ -157,18 +179,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	rules, err := client.GetFirewallRules(ctx, id)
-	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Failed to Get Rules for Firewall %d", id), err.Error())
-		return
-	}
-
-	state.flattenRules(ctx, rules, false, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	refreshDevices(ctx, client, id, &state, &resp.Diagnostics)
+	refreshRules(ctx, client, id, &state, &resp.Diagnostics, false)
+	refreshDevices(ctx, client, id, &state, &resp.Diagnostics, false)
 
 	// TODO: cleanup when Crossplane fixes it
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {

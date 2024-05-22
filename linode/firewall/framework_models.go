@@ -88,7 +88,7 @@ func (data *RuleModel) Expands(ctx context.Context, diags *diag.Diagnostics) (ru
 	return
 }
 
-func ExpandFirewallRule(ctx context.Context, rulesList []RuleModel, diags *diag.Diagnostics) []linodego.FirewallRule {
+func ExpandFirewallRules(ctx context.Context, rulesList []RuleModel, diags *diag.Diagnostics) []linodego.FirewallRule {
 	result := make([]linodego.FirewallRule, len(rulesList))
 	for i, v := range rulesList {
 		result[i] = v.Expands(ctx, diags)
@@ -104,12 +104,12 @@ func isDisabled(firewall linodego.Firewall) bool {
 func (data *FirewallResourceModel) ExpandFirewallRuleSet(
 	ctx context.Context, diags *diag.Diagnostics,
 ) (rules linodego.FirewallRuleSet) {
-	rules.Inbound = ExpandFirewallRule(ctx, data.Inbound, diags)
+	rules.Inbound = ExpandFirewallRules(ctx, data.Inbound, diags)
 	if diags.HasError() {
 		return
 	}
 
-	rules.Outbound = ExpandFirewallRule(ctx, data.Outbound, diags)
+	rules.Outbound = ExpandFirewallRules(ctx, data.Outbound, diags)
 	if diags.HasError() {
 		return
 	}
@@ -129,8 +129,6 @@ func (data *FirewallResourceModel) getCreateOptions(
 	if diags.HasError() {
 		return
 	}
-
-	// TODO: handle int64 to int if necessary
 
 	createOpts.Devices.Linodes = helper.ExpandFwInt64Set(data.Linodes, diags)
 	if diags.HasError() {
@@ -207,12 +205,7 @@ func (data *FirewallResourceModel) flattenRules(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	// rules block can never be unknown
-	if preserveKnown {
-		return
-	}
-
-	inboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Inbound)
+	inboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Inbound, data.Inbound, preserveKnown)
 	diags.Append(newDiags...)
 	if diags.HasError() {
 		return
@@ -220,12 +213,11 @@ func (data *FirewallResourceModel) flattenRules(
 
 	data.Inbound = inboundRules
 
-	outboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Outbound)
+	outboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Outbound, data.Outbound, preserveKnown)
 	diags.Append(newDiags...)
 	if diags.HasError() {
 		return
 	}
-
 	data.Outbound = outboundRules
 }
 
@@ -295,7 +287,7 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	data.Label = types.StringValue(firewall.Label)
 
 	if ruleSet.Inbound != nil {
-		inBound, diags := FlattenFirewallRules(ctx, ruleSet.Inbound)
+		inBound, diags := FlattenFirewallRules(ctx, ruleSet.Inbound, nil, false)
 		if diags.HasError() {
 			return diags
 		}
@@ -303,7 +295,7 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	}
 
 	if ruleSet.Outbound != nil {
-		outBound, diags := FlattenFirewallRules(ctx, ruleSet.Outbound)
+		outBound, diags := FlattenFirewallRules(ctx, ruleSet.Outbound, nil, false)
 		if diags.HasError() {
 			return diags
 		}
@@ -367,41 +359,42 @@ func (state *FirewallResourceModel) LinodesOrNodeBalancersHaveChanges(
 func FlattenFirewallRules(
 	ctx context.Context,
 	rules []linodego.FirewallRule,
+	knownRules []RuleModel,
+	preserveKnown bool,
 ) ([]RuleModel, diag.Diagnostics) {
-	// TODO: consider implementing nested unknown handling
-	rulesData := make([]RuleModel, len(rules))
-
-	for i, rule := range rules {
-		rulesData[i].Action = types.StringValue(rule.Action)
-		rulesData[i].Label = types.StringValue(rule.Label)
-		rulesData[i].Protocol = types.StringValue(string(rule.Protocol))
-
-		// TODO:
-		// It's currently impossible to distinguish an actual empty string and omitted attribute for `ports` attribute.
-		// This logic works only if user not configuring it to be an explicit empty string in the TF config files.
-		// We may have to consider prohibit an empty string of `ports` in the schema or in the API validator
-		// We may also consider change `Ports` to be a pointer in linodego.
-		if rule.Ports == "" {
-			rulesData[i].Ports = types.StringNull()
-		} else {
-			rulesData[i].Ports = types.StringValue(rule.Ports)
-		}
-
-		ipv4, diags := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv4)
-		if diags.HasError() {
-			return nil, diags
-		}
-
-		rulesData[i].IPv4 = ipv4
-
-		ipv6, diags := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv6)
-		if diags.HasError() {
-			return nil, diags
-		}
-
-		rulesData[i].IPv6 = ipv6
+	if preserveKnown && knownRules == nil {
+		return make([]RuleModel, 0), nil
 	}
-	return rulesData, nil
+
+	if !preserveKnown {
+		knownRules = make([]RuleModel, len(rules))
+	}
+
+	for i := range knownRules {
+		if i > len(rules) {
+			break
+		}
+
+		knownRules[i].Action = helper.KeepOrUpdateString(knownRules[i].Action, rules[i].Action, preserveKnown)
+		knownRules[i].Label = helper.KeepOrUpdateString(knownRules[i].Label, rules[i].Label, preserveKnown)
+		knownRules[i].Protocol = helper.KeepOrUpdateString(knownRules[i].Protocol, string(rules[i].Protocol), preserveKnown)
+		knownRules[i].Ports = helper.KeepOrUpdateString(knownRules[i].Ports, rules[i].Ports, preserveKnown)
+
+		ipv4, diags := types.ListValueFrom(ctx, types.StringType, rules[i].Addresses.IPv4)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		knownRules[i].IPv4 = helper.KeepOrUpdateValue(knownRules[i].IPv4, ipv4, preserveKnown)
+
+		ipv6, diags := types.ListValueFrom(ctx, types.StringType, rules[i].Addresses.IPv6)
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		knownRules[i].IPv6 = helper.KeepOrUpdateValue(knownRules[i].IPv6, ipv6, preserveKnown)
+	}
+	return knownRules, nil
 }
 
 func AggregateEntityIDs(devices []linodego.FirewallDevice, entityType linodego.FirewallDeviceType) []int {
