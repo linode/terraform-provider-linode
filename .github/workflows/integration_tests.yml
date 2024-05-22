@@ -42,19 +42,19 @@ jobs:
         run: |
           case "${{ matrix.user }}" in 
             "USER_1")
-              echo "TEST_TAGS=acceptance,backup,domain,domainrecord,domains,domainzonefile,firewall,firewalldevice,firewalls,helper,instance" >> $GITHUB_ENV
+              echo "TEST_TAGS=acceptance,backup,domain,domainrecord,domains,domainzonefile,helper,instance" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_TAGS=instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lke,sshkey,sshkeys" >> $GITHUB_ENV
+              echo "TEST_TAGS=instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,lke,nb,nbconfig,nbconfigs,nbnode,nbs,sshkey,sshkeys" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
-              echo "TEST_TAGS=instanceconfig,instancedisk,instanceip,networkingip,obj,objbucket,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
+              echo "TEST_TAGS=instanceconfig,instancedisk,instanceip,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
-              echo "TEST_TAGS=image,images,lkeclusters,lkenodepool,lkeversions,nb,nbconfig,nbconfigs,nbnode,nbs,token,user,users,vlan,volume,volumes,vpc,vpcs" >> $GITHUB_ENV
+              echo "TEST_TAGS=firewall,firewalldevice,firewalls,image,images,lkeclusters,lkenodepool,lkeversions,obj,objbucket,token,user,users,vlan,volume,volumes,vpc,vpcs" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_4 }}" >> $GITHUB_ENV
               ;;
           esac
