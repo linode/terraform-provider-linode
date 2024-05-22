@@ -120,8 +120,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetFirewallDevice(...)")
-
 	device, err := client.GetFirewallDevice(ctx, firewallID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {

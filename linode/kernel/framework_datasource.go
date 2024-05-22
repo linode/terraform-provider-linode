@@ -40,7 +40,6 @@ func (d *DataSource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "kernel_id", data.ID.ValueString())
-	tflog.Trace(ctx, "client.GetKernel(...)")
 
 	kernel, err := client.GetKernel(ctx, data.ID.ValueString())
 	if err != nil {

@@ -58,7 +58,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetLKENodePool(...)")
 	nodePool, err := client.GetLKENodePool(ctx, clusterID, poolID)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {

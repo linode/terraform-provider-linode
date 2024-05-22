@@ -43,7 +43,6 @@ func (r *DataSource) Read(
 	id := data.ID.ValueString()
 
 	ctx = tflog.SetField(ctx, "region_id", id)
-	tflog.Trace(ctx, "client.GetRegion(...)")
 
 	region, err := client.GetRegion(ctx, id)
 	if err != nil {

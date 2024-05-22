@@ -72,8 +72,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 	domainID := d.Get("domain_id").(int)
 
-	tflog.Trace(ctx, "client.GetDomainRecord(...)")
-
 	record, err := client.GetDomainRecord(ctx, domainID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -248,10 +246,6 @@ func reconcileName(ctx context.Context, client linodego.Client, d *schema.Resour
 	}
 
 	domainId := d.Get("domain_id").(int)
-
-	tflog.Trace(ctx, "client.GetDomain(...)", map[string]any{
-		"domain_id": domainId,
-	})
 
 	domain, err := client.GetDomain(ctx, domainId)
 	if err != nil {

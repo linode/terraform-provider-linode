@@ -97,8 +97,6 @@ func (d *DataSource) Read(
 
 		ctx = tflog.SetField(ctx, "record_id", recordID)
 
-		tflog.Trace(ctx, "client.GetDomainRecord(...)")
-
 		rec, err := client.GetDomainRecord(ctx, domainID, recordID)
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching domain record: %v", err.Error())

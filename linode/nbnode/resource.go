@@ -46,8 +46,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error parsing Linode NodeBalancer ID %v as int", d.Get("config_id"))
 	}
 
-	tflog.Trace(ctx, "client.GetNodeBalancerNode(...)")
-
 	node, err := client.GetNodeBalancerNode(ctx, nodebalancerID, configID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {

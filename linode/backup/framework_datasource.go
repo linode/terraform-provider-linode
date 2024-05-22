@@ -48,7 +48,6 @@ func (d *DataSource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "linode_id", linodeID)
-	tflog.Trace(ctx, "client.GetInstanceBackups(...)")
 
 	backups, err := client.GetInstanceBackups(ctx, linodeID)
 	if err != nil {

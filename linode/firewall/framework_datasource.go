@@ -45,7 +45,6 @@ func (d *DataSource) Read(
 
 	ctx = tflog.SetField(ctx, "firewall_id", firewallID)
 
-	tflog.Trace(ctx, "client.GetFirewall(...)")
 	firewall, err := client.GetFirewall(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -55,7 +54,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetFirewallRules(...)")
 	rules, err := client.GetFirewallRules(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(

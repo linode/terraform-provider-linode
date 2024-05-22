@@ -130,7 +130,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetVPCSubnet(...)")
 	subnet, err := client.GetVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {

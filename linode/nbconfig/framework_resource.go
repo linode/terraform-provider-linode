@@ -133,8 +133,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetNodeBalancerConfig(...)")
-
 	config, err := client.GetNodeBalancerConfig(ctx, nodeBalancerID, id)
 	if err != nil {
 		if linodego.IsNotFound(err) {

@@ -67,8 +67,6 @@ func (d *DataSource) Read(
 
 	var data DataSourceModel
 
-	tflog.Trace(ctx, "client.GetAccount(...)")
-
 	account, err := client.GetAccount(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(

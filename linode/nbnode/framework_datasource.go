@@ -52,7 +52,6 @@ func (d *DataSource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "node_id", id)
-	tflog.Trace(ctx, "client.GetNodeBalancerNode(...)")
 
 	node, err := client.GetNodeBalancerNode(ctx, nodeBalancerID, configID, id)
 	if err != nil {

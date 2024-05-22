@@ -136,7 +136,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = populateLogAttributes(ctx, data)
-	tflog.Trace(ctx, "client.GetNodeBalancer(...)")
 
 	nodeBalancer, err := client.GetNodeBalancer(ctx, id)
 	if err != nil {

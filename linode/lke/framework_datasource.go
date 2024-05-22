@@ -48,8 +48,6 @@ func (r *DataSource) Read(
 
 	ctx = tflog.SetField(ctx, "cluster_id", clusterId)
 
-	tflog.Trace(ctx, "client.GetLKECluster(...)")
-
 	cluster, err := client.GetLKECluster(ctx, clusterId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -70,8 +68,6 @@ func (r *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
-
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, clusterId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -91,8 +87,6 @@ func (r *DataSource) Read(
 		)
 		return
 	}
-
-	tflog.Trace(ctx, "client.GetLKEClusterDashboard(...)")
 
 	dashboard, err := client.GetLKEClusterDashboard(ctx, clusterId)
 	if err != nil {

@@ -49,7 +49,6 @@ func (r *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetAccountSettings(...)")
 	settings, err := client.GetAccountSettings(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(

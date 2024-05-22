@@ -97,7 +97,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "sshkey_id", id)
-	tflog.Trace(ctx, "client.GetSSHKey(...)")
 
 	key, err := client.GetSSHKey(ctx, id)
 	if err != nil {

@@ -71,7 +71,6 @@ func (d *DataSource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "address", data.Address.ValueString())
-	tflog.Trace(ctx, "client.GetIPAddress(...)")
 
 	ip, err := d.Meta.Client.GetIPAddress(ctx, data.Address.ValueString())
 	if err != nil {

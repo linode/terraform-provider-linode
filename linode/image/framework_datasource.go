@@ -49,8 +49,6 @@ func (d *DataSource) Read(
 
 	ctx = tflog.SetField(ctx, "image_id", data.ID.ValueString())
 
-	tflog.Trace(ctx, "client.GetImage(...)")
-
 	image, err := client.GetImage(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

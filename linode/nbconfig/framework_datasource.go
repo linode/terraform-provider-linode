@@ -46,11 +46,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Debug(ctx, "client.GetNodeBalancerConfig(...)", map[string]any{
-		"nodebalancer_id": nodeBalancerID,
-		"config_id":       configID,
-	})
-
 	config, err := client.GetNodeBalancerConfig(ctx, nodeBalancerID, configID)
 	if err != nil {
 		resp.Diagnostics.AddError(

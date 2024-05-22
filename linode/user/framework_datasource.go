@@ -44,7 +44,6 @@ func (d *DataSource) Read(
 	username := data.Username.ValueString()
 
 	ctx = tflog.SetField(ctx, "username", username)
-	tflog.Trace(ctx, "client.GetUser(...)")
 
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
@@ -60,8 +59,6 @@ func (d *DataSource) Read(
 	}
 
 	if user.Restricted {
-		tflog.Trace(ctx, "client.GetUserGrants(...)")
-
 		grants, err := client.GetUserGrants(ctx, data.Username.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
