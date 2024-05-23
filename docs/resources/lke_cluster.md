@@ -75,7 +75,6 @@ resource "linode_lke_cluster" "test" {
 }
 ```
 
-
 ## Argument Reference
 
 The following arguments are supported:
@@ -123,11 +122,11 @@ The following arguments are supported in the `control_plane` specification block
 * `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
 
 * [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane.
-             
+
 ### acl
 
 The following arguments are supported in the `acl` specification block:
-                                                 
+
 * `enabled` - (Optional) Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW.
 
 * [`addresses`](#addresses) - (Optional) A list of ip addresses to allow.
