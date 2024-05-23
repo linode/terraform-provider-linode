@@ -166,15 +166,15 @@ var resourceSchema = map[string]*schema.Schema{
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"ipv4": {
-											Type:        schema.TypeList,
-											Description: "A list of individual ipv4 addresses or CIDRs to ALLOW.",
+											Type:        schema.TypeSet,
+											Description: "A set of individual ipv4 addresses or CIDRs to ALLOW.",
 											Optional:    true,
 											Computed:    true,
 											Elem:        &schema.Schema{Type: schema.TypeString},
 										},
 										"ipv6": {
-											Type:        schema.TypeList,
-											Description: "A list of individual ipv6 addresses or CIDRs to ALLOW.",
+											Type:        schema.TypeSet,
+											Description: "A set of individual ipv6 addresses or CIDRs to ALLOW.",
 											Optional:    true,
 											Computed:    true,
 											Elem:        &schema.Schema{Type: schema.TypeString},

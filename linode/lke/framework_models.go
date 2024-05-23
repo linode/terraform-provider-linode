@@ -48,8 +48,8 @@ type LKEControlPlaneACL struct {
 }
 
 type LKEControlPlaneACLAddresses struct {
-	IPv4 types.List `tfsdk:"ipv4"`
-	IPv6 types.List `tfsdk:"ipv6"`
+	IPv4 types.Set `tfsdk:"ipv4"`
+	IPv6 types.Set `tfsdk:"ipv6"`
 }
 
 type LKENodePool struct {
@@ -192,13 +192,13 @@ func parseControlPlane(
 		acl := aclResp.ACL
 		var aclAddresses LKEControlPlaneACLAddresses
 
-		ipv4, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
+		ipv4, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
 		if diags.HasError() {
 			return cp, diags
 		}
 		aclAddresses.IPv4 = ipv4
 
-		ipv6, diags := types.ListValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
+		ipv6, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
 		if diags.HasError() {
 			return cp, diags
 		}

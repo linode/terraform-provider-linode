@@ -81,13 +81,13 @@ var frameworkDataSourceSchema = schema.Schema{
 									Description: "A list of ip addresses allowed.",
 									NestedObject: schema.NestedBlockObject{
 										Attributes: map[string]schema.Attribute{
-											"ipv4": schema.ListAttribute{
-												Description: "A list of individual ipv4 addresses or CIDRs allowed.",
+											"ipv4": schema.SetAttribute{
+												Description: "A set of individual ipv4 addresses or CIDRs allowed.",
 												Computed:    true,
 												ElementType: types.StringType,
 											},
-											"ipv6": schema.ListAttribute{
-												Description: "A list of individual ipv6 addresses or CIDRs allowed.",
+											"ipv6": schema.SetAttribute{
+												Description: "A set of individual ipv6 addresses or CIDRs allowed.",
 												Computed:    true,
 												ElementType: types.StringType,
 											},

@@ -100,8 +100,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok &&
 			lerr.Code == 400 && strings.Contains(lerr.Message, "Cluster does not support Control Plane ACL") {
-			// The cluster does not have a Gateway
-			tflog.Warn(ctx, fmt.Sprintf("This cluster does not have a Control Plane ACL. %v", err.Error()))
+			// The cluster does not have a Gateway. Nothing to do here.
 		} else {
 			return diag.Errorf("failed to get control plane ACL for LKE cluster %d: %s", id, err)
 		}

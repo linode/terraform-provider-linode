@@ -88,7 +88,7 @@ In addition to all arguments above, the following attributes are exported:
 
     * `addresses` - A list of ip addresses to allow.
 
-      * `ipv4` - A list of individual ipv4 addresses or CIDRs to ALLOW.
+      * `ipv4` - A set of individual ipv4 addresses or CIDRs to ALLOW.
 
-      * `ipv6` - A list of individual ipv6 addresses or CIDRs to ALLOW.    
+      * `ipv6` - A set of individual ipv6 addresses or CIDRs to ALLOW.    
                                                                                 

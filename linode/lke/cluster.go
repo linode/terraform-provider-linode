@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
@@ -493,12 +494,12 @@ func expandACLAddressOptions(addressOptions map[string]interface{}) *linodego.LK
 	var result linodego.LKEClusterControlPlaneACLAddressesOptions
 
 	if value, ok := addressOptions["ipv4"]; ok {
-		ipv4 := helper.ExpandStringList(value.([]interface{}))
+		ipv4 := helper.ExpandStringSet(value.(*schema.Set))
 		result.IPv4 = &ipv4
 	}
 
 	if value, ok := addressOptions["ipv6"]; ok {
-		ipv6 := helper.ExpandStringList(value.([]interface{}))
+		ipv6 := helper.ExpandStringSet(value.(*schema.Set))
 		result.IPv6 = &ipv6
 	}
 

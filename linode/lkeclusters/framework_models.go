@@ -21,18 +21,18 @@ type LKEClusterFilterModel struct {
 }
 
 type LKEClusterModel struct {
-	ID           types.Int64     `tfsdk:"id"`
-	Created      types.String    `tfsdk:"created"`
-	Updated      types.String    `tfsdk:"updated"`
-	Label        types.String    `tfsdk:"label"`
-	Region       types.String    `tfsdk:"region"`
-	Status       types.String    `tfsdk:"status"`
-	K8sVersion   types.String    `tfsdk:"k8s_version"`
-	Tags         types.Set       `tfsdk:"tags"`
-	ControlPlane LKEControlPlane `tfsdk:"control_plane"`
+	ID           types.Int64          `tfsdk:"id"`
+	Created      types.String         `tfsdk:"created"`
+	Updated      types.String         `tfsdk:"updated"`
+	Label        types.String         `tfsdk:"label"`
+	Region       types.String         `tfsdk:"region"`
+	Status       types.String         `tfsdk:"status"`
+	K8sVersion   types.String         `tfsdk:"k8s_version"`
+	Tags         types.Set            `tfsdk:"tags"`
+	ControlPlane LKEControlPlaneModel `tfsdk:"control_plane"`
 }
 
-type LKEControlPlane struct {
+type LKEControlPlaneModel struct {
 	HighAvailability types.Bool `tfsdk:"high_availability"`
 }
 
@@ -72,8 +72,8 @@ func (data *LKEClusterModel) parseLKECluster(
 	}
 	data.Tags = tags
 
-	parseControlPlane := func() LKEControlPlane {
-		var cp LKEControlPlane
+	parseControlPlane := func() LKEControlPlaneModel {
+		var cp LKEControlPlaneModel
 		cp.HighAvailability = types.BoolValue(cluster.ControlPlane.HighAvailability)
 
 		return cp

@@ -136,9 +136,9 @@ The following arguments are supported in the `acl` specification block:
 
 The following arguments are supported in the `addresses` specification block:
 
-* `ipv4` - (Optional) A list of individual ipv4 addresses or CIDRs to ALLOW.
+* `ipv4` - (Optional) A set of individual ipv4 addresses or CIDRs to ALLOW.
 
-* `ipv6` - (Optional) A list of individual ipv6 addresses or CIDRs to ALLOW.
+* `ipv6` - (Optional) A set of individual ipv6 addresses or CIDRs to ALLOW.
 
 ## Attributes Reference
 
