@@ -154,7 +154,7 @@ var resourceSchema = map[string]*schema.Schema{
 						Schema: map[string]*schema.Schema{
 							"enabled": {
 								Type:        schema.TypeBool,
-								Description: "Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW.",
+								Description: "Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW, and has the same effect as delete the ACL configuration.",
 								Computed:    true,
 								Optional:    true,
 							},
