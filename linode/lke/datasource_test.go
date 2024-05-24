@@ -87,13 +87,16 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 
 	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
+		testIPv4 := "0.0.0.0/0"
+		testIPv6 := "2001:db8::/32"
+
 		resource.Test(tRetry, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.DataControlPlane(t, clusterName, k8sVersionLatest, testRegion, true),
+					Config: tmpl.DataControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4, testIPv6, false, true),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(dataSourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "region", testRegion),
@@ -105,7 +108,10 @@ func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.count", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.nodes.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.autoscaler.#", "0"),
-						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.high_availability", "true"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.high_availability", "false"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.acl.0.enabled", "true"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "pools.0.id"),
 						resource.TestCheckResourceAttrSet(dataSourceClusterName, "kubeconfig"),
 					),

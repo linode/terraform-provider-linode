@@ -11,6 +11,9 @@ type TemplateData struct {
 	K8sVersion       string
 	HighAvailability bool
 	Region           string
+	ACLEnabled       bool
+	IPv4             string
+	IPv6             string
 }
 
 func Basic(t *testing.T, name, version, region string) string {
@@ -52,13 +55,16 @@ func AutoscalerManyPools(t *testing.T, name, version, region string) string {
 		"lke_cluster_autoscaler_many_pools", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func ControlPlane(t *testing.T, name, version, region string, ha bool) string {
+func ControlPlane(t *testing.T, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_control_plane", TemplateData{
 			Label:            name,
 			HighAvailability: ha,
 			K8sVersion:       version,
 			Region:           region,
+			IPv4:             ipv4,
+			IPv6:             ipv6,
+			ACLEnabled:       enabled,
 		})
 }
 
@@ -90,12 +96,15 @@ func DataAutoscaler(t *testing.T, name, version, region string) string {
 		"lke_cluster_data_autoscaler", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func DataControlPlane(t *testing.T, name, version, region string, ha bool) string {
+func DataControlPlane(t *testing.T, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_control_plane", TemplateData{
 			Label:            name,
 			HighAvailability: ha,
 			K8sVersion:       version,
 			Region:           region,
+			IPv4:             ipv4,
+			IPv6:             ipv6,
+			ACLEnabled:       enabled,
 		})
 }
