@@ -3,10 +3,11 @@ package lke
 import (
 	"context"
 	"fmt"
-
-	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -97,7 +98,21 @@ func (r *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, dashboard)...)
+	acl, err := client.GetLKEClusterControlPlaneACL(ctx, clusterId)
+	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok &&
+			lerr.Code == 400 && strings.Contains(lerr.Message, "Cluster does not support Control Plane ACL") {
+			// The cluster does not have a Gateway. Nothing to do here.
+		} else {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to get Control Plane ACL for LKE cluster %d", clusterId),
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	resp.Diagnostics.Append(data.parseLKEAttributes(ctx, cluster, pools, kubeconfig, endpoints, dashboard, acl)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

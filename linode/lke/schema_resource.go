@@ -131,10 +131,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "A node pool in the cluster.",
 	},
 	"control_plane": {
-		Type:     schema.TypeList,
-		MaxItems: 1,
-		Optional: true,
-		Computed: true,
+		Type:        schema.TypeList,
+		MaxItems:    1,
+		Optional:    true,
+		Computed:    true,
+		Description: "Defines settings for the Kubernetes Control Plane.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"high_availability": {
@@ -143,8 +144,48 @@ var resourceSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Computed:    true,
 				},
+				"acl": {
+					Type:        schema.TypeList,
+					Description: "Defines the ACL configuration for an LKE cluster's control plane.",
+					Optional:    true,
+					Computed:    true,
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"enabled": {
+								Type:        schema.TypeBool,
+								Description: "Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW, and has the same effect as delete the ACL configuration.",
+								Computed:    true,
+								Optional:    true,
+							},
+							"addresses": {
+								Type:        schema.TypeList,
+								Description: "A list of ip addresses to allow.",
+								Optional:    true,
+								Computed:    true,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"ipv4": {
+											Type:        schema.TypeSet,
+											Description: "A set of individual ipv4 addresses or CIDRs to ALLOW.",
+											Optional:    true,
+											Computed:    true,
+											Elem:        &schema.Schema{Type: schema.TypeString},
+										},
+										"ipv6": {
+											Type:        schema.TypeSet,
+											Description: "A set of individual ipv6 addresses or CIDRs to ALLOW.",
+											Optional:    true,
+											Computed:    true,
+											Elem:        &schema.Schema{Type: schema.TypeString},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
-		Description: "Defines settings for the Kubernetes Control Plane.",
 	},
 }
