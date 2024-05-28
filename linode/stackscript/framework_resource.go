@@ -161,8 +161,6 @@ func (r *Resource) Read(
 
 	ctx = tflog.SetField(ctx, "stackscript_id", id)
 
-	tflog.Trace(ctx, "client.GetStackscript(...)")
-
 	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {

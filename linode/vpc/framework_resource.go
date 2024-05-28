@@ -98,7 +98,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetVPC(...)")
 	vpc, err := client.GetVPC(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {

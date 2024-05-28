@@ -74,7 +74,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetAccount(...)")
 	account, err := client.GetAccount(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -84,7 +83,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetAccountSettings(...)")
 	settings, err := client.GetAccountSettings(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(

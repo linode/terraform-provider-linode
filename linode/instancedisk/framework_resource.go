@@ -185,7 +185,6 @@ func (r *Resource) Read(
 
 	client := r.Meta.Client
 
-	tflog.Trace(ctx, "client.GetInstanceDisk(...)")
 	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -430,7 +429,6 @@ func diskInConfig(
 		return false, nil
 	}
 
-	tflog.Trace(ctx, "client.GetInstanceConfig(...)")
 	cfg, err := client.GetInstanceConfig(ctx, linodeID, configID)
 	if err != nil {
 		return false, err

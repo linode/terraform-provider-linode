@@ -95,7 +95,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetProfile(...)")
 	profile, err := client.GetProfile(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(

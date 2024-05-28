@@ -8,6 +8,13 @@ resource "linode_lke_cluster" "test" {
 
     control_plane {
         high_availability = {{.HighAvailability}}
+        acl {
+            enabled = "{{.ACLEnabled}}"
+            addresses {
+                ipv4 = ["{{.IPv4}}"]
+                ipv6 = ["{{.IPv6}}"]
+            }
+        }
     }
 
     pool {

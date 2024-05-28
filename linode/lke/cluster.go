@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
@@ -430,22 +431,79 @@ func flattenLKENodePools(pools []linodego.LKEClusterPool) []map[string]interface
 	return flattened
 }
 
-func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane) map[string]interface{} {
+func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]interface{} {
 	flattened := make(map[string]interface{})
+	if aclResp != nil {
+		acl := aclResp.ACL
+		flattenACL := func() []map[string]interface{} {
+			flattenedAddresses := make(map[string]interface{})
+			flattenedAddresses["ipv4"] = acl.Addresses.IPv4
+			flattenedAddresses["ipv6"] = acl.Addresses.IPv6
+
+			flattenedACL := make(map[string]interface{})
+			flattenedACL["enabled"] = acl.Enabled
+			flattenedACL["addresses"] = []map[string]interface{}{flattenedAddresses}
+
+			return []map[string]interface{}{flattenedACL}
+		}
+		flattened["acl"] = flattenACL()
+	}
 
 	flattened["high_availability"] = controlPlane.HighAvailability
 
 	return flattened
 }
 
-func expandLKEClusterControlPlane(controlPlane map[string]interface{}) linodego.LKEClusterControlPlane {
-	var result linodego.LKEClusterControlPlane
+func expandControlPlaneOptions(controlPlane map[string]interface{}) linodego.LKEClusterControlPlaneOptions {
+	var result linodego.LKEClusterControlPlaneOptions
 
 	if value, ok := controlPlane["high_availability"]; ok {
-		result.HighAvailability = value.(bool)
+		v := value.(bool)
+		result.HighAvailability = &v
+	}
+
+	if value, ok := controlPlane["acl"]; ok {
+		v := value.([]interface{})
+		if len(v) > 0 {
+			result.ACL = expandACLOptions(v[0].(map[string]interface{}))
+		}
 	}
 
 	return result
+}
+
+func expandACLOptions(aclOptions map[string]interface{}) *linodego.LKEClusterControlPlaneACLOptions {
+	var result linodego.LKEClusterControlPlaneACLOptions
+
+	if value, ok := aclOptions["enabled"]; ok {
+		v := value.(bool)
+		result.Enabled = &v
+	}
+
+	if value, ok := aclOptions["addresses"]; ok {
+		v := value.([]interface{})
+		if len(v) > 0 {
+			result.Addresses = expandACLAddressOptions(v[0].(map[string]interface{}))
+		}
+	}
+
+	return &result
+}
+
+func expandACLAddressOptions(addressOptions map[string]interface{}) *linodego.LKEClusterControlPlaneACLAddressesOptions {
+	var result linodego.LKEClusterControlPlaneACLAddressesOptions
+
+	if value, ok := addressOptions["ipv4"]; ok {
+		ipv4 := helper.ExpandStringSet(value.(*schema.Set))
+		result.IPv4 = &ipv4
+	}
+
+	if value, ok := addressOptions["ipv6"]; ok {
+		ipv6 := helper.ExpandStringSet(value.(*schema.Set))
+		result.IPv6 = &ipv6
+	}
+
+	return &result
 }
 
 func filterExternalPools(ctx context.Context, externalPoolTags []string, pools []linodego.LKENodePool) []linodego.LKENodePool {

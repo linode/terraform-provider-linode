@@ -64,7 +64,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to parse linode lke cluster pools: %d", id)
 	}
 
-	tflog.Trace(ctx, "client.GetLKECluster(...)")
 	cluster, err := client.GetLKECluster(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -86,7 +85,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		pools = filterExternalPools(ctx, externalPoolTags, pools)
 	}
 
-	tflog.Trace(ctx, "client.GetLKEClusterKubeconfig(...)")
 	kubeconfig, err := client.GetLKEClusterKubeconfig(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get kubeconfig for LKE cluster %d: %s", id, err)
@@ -98,9 +96,18 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get API endpoints for LKE cluster %d: %s", id, err)
 	}
 
-	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane)
+	acl, err := client.GetLKEClusterControlPlaneACL(ctx, id)
+	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok &&
+			lerr.Code == 400 && strings.Contains(lerr.Message, "Cluster does not support Control Plane ACL") {
+			// The cluster does not have a Gateway. Nothing to do here.
+		} else {
+			return diag.Errorf("failed to get control plane ACL for LKE cluster %d: %s", id, err)
+		}
+	}
 
-	tflog.Trace(ctx, "client.GetLKEClusterDashboard(...)")
+	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
+
 	dashboard, err := client.GetLKEClusterDashboard(ctx, id)
 	if err != nil {
 		return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
@@ -143,7 +150,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if len(controlPlane) > 0 {
-		expandedControlPlane := expandLKEClusterControlPlane(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
 		createOpts.ControlPlane = &expandedControlPlane
 	}
 
@@ -236,7 +243,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	controlPlane := d.Get("control_plane").([]interface{})
 	if len(controlPlane) > 0 {
-		expandedControlPlane := expandLKEClusterControlPlane(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
 		updateOpts.ControlPlane = &expandedControlPlane
 	}
 

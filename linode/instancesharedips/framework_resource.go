@@ -213,7 +213,6 @@ func (r *Resource) Delete(
 func GetSharedIPsForLinode(ctx context.Context, client *linodego.Client, linodeID int) ([]string, error) {
 	tflog.Debug(ctx, "Enter GetSharedIPsForLinode")
 
-	tflog.Debug(ctx, "client.GetInstanceIPAddresses(...)")
 	networking, err := client.GetInstanceIPAddresses(ctx, linodeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get instance (%d) networking: %s", linodeID, err)
