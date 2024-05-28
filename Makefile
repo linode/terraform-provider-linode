@@ -75,6 +75,17 @@ smoke-test: fmt-check
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" | grep -v "\[no test files\]"
 
+.PHONY: cloud-linode-firewall
+cloud-linode-firewall:
+	@if [ -z "$$LINODE_TOKEN" ]; then \
+		echo "Error: LINODE_TOKEN environment variable is not set."; \
+		exit 1; \
+	fi
+	cd scripts && terraform init
+	cd scripts && TF_VAR_linode_token=$$LINODE_TOKEN terraform plan
+	cd scripts && TF_VAR_linode_token=$$LINODE_TOKEN terraform apply -auto-approve
+
+
 .PHONY: docs-check
 docs-check:
 	# markdown linter for the documents

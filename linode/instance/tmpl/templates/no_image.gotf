@@ -1,10 +1,14 @@
 {{ define "instance_no_image" }}
 
-resource "linode_instance" "foobar" {
-    label = "{{.Label}}"
-    group = "tf_test"
-    type = "g6-nanode-1"
+{{ $resource_name := "foobar" }}
+
+resource "linode_instance" "{{ $resource_name }}" {
+    label  = "{{ .Label }}"
+    group  = "tf_test"
+    type   = "g6-nanode-1"
     region = "{{ .Region }}"
 }
+
+{{ template "update_cloud_firewall" . }}
 
 {{ end }}

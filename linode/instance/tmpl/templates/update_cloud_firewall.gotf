@@ -1,0 +1,24 @@
+{{ define "update_cloud_firewall" }}
+
+data "linode_instances" "foobar" {
+    depends_on = [
+        linode_instance.foobar,
+    ]
+
+    filter {
+        name = "label"
+        values = ["{{ .Label }}"]
+        match_by = "exact"
+    }
+}
+
+resource "linode_firewall" "linode_cloud_firewall" {
+    label = "linode_cloud_firewall"
+    inbound_policy = "ACCEPT"
+    outbound_policy = "ACCEPT"
+    linodes = [data.linode_instances.foobar.instances[0].id]
+}
+
+
+{{ end }}
+
