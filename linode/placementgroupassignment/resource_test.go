@@ -4,7 +4,6 @@ package placementgroupassignment_test
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"testing"
 
@@ -20,12 +19,13 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
-	if err != nil {
-		log.Fatal(err)
-	}
+	// TODO: Resolve region by caps before merging project branch
+	//region, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
-	testRegion = region
+	testRegion = "us-east"
 }
 
 func TestAccResourcePlacementGroupAssignment_basic(t *testing.T) {
