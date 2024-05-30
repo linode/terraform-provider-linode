@@ -79,6 +79,11 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "A Linode Type for all of the nodes in the Node Pool.",
 					Required:    true,
 				},
+				"disk_encryption": {
+					Type:        schema.TypeString,
+					Description: "The disk encryption policy for the nodes in this pool.",
+					Computed:    true,
+				},
 				"nodes": {
 					Type: schema.TypeList,
 					Elem: &schema.Resource{
