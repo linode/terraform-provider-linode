@@ -3,7 +3,6 @@
 package placementgroups_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -21,10 +20,12 @@ func TestAccDataSourcePlacementGroups_basic(t *testing.T) {
 
 	baseLabel := acctest.RandomWithPrefix("tf-test")
 
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
-	if err != nil {
-		t.Error(fmt.Errorf("failed to get region with PG capability: %w", err))
-	}
+	// TODO: Resolve region by caps before merging project branch
+	//testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
+	//if err != nil {
+	//	t.Error(fmt.Errorf("failed to get region with PG capability: %w", err))
+	//}
+	testRegion := "us-east"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

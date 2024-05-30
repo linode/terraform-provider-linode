@@ -53,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
+	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroups"
 	"github.com/linode/terraform-provider-linode/v2/linode/profile"
 	"github.com/linode/terraform-provider-linode/v2/linode/rdns"
@@ -210,6 +211,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		image.NewResource,
 		nbconfig.NewResource,
 		placementgroup.NewResource,
+		placementgroupassignment.NewResource,
 	}
 }
 
