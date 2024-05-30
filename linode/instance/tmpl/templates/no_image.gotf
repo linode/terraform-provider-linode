@@ -1,5 +1,7 @@
 {{ define "instance_no_image" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 {{ $resource_name := "foobar" }}
 
 resource "linode_instance" "{{ $resource_name }}" {
@@ -7,8 +9,8 @@ resource "linode_instance" "{{ $resource_name }}" {
     group  = "tf_test"
     type   = "g6-nanode-1"
     region = "{{ .Region }}"
+    booted = false
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
-
-{{ template "update_cloud_firewall" . }}
 
 {{ end }}

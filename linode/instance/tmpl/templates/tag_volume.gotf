@@ -1,5 +1,7 @@
 {{ define "instance_tag_volume" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_volume" "foobar" {
     label  = "{{.Label}}"
     region = "{{ .Region }}"
@@ -21,6 +23,7 @@ resource "linode_instance" "foobar" {
             }
         }
     }
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 {{ end }}

@@ -1,5 +1,7 @@
 {{ define "instance_public_vpc_interface" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_vpc" "foobar" {
     label = "{{.Label}}"
     region = "{{.Region}}"
@@ -28,6 +30,8 @@ resource "linode_instance" "foobar" {
             vpc = "10.0.4.150"
         }
     }
+
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 {{ end }}

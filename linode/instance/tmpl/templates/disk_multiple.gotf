@@ -1,5 +1,7 @@
 {{ define "instance_disk_multiple" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
@@ -17,6 +19,8 @@ resource "linode_instance" "foobar" {
         filesystem = "swap"
         size = 512
     }
+
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 {{ end }}

@@ -1,11 +1,15 @@
 {{ define "instance_boot_state_noimage" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     booted = {{.Booted}}
+
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 {{ end }}

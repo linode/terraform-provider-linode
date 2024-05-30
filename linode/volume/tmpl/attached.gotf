@@ -1,5 +1,7 @@
 {{ define "volume_attached" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     region = "{{ .Region }}"
@@ -13,6 +15,8 @@ resource "linode_instance" "foobar" {
             }
         }
     }
+
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 resource "linode_volume" "foobar" {

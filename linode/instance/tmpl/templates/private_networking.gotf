@@ -1,5 +1,7 @@
 {{ define "instance_private_networking" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
@@ -10,6 +12,7 @@ resource "linode_instance" "foobar" {
     private_ip = true
     authorized_keys = ["{{.PubKey}}"]
     group = "tf_test"
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 {{ end }}

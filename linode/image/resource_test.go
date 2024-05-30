@@ -84,6 +84,7 @@ func TestAccImage_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -105,7 +106,7 @@ func TestAccImage_basic(t *testing.T) {
 				ResourceName: resName,
 				ImportState:  true,
 				// ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"linode_id", "disk_id"},
+				ImportStateVerifyIgnore: []string{"linode_id", "disk_id", "firewall_id"},
 			},
 		},
 	})
@@ -121,6 +122,7 @@ func TestAccImage_update(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkImageDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, imageName, testRegion),
@@ -149,7 +151,7 @@ func TestAccImage_update(t *testing.T) {
 				ResourceName: resName,
 				ImportState:  true,
 				// ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"linode_id", "disk_id"},
+				ImportStateVerifyIgnore: []string{"linode_id", "disk_id", "firewall_id"},
 			},
 		},
 	})

@@ -1,5 +1,7 @@
 {{ define "instance_raw_disk_expanded" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
@@ -9,6 +11,7 @@ resource "linode_instance" "foobar" {
         label = "disk"
         size = 6000
     }
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 {{ end }}

@@ -1,21 +1,4 @@
-terraform {
-  required_providers {
-    linode = {
-      source  = "linode/linode"
-      version = ">= 1.0.0"
-    }
-  }
-}
-
-variable "linode_token" {
-  description = "Linode API Token"
-  type        = string
-  sensitive   = true
-}
-
-provider "linode" {
-  token = var.linode_token
-}
+{{ define "linode_cloud_firewall" }}
 
 data "http" "ipv6_addr" {
   url = "https://api64.ipify.org?format=text"
@@ -34,9 +17,8 @@ locals {
   ipv6_address = local.valid_ipv6 ? "${data.http.ipv6_addr.response_body}/128" : null
 }
 
-resource "linode_firewall" "cloud_linode_firewall" {
-  label = "linode_cloud_firewall"
-
+resource "linode_firewall" "linode_cloud_firewall" {
+  label           = "{{.Label}}"
   outbound_policy = "ACCEPT"
   inbound_policy  = "DROP"
 
@@ -53,10 +35,4 @@ resource "linode_firewall" "cloud_linode_firewall" {
   }
 }
 
-resource "null_resource" "validation_check" {
-  count = local.valid_ipv4 || local.valid_ipv6 ? 0 : 1
-
-  provisioner "local-exec" {
-    command = "echo 'Both IPv4 and IPv6 addresses are invalid. Creating default cloud firewall without any rule.'"
-  }
-}
+{{ end }}

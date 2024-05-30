@@ -1,5 +1,7 @@
 {{ define "instance_userdata" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
@@ -11,6 +13,8 @@ resource "linode_instance" "foobar" {
     metadata {
         user_data = base64encode("myuserdata")
     }
+
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 {{ end }}

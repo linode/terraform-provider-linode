@@ -1,10 +1,13 @@
 {{ define "rdns_with_timeout" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     image = "linode/alpine3.19"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 resource "linode_rdns" "foobar" {

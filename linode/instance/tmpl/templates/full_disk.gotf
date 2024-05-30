@@ -1,5 +1,7 @@
 {{ define "instance_full_disk" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
@@ -11,6 +13,7 @@ resource "linode_instance" "foobar" {
     swap_size = {{.SwapSize}}
     authorized_keys = ["{{.PubKey}}"]
     stackscript_id = linode_stackscript.flooddisk.id
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 resource "linode_stackscript" "flooddisk" {

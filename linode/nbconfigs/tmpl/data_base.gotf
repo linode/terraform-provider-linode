@@ -1,10 +1,13 @@
 {{ define "nb_configs_data_base" }}
 
+{{ template "linode_cloud_firewall" . }}
+
 resource "linode_nodebalancer" "foobar" {
     label = "{{.Label}}"
     region = "{{ .Region }}"
     client_conn_throttle = 20
     tags = ["tf_test"]
+    firewall_id = linode_firewall.linode_cloud_firewall.id
 }
 
 resource "linode_nodebalancer_config" "foo" {
