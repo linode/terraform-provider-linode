@@ -103,7 +103,7 @@ func (r *DataSource) Read(
 		if lerr, ok := err.(*linodego.Error); ok &&
 			(lerr.Code == 404 ||
 				(lerr.Code == 400 && strings.Contains(lerr.Message, "Cluster does not support Control Plane ACL"))) {
-			// The customer doesn't have access to LKE or the cluster does not have a Gateway. Nothing to do here.
+			// The customer doesn't have access to LKE ACL or the cluster does not have a Gateway. Nothing to do here.
 		} else {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to get Control Plane ACL for LKE cluster %d", clusterId),
