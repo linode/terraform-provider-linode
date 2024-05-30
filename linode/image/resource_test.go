@@ -80,6 +80,7 @@ func TestAccImage_basic(t *testing.T) {
 
 	resName := "linode_image.foobar"
 	imageName := acctest.RandomWithPrefix("tf_test")
+	label := imageName
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -88,7 +89,7 @@ func TestAccImage_basic(t *testing.T) {
 		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, imageName, testRegion),
+				Config: tmpl.Basic(t, imageName, testRegion, label),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -117,6 +118,7 @@ func TestAccImage_update(t *testing.T) {
 
 	imageName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_image.foobar"
+	label := imageName
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -125,7 +127,7 @@ func TestAccImage_update(t *testing.T) {
 		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, imageName, testRegion),
+				Config: tmpl.Basic(t, imageName, testRegion, label),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -134,7 +136,7 @@ func TestAccImage_update(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, imageName, testRegion),
+				Config: tmpl.Updates(t, imageName, testRegion, label),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", imageName)),
