@@ -62,8 +62,8 @@ resource "linode_lke_cluster" "test" {
         acl {
             enabled = true
             addresses {
-                ipv4 = "0.0.0.0/0"
-                ipv6 = "2001:db8::/32"
+                ipv4 = ["0.0.0.0/0"]
+                ipv6 = ["2001:db8::/32"]
             }
         }
     }
