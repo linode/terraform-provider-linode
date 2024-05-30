@@ -80,7 +80,7 @@ func TestAccImage_basic(t *testing.T) {
 
 	resName := "linode_image.foobar"
 	imageName := acctest.RandomWithPrefix("tf_test")
-	label := imageName
+	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -118,7 +118,7 @@ func TestAccImage_update(t *testing.T) {
 
 	imageName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_image.foobar"
-	label := imageName
+	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
