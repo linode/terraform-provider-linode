@@ -87,6 +87,8 @@ This resource exports the following attributes:
 
 * `created` - When this disk was created.
 
+* `disk_encryption` - The disk encryption policy for this disk's parent instance. (`enabled`, `disabled`)
+
 * `status` - A brief description of this Disk's current state.
 
 * `updated` - When this disk was last updated.

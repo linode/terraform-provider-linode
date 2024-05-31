@@ -102,6 +102,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the Node Pool within LKE Cluster.
 
+* `disk_encryption` - The disk encryption policy for nodes in this pool.
+
 * [`nodes`](#nodes) - The nodes in the Node Pool.
 
 ### nodes
