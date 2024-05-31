@@ -123,4 +123,5 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
+// TODO: Remove replacement before merging project branch
 replace github.com/linode/linodego => github.com/linode/linodego v1.34.1-0.20240523161713-6a6014f02272
