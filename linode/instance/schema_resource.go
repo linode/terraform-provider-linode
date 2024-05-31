@@ -425,13 +425,13 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The disk encryption policy for this Instance.",
 		Optional:    true,
-		Computed:    true,
+		ForceNew:    true,
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{"enabled", "disabled"}, false),
 		),
 
 		// This is necessary to prevent instances created pre-disk-encryption from being recreated.
-		ForceNew: true,
+		Computed: true,
 	},
 	"lke_cluster_id": {
 		Type:        schema.TypeInt,
