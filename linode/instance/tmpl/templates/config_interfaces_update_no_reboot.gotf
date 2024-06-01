@@ -1,6 +1,6 @@
 {{ define "instance_config_interfaces_update_no_reboot" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 provider "linode" {
     skip_implicit_reboots = true
@@ -52,7 +52,7 @@ resource "linode_instance" "foobar" {
     }
 
     boot_config_label = "config"
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

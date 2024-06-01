@@ -1,6 +1,6 @@
 {{ define "networking_ip_data_basic" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 provider "linode" {
   skip_instance_ready_poll = true
@@ -13,7 +13,7 @@ resource "linode_instance" "foobar" {
     image = "linode/alpine3.16"
     type = "g6-standard-1"
     region = "{{ .Region }}"
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 data "linode_networking_ip" "foobar" {

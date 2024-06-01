@@ -1,6 +1,6 @@
 {{ define "image_basic" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
     label = "{{.Image}}"
@@ -12,7 +12,7 @@ resource "linode_instance" "foobar" {
         size = 1000
         filesystem = "ext4"
     }
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_image" "foobar" {

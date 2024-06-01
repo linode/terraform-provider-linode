@@ -1,6 +1,6 @@
 {{ define "instance_disk_boot_image" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
@@ -18,7 +18,7 @@ resource "linode_instance" "foobar" {
         size = 512
         filesystem = "ext4"
     }
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

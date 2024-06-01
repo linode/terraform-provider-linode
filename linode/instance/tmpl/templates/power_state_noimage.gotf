@@ -1,6 +1,6 @@
 {{ define "instance_boot_state_noimage" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
@@ -9,7 +9,7 @@ resource "linode_instance" "foobar" {
     region = "{{ .Region }}"
     booted = {{.Booted}}
 
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

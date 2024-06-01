@@ -1,6 +1,6 @@
 {{ define "volume_cloned_step1" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
     type   = "g6-nanode-1"
@@ -8,7 +8,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     image = "linode/ubuntu20.04"
     authorized_keys = ["{{.PubKey}}"]
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_instance" "foobar2" {
@@ -17,7 +17,7 @@ resource "linode_instance" "foobar2" {
     label = "{{.Label}}-2"
     authorized_keys = ["{{.PubKey}}"]
     image = "linode/ubuntu20.04"
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_volume" "foobar" {
@@ -33,7 +33,7 @@ resource "linode_volume" "foobar" {
 
 {{ define "volume_cloned_step2" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
     type   = "g6-nanode-1"
@@ -41,7 +41,7 @@ resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     image = "linode/ubuntu20.04"
     authorized_keys = ["{{.PubKey}}"]
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_instance" "foobar2" {
@@ -50,7 +50,7 @@ resource "linode_instance" "foobar2" {
     label = "{{.Label}}-2"
     image = "linode/ubuntu20.04"
     authorized_keys = ["{{.PubKey}}"]
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_volume" "foobar" {

@@ -1,6 +1,6 @@
 {{ define "user_grants_update" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 # TODO: reuse no image instance template defined in instance
 resource "linode_instance" "foobar" {
@@ -8,7 +8,7 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     type = "g6-nanode-1"
     region = "us-east"
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_user" "test" {

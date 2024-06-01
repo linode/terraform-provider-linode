@@ -1,13 +1,13 @@
 {{ define "instance_ipv4_sharing_bad_input" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "primary" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_instance" "failover" {

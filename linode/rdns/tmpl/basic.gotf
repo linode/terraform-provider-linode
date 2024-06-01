@@ -1,6 +1,6 @@
 {{ define "rdns_basic" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
@@ -8,7 +8,7 @@ resource "linode_instance" "foobar" {
     image = "linode/alpine3.18"
     type = "g6-standard-1"
     region = "{{ .Region }}"
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_rdns" "foobar" {

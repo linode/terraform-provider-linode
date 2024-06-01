@@ -1,6 +1,6 @@
 {{ define "instance_type_change_disk_none" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
@@ -10,7 +10,7 @@ resource "linode_instance" "foobar" {
 
     {{ if .ResizeDisk }} resize_disk = {{.ResizeDisk}} {{ end }}
 
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

@@ -1,4 +1,4 @@
-{{ define "linode_cloud_firewall" }}
+{{ define "e2e_test_firewall" }}
 
 data "http" "ipv6_addr" {
   url = "https://api64.ipify.org?format=text"
@@ -17,7 +17,7 @@ locals {
   ipv6_address = local.valid_ipv6 ? "${data.http.ipv6_addr.response_body}/128" : null
 }
 
-resource "linode_firewall" "linode_cloud_firewall" {
+resource "linode_firewall" "e2e_test_firewall" {
   label           = "{{.Label}}"
   outbound_policy = "ACCEPT"
   inbound_policy  = "DROP"

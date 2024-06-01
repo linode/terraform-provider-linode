@@ -1,6 +1,6 @@
 {{ define "instance_authorized_users" }}
 
-{{ template "linode_cloud_firewall" . }}
+{{ template "e2e_test_firewall" . }}
 
 data "linode_profile" "profile" {}
 
@@ -18,7 +18,7 @@ resource "linode_instance" "foobar" {
     root_pass = "{{ .RootPass }}"
     swap_size = 256
     authorized_users = [ "${data.linode_profile.profile.username}" ]
-    firewall_id = linode_firewall.linode_cloud_firewall.id
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}
