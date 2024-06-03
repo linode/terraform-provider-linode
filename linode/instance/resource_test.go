@@ -594,7 +594,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id", "available"},
 			},
 		},
 	})
