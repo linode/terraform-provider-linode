@@ -48,6 +48,33 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an LKE cluster with control plane:
+
+```terraform
+resource "linode_lke_cluster" "test" {
+    label       = "my-cluster"     
+    k8s_version = "1.28"           
+    region      = "us-central"     
+    tags        = ["prod"]         
+
+    control_plane {
+        high_availability = true
+        acl {
+            enabled = true
+            addresses {
+                ipv4 = ["0.0.0.0/0"]
+                ipv6 = ["2001:db8::/32"]
+            }
+        }
+    }
+
+    pool {
+        type  = "g6-standard-2"
+        count = 1
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -64,7 +91,7 @@ The following arguments are supported:
 
 * `tags` - (Optional) An array of tags applied to the Kubernetes cluster. Tags are case-insensitive and are for organizational purposes only.
 
-* `external_pool_tags` - (Optional) An array of tags indicating that node pools having those tags are defined with a separate `linode_lke_node_pool` resource, rather than inside the current cluster resource.
+* `external_pool_tags` - (Optional) A set of node pool tags to ignore when planning and applying this cluster. This prevents externally managed node pools from being deleted or unintentionally updated on subsequent applies. See [Externally Managed Node Pools](#externally-managed-node-pools) for more details.
 
 ### pool
 
@@ -93,6 +120,24 @@ The following arguments are supported in the `autoscaler` specification block:
 The following arguments are supported in the `control_plane` specification block:
 
 * `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
+
+* [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane.
+
+### acl
+
+The following arguments are supported in the `acl` specification block:
+
+* `enabled` - (Optional) Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW, and has the same effect as delete the ACL configuration.
+
+* [`addresses`](#addresses) - (Optional) A list of ip addresses to allow.
+
+### addresses
+
+The following arguments are supported in the `addresses` specification block:
+
+* `ipv4` - (Optional) A set of individual ipv4 addresses or CIDRs to ALLOW.
+
+* `ipv6` - (Optional) A set of individual ipv6 addresses or CIDRs to ALLOW.
 
 ## Attributes Reference
 
@@ -193,3 +238,45 @@ In this case, the first node pool from the original configuration will be update
 the second node pool's configuration.
 
 Although not ideal, this functionality guarantees that updates to nested node pools will be reliable and predictable.
+
+## Externally Managed Node Pools
+
+By default, the `linode_lke_cluster` resource will account for all node pools under the corresponding cluster, meaning
+any node pools created externally or managed by other resources will be removed on subsequent applies.
+
+To signal the provider to ignore externally managed node pools, the `external_pool_tags` attribute can be defined with
+tags matching a tag on an externally managed node pool.
+
+For example:
+
+```terraform
+locals {
+  external_pool_tag = "external"
+}
+
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.28"
+    region      = "us-mia"
+    
+    # This tells the Linode provider to ignore 
+    # node pools with the tag `external`, preventing
+    # externally managed node pools from being deleted.
+    external_pool_tags = [local.external_pool_tag]
+    
+    # Due to certain restrictions in Terraform and LKE, 
+    # the cluster must be defined with at least one node pool.
+    pool {
+        type  = "g6-standard-1"
+        count = 1
+    }
+}
+
+resource "linode_lke_node_pool" "my-pool" {
+  cluster_id  = linode_lke_cluster.my-cluster.id
+  type        = "g6-standard-2"
+  node_count  = 3
+
+  tags = [local.external_pool_tag]
+}
+```

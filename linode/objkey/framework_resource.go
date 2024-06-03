@@ -60,8 +60,8 @@ func (r *Resource) Create(
 		createOpts.BucketAccess = &accessSlice
 	}
 
-	tflog.Info(ctx, "Creating the object storage key", map[string]any{
-		"createOpts": createOpts,
+	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]any{
+		"options": createOpts,
 	})
 	key, err := client.CreateObjectStorageKey(ctx, createOpts)
 	if err != nil {
@@ -113,8 +113,6 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	tflog.Debug(ctx, "Fetching the object storage key")
 
 	key, err := client.GetObjectStorageKey(ctx, id)
 	if err != nil {
@@ -173,8 +171,8 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		tflog.Info(ctx, "Updating object storage key", map[string]any{
-			"updateOpts": updateOpts,
+		tflog.Debug(ctx, "client.UpdateObjectStorageKey(...)", map[string]any{
+			"options": updateOpts,
 		})
 		key, err := r.Meta.Client.UpdateObjectStorageKey(ctx, id, updateOpts)
 		if err != nil {
@@ -188,6 +186,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -215,7 +221,7 @@ func (r *Resource) Delete(
 	}
 
 	client := r.Meta.Client
-	tflog.Info(ctx, "Deleting the object storage key")
+	tflog.Debug(ctx, "client.DeleteObjectStorageKey(...)")
 	err := client.DeleteObjectStorageKey(ctx, id)
 	if err != nil {
 		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {

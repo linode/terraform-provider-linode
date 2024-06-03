@@ -47,8 +47,6 @@ func (r *DataSource) Read(
 
 	tflog.Debug(ctx, "Read data.linode_stackscript")
 
-	tflog.Trace(ctx, "client.GetStackscript(...)")
-
 	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(

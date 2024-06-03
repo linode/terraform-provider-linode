@@ -90,7 +90,6 @@ func (r *Resource) CreateVolumeFromSource(
 	}
 
 	ctx = tflog.SetField(ctx, "source_volume_id", sourceVolumeID)
-	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	sourceVolume, err := client.GetVolume(ctx, sourceVolumeID)
 	if err != nil {
@@ -114,6 +113,8 @@ func (r *Resource) CreateVolumeFromSource(
 		return clonedVolume
 	}
 
+	ctx = tflog.SetField(ctx, "volume_id", clonedVolume.ID)
+
 	tflog.Trace(ctx, "client.WaitForVolumeStatus(...)")
 
 	_, err = client.WaitForVolumeStatus(
@@ -135,7 +136,7 @@ func (r *Resource) CreateVolumeFromSource(
 			return clonedVolume
 		}
 
-		tflog.Debug(ctx, "Update cloned volume", map[string]interface{}{
+		tflog.Debug(ctx, "client.UpdateVolume(...)", map[string]any{
 			"options": updateOpts,
 		})
 
@@ -176,12 +177,14 @@ func (r *Resource) CreateVolumeFromSource(
 			return clonedVolume
 		}
 
-		tflog.Debug(ctx, "client.AttachVolume(...)", map[string]interface{}{
-			"linode_id": linodeID,
+		attachOptions := &linodego.VolumeAttachOptions{LinodeID: linodeID}
+
+		tflog.Debug(ctx, "client.AttachVolume(...)", map[string]any{
+			"options": attachOptions,
 		})
 
 		attachedVolume, err := client.AttachVolume(
-			ctx, clonedVolume.ID, &linodego.VolumeAttachOptions{LinodeID: linodeID},
+			ctx, clonedVolume.ID, attachOptions,
 		)
 
 		if attachedVolume != nil {
@@ -327,8 +330,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "volume_id", id)
-
-	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	volume, err := client.GetVolume(ctx, id)
 	if err != nil {
@@ -539,6 +540,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -550,7 +559,7 @@ func DetachVolumeAndWait(
 ) *linodego.Volume {
 	tflog.Debug(ctx, "Detach volume and wait...")
 
-	tflog.Trace(ctx, "client.DetachVolume(...)")
+	tflog.Debug(ctx, "client.DetachVolume(...)")
 
 	if err := client.DetachVolume(ctx, id); err != nil {
 		diags.AddError(

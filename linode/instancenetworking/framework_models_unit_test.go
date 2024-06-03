@@ -3,9 +3,9 @@
 package instancenetworking
 
 import (
-	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +42,8 @@ func TestParseInstanceIPAddressResponse(t *testing.T) {
 
 	dataSourceModel := &DataSourceModel{}
 
-	diags := dataSourceModel.parseInstanceIPAddressResponse(context.Background(), instanceIPResponse)
+	var diags diag.Diagnostics
+	dataSourceModel.parseInstanceIPAddressResponse(instanceIPResponse, &diags)
 
 	assert.False(t, diags.HasError())
 

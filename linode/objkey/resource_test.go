@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || objkey
 
 package objkey_test
 

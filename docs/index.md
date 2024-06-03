@@ -54,6 +54,10 @@ resource "linode_instance" "foobar" {
 
 The following keys can be used to configure the provider.
 
+### Basic Configuration
+
+This section outlines commonly used provider configuration options.
+
 * `config_path` - (Optional) The path to the Linode config file to use. (default `~/.config/linode`)
 
 * `config_profile` - (Optional) The Linode config profile to use. (default `default`)
@@ -72,23 +76,47 @@ The following keys can be used to configure the provider.
   
    Overrides the Linode Config `api_url` field.
 
-* `ua_prefix` - (Optional) An HTTP User-Agent Prefix to prepend in API requests.
+* `api_version` (Optional) The version of the Linode API to use. (default `v4`)
 
-   The User-Agent Prefix can also be specified using the `LINODE_UA_PREFIX` environment variable.
+  The Linode API version can also be specified using the `LINODE_API_VERSION` environment variable.
+
+* `obj_access_key` - (Optional) The access key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
+
+  The Object Access Key can also be specified using the `LINODE_OBJ_ACCESS_KEY` shell environment variable.
+
+* `obj_secret_key` - (Optional) The secret key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
+
+  The Object Secret Key can also be specified using the `LINODE_OBJ_SECRET_KEY` shell environment variable.
+
+* `obj_use_temp_keys` - (Optional) If true, temporary object keys will be created implicitly at apply-time for the [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md) resource to use.
 
 * `skip_instance_ready_poll` - (Optional) Skip waiting for a linode_instance resource to be running.
 
 * `skip_instance_delete_poll` - (Optional) Skip waiting for a linode_instance resource to finish deleting.
 
-* `min_retry_delay_ms` - (Optional) Minimum delay in milliseconds before retrying a request.
+* `skip_implicit_reboots` - (Optional) If true, Linode Instances will not be rebooted on config and interface changes. (default `false`)
 
-* `max_retry_delay_ms` - (Optional) Maximum delay in milliseconds before retrying a request.
+### Advanced Configuration
 
-* `obj_access_key` - (Optional) The access key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
-  The Object Access Key can also be specified using the `LINODE_OBJ_ACCESS_KEY` shell environment variable.
+This section outlines less frequently used provider configuration options.
 
-* `obj_secret_key` - (Optional) The secret key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
-  The Object Secret Key can also be specified using the `LINODE_OBJ_SECRET_KEY` shell environment variable.
+* `ua_prefix` - (Optional) An HTTP User-Agent Prefix to prepend in API requests.
+
+   The User-Agent Prefix can also be specified using the `LINODE_UA_PREFIX` environment variable.
+
+* `min_retry_delay_ms` - (Optional) Minimum delay in milliseconds before retrying a request. (default `100`)
+
+* `max_retry_delay_ms` - (Optional) Maximum delay in milliseconds before retrying a request. (default `2000`)
+
+* `event_poll_ms` - (Optional) The rate in milliseconds to poll for Linode events. (default `4000`)
+
+  The event polling rate can also be configured using the `LINODE_EVENT_POLL_MS` environment variable.
+
+* `lke_event_poll_ms` - (Optional) The rate in milliseconds to poll for LKE events. (default `3000`)
+
+* `lke_node_ready_poll_ms` - (Optional) The rate in milliseconds to poll for an LKE node to be ready. (default `3000`)
+
+* `disable_internal_cache` - (Optional) If true, the internal caching system that backs certain Linode API requests will be disabled. (default `false`)
 
 ## Early Access
 

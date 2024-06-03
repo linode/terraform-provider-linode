@@ -220,7 +220,7 @@ func (f FilterConfig) FilterDataSource(
 
 	// Call linode list function defined by data source
 	tflog.Trace(ctx, "Calling resource-defined list function", map[string]any{
-		"filter_header": filter,
+		"filter": filter,
 	})
 
 	items, err := listFunc(ctx, d, &client, &linodego.ListOptions{
@@ -247,7 +247,7 @@ func (f FilterConfig) FilterDataSource(
 	d.SetId(filterID)
 
 	tflog.Trace(ctx, "Result filtering complete", map[string]any{
-		"items_filtered": itemsFiltered,
+		"results": itemsFiltered,
 	})
 
 	return itemsFiltered, nil

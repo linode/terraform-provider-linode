@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || ipv6ranges
 
 package ipv6ranges_test
 

@@ -42,8 +42,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("Error parsing Linode Domain ID %s as int: %s", d.Id(), err)
 	}
 
-	tflog.Trace(ctx, "client.GetDomain(...)")
-
 	domain, err := client.GetDomain(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -114,7 +112,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	tflog.Debug(ctx, "client.CreateDomain(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateDomain(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -175,7 +173,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.Tags = tags
 	}
 
-	tflog.Debug(ctx, "client.UpdateDomain(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.UpdateDomain(...)", map[string]any{
 		"options": updateOpts,
 	})
 

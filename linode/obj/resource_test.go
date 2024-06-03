@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || obj
 
 package obj_test
 
@@ -104,6 +104,31 @@ func TestAccResourceObject_credsConfiged(t *testing.T) {
 					Config: tmpl.CredsConfiged(t, bucketName, testCluster, keyName, content),
 					Check: resource.ComposeTestCheckFunc(
 						validateObject(getObjectResourceName("creds_configed"), "test_creds_configed", content),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceObject_tempKeys(t *testing.T) {
+	t.Parallel()
+
+	content := "test_temp_keys"
+
+	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+		bucketName := acctest.RandomWithPrefix("tf-test")
+		keyName := acctest.RandomWithPrefix("tf_test")
+
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkObjectDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.TempKeys(t, bucketName, testCluster, keyName, content),
+					Check: resource.ComposeTestCheckFunc(
+						validateObject(getObjectResourceName("temp_keys"), "test_temp_keys", content),
 					),
 				},
 			},

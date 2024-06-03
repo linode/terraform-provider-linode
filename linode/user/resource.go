@@ -25,6 +25,9 @@ func Resource() *schema.Resource {
 		CreateContext: createResource,
 		UpdateContext: updateResource,
 		DeleteContext: deleteResource,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
@@ -66,9 +69,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Get("username").(string)
-
-	tflog.Trace(ctx, "client.GetUser(...)")
+	username := d.Id()
 
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
@@ -81,8 +82,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 
 	if user.Restricted {
-		tflog.Trace(ctx, "client.GetUserGrants(...)")
-
 		grants, err := client.GetUserGrants(ctx, username)
 		if err != nil {
 			return diag.Errorf("failed to get user grants (%s): %s", username, err)
@@ -136,7 +135,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if d.HasChanges(resourceLinodeUserGrantFields...) {
 		if err := updateUserGrants(ctx, d, meta); err != nil {
-			return diag.Errorf("failed to update user grants (%s): %s", id, err)
+			return diag.Errorf("failed to update user grants (%s): %s", username, err)
 		}
 	}
 
@@ -149,7 +148,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Get("username").(string)
+	username := d.Id()
 
 	tflog.Debug(ctx, "client.DeleteUser(...)")
 	if err := client.DeleteUser(ctx, username); err != nil {
@@ -161,7 +160,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func updateUserGrants(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*helper.ProviderMeta).Client
 
-	username := d.Get("username").(string)
+	username := d.Id()
 	restricted := d.Get("restricted").(bool)
 
 	// TODO: Implement this validation at plan-time

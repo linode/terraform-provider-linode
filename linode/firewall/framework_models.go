@@ -3,38 +3,53 @@ package firewall
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-// FirewallModel describes the Terraform resource data model to match the
+// FirewallDataSourceModel describes the Terraform resource data model to match the
 // resource schema.
-type FirewallModel struct {
-	ID             types.Int64  `tfsdk:"id"`
-	Label          types.String `tfsdk:"label"`
-	Tags           types.Set    `tfsdk:"tags"`
-	Disabled       types.Bool   `tfsdk:"disabled"`
-	Inbound        types.List   `tfsdk:"inbound"`
-	InboundPolicy  types.String `tfsdk:"inbound_policy"`
-	Outbound       types.List   `tfsdk:"outbound"`
-	OutboundPolicy types.String `tfsdk:"outbound_policy"`
-	Linodes        types.Set    `tfsdk:"linodes"`
-	NodeBalancers  types.Set    `tfsdk:"nodebalancers"`
-	Devices        types.List   `tfsdk:"devices"`
-	Status         types.String `tfsdk:"status"`
-	Created        types.String `tfsdk:"created"`
-	Updated        types.String `tfsdk:"updated"`
+type FirewallDataSourceModel struct {
+	ID             types.Int64   `tfsdk:"id"`
+	Label          types.String  `tfsdk:"label"`
+	Tags           types.Set     `tfsdk:"tags"`
+	Disabled       types.Bool    `tfsdk:"disabled"`
+	Inbound        []RuleModel   `tfsdk:"inbound"`
+	InboundPolicy  types.String  `tfsdk:"inbound_policy"`
+	Outbound       []RuleModel   `tfsdk:"outbound"`
+	OutboundPolicy types.String  `tfsdk:"outbound_policy"`
+	Linodes        types.Set     `tfsdk:"linodes"`
+	NodeBalancers  types.Set     `tfsdk:"nodebalancers"`
+	Devices        []DeviceModel `tfsdk:"devices"`
+	Status         types.String  `tfsdk:"status"`
+	Created        types.String  `tfsdk:"created"`
+	Updated        types.String  `tfsdk:"updated"`
 }
 
-func (data *FirewallModel) parseComputedAttributes(
+type RuleModel struct {
+	Label    types.String `tfsdk:"label"`
+	Action   types.String `tfsdk:"action"`
+	Ports    types.String `tfsdk:"ports"`
+	Protocol types.String `tfsdk:"protocol"`
+	IPv4     types.List   `tfsdk:"ipv4"`
+	IPv6     types.List   `tfsdk:"ipv6"`
+}
+
+type DeviceModel struct {
+	ID       types.Int64  `tfsdk:"id"`
+	EntityID types.Int64  `tfsdk:"entity_id"`
+	Type     types.String `tfsdk:"type"`
+	Label    types.String `tfsdk:"label"`
+	URL      types.String `tfsdk:"url"`
+}
+
+func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	ctx context.Context,
 	firewall *linodego.Firewall,
-	rules *linodego.FirewallRuleSet,
 	devices []linodego.FirewallDevice,
+	ruleSet *linodego.FirewallRuleSet,
 ) diag.Diagnostics {
 	data.ID = types.Int64Value(int64(firewall.ID))
 	data.Status = types.StringValue(string(firewall.Status))
@@ -61,91 +76,64 @@ func (data *FirewallModel) parseComputedAttributes(
 	}
 	data.NodeBalancers = nodebalancers
 
-	firewallDevices, diags := parseFirewallDevices(devices)
-	if diags.HasError() {
-		return diags
-	}
-	data.Devices = *firewallDevices
+	data.Devices = parseFirewallDevices(devices)
 
-	return nil
-}
-
-func (data *FirewallModel) parseNonComputedAttributes(
-	ctx context.Context,
-	firewall *linodego.Firewall,
-	rules *linodego.FirewallRuleSet,
-	devices []linodego.FirewallDevice,
-) diag.Diagnostics {
 	tags, diags := types.SetValueFrom(ctx, types.StringType, firewall.Tags)
 	if diags.HasError() {
 		return diags
 	}
 	data.Tags = tags
 	data.Disabled = types.BoolValue(firewall.Status == linodego.FirewallDisabled)
-	data.InboundPolicy = types.StringValue(rules.InboundPolicy)
-	data.OutboundPolicy = types.StringValue(rules.OutboundPolicy)
+	data.InboundPolicy = types.StringValue(ruleSet.InboundPolicy)
+	data.OutboundPolicy = types.StringValue(ruleSet.OutboundPolicy)
 	data.Label = types.StringValue(firewall.Label)
 
-	if rules.Inbound != nil {
-		inBound, diags := ParseFirewallRules(ctx, rules.Inbound)
+	if ruleSet.Inbound != nil {
+		inBound, diags := FlattenFirewallRules(ctx, ruleSet.Inbound)
 		if diags.HasError() {
 			return diags
 		}
-		data.Inbound = *inBound
+		data.Inbound = inBound
 	}
 
-	if rules.Outbound != nil {
-		outBound, diags := ParseFirewallRules(ctx, rules.Outbound)
+	if ruleSet.Outbound != nil {
+		outBound, diags := FlattenFirewallRules(ctx, ruleSet.Outbound)
 		if diags.HasError() {
 			return diags
 		}
-		data.Outbound = *outBound
+		data.Outbound = outBound
 	}
 
 	return nil
 }
 
-func ParseFirewallRules(
+func FlattenFirewallRules(
 	ctx context.Context,
 	rules []linodego.FirewallRule,
-) (*basetypes.ListValue, diag.Diagnostics) {
-	specs := make([]attr.Value, len(rules))
+) ([]RuleModel, diag.Diagnostics) {
+	rulesData := make([]RuleModel, len(rules))
 
 	for i, rule := range rules {
-		spec := make(map[string]attr.Value)
-		spec["action"] = types.StringValue(rule.Action)
-		spec["label"] = types.StringValue(rule.Label)
-		spec["protocol"] = types.StringValue(string(rule.Protocol))
-		spec["ports"] = types.StringValue(rule.Ports)
+		rulesData[i].Action = types.StringValue(rule.Action)
+		rulesData[i].Label = types.StringValue(rule.Label)
+		rulesData[i].Protocol = types.StringValue(string(rule.Protocol))
+		rulesData[i].Ports = types.StringValue(rule.Ports)
+
 		ipv4, diags := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv4)
 		if diags.HasError() {
 			return nil, diags
 		}
-		spec["ipv4"] = ipv4
+
+		rulesData[i].IPv4 = ipv4
 
 		ipv6, diags := types.ListValueFrom(ctx, types.StringType, rule.Addresses.IPv6)
 		if diags.HasError() {
 			return nil, diags
 		}
-		spec["ipv6"] = ipv6
 
-		obj, diags := types.ObjectValue(RuleObjectType.AttrTypes, spec)
-		if diags.HasError() {
-			return nil, diags
-		}
-
-		specs[i] = obj
+		rulesData[i].IPv6 = ipv6
 	}
-
-	result, diags := basetypes.NewListValue(
-		RuleObjectType,
-		specs,
-	)
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return &result, nil
+	return rulesData, nil
 }
 
 func AggregateEntityIDs(devices []linodego.FirewallDevice, entityType linodego.FirewallDeviceType) []int {
@@ -158,31 +146,15 @@ func AggregateEntityIDs(devices []linodego.FirewallDevice, entityType linodego.F
 	return results
 }
 
-func parseFirewallDevices(devices []linodego.FirewallDevice) (*basetypes.ListValue, diag.Diagnostics) {
-	governedDevices := make([]attr.Value, len(devices))
+func parseFirewallDevices(devices []linodego.FirewallDevice) []DeviceModel {
+	governedDevices := make([]DeviceModel, len(devices))
 	for i, device := range devices {
-		governedDevice := make(map[string]attr.Value)
-		governedDevice["id"] = types.Int64Value(int64(device.ID))
-		governedDevice["entity_id"] = types.Int64Value(int64(device.Entity.ID))
-		governedDevice["type"] = types.StringValue(string(device.Entity.Type))
-		governedDevice["label"] = types.StringValue(device.Entity.Label)
-		governedDevice["url"] = types.StringValue(device.Entity.URL)
-
-		obj, diags := types.ObjectValue(deviceObjectType.AttrTypes, governedDevice)
-		if diags.HasError() {
-			return nil, diags
-		}
-
-		governedDevices[i] = obj
+		governedDevices[i].ID = types.Int64Value(int64(device.ID))
+		governedDevices[i].EntityID = types.Int64Value(int64(device.Entity.ID))
+		governedDevices[i].Type = types.StringValue(string(device.Entity.Type))
+		governedDevices[i].Label = types.StringValue(device.Entity.Label)
+		governedDevices[i].URL = types.StringValue(device.Entity.URL)
 	}
 
-	result, diags := basetypes.NewListValue(
-		deviceObjectType,
-		governedDevices,
-	)
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return &result, nil
+	return governedDevices
 }

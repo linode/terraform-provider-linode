@@ -30,7 +30,7 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data.linode_firewall")
 
-	var data FirewallModel
+	var data FirewallDataSourceModel
 	client := d.Meta.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -45,7 +45,6 @@ func (d *DataSource) Read(
 
 	ctx = tflog.SetField(ctx, "firewall_id", firewallID)
 
-	tflog.Trace(ctx, "client.GetFirewall(...)")
 	firewall, err := client.GetFirewall(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -55,7 +54,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetFirewallRules(...)")
 	rules, err := client.GetFirewallRules(ctx, firewallID)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -75,9 +73,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseComputedAttributes(ctx, firewall, rules, devices)...)
-	resp.Diagnostics.Append(data.parseNonComputedAttributes(ctx, firewall, rules, devices)...)
-
+	resp.Diagnostics.Append(data.flattenFirewallForDataSource(ctx, firewall, devices, rules)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

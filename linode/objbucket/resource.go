@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 )
 
 func resourceLifecycleExpiration() *schema.Resource {
@@ -51,8 +52,8 @@ func Resource() *schema.Resource {
 func readResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
-	tflog.Debug(ctx, "reading linode_object_storage_bucket")
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Read linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 	config := meta.(*helper.ProviderMeta).Config
 
@@ -61,7 +62,6 @@ func readResource(
 		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
 	}
 
-	tflog.Debug(ctx, "calling get bucket info API")
 	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -85,20 +85,6 @@ func readResource(
 	}
 
 	// Functionality requiring direct S3 API access
-	var accessKey, secretKey string
-
-	if v, ok := d.GetOk("access_key"); ok {
-		accessKey = v.(string)
-	} else {
-		accessKey = config.ObjAccessKey
-	}
-
-	if v, ok := d.GetOk("secret_key"); ok {
-		secretKey = v.(string)
-	} else {
-		secretKey = config.ObjSecretKey
-	}
-
 	endpoint := helper.ComputeS3EndpointFromBucket(ctx, *bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
@@ -109,21 +95,27 @@ func readResource(
 			"versioningPresent": versioningPresent,
 			"lifecyclePresent":  lifecyclePresent,
 		})
-		if accessKey == "" || secretKey == "" {
-			return diag.Errorf("access_key and secret_key are required to get versioning and lifecycle info")
+
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, cluster, "read_only")
+		if diags != nil {
+			return diags
 		}
 
-		s3Client, err := helper.S3Connection(ctx, endpoint, accessKey, secretKey)
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
+		}
+
+		s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		tflog.Debug(ctx, "getting bucket lifecycle")
+		tflog.Trace(ctx, "getting bucket lifecycle")
 		if err := readBucketLifecycle(ctx, d, s3Client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket lifecycle: %s", err)
 		}
 
-		tflog.Debug(ctx, "getting bucket versioning")
+		tflog.Trace(ctx, "getting bucket versioning")
 		if err := readBucketVersioning(ctx, d, s3Client); err != nil {
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
@@ -143,8 +135,8 @@ func readResource(
 func createResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
-	tflog.Debug(ctx, "creating linode_object_storage_bucket")
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Create linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
 	cluster := d.Get("cluster").(string)
@@ -159,7 +151,7 @@ func createResource(
 		CorsEnabled: &corsEnabled,
 	}
 
-	tflog.Debug(ctx, "getting object header", map[string]any{"body": createOpts})
+	tflog.Debug(ctx, "client.CreateObjectStorageBucket(...)", map[string]any{"options": createOpts})
 	bucket, err := client.CreateObjectStorageBucket(ctx, createOpts)
 	if err != nil {
 		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
@@ -174,8 +166,8 @@ func createResource(
 func updateResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
-	tflog.Debug(ctx, "updating linode_object_storage_bucket")
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Update linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
 	if d.HasChanges("acl", "cors_enabled") {
@@ -197,24 +189,38 @@ func updateResource(
 
 	if versioningChanged || lifecycleChanged {
 		tflog.Debug(ctx, "versioning or lifecycle change detected", map[string]any{
-			"versioningChanged": versioningChanged,
-			"lifecycleChanged":  lifecycleChanged,
+			"versioning_changed": versioningChanged,
+			"lifecycle_changed":  lifecycleChanged,
 		})
-		s3client, err := helper.S3ConnectionFromData(ctx, d, meta)
+
+		config := meta.(*helper.ProviderMeta).Config
+		cluster := d.Get("cluster").(string)
+		bucket := d.Get("label").(string)
+
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+		if diags != nil {
+			return diags
+		}
+
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
+		}
+
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		// Ensure we only update what is changed
 		if versioningChanged {
-			tflog.Debug(ctx, "updating bucket versioning configuration")
+			tflog.Debug(ctx, "Updating bucket versioning configuration")
 			if err := updateBucketVersioning(ctx, d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if lifecycleChanged {
-			tflog.Debug(ctx, "updating bucket lifecycle configuration")
+			tflog.Debug(ctx, "Updating bucket lifecycle configuration")
 			if err := updateBucketLifecycle(ctx, d, s3client); err != nil {
 				return diag.FromErr(err)
 			}
@@ -227,8 +233,8 @@ func updateResource(
 func deleteResource(
 	ctx context.Context, d *schema.ResourceData, meta any,
 ) diag.Diagnostics {
-	populateLogAttributes(ctx, d)
-	tflog.Debug(ctx, "deleting linode_object_storage_bucket")
+	ctx = populateLogAttributes(ctx, d)
+	tflog.Debug(ctx, "Delete linode_object_storage_bucket")
 
 	client := meta.(*helper.ProviderMeta).Client
 	cluster, label, err := DecodeBucketID(ctx, d.Id())
@@ -236,7 +242,7 @@ func deleteResource(
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
 
-	tflog.Debug(ctx, "calling bucket deleting API")
+	tflog.Debug(ctx, "client.DeleteObjectStorageBucket(...)")
 	err = client.DeleteObjectStorageBucket(ctx, cluster, label)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
@@ -245,10 +251,9 @@ func deleteResource(
 }
 
 func readBucketVersioning(ctx context.Context, d *schema.ResourceData, client *s3.Client) error {
-	tflog.Debug(ctx, "entering readBucketVersioning")
+	tflog.Trace(ctx, "entering readBucketVersioning")
 	label := d.Get("label").(string)
 
-	tflog.Debug(ctx, "getting bucket versioning info from the API")
 	versioningOutput, err := client.GetBucketVersioning(
 		ctx,
 		&s3.GetBucketVersioningInput{Bucket: &label},
@@ -263,10 +268,8 @@ func readBucketVersioning(ctx context.Context, d *schema.ResourceData, client *s
 }
 
 func readBucketLifecycle(ctx context.Context, d *schema.ResourceData, client *s3.Client) error {
-	tflog.Debug(ctx, "entering readBucketLifecycle")
 	label := d.Get("label").(string)
 
-	tflog.Debug(ctx, "getting bucket lifecycle info from the API")
 	lifecycleConfigOutput, err := client.GetBucketLifecycleConfiguration(
 		ctx,
 		&s3.GetBucketLifecycleConfigurationInput{Bucket: &label},
@@ -302,7 +305,6 @@ func updateBucketVersioning(
 	d *schema.ResourceData,
 	client *s3.Client,
 ) error {
-	tflog.Debug(ctx, "entering updateBucketVersioning")
 	bucket := d.Get("label").(string)
 	n := d.Get("versioning").(bool)
 
@@ -317,8 +319,8 @@ func updateBucketVersioning(
 			Status: status,
 		},
 	}
-	tflog.Debug(ctx, "making update bucket versioning call to the API", map[string]any{
-		"input": inputVersioningConfig,
+	tflog.Debug(ctx, "client.PutBucketVersioning(...)", map[string]any{
+		"options": inputVersioningConfig,
 	})
 	if _, err := client.PutBucketVersioning(ctx, inputVersioningConfig); err != nil {
 		return err
@@ -332,7 +334,6 @@ func updateBucketLifecycle(
 	d *schema.ResourceData,
 	client *s3.Client,
 ) error {
-	tflog.Debug(ctx, "entering updateBucketLifecycle")
 	bucket := d.Get("label").(string)
 
 	rules, err := expandLifecycleRules(ctx, d.Get("lifecycle_rule").([]any))
@@ -355,10 +356,14 @@ func updateBucketLifecycle(
 			},
 		)
 	} else {
-		tflog.Debug(ctx, "there isn't a rule presents, calling the delete endpoint")
+		options := &s3.DeleteBucketLifecycleInput{Bucket: &bucket}
+		tflog.Debug(ctx, "client.DeleteBucketLifecycle(...)", map[string]any{
+			"options": options,
+		})
+
 		_, err = client.DeleteBucketLifecycle(
 			ctx,
-			&s3.DeleteBucketLifecycleInput{Bucket: &bucket},
+			options,
 		)
 	}
 
@@ -381,7 +386,7 @@ func updateBucketAccess(
 		newCorsBool := d.Get("cors_enabled").(bool)
 		updateOpts.CorsEnabled = &newCorsBool
 	}
-	tflog.Debug(ctx, "updating bucket access", map[string]any{"updateOpts": updateOpts})
+	tflog.Debug(ctx, "client.UpdateObjectStorageBucketAccess(...)", map[string]any{"options": updateOpts})
 	if err := client.UpdateObjectStorageBucketAccess(ctx, cluster, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
@@ -399,6 +404,8 @@ func updateBucketCert(
 	hasOldCert := len(oldCert.([]any)) != 0
 
 	if hasOldCert {
+		tflog.Debug(ctx, "client.DeleteObjectStorageBucketCert(...)")
+
 		if err := client.DeleteObjectStorageBucketCert(ctx, cluster, label); err != nil {
 			return fmt.Errorf("failed to delete old bucket cert: %s", err)
 		}

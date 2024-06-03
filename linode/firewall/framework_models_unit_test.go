@@ -48,28 +48,6 @@ func TestParseComputedAttributes(t *testing.T) {
 		},
 	}
 
-	data := &FirewallModel{}
-	diags := data.parseComputedAttributes(context.Background(), firewall, nil, devices)
-	assert.Nil(t, diags)
-
-	assert.Equal(t, int64(123), data.ID.ValueInt64())
-	assert.Contains(t, data.Status.String(), string(linodego.FirewallEnabled))
-
-	assert.Contains(t, data.Linodes.String(), "1234")
-	assert.Contains(t, data.NodeBalancers.String(), "4321")
-
-	assert.Contains(t, data.Devices.String(), "111")
-	assert.Contains(t, data.Devices.String(), "112")
-}
-
-func TestParseNonComputedAttributes(t *testing.T) {
-	ctx := context.Background()
-
-	firewall := &linodego.Firewall{
-		ID:     123,
-		Status: linodego.FirewallEnabled,
-	}
-
 	inboundRules := []linodego.FirewallRule{
 		{
 			Action:      "allow",
@@ -105,21 +83,31 @@ func TestParseNonComputedAttributes(t *testing.T) {
 		Outbound:       outboundRules,
 	}
 
-	data := &FirewallModel{}
+	data := &FirewallDataSourceModel{}
+	diags := data.flattenFirewallForDataSource(context.Background(), firewall, devices, firewallRules)
+	assert.Nil(t, diags)
 
-	diags := data.parseNonComputedAttributes(ctx, firewall, firewallRules, nil)
+	assert.Equal(t, int64(123), data.ID.ValueInt64())
+	assert.Contains(t, data.Status.String(), string(linodego.FirewallEnabled))
+
+	assert.Contains(t, data.Linodes.String(), "1234")
+	assert.Contains(t, data.NodeBalancers.String(), "4321")
+
 	assert.Nil(t, diags)
 
 	assert.Contains(t, data.OutboundPolicy.String(), firewallRules.OutboundPolicy)
 	assert.Contains(t, data.InboundPolicy.String(), firewallRules.InboundPolicy)
 
-	assert.Contains(t, data.Inbound.String(), inboundRules[0].Action)
-	assert.Contains(t, data.Inbound.String(), inboundRules[0].Protocol)
-	assert.Contains(t, data.Inbound.String(), inboundRules[0].Ports)
-	assert.Contains(t, data.Inbound.String(), (*inboundRules[0].Addresses.IPv4)[0])
+	assert.Equal(t, data.Inbound[0].Action.ValueString(), inboundRules[0].Action)
+	assert.Equal(t, data.Inbound[0].Protocol.ValueString(), string(inboundRules[0].Protocol))
+	assert.Equal(t, data.Inbound[0].Ports.ValueString(), inboundRules[0].Ports)
+	assert.Contains(t, data.Inbound[0].IPv4.String(), (*inboundRules[0].Addresses.IPv4)[0])
 
-	assert.Contains(t, data.Outbound.String(), outboundRules[0].Action)
-	assert.Contains(t, data.Outbound.String(), outboundRules[0].Protocol)
-	assert.Contains(t, data.Outbound.String(), outboundRules[0].Ports)
-	assert.Contains(t, data.Outbound.String(), (*outboundRules[0].Addresses.IPv4)[0])
+	assert.Equal(t, data.Outbound[0].Action.ValueString(), outboundRules[0].Action)
+	assert.Equal(t, data.Outbound[0].Protocol.ValueString(), string(outboundRules[0].Protocol))
+	assert.Equal(t, data.Outbound[0].Ports.ValueString(), outboundRules[0].Ports)
+	assert.Contains(t, data.Outbound[0].IPv4.String(), (*outboundRules[0].Addresses.IPv4)[0])
+
+	assert.Equal(t, data.Devices[0].ID.ValueInt64(), int64(111))
+	assert.Equal(t, data.Devices[1].ID.ValueInt64(), int64(112))
 }

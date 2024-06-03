@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || stackscript
 
 package stackscript_test
 
@@ -71,9 +71,10 @@ func TestAccResourceStackscript_basic_smoke(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})

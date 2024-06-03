@@ -18,7 +18,7 @@ import (
 )
 
 func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*s3.Client, error) {
-	tflog.Debug(ctx, "creating object storage client")
+	tflog.Debug(ctx, "Creating Object Storage client")
 	awsSDKConfig, err := config.LoadDefaultConfig(
 		context.Background(),
 		config.WithCredentialsProvider(
@@ -34,17 +34,22 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 		config.WithRegion("auto"),
 	)
 	if err != nil {
-		tflog.Error(ctx, "failed to create object storage client")
+		tflog.Error(ctx, "Failed to create Object Storage client")
 		return nil, err
 	}
 
 	return s3.NewFromConfig(awsSDKConfig), nil
 }
 
-// S3ConnectionFromDataV1 requires endpoint, access_key and secret_key in the data.
-// if endpoint is empty a bucket and cluster are required
-func S3ConnectionFromData(ctx context.Context, d *schema.ResourceData, meta interface{}) (*s3.Client, error) {
-	tflog.Debug(ctx, "creating object storage client from resource data")
+// S3ConnectionFromData requires endpoint in the data.
+// If endpoint is empty a bucket and cluster are required.
+func S3ConnectionFromData(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+	accessKey, secretKey string,
+) (*s3.Client, error) {
+	tflog.Debug(ctx, "Creating Object Storage client from resource data")
 	endpoint := d.Get("endpoint").(string)
 	if endpoint == "" {
 		var err error
@@ -53,31 +58,11 @@ func S3ConnectionFromData(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 	}
 
-	config := meta.(*ProviderMeta).Config
-
-	var accessKey, secretKey string
-
-	if v, ok := d.GetOk("access_key"); ok {
-		accessKey = v.(string)
-	} else {
-		accessKey = config.ObjAccessKey
-	}
-
-	if v, ok := d.GetOk("secret_key"); ok {
-		secretKey = v.(string)
-	} else {
-		secretKey = config.ObjSecretKey
-	}
-
-	if accessKey == "" || secretKey == "" {
-		return nil, errors.New("access_key and secret_key are required to establish S3 connection")
-	}
-
 	return S3Connection(ctx, endpoint, accessKey, secretKey)
 }
 
 func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interface{}) (string, error) {
-	tflog.Debug(ctx, "getting object storage bucket from resource data")
+	tflog.Debug(ctx, "Getting Object Storage bucket from resource data")
 	cluster := d.Get("cluster").(string)
 	bucket := d.Get("bucket").(string)
 
@@ -90,7 +75,7 @@ func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interfa
 }
 
 func ComputeS3EndpointFromBucket(ctx context.Context, bucket linodego.ObjectStorageBucket) string {
-	tflog.Debug(ctx, "computing object storage endpoint from bucket instance")
+	tflog.Debug(ctx, "Computing Object Storage endpoint from bucket instance")
 	return strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label))
 }
 
@@ -118,9 +103,9 @@ func PurgeAllObjects(
 	bypassRetention,
 	ignoreNotFound bool,
 ) error {
-	tflog.Debug(ctx, fmt.Sprintf("purge all objects in bucket: %s", bucket))
+	tflog.Debug(ctx, fmt.Sprintf("Purge all objects in bucket: %s", bucket))
 
-	tflog.Debug(ctx, fmt.Sprintf("getting versioning config of bucket: %s", bucket))
+	tflog.Debug(ctx, fmt.Sprintf("Getting versioning config of bucket: %s", bucket))
 	versioning, err := s3client.GetBucketVersioning(context.Background(), &s3.GetBucketVersioningInput{
 		Bucket: aws.String(bucket),
 	})
@@ -129,7 +114,7 @@ func PurgeAllObjects(
 	}
 
 	if versioning.Status == s3types.BucketVersioningStatusEnabled {
-		tflog.Debug(ctx, fmt.Sprintf("bucket '%s' is a versioned bucket", bucket))
+		tflog.Debug(ctx, fmt.Sprintf("Bucket '%s' is a versioned bucket", bucket))
 		err = DeleteAllObjectVersionsAndDeleteMarkers(
 			context.Background(),
 			s3client,
@@ -139,7 +124,7 @@ func PurgeAllObjects(
 			ignoreNotFound,
 		)
 	} else {
-		tflog.Debug(ctx, fmt.Sprintf("bucket '%s' isn't a versioned bucket", bucket))
+		tflog.Debug(ctx, fmt.Sprintf("Bucket '%s' isn't a versioned bucket", bucket))
 		err = DeleteAllObjects(ctx, s3client, bucket, bypassRetention)
 	}
 	return err
@@ -153,28 +138,28 @@ func DeleteAllObjects(
 	bucketName string,
 	bypassRetention bool,
 ) error {
-	tflog.Debug(ctx, fmt.Sprintf("deleting all objects in bucket '%s'", bucketName))
+	tflog.Debug(ctx, fmt.Sprintf("Deleting all objects in bucket '%s'", bucketName))
 	objPaginator := s3.NewListObjectsV2Paginator(s3client, &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucketName),
 	})
 
 	var objectsToDelete []s3types.ObjectIdentifier
 	for objPaginator.HasMorePages() {
-		tflog.Debug(ctx, fmt.Sprintf("getting next page of the list of objects'%s'", bucketName))
+		tflog.Debug(ctx, fmt.Sprintf("Getting next page of the list of objects'%s'", bucketName))
 		page, err := objPaginator.NextPage(context.Background())
 		if err != nil {
 			return err
 		}
 
 		for _, obj := range page.Contents {
-			tflog.Debug(ctx, fmt.Sprintf("adding key to delete list: %v", obj.Key))
+			tflog.Debug(ctx, fmt.Sprintf("Adding key to delete list: %v", obj.Key))
 			objectsToDelete = append(objectsToDelete, s3types.ObjectIdentifier{
 				Key: obj.Key,
 			})
 		}
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("deleting all keys in the list: %v", objectsToDelete))
+	tflog.Debug(ctx, fmt.Sprintf("Deleting all keys in the list: %v", objectsToDelete))
 	_, err := s3client.DeleteObjects(context.Background(), &s3.DeleteObjectsInput{
 		Bucket:                    aws.String(bucketName),
 		Delete:                    &s3types.Delete{Objects: objectsToDelete},
@@ -186,7 +171,7 @@ func DeleteAllObjects(
 
 // deleteAllObjectVersions deletes all versions of a given object
 func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, key string, bypassRetention, ignoreNotFound bool) error {
-	tflog.Debug(ctx, fmt.Sprintf("deleting all versions and deletion marker in bucket '%s'", bucket))
+	tflog.Debug(ctx, fmt.Sprintf("Deleting all versions and deletion marker in bucket '%s'", bucket))
 	paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
 		Bucket: aws.String(bucket),
 		Prefix: aws.String(key),
@@ -196,18 +181,18 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 	for paginator.HasMorePages() {
 		tflog.Debug(
 			ctx,
-			fmt.Sprintf("getting next page of the list of versions and delete markers in bucket '%s'", bucket),
+			fmt.Sprintf("Getting next page of the list of versions and delete markers in bucket '%s'", bucket),
 		)
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			if !IsObjNotFoundErr(err) || !ignoreNotFound {
 				return err
 			}
-			tflog.Warn(ctx, fmt.Sprintf("bucket or object does not exist: %v", err))
+			tflog.Warn(ctx, fmt.Sprintf("Bucket or object does not exist: %v", err))
 		}
 
 		for _, version := range page.Versions {
-			tflog.Debug(ctx, fmt.Sprintf("adding version '%v' of object key '%v' into delete list", version.VersionId, version.Key))
+			tflog.Debug(ctx, fmt.Sprintf("Adding version '%v' of object key '%v' into delete list", version.VersionId, version.Key))
 			objectsToDelete = append(
 				objectsToDelete,
 				s3types.ObjectIdentifier{
@@ -217,7 +202,7 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 			)
 		}
 		for _, marker := range page.DeleteMarkers {
-			tflog.Debug(ctx, fmt.Sprintf("adding delete marker '%v' of object key '%v' into delete list", marker.VersionId, marker.Key))
+			tflog.Debug(ctx, fmt.Sprintf("Adding delete marker '%v' of object key '%v' into delete list", marker.VersionId, marker.Key))
 			objectsToDelete = append(
 				objectsToDelete,
 				s3types.ObjectIdentifier{
@@ -228,7 +213,7 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 		}
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("delete all versions and delete markers in the list: %v", objectsToDelete))
+	tflog.Debug(ctx, fmt.Sprintf("Delete all versions and delete markers in the list: %v", objectsToDelete))
 	_, err := client.DeleteObjects(
 		context.Background(),
 		&s3.DeleteObjectsInput{
@@ -241,7 +226,7 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 		if !IsObjNotFoundErr(err) || !ignoreNotFound {
 			return err
 		}
-		tflog.Warn(ctx, fmt.Sprintf("bucket or object does not exist: %v", err))
+		tflog.Warn(ctx, fmt.Sprintf("Bucket or object does not exist: %v", err))
 	}
 	return nil
 }

@@ -67,10 +67,6 @@ func (r *Resource) Create(
 
 	address := plan.Address.ValueString()
 
-	tflog.Trace(ctx, "client.GetIPAddress(...)", map[string]any{
-		"address": address,
-	})
-
 	ip, err := client.GetIPAddress(ctx, address)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -135,7 +131,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetIPAddress(...)")
 	ip, err := client.GetIPAddress(ctx, data.ID.ValueString())
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -213,7 +208,16 @@ func (r *Resource) Update(
 		}
 		plan.FlattenInstanceIP(ip, true)
 	}
+
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

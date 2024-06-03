@@ -109,7 +109,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetToken(...)")
 	token, err := client.GetToken(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -161,7 +160,6 @@ func (r *Resource) Update(
 
 		client := r.Meta.Client
 
-		tflog.Trace(ctx, "client.GetToken(...)")
 		token, err := client.GetToken(ctx, tokenID)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -174,7 +172,9 @@ func (r *Resource) Update(
 		updateOpts := token.GetUpdateOptions()
 		updateOpts.Label = plan.Label.ValueString()
 
-		tflog.Debug(ctx, "client.UpdateToken(...)")
+		tflog.Debug(ctx, "client.UpdateToken(...)", map[string]any{
+			"options": updateOpts,
+		})
 		_, err = client.UpdateToken(ctx, token.ID, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -187,6 +187,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -233,6 +241,6 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"token_id": model.ID,
+		"token_id": model.ID.ValueString(),
 	})
 }

@@ -6,14 +6,16 @@ var resourceSchema = map[string]*schema.Schema{
 	"secret_key": {
 		Type: schema.TypeString,
 		Description: "The S3 secret key to use for this resource. (Required for lifecycle_rule and versioning). " +
-			"If not specified with the resource, the value will be read from provider-level obj_secret_key.",
+			"If not specified with the resource, the value will be read from provider-level obj_secret_key, " +
+			"or, generated implicitly at apply-time if obj_use_temp_keys in provider configuration is set.",
 		Optional:  true,
 		Sensitive: true,
 	},
 	"access_key": {
 		Type: schema.TypeString,
 		Description: "The S3 access key to use for this resource. (Required for lifecycle_rule and versioning). " +
-			"If not specified with the resource, the value will be read from provider-level obj_access_key.",
+			"If not specified with the resource, the value will be read from provider-level obj_access_key, " +
+			"or, generated implicitly at apply-time if obj_use_temp_keys in provider configuration is set.",
 		Optional: true,
 	},
 	"cluster": {

@@ -27,8 +27,26 @@ var udfObjectType = types.ObjectType{
 	},
 }
 
-var frameworkResourceSchema = schema.Schema{
-	Attributes: map[string]schema.Attribute{
+func getSchemaAttributes(version int) map[string]schema.Attribute {
+	createdAttr := schema.StringAttribute{
+		Description: "The date this StackScript was created.",
+		Computed:    true,
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+
+	updateAttr := schema.StringAttribute{
+		Description: "The date this StackScript was updated.",
+		Computed:    true,
+	}
+
+	if version > 0 {
+		updateAttr.CustomType = timetypes.RFC3339Type{}
+		createdAttr.CustomType = timetypes.RFC3339Type{}
+	}
+
+	result := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Description: "The StackScript's unique ID.",
 			Computed:    true,
@@ -113,19 +131,8 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"created": schema.StringAttribute{
-			Description: "The date this StackScript was created.",
-			CustomType:  timetypes.RFC3339Type{},
-			Computed:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-		},
-		"updated": schema.StringAttribute{
-			Description: "The date this StackScript was updated.",
-			CustomType:  timetypes.RFC3339Type{},
-			Computed:    true,
-		},
+		"created": createdAttr,
+		"updated": updateAttr,
 
 		"user_defined_fields": schema.ListAttribute{
 			Description: "This is a list of fields defined with a special syntax inside this " +
@@ -133,5 +140,17 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 			ElementType: udfObjectType,
 		},
-	},
+	}
+
+	return result
+}
+
+var frameworkResourceSchemaV1 = schema.Schema{
+	Version:    1,
+	Attributes: getSchemaAttributes(1),
+}
+
+var frameworkResourceSchemaV0 = schema.Schema{
+	Version:    0,
+	Attributes: getSchemaAttributes(0),
 }

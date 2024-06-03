@@ -77,13 +77,16 @@ func (d *DataSource) Read(
 		return
 	}
 
+	domainID := helper.FrameworkSafeInt64ToInt(
+		data.DomainID.ValueInt64(),
+		&resp.Diagnostics,
+	)
+
+	ctx = tflog.SetField(ctx, "domain_id", domainID)
+
 	var record *linodego.DomainRecord
 
 	if !(data.ID.IsNull() || data.ID.IsUnknown()) {
-		domainID := helper.FrameworkSafeInt64ToInt(
-			data.DomainID.ValueInt64(),
-			&resp.Diagnostics,
-		)
 		recordID := helper.FrameworkSafeInt64ToInt(
 			data.ID.ValueInt64(),
 			&resp.Diagnostics,
@@ -92,10 +95,7 @@ func (d *DataSource) Read(
 			return
 		}
 
-		ctx = tflog.SetField(ctx, "domain_id", domainID)
 		ctx = tflog.SetField(ctx, "record_id", recordID)
-
-		tflog.Trace(ctx, "client.GetDomainRecord(...)")
 
 		rec, err := client.GetDomainRecord(ctx, domainID, recordID)
 		if err != nil {
@@ -105,18 +105,12 @@ func (d *DataSource) Read(
 		record = rec
 	} else if data.Name.ValueString() != "" {
 		filter, _ := json.Marshal(map[string]interface{}{"name": data.Name.ValueString()})
-		domainID := helper.FrameworkSafeInt64ToInt(
-			data.DomainID.ValueInt64(),
-			&resp.Diagnostics,
-		)
-		if resp.Diagnostics.HasError() {
-			return
-		}
 
-		ctx = tflog.SetField(ctx, "domain_id", domainID)
 		ctx = tflog.SetField(ctx, "record_name", data.Name.ValueString())
 
-		tflog.Trace(ctx, "client.ListDomainRecords(...)")
+		tflog.Trace(ctx, "client.ListDomainRecords(...)", map[string]any{
+			"filter": filter,
+		})
 
 		records, err := client.ListDomainRecords(ctx, domainID,
 			linodego.NewListOptions(0, string(filter)))

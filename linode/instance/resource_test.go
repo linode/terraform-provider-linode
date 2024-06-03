@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || instance
 
 package instance_test
 
@@ -68,7 +68,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(16)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

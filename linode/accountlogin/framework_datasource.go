@@ -91,9 +91,7 @@ func (d *DataSource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Trace(ctx, "client.GetLogin(...)", map[string]any{
-		"loginID": loginID,
-	})
+
 	accountlogin, err := client.GetLogin(ctx, loginID)
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || nb
 
 package nb_test
 
@@ -92,9 +92,10 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
@@ -130,9 +131,10 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 			},
 
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})

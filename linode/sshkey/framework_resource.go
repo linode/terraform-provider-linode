@@ -49,7 +49,7 @@ func (r *Resource) Create(
 		SSHKey: data.SSHKey.ValueString(),
 	}
 
-	tflog.Debug(ctx, "client.CreateSSHKey(...)", map[string]interface{}{
+	tflog.Debug(ctx, "client.CreateSSHKey(...)", map[string]any{
 		"options": createOpts,
 	})
 
@@ -97,7 +97,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = tflog.SetField(ctx, "sshkey_id", id)
-	tflog.Trace(ctx, "client.GetSSHKey(...)")
 
 	key, err := client.GetSSHKey(ctx, id)
 	if err != nil {
@@ -167,7 +166,16 @@ func (r *Resource) Update(
 		}
 		plan.FlattenSSHKey(key, true)
 	}
+
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

@@ -20,12 +20,18 @@ func TestParseAvailabilities(t *testing.T) {
 			"something",
 			"something else",
 		},
+		Available: []string{
+			"something available",
+		},
 	}
 
 	avail2 := linodego.AccountAvailability{
 		Region: "us-iad",
 		Unavailable: []string{
 			"another thing",
+		},
+		Available: []string{
+			"something else",
 		},
 	}
 
@@ -52,6 +58,17 @@ func TestParseAvailabilities(t *testing.T) {
 	) {
 		t.Error(
 			"mismatch when comparing unavailable list",
+		)
+	}
+
+	var availList []string
+	model.Availabilities[0].Available.ElementsAs(context.Background(), &availList, false)
+	if !reflect.DeepEqual(
+		availList,
+		[]string{"something available"},
+	) {
+		t.Error(
+			"mismatch when comparing available list",
 		)
 	}
 }

@@ -46,7 +46,6 @@ func (d *DataSource) Read(
 	rangeStr := rangeStrSplit[0]
 
 	ctx = tflog.SetField(ctx, "ipv6_range", rangeStr)
-	tflog.Trace(ctx, "client.GetIPv6Range(...)")
 
 	rangeData, err := client.GetIPv6Range(ctx, rangeStr)
 	if err != nil {

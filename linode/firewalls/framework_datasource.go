@@ -72,10 +72,6 @@ func listFirewalls(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
-	tflog.Trace(ctx, "client.ListFirewalls", map[string]any{
-		"filter": filter,
-	})
-
 	firewalls, err := client.ListFirewalls(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

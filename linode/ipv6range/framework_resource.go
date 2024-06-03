@@ -105,8 +105,6 @@ func (r *Resource) Create(
 	// only returns two fields for the newly created range (range and route_target).
 	// We need to make a second call out to the GET endpoint to populate more
 	// computed fields (region, is_bgp, linodes).
-	tflog.Trace(ctx, "client.GetIPv6Range(...)")
-
 	ipv6rangeR, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -153,7 +151,6 @@ func (r *Resource) Read(
 	}
 
 	ctx = populateLogAttributes(ctx, data)
-	tflog.Debug(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, data.ID.ValueString())
 	if err != nil {
@@ -196,7 +193,6 @@ func (r *Resource) Update(
 	}
 
 	ctx = populateLogAttributes(ctx, plan)
-	tflog.Debug(ctx, "client.GetIPv6Range(...)")
 
 	ipv6range, err := client.GetIPv6Range(ctx, plan.ID.ValueString())
 	if err != nil {
@@ -246,6 +242,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -264,7 +268,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	populateLogAttributes(ctx, data)
+	ctx = populateLogAttributes(ctx, data)
 	tflog.Debug(ctx, "client.DeleteIPv6Range(...)")
 
 	if err := client.DeleteIPv6Range(ctx, data.ID.ValueString()); err != nil {
@@ -285,7 +289,7 @@ func (r *Resource) Delete(
 
 func populateLogAttributes(ctx context.Context, model ResourceModel) context.Context {
 	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"ipv6_id": model.ID,
-		"range:":  model.Range,
+		"ipv6_id": model.ID.ValueString(),
+		"range:":  model.Range.ValueString(),
 	})
 }

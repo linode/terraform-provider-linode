@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || lke
 
 package lke_test
 
@@ -472,34 +472,44 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 
 	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		// newClusterName := acctest.RandomWithPrefix("tf_test")
+		testIPv4 := "0.0.0.0/0"
+		testIPv6 := "2001:db8::/32"
+		testIPv4Updated := "203.0.113.1"
+		testIPv6Updated := "2001:db8:1234:abcd::/64"
+
 		resource.Test(tRetry, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4, testIPv6, false, true),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "true"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6),
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, true),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, false),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "false"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Updated),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6Updated),
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, false),
 
 					// Expect a 400 response when attempting to disable HA
 					ExpectError: regexp.MustCompile("\\[400]"),

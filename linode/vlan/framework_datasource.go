@@ -68,7 +68,7 @@ func listVLANs(
 	client *linodego.Client,
 	filter string,
 ) ([]any, error) {
-	tflog.Debug(ctx, "client.ListVLANs(...)", map[string]interface{}{
+	tflog.Trace(ctx, "client.ListVLANs(...)", map[string]any{
 		"filter": filter,
 	})
 

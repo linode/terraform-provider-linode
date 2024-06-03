@@ -18,11 +18,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/image"
 	"github.com/linode/terraform-provider-linode/v2/linode/instance"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig"
 	"github.com/linode/terraform-provider-linode/v2/linode/lke"
-	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
@@ -39,12 +37,14 @@ func Provider() *schema.Provider {
 				Description: "The token that allows you access to your Linode account",
 			},
 			"config_path": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The path to the Linode config file to use. (default `~/.config/linode`)",
 			},
 			"config_profile": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Linode config profile to use. (default `default`)",
 			},
 			"url": {
 				Type:         schema.TypeString,
@@ -107,7 +107,6 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "The rate in milliseconds to poll for LKE events.",
 			},
-
 			"lke_node_ready_poll_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -124,6 +123,12 @@ func Provider() *schema.Provider {
 				Description: "The secret key to be used in linode_object_storage_bucket and linode_object_storage_object.",
 				Sensitive:   true,
 			},
+			"obj_use_temp_keys": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Description: "If true, temporary object keys will be created implicitly at apply-time " +
+					"for the linode_object_storage_object and linode_object_sorage_bucket resource.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -138,12 +143,10 @@ func Provider() *schema.Provider {
 			"linode_domain":                   domain.Resource(),
 			"linode_domain_record":            domainrecord.Resource(),
 			"linode_firewall":                 firewall.Resource(),
-			"linode_image":                    image.Resource(),
 			"linode_instance":                 instance.Resource(),
 			"linode_instance_config":          instanceconfig.Resource(),
 			"linode_lke_cluster":              lke.Resource(),
 			"linode_nodebalancer_node":        nbnode.Resource(),
-			"linode_nodebalancer_config":      nbconfig.Resource(),
 			"linode_object_storage_bucket":    objbucket.Resource(),
 			"linode_object_storage_object":    obj.Resource(),
 			"linode_user":                     user.Resource(),
@@ -255,6 +258,8 @@ func providerConfigure(
 
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
+
+		ObjUseTempKeys: d.Get("obj_use_temp_keys").(bool),
 	}
 
 	handleDefault(config, d)

@@ -162,7 +162,7 @@ func (f Config) GetAndFilter(
 
 	// Call the user-defined list function
 	tflog.Trace(ctx, "Calling resource-defined list function", map[string]any{
-		"filter_header": filterStr,
+		"filter": filterStr,
 	})
 
 	listedElems, err := listFunc(ctx, client, filterStr)
