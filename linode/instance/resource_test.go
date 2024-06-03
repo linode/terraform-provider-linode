@@ -2345,8 +2345,8 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	encryptionEnabled := linodego.InstanceDiskEncryption("enabled")
-	encryptionDisabled := linodego.InstanceDiskEncryption("disabled")
+	encryptionEnabled := linodego.InstanceDiskEncryptionEnabled
+	encryptionDisabled := linodego.InstanceDiskEncryptionDisabled
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
