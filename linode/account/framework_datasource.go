@@ -13,11 +13,13 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
+	schema := DataSourceSchema()
+
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
 				Name:   "linode_account",
-				Schema: DataSourceSchema(),
+				Schema: &schema,
 			},
 		),
 	}
