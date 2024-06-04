@@ -34,6 +34,7 @@ func TestAccResourceUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(testUserResName, "email", email),
 					resource.TestCheckResourceAttr(testUserResName, "username", username),
 					resource.TestCheckResourceAttr(testUserResName, "restricted", "true"),
+					resource.TestCheckResourceAttrSet(testUserResName, "user_type"),
 					resource.TestCheckResourceAttr(testUserResName, "ssh_keys.#", "0"),
 					resource.TestCheckResourceAttr(testUserResName, "tfa_enabled", "false"),
 				),

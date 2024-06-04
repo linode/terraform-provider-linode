@@ -102,6 +102,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("username", username)
 	d.Set("email", user.Email)
 	d.Set("restricted", user.Restricted)
+	d.Set("user_type", user.UserType)
 	d.Set("ssh_keys", user.SSHKeys)
 	d.Set("tfa_enabled", user.TFAEnabled)
 	return nil
