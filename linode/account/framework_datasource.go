@@ -17,7 +17,7 @@ func NewDataSource() datasource.DataSource {
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
 				Name:   "linode_account",
-				Schema: &frameworkDataSourceSchema,
+				Schema: &DataSourceSchema,
 			},
 		),
 	}
