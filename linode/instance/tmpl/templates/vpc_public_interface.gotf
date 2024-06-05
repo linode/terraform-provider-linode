@@ -1,5 +1,7 @@
 {{ define "instance_vpc_public_interface" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_vpc" "foobar" {
     label = "{{.Label}}"
     region = "{{.Region}}"
@@ -28,6 +30,8 @@ resource "linode_instance" "foobar" {
     interface {
         purpose = "public"
     }
+
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

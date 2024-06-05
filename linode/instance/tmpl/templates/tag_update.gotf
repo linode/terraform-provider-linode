@@ -1,5 +1,7 @@
 {{ define "instance_tag_update" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     tags = ["tf_test", "tf_test_2"]
@@ -9,6 +11,7 @@ resource "linode_instance" "foobar" {
         label = "config"
         kernel = "linode/latest-64bit"
     }
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

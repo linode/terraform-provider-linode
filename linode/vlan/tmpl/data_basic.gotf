@@ -1,5 +1,7 @@
 {{ define "vlan_data_basic" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "fooinst" {
     label = "{{.InstLabel}}"
     type = "g6-nanode-1"
@@ -11,6 +13,8 @@ resource "linode_instance" "fooinst" {
         purpose = "vlan"
         ipam_address = "10.0.0.1/24"
     }
+
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 data "linode_vlans" "foolan" {
