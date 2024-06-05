@@ -54,6 +54,7 @@ func TestAccDataSourceUsers_clientFilter(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "users.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "users.0.email", email),
 					resource.TestCheckResourceAttr(resourceName, "users.0.restricted", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, "users.0.user_type"),
 					resource.TestCheckResourceAttr(resourceName, "users.0.global_grants.#", "1"),
 					resource.TestCheckNoResourceAttr(resourceName, "users.0.verified_phone_number"),
 					resource.TestCheckNoResourceAttr(resourceName, "users.0.password_created"),

@@ -60,6 +60,10 @@ var UserAttributes = map[string]schema.Attribute{
 		Description: "If true, this User must be granted access to perform actions or access entities on this Account.",
 		Computed:    true,
 	},
+	"user_type": schema.StringAttribute{
+		Description: "The type of this user.",
+		Computed:    true,
+	},
 	"global_grants": schema.ListAttribute{
 		Description: "A structure containing the Account-level grants a User has.",
 		Computed:    true,

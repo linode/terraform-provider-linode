@@ -46,6 +46,8 @@ The Linode User resource exports the following attributes:
 
 * `restricted` - If true, this User must be granted access to perform actions or access entities on this Account.
 
+* `user_type` - The type of this user.
+
 * [`global_grants`](#global-grants) - The Account-level grants a User has.
 
 * [`database_grant`](#grant) - The grants this User has pertaining to Databases on this Account.

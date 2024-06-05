@@ -1,26 +1,30 @@
 ---
-page_title: "Linode: linode_account"
+page_title: "Linode: linode_child_account"
 description: |-
-  Provides details about a Linode account.
+  Provides details about a Linode Child Account.
 ---
 
-# Data Source: linode\_account
+# Data Source: linode\_child\_account
 
-Provides information about a Linode account.
+Provides information about a Linode Child Account.
 
 Due to the sensitive nature of the data exposed by this data source, it should not be used in conjunction with the `LINODE_DEBUG` option.  See the [debugging notes](/providers/linode/linode/latest/docs#debugging) for more details.
 
 ## Example Usage
 
-The following example shows how one might use this data source to access account details.
+The following example shows how one might use this data source to access child account details.
 
 ```hcl
-data "linode_account" "account" {}
+data "linode_child_account" "account" {
+  euuid = "FFFFFFFF-FFFF-FFFF-FFFFFFFFFFFFFFFF"
+}
 ```
 
 ## Argument Reference
 
-There are no supported arguments because the provider `token` can only access the associated account.
+The following arguments are supported:
+
+* `euuid` - (Required) The unique EUUID of this Child Account.
 
 ## Attributes Reference
 
@@ -50,6 +54,6 @@ The Linode Account resource exports the following attributes:
 
 * `balance` - This Account's balance, in US dollars.
 
-* `capabilities` - A set containing all the capabilities of the current Account.
+* `capabilities` - A set containing all the capabilities of this Account.
 
 * `active_since` - When this account was first activated.

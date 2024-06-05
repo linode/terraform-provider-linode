@@ -17,6 +17,7 @@ type DataSourceModel struct {
 	SSHKeys             types.List   `tfsdk:"ssh_keys"`
 	Email               types.String `tfsdk:"email"`
 	Restricted          types.Bool   `tfsdk:"restricted"`
+	UserType            types.String `tfsdk:"user_type"`
 	GlobalGrants        types.List   `tfsdk:"global_grants"`
 	DomainGrant         types.Set    `tfsdk:"domain_grant"`
 	FirewallGrant       types.Set    `tfsdk:"firewall_grant"`
@@ -39,6 +40,7 @@ func (data *DataSourceModel) ParseUser(
 	data.Username = types.StringValue(user.Username)
 	data.Email = types.StringValue(user.Email)
 	data.Restricted = types.BoolValue(user.Restricted)
+	data.UserType = types.StringValue(string(user.UserType))
 	data.TFAEnabled = types.BoolValue(user.TFAEnabled)
 	data.VerifiedPhoneNumber = types.StringPointerValue(user.VerifiedPhoneNumber)
 

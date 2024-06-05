@@ -73,6 +73,8 @@ The following arguments are sets of [entity grants](#entity-grants):
 
 In addition to all the arguments above, the following attributes are exported.
 
+* `user_type` - The type of this user.
+
 * `tfa_enabled` - Whether the user has two-factor-authentication enabled.
 
 * `ssh_keys` - A list of the User's SSH keys.

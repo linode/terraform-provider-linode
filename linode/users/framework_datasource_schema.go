@@ -10,6 +10,7 @@ var filterConfig = frameworkfilter.Config{
 	"username":              {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"email":                 {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"restricted":            {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
+	"user_type":             {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"password_created":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"tfa_enabled":           {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeBool},
 	"verified_phone_number": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},

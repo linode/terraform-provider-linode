@@ -20,6 +20,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Default:     false,
 		Description: "If true, the user must be explicitly granted access to platform actions and entities.",
 	},
+	"user_type": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The type of this user.",
+	},
 	"ssh_keys": {
 		Type:        schema.TypeList,
 		Elem:        &schema.Schema{Type: schema.TypeString},
