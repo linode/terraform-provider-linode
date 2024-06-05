@@ -14,6 +14,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/v2/linode/backup"
+	"github.com/linode/terraform-provider-linode/v2/linode/childaccount"
+	"github.com/linode/terraform-provider-linode/v2/linode/childaccounts"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
@@ -273,5 +275,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		lkeclusters.NewDataSource,
 		placementgroup.NewDataSource,
 		placementgroups.NewDataSource,
+		childaccount.NewDataSource,
+		childaccounts.NewDataSource,
 	}
 }

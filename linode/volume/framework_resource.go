@@ -90,7 +90,6 @@ func (r *Resource) CreateVolumeFromSource(
 	}
 
 	ctx = tflog.SetField(ctx, "source_volume_id", sourceVolumeID)
-	tflog.Trace(ctx, "client.GetVolume(...)")
 
 	sourceVolume, err := client.GetVolume(ctx, sourceVolumeID)
 	if err != nil {
@@ -332,8 +331,6 @@ func (r *Resource) Read(
 
 	ctx = tflog.SetField(ctx, "volume_id", id)
 
-	tflog.Trace(ctx, "client.GetVolume(...)")
-
 	volume, err := client.GetVolume(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -543,6 +540,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

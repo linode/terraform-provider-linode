@@ -185,7 +185,6 @@ func (r *Resource) Read(
 
 	client := r.Meta.Client
 
-	tflog.Trace(ctx, "client.GetInstanceDisk(...)")
 	disk, err := client.GetInstanceDisk(ctx, linodeID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -290,6 +289,14 @@ func (r *Resource) Update(
 	plan.FlattenDisk(disk, true)
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -422,7 +429,6 @@ func diskInConfig(
 		return false, nil
 	}
 
-	tflog.Trace(ctx, "client.GetInstanceConfig(...)")
 	cfg, err := client.GetInstanceConfig(ctx, linodeID, configID)
 	if err != nil {
 		return false, err

@@ -133,8 +133,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetNodeBalancerConfig(...)")
-
 	config, err := client.GetNodeBalancerConfig(ctx, nodeBalancerID, id)
 	if err != nil {
 		if linodego.IsNotFound(err) {
@@ -209,6 +207,14 @@ func (r *Resource) Update(
 
 	plan.FlattenNodeBalancerConfig(config, true)
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

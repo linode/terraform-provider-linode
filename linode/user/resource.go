@@ -71,8 +71,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	username := d.Id()
 
-	tflog.Trace(ctx, "client.GetUser(...)")
-
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -84,8 +82,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 
 	if user.Restricted {
-		tflog.Trace(ctx, "client.GetUserGrants(...)")
-
 		grants, err := client.GetUserGrants(ctx, username)
 		if err != nil {
 			return diag.Errorf("failed to get user grants (%s): %s", username, err)
@@ -106,6 +102,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("username", username)
 	d.Set("email", user.Email)
 	d.Set("restricted", user.Restricted)
+	d.Set("user_type", user.UserType)
 	d.Set("ssh_keys", user.SSHKeys)
 	d.Set("tfa_enabled", user.TFAEnabled)
 	return nil

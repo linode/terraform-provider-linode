@@ -78,4 +78,16 @@ In addition to all arguments above, the following attributes are exported:
 
     * `type` - This custom disk partition’s filesystem type.
 
-* `control_plane.0.high_availability` - Whether High Availability is enabled for the cluster Control Plane.
+* `control_plane` - The settings for the Kubernetes Control Plane.
+
+  * `high_availability` - Whether High Availability is enabled for the cluster Control Plane.
+  
+  * `acl` - The ACL configuration for an LKE cluster's control plane.
+
+    * `enabled` - The default policy. A value of true means a default policy of DENY. A value of false means a default policy of ALLOW.
+
+    * `addresses` - A list of ip addresses to allow.
+
+      * `ipv4` - A set of individual ipv4 addresses or CIDRs to ALLOW.
+
+      * `ipv6` - A set of individual ipv6 addresses or CIDRs to ALLOW.

@@ -1,0 +1,10 @@
+{{ define "child_account_data_basic" }}
+
+data "linode_child_accounts" "all" {}
+
+data "linode_child_account" "foo" {
+    depends_on = [data.linode_child_accounts.all]
+    euuid = data.linode_child_accounts.all.child_accounts[0].euuid
+}
+
+{{ end }}

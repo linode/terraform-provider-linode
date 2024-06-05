@@ -38,9 +38,6 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetAccountAvailability(...)", map[string]any{
-		"region": data.Region.ValueString(),
-	})
 	availability, err := client.GetAccountAvailability(ctx, data.Region.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

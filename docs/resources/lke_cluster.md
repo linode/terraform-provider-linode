@@ -48,6 +48,33 @@ resource "linode_lke_cluster" "my-cluster" {
 }
 ```
 
+Creating an LKE cluster with control plane:
+
+```terraform
+resource "linode_lke_cluster" "test" {
+    label       = "my-cluster"     
+    k8s_version = "1.28"           
+    region      = "us-central"     
+    tags        = ["prod"]         
+
+    control_plane {
+        high_availability = true
+        acl {
+            enabled = true
+            addresses {
+                ipv4 = ["0.0.0.0/0"]
+                ipv6 = ["2001:db8::/32"]
+            }
+        }
+    }
+
+    pool {
+        type  = "g6-standard-2"
+        count = 1
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -93,6 +120,24 @@ The following arguments are supported in the `autoscaler` specification block:
 The following arguments are supported in the `control_plane` specification block:
 
 * `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
+
+* [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane.
+
+### acl
+
+The following arguments are supported in the `acl` specification block:
+
+* `enabled` - (Optional) Defines default policy. A value of true results in a default policy of DENY. A value of false results in default policy of ALLOW, and has the same effect as delete the ACL configuration.
+
+* [`addresses`](#addresses) - (Optional) A list of ip addresses to allow.
+
+### addresses
+
+The following arguments are supported in the `addresses` specification block:
+
+* `ipv4` - (Optional) A set of individual ipv4 addresses or CIDRs to ALLOW.
+
+* `ipv6` - (Optional) A set of individual ipv6 addresses or CIDRs to ALLOW.
 
 ## Attributes Reference
 

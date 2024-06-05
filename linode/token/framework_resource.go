@@ -109,7 +109,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetToken(...)")
 	token, err := client.GetToken(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -161,7 +160,6 @@ func (r *Resource) Update(
 
 		client := r.Meta.Client
 
-		tflog.Trace(ctx, "client.GetToken(...)")
 		token, err := client.GetToken(ctx, tokenID)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -189,6 +187,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

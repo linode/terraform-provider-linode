@@ -130,7 +130,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.GetVPCSubnet(...)")
 	subnet, err := client.GetVPCSubnet(ctx, vpcId, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -214,6 +213,13 @@ func (r *Resource) Update(
 		}
 	} else {
 		req.State.GetAttribute(ctx, path.Root("updated"), &plan.Updated)
+	}
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

@@ -114,8 +114,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Debug(ctx, "client.GetObjectStorageKey(...)")
-
 	key, err := client.GetObjectStorageKey(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -188,6 +186,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

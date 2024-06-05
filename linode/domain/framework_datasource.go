@@ -69,8 +69,6 @@ func (d *DataSource) Read(
 }
 
 func (d *DataSource) getDomainByID(ctx context.Context, id int) (*linodego.Domain, diag.Diagnostic) {
-	tflog.Trace(ctx, "client.GetDomain(...)")
-
 	domain, err := d.Meta.Client.GetDomain(ctx, id)
 	if err != nil {
 		return nil, diag.NewErrorDiagnostic(

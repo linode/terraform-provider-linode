@@ -84,14 +84,14 @@ func (r *BaseResource) Schema(
 		return
 	}
 
-	if r.Config.TimeoutOpts != nil {
-		if r.Config.Schema.Blocks == nil {
-			r.Config.Schema.Blocks = make(map[string]schema.Block)
-		}
-		r.Config.Schema.Blocks["timeouts"] = timeouts.Block(ctx, *r.Config.TimeoutOpts)
-	}
-
 	resp.Schema = *r.Config.Schema
+
+	if r.Config.TimeoutOpts != nil {
+		if resp.Schema.Blocks == nil {
+			resp.Schema.Blocks = make(map[string]schema.Block)
+		}
+		resp.Schema.Blocks["timeouts"] = timeouts.Block(ctx, *r.Config.TimeoutOpts)
+	}
 }
 
 // ImportState should be overridden for resources with

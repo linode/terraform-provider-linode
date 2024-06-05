@@ -161,8 +161,6 @@ func (r *Resource) Read(
 
 	ctx = tflog.SetField(ctx, "stackscript_id", id)
 
-	tflog.Trace(ctx, "client.GetStackscript(...)")
-
 	stackscript, err := client.GetStackscript(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -233,6 +231,14 @@ func (r *Resource) Update(
 	}
 
 	plan.CopyFrom(state, true)
+
+	// Workaround for Crossplane issue where ID is not
+	// properly populated in plan
+	// See TPT-2865 for more details
+	if plan.ID.ValueString() == "" {
+		plan.ID = state.ID
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
