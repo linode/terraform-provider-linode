@@ -22,7 +22,7 @@ locals {
 }
 
 resource "linode_firewall" "e2e_test_firewall" {
-    depends_on = local.firewall_dependencies
+    depends_on = [data.http.ipv4_addr, data.http.ipv6_addr]
 
     label           = "{{.Label}}"
     outbound_policy = "ACCEPT"
