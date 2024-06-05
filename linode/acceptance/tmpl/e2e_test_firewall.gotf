@@ -9,7 +9,7 @@ data "http" "ipv4_addr" {
 }
 
 locals {
-    depends_on = [data.http.ipv4_addr]
+    depends_on = [ data.http.ipv4_addr ]
     valid_ipv4_pattern = "^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$$"
     valid_ipv6_pattern = "^(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}:(?:[a-fA-F0-9]{1,4}:){1,4}|(?:[a-fA-F0-9]{1,4}:){1,4}:(?:[a-fA-F0-9]{1,4}:){1,4}|(?:[a-fA-F0-9]{1,4}:){1,3}:(?:[a-fA-F0-9]{1,4}:){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}:(?:[a-fA-F0-9]{1,4}:){1,4}|[a-fA-F0-9]{1,4}:(?:[a-fA-F0-9]{1,4}:){1,4}|(?:[a-fA-F0-9]{1,4}:){1,4}:|:(?::[a-fA-F0-9]{1,4}){1,7}|::|(?:[a-fA-F0-9]{1,4}:){1,7}(?::[a-fA-F0-9]{1,4}){1,7}$$"
     valid_ipv4 = can(regex(local.valid_ipv4_pattern, data.http.ipv4_addr.response_body))
@@ -19,7 +19,7 @@ locals {
 }
 
 resource "linode_firewall" "e2e_test_firewall" {
-    depends_on = [local.ipv4_address]
+    depends_on = [ local.ipv4_address ]
 
     label           = "{{.Label}}"
     outbound_policy = "ACCEPT"
