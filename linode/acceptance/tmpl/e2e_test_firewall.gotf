@@ -19,8 +19,6 @@ locals {
 }
 
 resource "linode_firewall" "e2e_test_firewall" {
-    depends_on = [ local.ipv4_address ]
-
     label           = "{{.Label}}"
     outbound_policy = "ACCEPT"
     inbound_policy  = "DROP"
