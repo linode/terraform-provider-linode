@@ -11,21 +11,24 @@ type TemplateData struct {
 	ID       string
 	FilePath string
 	Region   string
+	Label    string
 }
 
-func Basic(t *testing.T, image, region string) string {
+func Basic(t *testing.T, image, region, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"image_basic", TemplateData{
 			Image:  image,
 			Region: region,
+			Label:  label,
 		})
 }
 
-func Updates(t *testing.T, image, region string) string {
+func Updates(t *testing.T, image, region, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"image_updates", TemplateData{
 			Image:  image,
 			Region: region,
+			Label:  label,
 		})
 }
 

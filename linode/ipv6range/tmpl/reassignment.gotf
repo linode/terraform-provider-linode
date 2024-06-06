@@ -1,15 +1,19 @@
 {{ define "ipv6range_reassign_step1" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_instance" "foobar2" {
     label = "{{.Label}}-2"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_ipv6_range" "foobar" {
@@ -22,16 +26,20 @@ resource "linode_ipv6_range" "foobar" {
 
 {{ define "ipv6range_reassign_step2" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_instance" "foobar2" {
     label = "{{.Label}}-2"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_ipv6_range" "foobar" {

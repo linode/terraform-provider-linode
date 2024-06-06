@@ -1,5 +1,7 @@
 {{ define "instance_type_change_disk_explicit" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
@@ -13,6 +15,8 @@ resource "linode_instance" "foobar" {
         label = "disk"
         size = 6000
     }
+
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

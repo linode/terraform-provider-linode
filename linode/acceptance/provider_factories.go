@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 var ProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
@@ -24,5 +25,11 @@ var ProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, erro
 		}
 
 		return muxServer.ProviderServer(), nil
+	},
+}
+
+var HttpExternalProviders = map[string]resource.ExternalProvider{
+	"http": {
+		Source: "hashicorp/http",
 	},
 }

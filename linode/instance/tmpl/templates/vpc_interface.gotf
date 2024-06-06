@@ -1,5 +1,7 @@
 {{ define "instance_vpc_interface" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_vpc" "foobar" {
     label = join("", ["{{.Label}}", "-vpc"])
     region = "{{.Region}}"
@@ -28,6 +30,7 @@ resource "linode_instance" "foobar" {
         }
         ip_ranges = ["10.0.4.100/32"]
     }
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

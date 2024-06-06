@@ -1,5 +1,7 @@
 {{ define "instance_with_config" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
@@ -23,6 +25,7 @@ resource "linode_instance" "foobar" {
     }
 
     boot_config_label = "config"
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

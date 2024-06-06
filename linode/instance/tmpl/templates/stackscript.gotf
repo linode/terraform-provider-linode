@@ -1,5 +1,7 @@
 {{ define "instance_stackscript" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_stackscript" "foo" {
     label = "foo-label"
     description = "Installs a Package"
@@ -23,6 +25,8 @@ resource "linode_instance" "foobar" {
         "hello" = "cool"
     }
     image = "{{.Image}}"
+
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

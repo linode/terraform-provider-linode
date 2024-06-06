@@ -1,5 +1,7 @@
 {{ define "ipv6range_race_condition" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     count = 5
 
@@ -7,6 +9,7 @@ resource "linode_instance" "foobar" {
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     booted = false
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_ipv6_range" "foobar" {

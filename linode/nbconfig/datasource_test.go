@@ -22,6 +22,7 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, nodebalancerName, testRegion),

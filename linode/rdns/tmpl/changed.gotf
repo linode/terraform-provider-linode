@@ -1,11 +1,14 @@
 {{ define "rdns_changed" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
     image = "linode/alpine3.18"
     type = "g6-standard-1"
     region = "{{ .Region }}"
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_rdns" "foobar" {

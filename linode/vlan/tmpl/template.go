@@ -10,31 +10,35 @@ type TemplateData struct {
 	InstLabel string
 	VLANLabel string
 	Region    string
+	Label     string
 }
 
-func DataBasic(t *testing.T, instLabel, region, vlanLabel string) string {
+func DataBasic(t *testing.T, instLabel, region, vlanLabel, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vlan_data_basic", TemplateData{
 			InstLabel: instLabel,
 			VLANLabel: vlanLabel,
 			Region:    region,
+			Label:     label,
 		})
 }
 
-func DataRegex(t *testing.T, instLabel, region, vlanLabel string) string {
+func DataRegex(t *testing.T, instLabel, region, vlanLabel, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vlan_data_regex", TemplateData{
 			InstLabel: instLabel,
 			VLANLabel: vlanLabel,
 			Region:    region,
+			Label:     label,
 		})
 }
 
-func DataCheckDuplicate(t *testing.T, instLabel, region, vlanLabel string) string {
+func DataCheckDuplicate(t *testing.T, instLabel, region, vlanLabel, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vlan_data_check_duplicate", TemplateData{
 			InstLabel: instLabel,
 			VLANLabel: vlanLabel,
 			Region:    region,
+			Label:     label,
 		})
 }
