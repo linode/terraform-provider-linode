@@ -421,11 +421,12 @@ func flattenLKENodePools(pools []linodego.LKEClusterPool) []map[string]interface
 		}
 
 		flattened[i] = map[string]interface{}{
-			"id":         pool.ID,
-			"count":      pool.Count,
-			"type":       pool.Type,
-			"nodes":      nodes,
-			"autoscaler": autoscaler,
+			"id":              pool.ID,
+			"count":           pool.Count,
+			"type":            pool.Type,
+			"disk_encryption": pool.DiskEncryption,
+			"nodes":           nodes,
+			"autoscaler":      autoscaler,
 		}
 	}
 	return flattened

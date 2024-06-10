@@ -14,9 +14,10 @@ import (
 
 func TestParseNodePool(t *testing.T) {
 	lkeNodePool := linodego.LKENodePool{
-		ID:    123,
-		Count: 3,
-		Type:  "g6-standard-2",
+		ID:             123,
+		Count:          3,
+		Type:           "g6-standard-2",
+		DiskEncryption: linodego.InstanceDiskEncryptionEnabled,
 		Disks: []linodego.LKENodePoolDisk{
 			{Size: 50, Type: "ssd"},
 		},
@@ -42,6 +43,7 @@ func TestParseNodePool(t *testing.T) {
 	assert.Equal(t, "123", nodePoolModel.ID.ValueString())
 	assert.Equal(t, int64(3), nodePoolModel.Count.ValueInt64())
 	assert.Equal(t, "g6-standard-2", nodePoolModel.Type.ValueString())
+	assert.Equal(t, "enabled", nodePoolModel.DiskEncryption.ValueString())
 	assert.Len(t, nodePoolModel.Nodes.Elements(), 3)
 
 	tags := make([]string, len(nodePoolModel.Tags.Elements()))

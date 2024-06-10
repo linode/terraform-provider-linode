@@ -14,13 +14,14 @@ import (
 )
 
 type NodePoolModel struct {
-	ID         types.String              `tfsdk:"id"`
-	ClusterID  types.Int64               `tfsdk:"cluster_id"`
-	Count      types.Int64               `tfsdk:"node_count"`
-	Type       types.String              `tfsdk:"type"`
-	Tags       types.Set                 `tfsdk:"tags"`
-	Nodes      types.List                `tfsdk:"nodes"`
-	Autoscaler []NodePoolAutoscalerModel `tfsdk:"autoscaler"`
+	ID             types.String              `tfsdk:"id"`
+	ClusterID      types.Int64               `tfsdk:"cluster_id"`
+	Count          types.Int64               `tfsdk:"node_count"`
+	Type           types.String              `tfsdk:"type"`
+	DiskEncryption types.String              `tfsdk:"disk_encryption"`
+	Tags           types.Set                 `tfsdk:"tags"`
+	Nodes          types.List                `tfsdk:"nodes"`
+	Autoscaler     []NodePoolAutoscalerModel `tfsdk:"autoscaler"`
 }
 
 type NodePoolAutoscalerModel struct {
@@ -76,6 +77,7 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 	pool.ID = helper.KeepOrUpdateString(pool.ID, strconv.Itoa(p.ID), preserveKnown)
 	pool.Count = helper.KeepOrUpdateInt64(pool.Count, int64(p.Count), preserveKnown)
 	pool.Type = helper.KeepOrUpdateString(pool.Type, p.Type, preserveKnown)
+	pool.DiskEncryption = helper.KeepOrUpdateString(pool.DiskEncryption, string(p.DiskEncryption), preserveKnown)
 	pool.Tags = helper.KeepOrUpdateStringSet(pool.Tags, p.Tags, preserveKnown, diags)
 	if diags.HasError() {
 		return

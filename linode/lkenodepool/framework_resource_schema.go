@@ -48,6 +48,10 @@ var resourceSchema = schema.Schema{
 			Description: "The type of node pool.",
 			Required:    true,
 		},
+		"disk_encryption": schema.StringAttribute{
+			Description: "The disk encryption policy for nodes in this pool",
+			Computed:    true,
+		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
