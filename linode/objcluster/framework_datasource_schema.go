@@ -5,11 +5,11 @@ import (
 )
 
 var frameworkDatasourceSchema = schema.Schema{
-	DeprecationMessage: "'linode_object_storage_cluster' data source " +
-		"has been deprecated because it uses a deprecated View Cluster " +
-		"API. In the future, 'region' will be preferred over 'cluster' " +
-		"for the request body of many other Object Storage related API " +
-		"endpoints because there may be multiple clusters per region.",
+	DeprecationMessage: "This data source has been deprecated because it " +
+		"relies on deprecated API endpoints. Going forward, `region` will " +
+		"be the preferred way to designate where Object Storage resources " +
+		"should be created.",
+
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Description: "The unique ID of this Cluster.",
