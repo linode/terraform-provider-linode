@@ -215,7 +215,7 @@ func (fp *FrameworkProvider) InitProvider(
 	diags *diag.Diagnostics,
 	meta *helper.FrameworkProviderMeta,
 ) {
-	if fp.Meta.Client != nil {
+	if fp.Meta != nil && fp.Meta.Client != nil {
 		// Crossplane provider-linode expects to use a single configured instance of the linode client across all invocations
 		// However, due to how upjet operates, the configureProvider() gets invoked on every resource call. To preserve the client,
 		// see if the fp.Meta.Client is already initialized, and if so, re-use it.
