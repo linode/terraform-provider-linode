@@ -90,7 +90,7 @@ This section outlines commonly used provider configuration options.
 
 * `obj_use_temp_keys` - (Optional) If true, temporary object keys will be created implicitly at apply-time for the [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md) resource to use.
 
-* `obj_bucket_force_delete` - (Optional) If true, When deleting a [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) resource all objects, and versions will be purged from the bucket.
+* `obj_bucket_force_delete` - (Optional) If true, all objects and versions will purged from a [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) before it is destroyed.
 
 * `skip_instance_ready_poll` - (Optional) Skip waiting for a linode_instance resource to be running.
 
