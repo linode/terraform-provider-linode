@@ -139,7 +139,6 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.AuthorizedUsers(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
