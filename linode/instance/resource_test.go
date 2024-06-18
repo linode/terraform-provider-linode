@@ -2393,9 +2393,6 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
 		[]string{"Linodes", "Placement Group"},
-		func(v linodego.Region) bool {
-			return v.ID != testRegion
-		},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -2407,7 +2404,7 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.WithPG(t, testLabel, testRegion, "g1", pgIDs),
+				Config: tmpl.WithPG(t, testLabel, targetRegion, "g1", pgIDs),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", testLabel),

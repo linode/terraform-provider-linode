@@ -1,4 +1,4 @@
-//go:build integration || placement_group
+//go:build integration || placementgroup
 
 package placementgroup_test
 
