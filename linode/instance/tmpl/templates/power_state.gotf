@@ -1,5 +1,7 @@
 {{ define "instance_boot_state" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     image = "{{.Image}}"
@@ -13,6 +15,7 @@ resource "linode_instance" "foobar" {
         label = "cool"
         ipam_address = "10.0.0.3/24"
     }
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

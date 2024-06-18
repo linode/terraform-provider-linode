@@ -42,6 +42,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 		PreCheck:                  func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
+		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:       tmpl.Basic(t, nodebalancerName, testRegion),
@@ -88,6 +89,7 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 		PreCheck:                  func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
+		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:       tmpl.SSL(t, nodebalancerName, testRegion, tmpl.TestCertifcate, tmpl.TestPrivateKey),
@@ -120,6 +122,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodebalancerName, testRegion),
@@ -166,6 +169,7 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ProxyProtocol(t, nodebalancerName, testRegion),

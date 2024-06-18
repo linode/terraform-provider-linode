@@ -32,6 +32,7 @@ func TestAccIPv6Range_basic(t *testing.T) {
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
+			ExternalProviders:        acceptance.HttpExternalProviders,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.Basic(t, instLabel, testRegion),
@@ -51,7 +52,7 @@ func TestAccIPv6Range_basic(t *testing.T) {
 					ResourceName:            resName,
 					ImportState:             true,
 					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"linode_id", "route_target"},
+					ImportStateVerifyIgnore: []string{"linode_id", "route_target", "firewall_id"},
 				},
 			},
 		})
@@ -69,6 +70,7 @@ func TestAccIPv6Range_routeTarget(t *testing.T) {
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
+			ExternalProviders:        acceptance.HttpExternalProviders,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.RouteTarget(t, instLabel, testRegion),
@@ -87,7 +89,7 @@ func TestAccIPv6Range_routeTarget(t *testing.T) {
 					ResourceName:            resName,
 					ImportState:             true,
 					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"linode_id", "route_target"},
+					ImportStateVerifyIgnore: []string{"linode_id", "route_target", "firewall_id"},
 				},
 			},
 		})
@@ -127,6 +129,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
+			ExternalProviders:        acceptance.HttpExternalProviders,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.ReassignmentStep1(t, instLabel, testRegion),
@@ -184,6 +187,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
+			ExternalProviders:        acceptance.HttpExternalProviders,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.RaceCondition(t, instLabel, testRegion),

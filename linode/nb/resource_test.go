@@ -72,6 +72,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodebalancerName, testRegion),
@@ -95,7 +96,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated"}, // Ignore strict comparison for these attributes
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
@@ -111,6 +112,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodebalancerName, testRegion),
@@ -134,7 +136,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated"}, // Ignore strict comparison for these attributes
+				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
@@ -150,6 +152,7 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Firewall(t, nodebalancerName, testRegion),

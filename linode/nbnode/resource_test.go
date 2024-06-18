@@ -41,6 +41,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 		PreCheck:                  func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:              checkNodeBalancerNodeDestroy,
+		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -73,6 +74,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerNodeDestroy,
+		ExternalProviders:        acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, nodeName, testRegion, rootPass),

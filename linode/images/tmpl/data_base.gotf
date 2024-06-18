@@ -10,6 +10,7 @@ resource "linode_instance" "foobar" {
         size = 1000
         filesystem = "ext4"
     }
+    booted = false
 }
 resource "linode_image" "foobar" {
     linode_id = "${linode_instance.foobar.id}"
