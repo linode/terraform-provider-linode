@@ -2391,17 +2391,15 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 	pgIDs := []string{"g1"}
 
 	// Resolve a region with support for PGs
-	// TODO: Uncomment once availability issues are resolved
-	//targetRegion, err := acceptance.GetRandomRegionWithCaps(
-	//	[]string{"Linodes", "Placement Group"},
-	//	func(v linodego.Region) bool {
-	//		return v.ID != testRegion
-	//	},
-	//)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	testRegion := "us-east"
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Placement Group"},
+		func(v linodego.Region) bool {
+			return v.ID != testRegion
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2443,15 +2441,12 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 	pgIDs := []string{"g1", "g2"}
 
 	// Resolve a region with support for PGs
-	// TODO: Uncomment once availability issues have been resolved
-	//testRegion, err := acceptance.GetRandomRegionWithCaps(
-	//	[]string{"Linodes", "Placement Group"},
-	//)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-
-	testRegion := "us-east"
+	testRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Placement Group"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

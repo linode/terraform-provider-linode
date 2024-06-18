@@ -26,13 +26,11 @@ func init() {
 		F:    sweep,
 	})
 
-	// TODO: Resolve region by caps before merging project branch
-	//var err error
-	//testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
-	//if err != nil {
-	//	log.Fatal(fmt.Errorf("Error getting region: %s", err))
-	//}
-	testRegion = "us-east"
+	var err error
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
+	if err != nil {
+		log.Fatal(fmt.Errorf("Error getting region: %s", err))
+	}
 }
 
 func TestAccResourcePG_basic(t *testing.T) {

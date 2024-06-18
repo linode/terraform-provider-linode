@@ -4,13 +4,13 @@ package placementgroupassignment_test
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment/tmpl"
@@ -19,13 +19,12 @@ import (
 var testRegion string
 
 func init() {
-	// TODO: Resolve region by caps before merging project branch
-	//region, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	testRegion = "us-east"
+	testRegion = region
 }
 
 func TestAccResourcePlacementGroupAssignment_basic(t *testing.T) {
