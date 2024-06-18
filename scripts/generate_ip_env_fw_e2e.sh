@@ -4,7 +4,7 @@
 PUBLIC_IPV4=$(curl -s https://api.ipify.org)
 
 # Fetch public IPv6 address
-PUBLIC_IPV6=$(curl -s https://ifconfig.co/ip)
+PUBLIC_IPV6=$(curl -s https://api64.ipify.org)
 
 # Create .env file in /tmp directory
 ENV_FILE="/tmp/ip_vars.env"
