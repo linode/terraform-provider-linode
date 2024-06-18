@@ -6,9 +6,11 @@ description: |-
 
 # linode\_placement\_group\_assignment
 
+**NOTE: Placement Groups may not currently be available to all users.**
+
 Manages a single assignment between a Linode and a Placement Group.
 
-**NOTICE:** To prevent update conflicts, Linodes managed through the `linode_instance` resource should specify `placement_group_externally_managed`:
+To prevent update conflicts, Linodes managed through the `linode_instance` resource should specify `placement_group_externally_managed`:
 
 ```terraform
 resource "linode_instance" "my-instance" {

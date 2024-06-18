@@ -6,6 +6,8 @@ description: |-
 
 # linode\_placement\_group
 
+**NOTE: Placement Groups may not currently be available to all users.**
+
 Manages a Linode Placement Group.
 
 ## Example Usage
