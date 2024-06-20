@@ -7,6 +7,7 @@ PUBLIC_IPV4=$(curl -s https://api.ipify.org)
 PUBLIC_IPV6=$(curl -s https://api64.ipify.org)
 
 # Create .env file in /tmp directory
+mkdir -p /tmp/linode/
 ENV_FILE="/tmp/linode/ip_vars.env"
 
 cat << EOF > "$ENV_FILE"
