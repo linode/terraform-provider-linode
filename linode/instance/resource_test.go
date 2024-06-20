@@ -2409,7 +2409,7 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 					acceptance.CheckInstanceExists(resName, &instance),
 					resource.TestCheckResourceAttr(resName, "label", testLabel),
 					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
-					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "region", targetRegion),
 
 					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),

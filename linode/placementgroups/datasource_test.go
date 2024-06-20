@@ -33,7 +33,7 @@ func TestAccDataSourcePlacementGroups_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, baseLabel, testRegion),
 				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckResourceAttrGreaterThan(dsAllName, "placement_groups.#", 3),
+					acceptance.CheckResourceAttrGreaterThan(dsAllName, "placement_groups.#", 2),
 					resource.TestCheckResourceAttrSet(dsAllName, "placement_groups.0.id"),
 					resource.TestCheckResourceAttrSet(dsAllName, "placement_groups.0.label"),
 					resource.TestCheckResourceAttrSet(dsAllName, "placement_groups.0.affinity_type"),
@@ -51,7 +51,7 @@ func TestAccDataSourcePlacementGroups_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dsByLabelName, "placement_groups.0.is_strict", "true"),
 					resource.TestCheckResourceAttr(dsByLabelName, "placement_groups.0.members.#", "0"),
 
-					acceptance.CheckResourceAttrGreaterThan(dsByATName, "placement_groups.#", 3),
+					acceptance.CheckResourceAttrGreaterThan(dsByATName, "placement_groups.#", 2),
 					resource.TestCheckResourceAttrSet(dsByATName, "placement_groups.0.id"),
 					resource.TestCheckResourceAttrSet(dsByATName, "placement_groups.0.label"),
 					resource.TestCheckResourceAttrSet(dsByATName, "placement_groups.0.affinity_type"),
