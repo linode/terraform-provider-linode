@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -515,6 +516,61 @@ func TestAccResourceBucket_tempKeys(t *testing.T) {
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceBucket_forceDelete(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_bucket.foobar"
+	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
+	objectStorageKeyName2 := acctest.RandomWithPrefix("tf-test")
+
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.ForceDelete(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
+					),
+				},
+				{
+					PreConfig: func() {
+						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						createOpts := linodego.ObjectStorageKeyCreateOptions{
+							Label: fmt.Sprintf("temp_%s_%v", objectStorageBucketName, time.Now().Unix()),
+							BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
+								BucketName:  objectStorageBucketName,
+								Cluster:     testCluster,
+								Permissions: "read_write",
+							}},
+						}
+
+						keys, _ := client.CreateObjectStorageKey(context.Background(), createOpts)
+						endpoint := fmt.Sprintf("https://%s.%s.linodeobjects.com", objectStorageBucketName, testCluster)
+						s3client, _ := helper.S3Connection(context.Background(), endpoint, keys.AccessKey, keys.SecretKey)
+						contentBytes := []byte("delete test")
+						body := *s3manager.ReadSeekCloser(bytes.NewReader(contentBytes))
+						putInput := &s3.PutObjectInput{
+							Bucket: &objectStorageBucketName,
+							Key:    &objectStorageKeyName2,
+							Body:   &body,
+						}
+						s3client.PutObject(context.Background(), putInput)
+						client.DeleteObjectStorageKey(context.Background(), keys.ID)
+					},
+					Config: tmpl.ForceDelete_Empty(t),
+					Check:  resource.ComposeTestCheckFunc(checkBucketDestroy),
 				},
 			},
 		})

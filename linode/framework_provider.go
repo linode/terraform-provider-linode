@@ -186,6 +186,11 @@ func (p *FrameworkProvider) Schema(
 				Description: "If true, temporary object keys will be created implicitly at apply-time " +
 					"for the linode_object_storage_object and linode_object_sorage_bucket resource.",
 			},
+			"obj_bucket_force_delete": schema.BoolAttribute{
+				Optional: true,
+				Description: "If true, when deleting a linode_object_storage_bucket any objects " +
+					"and versions will be force deleted.",
+			},
 		},
 	}
 }

@@ -236,10 +236,33 @@ func deleteResource(
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_object_storage_bucket")
 
+	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
 	cluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
+	}
+
+	if config.ObjBucketForceDelete {
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, cluster, "read_write")
+		if diags != nil {
+			return diags
+		}
+
+		if teardownKeysCleanUp != nil {
+			defer teardownKeysCleanUp()
+		}
+
+		s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		tflog.Debug(ctx, "helper.PurgeAllObjects(...)")
+		err = helper.PurgeAllObjects(ctx, label, s3client, true, true)
+		if err != nil {
+			return diag.Errorf("Error purging all objects from ObjectStorageBucket: %s: %s", d.Id(), err)
+		}
 	}
 
 	tflog.Debug(ctx, "client.DeleteObjectStorageBucket(...)")

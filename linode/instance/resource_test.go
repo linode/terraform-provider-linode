@@ -74,7 +74,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -111,7 +111,7 @@ func TestAccResourceInstance_watchdogDisabled(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WatchdogDisabled(t, instanceName, testRegion, rootPass),
@@ -173,7 +173,6 @@ func TestAccResourceInstance_validateAuthorizedKeys(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 
 		Steps: []resource.TestStep{
 			{
@@ -201,7 +200,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Interfaces(t, instanceName, testRegion),
@@ -257,7 +256,6 @@ func TestAccResourceInstance_config(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 
 		Steps: []resource.TestStep{
 			{
@@ -302,7 +300,6 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 
 		Steps: []resource.TestStep{
 			{
@@ -342,7 +339,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ConfigInterfaces(t, instanceName, testRegion, rootPass),
@@ -412,7 +409,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ConfigInterfaces(t, instanceName, testRegion, rootPass),
@@ -486,7 +483,6 @@ func TestAccResourceInstance_disk(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 
 		Steps: []resource.TestStep{
 			{
@@ -529,7 +525,6 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 
 		Steps: []resource.TestStep{
 			{
@@ -570,7 +565,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskMultiple(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -611,7 +606,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskConfig(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -707,7 +702,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VolumeConfig(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -750,7 +745,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PrivateImage(t, instanceName, testRegion),
@@ -789,7 +784,7 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NoImage(t, instanceName, testRegion),
@@ -823,7 +818,7 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -857,7 +852,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckInstanceDestroy,
-			ExternalProviders:        acceptance.HttpExternalProviders,
+
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.WithConfig(t, instanceName, testRegion),
@@ -905,7 +900,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithConfig(t, instanceName, testRegion),
@@ -1000,7 +995,7 @@ func TestAccResourceInstance_upsizeWithoutDisk(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithType(t, instanceName, acceptance.PublicKeyMaterial, "g6-nanode-1", testRegion, rootPass),
@@ -1038,7 +1033,7 @@ func TestAccResourceInstance_diskRawResize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1084,7 +1079,7 @@ func TestAccResourceInstance_tag(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Start off with a single tag
 			{
@@ -1137,7 +1132,7 @@ func TestAccResourceInstance_tagWithVolume(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.TagVolume(t, label, "tf_test", testRegion),
@@ -1173,7 +1168,7 @@ func TestAccResourceInstance_diskResize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1216,7 +1211,7 @@ func TestAccResourceInstance_withDiskLinodeUpsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Start with g6-nanode-1
 			{
@@ -1259,7 +1254,7 @@ func TestAccResourceInstance_withDiskLinodeDownsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Start with g6-standard-1 with fully allocated disk
 			{
@@ -1303,7 +1298,6 @@ func TestAccResourceInstance_downsizeWithoutDisk(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 
 		Steps: []resource.TestStep{
 			{
@@ -1338,7 +1332,6 @@ func TestAccResourceInstance_fullDiskSwapUpsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
 
 		Steps: []resource.TestStep{
 			{
@@ -1403,7 +1396,7 @@ func TestAccResourceInstance_swapUpsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithSwapSize(t, instanceName, acceptance.PublicKeyMaterial, testRegion, 256, rootPass),
@@ -1442,7 +1435,7 @@ func TestAccResourceInstance_swapDownsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithSwapSize(t, instanceName, acceptance.PublicKeyMaterial, testRegion, 512, rootPass),
@@ -1479,7 +1472,7 @@ func TestAccResourceInstance_diskResizeAndExpanded(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1528,7 +1521,7 @@ func TestAccResourceInstance_diskSlotReorder(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1585,7 +1578,7 @@ func TestAccResourceInstance_privateNetworking(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PrivateNetworking(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -1610,7 +1603,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.StackScript(t, instanceName, testRegion),
@@ -1645,7 +1638,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImagePrevious, testRegion),
@@ -1686,7 +1679,7 @@ func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskStackScript(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -1713,7 +1706,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Create an initial instance
 			{
@@ -1753,7 +1746,7 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
@@ -1793,7 +1786,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
@@ -1837,7 +1830,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootState(t, instanceName, testRegion, false),
@@ -1912,7 +1905,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootStateConfig(t, instanceName, testRegion, false, rootPass),
@@ -1954,7 +1947,7 @@ func TestAccResourceInstance_powerStateConfigBooted(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootStateConfig(t, instanceName, testRegion, true, rootPass),
@@ -1979,7 +1972,7 @@ func TestAccResourceInstance_powerStateBooted(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootState(t, instanceName, testRegion, true),
@@ -2002,7 +1995,7 @@ func TestAccResourceInstance_powerStateNoImage(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.BootStateNoImage(t, instanceName, testRegion, true),
@@ -2028,7 +2021,7 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.IPv4SharingBadInput(t, instanceName, region),
@@ -2079,7 +2072,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.UserData(t, instanceName, region, rootPass),
@@ -2219,7 +2212,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VPCInterface(t, instanceName, testRegion),
@@ -2257,7 +2250,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PublicInterface(t, instanceName, testRegion),
@@ -2347,7 +2340,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
