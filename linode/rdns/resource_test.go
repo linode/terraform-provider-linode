@@ -67,7 +67,7 @@ func TestAccResourceRDNS_basic(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkRDNSDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, linodeLabel, testRegion, false),
@@ -96,7 +96,7 @@ func TestAccResourceRDNS_update(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkRDNSDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, false),
@@ -137,7 +137,7 @@ func TestAccResourceRDNS_waitForAvailable(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkRDNSDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, true),
@@ -180,7 +180,7 @@ func TestAccResourceRDNS_waitForAvailableWithTimeout(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkRDNSDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithTimeout(t, linodeLabel, testRegion, createTimeout, updateTimeout),
