@@ -6,6 +6,8 @@ description: |-
 
 # Data Source: linode\_placement\_groups
 
+**NOTE: Placement Groups may not currently be available to all users.**
+
 Provides information about a list of Linode Placement Groups that match a set of filters.
 
 ## Example Usage

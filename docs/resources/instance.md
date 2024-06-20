@@ -124,6 +124,8 @@ resource "linode_instance_config" "boot_config" {
 
 ### Linode Instance Assigned to a Placement Group
 
+**NOTE: Placement Groups may not currently be available to all users.**
+
 The following example shows how one might use this resource to configure a Linode instance assigned to a
 Placement Group.
 
@@ -375,7 +377,7 @@ This Linode Instance resource exports the following attributes:
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
 
-* `placement_group` - Information about the Placement Group this Linode is assigned to.
+* `placement_group` - Information about the Placement Group this Linode is assigned to. NOTE: Placement Groups may not currently be available to all users.
 
   * `id` - The ID of the Placement Group.
 

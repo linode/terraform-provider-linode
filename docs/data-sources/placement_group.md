@@ -6,6 +6,8 @@ description: |-
 
 # Data Source: linode\_placement\_group
 
+**NOTE: Placement Groups may not currently be available to all users.**
+
 `linode_placement_group` provides details about a Linode placement group.
 
 ## Example Usage
