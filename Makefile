@@ -9,7 +9,7 @@ TEST_TAGS="integration"
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.28.1
 
-IP_ENV_FILE := /tmp/ip_vars.env
+IP_ENV_FILE := /tmp/linode/ip_vars.env
 
 .PHONY: default
 default: build
