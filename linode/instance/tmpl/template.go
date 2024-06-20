@@ -22,6 +22,9 @@ type TemplateData struct {
 
 	Booted     bool
 	ResizeDisk bool
+
+	PlacementGroups []string
+	AssignedGroup   string
 }
 
 func Basic(t *testing.T, label, pubKey, region string, rootPass string) string {
@@ -687,5 +690,15 @@ func PublicInterface(t *testing.T, label, region string) string {
 			Label:  label,
 			Region: region,
 			Image:  acceptance.TestImageLatest,
+		})
+}
+
+func WithPG(t *testing.T, label, region, assignedGroup string, groups []string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_with_pg", TemplateData{
+			Label:           label,
+			Region:          region,
+			PlacementGroups: groups,
+			AssignedGroup:   assignedGroup,
 		})
 }

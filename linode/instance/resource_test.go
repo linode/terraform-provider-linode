@@ -2373,6 +2373,144 @@ func TestAccResourceInstance_migration(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_withPG(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	testLabel := acctest.RandomWithPrefix("tf_test")
+
+	pgIDs := []string{"g1"}
+
+	// Resolve a region with support for PGs
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Placement Group"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithPG(t, testLabel, targetRegion, "g1", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g1"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_pgAssignment(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	testLabel := acctest.RandomWithPrefix("tf_test")
+
+	pgIDs := []string{"g1", "g2"}
+
+	// Resolve a region with support for PGs
+	testRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Placement Group"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Create the instance with a PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "0"),
+				),
+			},
+
+			// Assign the instance to a PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "g1", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g1"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+				),
+			},
+
+			// Reassign the instance to another PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "g2", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g2"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+				),
+			},
+
+			// Unassign the instance from the PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "0"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type"},
+			},
+		},
+	})
+}
+
 func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
