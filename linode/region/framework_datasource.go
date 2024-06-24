@@ -14,7 +14,7 @@ func NewDataSource() datasource.DataSource {
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
 				Name:   "linode_region",
-				Schema: &frameworkDataSourceSchema,
+				Schema: &DataSourceSchema,
 			},
 		),
 	}
@@ -57,7 +57,7 @@ func (r *DataSource) Read(
 		return
 	}
 
-	data.parseRegion(region)
+	data.ParseRegion(region)
 	if resp.Diagnostics.HasError() {
 		return
 	}

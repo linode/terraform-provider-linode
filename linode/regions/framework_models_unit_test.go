@@ -23,6 +23,10 @@ func TestParseRegions(t *testing.T) {
 				IPv4: "192.0.2.0,192.0.2.1",
 				IPv6: "2001:0db8::,2001:0db8::1",
 			},
+			PlacementGroupLimits: &linodego.RegionPlacementGroupLimits{
+				MaximumLinodesPerPG:   6,
+				MaximumPGsPerCustomer: 11,
+			},
 		},
 		{
 			ID:           "ap-west",
@@ -34,6 +38,10 @@ func TestParseRegions(t *testing.T) {
 			Resolvers: linodego.RegionResolvers{
 				IPv4: "192.0.2.4,192.0.2.3",
 				IPv6: "2001:0db8::,2001:0db8::3",
+			},
+			PlacementGroupLimits: &linodego.RegionPlacementGroupLimits{
+				MaximumLinodesPerPG:   5,
+				MaximumPGsPerCustomer: 10,
 			},
 		},
 	}
@@ -54,7 +62,20 @@ func TestParseRegions(t *testing.T) {
 		for j, capability := range regions[i].Capabilities {
 			assert.Equal(t, types.StringValue(capability), model.Regions[i].Capabilities[j])
 		}
+
 		assert.Equal(t, types.StringValue(expectedRegion.Resolvers.IPv4), model.Regions[i].Resolvers[0].IPv4)
 		assert.Equal(t, types.StringValue(expectedRegion.Resolvers.IPv6), model.Regions[i].Resolvers[0].IPv6)
+
+		assert.Equal(
+			t,
+			types.Int64Value(int64(expectedRegion.PlacementGroupLimits.MaximumPGsPerCustomer)),
+			model.Regions[i].PlacementGroupLimits[0].MaximumPGsPerCustomer,
+		)
+
+		assert.Equal(
+			t,
+			types.Int64Value(int64(expectedRegion.PlacementGroupLimits.MaximumLinodesPerPG)),
+			model.Regions[i].PlacementGroupLimits[0].MaximumLinodesPerPG,
+		)
 	}
 }

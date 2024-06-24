@@ -1,0 +1,26 @@
+{{ define "instance_with_pg" }}
+
+{{ range $group_id := .PlacementGroups }}
+
+resource "linode_placement_group" "{{ $group_id }}" {
+    label = "{{ $.Label }}-{{ $group_id }}"
+    region = "{{ $.Region }}"
+    affinity_type = "anti_affinity:local"
+    is_strict = false
+}
+
+{{ end }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+
+    {{ if ne .AssignedGroup "" }}
+    placement_group {
+        id = linode_placement_group.{{ .AssignedGroup }}.id
+    }
+    {{ end }}
+}
+
+{{ end }}

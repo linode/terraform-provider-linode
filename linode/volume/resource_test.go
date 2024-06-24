@@ -167,7 +167,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, volumeName, testRegion),
@@ -206,7 +206,7 @@ func TestAccResourceVolume_detached(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Attached(t, volumeName, testRegion),
@@ -240,7 +240,7 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Attached(t, volumeName, testRegion),
@@ -289,7 +289,7 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ClonedStep1(t, volumeName, testRegion, acceptance.PublicKeyMaterial),

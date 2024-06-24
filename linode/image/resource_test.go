@@ -85,8 +85,8 @@ func TestAccImage_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		ExternalProviders:        acceptance.HttpExternalProviders,
-		CheckDestroy:             checkImageDestroy,
+
+		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, imageName, testRegion, label),
@@ -124,7 +124,7 @@ func TestAccImage_update(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkImageDestroy,
-		ExternalProviders:        acceptance.HttpExternalProviders,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, imageName, testRegion, label),
