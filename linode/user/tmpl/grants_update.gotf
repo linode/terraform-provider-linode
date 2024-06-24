@@ -6,6 +6,7 @@ resource "linode_instance" "foobar" {
     group = "tf_test"
     type = "g6-nanode-1"
     region = "us-east"
+    booted = false
 }
 
 resource "linode_user" "test" {

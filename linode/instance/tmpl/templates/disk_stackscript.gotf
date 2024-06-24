@@ -1,5 +1,7 @@
 {{ define "instance_disk_stackscript" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_stackscript" "foo-script" {
     label = "foo-label"
     description = "Installs a Package"
@@ -41,6 +43,7 @@ resource "linode_instance" "foobar" {
         }
     }
 
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 {{ end }}

@@ -22,6 +22,7 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             checkNodeBalancerNodeDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, nodebalancerName, testRegion, rootPass),

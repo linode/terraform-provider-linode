@@ -206,6 +206,9 @@ func (fp *FrameworkProvider) HandleDefaults(
 	if lpm.ObjUseTempKeys.IsNull() {
 		lpm.ObjUseTempKeys = types.BoolValue(false)
 	}
+	if lpm.ObjBucketForceDelete.IsNull() {
+		lpm.ObjBucketForceDelete = types.BoolValue(false)
+	}
 }
 
 func (fp *FrameworkProvider) InitProvider(
@@ -215,6 +218,17 @@ func (fp *FrameworkProvider) InitProvider(
 	diags *diag.Diagnostics,
 	meta *helper.FrameworkProviderMeta,
 ) {
+	if fp.Meta != nil && fp.Meta.Client != nil {
+		// Crossplane provider-linode expects to use a single configured instance of the linode client across all invocations
+		// However, due to how upjet operates, the configureProvider() gets invoked on every resource call. To preserve the client,
+		// see if the fp.Meta.Client is already initialized, and if so, re-use it.
+
+		tflog.Info(ctx, "Linode client was already configured, re-using..")
+		meta.Client = fp.Meta.Client
+		meta.Config = fp.Meta.Config
+		return
+	}
+
 	loggingTransport := helper.NewAPILoggerTransport(
 		logging.NewSubsystemLoggingHTTPTransport(
 			helper.APILoggerSubsystem,
@@ -246,7 +260,6 @@ func (fp *FrameworkProvider) InitProvider(
 	// LKENodeReadyPollMilliseconds := lpm.LKEEventPollMilliseconds.ValueInt64()
 
 	client := linodego.NewClient(oauth2Client)
-
 	// Load the config file if it exists
 	if _, err := os.Stat(configPath); err == nil {
 		tflog.Info(ctx, "Using Linode profile", map[string]any{

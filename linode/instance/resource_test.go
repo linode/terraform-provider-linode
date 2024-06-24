@@ -74,6 +74,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -93,7 +94,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -110,6 +111,7 @@ func TestAccResourceInstance_watchdogDisabled(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WatchdogDisabled(t, instanceName, testRegion, rootPass),
@@ -155,7 +157,7 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_users", "image", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -171,6 +173,7 @@ func TestAccResourceInstance_validateAuthorizedKeys(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.AuthorizedKeysEmpty(t, instanceName, testRegion),
@@ -197,6 +200,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Interfaces(t, instanceName, testRegion),
@@ -235,7 +239,7 @@ func TestAccResourceInstance_interfaces(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -252,6 +256,7 @@ func TestAccResourceInstance_config(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithConfig(t, instanceName, testRegion),
@@ -278,7 +283,7 @@ func TestAccResourceInstance_config(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -295,6 +300,7 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.MultipleConfigs(t, instanceName, testRegion),
@@ -315,7 +321,7 @@ func TestAccResourceInstance_configPair(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -333,6 +339,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ConfigInterfaces(t, instanceName, testRegion, rootPass),
@@ -384,7 +391,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -402,6 +409,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ConfigInterfaces(t, instanceName, testRegion, rootPass),
@@ -437,7 +445,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "boot_config_label", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "boot_config_label", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -499,7 +507,7 @@ func TestAccResourceInstance_disk(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -538,7 +546,7 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -557,6 +565,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskMultiple(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -579,7 +588,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id", "available"},
 			},
 		},
 	})
@@ -597,6 +606,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskConfig(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -619,7 +629,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -643,6 +653,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 			acceptance.CheckInstanceDestroy,
 			acceptance.CheckVolumeDestroy,
 		),
+		ExternalProviders: acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskConfigMultiple(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -669,7 +680,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -691,6 +702,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VolumeConfig(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -716,7 +728,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -733,6 +745,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PrivateImage(t, instanceName, testRegion),
@@ -754,7 +767,7 @@ func TestAccResourceInstance_privateImage(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -771,6 +784,7 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NoImage(t, instanceName, testRegion),
@@ -787,7 +801,7 @@ func TestAccResourceInstance_noImage(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -804,6 +818,7 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -837,6 +852,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.WithConfig(t, instanceName, testRegion),
@@ -884,6 +900,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithConfig(t, instanceName, testRegion),
@@ -924,7 +941,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label", "status", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "status", "resize_disk", "migration_type", "firewall_id"},
 			},
 			{
 				Config: tmpl.WithConfig(t, instanceName, testRegion),
@@ -944,7 +961,7 @@ func TestAccResourceInstance_configPairUpdate(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"boot_config_label", "status", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"boot_config_label", "status", "resize_disk", "migration_type", "firewall_id"},
 			},
 			{
 				Config: tmpl.ConfigsAllUpdated(t, instanceName, testRegion),
@@ -978,6 +995,7 @@ func TestAccResourceInstance_upsizeWithoutDisk(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithType(t, instanceName, acceptance.PublicKeyMaterial, "g6-nanode-1", testRegion, rootPass),
@@ -1015,6 +1033,7 @@ func TestAccResourceInstance_diskRawResize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1060,6 +1079,7 @@ func TestAccResourceInstance_tag(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Start off with a single tag
 			{
@@ -1112,6 +1132,7 @@ func TestAccResourceInstance_tagWithVolume(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.TagVolume(t, label, "tf_test", testRegion),
@@ -1147,6 +1168,7 @@ func TestAccResourceInstance_diskResize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1189,6 +1211,7 @@ func TestAccResourceInstance_withDiskLinodeUpsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Start with g6-nanode-1
 			{
@@ -1231,6 +1254,7 @@ func TestAccResourceInstance_withDiskLinodeDownsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Start with g6-standard-1 with fully allocated disk
 			{
@@ -1372,6 +1396,7 @@ func TestAccResourceInstance_swapUpsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithSwapSize(t, instanceName, acceptance.PublicKeyMaterial, testRegion, 256, rootPass),
@@ -1410,6 +1435,7 @@ func TestAccResourceInstance_swapDownsize(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.WithSwapSize(t, instanceName, acceptance.PublicKeyMaterial, testRegion, 512, rootPass),
@@ -1446,6 +1472,7 @@ func TestAccResourceInstance_diskResizeAndExpanded(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1494,6 +1521,7 @@ func TestAccResourceInstance_diskSlotReorder(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Start off with a Linode 1024
 			{
@@ -1550,6 +1578,7 @@ func TestAccResourceInstance_privateNetworking(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PrivateNetworking(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -1574,6 +1603,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.StackScript(t, instanceName, testRegion),
@@ -1591,7 +1621,7 @@ func TestAccResourceInstance_stackScriptInstance(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       false,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -1608,6 +1638,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskBootImage(t, instanceName, acceptance.TestImagePrevious, testRegion),
@@ -1630,7 +1661,7 @@ func TestAccResourceInstance_diskImageUpdate(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       false,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -1648,6 +1679,7 @@ func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DiskStackScript(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -1674,6 +1706,7 @@ func TestAccResourceInstance_typeChangeDiskImplicit(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Create an initial instance
 			{
@@ -1713,6 +1746,7 @@ func TestAccResourceInstance_typeChangeDiskExplicit(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
@@ -1752,6 +1786,7 @@ func TestAccResourceInstance_typeChangeNoDisks(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			// Create an instance with explicit disks
 			{
@@ -1795,6 +1830,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootState(t, instanceName, testRegion, false),
@@ -1869,6 +1905,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootStateConfig(t, instanceName, testRegion, false, rootPass),
@@ -1910,6 +1947,7 @@ func TestAccResourceInstance_powerStateConfigBooted(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootStateConfig(t, instanceName, testRegion, true, rootPass),
@@ -1934,6 +1972,7 @@ func TestAccResourceInstance_powerStateBooted(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.BootState(t, instanceName, testRegion, true),
@@ -1956,6 +1995,7 @@ func TestAccResourceInstance_powerStateNoImage(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.BootStateNoImage(t, instanceName, testRegion, true),
@@ -1981,6 +2021,7 @@ func TestAccResourceInstance_ipv4Sharing(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config:      tmpl.IPv4SharingBadInput(t, instanceName, region),
@@ -2031,6 +2072,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.UserData(t, instanceName, region, rootPass),
@@ -2048,7 +2090,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -2088,8 +2130,9 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 		})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acceptance.PreCheck(t) },
-		Providers: providerMap,
+		PreCheck:          func() { acceptance.PreCheck(t) },
+		Providers:         providerMap,
+		ExternalProviders: acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
 			{
 				// Provision a bunch of Linodes and wait for them to boot into an image
@@ -2169,6 +2212,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.VPCInterface(t, instanceName, testRegion),
@@ -2189,7 +2233,7 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -2206,6 +2250,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.PublicInterface(t, instanceName, testRegion),
@@ -2234,7 +2279,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
 			},
 			{
 				Config: tmpl.VPCAndPublicInterfaces(t, instanceName, testRegion),
@@ -2263,7 +2308,7 @@ func TestAccResourceInstance_VPCPublicInterfacesAddRemoveSwap(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -2295,6 +2340,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
@@ -2317,6 +2363,144 @@ func TestAccResourceInstance_migration(t *testing.T) {
 				),
 			},
 			// TODO: Add logic for testing warm migrations once possible
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type", "firewall_id"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_withPG(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	testLabel := acctest.RandomWithPrefix("tf_test")
+
+	pgIDs := []string{"g1"}
+
+	// Resolve a region with support for PGs
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Placement Group"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithPG(t, testLabel, targetRegion, "g1", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", targetRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g1"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "metadata", "migration_type"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_pgAssignment(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	testLabel := acctest.RandomWithPrefix("tf_test")
+
+	pgIDs := []string{"g1", "g2"}
+
+	// Resolve a region with support for PGs
+	testRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Placement Group"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Create the instance with a PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "0"),
+				),
+			},
+
+			// Assign the instance to a PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "g1", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g1"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+				),
+			},
+
+			// Reassign the instance to another PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "g2", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g2"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+				),
+			},
+
+			// Unassign the instance from the PG
+			{
+				Config: tmpl.WithPG(t, testLabel, testRegion, "", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", testLabel),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+
+					resource.TestCheckResourceAttr(resName, "placement_group.#", "0"),
+				),
+			},
 			{
 				ResourceName:            resName,
 				ImportState:             true,

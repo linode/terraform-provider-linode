@@ -9,11 +9,12 @@ import (
 type TemplateData struct {
 	Image  string
 	Region string
+	Label  string
 }
 
-func DataBasic(t *testing.T, image, region string) string {
+func DataBasic(t *testing.T, image, region, label string) string {
 	return acceptance.ExecuteTemplate(t,
-		"images_data_basic", TemplateData{Image: image, Region: region})
+		"images_data_basic", TemplateData{Image: image, Region: region, Label: label})
 }
 
 func DataLatest(t *testing.T, image, region string) string {

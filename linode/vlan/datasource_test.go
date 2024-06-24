@@ -43,17 +43,19 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
+	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, instanceName, testRegion, vlanName),
+				Config: tmpl.DataBasic(t, instanceName, testRegion, vlanName, label),
 			},
 			{
 				PreConfig: preConfigVLANPoll(t, vlanName),
-				Config:    tmpl.DataBasic(t, instanceName, testRegion, vlanName),
+				Config:    tmpl.DataBasic(t, instanceName, testRegion, vlanName, label),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.region", testRegion),
@@ -71,17 +73,19 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	vlanName := "tf-test"
 	resourceName := "data.linode_vlans.foolan"
+	label := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataRegex(t, instanceName, testRegion, vlanName),
+				Config: tmpl.DataRegex(t, instanceName, testRegion, vlanName, label),
 			},
 			{
 				PreConfig: preConfigVLANPoll(t, vlanName),
-				Config:    tmpl.DataRegex(t, instanceName, testRegion, vlanName),
+				Config:    tmpl.DataRegex(t, instanceName, testRegion, vlanName, label),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vlans.#", 0),
 					resource.TestCheckResourceAttr(resourceName, "vlans.0.label", vlanName),
