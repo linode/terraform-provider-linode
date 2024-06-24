@@ -47,6 +47,9 @@ var resourceSchema = schema.Schema{
 		"type": schema.StringAttribute{
 			Description: "The type of node pool.",
 			Required:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,
