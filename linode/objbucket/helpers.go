@@ -13,3 +13,12 @@ func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.
 		"cluster": d.Get("cluster"),
 	})
 }
+
+func getRegionOrCluster(d *schema.ResourceData) (regionOrCluster string) {
+	if region, ok := d.GetOk("region"); ok {
+		regionOrCluster = region.(string)
+	} else {
+		regionOrCluster = d.Get("cluster").(string)
+	}
+	return
+}

@@ -556,9 +556,16 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 							}},
 						}
 
-						keys, _ := client.CreateObjectStorageKey(context.Background(), createOpts)
+						keys, err := client.CreateObjectStorageKey(context.Background(), createOpts)
+						if err != nil {
+							t.Errorf("error creating obj keys in PreConfig func: %v", err)
+						}
+						defer client.DeleteObjectStorageKey(context.Background(), keys.ID)
 						endpoint := fmt.Sprintf("https://%s.%s.linodeobjects.com", objectStorageBucketName, testCluster)
-						s3client, _ := helper.S3Connection(context.Background(), endpoint, keys.AccessKey, keys.SecretKey)
+						s3client, err := helper.S3Connection(context.Background(), endpoint, keys.AccessKey, keys.SecretKey)
+						if err != nil {
+							t.Errorf("error connecting s3 in PreConfig func: %v", err)
+						}
 						contentBytes := []byte("delete test")
 						body := *s3manager.ReadSeekCloser(bytes.NewReader(contentBytes))
 						putInput := &s3.PutObjectInput{
@@ -567,7 +574,6 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 							Body:   &body,
 						}
 						s3client.PutObject(context.Background(), putInput)
-						client.DeleteObjectStorageKey(context.Background(), keys.ID)
 					},
 					Config: tmpl.ForceDelete_Empty(t),
 					Check:  resource.ComposeTestCheckFunc(checkBucketDestroy),
