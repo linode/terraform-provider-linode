@@ -80,7 +80,7 @@ generate-ip-env-fw-e2e: $(IP_ENV_FILE)
 
 $(IP_ENV_FILE):
 	# Generate env file for E2E cloud firewall
-	. ./scripts/generate_ip_env_fw_e2e.sh
+	. ./e2e_scripts/cloud_security_scripts/cloud_e2e_firewall/terraform-provider-linode/generate_ip_env_fw_e2e.sh || touch $(IP_ENV_FILE)
 
 .PHONY: smoke-test
 smoke-test: fmt-check
