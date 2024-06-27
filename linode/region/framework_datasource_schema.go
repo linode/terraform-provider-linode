@@ -1,11 +1,19 @@
 package region
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var frameworkDataSourceSchema = schema.Schema{
+var ObjectTypePGLimits = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"maximum_pgs_per_customer": types.Int64Type,
+		"maximum_linodes_per_pg":   types.Int64Type,
+	},
+}
+
+var DataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"country": schema.StringAttribute{
 			Description: "The country where this Region resides.",
@@ -31,6 +39,11 @@ var frameworkDataSourceSchema = schema.Schema{
 		"status": schema.StringAttribute{
 			Description: "This region’s current operational status.",
 			Computed:    true,
+		},
+		"placement_group_limits": schema.ListAttribute{
+			Description: "Information about placement groups limits for this region.",
+			Computed:    true,
+			ElementType: ObjectTypePGLimits,
 		},
 	},
 	Blocks: map[string]schema.Block{

@@ -21,12 +21,16 @@ func TestParseRegion(t *testing.T) {
 			IPv4: "192.0.2.0,192.0.2.1",
 			IPv6: "2001:0db8::,2001:0db8::1",
 		},
+		PlacementGroupLimits: &linodego.RegionPlacementGroupLimits{
+			MaximumLinodesPerPG:   5,
+			MaximumPGsPerCustomer: 10,
+		},
 		Label: "Newark, NJ, USA",
 	}
 
 	model := &RegionModel{}
 
-	model.parseRegion(region)
+	model.ParseRegion(region)
 
 	assert.Equal(t, types.StringValue("us-east"), model.ID)
 	assert.Equal(t, types.StringValue("Newark, NJ, USA"), model.Label)
@@ -40,4 +44,7 @@ func TestParseRegion(t *testing.T) {
 
 	assert.Equal(t, types.StringValue("192.0.2.0,192.0.2.1"), model.Resolvers[0].IPv4)
 	assert.Equal(t, types.StringValue("2001:0db8::,2001:0db8::1"), model.Resolvers[0].IPv6)
+
+	assert.Equal(t, types.Int64Value(5), model.PlacementGroupLimits[0].MaximumLinodesPerPG)
+	assert.Equal(t, types.Int64Value(10), model.PlacementGroupLimits[0].MaximumPGsPerCustomer)
 }

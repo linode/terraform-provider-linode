@@ -10,6 +10,8 @@ Provides information about a Linode Child Account.
 
 Due to the sensitive nature of the data exposed by this data source, it should not be used in conjunction with the `LINODE_DEBUG` option.  See the [debugging notes](/providers/linode/linode/latest/docs#debugging) for more details.
 
+**NOTE: Parent/Child related features may not be generally available.**
+
 ## Example Usage
 
 The following example shows how one might use this data source to access child account details.

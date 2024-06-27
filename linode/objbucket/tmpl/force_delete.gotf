@@ -1,0 +1,31 @@
+{{ define "object_bucket_force_delete" }}
+
+provider "linode" {
+    obj_use_temp_keys = true
+    obj_bucket_force_delete = true
+}
+
+resource "linode_object_storage_bucket" "foobar" {
+    cluster = "{{ .Cluster }}"
+    label = "{{ .Label }}"
+
+    lifecycle_rule {
+        prefix = "tf"
+        enabled = true
+
+        abort_incomplete_multipart_upload_days = 5
+
+        expiration {
+            date = "2024-06-21"
+        }
+    }
+}
+
+resource "linode_object_storage_object" "test" {
+    bucket     = linode_object_storage_bucket.foobar.label
+    cluster    = "{{ .Cluster }}"
+    key        = "{{ .Key }}"
+    content = "cool"
+}
+
+{{ end }}

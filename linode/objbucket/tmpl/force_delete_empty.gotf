@@ -1,0 +1,8 @@
+{{ define "object_bucket_force_delete_empty" }}
+
+provider "linode" {
+    obj_use_temp_keys = true
+    obj_bucket_force_delete = true
+}
+
+{{ end }}

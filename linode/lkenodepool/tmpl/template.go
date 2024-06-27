@@ -12,6 +12,7 @@ type TemplateData struct {
 	Region            string
 	K8sVersion        string
 	PoolTag           string
+	PoolNodeType      string
 	NodeCount         int
 	AutoscalerEnabled bool
 	AutoscalerMin     int

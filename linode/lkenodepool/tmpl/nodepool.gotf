@@ -30,7 +30,7 @@ resource "linode_lke_node_pool" "foobar" {
 {{else}}
     node_count = {{.NodeCount}}
 {{end}}
-    type  = "g6-standard-1"
+    type  = "{{.PoolNodeType}}"
     tags  = ["external", "{{.PoolTag}}"]
 }
 

@@ -206,6 +206,9 @@ func (fp *FrameworkProvider) HandleDefaults(
 	if lpm.ObjUseTempKeys.IsNull() {
 		lpm.ObjUseTempKeys = types.BoolValue(false)
 	}
+	if lpm.ObjBucketForceDelete.IsNull() {
+		lpm.ObjBucketForceDelete = types.BoolValue(false)
+	}
 }
 
 func (fp *FrameworkProvider) InitProvider(

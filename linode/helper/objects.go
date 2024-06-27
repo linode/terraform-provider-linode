@@ -159,6 +159,10 @@ func DeleteAllObjects(
 		}
 	}
 
+	if len(objectsToDelete) == 0 {
+		return nil
+	}
+
 	tflog.Debug(ctx, fmt.Sprintf("Deleting all keys in the list: %v", objectsToDelete))
 	_, err := s3client.DeleteObjects(context.Background(), &s3.DeleteObjectsInput{
 		Bucket:                    aws.String(bucketName),
@@ -211,6 +215,10 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 				},
 			)
 		}
+	}
+
+	if len(objectsToDelete) == 0 {
+		return nil
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Delete all versions and delete markers in the list: %v", objectsToDelete))

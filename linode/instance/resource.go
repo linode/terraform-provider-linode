@@ -126,6 +126,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("specs", flatSpecs)
 	d.Set("alerts", flatAlerts)
 
+	d.Set("placement_group", flattenInstancePlacementGroup(d, instance.PlacementGroup))
+
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 	d.Set("disk", disks)
 	d.Set("swap_size", swapSize)
@@ -201,6 +203,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		createOpts.Metadata = &metadata
 	}
+
+	createOpts.PlacementGroup = getPlacementGroupCreateOptions(ctx, d)
 
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
@@ -561,6 +565,26 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		updateOpts.Alerts.NetworkOut = d.Get("alerts.0.network_out").(int)
 		updateOpts.Alerts.TransferQuota = d.Get("alerts.0.transfer_quota").(int)
 		simpleUpdate = true
+	}
+
+	if d.HasChange("placement_group.0.id") {
+		oldPGID, newPGID := d.GetChange("placement_group.0.id")
+
+		tflog.Debug(ctx, "Attempting Placement Group reassignment", map[string]any{
+			"old_pg_id": oldPGID,
+			"new_pg_id": newPGID,
+		})
+
+		if err := reassignPlacementGroup(
+			ctx,
+			client,
+			instance.ID,
+			oldPGID.(int),
+			newPGID.(int),
+			helper.SDKv2UnwrapOptionalConfigAttr[bool](ctx, d, "placement_group.0.compliant_only"),
+		); err != nil {
+			return diag.Errorf("failed to update Linode Placement Group: %s", err)
+		}
 	}
 
 	// apply staged simple updates early
