@@ -93,7 +93,10 @@ resource "linode_object_storage_bucket" "mybucket" {
 
 The following arguments are supported:
 
-* `cluster` - (Required) The cluster of the Linode Object Storage Bucket.
+* `region` - (Required) The region of the Linode Object Storage Bucket. Exactly one of `region` and `cluster` is required for creating a bucket.
+
+* `cluster` - (Deprecated) The cluster of the Linode Object Storage Bucket. This is deprecated in favor of `region` attribute.
+For example, `us-mia-1` cluster can be translated into `us-mia` region. Exactly one of `region` and `cluster` is required for creating a bucket.
 
 * `label` - (Required) The label of the Linode Object Storage Bucket.
 

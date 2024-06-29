@@ -57,12 +57,12 @@ func readResource(
 	client := meta.(*helper.ProviderMeta).Client
 	config := meta.(*helper.ProviderMeta).Config
 
-	cluster, label, err := DecodeBucketID(ctx, d.Id())
+	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
 		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
 	}
 
-	bucket, err := client.GetObjectStorageBucket(ctx, cluster, label)
+	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, label)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			tflog.Warn(
@@ -79,7 +79,7 @@ func readResource(
 	}
 
 	tflog.Debug(ctx, "getting bucket access info")
-	access, err := client.GetObjectStorageBucketAccess(ctx, cluster, label)
+	access, err := client.GetObjectStorageBucketAccess(ctx, regionOrCluster, label)
 	if err != nil {
 		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
@@ -96,7 +96,7 @@ func readResource(
 			"lifecyclePresent":  lifecyclePresent,
 		})
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, cluster, "read_only")
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket.Label, regionOrCluster, "read_only")
 		if diags != nil {
 			return diags
 		}
@@ -121,8 +121,9 @@ func readResource(
 		}
 	}
 
-	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
+	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 	d.Set("cluster", bucket.Cluster)
+	d.Set("region", bucket.Region)
 	d.Set("label", bucket.Label)
 	d.Set("hostname", bucket.Hostname)
 	d.Set("acl", access.ACL)
@@ -139,16 +140,20 @@ func createResource(
 	tflog.Debug(ctx, "Create linode_object_storage_bucket")
 	client := meta.(*helper.ProviderMeta).Client
 
-	cluster := d.Get("cluster").(string)
 	label := d.Get("label").(string)
 	acl := d.Get("acl").(string)
 	corsEnabled := d.Get("cors_enabled").(bool)
 
 	createOpts := linodego.ObjectStorageBucketCreateOptions{
-		Cluster:     cluster,
 		Label:       label,
 		ACL:         linodego.ObjectStorageACL(acl),
 		CorsEnabled: &corsEnabled,
+	}
+
+	if region, ok := d.GetOk("region"); ok {
+		createOpts.Region = region.(string)
+	} else {
+		createOpts.Cluster = d.Get("cluster").(string)
 	}
 
 	tflog.Debug(ctx, "client.CreateObjectStorageBucket(...)", map[string]any{"options": createOpts})
@@ -158,7 +163,7 @@ func createResource(
 	}
 
 	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(ctx, *bucket))
-	d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
+	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 
 	return updateResource(ctx, d, meta)
 }
@@ -194,10 +199,11 @@ func updateResource(
 		})
 
 		config := meta.(*helper.ProviderMeta).Config
-		cluster := d.Get("cluster").(string)
+		regionOrCluster := helper.GetRegionOrCluster(d)
+
 		bucket := d.Get("label").(string)
 
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_write")
 		if diags != nil {
 			return diags
 		}
@@ -238,13 +244,13 @@ func deleteResource(
 
 	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
-	cluster, label, err := DecodeBucketID(ctx, d.Id())
+	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
 
 	if config.ObjBucketForceDelete {
-		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, cluster, "read_write")
+		objKeys, diags, teardownKeysCleanUp := obj.GetObjKeys(ctx, d, config, client, label, regionOrCluster, "read_write")
 		if diags != nil {
 			return diags
 		}
@@ -266,7 +272,7 @@ func deleteResource(
 	}
 
 	tflog.Debug(ctx, "client.DeleteObjectStorageBucket(...)")
-	err = client.DeleteObjectStorageBucket(ctx, cluster, label)
+	err = client.DeleteObjectStorageBucket(ctx, regionOrCluster, label)
 	if err != nil {
 		return diag.Errorf("Error deleting Linode ObjectStorageBucket %s: %s", d.Id(), err)
 	}
@@ -397,7 +403,7 @@ func updateBucketAccess(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketAccess")
-	cluster := d.Get("cluster").(string)
+	regionOrCluster := helper.GetRegionOrCluster(d)
 	label := d.Get("label").(string)
 
 	updateOpts := linodego.ObjectStorageBucketUpdateAccessOptions{}
@@ -410,7 +416,7 @@ func updateBucketAccess(
 		updateOpts.CorsEnabled = &newCorsBool
 	}
 	tflog.Debug(ctx, "client.UpdateObjectStorageBucketAccess(...)", map[string]any{"options": updateOpts})
-	if err := client.UpdateObjectStorageBucketAccess(ctx, cluster, label, updateOpts); err != nil {
+	if err := client.UpdateObjectStorageBucketAccess(ctx, regionOrCluster, label, updateOpts); err != nil {
 		return fmt.Errorf("failed to update bucket access: %s", err)
 	}
 
@@ -421,7 +427,7 @@ func updateBucketCert(
 	ctx context.Context, d *schema.ResourceData, client linodego.Client,
 ) error {
 	tflog.Debug(ctx, "entering updateBucketCert")
-	cluster := d.Get("cluster").(string)
+	regionOrCluster := helper.GetRegionOrCluster(d)
 	label := d.Get("label").(string)
 	oldCert, newCert := d.GetChange("cert")
 	hasOldCert := len(oldCert.([]any)) != 0
@@ -429,7 +435,7 @@ func updateBucketCert(
 	if hasOldCert {
 		tflog.Debug(ctx, "client.DeleteObjectStorageBucketCert(...)")
 
-		if err := client.DeleteObjectStorageBucketCert(ctx, cluster, label); err != nil {
+		if err := client.DeleteObjectStorageBucketCert(ctx, regionOrCluster, label); err != nil {
 			return fmt.Errorf("failed to delete old bucket cert: %s", err)
 		}
 	}
@@ -440,7 +446,7 @@ func updateBucketCert(
 	}
 
 	uploadOptions := expandBucketCert(certSpec[0])
-	if _, err := client.UploadObjectStorageBucketCert(ctx, cluster, label, uploadOptions); err != nil {
+	if _, err := client.UploadObjectStorageBucketCert(ctx, regionOrCluster, label, uploadOptions); err != nil {
 		return fmt.Errorf("failed to upload new bucket cert: %s", err)
 	}
 	return nil
@@ -454,14 +460,14 @@ func expandBucketCert(v any) linodego.ObjectStorageBucketCertUploadOptions {
 	}
 }
 
-func DecodeBucketID(ctx context.Context, id string) (cluster, label string, err error) {
+func DecodeBucketID(ctx context.Context, id string) (regionOrCluster, label string, err error) {
 	tflog.Debug(ctx, "decoding bucket ID")
 	parts := strings.Split(id, ":")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		err = fmt.Errorf("Linode Object Storage Bucket ID must be of the form <Cluster>:<Label>, was provided: %s", id)
 		return
 	}
-	cluster = parts[0]
+	regionOrCluster = parts[0]
 	label = parts[1]
 	return
 }
