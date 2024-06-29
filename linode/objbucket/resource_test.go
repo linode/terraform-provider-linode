@@ -39,15 +39,19 @@ const (
 	objSecretKeyEnvVar = "LINODE_OBJ_SECRET_KEY"
 )
 
-var testCluster string
+var (
+	testCluster string
+	testRegion  string
+)
 
 func init() {
-	cluster, err := acceptance.GetRandomOBJCluster()
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster = cluster
+	testCluster = region + "-1"
+	testRegion = region
 }
 
 func init() {
@@ -166,6 +170,36 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
+	t.Parallel()
+
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resName := "linode_object_storage_bucket.foobar"
+		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.BasicLegacy(t, objectStorageBucketName, testCluster),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttrSet(resName, "hostname"),
+					),
+				},
+				{
+					ResourceName:      resName,
+					ImportState:       true,
+					ImportStateVerify: true,
+				},
+			},
+		})
+	})
+}
+
 func TestAccResourceBucket_basic_smoke(t *testing.T) {
 	t.Parallel()
 
@@ -179,7 +213,7 @@ func TestAccResourceBucket_basic_smoke(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Basic(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -378,7 +412,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Cert(t, objectStorageBucketName, testCluster, cert, key),
+					Config: tmpl.Cert(t, objectStorageBucketName, testRegion, cert, key),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						checkBucketHasSSL(true),
@@ -386,11 +420,11 @@ func TestAccResourceBucket_cert(t *testing.T) {
 					),
 				},
 				{
-					Config:      tmpl.Cert(t, objectStorageBucketName, testCluster, invalidCert, invalidKey),
+					Config:      tmpl.Cert(t, objectStorageBucketName, testRegion, invalidCert, invalidKey),
 					ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
 				},
 				{
-					Config: tmpl.Cert(t, objectStorageBucketName, testCluster, otherCert, otherKey),
+					Config: tmpl.Cert(t, objectStorageBucketName, testRegion, otherCert, otherKey),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						checkBucketHasSSL(true),
@@ -398,7 +432,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Basic(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						checkBucketHasSSL(false),
@@ -452,14 +486,14 @@ func TestAccResourceBucket_update(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Basic(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					),
 				},
 				{
-					Config: tmpl.Updates(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Updates(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", objectStorageBucketName)),
