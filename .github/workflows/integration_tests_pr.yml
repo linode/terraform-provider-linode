@@ -69,7 +69,7 @@ jobs:
       - name: Apply Calico Rules to LKE
         if: always()
         run: |
-          cd scripts && ./lke_calico_rules_e2e.sh
+          cd e2e_scripts/cloud_security_scripts/lke_calico_rules/ && ./lke_calico_rules_e2e.sh
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
       

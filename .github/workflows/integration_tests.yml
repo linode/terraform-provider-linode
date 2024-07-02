@@ -46,7 +46,7 @@ jobs:
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_TAGS=firewall,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,sshkey,sshkeys" >> $GITHUB_ENV
+              echo "TEST_TAGS=firewall,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
@@ -54,7 +54,7 @@ jobs:
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
-              echo "TEST_TAGS=lke,lkeclusters,lkenodepool,lkeversions,obj,objbucket,token,user,users,vlan,volume,volumes,vpc,vpcs,placementgroup,placementgroups,placementgorupassignment" >> $GITHUB_ENV
+              echo "TEST_TAGS=lke,lkeclusters,lkenodepool,lkeversions,obj,objbucket,placementgroup,placementgroups,placementgorupassignment,token,user,users" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_4 }}" >> $GITHUB_ENV
               ;;
           esac
@@ -105,17 +105,17 @@ jobs:
         run: rsync -av test-report-USER_*/* .
 
       - name: Merge Test Reports
-        run: python tod_scripts/merge_terraform_results.py
+        run: python e2e_scripts/tod_scripts/xml_to_obj_storage/terraform_tests/merge_terraform_results.py
 
       - name: Add Information to XML Report
         run: |
           filename=$(ls | grep -E '^[0-9]{12}_terraform_merged_report.xml$') 
-          python tod_scripts/add_to_xml_test_report.py --branch_name "${GITHUB_REF#refs/*/}" --gha_run_id "${GITHUB_RUN_ID}" --gha_run_number "${GITHUB_RUN_NUMBER}" --xmlfile "${filename}"
+          python e2e_scripts/tod_scripts/xml_to_obj_storage/scripts/add_gha_info_to_xml.py --branch_name "${GITHUB_REF#refs/*/}" --gha_run_id "${GITHUB_RUN_ID}" --gha_run_number "${GITHUB_RUN_NUMBER}" --xmlfile "${filename}"
 
       - name: Upload Test Results
         run: |
           filename=$(ls | grep -E '^[0-9]{12}_terraform_merged_report.xml$') 
-          python3 tod_scripts/test_report_upload_script.py "${filename}"
+          python e2e_scripts/tod_scripts/xml_to_obj_storage/scripts/xml_to_obj.py "${filename}"
         env:
           LINODE_CLI_OBJ_ACCESS_KEY: ${{ secrets.LINODE_CLI_OBJ_ACCESS_KEY }}
           LINODE_CLI_OBJ_SECRET_KEY: ${{ secrets.LINODE_CLI_OBJ_SECRET_KEY }}
@@ -143,6 +143,6 @@ jobs:
 
       - name: Apply Calico Rules to LKE # Only Running against Matrix USER 4 which includes LKE test suite
         run: |
-          cd scripts && ./lke_calico_rules_e2e.sh
+          cd e2e_scripts/cloud_security_scripts/lke_calico_rules/ && ./lke_calico_rules_e2e.sh
         env:
           LINODE_TOKEN: ${{ secrets.LINODE_TOKEN_USER_4 }}
