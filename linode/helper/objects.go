@@ -24,21 +24,16 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 		config.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
 		),
-		config.WithEndpointResolverWithOptions(
-			aws.EndpointResolverWithOptionsFunc(
-				func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-					return aws.Endpoint{URL: "https://" + endpoint}, nil
-				},
-			),
-		),
 		config.WithRegion("auto"),
 	)
 	if err != nil {
 		tflog.Error(ctx, "Failed to create Object Storage client")
 		return nil, err
 	}
-
-	return s3.NewFromConfig(awsSDKConfig), nil
+	s3Client := s3.NewFromConfig(awsSDKConfig, func(opts *s3.Options) {
+		opts.BaseEndpoint = aws.String("https://" + endpoint)
+	})
+	return s3Client, nil
 }
 
 // S3ConnectionFromData requires endpoint in the data.
