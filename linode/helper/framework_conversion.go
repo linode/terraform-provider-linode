@@ -51,6 +51,16 @@ func StringSliceToFrameworkValueSlice(val []string) []attr.Value {
 	return GenericSliceToFramework(val, GetBaseSafeFwValueConverter(types.StringValue))
 }
 
+// IntSliceToFrameworkValueSlice converts the given string slice
+// into a framework-compatible slice of attr.Value.
+func IntSliceToFrameworkValueSlice(val []int) []attr.Value {
+	valInt64 := make([]int64, len(val))
+	for i, v := range val {
+		valInt64[i] = int64(v)
+	}
+	return GenericSliceToFramework(valInt64, GetBaseSafeFwValueConverter(types.Int64Value))
+}
+
 // GenericSliceToFramework converts the given generic slice
 // into a framework-compatible slice of attr.Value.
 func GenericSliceToFramework[T any, U attr.Value](

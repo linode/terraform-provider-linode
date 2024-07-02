@@ -145,7 +145,7 @@ func parseNBFirewalls(
 		nbFirewalls[i].Tags = tags
 
 		if fw.Rules.Inbound != nil {
-			inBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Inbound)
+			inBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Inbound, nbFirewalls[i].Inbound, false)
 			if diags.HasError() {
 				return nil, diags
 			}
@@ -153,7 +153,7 @@ func parseNBFirewalls(
 		}
 
 		if fw.Rules.Outbound != nil {
-			outBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Outbound)
+			outBound, diags := firewall.FlattenFirewallRules(ctx, fw.Rules.Outbound, nbFirewalls[i].Inbound, false)
 			if diags.HasError() {
 				return nil, diags
 			}
