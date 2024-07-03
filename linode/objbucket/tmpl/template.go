@@ -18,16 +18,22 @@ type TemplateData struct {
 	Cert    string
 	PrivKey string
 	Cluster string
+	Region  string
 }
 
-func Basic(t *testing.T, label, cluster string) string {
+func Basic(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_basic", TemplateData{Label: label, Region: region})
+}
+
+func BasicLegacy(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_basic", TemplateData{Label: label, Cluster: cluster})
 }
 
-func Updates(t *testing.T, label, cluster string) string {
+func Updates(t *testing.T, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
-		"object_bucket_updates", TemplateData{Label: label, Cluster: cluster})
+		"object_bucket_updates", TemplateData{Label: label, Region: region})
 }
 
 func Access(t *testing.T, label, cluster, acl string, cors bool) string {
@@ -40,13 +46,13 @@ func Access(t *testing.T, label, cluster, acl string, cors bool) string {
 		})
 }
 
-func Cert(t *testing.T, label, cluster, cert, privKey string) string {
+func Cert(t *testing.T, label, region, cert, privKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cert", TemplateData{
 			Label:   label,
 			Cert:    cert,
 			PrivKey: privKey,
-			Cluster: cluster,
+			Region:  region,
 		})
 }
 
