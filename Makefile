@@ -9,6 +9,8 @@ TEST_TAGS="integration"
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.28.1
 
+IP_ENV_FILE := /tmp/linode/ip_vars.env
+
 .PHONY: default
 default: build
 
@@ -62,11 +64,23 @@ unit-test: fmt-check
 	go test -v --tags=unit ./$(PKG_NAME) | grep -v "\[no test files\]"
 
 .PHONY: int-test
-int-test: fmt-check
+int-test: fmt-check generate-ip-env-fw-e2e include-env
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS) | grep -v "\[no test files\]"
+	TF_VAR_ipv4_addr=${PUBLIC_IPV4} \
+	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
+	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel=$(PARALLEL) $(ARGS) | grep -v "\[no test files\]"
+
+.PHONY: include-env
+include-env: $(IP_ENV_FILE)
+-include $(IP_ENV_FILE)
+
+generate-ip-env-fw-e2e: $(IP_ENV_FILE)
+
+$(IP_ENV_FILE):
+	# Generate env file for E2E cloud firewall
+	. ./e2e_scripts/cloud_security_scripts/cloud_e2e_firewall/terraform-provider-linode/generate_ip_env_fw_e2e.sh || touch $(IP_ENV_FILE)
 
 .PHONY: smoke-test
 smoke-test: fmt-check

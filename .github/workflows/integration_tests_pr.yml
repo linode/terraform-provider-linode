@@ -52,11 +52,26 @@ jobs:
 
       - run: make deps
 
+      - name: Download kubectl and calicoctl for LKE clusters
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          curl -LO "https://github.com/projectcalico/calico/releases/download/v3.25.0/calicoctl-linux-amd64"
+          chmod +x calicoctl-linux-amd64 kubectl
+          mv calicoctl-linux-amd64 /usr/local/bin/calicoctl
+          mv kubectl /usr/local/bin/kubectl
+
       - run: make PKG_NAME="${{ inputs.module }}" int-test
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
           RUN_LONG_TESTS: ${{ inputs.run_long_tests }}
+
+      - name: Apply Calico Rules to LKE
+        if: always()
+        run: |
+          cd e2e_scripts/cloud_security_scripts/lke_calico_rules/ && ./lke_calico_rules_e2e.sh
+        env:
+          LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
       
       - name: Get the hash value of the latest commit from the PR branch
         uses: octokit/graphql-action@v2.x

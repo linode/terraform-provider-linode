@@ -167,6 +167,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, volumeName, testRegion),
@@ -188,7 +189,7 @@ func TestAccResourceVolume_attached(t *testing.T) {
 				ResourceName:            "linode_volume.foobar",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"linode_id"},
+				ImportStateVerifyIgnore: []string{"linode_id", "firewall_id"},
 				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
 			},
 		},
@@ -205,6 +206,7 @@ func TestAccResourceVolume_detached(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Attached(t, volumeName, testRegion),
@@ -218,7 +220,7 @@ func TestAccResourceVolume_detached(t *testing.T) {
 				ResourceName:            "linode_volume.foobar",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"linode_id"},
+				ImportStateVerifyIgnore: []string{"linode_id", "firewall_id"},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("linode_volume.foobar", "linode_id", "0"),
 					resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobar", "id"),
@@ -238,6 +240,7 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Attached(t, volumeName, testRegion),
@@ -258,14 +261,14 @@ func TestAccResourceVolume_reattachedBetweenInstances(t *testing.T) {
 				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobaz", "linode_id", "linode_instance.foobar", "id"),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 			{
 				ResourceName:            "linode_instance.foobaz",
 				Check:                   resource.TestCheckResourceAttrPair("linode_volume.foobar", "linode_id", "linode_instance.foobaz", "id"),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type"},
+				ImportStateVerifyIgnore: []string{"resize_disk", "migration_type", "firewall_id"},
 			},
 		},
 	})
@@ -286,6 +289,7 @@ func TestAccResourceVolume_cloned(t *testing.T) {
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckVolumeDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.ClonedStep1(t, volumeName, testRegion, acceptance.PublicKeyMaterial),
@@ -374,7 +378,7 @@ umount /mnt/vol
 
 const scriptCheckCloneExists = `
 until [ -e "%s" ]; do sleep .1; done && \
-echo $? && \
+echo $? && \																			
 mkdir -p /mnt/vol && \
 echo $? && \
 mount "%s" "/mnt/vol" && \

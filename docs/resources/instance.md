@@ -122,6 +122,26 @@ resource "linode_instance_config" "boot_config" {
 
 ```
 
+### Linode Instance Assigned to a Placement Group
+
+**NOTE: Placement Groups may not currently be available to all users.**
+
+The following example shows how one might use this resource to configure a Linode instance assigned to a
+Placement Group.
+
+```hcl
+resource "linode_instance" "my-instance" {
+  label           = "my-instance"
+  region          = "us-mia"
+  type            = "g6-standard-1"
+
+  placement_group {
+    id = 12345
+  }
+}
+
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -141,6 +161,10 @@ The following arguments are supported:
 * `shared_ipv4` - (Optional) A set of IPv4 addresses to be shared with the Instance. These IP addresses can be both private and public, but must be in the same region as the instance.
 
 * `metadata.0.user_data` - (Optional) The base64-encoded user-defined data exposed to this instance through the Linode Metadata service. Refer to the base64encode(...) function for information on encoding content for this field.
+
+* `placement_group.0.id` - (Optional) The ID of the Placement Group to assign this Linode to.
+
+* `placement_group_externally_managed` - (Optional) If true, changes to the Linode's assigned Placement Group will be ignored. This is necessary when using this resource in conjunction with the [linode_placement_group_assignment](placement_group_assignment.md) resource.
 
 * `resize_disk` - (Optional) If true, changes in Linode type will attempt to upsize or downsize implicitly created disks. This must be false if explicit disks are defined. *This is an irreversible action as Linode disks cannot be automatically downsized.*
 
@@ -356,6 +380,16 @@ This Linode Instance resource exports the following attributes:
     * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
+
+* `placement_group` - Information about the Placement Group this Linode is assigned to. NOTE: Placement Groups may not currently be available to all users.
+
+  * `id` - The ID of the Placement Group.
+
+  * `label` - The label of the Placement Group.
+
+  * `affinity_type` - The affinity policy enforced by the Placement Group.
+
+  * `is_strict` - Whether the Placement Group enforces strict compliance.
 
 ## Import
 

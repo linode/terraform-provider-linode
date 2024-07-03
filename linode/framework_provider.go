@@ -14,6 +14,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/accountlogins"
 	"github.com/linode/terraform-provider-linode/v2/linode/accountsettings"
 	"github.com/linode/terraform-provider-linode/v2/linode/backup"
+	"github.com/linode/terraform-provider-linode/v2/linode/childaccount"
+	"github.com/linode/terraform-provider-linode/v2/linode/childaccounts"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
@@ -52,6 +54,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
+	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
+	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment"
+	"github.com/linode/terraform-provider-linode/v2/linode/placementgroups"
 	"github.com/linode/terraform-provider-linode/v2/linode/profile"
 	"github.com/linode/terraform-provider-linode/v2/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v2/linode/region"
@@ -183,6 +188,11 @@ func (p *FrameworkProvider) Schema(
 				Description: "If true, temporary object keys will be created implicitly at apply-time " +
 					"for the linode_object_storage_object and linode_object_sorage_bucket resource.",
 			},
+			"obj_bucket_force_delete": schema.BoolAttribute{
+				Optional: true,
+				Description: "If true, when deleting a linode_object_storage_bucket any objects " +
+					"and versions will be force deleted.",
+			},
 		},
 	}
 }
@@ -207,6 +217,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		lkenodepool.NewResource,
 		image.NewResource,
 		nbconfig.NewResource,
+		placementgroup.NewResource,
+		placementgroupassignment.NewResource,
 	}
 }
 
@@ -266,5 +278,9 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domains.NewDataSource,
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
+		placementgroup.NewDataSource,
+		placementgroups.NewDataSource,
+		childaccount.NewDataSource,
+		childaccounts.NewDataSource,
 	}
 }

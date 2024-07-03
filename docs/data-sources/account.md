@@ -8,7 +8,7 @@ description: |-
 
 Provides information about a Linode account.
 
-This data source should not be used in conjuction with the `LINODE_DEBUG` option.  See the [debugging notes](/providers/linode/linode/latest/docs#debugging) for more details.
+Due to the sensitive nature of the data exposed by this data source, it should not be used in conjunction with the `LINODE_DEBUG` option.  See the [debugging notes](/providers/linode/linode/latest/docs#debugging) for more details.
 
 ## Example Usage
 
@@ -49,3 +49,7 @@ The Linode Account resource exports the following attributes:
 * `zip` - The zip code of this Account's billing address.
 
 * `balance` - This Account's balance, in US dollars.
+
+* `capabilities` - A set containing all the capabilities of the current Account.
+
+* `active_since` - When this account was first activated.

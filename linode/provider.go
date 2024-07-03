@@ -129,6 +129,12 @@ func Provider() *schema.Provider {
 				Description: "If true, temporary object keys will be created implicitly at apply-time " +
 					"for the linode_object_storage_object and linode_object_sorage_bucket resource.",
 			},
+			"obj_bucket_force_delete": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Description: "If true, when deleting a linode_object_storage_bucket any objects " +
+					"and versions will be force deleted.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -259,7 +265,8 @@ func providerConfigure(
 		MinRetryDelayMilliseconds: d.Get("min_retry_delay_ms").(int),
 		MaxRetryDelayMilliseconds: d.Get("max_retry_delay_ms").(int),
 
-		ObjUseTempKeys: d.Get("obj_use_temp_keys").(bool),
+		ObjUseTempKeys:       d.Get("obj_use_temp_keys").(bool),
+		ObjBucketForceDelete: d.Get("obj_bucket_force_delete").(bool),
 	}
 
 	handleDefault(config, d)

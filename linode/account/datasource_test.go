@@ -37,6 +37,8 @@ func TestAccDataSourceAccount_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "zip"),
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
 					resource.TestCheckResourceAttrSet(resourceName, "balance"),
+					resource.TestCheckResourceAttrSet(resourceName, "capabilities.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "active_since"),
 				),
 			},
 		},

@@ -28,13 +28,14 @@ func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 
 	imageName := acctest.RandomWithPrefix("tf_test")
 	resourceName := "data.linode_images.foobar"
-
+	label := imageName
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, imageName, testRegion),
+				Config: tmpl.DataBasic(t, imageName, testRegion, label),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.label", imageName),

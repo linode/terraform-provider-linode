@@ -105,6 +105,19 @@ func TempKeys(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
+func ForceDelete(t *testing.T, label, cluster, keyName string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_force_delete", TemplateData{
+			Key:     objkey.TemplateData{Label: keyName},
+			Label:   label,
+			Cluster: cluster,
+		})
+}
+
+func ForceDelete_Empty(t *testing.T) string {
+	return acceptance.ExecuteTemplate(t, "object_bucket_force_delete_empty", nil)
+}
+
 func ClusterDataBasic(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cluster_data_basic", TemplateData{

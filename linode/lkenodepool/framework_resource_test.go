@@ -259,6 +259,57 @@ func TestAccResourceNodePool_enableAutoscaling(t *testing.T) {
 	})
 }
 
+func TestAccResourceNodePool_update_type(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_lke_node_pool.foobar"
+	clusterLabel := acctest.RandomWithPrefix("tf_test_")
+	poolTag := acctest.RandomWithPrefix("tf_test_")
+
+	templateData := createTemplateData()
+	templateData.ClusterLabel = clusterLabel
+	templateData.PoolTag = poolTag
+	templateData.AutoscalerEnabled = false
+	templateData.NodeCount = 1
+	createConfig := createResourceConfig(t, &templateData)
+
+	templateData.PoolNodeType = "g6-standard-2"
+	updateConfig := createResourceConfig(t, &templateData)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodePoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "external"),
+					resource.TestCheckResourceAttr(resName, "tags.1", poolTag),
+					resource.TestCheckResourceAttr(resName, "node_count", "1"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+			{
+				Config: updateConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-2"),
+				),
+			},
+		},
+	})
+}
+
 func checkNodePoolExists(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	clusterID, poolID, err := extractIDs(s)
@@ -308,6 +359,7 @@ func createTemplateData() tmpl.TemplateData {
 	data.ClusterID = clusterID
 	data.K8sVersion = k8sVersion
 	data.Region = testRegion
+	data.PoolNodeType = "g6-standard-1"
 	return data
 }
 

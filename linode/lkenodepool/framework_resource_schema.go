@@ -47,6 +47,9 @@ var resourceSchema = schema.Schema{
 		"type": schema.StringAttribute{
 			Description: "The type of node pool.",
 			Required:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
 		},
 		"disk_encryption": schema.StringAttribute{
 			Description: "The disk encryption policy for nodes in this pool",

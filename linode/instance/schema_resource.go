@@ -29,6 +29,38 @@ You may need to switch to an explicit disk configuration.
 Take a look at the example here:
 https://www.terraform.io/docs/providers/linode/r/instance.html#linode-instance-with-explicit-configs-and-disks`
 
+func resourcePlacementGroup() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "The ID of the Placement Group to assign this Linode to.",
+			},
+			"compliant_only": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+
+			"label": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The label of this Placement Group.",
+			},
+			"affinity_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The affinity policy for this Placement Group.",
+			},
+			"is_strict": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether compliance is strictly enforced by this Placement Group.",
+			},
+		},
+	}
+}
+
 func resourceMetadata() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -415,6 +447,26 @@ var resourceSchema = map[string]*schema.Schema{
 		Elem:        resourceMetadata(),
 		Description: "Various fields related to the Linode Metadata service.",
 		Optional:    true,
+	},
+	"placement_group": {
+		Type:        schema.TypeList,
+		Elem:        resourcePlacementGroup(),
+		Description: "Fields related to the Placement Group this instance is assigned to.",
+		Optional:    true,
+		MaxItems:    1,
+		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+			return d.Get("placement_group_externally_managed").(bool)
+		},
+	},
+	"placement_group_externally_managed": {
+		Type: schema.TypeBool,
+		Description: "If true, this placement group's assignment is externally managed and will " +
+			"NOT be updated by this resource.",
+		Optional: true,
+		Default:  false,
+		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+			return true
+		},
 	},
 	"has_user_data": {
 		Type:        schema.TypeBool,

@@ -1,0 +1,14 @@
+{{ define "child_accounts_data_basic" }}
+
+data "linode_child_accounts" "all" {}
+
+data "linode_child_accounts" "filter" {
+    depends_on = [data.linode_child_accounts.all]
+
+    filter {
+        name = "email"
+        values = [data.linode_child_accounts.all.child_accounts[0].email]
+    }
+}
+
+{{ end }}

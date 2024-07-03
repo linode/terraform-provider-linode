@@ -1,0 +1,34 @@
+{{ define "placement_groups_data_basic" }}
+
+data "linode_placement_groups" "all" {
+    depends_on = [linode_placement_group.test]
+}
+
+data "linode_placement_groups" "by-label" {
+    depends_on = [linode_placement_group.test]
+
+    filter {
+        name = "label"
+        values = [linode_placement_group.test[1].label]
+    }
+}
+
+data "linode_placement_groups" "by-affinity-type" {
+    depends_on = [linode_placement_group.test]
+
+    filter {
+        name = "affinity_type"
+        values = ["anti_affinity:local"]
+    }
+}
+
+resource "linode_placement_group" "test" {
+    count = 3
+
+    label = "{{.Label}}-${count.index}"
+    region = "{{.Region}}"
+    affinity_type = "anti_affinity:local"
+    is_strict = true
+}
+
+{{ end }}

@@ -84,7 +84,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `high_availability` - Whether High Availability is enabled for the cluster Control Plane.
   
-  * `acl` - The ACL configuration for an LKE cluster's control plane.
+  * `acl` - The ACL configuration for an LKE cluster's control plane. **NOTE: Control Plane ACLs may not currently be available to all users.**
 
     * `enabled` - The default policy. A value of true means a default policy of DENY. A value of false means a default policy of ALLOW.
 

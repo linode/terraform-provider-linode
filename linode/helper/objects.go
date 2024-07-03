@@ -24,21 +24,16 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 		config.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
 		),
-		config.WithEndpointResolverWithOptions(
-			aws.EndpointResolverWithOptionsFunc(
-				func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-					return aws.Endpoint{URL: "https://" + endpoint}, nil
-				},
-			),
-		),
 		config.WithRegion("auto"),
 	)
 	if err != nil {
 		tflog.Error(ctx, "Failed to create Object Storage client")
 		return nil, err
 	}
-
-	return s3.NewFromConfig(awsSDKConfig), nil
+	s3Client := s3.NewFromConfig(awsSDKConfig, func(opts *s3.Options) {
+		opts.BaseEndpoint = aws.String("https://" + endpoint)
+	})
+	return s3Client, nil
 }
 
 // S3ConnectionFromData requires endpoint in the data.
@@ -159,6 +154,10 @@ func DeleteAllObjects(
 		}
 	}
 
+	if len(objectsToDelete) == 0 {
+		return nil
+	}
+
 	tflog.Debug(ctx, fmt.Sprintf("Deleting all keys in the list: %v", objectsToDelete))
 	_, err := s3client.DeleteObjects(context.Background(), &s3.DeleteObjectsInput{
 		Bucket:                    aws.String(bucketName),
@@ -211,6 +210,10 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 				},
 			)
 		}
+	}
+
+	if len(objectsToDelete) == 0 {
+		return nil
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Delete all versions and delete markers in the list: %v", objectsToDelete))
