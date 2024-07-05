@@ -77,7 +77,7 @@ func (r *Resource) Create(
 		"label":  key.Label,
 	})
 
-	data.FlattenObjectStorageKey(key, true)
+	data.FlattenObjectStorageKey(ctx, key, true, &resp.Diagnostics)
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
@@ -134,7 +134,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.FlattenObjectStorageKey(key, false)
+	data.FlattenObjectStorageKey(ctx, key, false, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -145,6 +145,7 @@ func (r *Resource) Update(
 ) {
 	tflog.Debug(ctx, "Update linode_object_storage_key")
 	var plan, state ResourceModel
+	tflog.Info(ctx, "here0")
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -162,14 +163,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	var updateOpts linodego.ObjectStorageKeyUpdateOptions
-	shouldUpdate := false
-
-	if !state.Label.Equal(plan.Label) {
-		updateOpts.Label = plan.Label.ValueString()
-		shouldUpdate = true
-	}
-
+	updateOpts, shouldUpdate := plan.GetUpdateOptions(ctx, state)
 	if shouldUpdate {
 		tflog.Debug(ctx, "client.UpdateObjectStorageKey(...)", map[string]any{
 			"options": updateOpts,
@@ -182,11 +176,10 @@ func (r *Resource) Update(
 			return
 		}
 
-		plan.FlattenObjectStorageKey(key, true)
+		plan.FlattenObjectStorageKey(ctx, key, true, &resp.Diagnostics)
 	}
 
 	plan.CopyFrom(state, true)
-
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan
 	// See TPT-2865 for more details

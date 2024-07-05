@@ -50,6 +50,26 @@ func StringListElementsEqual(a, b []string) bool {
 	return true
 }
 
+// Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`.
+func ValidateStringSubset(superset, subset []string) bool {
+	return ValidateSubset(TypedSliceToAny(superset), TypedSliceToAny(subset))
+}
+
+// Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`.
+func ValidateSubset(superset, subset []any) bool {
+	aSet := make(map[any]bool, len(superset))
+	for _, v := range superset {
+		aSet[v] = true
+	}
+
+	for _, v := range subset {
+		if !aSet[v] {
+			return false
+		}
+	}
+	return true
+}
+
 func CompareScopes(s1, s2 string) bool {
 	s1AccountScope := s1 == "*"
 	s2AccountScope := s2 == "*"
