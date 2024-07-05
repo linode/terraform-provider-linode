@@ -141,10 +141,18 @@ func CredsConfiged(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
-func DataBasic(t *testing.T, label, cluster string) string {
+func DataBasicWithCluster(t *testing.T, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_data_basic", TemplateData{
 			Label:   label,
 			Cluster: cluster,
+		})
+}
+
+func DataBasic(t *testing.T, label, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_bucket_data_basic", TemplateData{
+			Label:  label,
+			Region: region,
 		})
 }

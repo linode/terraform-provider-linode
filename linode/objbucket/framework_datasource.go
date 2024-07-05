@@ -29,6 +29,7 @@ type DataSource struct {
 
 func (data *DataSourceModel) parseObjectStorageBucket(bucket *linodego.ObjectStorageBucket) {
 	data.Cluster = types.StringValue(bucket.Cluster)
+	data.Region = types.StringValue(bucket.Region)
 	data.Created = types.StringValue(bucket.Created.Format(time.RFC3339))
 	data.Hostname = types.StringValue(bucket.Hostname)
 	data.ID = types.StringValue(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
@@ -39,6 +40,7 @@ func (data *DataSourceModel) parseObjectStorageBucket(bucket *linodego.ObjectSto
 
 type DataSourceModel struct {
 	Cluster  types.String `tfsdk:"cluster"`
+	Region   types.String `tfsdk:"region"`
 	Created  types.String `tfsdk:"created"`
 	Hostname types.String `tfsdk:"hostname"`
 	ID       types.String `tfsdk:"id"`
@@ -63,14 +65,22 @@ func (d *DataSource) Read(
 	}
 
 	cluster := data.Cluster.ValueString()
+	region := data.Region.ValueString()
+
+	var regionOrCluster string
+	if region != "" {
+		regionOrCluster = region
+	} else {
+		regionOrCluster = cluster
+	}
 	bucketLabel := data.Label.ValueString()
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
-		"cluster": cluster,
-		"bucket":  bucketLabel,
+		"region_or_cluster": regionOrCluster,
+		"bucket":            bucketLabel,
 	})
 
-	bucket, err := client.GetObjectStorageBucket(ctx, cluster, bucketLabel)
+	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, bucketLabel)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to find the specified Linode ObjectStorageBucket: %s", err.Error(),
