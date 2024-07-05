@@ -14,10 +14,18 @@ var resourceSchema = map[string]*schema.Schema{
 		ForceNew:    true,
 	},
 	"cluster": {
-		Type:        schema.TypeString,
-		Description: "The target cluster that the bucket is in.",
-		Required:    true,
-		ForceNew:    true,
+		Type:         schema.TypeString,
+		Description:  "The target cluster that the bucket is in.",
+		Optional:     true,
+		ForceNew:     true,
+		ExactlyOneOf: []string{"cluster", "region"},
+	},
+	"region": {
+		Type:         schema.TypeString,
+		Description:  "The target cluster that the bucket is in.",
+		Optional:     true,
+		ForceNew:     true,
+		ExactlyOneOf: []string{"cluster", "region"},
 	},
 	"key": {
 		Type:        schema.TypeString,
