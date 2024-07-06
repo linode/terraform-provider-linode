@@ -67,7 +67,8 @@ var frameworkResourceSchema = schema.Schema{
 			ElementType: types.StringType,
 		},
 		"regions_details": schema.SetAttribute{
-			Description: "A set of regions where the key will grant access to create buckets.",
+			Description: "A set of objects containing the detailed info of the regions where " +
+				"the key will grant access.",
 			Computed:    true,
 			ElementType: RegionDetailType,
 		},
@@ -82,8 +83,8 @@ var frameworkResourceSchema = schema.Schema{
 						Required:    true,
 					},
 					"cluster": schema.StringAttribute{
-						Description: "The Object Storage cluster where a bucket to which the key is " +
-							"granting access is hosted.",
+						Description: "The Object Storage cluster where the bucket resides. " +
+							"Deprecated in favor of `region`",
 						Optional: true,
 						Computed: true,
 						DeprecationMessage: "The `cluster` attribute in a `bucket_access` block has " +
@@ -100,7 +101,7 @@ var frameworkResourceSchema = schema.Schema{
 						},
 					},
 					"region": schema.StringAttribute{
-						Description: "The region where a bucket to which the key is granting access is hosted.",
+						Description: "The region where the bucket resides.",
 						Optional:    true,
 						Computed:    true,
 						Validators: []validator.String{
