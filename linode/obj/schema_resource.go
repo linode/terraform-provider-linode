@@ -22,7 +22,7 @@ var resourceSchema = map[string]*schema.Schema{
 	},
 	"region": {
 		Type:         schema.TypeString,
-		Description:  "The target cluster that the bucket is in.",
+		Description:  "The target region that the bucket is in.",
 		Optional:     true,
 		ForceNew:     true,
 		ExactlyOneOf: []string{"cluster", "region"},
