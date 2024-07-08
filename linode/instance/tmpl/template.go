@@ -26,7 +26,7 @@ type TemplateData struct {
 
 	PlacementGroups []string
 	AssignedGroup   string
-  
+
 	DiskEncryption *linodego.InstanceDiskEncryption
 }
 

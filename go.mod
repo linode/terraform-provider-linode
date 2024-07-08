@@ -124,4 +124,4 @@ require (
 )
 
 // TODO: Remove replacement before merging project branch
-replace github.com/linode/linodego => github.com/linode/linodego v1.34.1-0.20240523161713-6a6014f02272
+replace github.com/linode/linodego => github.com/linode/linodego v1.36.2-0.20240703205759-8d41d439317b
