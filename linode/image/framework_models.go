@@ -45,8 +45,6 @@ func (data *ResourceModel) FlattenImage(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	println(image)
-	println(data)
 	data.ID = helper.KeepOrUpdateString(data.ID, image.ID, preserveKnown)
 	data.Label = helper.KeepOrUpdateString(data.Label, image.Label, preserveKnown)
 	data.Description = helper.KeepOrUpdateString(
