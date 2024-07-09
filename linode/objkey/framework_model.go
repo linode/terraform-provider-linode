@@ -153,35 +153,7 @@ func (rm *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	if !preserveKnown {
 		rm.BucketAccess = other.BucketAccess
 	}
-
-	// rm.copyBucketAccessEntriesFrom(other.BucketAccess, preserveKnown)
 }
-
-// func (rm *ResourceModel) copyBucketAccessEntriesFrom(other []BucketAccessModelEntry, preserveKnown bool) {
-// 	if !preserveKnown {
-// 		rm.BucketAccess = other
-// 		return
-// 	}
-
-// if other == nil {
-// 	rm.BucketAccess = other
-// 	return
-// }
-
-// for i := range rm.BucketAccess {
-// 	if i > len(other) {
-// 		break
-// 	}
-// 	rm.BucketAccess[i].copyFrom(other[i], preserveKnown)
-// }
-// }
-
-// func (b *BucketAccessModelEntry) copyFrom(other BucketAccessModelEntry, preserveKnown bool) {
-// 	b.BucketName = helper.KeepOrUpdateValue(b.BucketName, other.BucketName, preserveKnown)
-// 	b.Cluster = helper.KeepOrUpdateValue(b.Cluster, other.Cluster, preserveKnown)
-// 	b.Permissions = helper.KeepOrUpdateValue(b.Permissions, other.Permissions, preserveKnown)
-// 	b.Region = helper.KeepOrUpdateValue(b.Region, other.Region, preserveKnown)
-// }
 
 func (b *BucketAccessModelEntry) FlattenBucketAccess(access *linodego.ObjectStorageKeyBucketAccess, preserveKnown bool) {
 	b.BucketName = helper.KeepOrUpdateString(b.BucketName, access.BucketName, preserveKnown)
