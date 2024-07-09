@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -15,6 +16,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+var replicationObjType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"region": types.StringType,
+		"status": types.StringType,
+	},
+}
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -186,6 +194,28 @@ var frameworkResourceSchema = schema.Schema{
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(),
 			},
+		},
+		"tags": schema.ListAttribute{
+			Description: "The customized tags for the image.",
+			Computed:    true,
+			Optional:    true,
+			ElementType: types.StringType,
+		},
+		"total_size": schema.Int64Attribute{
+			Description: "The total size of the image in all available regions.",
+			Computed:    true,
+		},
+		"regions_to_replicate": schema.ListAttribute{
+			Description: "A list of regions that customer wants to replicate this image in. " +
+				"At least one valid region is required and only core regions allowed. " +
+				"Existing images in the regions not passed will be removed.",
+			Optional:    true,
+			ElementType: types.StringType,
+		},
+		"replications": schema.ListAttribute{
+			Description: "A list of image replications region and corresponding status.",
+			Computed:    true,
+			ElementType: replicationObjType,
 		},
 	},
 }
