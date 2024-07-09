@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"slices"
 	"strings"
 	"time"
 )
@@ -57,16 +58,12 @@ func ValidateStringSubset(superset, subset []string) bool {
 
 // Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`.
 func ValidateSubset(superset, subset []any) bool {
-	aSet := make(map[any]bool, len(superset))
-	for _, v := range superset {
-		aSet[v] = true
-	}
-
 	for _, v := range subset {
-		if !aSet[v] {
+		if !slices.Contains(superset, v) {
 			return false
 		}
 	}
+
 	return true
 }
 
