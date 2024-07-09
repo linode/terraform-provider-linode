@@ -55,4 +55,3 @@ The Linode Image resource exports the following attributes:
 * `replications` - A list of image replication regions and corresponding status.
   * `region` - The region of an image replica.
   * `status` - The status of an image replica.
-

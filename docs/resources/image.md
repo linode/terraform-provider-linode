@@ -117,7 +117,6 @@ This resource exports the following attributes:
   * `region` - The region of an image replica.
   * `status` - The status of an image replica.
 
-
 ## Import
 
 Linodes Images can be imported using the Linode Image `id`, e.g.
