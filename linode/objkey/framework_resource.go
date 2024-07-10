@@ -145,7 +145,6 @@ func (r *Resource) Update(
 ) {
 	tflog.Debug(ctx, "Update linode_object_storage_key")
 	var plan, state ResourceModel
-	tflog.Info(ctx, "here0")
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)

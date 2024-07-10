@@ -2,7 +2,6 @@ package objkey
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	//"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -61,9 +60,6 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "A set of regions where the key will grant access to create buckets.",
 			Optional:    true,
 			Computed:    true,
-			Validators:  []validator.Set{
-				// setvalidator.ExactlyOneOf()
-			},
 			ElementType: types.StringType,
 		},
 		"regions_details": schema.SetAttribute{
