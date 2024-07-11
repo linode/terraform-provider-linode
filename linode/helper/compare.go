@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"slices"
 	"strings"
 	"time"
 )
@@ -47,6 +48,22 @@ func StringListElementsEqual(a, b []string) bool {
 			return false
 		}
 	}
+	return true
+}
+
+// Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`.
+func ValidateStringSubset(superset, subset []string) bool {
+	return ValidateSubset(TypedSliceToAny(superset), TypedSliceToAny(subset))
+}
+
+// Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`.
+func ValidateSubset(superset, subset []any) bool {
+	for _, v := range subset {
+		if !slices.Contains(superset, v) {
+			return false
+		}
+	}
+
 	return true
 }
 

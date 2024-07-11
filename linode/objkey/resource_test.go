@@ -19,7 +19,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey/tmpl"
 )
 
-var testCluster string
+var (
+	testCluster string
+	testRegion  string
+)
 
 func init() {
 	resource.AddTestSweepers("linode_object_storage_key", &resource.Sweeper{
@@ -27,12 +30,13 @@ func init() {
 		F:    sweep,
 	})
 
-	cluster, err := acceptance.GetRandomOBJCluster()
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster = cluster
+	testCluster = region + "-1"
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -84,7 +88,7 @@ func TestAccResourceObjectKey_basic(t *testing.T) {
 	})
 }
 
-func TestAccResourceObjectKey_limited(t *testing.T) {
+func TestAccResourceObjectKey_limited_cluster(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_object_storage_key.foobar"
@@ -96,7 +100,7 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 		CheckDestroy:             checkObjectKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Limited(t, objectStorageKeyLabel, testCluster),
+				Config: tmpl.ClusterLimited(t, objectStorageKeyLabel, testCluster),
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible,
@@ -109,6 +113,43 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", testCluster),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
+					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
+					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
+					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceObjectKey_limited(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_key.foobar"
+	objectStorageKeyLabel := acctest.RandomWithPrefix("tf-test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkObjectKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Limited(t, objectStorageKeyLabel, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkObjectKeyExists,
+					checkObjectKeySecretAccessible,
+					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_key", objectStorageKeyLabel)),
+					resource.TestCheckResourceAttrSet(resName, "access_key"),
+					resource.TestCheckResourceAttrSet(resName, "secret_key"),
+					resource.TestCheckResourceAttr(resName, "limited", "true"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.#", "2"),
+					resource.TestCheckResourceAttrSet(resName, "bucket_access.0.bucket_name"),
+					resource.TestCheckResourceAttrSet(resName, "bucket_access.1.bucket_name"),
+					resource.TestCheckResourceAttr(resName, "bucket_access.0.cluster", testCluster),
+					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
+					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
+					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
 				),
