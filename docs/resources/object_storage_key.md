@@ -7,6 +7,7 @@ description: |-
 # linode\_object\_storage\_key
 
 Provides a Linode Object Storage Key resource. This can be used to create, modify, and delete Linodes Object Storage Keys.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-object-storage-keys).
 
 ## Example Usage
 

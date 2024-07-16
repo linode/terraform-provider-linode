@@ -7,6 +7,7 @@ description: |-
 # linode\_regions
 
 Provides information about Linode regions that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-regions).
 
 ```hcl
 data "linode_regions" "filtered-regions" {
