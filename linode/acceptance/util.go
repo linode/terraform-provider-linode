@@ -634,6 +634,7 @@ func GetRandomRegionWithCaps(capabilities []string, filters ...RegionFilterFunc)
 	return regions[rand.Intn(len(regions))], nil
 }
 
+// Deprecated: Cluster is now deprecated in favor of Region.
 // GetRandomOBJCluster gets a random Object Storage cluster.
 func GetRandomOBJCluster() (string, error) {
 	client, err := GetTestClient()

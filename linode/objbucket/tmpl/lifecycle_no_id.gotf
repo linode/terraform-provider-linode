@@ -6,7 +6,11 @@ resource "linode_object_storage_bucket" "foobar" {
     access_key = linode_object_storage_key.foobar.access_key
     secret_key = linode_object_storage_key.foobar.secret_key
 
+    {{if .Region }}
+    region = "{{.Region}}"
+    {{else}}
     cluster = "{{ .Cluster }}"
+    {{end}}
     label = "{{.Label}}"
 
     lifecycle_rule {
