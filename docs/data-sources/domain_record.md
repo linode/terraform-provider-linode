@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode_domain_record
 
 Provides information about a Linode Domain Record.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-domain-record).
 
 ## Example Usage
 
@@ -44,7 +45,7 @@ The Linode Volume resource exports the following attributes:
 
 - `domain_id` - The associated domain's unique ID.
 
-- `type` - The type of Record this is in the DNS system. See all record types [here](https://www.linode.com/docs/api/domains/#domain-records-list__responses).
+- `type` - The type of Record this is in the DNS system. See all record types [here](https://techdocs.akamai.com/linode-api/reference/get-domain-record).
 
 - `ttl_sec` - The amount of time in seconds that this Domain's records may be cached by resolvers or other domain servers.
 

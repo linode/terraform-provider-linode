@@ -7,6 +7,7 @@ description: |-
 # linode\_instance\_disk
 
 Provides a Linode Instance Disk resource. This can be used to create, modify, and delete Linode Instance Disks.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-add-linode-disk).
 
 **NOTE:** Deleting a disk will shut down the attached instance if the instance is booted. If the disk was not in use by the booted configuration profile, the instance will be automatically rebooted.
 

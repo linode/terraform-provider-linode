@@ -62,7 +62,7 @@ This section outlines commonly used provider configuration options.
 
 * `config_profile` - (Optional) The Linode config profile to use. (default `default`)
 
-* `token` - (Optional) This is your [Linode APIv4 Token](https://developers.linode.com/api/v4#section/Personal-Access-Token).
+* `token` - (Optional) This is your [Linode APIv4 Token](https://techdocs.akamai.com/linode-api/reference/get-started#personal-access-tokens).
 
    The Linode Token can also be specified using the `LINODE_TOKEN` shell environment variable. (e.g. `export LINODE_TOKEN=mytoken`)
 
