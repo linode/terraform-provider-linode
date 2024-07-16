@@ -55,17 +55,17 @@ Each Linode Placement Group will be stored in the `placement_groups` attribute a
 
 * `region` - The region of the Placement Group.
 
-* `affinity_type` - The affinity policy to use when placing Linodes in this group.
+* `placement_group_type` - The placement group type to use when placing Linodes in this group.
 
-* `is_strict` - Whether Linodes must be able to become compliant during assignment. (Default `true`)
+* `placement_group_policy` - Whether Linodes must be able to become compliant during assignment. (Default `strict`)
 
-* `is_compliant` - Whether all Linodes in this group are currently compliant with the group's affinity policy.
+* `is_compliant` - Whether all Linodes in this group are currently compliant with the group's type.
 
 * `members` - A set of Linodes currently assigned to this Placement Group.
 
   * `linode_id` - The ID of the Linode.
 
-  * `is_compliant` - Whether this Linode is currently compliant with the group's affinity policy.
+  * `is_compliant` - Whether this Linode is currently compliant with the group's placement group type.
 
 ## Filterable Fields
 
@@ -75,8 +75,8 @@ Each Linode Placement Group will be stored in the `placement_groups` attribute a
 
 * `region`
 
-* `affinity_type`
+* `placement_group_type`
 
-* `is_strict`
+* `placement_group_policy`
 
 * `is_compliant`

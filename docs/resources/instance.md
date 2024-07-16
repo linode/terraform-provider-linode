@@ -383,9 +383,9 @@ This Linode Instance resource exports the following attributes:
 
   * `label` - The label of the Placement Group.
 
-  * `affinity_type` - The affinity policy enforced by the Placement Group.
+  * `placement_group_type` - The placement group type enforced by the Placement Group.
 
-  * `is_strict` - Whether the Placement Group enforces strict compliance.
+  * `placement_group_policy` - Whether the Placement Group enforces strict compliance.
 
 ## Import
 
