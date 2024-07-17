@@ -11,6 +11,7 @@ To use early access resources, the `api_version` provider argument must be set t
 To learn more, see the [early access documentation](../..#early-access).
 
 Provides details about Linode VLANs.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-vlans).
 
 ## Example Usage
 

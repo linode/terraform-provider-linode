@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_vpc\_subnet
 
 Provides information about a Linode VPC subnet.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-vpc-subnet).
 
 ## Example Usage
 

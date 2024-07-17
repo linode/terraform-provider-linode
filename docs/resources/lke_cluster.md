@@ -7,6 +7,7 @@ description: |-
 # linode\_lke_cluster
 
 Manages an LKE cluster.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-lke-cluster).
 
 ## Example Usage
 

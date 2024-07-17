@@ -7,6 +7,7 @@ description: |-
 # linode\_ipv6\_ranges
 
 Provides information about Linode IPv6 ranges that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-ipv6-ranges).
 
 ~> Some fields may not be accessible directly the results of this data source.
 For additional information about a specific IPv6 range consider using the [linode_ipv6_range](ipv6_range.md)

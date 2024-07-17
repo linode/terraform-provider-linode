@@ -11,7 +11,11 @@ provider "linode" {
 resource "linode_object_storage_bucket" "foobar" {
     provider = linode.creds_configed
 
+    {{if .Region }}
+    region = "{{.Region}}"
+    {{else}}
     cluster = "{{ .Cluster }}"
+    {{end}}
     label = "{{.Label}}"
 
     lifecycle_rule {

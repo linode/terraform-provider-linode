@@ -6,13 +6,14 @@ description: |-
 
 # linode\_lke\_node\_pool
 
+Manages an LKE Node Pool.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-lke-cluster-pools).
+
 ~> **Notice** To prevent LKE node pools managed by this resource from being
 recreated by the linode_lke_cluster resource, the cluster's external_pool_tags
  attribute must match the tags attribute of this resource. Please review the
 [Externally Managed Node Pools](lke_cluster.md#externally-managed-node-pools)
 section for more information.
-
-Manages an LKE Node Pool.
 
 ## Example Usage
 

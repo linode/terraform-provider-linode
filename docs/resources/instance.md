@@ -7,7 +7,7 @@ description: |-
 # linode\_instance
 
 Provides a Linode Instance resource.  This can be used to create, modify, and delete Linodes.
-For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/) and the [Linode APIv4 docs](https://developers.linode.com/api/v4#operation/createLinodeInstance).
+For more information, see [Getting Started with Linode](https://linode.com/docs/getting-started/) and the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-linode-instance).
 
 The Linode Guide, [Use Terraform to Provision Linode Environments](https://www.linode.com/docs/applications/configuration-management/how-to-build-your-infrastructure-using-terraform-and-linode/), provides step-by-step guidance and additional examples.
 
@@ -198,7 +198,7 @@ Just as the Linode API provides, these fields are for the most common provisioni
 
 * `backup_id` - (Optional) A Backup ID from another Linode's available backups. Your User must have read_write access to that Linode, the Backup must have a status of successful, and the Linode must be deployed to the same region as the Backup. See /linode/instances/{linodeId}/backups for a Linode's available backups. This field and the image field are mutually exclusive. *This value can not be imported.* *Changing `backup_id` forces the creation of a new Linode Instance.*
 
-* `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://developers.linode.com/api/v4/images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
+* `image` - (Optional) An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://techdocs.akamai.com/linode-api/reference/get-images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
 
 * `root_pass` - (Required with `image`) The initial password for the `root` user account. *This value can not be imported.* *Changing `root_pass` forces the creation of a new Linode Instance.* *If omitted, a random password will be generated but will not be stored in Terraform state.*
 
@@ -280,7 +280,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
       * `disk_id` - (Computed) The Disk ID of the associated `disk_label`, if used.
 
-    * `kernel` - (Optional) - A Kernel ID to boot a Linode with. Default is based on image choice. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://developers.linode.com/api/v4/linode-kernels)).
+    * `kernel` - (Optional) - A Kernel ID to boot a Linode with. Default is based on image choice. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://techdocs.akamai.com/linode-api/reference/get-kernels)).
 
     * `run_level` - (Optional) - Defines the state of your Linode after booting. Defaults to `"default"`.
 
@@ -296,7 +296,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
 ### Interface
 
-Interface defines a network interfaces that is exposed to a Linode. See the official [Linode API documentation](https://www.linode.com/docs/api/linode-instances/#linode-create__request-body-schema) for more details.
+Interface defines a network interfaces that is exposed to a Linode. See the official [Linode API documentation](https://techdocs.akamai.com/linode-api/reference/post-linode-instance) for more details.
 
 A Linode must have a public interface in the first/eth0 position to be reachable via the public internet
 upon boot without additional system configuration. If no public interface is configured, the Linode

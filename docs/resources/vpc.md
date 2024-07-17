@@ -7,6 +7,7 @@ description: |-
 # linode\_vpc
 
 Manages a Linode VPC.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-vpc).
 
 Please refer to [linode_vpc_subnet](vpc_subnet.html.markdown) to manage the subnets under a Linode VPC.
 

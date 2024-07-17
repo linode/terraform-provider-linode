@@ -6,9 +6,10 @@ description: |-
 
 # linode\_placement\_group
 
-**NOTE: Placement Groups may not currently be available to all users.**
-
 Manages a Linode Placement Group.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-placement-group).
+
+**NOTE: Placement Groups may not currently be available to all users.**
 
 ## Example Usage
 

@@ -7,6 +7,7 @@ description: |-
 # linode\_account\_settings
 
 Manages the settings of a Linode account.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-account-settings).
 
 ## Example Usage
 
@@ -27,7 +28,7 @@ The following arguments are supported:
 
 * `network_helper` - (Optional) Enables network helper across all users by default for new Linodes and Linode Configs.
 
-* `longview_subscription` - (Optional) The Longview Pro tier you are currently subscribed to. The value must be a [Longview Subscription](https://www.linode.com/docs/api/longview/#longview-subscriptions-list) ID or null for Longview Free.
+* `longview_subscription` - (Optional) The Longview Pro tier you are currently subscribed to. The value must be a [Longview Subscription](https://techdocs.akamai.com/linode-api/reference/get-longview-subscriptions) ID or null for Longview Free.
 
 ## Additional Results
 

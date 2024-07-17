@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_domain
 
 Provides information about a Linode domain.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-domain).
 
 ## Example Usage
 

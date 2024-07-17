@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_firewall
 
 Provides details about a Linode Firewall.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-firewall).
 
 ## Example Usage
 

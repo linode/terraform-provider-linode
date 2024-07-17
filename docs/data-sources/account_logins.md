@@ -7,6 +7,7 @@ description: |-
 # linode\_account\_logins
 
 Provides information about Linode account logins that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-account-logins).
 
 ## Example Usage
 

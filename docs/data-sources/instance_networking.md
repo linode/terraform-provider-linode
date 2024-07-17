@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_instance\_networking
 
 Provides details about the networking configuration of an Instance.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-linode-config-interfaces).
 
 ## Example Usage
 
@@ -84,7 +85,7 @@ A list of public IP Address objects belonging to this Linode.
 
 * `gateway` - (Nullable) The default gateway for this address.
 
-* `linode_id` - The ID of the Linode this address currently belongs to. For IPv4 addresses, this is by default the Linode that this address was assigned to on creation, and these addresses my be moved using the [/networking/ipv4/assign](https://www.linode.com/docs/api/networking/#ips-to-linodes-assign) endpoint. For SLAAC and link-local addresses, this value may not be changed.
+* `linode_id` - The ID of the Linode this address currently belongs to. For IPv4 addresses, this is by default the Linode that this address was assigned to on creation, and these addresses my be moved using the [/networking/ipv4/assign](https://techdocs.akamai.com/linode-api/reference/post-assign-ips) endpoint. For SLAAC and link-local addresses, this value may not be changed.
 
 * `prefix` - The number of bits set in the subnet mask.
 
@@ -111,7 +112,7 @@ A list of reserved IP Address objects belonging to this Linode.
 
 * `gateway` - (Nullable) The default gateway for this address.
 
-* `linode_id` - The ID of the Linode this address currently belongs to. For IPv4 addresses, this is by default the Linode that this address was assigned to on creation, and these addresses my be moved using the [/networking/ipv4/assign](https://www.linode.com/docs/api/networking/#ips-to-linodes-assign) endpoint. For SLAAC and link-local addresses, this value may not be changed.
+* `linode_id` - The ID of the Linode this address currently belongs to. For IPv4 addresses, this is by default the Linode that this address was assigned to on creation, and these addresses my be moved using the [/networking/ipv4/assign](https://techdocs.akamai.com/linode-api/reference/post-assign-ips) endpoint. For SLAAC and link-local addresses, this value may not be changed.
 
 * `prefix` - The number of bits set in the subnet mask.
 
@@ -138,7 +139,7 @@ A list of shared IP Address objects assigned to this Linode.
 
 * `gateway` - (Nullable) The default gateway for this address.
 
-* `linode_id` - The ID of the Linode this address currently belongs to. For IPv4 addresses, this is by default the Linode that this address was assigned to on creation, and these addresses my be moved using the [/networking/ipv4/assign](https://www.linode.com/docs/api/networking/#ips-to-linodes-assign) endpoint. For SLAAC and link-local addresses, this value may not be changed.
+* `linode_id` - The ID of the Linode this address currently belongs to. For IPv4 addresses, this is by default the Linode that this address was assigned to on creation, and these addresses my be moved using the [/networking/ipv4/assign](https://techdocs.akamai.com/linode-api/reference/post-assign-ips) endpoint. For SLAAC and link-local addresses, this value may not be changed.
 
 * `prefix` - The number of bits set in the subnet mask.
 

@@ -39,15 +39,19 @@ const (
 	objSecretKeyEnvVar = "LINODE_OBJ_SECRET_KEY"
 )
 
-var testCluster string
+var (
+	testCluster string
+	testRegion  string
+)
 
 func init() {
-	cluster, err := acceptance.GetRandomOBJCluster()
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster = cluster
+	testCluster = region + "-1"
+	testRegion = region
 }
 
 func init() {
@@ -166,6 +170,36 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
+	t.Parallel()
+
+	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+		resName := "linode_object_storage_bucket.foobar"
+		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
+
+		resource.Test(retryT, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkBucketDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.BasicLegacy(t, objectStorageBucketName, testCluster),
+					Check: resource.ComposeTestCheckFunc(
+						checkBucketExists,
+						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
+						resource.TestCheckResourceAttrSet(resName, "hostname"),
+					),
+				},
+				{
+					ResourceName:      resName,
+					ImportState:       true,
+					ImportStateVerify: true,
+				},
+			},
+		})
+	})
+}
+
 func TestAccResourceBucket_basic_smoke(t *testing.T) {
 	t.Parallel()
 
@@ -179,7 +213,7 @@ func TestAccResourceBucket_basic_smoke(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Basic(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -283,6 +317,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
@@ -297,6 +332,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.id", "test-rule-update"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf-update"),
@@ -311,6 +347,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "0"),
 					),
 				},
@@ -337,6 +374,7 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 						resource.TestCheckResourceAttrSet(resName, "lifecycle_rule.0.id"),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.0.prefix", "tf"),
@@ -378,7 +416,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Cert(t, objectStorageBucketName, testCluster, cert, key),
+					Config: tmpl.Cert(t, objectStorageBucketName, testRegion, cert, key),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						checkBucketHasSSL(true),
@@ -386,11 +424,11 @@ func TestAccResourceBucket_cert(t *testing.T) {
 					),
 				},
 				{
-					Config:      tmpl.Cert(t, objectStorageBucketName, testCluster, invalidCert, invalidKey),
+					Config:      tmpl.Cert(t, objectStorageBucketName, testRegion, invalidCert, invalidKey),
 					ExpectError: regexp.MustCompile("failed to upload new bucket cert"),
 				},
 				{
-					Config: tmpl.Cert(t, objectStorageBucketName, testCluster, otherCert, otherKey),
+					Config: tmpl.Cert(t, objectStorageBucketName, testRegion, otherCert, otherKey),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						checkBucketHasSSL(true),
@@ -398,7 +436,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Basic(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						checkBucketHasSSL(false),
@@ -452,14 +490,14 @@ func TestAccResourceBucket_update(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Basic(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 					),
 				},
 				{
-					Config: tmpl.Updates(t, objectStorageBucketName, testCluster),
+					Config: tmpl.Updates(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", objectStorageBucketName)),
@@ -488,6 +526,7 @@ func TestAccResourceBucket_credsConfiged(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 					),
 				},
@@ -514,6 +553,7 @@ func TestAccResourceBucket_tempKeys(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
 					),
 				},
@@ -528,7 +568,6 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 	resName := "linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
-	objectStorageKeyName2 := acctest.RandomWithPrefix("tf-test")
 
 	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
 		resource.Test(retryT, resource.TestCase{
@@ -537,11 +576,11 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.ForceDelete(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Config: tmpl.ForceDelete(t, objectStorageBucketName, testRegion),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
-						resource.TestCheckResourceAttr(resName, "lifecycle_rule.#", "1"),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
 					),
 				},
 				{
@@ -551,23 +590,36 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 							Label: fmt.Sprintf("temp_%s_%v", objectStorageBucketName, time.Now().Unix()),
 							BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
 								BucketName:  objectStorageBucketName,
-								Cluster:     testCluster,
+								Region:      testRegion,
 								Permissions: "read_write",
 							}},
 						}
 
-						keys, _ := client.CreateObjectStorageKey(context.Background(), createOpts)
-						endpoint := fmt.Sprintf("https://%s.%s.linodeobjects.com", objectStorageBucketName, testCluster)
-						s3client, _ := helper.S3Connection(context.Background(), endpoint, keys.AccessKey, keys.SecretKey)
+						keys, err := client.CreateObjectStorageKey(context.Background(), createOpts)
+						if err != nil {
+							retryT.Errorf("error creating obj keys in PreConfig func: %v", err)
+						}
+						defer client.DeleteObjectStorageKey(context.Background(), keys.ID)
+
+						bucket, err := client.GetObjectStorageBucket(context.Background(), testRegion, objectStorageBucketName)
+						if err != nil {
+							retryT.Errorf("error getting obj bucket in PreConfig func: %v", err)
+						}
+
+						endpoint := helper.ComputeS3EndpointFromBucket(context.Background(), *bucket)
+						s3client, err := helper.S3Connection(context.Background(), endpoint, keys.AccessKey, keys.SecretKey)
+						if err != nil {
+							retryT.Errorf("error connecting s3 in PreConfig func: %v", err)
+						}
+
 						contentBytes := []byte("delete test")
 						body := *s3manager.ReadSeekCloser(bytes.NewReader(contentBytes))
 						putInput := &s3.PutObjectInput{
 							Bucket: &objectStorageBucketName,
-							Key:    &objectStorageKeyName2,
+							Key:    &objectStorageKeyName,
 							Body:   &body,
 						}
 						s3client.PutObject(context.Background(), putInput)
-						client.DeleteObjectStorageKey(context.Background(), keys.ID)
 					},
 					Config: tmpl.ForceDelete_Empty(t),
 					Check:  resource.ComposeTestCheckFunc(checkBucketDestroy),

@@ -46,17 +46,18 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
-	cluster := d.Get("cluster").(string)
+	regionOrCluster := helper.GetRegionOrCluster(d)
+
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_only")
-	if diags != nil {
-		return diags
-	}
-
+	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_only")
 	if teardownKeysCleanUp != nil {
 		defer teardownKeysCleanUp()
+	}
+
+	if diags != nil {
+		return diags
 	}
 
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
@@ -118,7 +119,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return putObject(ctx, d, meta)
 	}
 
-	cluster := d.Get("cluster").(string)
+	regionOrCluster := helper.GetRegionOrCluster(d)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	acl := s3types.ObjectCannedACL(d.Get("acl").(string))
@@ -127,7 +128,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		config := meta.(*helper.ProviderMeta).Config
 		client := meta.(*helper.ProviderMeta).Client
 
-		objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+		objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_write")
 		if diags != nil {
 			return diags
 		}
@@ -167,12 +168,12 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
-	cluster := d.Get("cluster").(string)
+	regionOrCluster := helper.GetRegionOrCluster(d)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 	force := d.Get("force_destroy").(bool)
 
-	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_write")
 	if diags != nil {
 		return diags
 	}
@@ -214,11 +215,11 @@ func putObject(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
-	cluster := d.Get("cluster").(string)
+	regionOrCluster := helper.GetRegionOrCluster(d)
 	bucket := d.Get("bucket").(string)
 	key := d.Get("key").(string)
 
-	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, cluster, "read_write")
+	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_write")
 	if diags != nil {
 		return diags
 	}

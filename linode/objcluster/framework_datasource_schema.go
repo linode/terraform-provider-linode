@@ -5,6 +5,11 @@ import (
 )
 
 var frameworkDatasourceSchema = schema.Schema{
+	DeprecationMessage: "This data source has been deprecated because it " +
+		"relies on deprecated API endpoints. Going forward, `region` will " +
+		"be the preferred way to designate where Object Storage resources " +
+		"should be created.",
+
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Description: "The unique ID of this Cluster.",

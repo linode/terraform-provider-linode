@@ -7,6 +7,7 @@ description: |-
 # linode\_users
 
 Provides information about Linode users that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-users).
 
 ```hcl
 data "linode_users" "filtered-users" {

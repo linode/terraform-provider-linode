@@ -7,6 +7,7 @@ description: |-
 # linode\_account\_settings
 
 Provides information about Linode account settings.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-account-settings).
 
 ## Example Usage
 

@@ -7,6 +7,7 @@ description: |-
 # linode\_account\_availabilities
 
 Provides information about services availabilities for the current Linode account.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-availability).
 
 ## Example Usage
 

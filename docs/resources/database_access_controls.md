@@ -7,6 +7,7 @@ description: |-
 # linode\_database\_access_controls
 
 Manages the access control for a Linode Database. Only one `linode_database_access_controls` resource should be defined per-database.
+For more information, see the Linode APIv4 docs for [MySQL](https://techdocs.akamai.com/linode-api/reference/put-databases-mysql-instance) and [PostgreSQL](https://techdocs.akamai.com/linode-api/reference/put-databases-postgre-sql-instance).
 
 ## Example Usage
 
@@ -41,6 +42,6 @@ The following arguments are supported:
 
 * `database_id` - (Required) The unique ID of the target database.
 
-* `database_type` - (Required) The unique type of the target database. (`mysql`, `mongodb`, `postgresql`)
+* `database_type` - (Required) The unique type of the target database. (`mysql`, `postgresql`)
 
 * `allow_list` - (Required) A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format.

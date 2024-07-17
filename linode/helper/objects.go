@@ -17,6 +17,15 @@ import (
 	"github.com/linode/linodego"
 )
 
+func GetRegionOrCluster(d *schema.ResourceData) (regionOrCluster string) {
+	if region, ok := d.GetOk("region"); ok && region != "" {
+		regionOrCluster = region.(string)
+	} else {
+		regionOrCluster = d.Get("cluster").(string)
+	}
+	return
+}
+
 func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*s3.Client, error) {
 	tflog.Debug(ctx, "Creating Object Storage client")
 	awsSDKConfig, err := config.LoadDefaultConfig(
@@ -58,10 +67,10 @@ func S3ConnectionFromData(
 
 func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interface{}) (string, error) {
 	tflog.Debug(ctx, "Getting Object Storage bucket from resource data")
-	cluster := d.Get("cluster").(string)
+	regionOrCluster := GetRegionOrCluster(d)
 	bucket := d.Get("bucket").(string)
 
-	b, err := meta.(*ProviderMeta).Client.GetObjectStorageBucket(ctx, cluster, bucket)
+	b, err := meta.(*ProviderMeta).Client.GetObjectStorageBucket(ctx, regionOrCluster, bucket)
 	if err != nil {
 		return "", fmt.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
 	}

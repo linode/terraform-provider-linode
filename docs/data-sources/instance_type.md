@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_instance\_type
 
 Provides information about a Linode instance type
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-linode-type).
 
 ## Example Usage
 
@@ -32,7 +33,7 @@ The Linode Instance Type resource exports the following attributes:
 
 * `label` - The Linode Type's label is for display purposes only
 
-* `class` - The class of the Linode Type. See all classes [here](https://www.linode.com/docs/api/linode-types/#type-view__responses).
+* `class` - The class of the Linode Type. See all classes [here](https://techdocs.akamai.com/linode-api/reference/get-linode-type).
 
 * `disk` - The Disk size, in MB, of the Linode Type
 

@@ -85,9 +85,11 @@ The following arguments are supported:
 
 * `bucket` - (Required) The name of the bucket to put the object in.
 
-* `cluster` - (Required) The cluster the bucket is in.
-
 * `key` - (Required) They name of the object once it is in the bucket.
+
+* `region` - The cluster the bucket is in. Required if `cluster` is not configured.
+
+* `cluster` - (Deprecated) The cluster the bucket is in. Required if `region` is not configured. Deprecated in favor of `region`.
 
 * `secret_key` - (Optional) The REQUIRED secret key to authenticate with. If it's not specified with the resource, you must provide its value by
   * configuring the [`obj_secret_key`](../index.md#configuration-reference) in the provider configuration;

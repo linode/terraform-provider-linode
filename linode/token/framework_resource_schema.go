@@ -37,7 +37,7 @@ var frameworkResourceSchema = schema.Schema{
 				"token can be used to access. Many command-line tools, such as the Linode CLI, require tokens with " +
 				"access to *. Tokens with more restrictive scopes are generally more secure. Multiple scopes are " +
 				"separated by a space character (e.g., \"databases:read_only events:read_only\"). You can find the " +
-				"list of available scopes on Linode API docs site, https://www.linode.com/docs/api#oauth-reference",
+				"list of available scopes on Linode API docs site, https://techdocs.akamai.com/linode-api/reference/get-started#oauth-reference",
 			Required: true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplaceIf(

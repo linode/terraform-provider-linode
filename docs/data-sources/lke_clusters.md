@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_lke\_clusters
 
 Provides information about a list of current Linode Kubernetes (LKE) clusters on your account that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-lke-clusters).
 
 ## Example Usage
 

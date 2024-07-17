@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_database\_mysql
 
 Provides information about a Linode MySQL Database.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-databases-instances).
 
 ## Example Usage
 
