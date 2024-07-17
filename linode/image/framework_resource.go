@@ -224,6 +224,10 @@ func (r *Resource) Create(
 		image = createResourceFromUpload(ctx, &plan, client, resp, timeoutSeconds)
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if !plan.RegionsToReplicate.IsNull() && !plan.RegionsToReplicate.IsUnknown() {
 		plan.ID = types.StringValue(image.ID)
 
