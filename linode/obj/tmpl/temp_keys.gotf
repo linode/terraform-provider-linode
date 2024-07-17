@@ -8,7 +8,11 @@ provider "linode" {
 
 resource "linode_object_storage_object" "temp_keys" {
     bucket     = linode_object_storage_bucket.foobar.label
+    {{if .Region }}
+    region     = "{{.Region}}"
+    {{else}}
     cluster    = "{{ .Cluster }}"
+    {{end}}
     key        = "test_temp_keys"
     content    = "{{.Content}}"
 }

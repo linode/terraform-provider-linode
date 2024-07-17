@@ -6,11 +6,12 @@ description: |-
 
 # linode\_instance\_ip
 
+Manages a Linode instance IP.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-add-linode-ip).
+
 ~> **NOTICE:** You may need to contact support to increase your instance IP limit before you can allocate additional IPs.
 
 ~> **NOTICE:** This resource will reboot the specified instance following IP allocation.
-
-Manages a Linode instance IP.
 
 ## Example Usage
 

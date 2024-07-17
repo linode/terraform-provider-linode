@@ -1,19 +1,31 @@
 {{ define "object_key_limited" }}
 
 resource "linode_object_storage_bucket" "foobar" {
+    {{if .Region }}
+    region = "{{.Region}}"
+    {{else}}
     cluster = "{{ .Cluster }}"
+    {{end}}
     label = "{{.Label}}-bucket"
 }
 resource "linode_object_storage_key" "foobar" {
     label = "{{.Label}}_key"
     bucket_access {
         bucket_name = "{{.Label}}-bucket"
+        {{if .Region }}
+        region = "{{.Region}}"
+        {{else}}
         cluster = "{{ .Cluster }}"
+        {{end}}
         permissions = "read_only"
     }
     bucket_access {
         bucket_name = linode_object_storage_bucket.foobar.label
+        {{if .Region }}
+        region = linode_object_storage_bucket.foobar.region
+        {{else}}
         cluster = linode_object_storage_bucket.foobar.cluster
+        {{end}}
         permissions = "read_write"
     }
 }

@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_sshkeys
 
 `linode_sshkey` provides access to a filtered list of SSH Keys in the Profile of the User identified by the access token.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-ssh-keys).
 
 ## Example Usage
 

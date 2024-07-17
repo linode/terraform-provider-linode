@@ -6,13 +6,14 @@ description: |-
 
 # linode\_instance\_shared\_ips
 
+Manages IPs shared to a Linode instance.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-share-ips).
+
 ~> **Beta Notice** IPv6 sharing is currently available through early access.
 To use early access resources, the `api_version` provider argument must be set to `v4beta`.
 To learn more, see the [early access documentation](../..#early-access).
 
 ~> **Notice** This resource should only be defined once per-instance and should not be used alongside the `shared_ipv4` field in `linode_instance`.
-
-Manages IPs shared to a Linode instance.
 
 ## Example Usage
 
