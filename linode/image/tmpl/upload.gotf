@@ -6,6 +6,7 @@ resource "linode_image" "foobar" {
     file_hash = filemd5("{{.FilePath}}")
     region = "{{ .Region }}"
     description = "really descriptive text"
+    tags = ["{{.Tag}}"]
 }
 
 {{ end }}

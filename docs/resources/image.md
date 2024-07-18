@@ -27,6 +27,7 @@ resource "linode_image" "bar" {
     description = "Image taken from foo"
     disk_id = linode_instance.foo.disk.0.id
     linode_id = linode_instance.foo.id
+    tags = ["image-tag", "test"]
 }
 
 resource "linode_instance" "bar_based" {
@@ -43,6 +44,7 @@ resource "linode_image" "foobar" {
     label = "foobar-image"
     description = "An image uploaded from Terraform!"
     region = "us-southeast"
+    tags = ["image-tag", "test"]
   
     file_path = "path/to/image.img.gz"
     file_hash = filemd5("path/to/image.img.gz")
@@ -56,6 +58,10 @@ The following arguments are supported:
 * `label` - (Required) A short description of the Image. Labels cannot contain special characters.
 
 * `description` - (Optional) A detailed description of this Image.
+
+* `tags` - (Optional) A list of customized tags.
+
+* `regions_to_replicate` - (Optional) A list of regions that customer wants to replicate this image in. At least one valid region is required and only core regions allowed. Existing images in the regions not passed will be removed.
 
 - - -
 
@@ -104,6 +110,12 @@ This resource exports the following attributes:
 * `expiry` - Only Images created automatically (from a deleted Linode; type=automatic) will expire.
 
 * `vendor` - The upstream distribution vendor. Nil for private Images.
+
+* `total_size` - The total size of the image in all available regions.
+
+* `replications` - A list of image replications region and corresponding status.
+  * `region` - The region of an image replica.
+  * `status` - The status of an image replica.
 
 ## Import
 

@@ -86,6 +86,14 @@ Each Linode image will be stored in the `images` attribute and will export the f
 
 * `vendor` - The upstream distribution vendor. `None` for private Images.
 
+* `tags` - A list of customized tags.
+
+* `total_size` - The total size of the image in all available regions.
+
+* `replications` - A list of image replication regions and corresponding status.
+  * `region` - The region of an image replica.
+  * `status` - The status of an image replica.
+
 ## Filterable Fields
 
 * `created_by`
@@ -105,3 +113,5 @@ Each Linode image will be stored in the `images` attribute and will export the f
 * `status`
 
 * `vendor`
+
+* `tags`

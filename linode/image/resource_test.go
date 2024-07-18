@@ -5,7 +5,6 @@ package image_test
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"testing"
 
@@ -42,13 +41,15 @@ func init() {
 		Name: "linode_image",
 		F:    sweep,
 	})
-
-	region, err := acceptance.GetRandomRegionWithCaps(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testRegion = region
+	//
+	//region, err := acceptance.GetRandomRegionWithCaps(nil)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//testRegion = region
+	// TODO: revert the change once image gen2 works globally or with specific capabilities
+	testRegion = "us-east"
 }
 
 func sweep(prefix string) error {
@@ -89,7 +90,7 @@ func TestAccImage_basic(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, imageName, testRegion, label),
+				Config: tmpl.Basic(t, imageName, testRegion, label, "test-tag"),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -101,6 +102,7 @@ func TestAccImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "is_public", "false"),
 					resource.TestCheckResourceAttr(resName, "capabilities.0", "cloud-init"),
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 				),
 			},
 			{
@@ -127,16 +129,18 @@ func TestAccImage_update(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, imageName, testRegion, label),
+				Config: tmpl.Basic(t, imageName, testRegion, label, "test-tag"),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
 					resource.TestCheckResourceAttr(resName, "description", "descriptive text"),
 					resource.TestCheckResourceAttrSet(resName, "capabilities.#"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "test-tag"),
 				),
 			},
 			{
-				Config: tmpl.Updates(t, imageName, testRegion, label),
+				Config: tmpl.Updates(t, imageName, testRegion, label, "updated-tag"),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", imageName)),
@@ -147,6 +151,8 @@ func TestAccImage_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "type", "manual"),
 					resource.TestCheckResourceAttr(resName, "is_public", "false"),
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "updated-tag"),
 				),
 			},
 			{
@@ -179,7 +185,7 @@ func TestAccImage_uploadFile(t *testing.T) {
 		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Upload(t, imageName, file.Name(), testRegion),
+				Config: tmpl.Upload(t, imageName, file.Name(), testRegion, "test-tag"),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -192,13 +198,14 @@ func TestAccImage_uploadFile(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "deprecated"),
 					resource.TestCheckResourceAttr(resName, "file_hash", testImageMD5),
 					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),
+					resource.TestCheckResourceAttr(resName, "tags.#", "1"),
 				),
 			},
 			{
 				PreConfig: func() {
 					file.Write(testImageBytesNew)
 				},
-				Config: tmpl.Upload(t, imageName, file.Name(), testRegion),
+				Config: tmpl.Upload(t, imageName, file.Name(), testRegion, "test-tag"),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "status", string(linodego.ImageStatusAvailable)),
@@ -207,6 +214,47 @@ func TestAccImage_uploadFile(t *testing.T) {
 		},
 	})
 }
+
+//
+//func TestAccImage_replicate(t *testing.T) {
+//	t.Parallel()
+//
+//	resourceName := "linode_image.foobar"
+//	imageName := acctest.RandomWithPrefix("tf_test")
+//	label := acctest.RandomWithPrefix("tf_test")
+//	// TODO: Use random region once image gen2 works globally or with specific capabilities
+//	replicateRegion := "us-central"
+//
+//	resource.Test(t, resource.TestCase{
+//		PreCheck:                 func() { acceptance.PreCheck(t) },
+//		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+//
+//		CheckDestroy: checkImageDestroy,
+//		Steps: []resource.TestStep{
+//			{
+//				Config: tmpl.Replicate(t, imageName, testRegion, label, replicateRegion),
+//				Check: resource.ComposeTestCheckFunc(
+//					checkImageExists(resourceName, nil),
+//					resource.TestCheckResourceAttrSet(resourceName, "size"),
+//					resource.TestCheckResourceAttr(resourceName, "type", "manual"),
+//					resource.TestCheckResourceAttr(resourceName, "is_public", "false"),
+//					resource.TestCheckResourceAttrSet(resourceName, "total_size"),
+//					resource.TestCheckResourceAttr(resourceName, "replications.#", "2"),
+//				),
+//			},
+//			{
+//				Config: tmpl.Replicate(t, imageName, testRegion, label, ""),
+//				Check: resource.ComposeTestCheckFunc(
+//					checkImageExists(resourceName, nil),
+//					resource.TestCheckResourceAttrSet(resourceName, "size"),
+//					resource.TestCheckResourceAttrSet(resourceName, "total_size"),
+//					resource.TestCheckResourceAttr(resourceName, "replications.#", "1"),
+//					resource.TestCheckResourceAttr(resourceName, "replications.0.region", testRegion),
+//				),
+//			},
+//		},
+//	})
+//}
 
 func checkImageExists(name string, image *linodego.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

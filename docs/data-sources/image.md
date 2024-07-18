@@ -47,3 +47,11 @@ The Linode Image resource exports the following attributes:
 * `type` - How the Image was created. Manual Images can be created at any time. "Automatic" Images are created automatically from a deleted Linode. (`manual`, `automatic`)
 
 * `vendor` - The upstream distribution vendor. `None` for private Images.
+
+* `tags` - A list of customized tags.
+
+* `total_size` - The total size of the image in all available regions.
+
+* `replications` - A list of image replication regions and corresponding status.
+  * `region` - The region of an image replica.
+  * `status` - The status of an image replica.

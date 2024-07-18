@@ -66,6 +66,11 @@ func createResourceFromUpload(
 		CloudInit:   plan.CloudInit.ValueBool(),
 	}
 
+	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
+	if resp.Diagnostics.HasError() {
+		return nil
+	}
+
 	tflog.Trace(ctx, "client.CreateImageUpload(...)", map[string]any{
 		"options": createOpts,
 	})
@@ -141,6 +146,12 @@ func createResourceFromLinode(
 		Description: plan.Description.ValueString(),
 		CloudInit:   plan.CloudInit.ValueBool(),
 	}
+
+	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
+	if resp.Diagnostics.HasError() {
+		return nil
+	}
+
 	tflog.Trace(ctx, "client.CreateImage(...)", map[string]any{
 		"options": createOpts,
 	})
@@ -213,7 +224,22 @@ func (r *Resource) Create(
 		image = createResourceFromUpload(ctx, &plan, client, resp, timeoutSeconds)
 	}
 
-	plan.FlattenImage(image, true, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !plan.RegionsToReplicate.IsNull() && !plan.RegionsToReplicate.IsUnknown() {
+		plan.ID = types.StringValue(image.ID)
+
+		// Refresh image from replication
+		image, diags = replicateImage(ctx, &plan, client)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	plan.FlattenImage(ctx, image, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -263,7 +289,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	state.FlattenImage(image, true, &resp.Diagnostics)
+	state.FlattenImage(ctx, image, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -304,6 +330,14 @@ func (r *Resource) Update(
 		shouldUpdate = true
 	}
 
+	if !state.Tags.Equal(plan.Tags) {
+		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		shouldUpdate = true
+	}
+
 	if shouldUpdate {
 		tflog.Debug(ctx, "client.UpdateImage(...)", map[string]any{
 			"options": updateOpts,
@@ -314,7 +348,28 @@ func (r *Resource) Update(
 			resp.Diagnostics.AddError("Failed to Update Image", err.Error())
 			return
 		}
-		plan.FlattenImage(image, true, &resp.Diagnostics)
+		plan.FlattenImage(ctx, image, true, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !state.RegionsToReplicate.Equal(plan.RegionsToReplicate) {
+		if plan.RegionsToReplicate.IsNull() {
+			resp.Diagnostics.AddError(
+				"Invalid regions to replicate.",
+				"At least one valid region is required. "+
+					"Image is not allowed to be deleted by sending an empty regions list.")
+		}
+
+		image, diags := replicateImage(ctx, &plan, client)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// Refresh image from replication
+		plan.FlattenImage(ctx, image, true, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -426,4 +481,31 @@ func uploadImageAndStoreHash(
 	}
 
 	plan.FileHash = types.StringValue(hex.EncodeToString(hash.Sum(nil)))
+}
+
+func replicateImage(
+	ctx context.Context,
+	plan *ResourceModel,
+	client *linodego.Client,
+) (*linodego.Image, diag.Diagnostics) {
+	var replicationOpts linodego.ImageReplicateOptions
+	diags := plan.RegionsToReplicate.ElementsAs(ctx, &replicationOpts.Regions, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	tflog.Debug(ctx, "client.ReplicateImage(...)", map[string]any{
+		"opts": replicationOpts,
+	})
+
+	image, err := client.ReplicateImage(ctx, plan.ID.ValueString(), replicationOpts)
+	if err != nil {
+		diags.AddError(
+			fmt.Sprintf("Failed to replicate image %v", plan.ID.ValueString()),
+			err.Error(),
+		)
+		return nil, diags
+	}
+
+	return image, nil
 }

@@ -1,4 +1,4 @@
-{{ define "image_basic" }}
+{{ define "image_replicate" }}
 
 {{ template "e2e_test_firewall" . }}
 
@@ -20,8 +20,9 @@ resource "linode_image" "foobar" {
     disk_id = "${linode_instance.foobar.disk.0.id}"
     label = "{{.Image}}"
     description = "descriptive text"
-    cloud_init = true
-    tags = ["{{.Tag}}"]
+    tags = ["test", "image-gen2"]
+    # test replication when it's ready
+    # regions_to_replicate = ["{{ .Region }}", "{{ .RegionToReplicate }}"]
 }
 
 {{ end }}
