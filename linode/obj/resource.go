@@ -52,12 +52,19 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	key := d.Get("key").(string)
 
 	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_only")
-	if teardownKeysCleanUp != nil {
-		defer teardownKeysCleanUp()
+	if diags != nil {
+		// Check if the error is due to the bucket being not found
+		if helper.IsBucketNotFoundError(fmt.Errorf(diags[0].Summary)) {
+			d.SetId("")
+			tflog.Warn(ctx,
+				"couldn't find the bucket, removing the object from the TF state")
+			return nil
+		}
+		return diags
 	}
 
-	if diags != nil {
-		return diags
+	if teardownKeysCleanUp != nil {
+		defer teardownKeysCleanUp()
 	}
 
 	s3client, err := helper.S3ConnectionFromData(ctx, d, meta, objKeys.AccessKey, objKeys.SecretKey)
