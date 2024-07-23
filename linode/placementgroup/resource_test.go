@@ -39,7 +39,7 @@ func TestAccResourcePG_basic(t *testing.T) {
 	resName := "linode_placement_group.foobar"
 	label := acctest.RandomWithPrefix("tf-test")
 	labelUpdated := label + "-updated"
-	affinityType := string(linodego.AffinityTypeAntiAffinityLocal)
+	placementGroupType := string(linodego.PlacementGroupTypeAntiAffinityLocal)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -47,24 +47,24 @@ func TestAccResourcePG_basic(t *testing.T) {
 		CheckDestroy:             checkPGDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Basic(t, label, testRegion, affinityType, false),
+				Config: tmpl.Basic(t, label, testRegion, placementGroupType, "flexible"),
 				Check: resource.ComposeTestCheckFunc(
 					checkPGExists,
 					resource.TestCheckResourceAttr(resName, "label", label),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "affinity_type", affinityType),
-					resource.TestCheckResourceAttr(resName, "is_strict", "false"),
+					resource.TestCheckResourceAttr(resName, "placement_group_type", placementGroupType),
+					resource.TestCheckResourceAttr(resName, "placement_group_policy", "flexible"),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 				),
 			},
 			{
-				Config: tmpl.Basic(t, labelUpdated, testRegion, affinityType, false),
+				Config: tmpl.Basic(t, labelUpdated, testRegion, placementGroupType, "flexible"),
 				Check: resource.ComposeTestCheckFunc(
 					checkPGExists,
 					resource.TestCheckResourceAttr(resName, "label", labelUpdated),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "affinity_type", affinityType),
-					resource.TestCheckResourceAttr(resName, "is_strict", "false"),
+					resource.TestCheckResourceAttr(resName, "placement_group_type", placementGroupType),
+					resource.TestCheckResourceAttr(resName, "placement_group_policy", "flexible"),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 				),
 			},
