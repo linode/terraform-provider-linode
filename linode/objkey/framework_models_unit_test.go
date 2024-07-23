@@ -3,8 +3,10 @@
 package objkey
 
 import (
+	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +31,9 @@ func TestFlattenObjectStorageKey(t *testing.T) {
 	}
 
 	data := ResourceModel{}
-	data.FlattenObjectStorageKey(&key, false)
+	var diags diag.Diagnostics
+	data.FlattenObjectStorageKey(context.Background(), &key, false, &diags)
+	assert.False(t, diags.HasError(), "error flattening obj key")
 	assert.True(t, types.StringValue("123").Equal(data.ID))
 	assert.Equal(t, types.StringValue("my-key"), data.Label)
 	assert.Equal(t, types.StringValue("KVAKUTGBA4WTR2NSJQ81"), data.AccessKey)
@@ -61,7 +65,10 @@ func TestFlattenObjectStorageKeyPreserveKnown(t *testing.T) {
 		SecretKey: expectedSecretKey,
 	}
 
-	rm.FlattenObjectStorageKey(&key, true)
+	var diags diag.Diagnostics
+	rm.FlattenObjectStorageKey(context.Background(), &key, true, &diags)
+	assert.False(t, diags.HasError(), "error flattening obj key")
+
 	assert.True(t, expectedID.Equal(rm.ID))
 	assert.True(t, expectedSecretKey.Equal(rm.SecretKey))
 }

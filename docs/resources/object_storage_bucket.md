@@ -7,6 +7,7 @@ description: |-
 # linode\_object\_storage\_bucket
 
 Provides a Linode Object Storage Bucket resource. This can be used to create, modify, and delete Linodes Object Storage Buckets.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-object-storage-bucket).
 
 ## Example Usage
 
@@ -93,11 +94,14 @@ resource "linode_object_storage_bucket" "mybucket" {
 
 The following arguments are supported:
 
-* `cluster` - (Required) The cluster of the Linode Object Storage Bucket.
+* `region` - (Required) The region of the Linode Object Storage Bucket. Exactly one of `region` and `cluster` is required for creating a bucket.
+
+* `cluster` - (Deprecated) The cluster of the Linode Object Storage Bucket. This is deprecated in favor of `region` attribute.
+For example, `us-mia-1` cluster can be translated into `us-mia` region. Exactly one of `region` and `cluster` is required for creating a bucket.
 
 * `label` - (Required) The label of the Linode Object Storage Bucket.
 
-* `acl` - (Optional) The Access Control Level of the bucket using a canned ACL string. See all ACL strings [in the Linode API v4 documentation](https://linode.com/docs/api/object-storage/#object-storage-bucket-access-update__request-body-schema).
+* `acl` - (Optional) The Access Control Level of the bucket using a canned ACL string. See all ACL strings [in the Linode API v4 documentation](https://techdocs.akamai.com/linode-api/reference/post-object-storage-bucket).
 
 * `access_key` - (Optional) The access key to authenticate with. If not specified with the resource, its value can be
   * configured by [`obj_access_key`](../index.md#configuration-reference) in the provider configuration;

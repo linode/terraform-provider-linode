@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_nodebalancer_config
 
 Provides details about a Linode NodeBalancer Config.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-node-balancer-config).
 
 ## Example Usage
 

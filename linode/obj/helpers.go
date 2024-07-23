@@ -3,6 +3,7 @@ package obj
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -38,23 +39,37 @@ func getObjKeysFromProvider(
 	return keys, checkObjKeysConfigured(keys)
 }
 
+func isCluster(regionOrCluster string) bool {
+	pattern := `^[a-z]{2}-[a-z]+-[0-9]+$`
+	re := regexp.MustCompile(pattern)
+	return re.MatchString(regionOrCluster)
+}
+
 // createTempKeys creates temporary Object Storage Keys to use.
 // The temporary keys are scoped only to the target cluster and bucket with limited permissions.
 // Keys only exist for the duration of the apply time.
 func createTempKeys(
 	ctx context.Context,
 	client linodego.Client,
-	bucket, cluster, permissions string,
+	bucket, regionOrCluster, permissions string,
 ) (*linodego.ObjectStorageKey, diag.Diagnostics) {
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
+	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
+		BucketName:  bucket,
+		Permissions: permissions,
+	}
+
+	if isCluster(regionOrCluster) {
+		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
+		tempBucketAccess.Cluster = regionOrCluster
+	} else {
+		tempBucketAccess.Region = regionOrCluster
+	}
+
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
-		Label: fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
-		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
-			BucketName:  bucket,
-			Cluster:     cluster,
-			Permissions: permissions,
-		}},
+		Label:        fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
+		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
 	}
 
 	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]interface{}{
@@ -100,7 +115,7 @@ func GetObjKeys(
 	d *schema.ResourceData,
 	config *helper.Config,
 	client linodego.Client,
-	bucket, cluster, permission string,
+	bucket, regionOrCluster, permission string,
 ) (ObjectKeys, diag.Diagnostics, func()) {
 	var teardownTempKeysCleanUp func() = nil
 
@@ -115,7 +130,7 @@ func GetObjKeys(
 			objKeys = providerKeys
 		} else if config.ObjUseTempKeys {
 			// Implicitly create temporary object storage keys
-			keys, diag := createTempKeys(ctx, client, bucket, cluster, permission)
+			keys, diag := createTempKeys(ctx, client, bucket, regionOrCluster, permission)
 			if diag != nil {
 				return objKeys, diag, nil
 			}

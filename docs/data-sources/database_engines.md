@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_database\_engines
 
 Provides information about Linode Managed Database engines that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-databases-engines).
 
 ## Example Usage
 

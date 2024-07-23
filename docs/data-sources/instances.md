@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_instances
 
 Provides information about Linode instances that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-linode-instances).
 
 ## Example Usage
 
@@ -88,7 +89,7 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `watchdog_enabled` - The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible. To prevent a loop, Lassie will give up if there have been more than 5 boot jobs issued within 15 minutes.
 
-* `image` - An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://developers.linode.com/api/v4/images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
+* `image` - An Image ID to deploy the Disk from. Official Linode Images start with linode/, while your Images start with `private/`. See [images](https://api.linode.com/v4/images) for more information on the Images available for you to use. Examples are `linode/debian12`, `linode/fedora39`, `linode/ubuntu22.04`, `linode/arch`, and `private/12345`. See all images [here](https://api.linode.com/v4/linode/images) (Requires a personal access token; docs [here](https://techdocs.akamai.com/linode-api/reference/get-images)). *This value can not be imported.* *Changing `image` forces the creation of a new Linode Instance.*
 
 * `swap_size` - When deploying from an Image, this field is optional with a Linode API default of 512mb, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.
 
@@ -144,7 +145,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
   * `label` - The Config's label for display purposes.  Also used by `boot_config_label`.
 
-  * `kernel` - A Kernel ID to boot a Linode with. Default is based on image choice. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://developers.linode.com/api/v4/linode-kernels)).
+  * `kernel` - A Kernel ID to boot a Linode with. Default is based on image choice. Examples are `linode/latest-64bit`, `linode/grub2`, `linode/direct-disk`, etc. See all kernels [here](https://api.linode.com/v4/linode/kernels). Note that this is a paginated API endpoint ([docs](https://techdocs.akamai.com/linode-api/reference/get-kernels)).
 
   * `run_level` - Defines the state of your Linode after booting.
 
@@ -180,7 +181,7 @@ Configuration profiles define the VM settings and boot behavior of the Linode In
 
 ### Interface
 
-Interface defines a network interfaces that is exposed to a Linode. See the official [Linode API documentation](https://www.linode.com/docs/api/linode-instances/#linode-create__request-body-schema) for more details.
+Interface defines a network interfaces that is exposed to a Linode. See the official [Linode API documentation](https://techdocs.akamai.com/linode-api/reference/post-linode-config-interface) for more details.
 
 Each interface exports the following attributes:
 
