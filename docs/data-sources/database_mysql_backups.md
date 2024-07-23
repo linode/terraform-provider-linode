@@ -6,9 +6,10 @@ description: |-
 
 # Data Source: linode\_database\_mysql\_backups
 
-~> **NOTICE:** This data source has been deprecated in favor of `linode_database_backups`.
-
 Provides information about Linode MySQL Database Backups that match a set of filters.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-databases-mysql-instance-backups).
+
+~> **NOTICE:** This data source has been deprecated in favor of `linode_database_backups`.
 
 ## Example Usage
 

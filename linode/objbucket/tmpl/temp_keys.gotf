@@ -5,7 +5,11 @@ provider "linode" {
 }
 
 resource "linode_object_storage_bucket" "foobar" {
+    {{if .Region }}
+    region = "{{.Region}}"
+    {{else}}
     cluster = "{{ .Cluster }}"
+    {{end}}
     label = "{{.Label}}"
 
     lifecycle_rule {
