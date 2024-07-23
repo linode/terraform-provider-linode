@@ -2408,8 +2408,8 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
 					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g1"),
-					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
-					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.placement_group_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.placement_group_policy", "flexible"),
 				),
 			},
 			{
@@ -2469,8 +2469,8 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
 					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g1"),
-					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
-					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.placement_group_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.placement_group_policy", "flexible"),
 				),
 			},
 
@@ -2486,8 +2486,8 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "placement_group.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "placement_group.0.id"),
 					resource.TestCheckResourceAttr(resName, "placement_group.0.label", testLabel+"-g2"),
-					resource.TestCheckResourceAttr(resName, "placement_group.0.affinity_type", "anti_affinity:local"),
-					resource.TestCheckResourceAttr(resName, "placement_group.0.is_strict", "false"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.placement_group_type", "anti_affinity:local"),
+					resource.TestCheckResourceAttr(resName, "placement_group.0.placement_group_policy", "flexible"),
 				),
 			},
 

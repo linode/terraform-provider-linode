@@ -12,22 +12,22 @@ import (
 )
 
 type PlacementGroupDataSourceModel struct {
-	ID           types.Int64                 `tfsdk:"id"`
-	Label        types.String                `tfsdk:"label"`
-	Region       types.String                `tfsdk:"region"`
-	AffinityType types.String                `tfsdk:"affinity_type"`
-	IsCompliant  types.Bool                  `tfsdk:"is_compliant"`
-	IsStrict     types.Bool                  `tfsdk:"is_strict"`
-	Members      []PlacementGroupMemberModel `tfsdk:"members"`
+	ID                   types.Int64                 `tfsdk:"id"`
+	Label                types.String                `tfsdk:"label"`
+	Region               types.String                `tfsdk:"region"`
+	PlacementGroupType   types.String                `tfsdk:"placement_group_type"`
+	IsCompliant          types.Bool                  `tfsdk:"is_compliant"`
+	PlacementGroupPolicy types.String                `tfsdk:"placement_group_policy"`
+	Members              []PlacementGroupMemberModel `tfsdk:"members"`
 }
 
 type PlacementGroupResourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Label        types.String `tfsdk:"label"`
-	Region       types.String `tfsdk:"region"`
-	AffinityType types.String `tfsdk:"affinity_type"`
-	IsStrict     types.Bool   `tfsdk:"is_strict"`
-	IsCompliant  types.Bool   `tfsdk:"is_compliant"`
+	ID                   types.String `tfsdk:"id"`
+	Label                types.String `tfsdk:"label"`
+	Region               types.String `tfsdk:"region"`
+	PlacementGroupType   types.String `tfsdk:"placement_group_type"`
+	PlacementGroupPolicy types.String `tfsdk:"placement_group_policy"`
+	IsCompliant          types.Bool   `tfsdk:"is_compliant"`
 
 	Members types.Set `tfsdk:"members"`
 }
@@ -42,9 +42,9 @@ func (data *PlacementGroupDataSourceModel) ParsePlacementGroup(
 ) {
 	data.Label = types.StringValue(pg.Label)
 	data.Region = types.StringValue(pg.Region)
-	data.AffinityType = types.StringValue(string(pg.AffinityType))
+	data.PlacementGroupType = types.StringValue(string(pg.PlacementGroupType))
 	data.IsCompliant = types.BoolValue(pg.IsCompliant)
-	data.IsStrict = types.BoolValue(pg.IsStrict)
+	data.PlacementGroupPolicy = types.StringValue(string(pg.PlacementGroupPolicy))
 
 	members := make([]PlacementGroupMemberModel, len(pg.Members))
 
@@ -71,8 +71,8 @@ func (m *PlacementGroupResourceModel) FlattenPlacementGroup(
 
 	m.Label = helper.KeepOrUpdateString(m.Label, pg.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, pg.Region, preserveKnown)
-	m.AffinityType = helper.KeepOrUpdateString(m.AffinityType, string(pg.AffinityType), preserveKnown)
-	m.IsStrict = helper.KeepOrUpdateBool(m.IsStrict, pg.IsStrict, preserveKnown)
+	m.PlacementGroupType = helper.KeepOrUpdateString(m.PlacementGroupType, string(pg.PlacementGroupType), preserveKnown)
+	m.PlacementGroupPolicy = helper.KeepOrUpdateString(m.PlacementGroupPolicy, string(pg.PlacementGroupPolicy), preserveKnown)
 	m.IsCompliant = helper.KeepOrUpdateBool(m.IsCompliant, pg.IsCompliant, preserveKnown)
 
 	members := make([]PlacementGroupMemberModel, len(pg.Members))
@@ -97,8 +97,8 @@ func (m *PlacementGroupResourceModel) CopyFrom(other PlacementGroupResourceModel
 
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
-	m.AffinityType = helper.KeepOrUpdateValue(m.AffinityType, other.AffinityType, preserveKnown)
-	m.IsStrict = helper.KeepOrUpdateValue(m.IsStrict, other.IsStrict, preserveKnown)
+	m.PlacementGroupType = helper.KeepOrUpdateValue(m.PlacementGroupType, other.PlacementGroupType, preserveKnown)
+	m.PlacementGroupPolicy = helper.KeepOrUpdateValue(m.PlacementGroupPolicy, other.PlacementGroupPolicy, preserveKnown)
 	m.IsCompliant = helper.KeepOrUpdateValue(m.IsCompliant, other.IsCompliant, preserveKnown)
 
 	m.Members = other.Members

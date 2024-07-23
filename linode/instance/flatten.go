@@ -233,10 +233,10 @@ func flattenInstancePlacementGroup(d *schema.ResourceData, pg *linodego.Instance
 	}
 
 	result := map[string]any{
-		"id":            pg.ID,
-		"label":         pg.Label,
-		"affinity_type": string(pg.AffinityType),
-		"is_strict":     pg.IsStrict,
+		"id":                     pg.ID,
+		"label":                  pg.Label,
+		"placement_group_type":   string(pg.PlacementGroupType),
+		"placement_group_policy": pg.PlacementGroupPolicy,
 	}
 
 	// Inherit compliant_only if it already exists in state

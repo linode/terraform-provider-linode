@@ -18,21 +18,21 @@ func TestAccDataSourcePlacementGroup_basic(t *testing.T) {
 	resourceName := "data.linode_placement_group.test"
 
 	label := acctest.RandomWithPrefix("tf-test")
-	affinityType := string(linodego.AffinityTypeAntiAffinityLocal)
+	placementGroupType := string(linodego.PlacementGroupTypeAntiAffinityLocal)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t, label, testRegion, affinityType, false),
+				Config: tmpl.DataBasic(t, label, testRegion, placementGroupType, "flexible"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "label"),
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
-					resource.TestCheckResourceAttrSet(resourceName, "affinity_type"),
+					resource.TestCheckResourceAttrSet(resourceName, "placement_group_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "is_compliant"),
-					resource.TestCheckResourceAttrSet(resourceName, "is_strict"),
+					resource.TestCheckResourceAttrSet(resourceName, "placement_group_policy"),
 				),
 			},
 		},
