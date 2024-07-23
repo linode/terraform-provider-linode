@@ -3,8 +3,8 @@
 resource "linode_placement_group" "foobar" {
     label = "{{.Label}}"
     region = "{{.Region}}"
-    affinity_type = "{{.AffinityType}}"
-    is_strict = {{.IsStrict}}
+    placement_group_type = "{{.PlacementGroupType}}"
+    placement_group_policy = "{{.PlacementGroupPolicy}}"
 }
 
 {{ end }}
