@@ -474,10 +474,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"disk_encryption": {
-		Type:        schema.TypeString,
-		Description: "The disk encryption policy for this Instance.",
-		Optional:    true,
-		ForceNew:    true,
+		Type: schema.TypeString,
+		Description: "The disk encryption policy for this Instance. " +
+			"NOTE: Disk encryption may not currently be available to all users.",
+		Optional: true,
+		ForceNew: true,
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{"enabled", "disabled"}, false),
 		),

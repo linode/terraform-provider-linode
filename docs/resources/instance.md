@@ -192,6 +192,8 @@ The following arguments are supported:
 
 * `disk_encryption` - (Optional) The disk encryption policy for this instance. (`enabled`, `disabled`; default `enabled` in supported regions)
 
+  * **NOTE: Disk encryption may not currently be available to all users.**
+
 * `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
 
 ### Simplified Resource Arguments

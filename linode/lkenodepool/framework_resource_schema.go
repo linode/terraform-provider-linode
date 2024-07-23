@@ -52,8 +52,9 @@ var resourceSchema = schema.Schema{
 			},
 		},
 		"disk_encryption": schema.StringAttribute{
-			Description: "The disk encryption policy for nodes in this pool",
-			Computed:    true,
+			Description: "The disk encryption policy for nodes in this pool. " +
+				"NOTE: Disk encryption may not currently be available to all users.",
+			Computed: true,
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,

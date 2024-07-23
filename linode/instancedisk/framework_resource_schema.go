@@ -146,8 +146,9 @@ var frameworkResourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"disk_encryption": schema.StringAttribute{
-			Description: "The disk encryption policy for this disk's parent Linode.",
-			Computed:    true,
+			Description: "The disk encryption policy for this disk's parent Linode. " +
+				"NOTE: Disk encryption may not currently be available to all users.",
+			Computed: true,
 		},
 	},
 }

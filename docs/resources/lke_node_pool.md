@@ -104,6 +104,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `disk_encryption` - The disk encryption policy for nodes in this pool.
 
+  * **NOTE: Disk encryption may not currently be available to all users.**
+
 * [`nodes`](#nodes) - The nodes in the Node Pool.
 
 ### nodes
