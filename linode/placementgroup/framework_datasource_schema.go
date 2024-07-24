@@ -18,15 +18,15 @@ var DataSourceSchema = schema.Schema{
 			Description: "The region that the placement group is in.",
 			Computed:    true,
 		},
-		"affinity_type": schema.StringAttribute{
-			Description: "The affinity policy for Linodes in a placement group",
+		"placement_group_type": schema.StringAttribute{
+			Description: "The placement group type for Linodes in a placement group",
 			Computed:    true,
 		},
 		"is_compliant": schema.BoolAttribute{
-			Description: "Whether all Linodes in this group are currently compliant with the group's affinity policy.",
+			Description: "Whether all Linodes in this group are currently compliant with the group's placement group type.",
 			Computed:    true,
 		},
-		"is_strict": schema.BoolAttribute{
+		"placement_group_policy": schema.StringAttribute{
 			Description: "Whether Linodes must be able to become compliant during assignment.",
 			Computed:    true,
 		},
@@ -41,7 +41,7 @@ var DataSourceSchema = schema.Schema{
 						Computed:    true,
 					},
 					"is_compliant": schema.BoolAttribute{
-						Description: "Whether this Linode is currently compliant with the group's affinity policy.",
+						Description: "Whether this Linode is currently compliant with the group's placement group type.",
 						Computed:    true,
 					},
 				},

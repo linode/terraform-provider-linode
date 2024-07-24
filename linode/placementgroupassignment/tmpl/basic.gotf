@@ -17,7 +17,7 @@ resource "linode_instance" "test" {
 resource "linode_placement_group" "test" {
     label = "{{ .Label }}"
     region = "{{ .Region }}"
-    affinity_type = "anti_affinity:local"
+    placement_group_type = "anti_affinity:local"
 }
 
 {{ end }}

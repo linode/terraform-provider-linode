@@ -7,12 +7,12 @@ import (
 )
 
 var filterConfig = frameworkfilter.Config{
-	"id":            {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
-	"label":         {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"region":        {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"affinity_type": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
-	"is_compliant":  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
-	"is_strict":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"id":                     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
+	"label":                  {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"region":                 {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"placement_group_type":   {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"is_compliant":           {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeBool},
+	"placement_group_policy": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 }
 
 var frameworkDataSourceSchema = schema.Schema{

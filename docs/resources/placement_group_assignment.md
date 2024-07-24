@@ -31,7 +31,7 @@ resource "linode_placement_group_assignment" "my-assignment" {
 resource "linode_placement_group" "my-pg" {
   label = "my-pg"
   region = "us-east"
-  affinity_type = "anti_affinity:local"
+  placement_group_type = "anti_affinity:local"
 }
 
 resource "linode_instance" "my-inst" {

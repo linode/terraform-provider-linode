@@ -1,12 +1,13 @@
 package placementgroup
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -38,24 +39,23 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.RequiresReplace(),
 			},
 		},
-		"affinity_type": schema.StringAttribute{
-			Description: "The affinity type for Linodes in this Placement Group.",
+		"placement_group_type": schema.StringAttribute{
+			Description: "The placement group type for Linodes in this Placement Group.",
 			Required:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
 			},
 			// Should we validate on the choices here or defer it to the API?
 		},
-		"is_strict": schema.BoolAttribute{
+		"placement_group_policy": schema.StringAttribute{
 			Description: "Whether this Placement Group has a strict compliance policy.",
 			Optional:    true,
 			Computed:    true,
-			Default:     booldefault.StaticBool(true),
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.RequiresReplace(),
+			Default:     stringdefault.StaticString("strict"),
+			Validators: []validator.String{
+				stringvalidator.OneOf("strict", "flexible"),
 			},
 		},
-
 		"is_compliant": schema.BoolAttribute{
 			Description: "Whether all Linodes in this Placement Group are currently compliant.",
 			Computed:    true,

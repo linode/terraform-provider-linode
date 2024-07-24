@@ -19,7 +19,7 @@ Create a Placement Group with the local anti-affinity policy:
 resource "linode_placement_group" "test" {
     label = "my-placement-group"
     region = "us-mia"
-    affinity_type = "anti_affinity:local"
+    placement_group_type = "anti_affinity:local"
 }
 ```
 
@@ -31,9 +31,9 @@ The following arguments are supported:
 
 * `region` - (Required) The region of the Placement Group.
 
-* `affinity_type` - (Required) The affinity policy to use when placing Linodes in this group.
+* `placement_group_type` - (Required) The placement group type to use when placing Linodes in this group.
 
-* `is_strict` - (Optional) Whether Linodes must be able to become compliant during assignment. (Default `true`)
+* `placement_group_policy` - (Optional) Whether Linodes must be able to become compliant during assignment. (Default `strict`)
 
 ## Attributes Reference
 
@@ -41,7 +41,7 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `id` - The ID of the Placement Group.
 
-* `is_compliant` - Whether all Linodes in this group are currently compliant with the group's affinity policy.
+* `is_compliant` - Whether all Linodes in this group are currently compliant with the group's placement group type.
 
 * [`members`](#members) - A set of Linodes currently assigned to this Placement Group.
 
@@ -51,7 +51,7 @@ Represents a single Linode assigned to a Placement Group.
 
 * `linode_id` - The ID of the Linode.
 
-* `is_compliant` - Whether this Linode is currently compliant with the group's affinity policy.
+* `is_compliant` - Whether this Linode is currently compliant with the group's placement group type.
 
 ## Import
 

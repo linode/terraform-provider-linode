@@ -45,10 +45,10 @@ func (r *Resource) Create(
 	}
 
 	createOpts := linodego.PlacementGroupCreateOptions{
-		Label:        data.Label.ValueString(),
-		Region:       data.Region.ValueString(),
-		AffinityType: linodego.PlacementGroupAffinityType(data.AffinityType.ValueString()),
-		IsStrict:     data.IsStrict.ValueBool(),
+		Label:                data.Label.ValueString(),
+		Region:               data.Region.ValueString(),
+		PlacementGroupType:   linodego.PlacementGroupType(data.PlacementGroupType.ValueString()),
+		PlacementGroupPolicy: linodego.PlacementGroupPolicy(data.PlacementGroupPolicy.ValueString()),
 	}
 
 	tflog.Debug(ctx, "client.CreatePlacementGroup(...)", map[string]any{

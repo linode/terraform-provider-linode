@@ -15,12 +15,12 @@ func TestFlattenPGModel(t *testing.T) {
 	label := "test-pgmodel"
 
 	pg := linodego.PlacementGroup{
-		ID:           123,
-		Label:        "test-pgmodel",
-		Region:       "us-mia",
-		AffinityType: linodego.AffinityTypeAntiAffinityLocal,
-		IsStrict:     false,
-		IsCompliant:  false,
+		ID:                   123,
+		Label:                "test-pgmodel",
+		Region:               "us-mia",
+		PlacementGroupType:   linodego.PlacementGroupTypeAntiAffinityLocal,
+		PlacementGroupPolicy: "flexible",
+		IsCompliant:          false,
 		Members: []linodego.PlacementGroupMember{
 			{
 				LinodeID:    123,
@@ -43,8 +43,8 @@ func TestFlattenPGModel(t *testing.T) {
 	require.Equal(t, "123", model.ID.ValueString())
 	require.Equal(t, label, model.Label.ValueString())
 	require.Equal(t, "us-mia", model.Region.ValueString())
-	require.Equal(t, string(linodego.AffinityTypeAntiAffinityLocal), model.AffinityType.ValueString())
-	require.Equal(t, false, model.IsStrict.ValueBool())
+	require.Equal(t, string(linodego.PlacementGroupTypeAntiAffinityLocal), model.PlacementGroupType.ValueString())
+	require.Equal(t, "flexible", model.PlacementGroupPolicy.ValueString())
 
 	require.Equal(t, false, model.IsCompliant.ValueBool())
 
