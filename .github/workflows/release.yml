@@ -24,3 +24,69 @@ jobs:
       gpg-private-key-passphrase: ${{ secrets.PASSPHRASE }}
     with:
       setup-go-version-file: 'go.mod'
+
+  verify-publications:
+    needs: terraform-provider-release
+    runs-on: ubuntu-latest
+    name: Verifying TF Registry Publications
+    strategy:
+      matrix:
+        registry:
+          - "https://registry.opentofu.org/v1"
+          - "https://registry.terraform.io/v1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        env:
+          REGISTRY: ${{ matrix.registry }}
+        with:
+          script: |
+            async function verifyPublication(targetVersion, registry) {
+              const url = `${registry}/providers/linode/linode/versions`;
+
+              const response = await fetch(url);
+              if (!response.ok) {
+                console.log(`Error response status: ${response.status}`);
+              }
+
+              const json = await response.json();
+
+              return json.versions.find((v) => v.version == targetVersion) != null;
+            }
+
+            let prefix = "refs/tags/v";
+            if (!context.ref.startsWith(prefix)) {
+              throw new Error(`Invalid ref: ${context.ref}`);
+            }
+
+            const TARGET_VERSION = context.ref.slice(prefix.length);
+            const REGISTRY = process.env.REGISTRY;
+
+            // 1 retry request per minute, 3 hours in total
+            const RETRIES = 180;
+            const RETRY_INTERVAL = 60000;
+
+            console.log(`Verifying publication of v${TARGET_VERSION} on ${REGISTRY}`);
+
+            let found = false;
+            let count = 0;
+            while (!found && count < RETRIES) {
+              count++;
+              found = await verifyPublication(TARGET_VERSION, REGISTRY);
+              if (found) {
+                break;
+              }
+              console.log(
+                `Publication of v${TARGET_VERSION} on ${REGISTRY} isn't found, retrying in ${RETRY_INTERVAL} ms...`
+              );
+              await new Promise((r) => setTimeout(r, RETRY_INTERVAL));
+            }
+            if (found) {
+              console.log(
+                `Verified that Linode Provider v${TARGET_VERSION} has been successfully published on ${REGISTRY}.`
+              );
+            } else {
+              throw new Error(
+                `Timeout waiting for Linode Provider v${TARGET_VERSION} publication on ${REGISTRY}`
+              );
+            }
