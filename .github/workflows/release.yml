@@ -63,23 +63,23 @@ jobs:
             const REGISTRY = process.env.REGISTRY;
 
             // 1 retry request per minute, 3 hours in total
-            const RETRIES = 180;
-            const RETRY_INTERVAL = 60000;
+            const REGISTRY_POLL_RETRIES = ${{ vars.REGISTRY_POLL_RETRIES }};
+            const REGISTRY_POLL_INTERVAL = ${{ vars.REGISTRY_POLL_INTERVAL }};
 
             console.log(`Verifying publication of v${TARGET_VERSION} on ${REGISTRY}`);
 
             let found = false;
             let count = 0;
-            while (!found && count < RETRIES) {
+            while (!found && count < REGISTRY_POLL_RETRIES) {
               count++;
               found = await verifyPublication(TARGET_VERSION, REGISTRY);
               if (found) {
                 break;
               }
               console.log(
-                `Publication of v${TARGET_VERSION} on ${REGISTRY} isn't found, retrying in ${RETRY_INTERVAL} ms...`
+                `Publication of v${TARGET_VERSION} on ${REGISTRY} isn't found, retrying in ${REGISTRY_POLL_INTERVAL} ms...`
               );
-              await new Promise((r) => setTimeout(r, RETRY_INTERVAL));
+              await new Promise((r) => setTimeout(r, REGISTRY_POLL_INTERVAL));
             }
             if (found) {
               console.log(
