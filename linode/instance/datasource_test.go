@@ -42,6 +42,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.disk.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.config.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.config.0.id"),
+					resource.TestCheckResourceAttr(resName, "instances.0.placement_group.#", "0"),
 				),
 			},
 		},
