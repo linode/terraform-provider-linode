@@ -47,15 +47,17 @@ func resourcePlacementGroup() *schema.Resource {
 				Computed:    true,
 				Description: "The label of this Placement Group.",
 			},
-			"affinity_type": {
+			"placement_group_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The affinity policy for this Placement Group.",
+				Description: "The placement group type for this Placement Group.",
 			},
-			"is_strict": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether compliance is strictly enforced by this Placement Group.",
+			"placement_group_policy": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"strict", "flexible"}, true),
+				Computed:     true,
+				Description:  "Whether compliance is strictly enforced by this Placement Group.",
 			},
 		},
 	}

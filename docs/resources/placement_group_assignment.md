@@ -6,9 +6,10 @@ description: |-
 
 # linode\_placement\_group\_assignment
 
-**NOTE: Placement Groups may not currently be available to all users.**
-
 Manages a single assignment between a Linode and a Placement Group.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-group-add-linode).
+
+**NOTE: Placement Groups may not currently be available to all users.**
 
 To prevent update conflicts, Linodes managed through the `linode_instance` resource should specify `placement_group_externally_managed`:
 
@@ -30,7 +31,7 @@ resource "linode_placement_group_assignment" "my-assignment" {
 resource "linode_placement_group" "my-pg" {
   label = "my-pg"
   region = "us-east"
-  affinity_type = "anti_affinity:local"
+  placement_group_type = "anti_affinity:local"
 }
 
 resource "linode_instance" "my-inst" {

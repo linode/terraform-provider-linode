@@ -20,15 +20,74 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/obj/tmpl"
 )
 
-var testCluster string
+var (
+	testCluster string
+	testRegion  string
+)
 
 func init() {
-	cluster, err := acceptance.GetRandomOBJCluster()
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster = cluster
+	testCluster = region + "-1"
+	testRegion = region
+}
+
+func TestAccResourceObject_basic_cluster(t *testing.T) {
+	t.Parallel()
+
+	validateObjectUpdates := func(resourceName, key, content string) resource.TestCheckFunc {
+		return resource.ComposeTestCheckFunc(
+			validateObject(resourceName, key, content),
+			resource.TestCheckResourceAttr(resourceName, "acl", "public-read"),
+			resource.TestCheckResourceAttr(resourceName, "content_type", "text/plain"),
+			resource.TestCheckResourceAttr(resourceName, "content_encoding", "utf8"),
+			resource.TestCheckResourceAttr(resourceName, "content_language", "en"),
+			resource.TestCheckResourceAttr(resourceName, "website_redirect", "test.com"),
+			resource.TestCheckResourceAttr(resourceName, "force_destroy", "true"),
+			resource.TestCheckResourceAttr(resourceName, "content_disposition", "attachment"),
+			resource.TestCheckResourceAttr(resourceName, "cache_control", "max-age=2592000"),
+			resource.TestCheckResourceAttr(resourceName, "metadata.foo", "bar"),
+			resource.TestCheckResourceAttr(resourceName, "metadata.bar", "foo"),
+		)
+	}
+
+	content := "testing123"
+	contentUpdated := "testing456"
+
+	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
+	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
+
+	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+		bucketName := acctest.RandomWithPrefix("tf-test")
+		keyName := acctest.RandomWithPrefix("tf_test")
+
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             checkObjectDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.BasicWithCluster(t, bucketName, testCluster, keyName, content, contentSource.Name()),
+					Check: resource.ComposeTestCheckFunc(
+						validateObject(getObjectResourceName("basic"), "test_basic", content),
+						validateObject(getObjectResourceName("base64"), "test_base64", content),
+						validateObject(getObjectResourceName("source"), "test_source", content),
+					),
+				},
+				{
+					Config: tmpl.Updates(t, bucketName, testRegion, keyName, contentUpdated, contentSourceUpdated.Name()),
+					Check: resource.ComposeTestCheckFunc(
+						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
+						validateObjectUpdates(getObjectResourceName("source"), "test_source", contentUpdated),
+					),
+				},
+			},
+		})
+	})
 }
 
 func TestAccResourceObject_basic(t *testing.T) {
@@ -66,7 +125,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Basic(t, bucketName, testCluster, keyName, content, contentSource.Name()),
+					Config: tmpl.Basic(t, bucketName, testRegion, keyName, content, contentSource.Name()),
 					Check: resource.ComposeTestCheckFunc(
 						validateObject(getObjectResourceName("basic"), "test_basic", content),
 						validateObject(getObjectResourceName("base64"), "test_base64", content),
@@ -74,7 +133,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Updates(t, bucketName, testCluster, keyName, contentUpdated, contentSourceUpdated.Name()),
+					Config: tmpl.Updates(t, bucketName, testRegion, keyName, contentUpdated, contentSourceUpdated.Name()),
 					Check: resource.ComposeTestCheckFunc(
 						validateObjectUpdates(getObjectResourceName("basic"), "test_basic", contentUpdated),
 						validateObjectUpdates(getObjectResourceName("base64"), "test_base64", contentUpdated),
@@ -101,7 +160,7 @@ func TestAccResourceObject_credsConfiged(t *testing.T) {
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.CredsConfiged(t, bucketName, testCluster, keyName, content),
+					Config: tmpl.CredsConfiged(t, bucketName, testRegion, keyName, content),
 					Check: resource.ComposeTestCheckFunc(
 						validateObject(getObjectResourceName("creds_configed"), "test_creds_configed", content),
 					),
@@ -126,7 +185,7 @@ func TestAccResourceObject_tempKeys(t *testing.T) {
 			CheckDestroy:             checkObjectDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.TempKeys(t, bucketName, testCluster, keyName, content),
+					Config: tmpl.TempKeys(t, bucketName, testRegion, keyName, content),
 					Check: resource.ComposeTestCheckFunc(
 						validateObject(getObjectResourceName("temp_keys"), "test_temp_keys", content),
 					),
@@ -154,7 +213,7 @@ func getObject(ctx context.Context, rs *terraform.ResourceState) (*s3.GetObjectO
 			Label: fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
 			BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
 				BucketName:  bucket,
-				Cluster:     rs.Primary.Attributes["cluster"],
+				Region:      rs.Primary.Attributes["region"],
 				Permissions: "read_write",
 			}},
 		}

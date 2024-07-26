@@ -1,12 +1,24 @@
 package objkey
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+var RegionDetailType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"id":          types.StringType,
+		"s3_endpoint": types.StringType,
+	},
+}
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -44,6 +56,18 @@ var frameworkResourceSchema = schema.Schema{
 				boolplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"regions": schema.SetAttribute{
+			Description: "A set of regions where the key will grant access to create buckets.",
+			Optional:    true,
+			Computed:    true,
+			ElementType: types.StringType,
+		},
+		"regions_details": schema.SetAttribute{
+			Description: "A set of objects containing the detailed info of the regions where " +
+				"the key will grant access.",
+			Computed:    true,
+			ElementType: RegionDetailType,
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"bucket_access": schema.SetNestedBlock{
@@ -55,8 +79,35 @@ var frameworkResourceSchema = schema.Schema{
 						Required:    true,
 					},
 					"cluster": schema.StringAttribute{
-						Description: "The Object Storage cluster where a bucket to which the key is granting access is hosted.",
-						Required:    true,
+						Description: "The Object Storage cluster where the bucket resides. " +
+							"Deprecated in favor of `region`",
+						Optional: true,
+						Computed: true,
+						DeprecationMessage: "The `cluster` attribute in a `bucket_access` block has " +
+							"been deprecated in favor of `region` attribute. A cluster value can be " +
+							"converted to a region value by removing -x at the end, for example, a " +
+							"cluster value `us-mia-1` can be converted to region value `us-mia`",
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(
+								path.MatchRelative().AtParent().AtName("region"),
+							),
+						},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"region": schema.StringAttribute{
+						Description: "The region where the bucket resides.",
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(
+								path.MatchRelative().AtParent().AtName("cluster"),
+							),
+						},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"permissions": schema.StringAttribute{
 						Description: "This Limited Access Key's permissions for the selected bucket.",

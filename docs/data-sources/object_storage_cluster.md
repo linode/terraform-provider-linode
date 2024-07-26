@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_object\_storage\_cluster
 
 Provides information about a Linode Object Storage Cluster
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-cluster).
 
 ## Example Usage
 

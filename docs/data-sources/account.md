@@ -7,6 +7,7 @@ description: |-
 # Data Source: linode\_account
 
 Provides information about a Linode account.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-account).
 
 Due to the sensitive nature of the data exposed by this data source, it should not be used in conjunction with the `LINODE_DEBUG` option.  See the [debugging notes](/providers/linode/linode/latest/docs#debugging) for more details.
 
