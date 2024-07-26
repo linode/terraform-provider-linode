@@ -1,4 +1,4 @@
-{{ define "image_replicate" }}
+{{ define "image_no_replica_regions" }}
 
 resource "linode_image" "foobar" {
     label = "{{.Image}}"
@@ -6,7 +6,6 @@ resource "linode_image" "foobar" {
     file_hash = filemd5("{{.FilePath}}")
     region = "{{ .Region }}"
     description = "really descriptive text"
-    replica_regions = ["{{ .Region }}", "{{ .ReplicaRegion }}"]
 }
 
 {{ end }}

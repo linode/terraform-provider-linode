@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -215,46 +216,43 @@ func TestAccImage_uploadFile(t *testing.T) {
 	})
 }
 
-//
-//func TestAccImage_replicate(t *testing.T) {
-//	t.Parallel()
-//
-//	resourceName := "linode_image.foobar"
-//	imageName := acctest.RandomWithPrefix("tf_test")
-//	label := acctest.RandomWithPrefix("tf_test")
-//	// TODO: Use random region once image gen2 works globally or with specific capabilities
-//	replicateRegion := "us-central"
-//
-//	resource.Test(t, resource.TestCase{
-//		PreCheck:                 func() { acceptance.PreCheck(t) },
-//		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-//
-//		CheckDestroy: checkImageDestroy,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: tmpl.Replicate(t, imageName, testRegion, label, replicateRegion),
-//				Check: resource.ComposeTestCheckFunc(
-//					checkImageExists(resourceName, nil),
-//					resource.TestCheckResourceAttrSet(resourceName, "size"),
-//					resource.TestCheckResourceAttr(resourceName, "type", "manual"),
-//					resource.TestCheckResourceAttr(resourceName, "is_public", "false"),
-//					resource.TestCheckResourceAttrSet(resourceName, "total_size"),
-//					resource.TestCheckResourceAttr(resourceName, "replications.#", "2"),
-//				),
-//			},
-//			{
-//				Config: tmpl.Replicate(t, imageName, testRegion, label, ""),
-//				Check: resource.ComposeTestCheckFunc(
-//					checkImageExists(resourceName, nil),
-//					resource.TestCheckResourceAttrSet(resourceName, "size"),
-//					resource.TestCheckResourceAttrSet(resourceName, "total_size"),
-//					resource.TestCheckResourceAttr(resourceName, "replications.#", "1"),
-//					resource.TestCheckResourceAttr(resourceName, "replications.0.region", testRegion),
-//				),
-//			},
-//		},
-//	})
-//}
+func TestAccImage_replicate(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_image.foobar"
+	imageName := acctest.RandomWithPrefix("tf_test")
+	// TODO: Use random region once image gen2 works globally or with specific capabilities
+	replicateRegion := "eu-west"
+
+	file, err := createTempFile("tf-test-image-replicate-file", testImageBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+
+	var image linodego.Image
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Replicate(t, imageName, file.Name(), testRegion, replicateRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkImageExists(resName, &image),
+					resource.TestCheckResourceAttr(resName, "label", imageName),
+					resource.TestCheckResourceAttr(resName, "replications.#", "2"),
+				),
+			},
+			{
+				Config: tmpl.NoReplicaRegions(t, imageName, file.Name(), testRegion),
+				ExpectError: regexp.MustCompile(
+					"At least one valid region must be specified"),
+			},
+		},
+	})
+}
 
 func checkImageExists(name string, image *linodego.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

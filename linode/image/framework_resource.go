@@ -66,7 +66,7 @@ func createResourceFromUpload(
 		CloudInit:   plan.CloudInit.ValueBool(),
 	}
 
-	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
+	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, true)...)
 	if resp.Diagnostics.HasError() {
 		return nil
 	}
@@ -147,7 +147,7 @@ func createResourceFromLinode(
 		CloudInit:   plan.CloudInit.ValueBool(),
 	}
 
-	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, false)...)
+	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, true)...)
 	if resp.Diagnostics.HasError() {
 		return nil
 	}
@@ -228,7 +228,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if !plan.RegionsToReplicate.IsNull() && !plan.RegionsToReplicate.IsUnknown() {
+	if !plan.ReplicaRegions.IsNull() && !plan.ReplicaRegions.IsUnknown() {
 		plan.ID = types.StringValue(image.ID)
 
 		// Refresh image from replication
@@ -331,7 +331,7 @@ func (r *Resource) Update(
 	}
 
 	if !state.Tags.Equal(plan.Tags) {
-		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, false)...)
+		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, true)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -354,11 +354,11 @@ func (r *Resource) Update(
 		}
 	}
 
-	if !state.RegionsToReplicate.Equal(plan.RegionsToReplicate) {
-		if plan.RegionsToReplicate.IsNull() {
+	if !state.ReplicaRegions.Equal(plan.ReplicaRegions) {
+		if plan.ReplicaRegions.IsNull() || plan.ReplicaRegions.IsUnknown() {
 			resp.Diagnostics.AddError(
 				"Invalid regions to replicate.",
-				"At least one valid region is required. "+
+				"At least one valid region must be specified. "+
 					"Image is not allowed to be deleted by sending an empty regions list.")
 		}
 
@@ -489,7 +489,7 @@ func replicateImage(
 	client *linodego.Client,
 ) (*linodego.Image, diag.Diagnostics) {
 	var replicationOpts linodego.ImageReplicateOptions
-	diags := plan.RegionsToReplicate.ElementsAs(ctx, &replicationOpts.Regions, false)
+	diags := plan.ReplicaRegions.ElementsAs(ctx, &replicationOpts.Regions, false)
 	if diags.HasError() {
 		return nil, diags
 	}

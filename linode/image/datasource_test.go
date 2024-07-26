@@ -3,6 +3,7 @@
 package image_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -43,9 +44,14 @@ func TestAccDataSourceImage_replicate(t *testing.T) {
 
 	resourceName := "data.linode_image.foobar"
 	imageName := acctest.RandomWithPrefix("tf_test")
-	label := acctest.RandomWithPrefix("tf_test")
 	// TODO: Use random region once image gen2 works globally or with specific capabilities
-	replicateRegion := "us-central"
+	replicateRegion := "eu-west"
+
+	file, err := createTempFile("tf-test-image-data-replicate-file", testImageBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -54,11 +60,11 @@ func TestAccDataSourceImage_replicate(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataReplicate(t, imageName, testRegion, label, replicateRegion),
+				Config: tmpl.DataReplicate(t, imageName, file.Name(), testRegion, replicateRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resourceName, nil),
 					resource.TestCheckResourceAttr(resourceName, "label", imageName),
-					resource.TestCheckResourceAttr(resourceName, "description", "descriptive text"),
+					resource.TestCheckResourceAttr(resourceName, "description", "really descriptive text"),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "size"),
@@ -67,7 +73,7 @@ func TestAccDataSourceImage_replicate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "deprecated"),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "total_size"),
-					// resource.TestCheckResourceAttr(resourceName, "replications.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "replications.#", "2"),
 				),
 			},
 		},

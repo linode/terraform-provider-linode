@@ -51,6 +51,23 @@ resource "linode_image" "foobar" {
 }
 ```
 
+Upload and replicate an image from a local file:
+
+```hcl
+resource "linode_image" "foobar" {
+    label = "foobar-image"
+    description = "An image uploaded from Terraform!"
+    region = "us-southeast"
+    tags = ["image-tag", "test"]
+  
+    file_path = "path/to/image.img.gz"
+    file_hash = filemd5("path/to/image.img.gz")
+    
+    // Note: Image replication may not be available to all users.
+    replica_regions = ["us-southeast", "us-east", "eu-west"]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -61,7 +78,7 @@ The following arguments are supported:
 
 * `tags` - (Optional) A list of customized tags.
 
-* `regions_to_replicate` - (Optional) A list of regions that customer wants to replicate this image in. At least one valid region is required and only core regions allowed. Existing images in the regions not passed will be removed.
+* `replica_regions` - (Optional) A list of regions that customer wants to replicate this image in. At least one valid region is required and only core regions allowed. Existing images in the regions not passed will be removed. **Note:** Image replication may not be available to all users.
 
 - - -
 

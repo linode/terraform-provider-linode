@@ -123,4 +123,4 @@ require (
 )
 
 // TODO: remove replace before merging into dev
-replace github.com/linode/linodego v1.36.1 => github.com/linode/linodego v1.36.1-0.20240628160657-30ab53bcb3d1
+replace github.com/linode/linodego => github.com/linode/linodego v1.38.1-0.20240725202053-21a8e63dc3c6

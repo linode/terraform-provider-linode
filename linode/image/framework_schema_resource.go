@@ -205,7 +205,7 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The total size of the image in all available regions.",
 			Computed:    true,
 		},
-		"regions_to_replicate": schema.ListAttribute{
+		"replica_regions": schema.ListAttribute{
 			Description: "A list of regions that customer wants to replicate this image in. " +
 				"At least one valid region is required and only core regions allowed. " +
 				"Existing images in the regions not passed will be removed.",
