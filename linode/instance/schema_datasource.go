@@ -411,11 +411,17 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 	"placement_group": {
 		Type:     schema.TypeList,
 		Computed: true,
+		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"id": {
 					Type:        schema.TypeInt,
 					Description: "The placement group's ID. You need to provide it for all operations impacting it.",
+					Computed:    true,
+				},
+				"label": {
+					Type:        schema.TypeString,
+					Description: "The unique name set for the placement group.",
 					Computed:    true,
 				},
 				"placement_group_type": {

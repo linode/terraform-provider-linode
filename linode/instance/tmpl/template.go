@@ -603,6 +603,16 @@ func DataBasic(t *testing.T, label, region string, rootPass string) string {
 		})
 }
 
+func DataWithPG(t *testing.T, label, region, assignedGroup string, groups []string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_with_pg", TemplateData{
+			Label:           label,
+			Region:          region,
+			PlacementGroups: groups,
+			AssignedGroup:   assignedGroup,
+		})
+}
+
 func DataMultiple(t *testing.T, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple", TemplateData{
