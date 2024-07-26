@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"slices"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -334,6 +335,10 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 			if declaredAutoscaler != nil && !reflect.DeepEqual(
 				*declaredAutoscaler, apiPool.Autoscaler,
 			) {
+				continue
+			}
+
+			if !slices.Equal(helper.ExpandStringSet(declaredPool["tags"].(*schema.Set)), apiPool.Tags) {
 				continue
 			}
 
