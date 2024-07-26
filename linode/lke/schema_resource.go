@@ -85,7 +85,8 @@ var resourceSchema = map[string]*schema.Schema{
 				},
 				"tags": {
 					Type:                  schema.TypeSet,
-					Description:           "An array of tags applied to this node pool.",
+					Description:           "A set of tags applied to this node pool.",
+
 					Elem:                  &schema.Schema{Type: schema.TypeString},
 					Optional:              true,
 					DiffSuppressOnRefresh: true,
