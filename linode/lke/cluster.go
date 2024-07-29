@@ -337,7 +337,7 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 				continue
 			}
 
-			if helper.CompareStringSets(helper.ExpandStringSet(declaredPool["tags"].(*schema.Set)), apiPool.Tags) {
+			if !helper.CompareStringSets(helper.ExpandStringSet(declaredPool["tags"].(*schema.Set)), apiPool.Tags) {
 				continue
 			}
 
