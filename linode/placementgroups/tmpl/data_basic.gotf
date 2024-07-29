@@ -13,11 +13,11 @@ data "linode_placement_groups" "by-label" {
     }
 }
 
-data "linode_placement_groups" "by-affinity-type" {
+data "linode_placement_groups" "by-placement-group-type" {
     depends_on = [linode_placement_group.test]
 
     filter {
-        name = "affinity_type"
+        name = "placement_group_type"
         values = ["anti_affinity:local"]
     }
 }
@@ -27,8 +27,8 @@ resource "linode_placement_group" "test" {
 
     label = "{{.Label}}-${count.index}"
     region = "{{.Region}}"
-    affinity_type = "anti_affinity:local"
-    is_strict = true
+    placement_group_type = "anti_affinity:local"
+    placement_group_policy = "strict"
 }
 
 {{ end }}
