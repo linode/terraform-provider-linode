@@ -1,0 +1,15 @@
+{{ define "instance_disk_encryption" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    image = "{{.Image}}"
+    region = "{{ .Region }}"
+    root_pass = "{{ .RootPass }}"
+
+{{ if not (eq .DiskEncryption nil) }}
+    disk_encryption = "{{ .DiskEncryption }}"
+{{ end }}
+}
+
+{{ end }}

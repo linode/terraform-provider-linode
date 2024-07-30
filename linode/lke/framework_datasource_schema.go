@@ -121,6 +121,11 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed:    true,
 						Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 					},
+					"disk_encryption": schema.StringAttribute{
+						Computed: true,
+						Description: "The disk encryption policy for the nodes in this pool. " +
+							"NOTE: Disk encryption may not currently be available to all users.",
+					},
 				},
 				Blocks: map[string]schema.Block{
 					"nodes": schema.ListNestedBlock{
