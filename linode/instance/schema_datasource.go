@@ -411,7 +411,6 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 	"placement_group": {
 		Type:     schema.TypeList,
 		Computed: true,
-		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"id": {
