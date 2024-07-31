@@ -35,6 +35,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "instances.0.group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "instances.0.swap_size", "256"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.disk_encryption"),
 					resource.TestCheckResourceAttr(resName, "instances.0.ipv4.#", "2"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.ipv6"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.host_uuid"),

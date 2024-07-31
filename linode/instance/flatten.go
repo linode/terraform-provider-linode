@@ -49,6 +49,8 @@ func flattenInstance(
 	result["image"] = instance.Image
 	result["host_uuid"] = instance.HostUUID
 	result["has_user_data"] = instance.HasUserData
+	result["disk_encryption"] = instance.DiskEncryption
+	result["lke_cluster_id"] = instance.LKEClusterID
 
 	result["backups"] = flattenInstanceBackups(*instance)
 	result["specs"] = flattenInstanceSpecs(*instance)

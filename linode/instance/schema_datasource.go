@@ -104,6 +104,17 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Description: "Whether this Instance was created with user-data.",
 		Computed:    true,
 	},
+	"disk_encryption": {
+		Type: schema.TypeString,
+		Description: "The disk encryption policy for this Instance." +
+			"NOTE: Disk encryption may not currently be available to all users.",
+		Computed: true,
+	},
+	"lke_cluster_id": {
+		Type:        schema.TypeInt,
+		Description: "If applicable, the ID of the LKE cluster this Instance is a node of.",
+		Computed:    true,
+	},
 	"specs": {
 		Computed: true,
 		Type:     schema.TypeList,
