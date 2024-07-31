@@ -31,7 +31,7 @@ func init() {
 	})
 
 	region, err := acceptance.GetRandomRegionWithCaps([]string{
-		linodego.Vlans, linodego.VPCs, linodego.DiskEncryption,
+		linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -2523,7 +2523,7 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 
 	// Resolve a region that supports disk encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{linodego.Linodes, linodego.DiskEncryption},
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityDiskEncryption},
 	)
 	if err != nil {
 		t.Fatal(err)
