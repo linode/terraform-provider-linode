@@ -42,6 +42,7 @@ func ReconcileLKENodePoolSpecs(
 		createOpts := linodego.LKENodePoolCreateOptions{
 			Count: spec.Count,
 			Type:  spec.Type,
+			Tags:  spec.Tags,
 		}
 
 		if createOpts.Count == 0 {
