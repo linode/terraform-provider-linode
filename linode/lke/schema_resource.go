@@ -110,6 +110,12 @@ var resourceSchema = map[string]*schema.Schema{
 						return false
 					},
 				},
+				"disk_encryption": {
+					Type: schema.TypeString,
+					Description: "The disk encryption policy for the nodes in this pool. " +
+						"NOTE: Disk encryption may not currently be available to all users.",
+					Computed: true,
+				},
 				"nodes": {
 					Type: schema.TypeList,
 					Elem: &schema.Resource{

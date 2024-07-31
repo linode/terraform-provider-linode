@@ -13,4 +13,13 @@ resource "linode_lke_cluster" "test" {
     }
 }
 
+data "linode_instances" "test" {
+    depends_on = [linode_lke_cluster.test]
+
+    filter {
+        name = "id"
+        values = [linode_lke_cluster.test.pool.0.nodes.0.instance_id]
+    }
+}
+
 {{ end }}
