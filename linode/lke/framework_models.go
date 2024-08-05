@@ -53,13 +53,14 @@ type LKEControlPlaneACLAddresses struct {
 }
 
 type LKENodePool struct {
-	ID         types.Int64             `tfsdk:"id"`
-	Count      types.Int64             `tfsdk:"count"`
-	Type       types.String            `tfsdk:"type"`
-	Tags       types.List              `tfsdk:"tags"`
-	Disks      []LKENodePoolDisk       `tfsdk:"disks"`
-	Nodes      []LKENodePoolNode       `tfsdk:"nodes"`
-	Autoscaler []LKENodePoolAutoscaler `tfsdk:"autoscaler"`
+	ID             types.Int64             `tfsdk:"id"`
+	Count          types.Int64             `tfsdk:"count"`
+	Type           types.String            `tfsdk:"type"`
+	Tags           types.List              `tfsdk:"tags"`
+	DiskEncryption types.String            `tfsdk:"disk_encryption"`
+	Disks          []LKENodePoolDisk       `tfsdk:"disks"`
+	Nodes          []LKENodePoolNode       `tfsdk:"nodes"`
+	Autoscaler     []LKENodePoolAutoscaler `tfsdk:"autoscaler"`
 }
 
 type LKENodePoolDisk struct {
@@ -116,6 +117,8 @@ func (data *LKEDataModel) parseLKEAttributes(
 			pool.ID = types.Int64Value(int64(p.ID))
 			pool.Count = types.Int64Value(int64(p.Count))
 			pool.Type = types.StringValue(p.Type)
+			pool.DiskEncryption = types.StringValue(string(p.DiskEncryption))
+
 			tags, diags := types.ListValueFrom(ctx, types.StringType, p.Tags)
 			if diags != nil {
 				return nil, diags

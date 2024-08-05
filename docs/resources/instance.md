@@ -190,6 +190,10 @@ The following arguments are supported:
 
 * `firewall_id` - (Optional) The ID of the Firewall to attach to the instance upon creation. *Changing `firewall_id` forces the creation of a new Linode Instance.*
 
+* `disk_encryption` - (Optional) The disk encryption policy for this instance. (`enabled`, `disabled`; default `enabled` in supported regions)
+
+  * **NOTE: Disk encryption may not currently be available to all users.**
+
 * `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
 
 ### Simplified Resource Arguments
@@ -358,6 +362,8 @@ This Linode Instance resource exports the following attributes:
 * `ipv4` - This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon creation, and may get a single private IPv4 address if needed. You may need to open a support ticket to get additional IPv4 addresses.
 
 * `has_user_data` - Whether this Instance was created with user-data.
+
+* `lke_cluster_id` - If applicable, the ID of the LKE cluster this instance is a part of.
 
 * `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
 

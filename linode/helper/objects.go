@@ -99,6 +99,15 @@ func IsObjNotFoundErr(err error) bool {
 	return errors.As(err, &apiErr) && (apiErr.ErrorCode() == "NotFound" || apiErr.ErrorCode() == "Forbidden")
 }
 
+// isBucketNotFoundError checks if the error is due to the bucket not being found.
+func IsBucketNotFoundError(err error) bool {
+	tflog.Debug(
+		context.Background(),
+		fmt.Sprintf("received an error: %s, checking whether it's a bucket not found error", err),
+	)
+	return strings.Contains(err.Error(), "Bucket not found")
+}
+
 // Purge all objects, wiping out all versions and delete markers for versioned objects.
 func PurgeAllObjects(
 	ctx context.Context,

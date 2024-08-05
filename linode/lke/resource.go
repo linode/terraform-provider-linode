@@ -177,6 +177,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
 			Type:       poolSpec["type"].(string),
+			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
 			Count:      count,
 			Autoscaler: autoscaler,
 		})

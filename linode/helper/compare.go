@@ -51,12 +51,14 @@ func StringListElementsEqual(a, b []string) bool {
 	return true
 }
 
-// Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`.
+// Check if `subset` is a subset of `superset`, or in other words, assuming no duplicated items are in the sets,
+// whether slice `superset` contains all elements of slice `subset`.
 func ValidateStringSubset(superset, subset []string) bool {
 	return ValidateSubset(TypedSliceToAny(superset), TypedSliceToAny(subset))
 }
 
-// Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`.
+// Check if `subset` is a subset of `superset`, or in other words, whether slice `superset` contains all elements of slice `subset`,
+// assuming no duplicated items are in the sets.
 func ValidateSubset(superset, subset []any) bool {
 	for _, v := range subset {
 		if !slices.Contains(superset, v) {
@@ -65,6 +67,18 @@ func ValidateSubset(superset, subset []any) bool {
 	}
 
 	return true
+}
+
+// Check if two slices are equivalent without considering ordering,
+// assuming no duplicated items are in the sets.
+func CompareSets(a, b []any) bool {
+	return ValidateSubset(a, b) && ValidateSubset(b, a)
+}
+
+// Check if two string slices are equivalent without considering ordering,
+// assuming no duplicated items are in the sets.
+func CompareStringSets(a, b []string) bool {
+	return CompareSets(TypedSliceToAny(a), TypedSliceToAny(b))
 }
 
 func CompareScopes(s1, s2 string) bool {

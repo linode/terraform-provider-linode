@@ -25,6 +25,7 @@ type ResourceModel struct {
 	Created         timetypes.RFC3339 `tfsdk:"created"`
 	Updated         timetypes.RFC3339 `tfsdk:"updated"`
 	Status          types.String      `tfsdk:"status"`
+	DiskEncryption  types.String      `tfsdk:"disk_encryption"`
 	Timeouts        timeouts.Value    `tfsdk:"timeouts"`
 }
 
@@ -44,6 +45,7 @@ func (data *ResourceModel) FlattenDisk(disk *linodego.InstanceDisk, preserveKnow
 	)
 
 	data.Status = helper.KeepOrUpdateString(data.Status, string(disk.Status), preserveKnown)
+	data.DiskEncryption = helper.KeepOrUpdateString(data.DiskEncryption, string(disk.DiskEncryption), preserveKnown)
 }
 
 func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
@@ -68,4 +70,5 @@ func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
 	data.Updated = helper.KeepOrUpdateValue(data.Updated, other.Updated, preserveKnown)
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
+	data.DiskEncryption = helper.KeepOrUpdateValue(data.DiskEncryption, other.DiskEncryption, preserveKnown)
 }
