@@ -1,0 +1,9 @@
+{{ define "image_data_replicate" }}
+
+{{ template "image_replicate" . }}
+
+data "linode_image" "foobar" {
+    id = linode_image.foobar.id
+}
+
+{{ end }}

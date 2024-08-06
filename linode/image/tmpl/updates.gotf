@@ -20,6 +20,7 @@ resource "linode_image" "foobar" {
     disk_id = "${linode_instance.foobar.disk.0.id}"
     label = "{{.Image}}_renamed"
     description = "more descriptive text"
+    tags = ["{{.Tag}}"]
 }
 
 {{ end }}

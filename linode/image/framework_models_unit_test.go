@@ -3,6 +3,7 @@
 package image
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -28,10 +29,22 @@ func TestParseImage(t *testing.T) {
 		Deprecated:   false,
 		Created:      createdTime,
 		Expiry:       nil,
+		TotalSize:    2500,
+		Tags:         []string{"test"},
+		Regions: []linodego.ImageRegion{
+			{
+				Region: "us-east",
+				Status: linodego.ImageRegionStatus("available"),
+			},
+			{
+				Region: "us-west",
+				Status: linodego.ImageRegionStatus("pending replication"),
+			},
+		},
 	}
 
 	var imageModel ImageModel
-	imageModel.ParseImage(&mockImage)
+	imageModel.ParseImage(context.Background(), &mockImage)
 
 	assert.Equal(t, types.StringValue("linode/debian11"), imageModel.ID)
 	assert.Equal(t, types.StringValue("linode"), imageModel.CreatedBy)
@@ -46,4 +59,10 @@ func TestParseImage(t *testing.T) {
 	assert.Equal(t, types.BoolValue(false), imageModel.Deprecated)
 	assert.Equal(t, imageModel.Created, types.StringValue(createdTimeFormatted))
 	assert.Empty(t, imageModel.Expiry)
+	assert.Equal(t, types.Int64Value(2500), imageModel.TotalSize)
+	assert.Equal(t, types.StringValue("us-east"), imageModel.Replications[0].Region)
+	assert.Equal(t, types.StringValue("available"), imageModel.Replications[0].Status)
+	assert.Equal(t, types.StringValue("us-west"), imageModel.Replications[1].Region)
+	assert.Equal(t, types.StringValue("pending replication"), imageModel.Replications[1].Status)
+	assert.Contains(t, imageModel.Tags.String(), "test")
 }

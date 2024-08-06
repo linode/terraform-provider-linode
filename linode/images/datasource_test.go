@@ -3,7 +3,6 @@
 package images_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -15,12 +14,14 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testRegion = region
+	//region, err := acceptance.GetRandomRegionWithCaps(nil)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//testRegion = region
+	// TODO: revert the change once image gen2 works globally or with specific capabilities
+	testRegion = "us-east"
 }
 
 func TestAccDataSourceImages_basic_smoke(t *testing.T) {
@@ -42,20 +43,26 @@ func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "images.0.description", "descriptive text"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.type", "manual"),
+					acceptance.CheckListContains(resourceName, "images.0.tags", "test"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.deprecated"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.total_size"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.0.replications.#"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.label", imageName),
 					resource.TestCheckResourceAttr(resourceName, "images.1.description", "descriptive text"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.type", "manual"),
+					acceptance.CheckListContains(resourceName, "images.1.tags", "test"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.1.deprecated"),
-					resource.TestCheckResourceAttrSet(resourceName, "images.0.capabilities.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.1.capabilities.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.1.total_size"),
+					resource.TestCheckResourceAttrSet(resourceName, "images.1.replications.#"),
 				),
 			},
 

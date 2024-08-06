@@ -60,8 +60,36 @@ var ImageAttributes = map[string]schema.Attribute{
 		Description: "The upstream distribution vendor. Nil for private Images.",
 		Computed:    true,
 	},
+	"tags": schema.ListAttribute{
+		Description: "The customized tags for the image.",
+		Computed:    true,
+		ElementType: types.StringType,
+	},
+	"total_size": schema.Int64Attribute{
+		Description: "The total size of the image in all available regions.",
+		Computed:    true,
+	},
+}
+
+var ReplicationsBlock = map[string]schema.Block{
+	"replications": schema.ListNestedBlock{
+		Description: "A list of image replications region and corresponding status.",
+		NestedObject: schema.NestedBlockObject{
+			Attributes: map[string]schema.Attribute{
+				"region": schema.StringAttribute{
+					Description: "The region of an image replica.",
+					Computed:    true,
+				},
+				"status": schema.StringAttribute{
+					Description: "The status of an image replica.",
+					Computed:    true,
+				},
+			},
+		},
+	},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: ImageAttributes,
+	Blocks:     ReplicationsBlock,
 }

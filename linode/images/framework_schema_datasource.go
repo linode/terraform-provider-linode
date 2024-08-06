@@ -14,6 +14,8 @@ var filterConfig = frameworkfilter.Config{
 	"type":       {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 	"vendor":     {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
 
+	// TODO: check if tags become API filterable
+	"tags":        {TypeFunc: frameworkfilter.FilterTypeString},
 	"created_by":  {TypeFunc: frameworkfilter.FilterTypeString},
 	"id":          {TypeFunc: frameworkfilter.FilterTypeString},
 	"status":      {TypeFunc: frameworkfilter.FilterTypeString},
@@ -39,6 +41,7 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The returned list of Images.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: image.ImageAttributes,
+				Blocks:     image.ReplicationsBlock,
 			},
 		},
 	},

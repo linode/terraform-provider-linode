@@ -12,6 +12,11 @@ data "linode_images" "foobar" {
         name = "is_public"
         values = ["false"]
     }
+
+    filter {
+        name = "tags"
+        values = ["test"]
+    }
 }
 
 {{ end }}
