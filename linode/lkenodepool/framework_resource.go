@@ -63,7 +63,7 @@ func (r *Resource) Read(
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"Error reading Linode Node Pool",
-				fmt.Sprintf("Removing Linode Node Pool %d, cluster %d, from state because it no longer exists", poolID, clusterID),
+				fmt.Sprintf("Removing Linode Node Pool %d in cluster %d, from state because it no longer exists", poolID, clusterID),
 			)
 			resp.State.RemoveResource(ctx)
 			return
@@ -75,7 +75,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.FlattenLKENodePool(nodePool, false, &resp.Diagnostics)
+	data.FlattenLKENodePool(ctx, nodePool, false, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -140,7 +140,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	plan.FlattenLKENodePool(readyPool, true, &resp.Diagnostics)
+	plan.FlattenLKENodePool(ctx, readyPool, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -206,7 +206,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	plan.FlattenLKENodePool(readyPool, true, &resp.Diagnostics)
+	plan.FlattenLKENodePool(ctx, readyPool, true, &resp.Diagnostics)
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan

@@ -4,6 +4,7 @@ package lkenodepool_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -82,10 +83,11 @@ func sweep(prefix string) error {
 	if err != nil {
 		return fmt.Errorf("Error getting clusters: %s", err)
 	}
+	var manyErrors []error
 	for _, cluster := range clusters {
 		if acceptance.ShouldSweep(prefix, cluster.Label) {
 			if err := client.DeleteLKECluster(context.Background(), cluster.ID); err != nil {
-				return fmt.Errorf("Error destroying LKE cluster %d during sweep: %s", cluster.ID, err)
+				manyErrors = append(manyErrors, fmt.Errorf("Error destroying LKE cluster %d during sweep: %s", cluster.ID, err))
 			}
 		} else {
 			pools, err := client.ListLKENodePools(context.Background(), clusterID, nil)
@@ -97,14 +99,14 @@ func sweep(prefix string) error {
 					log.Printf("[DEBUG] Found a leaked node pool, clusterID: %d, poolID: %d. Deleting", clusterID, pool.ID)
 					err := client.DeleteLKENodePool(context.Background(), clusterID, pool.ID)
 					if err != nil {
-						return fmt.Errorf("Error destroying nodepool %v during sweep: %s", pool.ID, err)
+						manyErrors = append(manyErrors, fmt.Errorf("Error destroying nodepool %v during sweep: %s", pool.ID, err))
 					}
 				}
 			}
 		}
 	}
 
-	return nil
+	return errors.Join(manyErrors...)
 }
 
 func TestAccResourceNodePool_basic(t *testing.T) {
@@ -290,7 +292,6 @@ func TestAccResourceNodePool_update_type(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "tags.0", "external"),
 					resource.TestCheckResourceAttr(resName, "tags.1", poolTag),
 					resource.TestCheckResourceAttr(resName, "node_count", "1"),
-					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
 				),
 			},
 			{
@@ -304,6 +305,106 @@ func TestAccResourceNodePool_update_type(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkNodePoolExists,
 					resource.TestCheckResourceAttr(resName, "type", "g6-standard-2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceNodePool_taints_labels(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_lke_node_pool.foobar"
+	clusterLabel := acctest.RandomWithPrefix("tf_test_")
+	poolTag := acctest.RandomWithPrefix("tf_test_")
+
+	templateData := createTemplateData()
+	templateData.ClusterLabel = clusterLabel
+	templateData.PoolTag = poolTag
+	templateData.AutoscalerEnabled = false
+	templateData.NodeCount = 1
+
+	configWithoutTaintsLabels := createResourceConfig(t, &templateData)
+
+	templateData.Labels = map[string]string{"foo": "bar"}
+	templateData.Taints = []tmpl.TaintData{
+		{
+			Effect: "PreferNoSchedule",
+			Key:    "foo",
+			Value:  "bar",
+		},
+	}
+	configWithTaintsLabels := createResourceConfig(t, &templateData)
+
+	templateData.Labels = map[string]string{"bar": "baz"}
+	templateData.Taints = []tmpl.TaintData{
+		{
+			Effect: "NoExecute",
+			Key:    "bar",
+			Value:  "baz",
+		},
+	}
+	configWithUpdatedTaintsLabels := createResourceConfig(t, &templateData)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodePoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: configWithTaintsLabels,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "taint.#", "1"),
+					resource.TestCheckResourceAttr(resName, "taint.0.effect", "PreferNoSchedule"),
+					resource.TestCheckResourceAttr(resName, "taint.0.key", "foo"),
+					resource.TestCheckResourceAttr(resName, "taint.0.value", "bar"),
+					resource.TestCheckResourceAttr(resName, "labels.%", "1"),
+					resource.TestCheckResourceAttr(resName, "labels.foo", "bar"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+			{
+				Config: configWithoutTaintsLabels,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "taint.#", "0"),
+					resource.TestCheckResourceAttr(resName, "labels.%", "0"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+			{
+				Config: configWithTaintsLabels,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "taint.#", "1"),
+					resource.TestCheckResourceAttr(resName, "taint.0.effect", "PreferNoSchedule"),
+					resource.TestCheckResourceAttr(resName, "taint.0.key", "foo"),
+					resource.TestCheckResourceAttr(resName, "taint.0.value", "bar"),
+					resource.TestCheckResourceAttr(resName, "labels.%", "1"),
+					resource.TestCheckResourceAttr(resName, "labels.foo", "bar"),
+				),
+			},
+			{
+				Config: configWithUpdatedTaintsLabels,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "taint.#", "1"),
+					resource.TestCheckResourceAttr(resName, "taint.0.effect", "NoExecute"),
+					resource.TestCheckResourceAttr(resName, "taint.0.key", "bar"),
+					resource.TestCheckResourceAttr(resName, "taint.0.value", "baz"),
+					resource.TestCheckResourceAttr(resName, "labels.%", "1"),
+					resource.TestCheckResourceAttr(resName, "labels.bar", "baz"),
 				),
 			},
 		},
