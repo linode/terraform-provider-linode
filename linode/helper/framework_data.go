@@ -26,6 +26,14 @@ func KeepOrUpdateStringSet(
 	)
 }
 
+func KeepOrUpdateIntSet(
+	original types.Set, updated []int, preserveKnown bool, diags *diag.Diagnostics,
+) types.Set {
+	return KeepOrUpdateSet(
+		types.Int64Type, original, IntSliceToFrameworkValueSlice(updated), preserveKnown, diags,
+	)
+}
+
 func KeepOrUpdateSet(
 	elementType attr.Type, original types.Set, updated []attr.Value, preserveKnown bool, diags *diag.Diagnostics,
 ) types.Set {

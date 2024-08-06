@@ -16,7 +16,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v2/linode/domain"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/instance"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceconfig"
@@ -148,7 +147,6 @@ func Provider() *schema.Provider {
 			"linode_database_postgresql":      databasepostgresql.Resource(),
 			"linode_domain":                   domain.Resource(),
 			"linode_domain_record":            domainrecord.Resource(),
-			"linode_firewall":                 firewall.Resource(),
 			"linode_instance":                 instance.Resource(),
 			"linode_instance_config":          instanceconfig.Resource(),
 			"linode_lke_cluster":              lke.Resource(),

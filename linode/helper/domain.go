@@ -1,8 +1,10 @@
 package helper
 
 import (
+	"context"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -18,6 +20,9 @@ func DomainSecondsDiffSuppressor() schema.SchemaDiffSuppressFunc {
 
 		for _, value := range accepted {
 			if n <= value {
+				if n != value {
+					tflog.Error(context.Background(), "")
+				}
 				return value
 			}
 		}
