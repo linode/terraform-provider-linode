@@ -14,8 +14,10 @@ var resourceSchema = map[string]*schema.Schema{
 		ForceNew:    true,
 	},
 	"cluster": {
-		Type:         schema.TypeString,
-		Description:  "The target cluster that the bucket is in.",
+		Type:        schema.TypeString,
+		Description: "The target cluster that the bucket is in.",
+		Deprecated: "The cluster attribute has been deprecated, please consider switching to the region attribute. " +
+			"For example, a cluster value of `us-mia-1` can be translated to a region value of `us-mia`.",
 		Optional:     true,
 		ForceNew:     true,
 		ExactlyOneOf: []string{"cluster", "region"},
