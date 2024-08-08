@@ -125,6 +125,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * [`backups`](#backups) - Information about the Linode's backup status.
 
+* [`placement_group`](#placement-groups) - Information about the Linode's Placement Groups.
+
 ### Disks
 
 * `disk`
@@ -220,7 +222,19 @@ The following arguments are available in an `ipv4` configuration block of an `in
     * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
-  
+
+### Placement Groups
+
+* `placement_group`
+
+  * `id` -  The ID of the Placement Group in the Linode API.
+
+  * `placement_group_type` - The placement group type to use when placing Linodes in this group.
+
+  * `placement_group_policy` - Whether Linodes must be able to become compliant during assignment. (Default `strict`)
+
+  * `label` - The label of the Placement Group. This field can only contain ASCII letters, digits and dashes.
+
 ## Filterable Fields
 
 * `group`
