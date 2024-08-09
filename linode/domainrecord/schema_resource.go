@@ -37,17 +37,15 @@ var resourceSchema = map[string]*schema.Schema{
 			"cached by resolvers or other domain servers. Valid values are 30, 120, 300, 3600, 7200, 14400, 28800, 57600, " +
 			"86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest " +
 			"valid value.",
-		Optional:              true,
-		DiffSuppressFunc:      helper.DomainSecondsDiffSuppressor(),
-		DiffSuppressOnRefresh: true,
+		Optional:         true,
+		DiffSuppressFunc: helper.DomainSecondsDiffSuppressor(),
 	},
 	"target": {
 		Type: schema.TypeString,
 		Description: "The target for this Record. This field's actual usage depends on the type of record " +
 			"this represents. For A and AAAA records, this is the address the named Domain should resolve to.",
-		Required:              true,
-		DiffSuppressFunc:      domainRecordTargetSuppressor,
-		DiffSuppressOnRefresh: true,
+		Required:         true,
+		DiffSuppressFunc: domainRecordTargetSuppressor,
 	},
 	"priority": {
 		Type:         schema.TypeInt,
