@@ -1,0 +1,28 @@
+{{ define "instance_data_with_pg" }}
+
+{{ template "e2e_test_firewall" . }}
+
+resource "linode_placement_group" "foobar" {
+    label = "{{ $.Label }}"
+    region = "{{ $.Region }}"
+    placement_group_type = "anti_affinity:local"
+    placement_group_policy = "flexible"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{ .Label }}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    placement_group {
+        id = linode_placement_group.foobar.id
+    }
+}
+
+data "linode_instances" "foobar" {
+    filter {
+        name = "id"
+        values = [linode_instance.foobar.id]
+    }
+}
+
+{{ end }}
