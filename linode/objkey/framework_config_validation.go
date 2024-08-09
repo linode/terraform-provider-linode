@@ -6,34 +6,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 func (r Resource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var config ResourceModel
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	validateRegionsAgainstBucketAccessEntries(ctx, config, &resp.Diagnostics)
+	validateRegionsAgainstBucketAccessEntries(ctx, req.Config, &resp.Diagnostics)
 }
 
-func validateRegionsAgainstBucketAccessEntries(ctx context.Context, config ResourceModel, diags *diag.Diagnostics) {
-	// regions will be computed if not configured, so it's okay to be null.
-	if config.BucketAccess == nil || config.Regions.IsNull() {
-		return
-	}
-
+func validateRegionsAgainstBucketAccessEntries(ctx context.Context, config tfsdk.Config, diags *diag.Diagnostics) {
+	var bucketAccesses types.Set
 	var regions []string
 	var bucketRegions []string
 
-	config.Regions.ElementsAs(ctx, &regions, true)
+	diags.Append(config.GetAttribute(ctx, path.Root("bucket_access"), &bucketAccesses)...)
+	diags.Append(config.GetAttribute(ctx, path.Root("regions"), &regions)...)
 
-	for _, ba := range config.BucketAccess {
-		bucketRegions = append(bucketRegions, ba.Region.ValueString())
+	if diags.HasError() {
+		return
+	}
+
+	if bucketAccesses.IsNull() || bucketAccesses.IsUnknown() || regions == nil {
+		return
+	}
+
+	for _, ba := range bucketAccesses.Elements() {
+		if baObj, ok := ba.(types.Object); ok {
+			if region, ok := baObj.Attributes()["region"]; ok {
+				if regionStringValue, ok := region.(types.String); ok {
+					bucketRegions = append(bucketRegions, regionStringValue.ValueString())
+				}
+			}
+		}
 	}
 
 	if !helper.ValidateStringSubset(regions, bucketRegions) {
