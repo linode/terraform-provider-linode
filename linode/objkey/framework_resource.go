@@ -13,6 +13,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
+var _ resource.ResourceWithValidateConfig = &Resource{}
+
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
