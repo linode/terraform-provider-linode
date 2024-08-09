@@ -101,6 +101,8 @@ var resourceSchema = schema.Schema{
 		},
 
 		"taint": schema.SetNestedBlock{
+			Description: "Kubernetes taints to add to node pool nodes. Taints help control how " + 
+				"pods are scheduled onto nodes, specifically allowing them to repel certain pods.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
 					"effect": schema.StringAttribute{
