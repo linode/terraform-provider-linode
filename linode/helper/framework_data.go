@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -24,6 +26,23 @@ func KeepOrUpdateStringSet(
 	return KeepOrUpdateSet(
 		types.StringType, original, StringSliceToFrameworkValueSlice(updated), preserveKnown, diags,
 	)
+}
+
+func KeepOrUpdateStringMap(
+	ctx context.Context,
+	original types.Map,
+	updated map[string]string,
+	preserveKnown bool,
+	diags *diag.Diagnostics,
+) types.Map {
+	mapValue, newDiags := types.MapValueFrom(ctx, types.StringType, updated)
+	diags.Append(newDiags...)
+
+	if diags.HasError() {
+		return mapValue
+	}
+
+	return KeepOrUpdateValue(original, mapValue, preserveKnown)
 }
 
 func KeepOrUpdateSet(

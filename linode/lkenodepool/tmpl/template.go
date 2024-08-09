@@ -6,6 +6,12 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
+type TaintData struct {
+	Effect string
+	Key    string
+	Value  string
+}
+
 type TemplateData struct {
 	ClusterID         string
 	ClusterLabel      string
@@ -17,6 +23,8 @@ type TemplateData struct {
 	AutoscalerEnabled bool
 	AutoscalerMin     int
 	AutoscalerMax     int
+	Taints            []TaintData
+	Labels            map[string]string
 }
 
 func Generate(t *testing.T, data *TemplateData) string {

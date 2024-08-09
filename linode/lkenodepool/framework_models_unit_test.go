@@ -37,7 +37,7 @@ func TestParseNodePool(t *testing.T) {
 	nodePoolModel := NodePoolModel{}
 	var diags diag.Diagnostics
 
-	nodePoolModel.FlattenLKENodePool(&lkeNodePool, false, &diags)
+	nodePoolModel.FlattenLKENodePool(context.Background(), &lkeNodePool, false, &diags)
 
 	assert.False(t, diags.HasError())
 	assert.Equal(t, "123", nodePoolModel.ID.ValueString())

@@ -3,6 +3,7 @@ package lkenodepool
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
 )
@@ -71,6 +73,14 @@ var resourceSchema = schema.Schema{
 			Computed:    true,
 			ElementType: nodeObjectType,
 		},
+		"labels": schema.MapAttribute{
+			Description: "Key-value pairs added as labels to nodes in the node pool. " +
+				"Labels help classify your nodes and to easily select subsets of objects.",
+			ElementType: types.StringType,
+			Optional:    true,
+			Computed:    true,
+			Default:     helper.EmptyMapDefault(types.StringType),
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"autoscaler": schema.ListNestedBlock{
@@ -85,6 +95,32 @@ var resourceSchema = schema.Schema{
 					},
 					"max": schema.Int64Attribute{
 						Required: true,
+					},
+				},
+			},
+		},
+
+		"taint": schema.SetNestedBlock{
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"effect": schema.StringAttribute{
+						Description: "The Kubernetes taint effect.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								string(linodego.LKENodePoolTaintEffectNoExecute),
+								string(linodego.LKENodePoolTaintEffectNoSchedule),
+								string(linodego.LKENodePoolTaintEffectPreferNoSchedule),
+							),
+						},
+						Required: true,
+					},
+					"key": schema.StringAttribute{
+						Description: "The Kubernetes taint key.",
+						Required:    true,
+					},
+					"value": schema.StringAttribute{
+						Description: "The Kubernetes taint value.",
+						Required:    true,
 					},
 				},
 			},
