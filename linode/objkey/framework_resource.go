@@ -13,8 +13,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-var _ resource.ResourceWithValidateConfig = &Resource{}
-
 func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
@@ -41,6 +39,11 @@ func (r *Resource) Create(
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	validateRegionsAgainstBucketAccesses(ctx, plan, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,6 +138,11 @@ func (r *Resource) Update(
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	validateRegionsAgainstBucketAccesses(ctx, plan, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
