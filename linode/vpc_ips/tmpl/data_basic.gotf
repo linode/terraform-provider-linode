@@ -1,0 +1,75 @@
+{{ define "vpc_ips_data_basic" }}
+
+{{ template "e2e_test_firewall" . }}
+
+# Create a test vpc with a subnet containing a linode instance
+resource "linode_vpc" "foobar" {
+    label = "{{.Label}}-1"
+    region = "{{.Region}}"
+    description = "some description"
+}
+
+resource "linode_vpc_subnet" "foobar" {
+    vpc_id = linode_vpc.foobar.id
+    label = "{{.Label}}-subnet-label-1"
+    ipv4 = "{{.IPv4_1}}"
+}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}-1"
+    region = "{{.Region}}"
+    type = "g6-nanode-1"
+}
+
+resource "linode_instance_config" "foobar" {
+  linode_id = linode_instance.foobar.id
+  label = "test-config-1"
+
+  interface {
+    purpose = "vpc"
+    subnet_id = linode_vpc_subnet.foobar.id
+    ipv4 {
+      nat_1_1 = "any"
+    }
+  }
+}
+
+# Create a second test vpc with a subnet containing a linode instance
+resource "linode_vpc" "barfoo" {
+    label = "{{.Label}}-2"
+    region = "{{.Region}}"
+    description = "some description"
+}
+
+resource "linode_vpc_subnet" "barfoo" {
+    vpc_id = linode_vpc.barfoo.id
+    label = "{{.Label}}-subnet-label-2"
+    ipv4 = "{{.IPv4_2}}"
+}
+
+resource "linode_instance" "barfoo" {
+    label = "{{.Label}}-2"
+    region = "{{.Region}}"
+    type = "g6-nanode-1"
+}
+
+resource "linode_instance_config" "barfoo" {
+  linode_id = linode_instance.barfoo.id
+  label = "test-config-2"
+
+  interface {
+    purpose = "vpc"
+    subnet_id = linode_vpc_subnet.barfoo.id
+  }
+}
+
+data "linode_vpc_ips" "foobar" {
+    depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
+}
+
+data "linode_vpc_ips" "barfoo" {
+    depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
+    vpc_id = linode_vpc.foobar.id
+}
+
+{{ end}}

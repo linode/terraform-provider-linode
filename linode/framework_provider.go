@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/vpc_ips"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -269,6 +271,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		kernels.NewDataSource,
 		vpcsubnet.NewDataSource,
 		vpc.NewDataSource,
+		vpc_ips.NewDataSource,
 		vpcsubnets.NewDataSource,
 		vpcs.NewDataSource,
 		volumes.NewDataSource,
