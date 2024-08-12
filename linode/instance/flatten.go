@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
@@ -51,10 +49,13 @@ func flattenInstance(
 	result["image"] = instance.Image
 	result["host_uuid"] = instance.HostUUID
 	result["has_user_data"] = instance.HasUserData
+	result["disk_encryption"] = instance.DiskEncryption
+	result["lke_cluster_id"] = instance.LKEClusterID
 
 	result["backups"] = flattenInstanceBackups(*instance)
 	result["specs"] = flattenInstanceSpecs(*instance)
 	result["alerts"] = flattenInstanceAlerts(*instance)
+	result["placement_group"] = flattenInstancePlacementGroup(*instance)
 
 	instanceDisks, err := client.ListInstanceDisks(ctx, id, nil)
 	if err != nil {
@@ -223,23 +224,16 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	return result, nil
 }
 
-// NOTE: The ResourceData needs to be passed down here because compliant_only is NOT returned
-// by the API and instead needs to be carried over from the old state.
-func flattenInstancePlacementGroup(d *schema.ResourceData, pg *linodego.InstancePlacementGroup) []map[string]any {
-	if pg == nil {
+func flattenInstancePlacementGroup(instance linodego.Instance) []map[string]any {
+	if instance.PlacementGroup == nil {
 		return nil
 	}
 
 	result := map[string]any{
-		"id":                     pg.ID,
-		"label":                  pg.Label,
-		"placement_group_type":   string(pg.PlacementGroupType),
-		"placement_group_policy": pg.PlacementGroupPolicy,
-	}
-
-	// Inherit compliant_only if it already exists in state
-	if compliantOnly, ok := d.GetOk("placement_group.0.compliant_only"); ok {
-		result["compliant_only"] = compliantOnly.(bool)
+		"id":                     instance.PlacementGroup.ID,
+		"label":                  instance.PlacementGroup.Label,
+		"placement_group_type":   instance.PlacementGroup.PlacementGroupType,
+		"placement_group_policy": instance.PlacementGroup.PlacementGroupPolicy,
 	}
 
 	return []map[string]any{result}

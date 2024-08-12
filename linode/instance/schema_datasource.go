@@ -1,6 +1,8 @@
 package instance
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
 
 var instanceDataSourceSchema = map[string]*schema.Schema{
 	"id": {
@@ -100,6 +102,17 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 	"has_user_data": {
 		Type:        schema.TypeBool,
 		Description: "Whether this Instance was created with user-data.",
+		Computed:    true,
+	},
+	"disk_encryption": {
+		Type: schema.TypeString,
+		Description: "The disk encryption policy for this Instance." +
+			"NOTE: Disk encryption may not currently be available to all users.",
+		Computed: true,
+	},
+	"lke_cluster_id": {
+		Type:        schema.TypeInt,
+		Description: "If applicable, the ID of the LKE cluster this Instance is a node of.",
 		Computed:    true,
 	},
 	"specs": {
@@ -402,6 +415,39 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Description: "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
 					Computed:    true,
+				},
+			},
+		},
+	},
+	"placement_group": {
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"id": {
+					Type:        schema.TypeInt,
+					Description: "The placement group's ID. You need to provide it for all operations impacting it.",
+					Computed:    true,
+				},
+				"label": {
+					Type:        schema.TypeString,
+					Description: "The unique name set for the placement group.",
+					Computed:    true,
+				},
+				"placement_group_type": {
+					Type: schema.TypeString,
+					Description: "How compute instances are distributed in your placement group. " +
+						"anti-affinity:local places compute instances in separate fault domains, but still in the same region.",
+					Computed: true,
+				},
+				"placement_group_policy": {
+					Type: schema.TypeString,
+					Description: "How the API enforces your placement_group_type. Set to strict, your group is strict. You can't " +
+						"add more compute instances to your placement group if your preferred container lacks capacity or is" +
+						" unavailable. Set to flexible, your group is flexible. You can add more compute instances to it even if " +
+						"they violate the placement_group_type. If you violate the placement_group_type your placement group becomes " +
+						"non-compliant and you need to wait for our assistance.",
+					Computed: true,
 				},
 			},
 		},

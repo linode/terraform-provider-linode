@@ -240,6 +240,7 @@ func (r *Resource) Create(
 	}
 
 	plan.FlattenImage(ctx, image, true, &resp.Diagnostics)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}

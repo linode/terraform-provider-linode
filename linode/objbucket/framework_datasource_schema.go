@@ -11,8 +11,11 @@ var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"cluster": schema.StringAttribute{
 			Description: "The ID of the Object Storage Cluster this bucket is in.",
-			Optional:    true,
-			Computed:    true,
+			DeprecationMessage: "The cluster attribute has been deprecated, please consider " +
+				"switching to the region attribute. For example, a cluster value of `us-mia-1` " +
+				"can be translated to a region value of `us-mia`.",
+			Optional: true,
+			Computed: true,
 			Validators: []validator.String{
 				stringvalidator.ExactlyOneOf(
 					path.MatchRelative().AtParent().AtName("region"),

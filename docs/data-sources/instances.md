@@ -105,6 +105,12 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `has_user_data` - Whether this Instance was created with user-data.
 
+* `disk_encryption` - The disk encryption policy for this instance.
+
+  * **NOTE: Disk encryption may not currently be available to all users.**
+
+* `lke_cluster_id` - If applicable, the ID of the LKE cluster this instance is a part of.
+
 * `specs.0.disk` -  The amount of storage space, in GB. this Linode has access to. A typical Linode will divide this space between a primary disk with an image deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an image through POST /linode/instances.
 
 * `specs.0.memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
@@ -118,6 +124,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 * [`config`](#configs) - A list of configs associated with the Linode.
 
 * [`backups`](#backups) - Information about the Linode's backup status.
+
+* [`placement_group`](#placement-groups) - Information about the Linode's Placement Groups.
 
 ### Disks
 
@@ -214,7 +222,19 @@ The following arguments are available in an `ipv4` configuration block of an `in
     * `day` -  The day of the week that your Linode's weekly Backup is taken. If not set manually, a day will be chosen for you. Backups are taken every day, but backups taken on this day are preferred when selecting backups to retain for a longer period.  If not set manually, then when backups are initially enabled, this may come back as "Scheduling" until the day is automatically selected.
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
-  
+
+### Placement Groups
+
+* `placement_group`
+
+  * `id` -  The ID of the Placement Group in the Linode API.
+
+  * `placement_group_type` - The placement group type to use when placing Linodes in this group.
+
+  * `placement_group_policy` - Whether Linodes must be able to become compliant during assignment. (Default `strict`)
+
+  * `label` - The label of the Placement Group. This field can only contain ASCII letters, digits and dashes.
+
 ## Filterable Fields
 
 * `group`
