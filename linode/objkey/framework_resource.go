@@ -37,30 +37,15 @@ func (r *Resource) Create(
 	resp *resource.CreateResponse,
 ) {
 	tflog.Debug(ctx, "Create linode_object_storage_key")
-	var data ResourceModel
+	var plan ResourceModel
 	client := r.Meta.Client
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	createOpts := linodego.ObjectStorageKeyCreateOptions{
-		Label: data.Label.ValueString(),
-	}
-
-	if data.BucketAccess != nil {
-		accessSlice := make(
-			[]linodego.ObjectStorageKeyBucketAccess,
-			len(data.BucketAccess),
-		)
-
-		for i, v := range data.BucketAccess {
-			accessSlice[i] = v.toLinodeObject()
-		}
-
-		createOpts.BucketAccess = &accessSlice
-	}
+	createOpts := plan.GetCreateOptions(ctx)
 
 	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]any{
 		"options": createOpts,
@@ -79,13 +64,13 @@ func (r *Resource) Create(
 		"label":  key.Label,
 	})
 
-	data.FlattenObjectStorageKey(ctx, key, true, &resp.Diagnostics)
+	plan.FlattenObjectStorageKey(ctx, key, true, &resp.Diagnostics)
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
-	data.ID = types.StringValue(strconv.Itoa(key.ID))
+	plan.ID = types.StringValue(strconv.Itoa(key.ID))
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Read(
