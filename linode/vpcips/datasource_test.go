@@ -1,6 +1,6 @@
 //go:build integration || vpc_ips
 
-package vpc_ips_test
+package vpcips_test
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpc_ips/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/vpcips/tmpl"
 )
 
 func TestAccDataSourceVPCIPs_basic(t *testing.T) {

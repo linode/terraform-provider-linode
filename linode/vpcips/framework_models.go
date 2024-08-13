@@ -1,4 +1,4 @@
-package vpc_ips
+package vpcips
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
