@@ -570,8 +570,12 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 	}
 }
 
-// GetRegionsWithCaps returns a list of regions that support the given capabilities.
-func GetRegionsWithCaps(capabilities []string, filters ...RegionFilterFunc) ([]string, error) {
+// GetRegionsWithCaps returns a list of region IDs that support the given capabilities
+// Parameters:
+// - capabilities: Required capabilities that the regions must support.
+// - siteType: The site type to filter by ("core" or "distributed").
+// - filters: Optional custom filters for additional criteria.
+func GetRegionsWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) ([]string, error) {
 	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
@@ -582,8 +586,13 @@ func GetRegionsWithCaps(capabilities []string, filters ...RegionFilterFunc) ([]s
 		return nil, err
 	}
 
-	// Filter on capabilities
+	// Filter on capabilities and site type
 	regionsWithCaps := slices.DeleteFunc(regions, func(region linodego.Region) bool {
+		// Check if the site type matches
+		if !strings.EqualFold(region.SiteType, regionType) {
+			return true
+		}
+
 		capsMap := make(map[string]bool)
 
 		for _, c := range region.Capabilities {
@@ -620,8 +629,8 @@ func GetRegionsWithCaps(capabilities []string, filters ...RegionFilterFunc) ([]s
 }
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
-func GetRandomRegionWithCaps(capabilities []string, filters ...RegionFilterFunc) (string, error) {
-	regions, err := GetRegionsWithCaps(capabilities, filters...)
+func GetRandomRegionWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) (string, error) {
+	regions, err := GetRegionsWithCaps(capabilities, regionType, filters...)
 	if err != nil {
 		return "", err
 	}

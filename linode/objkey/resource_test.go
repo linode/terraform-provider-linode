@@ -30,7 +30,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

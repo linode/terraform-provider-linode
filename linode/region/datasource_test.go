@@ -18,7 +18,7 @@ var (
 )
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"linodes"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"linodes"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

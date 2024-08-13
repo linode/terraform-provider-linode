@@ -68,7 +68,7 @@ func init() {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
