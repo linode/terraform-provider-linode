@@ -18,7 +18,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 	resourceName := "data.linode_nodebalancers.nbs"
 
 	nbLabel := acctest.RandomWithPrefix("tf_test")
-	nbRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers"})
+	nbRegion, err := acceptance.GetRandomRegionWithCaps([]string{"NodeBalancers"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

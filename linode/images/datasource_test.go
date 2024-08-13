@@ -15,7 +15,7 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps(nil)
+	region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

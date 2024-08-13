@@ -22,7 +22,7 @@ import (
 var testRegion string
 
 func init() {
-	r, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	r, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
