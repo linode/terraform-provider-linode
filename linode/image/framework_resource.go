@@ -213,6 +213,10 @@ func (r *Resource) Create(
 		image = createResourceFromUpload(ctx, &plan, client, resp, timeoutSeconds)
 	}
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	plan.FlattenImage(image, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
