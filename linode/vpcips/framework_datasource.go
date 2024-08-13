@@ -85,7 +85,7 @@ func (r *DataSource) Read(
 }
 
 func ListAllVPCIPs(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-	tflog.Trace(ctx, "client.ListVPCIPs(...)", map[string]any{
+	tflog.Trace(ctx, "client.ListAllVPCIPAddresses(...)", map[string]any{
 		"filter": filter,
 	})
 	vpcIps, err := client.ListAllVPCIPAddresses(ctx, &linodego.ListOptions{
@@ -99,7 +99,7 @@ func ListAllVPCIPs(ctx context.Context, client *linodego.Client, filter string) 
 }
 
 func ListVPCIPs(ctx context.Context, client *linodego.Client, filter string, vpcID int) ([]any, error) {
-	tflog.Trace(ctx, "client.ListVPCIPs(...)", map[string]any{
+	tflog.Trace(ctx, "client.ListVPCIPAddresses(...)", map[string]any{
 		"filter": filter,
 	})
 	vpcIps, err := client.ListVPCIPAddresses(ctx, vpcID, &linodego.ListOptions{
