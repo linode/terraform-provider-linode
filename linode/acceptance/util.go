@@ -573,7 +573,7 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
 // Parameters:
 // - capabilities: Required capabilities that the regions must support.
-// - siteType: The site type to filter by ("core" or "distributed").
+// - siteType: The site type to filter by ("core" or "distributed" or "any").
 // - filters: Optional custom filters for additional criteria.
 func GetRegionsWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) ([]string, error) {
 	client, err := GetTestClient()
@@ -589,7 +589,8 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 	// Filter on capabilities and site type
 	regionsWithCaps := slices.DeleteFunc(regions, func(region linodego.Region) bool {
 		// Check if the site type matches
-		if !strings.EqualFold(region.SiteType, regionType) {
+		// Skip site type check if "any" is passed
+		if !strings.EqualFold(regionType, "any") && !strings.EqualFold(region.SiteType, regionType) {
 			return true
 		}
 
