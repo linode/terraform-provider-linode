@@ -207,7 +207,7 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"replica_regions": schema.ListAttribute{
 			Description: "A list of regions that customer wants to replicate this image in. " +
-				"At least one valid region is required and only core regions allowed. " +
+				"At least one available region is required and only core regions allowed. " +
 				"Existing images in the regions not passed will be removed.",
 			Optional:    true,
 			ElementType: types.StringType,
@@ -216,6 +216,12 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "A list of image replications region and corresponding status.",
 			Computed:    true,
 			ElementType: replicationObjType,
+		},
+		"wait_for_replications": schema.BoolAttribute{
+			Description: "Whether to wait for all image replications become `available`.",
+			Optional:    true,
+			Computed:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 	},
 }

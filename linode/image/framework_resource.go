@@ -356,11 +356,18 @@ func (r *Resource) Update(
 	}
 
 	if !state.ReplicaRegions.Equal(plan.ReplicaRegions) {
-		if plan.ReplicaRegions.IsNull() || plan.ReplicaRegions.IsUnknown() {
+		isAvailableRegionLeft, diags := atLeastOneAvailableRegion(ctx, &plan, &state)
+		if diags != nil {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		if plan.ReplicaRegions.IsNull() || plan.ReplicaRegions.IsUnknown() || !isAvailableRegionLeft {
 			resp.Diagnostics.AddError(
 				"Invalid regions to replicate.",
-				"At least one valid region must be specified. "+
+				"At least one available region must be specified. "+
 					"Image is not allowed to be deleted by sending an empty regions list.")
+			return
 		}
 
 		image, diags := replicateImage(ctx, &plan, client)
@@ -499,14 +506,67 @@ func replicateImage(
 		"opts": replicationOpts,
 	})
 
-	image, err := client.ReplicateImage(ctx, plan.ID.ValueString(), replicationOpts)
+	imageID := plan.ID.ValueString()
+	image, err := client.ReplicateImage(ctx, imageID, replicationOpts)
 	if err != nil {
 		diags.AddError(
-			fmt.Sprintf("Failed to replicate image %v", plan.ID.ValueString()),
+			fmt.Sprintf("Failed to replicate image %v", imageID),
 			err.Error(),
 		)
 		return nil, diags
 	}
 
-	return image, nil
+	if plan.WaitForReplications.ValueBool() {
+		var replicaRegionWaitList []string
+
+		image, err = client.GetImage(ctx, imageID)
+		for _, region := range image.Regions {
+			// remove pending deletion replicas from the wait list
+			if region.Status != linodego.ImageRegionStatusPendingDeletion {
+				replicaRegionWaitList = append(replicaRegionWaitList, region.Region)
+			}
+		}
+
+		for _, region := range replicaRegionWaitList {
+			image, err = client.WaitForImageRegionStatus(ctx, imageID, region, linodego.ImageRegionStatusAvailable)
+			if err != nil {
+				diags.AddError(
+					fmt.Sprintf("Failed to get image %v replication status in region %v", imageID, region),
+					err.Error(),
+				)
+				return nil, diags
+			}
+		}
+	}
+
+	return image, diags
+}
+
+func atLeastOneAvailableRegion(
+	ctx context.Context,
+	plan *ResourceModel,
+	state *ResourceModel,
+) (bool, diag.Diagnostics) {
+	var planRegions, stateRegions []string
+	diags := plan.ReplicaRegions.ElementsAs(ctx, &planRegions, true)
+	if diags.HasError() {
+		return false, diags
+	}
+	diags = state.ReplicaRegions.ElementsAs(ctx, &stateRegions, true)
+	if diags.HasError() {
+		return false, diags
+	}
+
+	set := make(map[string]bool)
+	for _, v := range stateRegions {
+		set[v] = true
+	}
+
+	for _, v := range planRegions {
+		if set[v] {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
