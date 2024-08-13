@@ -2165,7 +2165,7 @@ func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"} "core")
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"}, "core")
 	rootPass := acctest.RandString(12)
 	if err != nil {
 		t.Fatal(err)
@@ -2329,7 +2329,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	// Resolve a region to migrate to
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes"},  "core",
+		[]string{"Linodes"}, "core",
 		func(v linodego.Region) bool {
 			return v.ID != testRegion
 		},
@@ -2386,7 +2386,7 @@ func TestAccResourceInstance_withPG(t *testing.T) {
 
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
-		[]string{"Linodes", "Placement Group"},  "core",
+		[]string{"Linodes", "Placement Group"}, "core",
 	)
 	if err != nil {
 		t.Fatal(err)

@@ -70,7 +70,7 @@ int-test: fmt-check generate-ip-env-fw-e2e include-env
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	TF_VAR_ipv4_addr=${PUBLIC_IPV4} \
 	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
-	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" $(ARGS) | grep -v "\[no test files\]"
+	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel=$(PARALLEL) $(ARGS) | grep -v "\[no test files\]"
 
 .PHONY: include-env
 include-env: $(IP_ENV_FILE)
