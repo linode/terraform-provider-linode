@@ -18,6 +18,8 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 
 	resourceName_all_ips := "data.linode_vpc_ips.foobar"
 	resourceName_vpc_ips := "data.linode_vpc_ips.barfoo"
+	resourceName_filtered_ips := "data.linode_vpc_ips.foobar_filter"
+
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
 	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
 	if err != nil {
@@ -33,6 +35,7 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName_all_ips, "vpc_ips.#", "2"),
 					resource.TestCheckResourceAttr(resourceName_vpc_ips, "vpc_ips.#", "1"),
+					resource.TestCheckResourceAttr(resourceName_filtered_ips, "vpc_ips.#", "1"),
 
 					resource.TestCheckResourceAttrSet(resourceName_all_ips, "vpc_ips.0.address"),
 					resource.TestCheckResourceAttrSet(resourceName_all_ips, "vpc_ips.0.gateway"),
@@ -61,31 +64,6 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resourceName_all_ips, "vpc_ips.1.address_range"),
 					resource.TestCheckResourceAttrSet(resourceName_all_ips, "vpc_ips.1.vpc_id"),
 					resource.TestCheckResourceAttrSet(resourceName_all_ips, "vpc_ips.1.active"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccDataSourceVPCIPs_filterByAddress(t *testing.T) {
-	t.Parallel()
-
-	resourceName := "data.linode_vpc_ips.foobar"
-	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
-	if err != nil {
-		log.Fatal(fmt.Errorf("Error getting region: %s", err))
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.DataFilterAddress(t, vpcLabel, testRegion, "10.0.0.0/24"),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpc_ips.#", 0),
-					acceptance.CheckResourceAttrContains(resourceName, "vpc_ips.0.address", "10.0.0"),
 				),
 			},
 		},

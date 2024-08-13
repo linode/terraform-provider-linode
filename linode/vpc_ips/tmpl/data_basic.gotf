@@ -4,21 +4,21 @@
 
 # Create a test vpc with a subnet containing a linode instance
 resource "linode_vpc" "foobar" {
-    label = "{{.Label}}-1"
-    region = "{{.Region}}"
-    description = "some description"
+  label = "{{.Label}}-1"
+  region = "{{.Region}}"
+  description = "some description"
 }
 
 resource "linode_vpc_subnet" "foobar" {
-    vpc_id = linode_vpc.foobar.id
-    label = "{{.Label}}-subnet-label-1"
-    ipv4 = "{{.IPv4_1}}"
+  vpc_id = linode_vpc.foobar.id
+  label = "{{.Label}}-subnet-label-1"
+  ipv4 = "{{.IPv4_1}}"
 }
 
 resource "linode_instance" "foobar" {
-    label = "{{.Label}}-1"
-    region = "{{.Region}}"
-    type = "g6-nanode-1"
+  label = "{{.Label}}-1"
+  region = "{{.Region}}"
+  type = "g6-nanode-1"
 }
 
 resource "linode_instance_config" "foobar" {
@@ -36,21 +36,21 @@ resource "linode_instance_config" "foobar" {
 
 # Create a second test vpc with a subnet containing a linode instance
 resource "linode_vpc" "barfoo" {
-    label = "{{.Label}}-2"
-    region = "{{.Region}}"
-    description = "some description"
+  label = "{{.Label}}-2"
+  region = "{{.Region}}"
+  description = "some description"
 }
 
 resource "linode_vpc_subnet" "barfoo" {
-    vpc_id = linode_vpc.barfoo.id
-    label = "{{.Label}}-subnet-label-2"
-    ipv4 = "{{.IPv4_2}}"
+  vpc_id = linode_vpc.barfoo.id
+  label = "{{.Label}}-subnet-label-2"
+  ipv4 = "{{.IPv4_2}}"
 }
 
 resource "linode_instance" "barfoo" {
-    label = "{{.Label}}-2"
-    region = "{{.Region}}"
-    type = "g6-nanode-1"
+  label = "{{.Label}}-2"
+  region = "{{.Region}}"
+  type = "g6-nanode-1"
 }
 
 resource "linode_instance_config" "barfoo" {
@@ -64,12 +64,20 @@ resource "linode_instance_config" "barfoo" {
 }
 
 data "linode_vpc_ips" "foobar" {
-    depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
+  depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
 }
 
 data "linode_vpc_ips" "barfoo" {
-    depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
-    vpc_id = linode_vpc.foobar.id
+  depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
+  vpc_id = linode_vpc.foobar.id
+}
+
+data "linode_vpc_ips" "foobar_filter" {
+  depends_on = [linode_instance_config.foobar, linode_instance_config.barfoo]
+  filter {
+    name = "linode_id"
+    values = [linode_instance.foobar.id]
+  }
 }
 
 {{ end}}
