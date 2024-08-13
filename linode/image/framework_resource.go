@@ -188,6 +188,21 @@ func createResourceFromLinode(
 	// Hash is only known when uploading image from file
 	plan.FileHash = helper.KeepOrUpdateValue(plan.FileHash, types.StringNull(), true)
 
+	tflog.Trace(ctx, "client.WaitForImageStatus(...)", map[string]any{
+		"status": linodego.ImageStatusAvailable,
+	})
+
+	image, err = client.WaitForImageStatus(
+		ctx,
+		image.ID,
+		linodego.ImageStatusAvailable,
+		timeoutSeconds,
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to Wait for Image to be Available", err.Error())
+		return image
+	}
+
 	return refreshImage(ctx, image, client, &resp.Diagnostics)
 }
 
@@ -526,6 +541,10 @@ func replicateImage(
 				replicaRegionWaitList = append(replicaRegionWaitList, region.Region)
 			}
 		}
+
+		tflog.Trace(ctx, "client.WaitForImageRegionStatus(...)", map[string]any{
+			"status": linodego.ImageRegionStatusAvailable,
+		})
 
 		for _, region := range replicaRegionWaitList {
 			image, err = client.WaitForImageRegionStatus(ctx, imageID, region, linodego.ImageRegionStatusAvailable)
