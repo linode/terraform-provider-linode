@@ -17,7 +17,7 @@ const testFirewallDataName = "data.linode_firewalls.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Linodes"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

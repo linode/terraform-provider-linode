@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	DefaultVolumeCreateTimeout = 30 * time.Minute
+	DefaultImageCreateTimeout = 30 * time.Minute
 )
 
 func NewResource() resource.Resource {
@@ -66,6 +66,11 @@ func createResourceFromUpload(
 		CloudInit:   plan.CloudInit.ValueBool(),
 	}
 
+	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, true)...)
+	if resp.Diagnostics.HasError() {
+		return nil
+	}
+
 	tflog.Trace(ctx, "client.CreateImageUpload(...)", map[string]any{
 		"options": createOpts,
 	})
@@ -92,19 +97,8 @@ func createResourceFromUpload(
 		return image
 	}
 
-	tflog.Debug(ctx, "Waiting for a single image to be ready")
-	tflog.Trace(ctx, "client.WaitForImageStatus(...)", map[string]any{
-		"status": linodego.ImageStatusAvailable,
-	})
-
-	image, err = client.WaitForImageStatus(
-		ctx,
-		image.ID,
-		linodego.ImageStatusAvailable,
-		timeoutSeconds,
-	)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to Wait for Image to be Available", err.Error())
+	image = waitForImageToBeAvailable(ctx, client, image.ID, timeoutSeconds, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return image
 	}
 
@@ -141,6 +135,12 @@ func createResourceFromLinode(
 		Description: plan.Description.ValueString(),
 		CloudInit:   plan.CloudInit.ValueBool(),
 	}
+
+	resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &createOpts.Tags, true)...)
+	if resp.Diagnostics.HasError() {
+		return nil
+	}
+
 	tflog.Trace(ctx, "client.CreateImage(...)", map[string]any{
 		"options": createOpts,
 	})
@@ -195,7 +195,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultVolumeCreateTimeout)
+	createTimeout, diags := plan.Timeouts.Create(ctx, DefaultImageCreateTimeout)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -217,7 +217,25 @@ func (r *Resource) Create(
 		return
 	}
 
-	plan.FlattenImage(image, true, &resp.Diagnostics)
+	if !plan.ReplicaRegions.IsNull() && !plan.ReplicaRegions.IsUnknown() {
+		plan.ID = types.StringValue(image.ID)
+
+		// make sure image is ready for replication
+		waitForImageToBeAvailable(ctx, client, image.ID, timeoutSeconds, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// Refresh image from replication
+		image, diags = replicateImage(ctx, &plan, client)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	plan.FlattenImage(ctx, image, true, &resp.Diagnostics)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -267,7 +285,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	state.FlattenImage(image, true, &resp.Diagnostics)
+	state.FlattenImage(ctx, image, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -308,6 +326,14 @@ func (r *Resource) Update(
 		shouldUpdate = true
 	}
 
+	if !state.Tags.Equal(plan.Tags) {
+		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, true)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		shouldUpdate = true
+	}
+
 	if shouldUpdate {
 		tflog.Debug(ctx, "client.UpdateImage(...)", map[string]any{
 			"options": updateOpts,
@@ -318,7 +344,52 @@ func (r *Resource) Update(
 			resp.Diagnostics.AddError("Failed to Update Image", err.Error())
 			return
 		}
-		plan.FlattenImage(image, true, &resp.Diagnostics)
+		plan.FlattenImage(ctx, image, true, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !state.ReplicaRegions.Equal(plan.ReplicaRegions) {
+		isAvailableRegionLeft, diags := atLeastOneAvailableRegion(ctx, &plan, &state)
+		if diags != nil {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+
+		if plan.ReplicaRegions.IsNull() || plan.ReplicaRegions.IsUnknown() || !isAvailableRegionLeft {
+			resp.Diagnostics.AddError(
+				"Invalid regions to replicate.",
+				"At least one available region must be specified. "+
+					"Note: Image is not allowed to be deleted by sending an empty regions list.")
+			return
+		}
+
+		createTimeout, diags := plan.Timeouts.Create(ctx, DefaultImageCreateTimeout)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(createTimeout.Seconds(), &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// make sure image is ready for replication
+		waitForImageToBeAvailable(ctx, client, plan.ID.ValueString(), timeoutSeconds, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		image, diags := replicateImage(ctx, &plan, client)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// Refresh image from replication
+		plan.FlattenImage(ctx, image, true, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -430,4 +501,113 @@ func uploadImageAndStoreHash(
 	}
 
 	plan.FileHash = types.StringValue(hex.EncodeToString(hash.Sum(nil)))
+}
+
+func replicateImage(
+	ctx context.Context,
+	plan *ResourceModel,
+	client *linodego.Client,
+) (*linodego.Image, diag.Diagnostics) {
+	var replicationOpts linodego.ImageReplicateOptions
+	diags := plan.ReplicaRegions.ElementsAs(ctx, &replicationOpts.Regions, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	tflog.Debug(ctx, "client.ReplicateImage(...)", map[string]any{
+		"opts": replicationOpts,
+	})
+
+	imageID := plan.ID.ValueString()
+	image, err := client.ReplicateImage(ctx, imageID, replicationOpts)
+	if err != nil {
+		diags.AddError(
+			fmt.Sprintf("Failed to replicate image %v", imageID),
+			err.Error(),
+		)
+		return nil, diags
+	}
+
+	if plan.WaitForReplications.ValueBool() {
+		var replicaRegionWaitList []string
+
+		image, err = client.GetImage(ctx, imageID)
+		for _, region := range image.Regions {
+			// remove pending deletion replicas from the wait list
+			if region.Status != linodego.ImageRegionStatusPendingDeletion {
+				replicaRegionWaitList = append(replicaRegionWaitList, region.Region)
+			}
+		}
+
+		tflog.Trace(ctx, "client.WaitForImageRegionStatus(...)", map[string]any{
+			"status": linodego.ImageRegionStatusAvailable,
+		})
+
+		for _, region := range replicaRegionWaitList {
+			image, err = client.WaitForImageRegionStatus(ctx, imageID, region, linodego.ImageRegionStatusAvailable)
+			if err != nil {
+				diags.AddError(
+					fmt.Sprintf("Failed to get image %v replication status in region %v", imageID, region),
+					err.Error(),
+				)
+				return nil, diags
+			}
+		}
+	}
+
+	return image, diags
+}
+
+func atLeastOneAvailableRegion(
+	ctx context.Context,
+	plan *ResourceModel,
+	state *ResourceModel,
+) (bool, diag.Diagnostics) {
+	var planRegions, stateRegions []string
+	diags := plan.ReplicaRegions.ElementsAs(ctx, &planRegions, true)
+	if diags.HasError() {
+		return false, diags
+	}
+	diags = state.ReplicaRegions.ElementsAs(ctx, &stateRegions, true)
+	if diags.HasError() {
+		return false, diags
+	}
+
+	set := make(map[string]bool)
+	for _, v := range stateRegions {
+		set[v] = true
+	}
+
+	for _, v := range planRegions {
+		if set[v] {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func waitForImageToBeAvailable(
+	ctx context.Context,
+	client *linodego.Client,
+	imageID string,
+	timeoutSeconds int,
+	diags *diag.Diagnostics,
+) *linodego.Image {
+	tflog.Debug(ctx, "Waiting for a single image to be ready")
+	tflog.Trace(ctx, "client.WaitForImageStatus(...)", map[string]any{
+		"status": linodego.ImageStatusAvailable,
+	})
+
+	image, err := client.WaitForImageStatus(
+		ctx,
+		imageID,
+		linodego.ImageStatusAvailable,
+		timeoutSeconds,
+	)
+	if err != nil {
+		diags.AddError("Failed to Wait for Image to be Available", err.Error())
+	}
+
+	return image
 }

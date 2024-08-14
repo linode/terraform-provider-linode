@@ -27,7 +27,7 @@ func init() {
 	})
 
 	var err error
-	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
+	testRegion, err = acceptance.GetRandomRegionWithCaps([]string{"Placement Group"}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}

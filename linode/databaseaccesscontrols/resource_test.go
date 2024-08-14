@@ -44,7 +44,7 @@ func init() {
 
 	postgresEngineVersion = v.ID
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Managed Databases"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

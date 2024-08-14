@@ -7,7 +7,7 @@ resource "linode_lke_cluster" "test" {
     tags        = ["test", "new_tag"]
 
     pool {
-        type  = "g6-standard-2"
+        type  = "g6-standard-1"
         count = 4
         tags  = ["test", "test-2"]
     }
