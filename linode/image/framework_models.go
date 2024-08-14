@@ -13,30 +13,31 @@ import (
 )
 
 type ResourceModel struct {
-	ID             types.String      `tfsdk:"id"`
-	Label          types.String      `tfsdk:"label"`
-	DiskID         types.Int64       `tfsdk:"disk_id"`
-	LinodeID       types.Int64       `tfsdk:"linode_id"`
-	FilePath       types.String      `tfsdk:"file_path"`
-	Region         types.String      `tfsdk:"region"`
-	FileHash       types.String      `tfsdk:"file_hash"`
-	Description    types.String      `tfsdk:"description"`
-	CloudInit      types.Bool        `tfsdk:"cloud_init"`
-	Capabilities   types.List        `tfsdk:"capabilities"`
-	Created        timetypes.RFC3339 `tfsdk:"created"`
-	CreatedBy      types.String      `tfsdk:"created_by"`
-	Deprecated     types.Bool        `tfsdk:"deprecated"`
-	IsPublic       types.Bool        `tfsdk:"is_public"`
-	Size           types.Int64       `tfsdk:"size"`
-	Status         types.String      `tfsdk:"status"`
-	Type           types.String      `tfsdk:"type"`
-	Expiry         timetypes.RFC3339 `tfsdk:"expiry"`
-	Vendor         types.String      `tfsdk:"vendor"`
-	Timeouts       timeouts.Value    `tfsdk:"timeouts"`
-	Tags           types.List        `tfsdk:"tags"`
-	TotalSize      types.Int64       `tfsdk:"total_size"`
-	ReplicaRegions types.List        `tfsdk:"replica_regions"`
-	Replications   types.List        `tfsdk:"replications"`
+	ID                  types.String      `tfsdk:"id"`
+	Label               types.String      `tfsdk:"label"`
+	DiskID              types.Int64       `tfsdk:"disk_id"`
+	LinodeID            types.Int64       `tfsdk:"linode_id"`
+	FilePath            types.String      `tfsdk:"file_path"`
+	Region              types.String      `tfsdk:"region"`
+	FileHash            types.String      `tfsdk:"file_hash"`
+	Description         types.String      `tfsdk:"description"`
+	CloudInit           types.Bool        `tfsdk:"cloud_init"`
+	Capabilities        types.List        `tfsdk:"capabilities"`
+	Created             timetypes.RFC3339 `tfsdk:"created"`
+	CreatedBy           types.String      `tfsdk:"created_by"`
+	Deprecated          types.Bool        `tfsdk:"deprecated"`
+	IsPublic            types.Bool        `tfsdk:"is_public"`
+	Size                types.Int64       `tfsdk:"size"`
+	Status              types.String      `tfsdk:"status"`
+	Type                types.String      `tfsdk:"type"`
+	Expiry              timetypes.RFC3339 `tfsdk:"expiry"`
+	Vendor              types.String      `tfsdk:"vendor"`
+	Timeouts            timeouts.Value    `tfsdk:"timeouts"`
+	Tags                types.List        `tfsdk:"tags"`
+	TotalSize           types.Int64       `tfsdk:"total_size"`
+	ReplicaRegions      types.List        `tfsdk:"replica_regions"`
+	Replications        types.List        `tfsdk:"replications"`
+	WaitForReplications types.Bool        `tfsdk:"wait_for_replications"`
 }
 
 func (data *ResourceModel) FlattenImage(
@@ -118,6 +119,7 @@ func (data *ResourceModel) CopyFrom(other ResourceModel, preserveKnown bool) {
 	data.TotalSize = helper.KeepOrUpdateValue(data.TotalSize, other.TotalSize, preserveKnown)
 	data.ReplicaRegions = helper.KeepOrUpdateValue(data.ReplicaRegions, other.ReplicaRegions, preserveKnown)
 	data.Replications = helper.KeepOrUpdateValue(data.Replications, other.Replications, preserveKnown)
+	data.WaitForReplications = helper.KeepOrUpdateValue(data.WaitForReplications, other.WaitForReplications, preserveKnown)
 }
 
 // ImageModel describes the Terraform resource data model to match the

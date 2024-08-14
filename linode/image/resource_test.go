@@ -223,6 +223,7 @@ func TestAccImage_replicate(t *testing.T) {
 	imageName := acctest.RandomWithPrefix("tf_test")
 	// TODO: Use random region once image gen2 works globally or with specific capabilities
 	replicateRegion := "eu-west"
+	replicateNewRegion := "us-central"
 
 	file, err := createTempFile("tf-test-image-replicate-file", testImageBytes)
 	if err != nil {
@@ -246,9 +247,25 @@ func TestAccImage_replicate(t *testing.T) {
 				),
 			},
 			{
+				// Remove the one of the available region and replicate the image in a new region
+				Config: tmpl.Replicate(t, imageName, file.Name(), testRegion, replicateNewRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkImageExists(resName, &image),
+					resource.TestCheckResourceAttr(resName, "label", imageName),
+					resource.TestCheckResourceAttr(resName, "replications.#", "2"),
+				),
+			},
+			{
+				// Remove all available region and replicate the image in new regions
+				Config: tmpl.Replicate(t, imageName, file.Name(), "us-west", "us-mia"),
+				ExpectError: regexp.MustCompile(
+					"At least one available region must be specified"),
+			},
+			{
+				// Remove all available region
 				Config: tmpl.NoReplicaRegions(t, imageName, file.Name(), testRegion),
 				ExpectError: regexp.MustCompile(
-					"At least one valid region must be specified"),
+					"At least one available region must be specified"),
 			},
 		},
 	})

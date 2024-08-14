@@ -7,6 +7,7 @@ resource "linode_image" "foobar" {
     region = "{{ .Region }}"
     description = "really descriptive text"
     replica_regions = ["{{ .Region }}", "{{ .ReplicaRegion }}"]
+    wait_for_replications = true
 }
 
 {{ end }}
