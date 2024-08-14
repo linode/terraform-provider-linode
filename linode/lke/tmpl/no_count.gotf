@@ -7,7 +7,7 @@ resource "linode_lke_cluster" "test" {
     k8s_version = "{{.K8sVersion}}"
 
     pool {
-        type  = "g6-standard-2"
+        type  = "g6-standard-1"
     }
 }
 
