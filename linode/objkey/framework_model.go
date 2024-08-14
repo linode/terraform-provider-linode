@@ -52,6 +52,27 @@ func (plan ResourceModel) GetUpdateOptions(
 	return
 }
 
+func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.ObjectStorageKeyCreateOptions) {
+	opts.Label = plan.Label.ValueString()
+
+	if plan.BucketAccess != nil {
+		accessSlice := make(
+			[]linodego.ObjectStorageKeyBucketAccess,
+			len(plan.BucketAccess),
+		)
+
+		for i, v := range plan.BucketAccess {
+			accessSlice[i] = v.toLinodeObject()
+		}
+
+		opts.BucketAccess = &accessSlice
+	}
+
+	plan.Regions.ElementsAs(ctx, &opts.Regions, false)
+
+	return
+}
+
 func getObjectStorageKeyRegionIDs(regions []linodego.ObjectStorageKeyRegion) []string {
 	regionIDs := make([]string, len(regions))
 	for i, r := range regions {

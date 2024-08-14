@@ -21,7 +21,7 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

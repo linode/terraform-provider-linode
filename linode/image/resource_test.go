@@ -42,15 +42,13 @@ func init() {
 		Name: "linode_image",
 		F:    sweep,
 	})
-	//
-	//region, err := acceptance.GetRandomRegionWithCaps(nil)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//testRegion = region
-	// TODO: revert the change once image gen2 works globally or with specific capabilities
-	testRegion = "us-east"
+
+	region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func sweep(prefix string) error {
@@ -221,7 +219,8 @@ func TestAccImage_replicate(t *testing.T) {
 
 	resName := "linode_image.foobar"
 	imageName := acctest.RandomWithPrefix("tf_test")
-	// TODO: Use random region once image gen2 works globally or with specific capabilities
+	// Override the testRegion to be a fixed value because we need to make sure these three regions are different
+	testRegion = "us-east"
 	replicateRegion := "eu-west"
 	replicateNewRegion := "us-central"
 

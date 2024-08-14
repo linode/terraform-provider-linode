@@ -14,14 +14,12 @@ import (
 var testRegion string
 
 func init() {
-	//region, err := acceptance.GetRandomRegionWithCaps(nil)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//testRegion = region
-	// TODO: revert the change once image gen2 works globally or with specific capabilities
-	testRegion = "us-east"
+	region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = region
 }
 
 func TestAccDataSourceImages_basic_smoke(t *testing.T) {

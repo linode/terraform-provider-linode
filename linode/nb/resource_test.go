@@ -30,7 +30,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"nodebalancers"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
