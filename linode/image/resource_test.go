@@ -5,6 +5,7 @@ package image_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"testing"

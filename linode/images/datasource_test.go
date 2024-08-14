@@ -3,6 +3,7 @@
 package images_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
