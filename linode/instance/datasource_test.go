@@ -61,6 +61,7 @@ func TestAccDataSourceInstances_withPG(t *testing.T) {
 	// Resolve a region with support for PGs
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
 		[]string{"Linodes", "Placement Group"},
+		"core",
 	)
 	if err != nil {
 		t.Fatal(err)
