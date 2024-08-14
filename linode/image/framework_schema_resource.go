@@ -102,7 +102,6 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"file_hash": schema.StringAttribute{
 			Description: "The MD5 hash of the image file.",
-			Computed:    true,
 			Optional:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),

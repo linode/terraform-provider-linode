@@ -361,7 +361,7 @@ func (r *Resource) Update(
 			resp.Diagnostics.AddError(
 				"Invalid regions to replicate.",
 				"At least one available region must be specified. "+
-					"Image is not allowed to be deleted by sending an empty regions list.")
+					"Note: Image is not allowed to be deleted by sending an empty regions list.")
 			return
 		}
 
