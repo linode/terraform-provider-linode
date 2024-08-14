@@ -1,6 +1,7 @@
 package objkey
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -61,6 +62,7 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			ElementType: types.StringType,
+			Validators:  []validator.Set{setvalidator.SizeAtLeast(1)},
 		},
 		"regions_details": schema.SetAttribute{
 			Description: "A set of objects containing the detailed info of the regions where " +

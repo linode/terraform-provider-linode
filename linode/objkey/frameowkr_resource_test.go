@@ -30,7 +30,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -117,6 +117,8 @@ func TestAccResourceObjectKey_limited_cluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
+					resource.TestCheckResourceAttr(resName, "regions.#", "1"),
+					resource.TestCheckResourceAttr(resName, "regions.0", testRegion),
 				),
 			},
 		},
@@ -152,6 +154,8 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
+					resource.TestCheckResourceAttr(resName, "regions.#", "1"),
+					resource.TestCheckResourceAttr(resName, "regions.0", testRegion),
 				),
 			},
 		},
