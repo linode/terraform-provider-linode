@@ -27,6 +27,7 @@ resource "linode_image" "bar" {
     description = "Image taken from foo"
     disk_id = linode_instance.foo.disk.0.id
     linode_id = linode_instance.foo.id
+    tags = ["image-tag", "test"]
 }
 
 resource "linode_instance" "bar_based" {
@@ -43,9 +44,27 @@ resource "linode_image" "foobar" {
     label = "foobar-image"
     description = "An image uploaded from Terraform!"
     region = "us-southeast"
+    tags = ["image-tag", "test"]
   
     file_path = "path/to/image.img.gz"
     file_hash = filemd5("path/to/image.img.gz")
+}
+```
+
+Upload and replicate an image from a local file:
+
+```hcl
+resource "linode_image" "foobar" {
+    label = "foobar-image"
+    description = "An image uploaded from Terraform!"
+    region = "us-southeast"
+    tags = ["image-tag", "test"]
+  
+    file_path = "path/to/image.img.gz"
+    file_hash = filemd5("path/to/image.img.gz")
+    
+    // Note: Image replication may not be available to all users.
+    replica_regions = ["us-southeast", "us-east", "eu-west"]
 }
 ```
 
@@ -56,6 +75,12 @@ The following arguments are supported:
 * `label` - (Required) A short description of the Image. Labels cannot contain special characters.
 
 * `description` - (Optional) A detailed description of this Image.
+
+* `tags` - (Optional) A list of customized tags.
+
+* `replica_regions` - (Optional) A list of regions that customer wants to replicate this image in. At least one valid region is required and only core regions allowed. Existing images in the regions not passed will be removed. **Note:** Image replication may not be available to all users. See Replicate an Image [here](https://techdocs.akamai.com/linode-api/reference/post-replicate-image) for more details.
+
+* `wait_for_replications` - (Optional) Whether to wait for all image replications become `available`. Default to false.
 
 - - -
 
@@ -75,13 +100,13 @@ The following arguments apply to uploading an image:
 
 * `file_hash` - (Optional) The MD5 hash of the file to be uploaded. This is used to trigger file updates.
 
-* `region` - (Required) The region of the image. See all regions [here](https://api.linode.com/v4/regions).
+* `region` - (Required) The region of the image. See all regions [here](https://techdocs.akamai.com/linode-api/reference/get-regions).
 
 ### Timeouts
 
 The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
 
-* `create` - (Defaults to 20 mins) Used when creating the instance image (until the instance is available)
+* `create` - (Defaults to 30 mins) Used when creating the instance image (until the instance is available)
 
 ## Attributes Reference
 
@@ -104,6 +129,12 @@ This resource exports the following attributes:
 * `expiry` - Only Images created automatically (from a deleted Linode; type=automatic) will expire.
 
 * `vendor` - The upstream distribution vendor. Nil for private Images.
+
+* `total_size` - The total size of the image in all available regions.
+
+* `replications` - A list of image replications region and corresponding status.
+  * `region` - The region of an image replica.
+  * `status` - The status of an image replica.
 
 ## Import
 

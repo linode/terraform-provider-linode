@@ -62,7 +62,10 @@ func (d *DataSource) Read(
 		}
 	}
 
-	data.parseImages(helper.AnySliceToTyped[linodego.Image](result))
+	resp.Diagnostics.Append(data.parseImages(ctx, helper.AnySliceToTyped[linodego.Image](result))...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
