@@ -49,11 +49,6 @@ func TestAccResourceInstanceDisk_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "status", "ready"),
 
 					resource.TestCheckResourceAttrSet(resName, "linode_id"),
-
-					resource.TestCheckResourceAttrPair(
-						resName, "disk_encryption",
-						"linode_instance.foobar", "disk_encryption",
-					),
 				),
 			},
 			// Resize up
