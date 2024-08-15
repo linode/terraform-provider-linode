@@ -7,11 +7,7 @@ resource "linode_instance" "foobar-orig" {
     group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
-    disk {
-        label = "disk"
-        size = 1000
-        filesystem = "ext4"
-    }
+    image = "linode/alpine3.19"
     firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
