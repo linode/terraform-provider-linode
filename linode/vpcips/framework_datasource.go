@@ -49,15 +49,20 @@ func (r *DataSource) Read(
 	var result []any
 
 	// Check if VPC ID is provided
+	vpcID := helper.FrameworkSafeInt64ToInt(data.VPCID.ValueInt64(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if !data.VPCID.IsNull() {
 		tflog.Debug(ctx, "Filtering IPs for specific VPC", map[string]interface{}{
-			"vpc_id": data.VPCID.ValueInt64(),
+			"vpc_id": vpcID,
 		})
 
 		result, d = filterConfig.GetAndFilter(
 			ctx, r.Meta.Client, data.Filters,
 			func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-				return ListVPCIPs(ctx, client, filter, helper.FrameworkSafeInt64ToInt(data.VPCID.ValueInt64(), &resp.Diagnostics))
+				return ListVPCIPs(ctx, client, filter, vpcID)
 			},
 			types.StringNull(), types.StringNull(),
 		)
