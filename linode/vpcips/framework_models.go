@@ -39,22 +39,6 @@ func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
 	m.InterfaceID = helper.KeepOrUpdateInt64(m.InterfaceID, int64(vpcIp.InterfaceID), preserveKnown)
 }
 
-func (m *VPCIPModel) CopyFrom(other VPCIPModel, preserveKnown bool) {
-	m.Address = helper.KeepOrUpdateValue(m.Address, other.Address, preserveKnown)
-	m.AddressRange = helper.KeepOrUpdateValue(m.AddressRange, other.AddressRange, preserveKnown)
-	m.Gateway = helper.KeepOrUpdateValue(m.Gateway, other.Gateway, preserveKnown)
-	m.SubnetMask = helper.KeepOrUpdateValue(m.SubnetMask, other.SubnetMask, preserveKnown)
-	m.Prefix = helper.KeepOrUpdateValue(m.Prefix, other.Prefix, preserveKnown)
-	m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, other.LinodeID, preserveKnown)
-	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
-	m.Active = helper.KeepOrUpdateValue(m.Active, other.Active, preserveKnown)
-	m.NAT1To1 = helper.KeepOrUpdateValue(m.NAT1To1, other.NAT1To1, preserveKnown)
-	m.VPCID = helper.KeepOrUpdateValue(m.VPCID, other.VPCID, preserveKnown)
-	m.SubnetID = helper.KeepOrUpdateValue(m.SubnetID, other.SubnetID, preserveKnown)
-	m.ConfigID = helper.KeepOrUpdateValue(m.ConfigID, other.ConfigID, preserveKnown)
-	m.InterfaceID = helper.KeepOrUpdateValue(m.InterfaceID, other.InterfaceID, preserveKnown)
-}
-
 type VPCIPFilterModel struct {
 	ID      types.String                     `tfsdk:"id"`
 	VPCID   types.Int64                      `tfsdk:"vpc_id"`

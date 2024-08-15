@@ -57,7 +57,7 @@ func (r *DataSource) Read(
 		result, d = filterConfig.GetAndFilter(
 			ctx, r.Meta.Client, data.Filters,
 			func(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-				return ListVPCIPs(ctx, client, filter, int(data.VPCID.ValueInt64()))
+				return ListVPCIPs(ctx, client, filter, helper.FrameworkSafeInt64ToInt(data.VPCID.ValueInt64(), &resp.Diagnostics))
 			},
 			types.StringNull(), types.StringNull(),
 		)

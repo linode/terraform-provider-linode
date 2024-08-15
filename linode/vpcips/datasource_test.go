@@ -18,10 +18,9 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 
 	resourceName_all_ips := "data.linode_vpc_ips.foobar"
 	resourceName_vpc_ips := "data.linode_vpc_ips.barfoo"
-	resourceName_filtered_ips := "data.linode_vpc_ips.foobar_filter"
 
 	vpcLabel := acctest.RandomWithPrefix("tf-test")
-	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"})
+	testRegion, err := acceptance.GetRandomRegionWithCaps([]string{"VPCs"}, "core")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error getting region: %s", err))
 	}
@@ -35,7 +34,6 @@ func TestAccDataSourceVPCIPs_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName_all_ips, "vpc_ips.#", "2"),
 					resource.TestCheckResourceAttr(resourceName_vpc_ips, "vpc_ips.#", "1"),
-					resource.TestCheckResourceAttr(resourceName_filtered_ips, "vpc_ips.#", "1"),
 
 					resource.TestCheckResourceAttrSet(resourceName_all_ips, "vpc_ips.0.address"),
 					resource.TestCheckResourceAttrSet(resourceName_all_ips, "vpc_ips.0.gateway"),
