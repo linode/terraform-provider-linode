@@ -1,16 +1,16 @@
 {{ define "lke_cluster_autoscaler_many_pools" }}
 
 resource "linode_lke_cluster" "test" {
-    label       = "{{.Label}}"
+    label       = "{{ .Label }}"
     region      = "{{ .Region }}"
-    k8s_version = "{{.K8sVersion}}"
+    k8s_version = "{{ .K8sVersion }}"
     tags        = ["test"]
     pool {
         autoscaler {
             min = 3
             max = 8
         }
-        type  = "g6-standard-4"
+        type  = "g6-standard-1"
         count = 5
     }
     pool {
@@ -18,7 +18,7 @@ resource "linode_lke_cluster" "test" {
             min = 1
             max = 8
         }
-        type  = "g6-standard-2"
+        type  = "g6-standard-1"
         count = 3
     }
 }

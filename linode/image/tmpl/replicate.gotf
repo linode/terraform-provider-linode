@@ -1,4 +1,4 @@
-{{ define "image_upload" }}
+{{ define "image_replicate" }}
 
 resource "linode_image" "foobar" {
     label = "{{.Image}}"
@@ -6,7 +6,8 @@ resource "linode_image" "foobar" {
     file_hash = filemd5("{{.FilePath}}")
     region = "{{ .Region }}"
     description = "really descriptive text"
-    tags = ["{{.Tag}}"]
+    replica_regions = ["{{ .Region }}", "{{ .ReplicaRegion }}"]
+    wait_for_replications = true
 }
 
 {{ end }}

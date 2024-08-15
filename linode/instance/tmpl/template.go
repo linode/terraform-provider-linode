@@ -3,7 +3,6 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
@@ -26,8 +25,6 @@ type TemplateData struct {
 
 	PlacementGroups []string
 	AssignedGroup   string
-
-	DiskEncryption *linodego.InstanceDiskEncryption
 }
 
 func Basic(t *testing.T, label, pubKey, region string, rootPass string) string {
@@ -593,23 +590,6 @@ func UserData(t *testing.T, label, region string, rootPass string) string {
 			Image:    acceptance.TestImageLatest,
 			Region:   region,
 			RootPass: rootPass,
-		})
-}
-
-func DiskEncryption(
-	t *testing.T,
-	label,
-	region,
-	rootPass string,
-	diskEncryption *linodego.InstanceDiskEncryption,
-) string {
-	return acceptance.ExecuteTemplate(t,
-		"instance_disk_encryption", TemplateData{
-			Label:          label,
-			Image:          acceptance.TestImageLatest,
-			Region:         region,
-			RootPass:       rootPass,
-			DiskEncryption: diskEncryption,
 		})
 }
 

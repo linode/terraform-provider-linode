@@ -183,9 +183,8 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.disk_encryption"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "3"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
@@ -195,15 +194,6 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "dashboard_url"),
-
-						// Ensure the lke_cluster_id field is populated on a sample
-						// node from the new cluster.
-						resource.TestCheckResourceAttrPair(
-							resourceClusterName,
-							"id",
-							"data.linode_instances.test",
-							"instances.0.lke_cluster_id",
-						),
 					),
 				},
 			},

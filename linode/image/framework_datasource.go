@@ -66,6 +66,9 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.ParseImage(image)
+	resp.Diagnostics.Append(data.ParseImage(ctx, image)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
