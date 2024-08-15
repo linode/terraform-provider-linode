@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -115,5 +116,7 @@ func createNodePoolModel() *NodePoolModel {
 			},
 		},
 	}
+
+	nodePoolModel.Labels = types.MapValueMust(types.StringType, map[string]attr.Value{})
 	return &nodePoolModel
 }
