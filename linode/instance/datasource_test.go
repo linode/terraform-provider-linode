@@ -42,6 +42,44 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.0.disk.#", "2"),
 					resource.TestCheckResourceAttr(resName, "instances.0.config.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.config.0.id"),
+					resource.TestCheckResourceAttr(resName, "instances.0.placement_group.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceInstances_withPG(t *testing.T) {
+	t.Parallel()
+
+	resName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	pgIDs := []string{"foobar"}
+
+	// Resolve a region with support for PGs
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Placement Group"},
+		"core",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataWithPG(t, instanceName, targetRegion, "foobar", pgIDs),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttr(resName, "instances.0.placement_group.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.placement_group.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.placement_group.0.placement_group_type"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.placement_group.0.placement_group_policy"),
 				),
 			},
 		},

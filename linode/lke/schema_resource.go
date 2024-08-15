@@ -1,8 +1,12 @@
 package lke
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 var resourceSchema = map[string]*schema.Schema{
@@ -78,6 +82,33 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Description: "A Linode Type for all of the nodes in the Node Pool.",
 					Required:    true,
+				},
+				"tags": {
+					Type:        schema.TypeSet,
+					Description: "A set of tags applied to this node pool.",
+
+					Elem:                  &schema.Schema{Type: schema.TypeString},
+					Optional:              true,
+					DiffSuppressOnRefresh: true,
+					DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+						setAttrName := k[0:strings.LastIndex(k, ".")]
+
+						index, err := strconv.Atoi(k[strings.LastIndex(k, "."):])
+						if err != nil {
+							return false
+						}
+
+						tags := helper.ExpandStringSet(d.Get(setAttrName).(*schema.Set))
+						for i, item := range tags {
+							if i == index {
+								continue
+							}
+							if strings.EqualFold(item, oldValue) || strings.EqualFold(item, newValue) {
+								return true
+							}
+						}
+						return false
+					},
 				},
 				"nodes": {
 					Type: schema.TypeList,

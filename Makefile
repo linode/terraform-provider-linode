@@ -2,7 +2,7 @@ COUNT?=1
 PARALLEL?=10
 PKG_NAME=linode/...
 TIMEOUT?=240m
-RUN_LONG_TESTS?=False
+RUN_LONG_TESTS?=false
 SWEEP?="tf_test,tf-test"
 TEST_TAGS="integration"
 
@@ -61,7 +61,7 @@ test: fmt-check smoke-test unit-test int-test
 
 .PHONY: unit-test
 unit-test: fmt-check
-	go test -v --tags=unit ./$(PKG_NAME) | grep -v "\[no test files\]"
+	go test -v --tags=unit ./$(PKG_NAME)
 
 .PHONY: int-test
 int-test: fmt-check generate-ip-env-fw-e2e include-env
@@ -70,7 +70,7 @@ int-test: fmt-check generate-ip-env-fw-e2e include-env
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	TF_VAR_ipv4_addr=${PUBLIC_IPV4} \
 	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
-	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel=$(PARALLEL) $(ARGS) | grep -v "\[no test files\]"
+	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel=$(PARALLEL) $(ARGS)
 
 .PHONY: include-env
 include-env: $(IP_ENV_FILE)
@@ -87,7 +87,7 @@ smoke-test: fmt-check
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" | grep -v "\[no test files\]"
+	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
 
 .PHONY: docs-check
 docs-check:

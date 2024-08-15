@@ -19,7 +19,7 @@ import (
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Placement Group"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -32,7 +32,7 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.#", "1"),
-						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.type", "g6-standard-2"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.type", "g6-standard-1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.count", "3"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.nodes.#", "3"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.autoscaler.#", "0"),

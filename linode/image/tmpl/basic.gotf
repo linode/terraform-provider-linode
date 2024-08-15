@@ -21,6 +21,7 @@ resource "linode_image" "foobar" {
     label = "{{.Image}}"
     description = "descriptive text"
     cloud_init = true
+    tags = ["{{.Tag}}"]
 }
 
 {{ end }}

@@ -3,6 +3,7 @@
 package images
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -49,7 +50,7 @@ func TestParseImages(t *testing.T) {
 
 	data := ImageFilterModel{}
 
-	data.parseImages(images)
+	data.parseImages(context.Background(), images)
 
 	assert.Len(t, data.Images, len(images))
 

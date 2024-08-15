@@ -24,7 +24,7 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Block Storage"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Block Storage"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}

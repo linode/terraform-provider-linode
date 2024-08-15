@@ -68,7 +68,7 @@ func init() {
 		k8sVersionPrevious = k8sVersions[len(k8sVersions)-2]
 	}
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"})
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"kubernetes"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -183,9 +183,11 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
@@ -283,6 +285,8 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 					),
 				},
@@ -291,6 +295,9 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "2"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.1", "test-2"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "4"),
 					),
 				},

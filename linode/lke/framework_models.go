@@ -122,35 +122,30 @@ func (data *LKEDataModel) parseLKEAttributes(
 			}
 			pool.Tags = tags
 
-			poolNodes := make([]LKENodePoolNode, len(p.Linodes))
-			for j, n := range p.Linodes {
-				var node LKENodePoolNode
-				node.ID = types.StringValue(n.ID)
-				node.InstanceID = types.Int64Value(int64(n.InstanceID))
-				node.Status = types.StringValue(string(n.Status))
-
-				poolNodes[j] = node
+			pool.Nodes = make([]LKENodePoolNode, len(p.Linodes))
+			for i, linode := range p.Linodes {
+				pool.Nodes[i].ID = types.StringValue(linode.ID)
+				pool.Nodes[i].InstanceID = types.Int64Value(int64(linode.InstanceID))
+				pool.Nodes[i].Status = types.StringValue(string(linode.Status))
 			}
-			pool.Nodes = poolNodes
 
 			// Only parse the autoscaler when it's enabled in order to keep returning
 			// the same list result of SDKv2.
 			if p.Autoscaler.Enabled {
-				var autoscaler LKENodePoolAutoscaler
-				autoscaler.Enabled = types.BoolValue(p.Autoscaler.Enabled)
-				autoscaler.Min = types.Int64Value(int64(p.Autoscaler.Min))
-				autoscaler.Max = types.Int64Value(int64(p.Autoscaler.Max))
-				pool.Autoscaler = []LKENodePoolAutoscaler{autoscaler}
+				pool.Autoscaler = []LKENodePoolAutoscaler{
+					{
+						Enabled: types.BoolValue(p.Autoscaler.Enabled),
+						Min:     types.Int64Value(int64(p.Autoscaler.Min)),
+						Max:     types.Int64Value(int64(p.Autoscaler.Max)),
+					},
+				}
 			}
 
-			poolDisks := make([]LKENodePoolDisk, len(p.Disks))
-			for k, d := range p.Disks {
-				var poolDisk LKENodePoolDisk
-				poolDisk.Size = types.Int64Value(int64(d.Size))
-				poolDisk.Type = types.StringValue(d.Type)
-				poolDisks[k] = poolDisk
+			pool.Disks = make([]LKENodePoolDisk, len(p.Disks))
+			for i, d := range p.Disks {
+				pool.Disks[i].Size = types.Int64Value(int64(d.Size))
+				pool.Disks[i].Type = types.StringValue(d.Type)
 			}
-			pool.Disks = poolDisks
 
 			lkePools[i] = pool
 		}

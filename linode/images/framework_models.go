@@ -1,6 +1,9 @@
 package images
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
@@ -19,14 +22,20 @@ type ImageFilterModel struct {
 }
 
 func (data *ImageFilterModel) parseImages(
+	ctx context.Context,
 	images []linodego.Image,
-) {
+) diag.Diagnostics {
 	result := make([]image.ImageModel, len(images))
 	for i := range images {
 		var imgData image.ImageModel
-		imgData.ParseImage(&images[i])
+		diags := imgData.ParseImage(ctx, &images[i])
+		if diags.HasError() {
+			return diags
+		}
 		result[i] = imgData
 	}
 
 	data.Images = result
+
+	return nil
 }

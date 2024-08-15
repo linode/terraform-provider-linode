@@ -15,6 +15,7 @@ import (
 
 type NodePoolSpec struct {
 	ID                int
+	Tags              []string
 	Type              string
 	Count             int
 	AutoScalerEnabled bool
@@ -41,6 +42,7 @@ func ReconcileLKENodePoolSpecs(
 		createOpts := linodego.LKENodePoolCreateOptions{
 			Count: spec.Count,
 			Type:  spec.Type,
+			Tags:  spec.Tags,
 		}
 
 		if createOpts.Count == 0 {
@@ -110,6 +112,7 @@ func ReconcileLKENodePoolSpecs(
 
 		updateOpts := linodego.LKENodePoolUpdateOptions{
 			Count: newSpec.Count,
+			Tags:  &newSpecs[i].Tags,
 		}
 
 		// Only include the autoscaler if the autoscaler has updated
@@ -335,6 +338,10 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 				continue
 			}
 
+			if !helper.CompareStringSets(helper.ExpandStringSet(declaredPool["tags"].(*schema.Set)), apiPool.Tags) {
+				continue
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
@@ -387,6 +394,7 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Type:              specMap["type"].(string),
+			Tags:              helper.ExpandStringSet(specMap["tags"].(*schema.Set)),
 			Count:             specMap["count"].(int),
 			AutoScalerEnabled: autoscaler.Enabled,
 			AutoScalerMin:     autoscaler.Min,
@@ -396,7 +404,7 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 	return
 }
 
-func flattenLKENodePools(pools []linodego.LKEClusterPool) []map[string]interface{} {
+func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} {
 	flattened := make([]map[string]interface{}, len(pools))
 	for i, pool := range pools {
 
@@ -424,6 +432,7 @@ func flattenLKENodePools(pools []linodego.LKEClusterPool) []map[string]interface
 			"id":         pool.ID,
 			"count":      pool.Count,
 			"type":       pool.Type,
+			"tags":       pool.Tags,
 			"nodes":      nodes,
 			"autoscaler": autoscaler,
 		}
