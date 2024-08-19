@@ -125,10 +125,10 @@ func (r *Resource) Create(
 
 	ctx = tflog.SetField(ctx, "disk_id", disk.ID)
 
-	event, err := p.WaitForFinished(ctx, timeoutSeconds)
+	_, err = p.WaitForFinished(ctx, timeoutSeconds)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to Wait for the Instance Shutdown Event (%d)", event.ID),
+			fmt.Sprintf("Failed to Wait for the Instance Shutdown Event on Linode Disk (%d)", disk.ID),
 			err.Error(),
 		)
 	}
