@@ -3,6 +3,7 @@ package acceptance
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -508,6 +509,20 @@ func CheckEventAbsent(name string, entityType linodego.EntityType, action linode
 		}
 
 		return nil
+	}
+}
+
+func AnyOfTestCheckFunc(funcs ...resource.TestCheckFunc) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		manyErrors := []error{}
+		for _, f := range funcs {
+			if err := f(s); err == nil {
+				return err
+			} else {
+				manyErrors = append(manyErrors, err)
+			}
+		}
+		return errors.Join(manyErrors...)
 	}
 }
 
