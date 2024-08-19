@@ -128,7 +128,7 @@ func (r *Resource) Create(
 	_, err = p.WaitForFinished(ctx, timeoutSeconds)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to Wait for the Instance Shutdown Event on Linode Disk (%d)", disk.ID),
+			fmt.Sprintf("Failed to Wait for the Disk Creation Event on Linode Disk (%d)", disk.ID),
 			err.Error(),
 		)
 	}
