@@ -2513,6 +2513,95 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_diskEncryption(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16)
+
+	// Resolve a region that supports disk encryption
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{linodego.CapabilityLinodes, linodego.CapabilityDiskEncryption}, "core",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	encryptionEnabled := linodego.InstanceDiskEncryptionEnabled
+	encryptionDisabled := linodego.InstanceDiskEncryptionDisabled
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DiskEncryption(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+					&encryptionEnabled,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "disk_encryption", "enabled"),
+				),
+			},
+			{
+				Config: tmpl.DiskEncryption(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+					&encryptionDisabled,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "disk_encryption", "disabled"),
+				),
+			},
+
+			// Make sure the instance is not recreated when disk_encryption is not explicitly set.
+			// This is necessary to prevent instances created pre-disk-encryption from being recreated.
+			{
+				Config: tmpl.DiskEncryption(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+					nil,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "disk_encryption", "disabled"),
+				),
+			},
+
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type"},
+			},
+		},
+	})
+}
+
 func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

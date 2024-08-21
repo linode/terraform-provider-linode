@@ -115,6 +115,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("booted", isInstanceBooted(instance))
 	d.Set("host_uuid", instance.HostUUID)
 	d.Set("has_user_data", instance.HasUserData)
+	d.Set("lke_cluster_id", instance.LKEClusterID)
+	d.Set("disk_encryption", instance.DiskEncryption)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -181,6 +183,9 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Group:          d.Get("group").(string),
 		BackupsEnabled: d.Get("backups_enabled").(bool),
 		PrivateIP:      d.Get("private_ip").(bool),
+		DiskEncryption: linodego.InstanceDiskEncryption(
+			d.Get("disk_encryption").(string),
+		),
 	}
 
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
