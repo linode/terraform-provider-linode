@@ -50,7 +50,9 @@ var ruleNestedObject = schema.NestedBlockObject{
 			Description: "A string representation of ports and/or port ranges " +
 				"(i.e. \"443\" or \"80-90, 91\").",
 			Optional: true,
-			Computed: true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"ipv4": schema.ListAttribute{
 			Description: "A list of CIDR blocks or 0.0.0.0/0 (to allow all) this rule applies to.",
