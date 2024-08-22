@@ -34,3 +34,5 @@ modules-dev/
 terraform-provider-linode
 
 dist/**
+
+.terraform.lock.hcl
