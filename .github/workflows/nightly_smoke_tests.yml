@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit SHA to test'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   smoke_tests:
@@ -15,6 +21,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+          ref: ${{ github.event.inputs.sha || github.ref }}
 
       - name: Set up go
         uses: actions/setup-go@v5
@@ -48,11 +55,6 @@ jobs:
             - Workflow: ${{ github.workflow }}
             - Run ID: ${{ github.run_id }}
             - Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            *Test Summary:*
-            - Total Tests: ${{ steps.smoke_tests.outputs.total_tests }}
-            - Passed: ${{ steps.smoke_tests.outputs.passed_tests }}
-            - Failed: ${{ steps.smoke_tests.outputs.failed_tests }}
 
             *Last Commit:*
             - Message: ${{ github.event.head_commit.message }}
