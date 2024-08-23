@@ -13,6 +13,7 @@ on:
 
 jobs:
   smoke_tests:
+    if: github.repository == 'linode/terraform-provider-linode' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +24,7 @@ jobs:
           submodules: 'recursive'
           ref: ${{ github.event.inputs.sha || github.ref }}
 
-      - name: Set up go
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.x'
@@ -49,15 +50,9 @@ jobs:
           SLACK_MESSAGE: |
             *Nightly Smoke Tests Completed*
 
-            *Status:* ${{ job.status }}
-
-            *Build Result:* ${{ job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed' }}
+            *Build Result:* `${{ job.steps.smoke_tests.outcome == 'success' ? 'Build Passed' : 'Build Failed' }}`
 
             *Job Details:*
-            - Workflow: ${{ github.workflow }}
-            - Run ID: ${{ github.run_id }}
-            - Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            *Last Commit:*
-            - Message: ${{ github.event.head_commit.message }}
-            - Author: ${{ github.event.head_commit.author.name }}
+            - **Workflow:** `${{ github.workflow }}`
+            - **Run ID:** `${{ github.run_id }}`
+            - **Run URL:** <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>
