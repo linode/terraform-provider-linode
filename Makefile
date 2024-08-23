@@ -83,11 +83,21 @@ $(IP_ENV_FILE):
 	. ./e2e_scripts/cloud_security_scripts/cloud_e2e_firewall/terraform-provider-linode/generate_ip_env_fw_e2e.sh || touch $(IP_ENV_FILE)
 
 .PHONY: smoke-test
-smoke-test: fmt-check
+smoke-test: fmt-check generate-ip-env-fw-e2e include-env
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
-	go test -v -run smoke ./linode/... -count $(COUNT) -timeout $(TIMEOUT) -parallel=$(PARALLEL) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc"
+	TF_VAR_ipv4_addr=${PUBLIC_IPV4} \
+	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
+	go test -v ./linode/... -run TestSmokeTests -tags=childaccount,databasepostgresql,domain,firewall,firewalldevice,instance,instancedisk,lke,nb,objbucket,regions,stackscript,stackscripts,volume,vpcsubnets \
+		-count $(COUNT) \
+		-timeout $(TIMEOUT) \
+		-parallel=$(PARALLEL) \
+		-ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" \
+		| sed '/\[no test files\]/d'; \
+	exit_code=$$PIPESTATUS; \
+	exit $$exit_code
+
 
 .PHONY: docs-check
 docs-check:

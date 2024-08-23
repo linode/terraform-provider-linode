@@ -57,6 +57,21 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestSmokeTests_firewall(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccLinodeFirewall_basic", TestAccLinodeFirewall_basic},
+	}
+
+	for _, tt := range tests {
+		if acceptance.Contains(acceptance.SmokeTests["firewall_test"], tt.name) {
+			t.Run(tt.name, tt.test)
+		}
+	}
+}
+
 func TestAccLinodeFirewall_basic(t *testing.T) {
 	t.Parallel()
 

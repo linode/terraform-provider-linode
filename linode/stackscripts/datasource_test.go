@@ -17,6 +17,21 @@ var basicStackScript = `#!/bin/bash
 echo "Hello, $NAME!"
 `
 
+func TestSmokeTests_stackscripts(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccDataSourceStackscripts_basic_smoke", TestAccDataSourceStackscripts_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		if acceptance.Contains(acceptance.SmokeTests["stackscripts_test"], tt.name) {
+			t.Run(tt.name, tt.test)
+		}
+	}
+}
+
 func TestAccDataSourceStackscripts_basic_smoke(t *testing.T) {
 	t.Parallel()
 

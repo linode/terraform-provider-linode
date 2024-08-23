@@ -75,6 +75,21 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestSmokeTests_databasepostgresql(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceDatabasePostgres_basic_smoke", TestAccResourceDatabasePostgres_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		if acceptance.Contains(acceptance.SmokeTests["databasepostgresql_test"], tt.name) {
+			t.Run(tt.name, tt.test)
+		}
+	}
+}
+
 func TestAccResourceDatabasePostgres_basic_smoke(t *testing.T) {
 	acceptance.LongRunningTest(t)
 

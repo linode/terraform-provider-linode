@@ -164,6 +164,21 @@ func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterv
 	}
 }
 
+func TestSmokeTests_lke(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceLKECluster_basic_smoke", TestAccResourceLKECluster_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		if acceptance.Contains(acceptance.SmokeTests["lke_test"], tt.name) {
+			t.Run(tt.name, tt.test)
+		}
+	}
+}
+
 func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 	t.Parallel()
 

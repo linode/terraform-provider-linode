@@ -29,6 +29,21 @@ func init() {
 	testRegion = region
 }
 
+func TestSmokeTests_firewalldevice(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceFirewallDevice_basic_smoke", TestAccResourceFirewallDevice_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		if acceptance.Contains(acceptance.SmokeTests["firewalldevice_test"], tt.name) {
+			t.Run(tt.name, tt.test)
+		}
+	}
+}
+
 func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 	t.Parallel()
 

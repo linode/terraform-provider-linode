@@ -12,6 +12,21 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/domain/tmpl"
 )
 
+func TestSmokeTests_domain_datasource(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccDataSourceDomain_basic_smoke", TestAccDataSourceDomain_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		if acceptance.Contains(acceptance.SmokeTests["domain_test"], tt.name) {
+			t.Run(tt.name, tt.test)
+		}
+	}
+}
+
 func TestAccDataSourceDomain_basic_smoke(t *testing.T) {
 	t.Parallel()
 
