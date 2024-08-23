@@ -89,12 +89,12 @@ smoke-test: fmt-check generate-ip-env-fw-e2e include-env
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	TF_VAR_ipv4_addr=${PUBLIC_IPV4} \
 	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
-	go test -v ./linode/... -run TestSmokeTests -tags=childaccount,databasepostgresql,domain,firewall,firewalldevice,instance,instancedisk,lke,nb,objbucket,regions,stackscript,stackscripts,volume,vpcsubnets \
+	go test -v ./linode/... -run TestSmokeTests -tags=integration \
 		-count $(COUNT) \
 		-timeout $(TIMEOUT) \
 		-parallel=$(PARALLEL) \
 		-ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" \
-		| sed '/\[no test files\]/d'; \
+		| sed -e '/testing: warning: no tests to run/,+1d' -e '/\[no test files\]/d' -e '/\[no tests to run\]/d'; \
 	exit_code=$$PIPESTATUS; \
 	exit $$exit_code
 

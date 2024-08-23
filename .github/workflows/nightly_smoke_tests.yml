@@ -29,3 +29,12 @@ jobs:
         run: make smoke-test
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
+
+      - name: Notify Slack
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: 'GHBot'
+          SLACK_MESSAGE: 'Test Workflow Completed'
