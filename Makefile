@@ -95,9 +95,8 @@ smoke-test: fmt-check generate-ip-env-fw-e2e include-env
 		-parallel=$(PARALLEL) \
 		-ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" \
 		| sed -e '/testing: warning: no tests to run/,+1d' -e '/\[no test files\]/d' -e '/\[no tests to run\]/d'; \
-	status=$? \
-	echo "Exit code: $status"; \
-	exit $$status
+	exit_status=$? \
+	exit $$exit_status
 
 
 .PHONY: docs-check

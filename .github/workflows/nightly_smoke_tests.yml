@@ -26,15 +26,34 @@ jobs:
           make deps
 
       - name: Run smoke tests
-        run: make smoke-test
-        env:
-          LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
+        id: smoke_tests
+        run: |
+          make smoke-test
 
       - name: Notify Slack
         if: always()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_COLOR: ${{ job.status }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_USERNAME: 'GHBot'
-          SLACK_MESSAGE: 'Test Workflow Completed'
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: |
+            *Nightly Smoke Tests Completed*
+
+            *Status:* ${{ job.status }}
+
+            *Build Result:* ${{ job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed' }}
+
+            *Job Details:*
+            - Workflow: ${{ github.workflow }}
+            - Run ID: ${{ github.run_id }}
+            - Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            *Test Summary:*
+            - Total Tests: ${{ steps.smoke_tests.outputs.total_tests }}
+            - Passed: ${{ steps.smoke_tests.outputs.passed_tests }}
+            - Failed: ${{ steps.smoke_tests.outputs.failed_tests }}
+
+            *Last Commit:*
+            - Message: ${{ github.event.head_commit.message }}
+            - Author: ${{ github.event.head_commit.author.name }}
