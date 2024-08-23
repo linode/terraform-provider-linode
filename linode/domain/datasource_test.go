@@ -49,7 +49,7 @@ func TestAccDataSourceDomain_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "type", "master"),
 					resource.TestCheckResourceAttr(resourceName, "description", "tf-testing"),
 					resource.TestCheckResourceAttr(resourceName, "status", "active"),
-					resource.TestCheckResourceAttr(resourceName, "tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tf_asdasdtest"),
 					resource.TestCheckResourceAttr(resourceName, "soa_email", "example@"+domainName),
 					resource.TestCheckResourceAttrSet(resourceName, "retry_sec"),
 					resource.TestCheckResourceAttrSet(resourceName, "expire_sec"),
