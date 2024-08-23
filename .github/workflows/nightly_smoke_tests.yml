@@ -36,6 +36,8 @@ jobs:
         id: smoke_tests
         run: |
           make smoke-test
+        env:
+          LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
       - name: Notify Slack
         if: always()
