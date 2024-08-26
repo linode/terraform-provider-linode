@@ -55,7 +55,7 @@ jobs:
                     "type": "mrkdwn",
                     "text": "*Nightly Smoke Tests Completed*\n\n" +
                             "*Build Result:* ${{
-                              job.steps.smoke_tests.outcome == 'success' ? 'Build Passed' : 'Build Failed'
+                              job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed'
                             }}\n\n" +
                             "*Workflow:* ${{ github.workflow }}\n" +
                             "*Run ID:* ${{ github.run_id }}"
@@ -78,3 +78,4 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
