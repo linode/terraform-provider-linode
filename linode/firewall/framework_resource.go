@@ -65,7 +65,12 @@ func refreshRules(
 	data.flattenRules(ctx, rules, preserveKnown, diags)
 }
 
-func disableFirewall(ctx context.Context, firewallID int, client *linodego.Client, diags *diag.Diagnostics) *linodego.Firewall {
+func disableFirewall(
+	ctx context.Context,
+	firewallID int,
+	client *linodego.Client,
+	diags *diag.Diagnostics,
+) *linodego.Firewall {
 	updateOpts := linodego.FirewallUpdateOptions{
 		Status: linodego.FirewallDisabled,
 	}
