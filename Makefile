@@ -72,8 +72,12 @@ int-test: fmt-check generate-ip-env-fw-e2e include-env
 	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
 	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel=$(PARALLEL) $(ARGS)
 
+.PHONY: update-test-submodules
+update-test-submodules:
+	@git submodule update --init
+
 .PHONY: include-env
-include-env: $(IP_ENV_FILE) update-test-submodules
+include-env: $(IP_ENV_FILE)
 -include $(IP_ENV_FILE)
 
 generate-ip-env-fw-e2e: $(IP_ENV_FILE)
@@ -84,6 +88,7 @@ $(IP_ENV_FILE):
 
 .PHONY: smoke-test
 smoke-test: fmt-check generate-ip-env-fw-e2e include-env
+	@set -o pipefail && \
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
@@ -95,7 +100,8 @@ smoke-test: fmt-check generate-ip-env-fw-e2e include-env
 		-parallel=$(PARALLEL) \
 		-ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" \
 		| sed -e '/testing: warning: no tests to run/,+1d' -e '/\[no test files\]/d' -e '/\[no tests to run\]/d'; \
-	exit_status=$? \
+	exit_status=$$?; \
+	echo "Exit status of go test: $$exit_status"; \
 	exit $$exit_status
 
 
@@ -113,6 +119,3 @@ sweep:
 	# sweep cleans the test infra from your account
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
 	go test -v ./$(PKG_NAME) -sweep=$(SWEEP) $(ARGS)
-
-update-test-submodules:
-	@git submodule update --init
