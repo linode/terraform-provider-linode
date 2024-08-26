@@ -46,9 +46,6 @@ func refreshDevices(
 	}
 
 	data.flattenDevices(ctx, devices, preserveKnown, diags)
-	if diags.HasError() {
-		return
-	}
 }
 
 func refreshRules(
@@ -66,9 +63,6 @@ func refreshRules(
 	}
 
 	data.flattenRules(ctx, rules, preserveKnown, diags)
-	if diags.HasError() {
-		return
-	}
 }
 
 func disableFirewall(ctx context.Context, firewallID int, client *linodego.Client, diags *diag.Diagnostics) *linodego.Firewall {
