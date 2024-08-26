@@ -42,11 +42,12 @@ jobs:
 
       - name: Send custom JSON data to Slack workflow
         id: slack
+        if: always()
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
-              "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+              "text": "Nightly Smoke Tests Completed",
               "blocks": [
                 {
                   "type": "section",
@@ -54,12 +55,24 @@ jobs:
                     "type": "mrkdwn",
                     "text": "*Nightly Smoke Tests Completed*\n\n" +
                             "*Build Result:* ${{
-                              job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed'
+                              job.steps.smoke_tests.outcome == 'success' ? 'Build Passed' : 'Build Failed'
                             }}\n\n" +
                             "*Workflow:* ${{ github.workflow }}\n" +
-                            "*Run ID:* ${{ github.run_id }}\n" +
-                            "*Run URL:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>"
+                            "*Run ID:* ${{ github.run_id }}"
                   }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": ":github: View Run"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
                 }
               ]
             }
