@@ -40,6 +40,10 @@ jobs:
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
+      - name: Set Build Result
+        id: set_build_result
+        run: echo "BUILD_RESULT=$(if [ '${{ job.steps.smoke_tests.outcome }}' == 'success' ]; then echo 'Build Passed'; else echo 'Build Failed'; fi)" >> $GITHUB_ENV
+
       - name: Send custom JSON data to Slack workflow
         id: slack
         if: always()
@@ -54,25 +58,11 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "*Nightly Smoke Tests Completed*\n\n" +
-                            "*Build Result:* ${{
-                              job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed'
-                            }}\n\n" +
-                            "*Workflow:* ${{ github.workflow }}\n" +
-                            "*Run ID:* ${{ github.run_id }}"
+                           "*Build Result:* ${{ env.BUILD_RESULT }}\n\n" +
+                           "*Workflow:* ${{ github.workflow }}\n" +
+                           "*Run ID:* ${{ github.run_id }}\n" +
+                           "*Build URL:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": ":github: View Run"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
                 }
               ]
             }
