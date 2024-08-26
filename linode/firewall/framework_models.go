@@ -218,6 +218,7 @@ func (data *FirewallResourceModel) flattenRules(
 	if diags.HasError() {
 		return
 	}
+
 	data.Outbound = outboundRules
 }
 
