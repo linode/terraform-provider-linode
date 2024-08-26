@@ -88,21 +88,20 @@ $(IP_ENV_FILE):
 
 .PHONY: smoke-test
 smoke-test: fmt-check generate-ip-env-fw-e2e include-env
-	@set -o pipefail && \
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	TF_VAR_ipv4_addr=${PUBLIC_IPV4} \
 	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
-	go test -v ./linode/... -run TestSmokeTests -tags=integration \
+	bash -c 'set -o pipefail && go test -v ./linode/... -run TestSmokeTests -tags=integration \
 		-count $(COUNT) \
 		-timeout $(TIMEOUT) \
 		-parallel=$(PARALLEL) \
 		-ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" \
-		| sed -e '/testing: warning: no tests to run/,+1d' -e '/\[no test files\]/d' -e '/\[no tests to run\]/d'; \
+		| sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"; \
 	exit_status=$$?; \
 	echo "Exit status of go test: $$exit_status"; \
-	exit $$exit_status
+	exit $$exit_status'
 
 
 .PHONY: docs-check
