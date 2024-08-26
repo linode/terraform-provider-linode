@@ -40,8 +40,8 @@ jobs:
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
-      - name: Notify Slack
-        if: always()
+      - name: Send custom JSON data to Slack workflow
+        id: slack
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
@@ -49,11 +49,10 @@ jobs:
               "text": "*Nightly Smoke Tests Completed*",
               "attachments": [
                 {
-                  "color": "${{ job.status == 'success' ? 'good' : 'danger' }}",
                   "fields": [
                     {
                       "title": "Build Result",
-                      "value": "${{ job.steps.smoke_tests.outcome == 'success' ? 'Build Passed' : 'Build Failed' }}",
+                      "value": "${{ job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed' }}",
                       "short": true
                     },
                     {
@@ -76,4 +75,4 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
