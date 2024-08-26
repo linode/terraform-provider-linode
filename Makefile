@@ -72,19 +72,23 @@ int-test: fmt-check generate-ip-env-fw-e2e include-env
 	TF_VAR_ipv6_addr=${PUBLIC_IPV6} \
 	go test --tags="$(TEST_TAGS)" -v ./$(PKG_NAME) -count $(COUNT) -timeout $(TIMEOUT) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel=$(PARALLEL) $(ARGS)
 
-.PHONY: update-test-submodules
-update-test-submodules:
-	@git submodule update --init
-
 .PHONY: include-env
 include-env: $(IP_ENV_FILE)
 -include $(IP_ENV_FILE)
 
 generate-ip-env-fw-e2e: $(IP_ENV_FILE)
 
+SUBMODULE_DIR := e2e_scripts
+
 $(IP_ENV_FILE):
 	# Generate env file for E2E cloud firewall
-	. ./e2e_scripts/cloud_security_scripts/cloud_e2e_firewall/terraform-provider-linode/generate_ip_env_fw_e2e.sh || touch $(IP_ENV_FILE)
+	@if [ ! -d $(SUBMODULE_DIR) ]; then \
+		echo "Submodule directory $(SUBMODULE_DIR) does not exist. Updating submodules..."; \
+		git submodule update --init --recursive; \
+	else \
+		echo "Submodule directory $(SUBMODULE_DIR) already exists. Skipping update."; \
+	fi
+	. ./e2e_scripts/cloud_security_scripts/cloud_e2e_firewall/terraform-provider-linode/generate_ip_env_fw_e2e.sh
 
 .PHONY: smoke-test
 smoke-test: fmt-check generate-ip-env-fw-e2e include-env
