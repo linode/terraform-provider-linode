@@ -42,6 +42,7 @@ jobs:
 
       - name: Set Build Result
         id: set_build_result
+        if: always()
         run: echo "BUILD_RESULT=$(if [ '${{ job.steps.smoke_tests.outcome }}' == 'success' ]; then echo 'Build Passed'; else echo 'Build Failed'; fi)" >> $GITHUB_ENV
 
       - name: Send custom JSON data to Slack workflow
