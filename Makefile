@@ -100,7 +100,6 @@ smoke-test: fmt-check generate-ip-env-fw-e2e include-env
 		-ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" \
 		| sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"; \
 	exit_status=$$?; \
-	echo "Exit status of go test: $$exit_status"; \
 	exit $$exit_status'
 
 
