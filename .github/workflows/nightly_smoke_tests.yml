@@ -40,33 +40,19 @@ jobs:
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
-      - name: Set Build Result
-        id: set_build_result
+      - name: Notify Slack
         if: always()
-        run: echo "BUILD_RESULT=$(if [ '${{ job.steps.smoke_tests.outcome }}' == 'success' ]; then echo 'Build Passed'; else echo 'Build Failed'; fi)" >> $GITHUB_ENV
-
-      - name: Send custom JSON data to Slack workflow
-        id: slack
-        if: always()
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": "Nightly Smoke Tests Completed",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Nightly Smoke Tests Completed*\n\n" +
-                           "*Build Result:* ${{ env.BUILD_RESULT }}\n\n" +
-                           "*Workflow:* ${{ github.workflow }}\n" +
-                           "*Run ID:* ${{ github.run_id }}\n" +
-                           "*Build URL:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                  }
-                }
-              ]
-            }
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: 'GHBot'
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: |
+            *Nightly Smoke Tests Completed*
+
+            *Build Result:* ${{ job.steps.smoke_tests.outcome == 'success' && 'Build Passed ' || 'Build Failed' }}
+
+            *Job Details:*
+            - Workflow: ${{ github.workflow }}
+            - Run ID: ${{ github.run_id }}
+            - Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
