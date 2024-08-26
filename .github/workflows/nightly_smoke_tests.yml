@@ -35,9 +35,9 @@ jobs:
 
       - name: Run smoke tests
         id: smoke_tests
-        shell: bash
         run: |
           make smoke-test
+        shell: bash
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
