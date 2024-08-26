@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,61 +28,6 @@ func NewResource() resource.Resource {
 
 type Resource struct {
 	helper.BaseResource
-}
-
-func refreshDevices(
-	ctx context.Context,
-	client *linodego.Client,
-	firewallID int,
-	data *FirewallResourceModel,
-	diags *diag.Diagnostics,
-	preserveKnown bool,
-) {
-	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
-	if err != nil {
-		diags.AddError(fmt.Sprintf("Failed to Get Devices for Firewall %d", firewallID), err.Error())
-		return
-	}
-
-	data.flattenDevices(ctx, devices, preserveKnown, diags)
-}
-
-func refreshRules(
-	ctx context.Context,
-	client *linodego.Client,
-	firewallID int,
-	data *FirewallResourceModel,
-	diags *diag.Diagnostics,
-	preserveKnown bool,
-) {
-	rules, err := client.GetFirewallRules(ctx, firewallID)
-	if err != nil {
-		diags.AddError(fmt.Sprintf("Failed to Get Rules for Firewall %d", firewallID), err.Error())
-		return
-	}
-
-	data.flattenRules(ctx, rules, preserveKnown, diags)
-}
-
-func disableFirewall(
-	ctx context.Context,
-	firewallID int,
-	client *linodego.Client,
-	diags *diag.Diagnostics,
-) *linodego.Firewall {
-	updateOpts := linodego.FirewallUpdateOptions{
-		Status: linodego.FirewallDisabled,
-	}
-
-	tflog.Debug(ctx, "client.UpdateFirewall(...)", map[string]any{
-		"options": updateOpts,
-	})
-
-	firewall, err := client.UpdateFirewall(ctx, firewallID, updateOpts)
-	if err != nil {
-		diags.AddError("Failed to Disable Fireall", err.Error())
-	}
-	return firewall
 }
 
 func (r *Resource) Create(
