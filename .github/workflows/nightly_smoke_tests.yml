@@ -46,31 +46,20 @@ jobs:
         with:
           payload: |
             {
-              "text": "*Nightly Smoke Tests Completed*",
-              "attachments": [
+              "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+              "blocks": [
                 {
-                  "fields": [
-                    {
-                      "title": "Build Result",
-                      "value": "${{ job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed' }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Workflow",
-                      "value": "${{ github.workflow }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Run ID",
-                      "value": "${{ github.run_id }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Run URL",
-                      "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>",
-                      "short": false
-                    }
-                  ]
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Nightly Smoke Tests Completed*\n\n" +
+                            "*Build Result:* ${{
+                              job.steps.smoke_tests.outcome == 'success' && 'Build Passed' || 'Build Failed'
+                            }}\n\n" +
+                            "*Workflow:* ${{ github.workflow }}\n" +
+                            "*Run ID:* ${{ github.run_id }}\n" +
+                            "*Run URL:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>"
+                  }
                 }
               ]
             }
