@@ -21,6 +21,8 @@ type NodePoolModel struct {
 	Tags       types.Set                 `tfsdk:"tags"`
 	Nodes      types.List                `tfsdk:"nodes"`
 	Autoscaler []NodePoolAutoscalerModel `tfsdk:"autoscaler"`
+	Taints     []NodePoolTaintModel      `tfsdk:"taint"`
+	Labels     types.Map                 `tfsdk:"labels"`
 }
 
 type NodePoolAutoscalerModel struct {
@@ -28,10 +30,10 @@ type NodePoolAutoscalerModel struct {
 	Max types.Int64 `tfsdk:"max"`
 }
 
-type NodePoolNodeModel struct {
-	ID         types.String `tfsdk:"id"`
-	InstanceID types.Int64  `tfsdk:"instance_id"`
-	Status     types.String `tfsdk:"status"`
+type NodePoolTaintModel struct {
+	Effect types.String `tfsdk:"effect"`
+	Key    types.String `tfsdk:"key"`
+	Value  types.String `tfsdk:"value"`
 }
 
 func flattenLKENodePoolLinode(node linodego.LKENodePoolLinode) (*basetypes.ObjectValue, diag.Diagnostics) {
@@ -70,8 +72,26 @@ func flattenLKENodePoolLinodeList(nodes []linodego.LKENodePoolLinode,
 	return &result, nil
 }
 
+func (taint *NodePoolTaintModel) FlattenLKENodePoolTaint(t linodego.LKENodePoolTaint, preserveKnown bool) {
+	taint.Effect = helper.KeepOrUpdateString(taint.Effect, string(t.Effect), preserveKnown)
+	taint.Key = helper.KeepOrUpdateString(taint.Key, t.Key, preserveKnown)
+	taint.Value = helper.KeepOrUpdateString(taint.Value, t.Value, preserveKnown)
+}
+
+func (pool *NodePoolModel) FlattenLKENodePoolTaints(taints []linodego.LKENodePoolTaint, preserveKnown bool) {
+	// taints block can't be computed and can't be modified if known values are preserved.
+	if preserveKnown {
+		return
+	}
+
+	pool.Taints = make([]NodePoolTaintModel, len(taints))
+	for i := range pool.Taints {
+		pool.Taints[i].FlattenLKENodePoolTaint(taints[i], preserveKnown)
+	}
+}
+
 func (pool *NodePoolModel) FlattenLKENodePool(
-	p *linodego.LKENodePool, preserveKnown bool, diags *diag.Diagnostics,
+	ctx context.Context, p *linodego.LKENodePool, preserveKnown bool, diags *diag.Diagnostics,
 ) {
 	pool.ID = helper.KeepOrUpdateString(pool.ID, strconv.Itoa(p.ID), preserveKnown)
 	pool.Count = helper.KeepOrUpdateInt64(pool.Count, int64(p.Count), preserveKnown)
@@ -81,13 +101,18 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 		return
 	}
 
-	if !preserveKnown && p.Autoscaler.Enabled {
-		pool.Autoscaler = []NodePoolAutoscalerModel{
-			{
-				Min: types.Int64Value(int64(p.Autoscaler.Min)),
-				Max: types.Int64Value(int64(p.Autoscaler.Max)),
-			},
+	pool.Labels = helper.KeepOrUpdateStringMap(ctx, pool.Labels, p.Labels, preserveKnown, diags)
+
+	if !preserveKnown {
+		if p.Autoscaler.Enabled {
+			pool.Autoscaler = []NodePoolAutoscalerModel{
+				{
+					Min: types.Int64Value(int64(p.Autoscaler.Min)),
+					Max: types.Int64Value(int64(p.Autoscaler.Max)),
+				},
+			}
 		}
+		pool.FlattenLKENodePoolTaints(p.Taints, preserveKnown)
 	}
 
 	nodePoolLinodes, errs := flattenLKENodePoolLinodeList(p.Linodes)
@@ -112,6 +137,10 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(ctx context.Context, p *lino
 	if p.Autoscaler.Enabled && p.Count == 0 {
 		p.Count = p.Autoscaler.Min
 	}
+
+	p.Taints = pool.getLKENodePoolTaints()
+
+	pool.Labels.ElementsAs(ctx, &p.Labels, false)
 }
 
 func (pool *NodePoolModel) SetNodePoolUpdateOptions(ctx context.Context, p *linodego.LKENodePoolUpdateOptions, diags *diag.Diagnostics) {
@@ -134,6 +163,11 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(ctx context.Context, p *lino
 	if p.Autoscaler.Enabled && p.Count == 0 {
 		p.Count = p.Autoscaler.Min
 	}
+
+	taints := pool.getLKENodePoolTaints()
+	p.Taints = &taints
+
+	pool.Labels.ElementsAs(ctx, &p.Labels, false)
 }
 
 func (pool *NodePoolModel) ExtractClusterAndNodePoolIDs(diags *diag.Diagnostics) (int, int) {
@@ -157,4 +191,22 @@ func (pool *NodePoolModel) getLKENodePoolAutoscaler(count int, diags *diag.Diagn
 		autoscaler.Max = count
 	}
 	return &autoscaler
+}
+
+func (taint NodePoolTaintModel) getLKENodePoolTaint() linodego.LKENodePoolTaint {
+	return linodego.LKENodePoolTaint{
+		Effect: linodego.LKENodePoolTaintEffect(taint.Effect.ValueString()),
+		Key:    taint.Key.ValueString(),
+		Value:  taint.Value.ValueString(),
+	}
+}
+
+func (pool *NodePoolModel) getLKENodePoolTaints() []linodego.LKENodePoolTaint {
+	taints := make([]linodego.LKENodePoolTaint, len(pool.Taints))
+
+	for i := range pool.Taints {
+		taints[i] = pool.Taints[i].getLKENodePoolTaint()
+	}
+
+	return taints
 }

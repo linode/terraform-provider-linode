@@ -60,14 +60,18 @@ resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
     k8s_version = "1.28"
     region      = "us-mia"
+
+    labels = {
+        "key" = "value"
+    }
     
     # This tells the Linode provider to ignore 
     # node pools with the tag `external`, preventing
     # externally managed node pools from being deleted.
     external_pool_tags = [local.external_pool_tag]
 
-  # Due to certain restrictions in Terraform and LKE, 
-  # the cluster must be defined with at least one node pool.
+    # Due to certain restrictions in Terraform and LKE, 
+    # the cluster must be defined with at least one node pool.
     pool {
         type  = "g6-standard-1"
         count = 1
@@ -87,7 +91,11 @@ The following arguments are supported:
 
 * `tags` - (Optional) An array of tags applied to the Node Pool. Tags can be used to flag node pools as externally managed, see [Externally Managed Node Pools](lke_cluster.md#externally-managed-node-pools) for more details.
 
+* `labels` - (Optional) A map attribute containing key-value pairs to be added as labels to nodes in the node pool. Labels help classify your nodes and to easily select subsets of objects. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
+
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
+
+* [`taint`](#taint) - (Optional) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
 
 ### autoscaler
 
@@ -96,6 +104,16 @@ The following arguments are supported in the `autoscaler` specification block:
 * `min` - (Required) The minimum number of nodes to autoscale to.
 
 * `max` - (Required) The maximum number of nodes to autoscale to.
+
+### taint
+
+The following arguments are supported in the `taint` specification block:
+
+* `effect` - (Required) The Kubernetes taint effect. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`. For the descriptions of these values, see [Kubernetes Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).
+
+* `key` - (Required) The Kubernetes taint key.
+
+* `value` - (Required) The Kubernetes taint value.
 
 ## Attributes Reference
 

@@ -1,6 +1,6 @@
 {{ define "nodepool_template" }}
 
-{{if not .ClusterID }}
+{{ if not .ClusterID }}
 resource "linode_lke_cluster" "nodepool_test_cluster" {
   label       = "{{.ClusterLabel}}"
   region      = "{{ .Region }}"
@@ -13,24 +13,44 @@ resource "linode_lke_cluster" "nodepool_test_cluster" {
       count = 1
   }
 }
-{{end}}
+{{ end }}
 
 resource "linode_lke_node_pool" "foobar" {
-{{if .ClusterID }}
+{{ if .ClusterID }}
     cluster_id = "{{.ClusterID}}"
-{{else}}
+{{ else }}
     cluster_id = linode_lke_cluster.nodepool_test_cluster.id
-{{end}}
+{{ end }}
 
-{{if .AutoscalerEnabled }}
+{{ if .AutoscalerEnabled }}
     autoscaler {
         min = {{.AutoscalerMin}}
         max = {{.AutoscalerMax}}
     }
-{{else}}
-    node_count = {{.NodeCount}}
-{{end}}
-    type  = "{{.PoolNodeType}}"
+{{ else }}
+    node_count = {{ .NodeCount }}
+{{ end }}
+
+{{ range $taint := .Taints }}
+    taint {
+        effect = "{{ $taint.Effect }}"
+        key    = "{{ $taint.Key }}"
+        value  = "{{ $taint.Value }}"
+    }
+{{ end }}
+
+{{ range $key, $val := .Labels }}
+    labels = {
+        "{{ $key }}" = "{{ $val }}"
+    }
+{{ end }}
+
+    {{ if .PoolNodeType }}
+    type  = "{{ .PoolNodeType }}"
+    {{ else }}
+    type  = "g6-standard-1"
+    {{ end }}
+
     tags  = ["external", "{{.PoolTag}}"]
 }
 
