@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	nodepooltmpl "github.com/linode/terraform-provider-linode/v2/linode/lkenodepool/tmpl"
 )
 
 type TemplateData struct {
@@ -107,4 +108,8 @@ func DataControlPlane(t *testing.T, name, version, region, ipv4, ipv6 string, ha
 			IPv6:             ipv6,
 			ACLEnabled:       enabled,
 		})
+}
+
+func DataTaintsLabels(t *testing.T, data *nodepooltmpl.TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "lke_cluster_data_taints_labels", *data)
 }
