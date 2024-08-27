@@ -19,12 +19,13 @@ var deviceObjectType = types.ObjectType{
 
 var RuleObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"label":    types.StringType,
-		"action":   types.StringType,
-		"ports":    types.StringType,
-		"protocol": types.StringType,
-		"ipv4":     types.ListType{ElemType: cidrtypes.IPv4PrefixType{}},
-		"ipv6":     types.ListType{ElemType: cidrtypes.IPv6PrefixType{}},
+		"label":       types.StringType,
+		"action":      types.StringType,
+		"ports":       types.StringType,
+		"protocol":    types.StringType,
+		"description": types.StringType,
+		"ipv4":        types.ListType{ElemType: cidrtypes.IPv4PrefixType{}},
+		"ipv6":        types.ListType{ElemType: cidrtypes.IPv6PrefixType{}},
 	},
 }
 

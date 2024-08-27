@@ -50,13 +50,13 @@ type FirewallResourceModel struct {
 }
 
 type RuleModel struct {
-	Label    types.String `tfsdk:"label"`
-	Action   types.String `tfsdk:"action"`
-	Ports    types.String `tfsdk:"ports"`
-	Protocol types.String `tfsdk:"protocol"`
-	IPv4     types.List   `tfsdk:"ipv4"`
-	IPv6     types.List   `tfsdk:"ipv6"`
-	// TODO: add Description
+	Label       types.String `tfsdk:"label"`
+	Action      types.String `tfsdk:"action"`
+	Ports       types.String `tfsdk:"ports"`
+	Protocol    types.String `tfsdk:"protocol"`
+	IPv4        types.List   `tfsdk:"ipv4"`
+	IPv6        types.List   `tfsdk:"ipv6"`
+	Description types.String `tfsdk:"description"`
 }
 
 type DeviceModel struct {
@@ -72,6 +72,7 @@ func (data *RuleModel) Expands(ctx context.Context, diags *diag.Diagnostics) (ru
 	rule.Label = data.Label.ValueString()
 	rule.Ports = data.Ports.ValueString()
 	rule.Protocol = linodego.NetworkProtocol(data.Protocol.ValueString())
+	rule.Description = data.Description.ValueString()
 
 	newDiags := data.IPv4.ElementsAs(ctx, &rule.Addresses.IPv4, false)
 	diags.Append(newDiags...)
@@ -379,6 +380,7 @@ func FlattenFirewallRules(
 		knownRules[i].Action = helper.KeepOrUpdateString(knownRules[i].Action, rules[i].Action, preserveKnown)
 		knownRules[i].Label = helper.KeepOrUpdateString(knownRules[i].Label, rules[i].Label, preserveKnown)
 		knownRules[i].Protocol = helper.KeepOrUpdateString(knownRules[i].Protocol, string(rules[i].Protocol), preserveKnown)
+		knownRules[i].Description = helper.KeepOrUpdateString(knownRules[i].Description, rules[i].Description, preserveKnown)
 
 		if rules[i].Ports == "" {
 			knownRules[i].Ports = helper.KeepOrUpdateValue(knownRules[i].Ports, types.StringNull(), preserveKnown)
