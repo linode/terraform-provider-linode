@@ -77,11 +77,15 @@ In addition to all arguments above, the following attributes are exported:
 
     * `max` - The maximum number of nodes to autoscale to.
 
-  * `disks` - This Node Pool’s custom disk layout.
+  * `taints` - Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods.
 
-    * `size` - The size of this custom disk partition in MB.
+    * `effect` - The Kubernetes taint effect. The accepted values are `NoSchedule`, `PreferNoSchedule` and `NoExecute`. For the descriptions of these values, see [Kubernetes Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).
 
-    * `type` - This custom disk partition’s filesystem type.
+    * `key` - The Kubernetes taint key.
+
+    * `value` - The Kubernetes taint value.
+
+  * `labels` - Key-value pairs added as labels to nodes in the node pool. Labels help classify your nodes and to easily select subsets of objects.
 
 * `control_plane` - The settings for the Kubernetes Control Plane.
 

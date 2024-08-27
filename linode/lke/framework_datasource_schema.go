@@ -1,9 +1,18 @@
 package lke
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+var taintObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"effect": types.StringType,
+		"key":    types.StringType,
+		"value":  types.StringType,
+	},
+}
 
 var frameworkDataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -125,6 +134,20 @@ var frameworkDataSourceSchema = schema.Schema{
 						Computed: true,
 						Description: "The disk encryption policy for the nodes in this pool. " +
 							"NOTE: Disk encryption may not currently be available to all users.",
+					},
+					"taints": schema.SetAttribute{
+						Computed: true,
+						Description: "Kubernetes taints to add to node pool nodes. " +
+							"Taints help control how pods are scheduled onto nodes, " +
+							"specifically allowing them to repel certain pods.",
+						ElementType: taintObjectType,
+					},
+					"labels": schema.MapAttribute{
+						Computed: true,
+						Description: "Key-value pairs added as labels to nodes in " +
+							"the node pool. Labels help classify your nodes and to " +
+							"easily select subsets of objects.",
+						ElementType: types.StringType,
 					},
 				},
 				Blocks: map[string]schema.Block{

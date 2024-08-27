@@ -8,6 +8,7 @@ import (
 
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
 )
 
 // LKEDataModel describes the Terraform resource data model to match the
@@ -53,14 +54,16 @@ type LKEControlPlaneACLAddresses struct {
 }
 
 type LKENodePool struct {
-	ID             types.Int64             `tfsdk:"id"`
-	Count          types.Int64             `tfsdk:"count"`
-	Type           types.String            `tfsdk:"type"`
-	Tags           types.List              `tfsdk:"tags"`
-	DiskEncryption types.String            `tfsdk:"disk_encryption"`
-	Disks          []LKENodePoolDisk       `tfsdk:"disks"`
-	Nodes          []LKENodePoolNode       `tfsdk:"nodes"`
-	Autoscaler     []LKENodePoolAutoscaler `tfsdk:"autoscaler"`
+	ID             types.Int64                      `tfsdk:"id"`
+	Count          types.Int64                      `tfsdk:"count"`
+	Type           types.String                     `tfsdk:"type"`
+	Tags           types.List                       `tfsdk:"tags"`
+	DiskEncryption types.String                     `tfsdk:"disk_encryption"`
+	Labels         types.Map                        `tfsdk:"labels"`
+	Disks          []LKENodePoolDisk                `tfsdk:"disks"`
+	Nodes          []LKENodePoolNode                `tfsdk:"nodes"`
+	Autoscaler     []LKENodePoolAutoscaler          `tfsdk:"autoscaler"`
+	Taints         []lkenodepool.NodePoolTaintModel `tfsdk:"taints"`
 }
 
 type LKENodePoolDisk struct {
@@ -125,6 +128,12 @@ func (data *LKEDataModel) parseLKEAttributes(
 			}
 			pool.Tags = tags
 
+			labels, diags := types.MapValueFrom(ctx, types.StringType, p.Labels)
+			if diags != nil {
+				return nil, diags
+			}
+			pool.Labels = labels
+
 			pool.Nodes = make([]LKENodePoolNode, len(p.Linodes))
 			for i, linode := range p.Linodes {
 				pool.Nodes[i].ID = types.StringValue(linode.ID)
@@ -148,6 +157,13 @@ func (data *LKEDataModel) parseLKEAttributes(
 			for i, d := range p.Disks {
 				pool.Disks[i].Size = types.Int64Value(int64(d.Size))
 				pool.Disks[i].Type = types.StringValue(d.Type)
+			}
+
+			pool.Taints = make([]lkenodepool.NodePoolTaintModel, len(p.Taints))
+			for i, taint := range p.Taints {
+				pool.Taints[i].Effect = types.StringValue(string(taint.Effect))
+				pool.Taints[i].Key = types.StringValue(taint.Key)
+				pool.Taints[i].Value = types.StringValue(taint.Value)
 			}
 
 			lkePools[i] = pool
