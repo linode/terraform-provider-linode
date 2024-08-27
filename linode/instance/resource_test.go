@@ -73,9 +73,7 @@ func TestSmokeTests_instance(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if acceptance.Contains(acceptance.SmokeTests["instance_test"], tt.name) {
-			t.Run(tt.name, tt.test)
-		}
+		t.Run(tt.name, tt.test)
 	}
 }
 

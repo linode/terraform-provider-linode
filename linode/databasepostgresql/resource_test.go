@@ -84,9 +84,7 @@ func TestSmokeTests_databasepostgresql(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if acceptance.Contains(acceptance.SmokeTests["databasepostgresql_test"], tt.name) {
-			t.Run(tt.name, tt.test)
-		}
+		t.Run(tt.name, tt.test)
 	}
 }
 

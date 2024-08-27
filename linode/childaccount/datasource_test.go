@@ -19,9 +19,7 @@ func TestSmokeTests_childaccount(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if acceptance.Contains(acceptance.SmokeTests["childaccount_test"], tt.name) {
-			t.Run(tt.name, tt.test)
-		}
+		t.Run(tt.name, tt.test)
 	}
 }
 

@@ -173,9 +173,7 @@ func TestSmokeTests_lke(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if acceptance.Contains(acceptance.SmokeTests["lke_test"], tt.name) {
-			t.Run(tt.name, tt.test)
-		}
+		t.Run(tt.name, tt.test)
 	}
 }
 

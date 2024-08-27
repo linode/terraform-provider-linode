@@ -180,9 +180,7 @@ func TestSmokeTests_objbucket(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if acceptance.Contains(acceptance.SmokeTests["objbucket_test"], tt.name) {
-			t.Run(tt.name, tt.test)
-		}
+		t.Run(tt.name, tt.test)
 	}
 }
 
