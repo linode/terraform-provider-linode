@@ -50,3 +50,11 @@ func Firewall(t *testing.T, nodebalancer, region string) string {
 			Region: region,
 		})
 }
+
+func FirewallUpdate(t *testing.T, nodebalancer, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"nodebalancer_firewall_updates", TemplateData{
+			Label:  nodebalancer,
+			Region: region,
+		})
+}
