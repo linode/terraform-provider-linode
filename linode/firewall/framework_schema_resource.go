@@ -3,6 +3,7 @@ package firewall
 import (
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -58,11 +59,17 @@ var ruleNestedObject = schema.NestedBlockObject{
 			Description: "A list of CIDR blocks or 0.0.0.0/0 (to allow all) this rule applies to.",
 			Optional:    true,
 			ElementType: cidrtypes.IPv4PrefixType{},
+			Validators: []validator.List{
+				listvalidator.SizeAtLeast(1),
+			},
 		},
 		"ipv6": schema.ListAttribute{
 			Description: "A list of IPv6 addresses or networks this rule applies to.",
 			Optional:    true,
 			ElementType: cidrtypes.IPv6PrefixType{},
+			Validators: []validator.List{
+				listvalidator.SizeAtLeast(1),
+			},
 		},
 	},
 }
@@ -131,14 +138,12 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:    true,
 			Computed:    true,
 			ElementType: types.Int64Type,
-			Default:     helper.EmptySetDefault(types.Int64Type),
 		},
 		"nodebalancers": schema.SetAttribute{
 			Description: "The IDs of NodeBalancers to apply this firewall to.",
 			Optional:    true,
 			Computed:    true,
 			ElementType: types.Int64Type,
-			Default:     helper.EmptySetDefault(types.Int64Type),
 		},
 		"devices": schema.ListAttribute{
 			Description: "The devices associated with this firewall.",
