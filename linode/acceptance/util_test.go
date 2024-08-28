@@ -6,8 +6,12 @@
 package acceptance
 
 import (
+	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetTestClient_noURLOverride(t *testing.T) {
@@ -62,4 +66,24 @@ func TestGetTestClient_URLOverride(t *testing.T) {
 	if apiVersion != expectedVersion {
 		t.Fatalf("expected api version to be %s, got %s", expectedVersion, apiVersion)
 	}
+}
+
+func TestAnyOfTestCheckFunc(t *testing.T) {
+	err := errors.New("")
+	checkFuncs1 := AnyOfTestCheckFunc(
+		func(s *terraform.State) error { return err },
+		func(s *terraform.State) error { return nil },
+		func(s *terraform.State) error { return err },
+	)
+	checkFuncs2 := AnyOfTestCheckFunc(
+		func(s *terraform.State) error { return nil },
+	)
+
+	checkFuncs3 := AnyOfTestCheckFunc(
+		func(s *terraform.State) error { return err },
+	)
+
+	assert.NoError(t, checkFuncs1(nil))
+	assert.NoError(t, checkFuncs2(nil))
+	assert.Error(t, checkFuncs3(nil))
 }

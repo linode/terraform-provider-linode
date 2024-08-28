@@ -45,7 +45,12 @@ resource "linode_lke_node_pool" "foobar" {
     }
 {{ end }}
 
-    type  = "{{.PoolNodeType}}"
+    {{ if .PoolNodeType }}
+    type  = "{{ .PoolNodeType }}"
+    {{ else }}
+    type  = "g6-standard-1"
+    {{ end }}
+
     tags  = ["external", "{{.PoolTag}}"]
 }
 
