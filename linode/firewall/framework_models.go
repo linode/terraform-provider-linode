@@ -339,17 +339,17 @@ func (state *FirewallResourceModel) RulesHaveChanges(
 	oldOutbound, newDiags := types.ListValueFrom(ctx, RuleObjectType, state.Outbound)
 	diags.Append(newDiags...)
 
-	newOutbound, newDiags := types.ListValueFrom(ctx, RuleObjectType, plan.Inbound)
+	newInbound, newDiags := types.ListValueFrom(ctx, RuleObjectType, plan.Inbound)
 	diags.Append(newDiags...)
 
-	newInbound, newDiags := types.ListValueFrom(ctx, RuleObjectType, plan.Outbound)
+	newOutbound, newDiags := types.ListValueFrom(ctx, RuleObjectType, plan.Outbound)
 	diags.Append(newDiags...)
 
 	if newDiags.HasError() {
 		diags.Append(newDiags...)
 	}
 
-	return !oldInbound.Equal(newInbound) || oldOutbound.Equal(newOutbound)
+	return !oldInbound.Equal(newInbound) || !oldOutbound.Equal(newOutbound)
 }
 
 func (state *FirewallResourceModel) LinodesOrNodeBalancersHaveChanges(
