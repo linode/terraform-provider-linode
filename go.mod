@@ -1,6 +1,8 @@
 module github.com/linode/terraform-provider-linode/v2
 
-go 1.21
+go 1.22
+
+toolchain go1.22.5
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.30.4
@@ -24,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.16.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
 	github.com/hashicorp/terraform-plugin-testing v1.10.0
-	github.com/linode/linodego v1.39.0
+	github.com/linode/linodego v1.40.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.26.0
