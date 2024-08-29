@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 	"testing"
@@ -57,7 +58,7 @@ func (t *TRetry) Cleanup(f func()) {
 }
 
 func (t *TRetry) Error(args ...any) {
-	t.ErrorChannel <- fmt.Errorf(fmt.Sprint(args...))
+	t.ErrorChannel <- errors.New(fmt.Sprint(args...))
 }
 
 func (t *TRetry) Errorf(format string, args ...any) {
@@ -74,7 +75,7 @@ func (t *TRetry) Failed() bool {
 }
 
 func (t *TRetry) Fatal(args ...any) {
-	t.ErrorChannel <- fmt.Errorf(fmt.Sprint(fmt.Sprint(args...)))
+	t.ErrorChannel <- errors.New(fmt.Sprint(args...))
 	t.Fail()
 }
 

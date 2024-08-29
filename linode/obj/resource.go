@@ -52,13 +52,16 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	key := d.Get("key").(string)
 
 	objKeys, diags, teardownKeysCleanUp := GetObjKeys(ctx, d, config, client, bucket, regionOrCluster, "read_only")
-	if diags != nil {
+	if len(diags) > 0 {
 		// Check if the error is due to the bucket being not found
-		if helper.IsBucketNotFoundError(fmt.Errorf(diags[0].Summary)) {
-			d.SetId("")
-			tflog.Warn(ctx,
-				"couldn't find the bucket, removing the object from the TF state")
-			return nil
+		for _, diag := range diags {
+			errMsg := diag.Summary
+			if helper.IsBucketNotFoundErrorMsg(errMsg) {
+				d.SetId("")
+				tflog.Warn(ctx,
+					"couldn't find the bucket, removing the object from the TF state")
+				return nil
+			}
 		}
 		return diags
 	}
