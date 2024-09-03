@@ -127,7 +127,6 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
-					// resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", ""),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "0"),
