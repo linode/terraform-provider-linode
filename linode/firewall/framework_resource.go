@@ -51,12 +51,14 @@ func (r *Resource) Create(
 	}
 
 	firewall, err := client.CreateFirewall(ctx, createOpts)
+	if firewall != nil && firewall.ID != 0 {
+		addFirewallResource(ctx, resp, strconv.Itoa(firewall.ID))
+	}
+
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to Create Firewall", err.Error())
 		return
 	}
-
-	addFirewallResource(ctx, resp, strconv.Itoa(firewall.ID))
 
 	if plan.Disabled.ValueBool() {
 		firewall = disableFirewall(ctx, firewall.ID, client, &resp.Diagnostics)
@@ -162,6 +164,7 @@ func (r *Resource) Update(
 		firewall, err := client.UpdateFirewall(ctx, id, updateOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(fmt.Sprintf("Failed to Update Firewall %d", id), err.Error())
+			return
 		}
 
 		plan.flattenFirewallForResource(firewall, true, &resp.Diagnostics)
@@ -185,6 +188,7 @@ func (r *Resource) Update(
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to Update Rules for Firewall %d", id), err.Error(),
 			)
+			return
 		}
 
 		plan.flattenRules(ctx, firewallRuleSet, true, &resp.Diagnostics)
