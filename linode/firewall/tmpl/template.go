@@ -29,7 +29,7 @@ func Basic(t *testing.T, label, devicePrefix, region string) string {
 			ID:       "one",
 			PubKey:   acceptance.PublicKeyMaterial,
 			Region:   region,
-			RootPass: acctest.RandString(12),
+			RootPass: acctest.RandString(64),
 		},
 	}
 
@@ -48,14 +48,14 @@ func Updates(t *testing.T, label, devicePrefix, region string) string {
 			ID:       "one",
 			PubKey:   acceptance.PublicKeyMaterial,
 			Region:   region,
-			RootPass: acctest.RandString(12),
+			RootPass: acctest.RandString(64),
 		},
 		{
 			Prefix:   devicePrefix,
 			ID:       "two",
 			PubKey:   acceptance.PublicKeyMaterial,
 			Region:   region,
-			RootPass: acctest.RandString(12),
+			RootPass: acctest.RandString(64),
 		},
 	}
 
@@ -84,7 +84,7 @@ func MultipleRules(t *testing.T, label, devicePrefix, region string) string {
 					ID:       "one",
 					PubKey:   acceptance.PublicKeyMaterial,
 					Region:   region,
-					RootPass: acctest.RandString(12),
+					RootPass: acctest.RandString(64),
 				},
 			},
 		})
@@ -118,7 +118,7 @@ func DataBasic(t *testing.T, label, devicePrefix, region string) string {
 			ID:       "one",
 			PubKey:   acceptance.PublicKeyMaterial,
 			Region:   region,
-			RootPass: acctest.RandString(12),
+			RootPass: acctest.RandString(64),
 		},
 	}
 

@@ -37,8 +37,8 @@ resource "linode_firewall" "e2e_test_firewall" {
         content {
             label    = "tcp_inbound_ssh_accept_local"
             action   = "ACCEPT"
-            ipv4     = local.ipv4_address != null ? [local.ipv4_address] : []
-            ipv6     = local.ipv6_address != null ? [local.ipv6_address] : []
+            ipv4     = local.ipv4_address != null ? [local.ipv4_address] : null
+            ipv6     = local.ipv6_address != null ? [local.ipv6_address] : null
             protocol = "TCP"
             ports    = "22"
         }
