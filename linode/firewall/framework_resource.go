@@ -170,7 +170,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	if state.RulesHaveChanges(ctx, plan, &resp.Diagnostics) {
+	if state.RulesAndPoliciesHaveChanges(ctx, plan, &resp.Diagnostics) {
 		if resp.Diagnostics.HasError() {
 			return
 		}

@@ -330,7 +330,7 @@ func (data *FirewallResourceModel) CopyFrom(
 	}
 }
 
-func (state *FirewallResourceModel) RulesHaveChanges(
+func (state *FirewallResourceModel) RulesAndPoliciesHaveChanges(
 	ctx context.Context, plan FirewallResourceModel, diags *diag.Diagnostics,
 ) bool {
 	oldInbound, newDiags := types.ListValueFrom(ctx, RuleObjectType, state.Inbound)
@@ -349,7 +349,8 @@ func (state *FirewallResourceModel) RulesHaveChanges(
 		diags.Append(newDiags...)
 	}
 
-	return !oldInbound.Equal(newInbound) || !oldOutbound.Equal(newOutbound)
+	return (!oldInbound.Equal(newInbound) || !oldOutbound.Equal(newOutbound) ||
+		!state.InboundPolicy.Equal(plan.InboundPolicy) || !state.OutboundPolicy.Equal(plan.OutboundPolicy))
 }
 
 func (state *FirewallResourceModel) LinodesOrNodeBalancersHaveChanges(
