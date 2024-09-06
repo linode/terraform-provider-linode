@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -637,7 +638,7 @@ func checkBucketExists(s *terraform.State) error {
 			continue
 		}
 
-		cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID)
+		cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID, &schema.ResourceData{})
 		if err != nil {
 			return fmt.Errorf("Error parsing %s, %s", rs.Primary.ID, err)
 		}
@@ -659,7 +660,7 @@ func checkBucketHasSSL(expected bool) func(*terraform.State) error {
 				continue
 			}
 
-			cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID)
+			cluster, label, err := objbucket.DecodeBucketID(context.Background(), rs.Primary.ID, &schema.ResourceData{})
 			if err != nil {
 				return fmt.Errorf("could not parse bucket ID %s: %s", rs.Primary.ID, err)
 			}
@@ -685,7 +686,7 @@ func checkBucketDestroy(s *terraform.State) error {
 		}
 
 		id := rs.Primary.ID
-		cluster, label, err := objbucket.DecodeBucketID(context.Background(), id)
+		cluster, label, err := objbucket.DecodeBucketID(context.Background(), id, &schema.ResourceData{})
 		if err != nil {
 			return fmt.Errorf("Error parsing %s", id)
 		}

@@ -1,6 +1,8 @@
 package instance
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
 
 var instanceDataSourceSchema = map[string]*schema.Schema{
 	"id": {
@@ -100,6 +102,17 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 	"has_user_data": {
 		Type:        schema.TypeBool,
 		Description: "Whether this Instance was created with user-data.",
+		Computed:    true,
+	},
+	"disk_encryption": {
+		Type: schema.TypeString,
+		Description: "The disk encryption policy for this Instance." +
+			"NOTE: Disk encryption may not currently be available to all users.",
+		Computed: true,
+	},
+	"lke_cluster_id": {
+		Type:        schema.TypeInt,
+		Description: "If applicable, the ID of the LKE cluster this Instance is a node of.",
 		Computed:    true,
 	},
 	"specs": {

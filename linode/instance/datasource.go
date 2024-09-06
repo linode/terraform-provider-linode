@@ -11,17 +11,19 @@ import (
 )
 
 var filterConfig = helper.FilterConfig{
-	"group":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"id":     {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
-	"image":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"label":  {APIFilterable: true, TypeFunc: helper.FilterTypeString},
-	"region": {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"group":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"id":             {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
+	"image":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"label":          {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"region":         {APIFilterable: true, TypeFunc: helper.FilterTypeString},
+	"lke_cluster_id": {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
 
 	// Tags must be filtered on the client
 	"tags":             {TypeFunc: helper.FilterTypeString},
 	"status":           {TypeFunc: helper.FilterTypeString},
 	"type":             {TypeFunc: helper.FilterTypeString},
 	"watchdog_enabled": {TypeFunc: helper.FilterTypeBool},
+	"disk_encryption":  {TypeFunc: helper.FilterTypeString},
 }
 
 func dataSourceInstance() *schema.Resource {
