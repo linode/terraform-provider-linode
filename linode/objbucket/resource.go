@@ -59,7 +59,7 @@ func readResource(
 
 	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id())
 	if err != nil {
-		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
+		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s: %s", d.Id(), err.Error())
 	}
 
 	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, label)
@@ -120,8 +120,12 @@ func readResource(
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
+	if bucket.Region != "" {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
+	} else {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
+	}
 
-	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 	d.Set("cluster", bucket.Cluster)
 	d.Set("region", bucket.Region)
 	d.Set("label", bucket.Label)
@@ -163,7 +167,12 @@ func createResource(
 	}
 
 	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(ctx, *bucket))
-	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
+
+	if bucket.Region != "" {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
+	} else {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
+	}
 
 	return updateResource(ctx, d, meta)
 }
@@ -464,7 +473,7 @@ func DecodeBucketID(ctx context.Context, id string) (regionOrCluster, label stri
 	tflog.Debug(ctx, "decoding bucket ID")
 	parts := strings.Split(id, ":")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		err = fmt.Errorf("Linode Object Storage Bucket ID must be of the form <Cluster>:<Label>, was provided: %s", id)
+		err = fmt.Errorf("Linode Object Storage Bucket ID must be of the form <ClusterOrRegion>:<Label>, was provided: %s", id)
 		return
 	}
 	regionOrCluster = parts[0]
