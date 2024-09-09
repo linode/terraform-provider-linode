@@ -16,7 +16,7 @@ func TestAccDataSourceNodeBalancerNode_basic(t *testing.T) {
 
 	resName := "data.linode_nodebalancer_node.foonode"
 	nodebalancerName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
