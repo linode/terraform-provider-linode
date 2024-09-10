@@ -2099,6 +2099,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 }
 
 func TestAccResourceInstance_requestQuantity(t *testing.T) {
+	t.Skip("firewall no longer available in old test provider")
 	t.Parallel()
 
 	const maxRequestsPerSecond = 3.0
@@ -2619,9 +2620,6 @@ func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 		}
 
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-		if err != nil {
-			return err
-		}
 
 		instanceIPs, err := client.GetInstanceIPAddresses(context.Background(), id)
 		if err != nil {
