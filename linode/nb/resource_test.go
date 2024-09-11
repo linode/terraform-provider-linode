@@ -184,7 +184,7 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Updates(t, nodebalancerName, testRegion),
+				Config: tmpl.FirewallUpdate(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodebalancerName)),

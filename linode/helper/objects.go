@@ -100,12 +100,12 @@ func IsObjNotFoundErr(err error) bool {
 }
 
 // isBucketNotFoundError checks if the error is due to the bucket not being found.
-func IsBucketNotFoundError(err error) bool {
+func IsBucketNotFoundErrorMsg(errMsg string) bool {
 	tflog.Debug(
 		context.Background(),
-		fmt.Sprintf("received an error: %s, checking whether it's a bucket not found error", err),
+		fmt.Sprintf("received an error: %s, checking whether it's a bucket not found error", errMsg),
 	)
-	return strings.Contains(err.Error(), "Bucket not found")
+	return strings.Contains(errMsg, "Bucket not found")
 }
 
 // Purge all objects, wiping out all versions and delete markers for versioned objects.

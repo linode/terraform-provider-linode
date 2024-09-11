@@ -57,9 +57,9 @@ func readResource(
 	client := meta.(*helper.ProviderMeta).Client
 	config := meta.(*helper.ProviderMeta).Config
 
-	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id())
+	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id(), d)
 	if err != nil {
-		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s", d.Id())
+		return diag.Errorf("failed to parse Linode ObjectStorageBucket id %s: %s", d.Id(), err.Error())
 	}
 
 	bucket, err := client.GetObjectStorageBucket(ctx, regionOrCluster, label)
@@ -120,8 +120,12 @@ func readResource(
 			return diag.Errorf("failed to find get object storage bucket versioning: %s", err)
 		}
 	}
+	if bucket.Region != "" {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
+	} else {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
+	}
 
-	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
 	d.Set("cluster", bucket.Cluster)
 	d.Set("region", bucket.Region)
 	d.Set("label", bucket.Label)
@@ -163,7 +167,12 @@ func createResource(
 	}
 
 	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(ctx, *bucket))
-	d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
+
+	if bucket.Region != "" {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
+	} else {
+		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
+	}
 
 	return updateResource(ctx, d, meta)
 }
@@ -244,7 +253,7 @@ func deleteResource(
 
 	config := meta.(*helper.ProviderMeta).Config
 	client := meta.(*helper.ProviderMeta).Client
-	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id())
+	regionOrCluster, label, err := DecodeBucketID(ctx, d.Id(), d)
 	if err != nil {
 		return diag.Errorf("Error parsing Linode ObjectStorageBucket id %s", d.Id())
 	}
@@ -460,15 +469,36 @@ func expandBucketCert(v any) linodego.ObjectStorageBucketCertUploadOptions {
 	}
 }
 
-func DecodeBucketID(ctx context.Context, id string) (regionOrCluster, label string, err error) {
+func DecodeBucketID(ctx context.Context, id string, d *schema.ResourceData) (regionOrCluster, label string, err error) {
 	tflog.Debug(ctx, "decoding bucket ID")
 	parts := strings.Split(id, ":")
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		err = fmt.Errorf("Linode Object Storage Bucket ID must be of the form <Cluster>:<Label>, was provided: %s", id)
+	if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
+		regionOrCluster = parts[0]
+		label = parts[1]
 		return
 	}
-	regionOrCluster = parts[0]
-	label = parts[1]
+	tflog.Warn(ctx, "Corrupted bucket ID detected, trying to recover it from cluster and label attributes.")
+
+	recoveredCluster, clusterOk := d.GetOk("cluster")
+	recoveredLabel, labelOk := d.GetOk("label")
+
+	if clusterOk {
+		regionOrCluster = recoveredCluster.(string)
+	}
+	if labelOk {
+		label = recoveredLabel.(string)
+	}
+
+	if clusterOk && labelOk {
+		d.SetId(fmt.Sprintf("%s:%s", regionOrCluster, label))
+	} else {
+		err = fmt.Errorf(
+			"Linode Object Storage Bucket ID must be of the form <ClusterOrRegion>:<Label>, "+
+				"but a corrupted ID %q, is in the state. Attempt to recover them from `cluster` "+
+				"and `label` attributes was also failed.", id,
+		)
+	}
+
 	return
 }
 

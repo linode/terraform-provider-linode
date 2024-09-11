@@ -1,6 +1,12 @@
 package helper
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
 
 func ExpandStringList(list []interface{}) []string {
 	slice := make([]string, 0, len(list))
@@ -28,4 +34,25 @@ func ExpandIntList(list []interface{}) []int {
 
 func ExpandIntSet(set *schema.Set) []int {
 	return ExpandIntList(set.List())
+}
+
+func ExpandFwInt64Set(set types.Set, diags *diag.Diagnostics) (result []int) {
+	elements := set.Elements()
+	result = make([]int, len(elements))
+
+	for i, v := range elements {
+		num, ok := v.(types.Int64)
+		if !ok {
+			diags.AddError(
+				"Value Conversion Failed",
+				fmt.Sprintf("Failed to convert %v to int", v),
+			)
+			return
+		}
+		result[i] = FrameworkSafeInt64ToInt(num.ValueInt64(), diags)
+		if diags.HasError() {
+			return
+		}
+	}
+	return
 }

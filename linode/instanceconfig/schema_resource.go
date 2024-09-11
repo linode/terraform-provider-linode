@@ -172,6 +172,15 @@ var deviceV2Schema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "The Disk ID to map to this disk slot",
+		ValidateDiagFunc: validation.ToDiagFunc(
+			validation.StringInSlice(
+				[]string{
+					"sda", "sdb", "sdc", "sdd",
+					"sde", "sdf", "sdg", "sdh",
+				},
+				false,
+			),
+		),
 	},
 	"disk_id": {
 		Type:        schema.TypeInt,

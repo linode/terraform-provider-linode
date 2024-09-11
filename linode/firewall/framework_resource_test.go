@@ -102,9 +102,10 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      testFirewallResName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            testFirewallResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created"},
 			},
 		},
 	})
@@ -126,7 +127,6 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 					resource.TestCheckResourceAttr(testFirewallResName, "disabled", "false"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.protocol", "TCP"),
-					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ports", ""),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.#", "1"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv4.0", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr(testFirewallResName, "inbound.0.ipv6.#", "0"),
@@ -138,9 +138,10 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      testFirewallResName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            testFirewallResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created"},
 			},
 		},
 	})
@@ -208,9 +209,10 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      testFirewallResName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            testFirewallResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created"},
 			},
 		},
 	})
@@ -245,9 +247,10 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      testFirewallResName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            testFirewallResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created"},
 			},
 		},
 	})
@@ -420,7 +423,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 	})
 }
 
-func TestAccLinodeFirewall_emptyIPv6(t *testing.T) {
+func TestAccLinodeFirewall_noIPv6(t *testing.T) {
 	t.Parallel()
 
 	name := acctest.RandomWithPrefix("tf_test")
@@ -477,9 +480,10 @@ func TestAccLinodeFirewall_noRules(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      testFirewallResName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            testFirewallResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created"},
 			},
 		},
 	})

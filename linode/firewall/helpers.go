@@ -1,13 +1,12 @@
 package firewall
 
 import (
-	"strings"
+	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"golang.org/x/net/context"
 )
 
@@ -18,69 +17,15 @@ type firewallDeviceAssignment struct {
 	Type linodego.FirewallDeviceType
 }
 
-func expandFirewallStatus(disabled interface{}) linodego.FirewallStatus {
+func expandFirewallStatus(disabled bool) linodego.FirewallStatus {
 	return map[bool]linodego.FirewallStatus{
 		true:  linodego.FirewallDisabled,
 		false: linodego.FirewallEnabled,
-	}[disabled.(bool)]
+	}[disabled]
 }
 
-func expandFirewallRules(ruleSpecs []interface{}) []linodego.FirewallRule {
-	rules := make([]linodego.FirewallRule, len(ruleSpecs))
-	for i, ruleSpec := range ruleSpecs {
-		ruleSpec := ruleSpec.(map[string]interface{})
-		rule := linodego.FirewallRule{}
-
-		rule.Label = ruleSpec["label"].(string)
-		rule.Action = ruleSpec["action"].(string)
-		rule.Protocol = linodego.NetworkProtocol(strings.ToUpper(ruleSpec["protocol"].(string)))
-		rule.Ports = ruleSpec["ports"].(string)
-
-		ipv4 := helper.ExpandStringList(ruleSpec["ipv4"].([]interface{}))
-		if len(ipv4) > 0 {
-			rule.Addresses.IPv4 = &ipv4
-		}
-		ipv6 := helper.ExpandStringList(ruleSpec["ipv6"].([]interface{}))
-		if len(ipv6) > 0 {
-			rule.Addresses.IPv6 = &ipv6
-		}
-		rules[i] = rule
-	}
-	return rules
-}
-
-func flattenFirewallRules(rules []linodego.FirewallRule) []map[string]interface{} {
-	specs := make([]map[string]interface{}, len(rules))
-	for i, rule := range rules {
-		specs[i] = map[string]interface{}{
-			"label":    rule.Label,
-			"action":   rule.Action,
-			"protocol": rule.Protocol,
-			"ports":    rule.Ports,
-			"ipv4":     rule.Addresses.IPv4,
-			"ipv6":     rule.Addresses.IPv6,
-		}
-	}
-	return specs
-}
-
-func flattenFirewallDevices(devices []linodego.FirewallDevice) []map[string]interface{} {
-	governedDevices := make([]map[string]interface{}, len(devices))
-	for i, device := range devices {
-		governedDevices[i] = map[string]interface{}{
-			"id":        device.ID,
-			"entity_id": device.Entity.ID,
-			"type":      device.Entity.Type,
-			"label":     device.Entity.Label,
-			"url":       device.Entity.URL,
-		}
-	}
-	return governedDevices
-}
-
-func updateFirewallDevices(
+func fwUpdateFirewallDevices(
 	ctx context.Context,
-	d *schema.ResourceData,
 	client linodego.Client,
 	id int,
 	configuredDevices []firewallDeviceAssignment,
@@ -133,8 +78,57 @@ func updateFirewallDevices(
 	return nil
 }
 
-func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
-	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"firewall_id": d.Id(),
+func refreshDevices(
+	ctx context.Context,
+	client *linodego.Client,
+	firewallID int,
+	data *FirewallResourceModel,
+	diags *diag.Diagnostics,
+	preserveKnown bool,
+) {
+	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
+	if err != nil {
+		diags.AddError(fmt.Sprintf("Failed to Get Devices for Firewall %d", firewallID), err.Error())
+		return
+	}
+
+	data.flattenDevices(ctx, devices, preserveKnown, diags)
+}
+
+func refreshRules(
+	ctx context.Context,
+	client *linodego.Client,
+	firewallID int,
+	data *FirewallResourceModel,
+	diags *diag.Diagnostics,
+	preserveKnown bool,
+) {
+	rules, err := client.GetFirewallRules(ctx, firewallID)
+	if err != nil {
+		diags.AddError(fmt.Sprintf("Failed to Get Rules for Firewall %d", firewallID), err.Error())
+		return
+	}
+
+	data.flattenRules(ctx, rules, preserveKnown, diags)
+}
+
+func disableFirewall(
+	ctx context.Context,
+	firewallID int,
+	client *linodego.Client,
+	diags *diag.Diagnostics,
+) *linodego.Firewall {
+	updateOpts := linodego.FirewallUpdateOptions{
+		Status: linodego.FirewallDisabled,
+	}
+
+	tflog.Debug(ctx, "client.UpdateFirewall(...)", map[string]any{
+		"options": updateOpts,
 	})
+
+	firewall, err := client.UpdateFirewall(ctx, firewallID, updateOpts)
+	if err != nil {
+		diags.AddError("Failed to Disable Fireall", err.Error())
+	}
+	return firewall
 }

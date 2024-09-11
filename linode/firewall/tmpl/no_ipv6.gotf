@@ -10,7 +10,7 @@ resource "linode_firewall" "test" {
         protocol = "TCP"
         ports    = "80"
         ipv4     = ["0.0.0.0/0"]
-        ipv6     = []
+        ipv6     = null
     }
 
     inbound_policy = "DROP"
