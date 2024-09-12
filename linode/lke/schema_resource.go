@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -82,6 +83,53 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Description: "A Linode Type for all of the nodes in the Node Pool.",
 					Required:    true,
+				},
+				"labels": {
+					Type: schema.TypeMap,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Description: "Key-value pairs added as labels to nodes in the node pool. " +
+						"Labels help classify your nodes and to easily select subsets of objects.",
+					Optional: true,
+				},
+				"taint": {
+					Type: schema.TypeSet,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"effect": {
+								Type:        schema.TypeString,
+								Description: "The Kubernetes taint effect.",
+								Required:    true,
+								ValidateDiagFunc: validation.ToDiagFunc(
+									validation.StringInSlice([]string{
+										string(linodego.LKENodePoolTaintEffectNoExecute),
+										string(linodego.LKENodePoolTaintEffectNoSchedule),
+										string(linodego.LKENodePoolTaintEffectPreferNoSchedule),
+									}, false),
+								),
+							},
+							"key": {
+								Description: "The Kubernetes taint key.",
+								Type:        schema.TypeString,
+								Required:    true,
+								ValidateDiagFunc: validation.ToDiagFunc(
+									validation.StringIsNotEmpty,
+								),
+							},
+							"value": {
+								Description: "The Kubernetes taint value.",
+								Type:        schema.TypeString,
+								Required:    true,
+								ValidateDiagFunc: validation.ToDiagFunc(
+									validation.StringIsNotEmpty,
+								),
+							},
+						},
+					},
+					Description: "Kubernetes taints to add to node pool nodes. Taints help control how " +
+						"pods are scheduled onto nodes, specifically allowing them to repel certain pods.",
+					Optional: true,
 				},
 				"tags": {
 					Type:        schema.TypeSet,
