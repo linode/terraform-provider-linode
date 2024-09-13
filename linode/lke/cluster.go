@@ -45,8 +45,11 @@ func ReconcileLKENodePoolSpecs(
 			Count:  spec.Count,
 			Type:   spec.Type,
 			Tags:   spec.Tags,
-			Taints: expandNodePoolTaints(spec.Taints),
 			Labels: linodego.LKENodePoolLabels(spec.Labels),
+		}
+
+		if spec.Taints != nil {
+			createOpts.Taints = expandNodePoolTaints(spec.Taints)
 		}
 
 		if createOpts.Count == 0 {
@@ -114,13 +117,19 @@ func ReconcileLKENodePoolSpecs(
 			continue
 		}
 
-		taints := expandNodePoolTaints(newSpec.Taints)
-		labels := linodego.LKENodePoolLabels(newSpecs[i].Labels)
 		updateOpts := linodego.LKENodePoolUpdateOptions{
-			Count:  newSpec.Count,
-			Tags:   &newSpecs[i].Tags,
-			Taints: &taints,
-			Labels: &labels,
+			Count: newSpec.Count,
+			Tags:  &newSpecs[i].Tags,
+		}
+
+		if !reflect.DeepEqual(newSpec.Taints, oldSpec.Taints) {
+			taints := expandNodePoolTaints(newSpec.Taints)
+			updateOpts.Taints = &taints
+		}
+
+		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) {
+			labels := linodego.LKENodePoolLabels(newSpecs[i].Labels)
+			updateOpts.Labels = &labels
 		}
 
 		// Only include the autoscaler if the autoscaler has updated
