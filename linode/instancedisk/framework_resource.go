@@ -412,7 +412,7 @@ func (r *Resource) Delete(
 
 	// Reboot the instance if necessary
 	if shouldShutdown && !diskInConfig {
-		if err := instance.BootInstanceSync(
+		if err := helper.BootInstanceSync(
 			ctx, client, linodeID, configID, timeoutSeconds,
 		); err != nil {
 			resp.Diagnostics.AddError(

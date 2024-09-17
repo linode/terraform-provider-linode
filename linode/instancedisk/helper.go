@@ -28,34 +28,17 @@ func getLinodeIDAndDiskID(data ResourceModel, diags *diag.Diagnostics) (int, int
 func handleDiskResize(
 	ctx context.Context, client *linodego.Client, instID, diskID, newSize, timeoutSeconds int,
 ) error {
-	configID, err := helper.GetCurrentBootedConfig(ctx, client, instID)
+	originalStatus, err := helper.WaitForInstanceNonTransientStatus(
+		ctx, client, instID, timeoutSeconds,
+	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to wait for instance to exit transient status: %w", err)
 	}
 
-	shouldShutdown := configID != 0
-
-	if shouldShutdown {
-		tflog.Info(ctx, "Shutting down Instance for disk resize")
-
-		p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
-		if err != nil {
-			return fmt.Errorf("failed to poll for events: %s", err)
+	if originalStatus == linodego.InstanceRunning {
+		if err := helper.ShutDownInstanceSync(ctx, client, instID, timeoutSeconds); err != nil {
+			return fmt.Errorf("failed to shut down instance: %w", err)
 		}
-
-		tflog.Debug(ctx, "client.ShutdownInstance(...)")
-
-		if err := client.ShutdownInstance(ctx, instID); err != nil {
-			return fmt.Errorf("failed to shutdown instance: %s", err)
-		}
-
-		tflog.Debug(ctx, "Waiting for Instance shutdown operation to complete")
-
-		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
-			return fmt.Errorf("failed to wait for instance shutdown: %s", err)
-		}
-
-		tflog.Debug(ctx, "Instance finished shutting down")
 	}
 
 	disk, err := client.GetInstanceDisk(ctx, instID, diskID)
@@ -91,37 +74,28 @@ func handleDiskResize(
 	}
 
 	// Check to see if the resize operation worked
-	if updatedDisk, err := client.WaitForInstanceDiskStatus(ctx, instID, disk.ID, linodego.DiskReady,
-		timeoutSeconds); err != nil {
+	if updatedDisk, err := client.WaitForInstanceDiskStatus(
+		ctx,
+		instID,
+		disk.ID,
+		linodego.DiskReady,
+		timeoutSeconds,
+	); err != nil {
 		return fmt.Errorf("failed to wait for disk ready: %s", err)
 	} else if updatedDisk.Size != newSize {
 		return fmt.Errorf(
-			"failed to resize disk %d from %d to %d", disk.ID, disk.Size, newSize)
+			"failed to resize disk %d from %d to %d", disk.ID, disk.Size, newSize,
+		)
 	}
 
 	tflog.Debug(ctx, "Resize operation complete")
 
-	// Reboot the instance if necessary
-	if shouldShutdown {
-		tflog.Info(ctx, "Rebooting instance to previously booted config")
-
-		p, err := client.NewEventPoller(ctx, instID, linodego.EntityLinode, linodego.ActionLinodeBoot)
-		if err != nil {
-			return fmt.Errorf("failed to poll for events: %s", err)
+	// Boot the instance back up if necessary
+	if originalStatus == linodego.InstanceRunning {
+		// NOTE: A config ID of 0 will boot the instance into its previously booted config
+		if err := helper.BootInstanceSync(ctx, client, instID, 0, timeoutSeconds); err != nil {
+			return fmt.Errorf("failed to boot instance: %w", err)
 		}
-
-		tflog.Debug(ctx, "client.BootInstance(...)", map[string]any{
-			"config_id": configID,
-		})
-		if err := client.BootInstance(ctx, instID, configID); err != nil {
-			return fmt.Errorf("failed to boot instance %d %d: %s", instID, configID, err)
-		}
-
-		if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
-			return fmt.Errorf("failed to wait for instance boot: %s", err)
-		}
-
-		tflog.Debug(ctx, "Reboot event finished")
 	}
 
 	return nil

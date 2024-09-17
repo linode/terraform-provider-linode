@@ -305,3 +305,121 @@ func FlattenInterfaces(interfaces []linodego.InstanceConfigInterface) []map[stri
 	}
 	return result
 }
+
+// BootInstanceSync boots the instance with the given ID and waits for the operation to
+// complete before returning.
+func BootInstanceSync(
+	ctx context.Context,
+	client *linodego.Client,
+	instanceID,
+	configID,
+	deadlineSeconds int,
+) error {
+	ctx = SetLogFieldBulk(
+		ctx,
+		map[string]any{
+			"instance_id": instanceID,
+			"config_id":   configID,
+		},
+	)
+
+	tflog.Info(ctx, "Booting instance")
+
+	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+	if err != nil {
+		return fmt.Errorf("failed to initialize event poller: %s", err)
+	}
+
+	tflog.Debug(ctx, "client.BootInstance(...)")
+
+	if err := client.BootInstance(ctx, instanceID, configID); err != nil {
+		return fmt.Errorf("failed to boot instance: %s", err)
+	}
+
+	tflog.Debug(ctx, "Waiting for instance boot to finish")
+
+	if _, err := p.WaitForFinished(ctx, deadlineSeconds); err != nil {
+		return fmt.Errorf("failed to wait for instance boot: %s", err)
+	}
+
+	tflog.Debug(ctx, "Instance has finished booting")
+
+	return nil
+}
+
+// ShutDownInstanceSync shuts down the instance with the given ID and waits for the operation to
+// complete before returning.
+func ShutDownInstanceSync(
+	ctx context.Context,
+	client *linodego.Client,
+	instanceID,
+	deadlineSeconds int,
+) error {
+	ctx = tflog.SetField(ctx, "instance_id", instanceID)
+
+	tflog.Info(ctx, "Shutting down instance")
+
+	p, err := client.NewEventPoller(ctx, instanceID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+	if err != nil {
+		return fmt.Errorf("failed to initialize event poller: %s", err)
+	}
+
+	tflog.Debug(ctx, "client.ShutdownInstance(...)")
+
+	if err := client.ShutdownInstance(ctx, instanceID); err != nil {
+		return fmt.Errorf("failed to shutdown instance: %s", err)
+	}
+
+	tflog.Debug(ctx, "Waiting for instance shutdown to finish")
+
+	if _, err := p.WaitForFinished(ctx, deadlineSeconds); err != nil {
+		return fmt.Errorf("failed to wait for instance shutdown: %s", err)
+	}
+
+	tflog.Debug(ctx, "Instance has finished shutting down")
+
+	return nil
+}
+
+// WaitForInstanceNonTransientStatus waits for the instance with the given ID to enter
+// a non-transient status (e.g. running, offline), and returns the final status of the instance.
+func WaitForInstanceNonTransientStatus(
+	ctx context.Context,
+	client *linodego.Client,
+	linodeID int,
+	timeoutSeconds int,
+) (linodego.InstanceStatus, error) {
+	instance, err := client.GetInstance(ctx, linodeID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get instance: %w", err)
+	}
+
+	var targetStatus linodego.InstanceStatus
+
+	switch instance.Status {
+	case linodego.InstanceBooting, linodego.InstanceRebooting:
+		targetStatus = linodego.InstanceRunning
+
+	case linodego.InstanceShuttingDown:
+		targetStatus = linodego.InstanceOffline
+
+	case linodego.InstanceRunning, linodego.InstanceOffline:
+		// Instance is offline, nothing to do here
+		return instance.Status, nil
+
+	default:
+		return "", fmt.Errorf("cannot wait for instance to exit transient status %s", instance.Status)
+	}
+
+	instance, err = client.WaitForInstanceStatus(
+		ctx,
+		instance.ID,
+		targetStatus,
+		timeoutSeconds,
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to wait for instance to reach status %s: %w", targetStatus, err)
+	}
+
+	return instance.Status, nil
+}
