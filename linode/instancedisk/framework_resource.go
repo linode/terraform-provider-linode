@@ -3,7 +3,6 @@ package instancedisk
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/instance"
 )
 
 const (
@@ -245,12 +243,12 @@ func (r *Resource) Update(
 	}
 
 	if !state.Size.Equal(plan.Size) {
-		if err := handleDiskResize(
-			ctx, client, linodeID, id, size, timeoutSeconds,
-		); err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to Resize Disk %d", id), err.Error(),
-			)
+		resp.Diagnostics.Append(
+			handleDiskResize(
+				ctx, client, r.Meta, linodeID, id, size, timeoutSeconds,
+			)...,
+		)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
@@ -336,47 +334,29 @@ func (r *Resource) Delete(
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	configID, err := helper.GetCurrentBootedConfig(ctx, client, linodeID)
-	if err != nil {
-		resp.Diagnostics.AddWarning(
-			fmt.Sprintf("Failed to Get the Current Booted Config of Linode %d", linodeID),
-			fmt.Sprintf(
-				"Will attempt to delete disk without without rebooting the instance. Error: %s",
-				err.Error(),
-			),
-		)
-	}
-
-	shouldShutdown := configID != 0
-	diskInConfig, err := diskInConfig(ctx, client, id, linodeID, configID)
-	if err != nil {
-		resp.Diagnostics.AddWarning(
-			fmt.Sprintf(
-				"Failed to Check If Disk (%d) is Used in the Booted Config (%d) of Linode Instance (%d)",
-				id, configID, linodeID,
-			),
-			fmt.Sprintf(
-				"%s\nWill attempt to delete disk without without rebooting the instance.",
-				err.Error(),
-			),
-		)
-	}
+	instanceStatus, err := helper.WaitForInstanceNonTransientStatus(
+		ctx,
+		client,
+		linodeID,
+		120,
+	)
 
 	// Shutdown instance if active
-	if shouldShutdown {
-		if r.Meta.Config.SkipInstanceReadyPoll.ValueBool() {
+	if instanceStatus == linodego.InstanceRunning {
+		if r.Meta.Config.SkipImplicitReboots.ValueBool() {
 			resp.Diagnostics.AddError(
-				"Linode Instance Shutdown is Required for this Disk Deletion",
-				"Please consider set please consider setting 'skip_implicit_reboots' "+
+				"Linode instance shutdown is required to delete this disk.",
+				"Please consider setting 'skip_implicit_reboots' "+
 					"to true in the Linode provider config.",
 			)
 			return
 		}
-		if err := instance.SafeShutdownInstance(
+
+		if err := helper.ShutDownInstanceSync(
 			ctx, client, linodeID, timeoutSeconds,
 		); err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to Shutdown Linode Instance %d", linodeID),
+				fmt.Sprintf("Failed to shutdown Linode instance %d", linodeID),
 				err.Error(),
 			)
 		}
@@ -391,67 +371,35 @@ func (r *Resource) Delete(
 		linodego.ActionDiskDelete,
 	)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to Initialize Event Poller", err.Error())
+		resp.Diagnostics.AddError("Failed to initialize event poller", err.Error())
 		return
 	}
 
 	tflog.Debug(ctx, "client.DeleteInstanceDisk(...)")
 	if err := client.DeleteInstanceDisk(ctx, linodeID, id); err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to Delete Linode Instance Disk %d", id), err.Error(),
+			fmt.Sprintf("Failed to delete Linode instance disk %d", id), err.Error(),
 		)
 		return
 	}
 
 	if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to Wait for Linode Instance Disk Deletion Finished", err.Error(),
+			"Failed to wait for Linode instance disk deletion to finish", err.Error(),
 		)
 		return
 	}
 
 	// Reboot the instance if necessary
-	if shouldShutdown && !diskInConfig {
+	if instanceStatus == linodego.InstanceRunning {
 		if err := helper.BootInstanceSync(
-			ctx, client, linodeID, configID, timeoutSeconds,
+			ctx, client, linodeID, 0, timeoutSeconds,
 		); err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to Boot Instance %d", linodeID), err.Error(),
+				fmt.Sprintf("Failed to boot Linode instance %d", linodeID), err.Error(),
 			)
 		}
 	}
-}
-
-func diskInConfig(
-	ctx context.Context, client *linodego.Client, diskID, linodeID, configID int,
-) (bool, error) {
-	if configID == 0 {
-		return false, nil
-	}
-
-	cfg, err := client.GetInstanceConfig(ctx, linodeID, configID)
-	if err != nil {
-		return false, err
-	}
-
-	if cfg.Devices == nil {
-		return false, nil
-	}
-
-	reflectMap := reflect.ValueOf(*cfg.Devices)
-
-	for i := 0; i < reflectMap.NumField(); i++ {
-		field := reflectMap.Field(i).Interface().(*linodego.InstanceConfigDevice)
-		if field == nil {
-			continue
-		}
-
-		if field.DiskID == diskID {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }
 
 func (r *Resource) ImportState(
