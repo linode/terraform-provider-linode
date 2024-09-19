@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -244,7 +246,7 @@ func (r *Resource) Update(
 
 	if !state.Size.Equal(plan.Size) {
 		resp.Diagnostics.Append(
-			handleDiskResize(
+			resizeDiskSync(
 				ctx, client, r.Meta, linodeID, id, size, timeoutSeconds,
 			)...,
 		)
@@ -334,72 +336,40 @@ func (r *Resource) Delete(
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	instanceStatus, err := helper.WaitForInstanceNonTransientStatus(
-		ctx,
-		client,
-		linodeID,
-		120,
-	)
-
-	// Shutdown instance if active
-	if instanceStatus == linodego.InstanceRunning {
-		if r.Meta.Config.SkipImplicitReboots.ValueBool() {
-			resp.Diagnostics.AddError(
-				"Linode instance shutdown is required to delete this disk.",
-				"Please consider setting 'skip_implicit_reboots' "+
-					"to true in the Linode provider config.",
+	d := runDiskOperation(
+		ctx, client, r.Meta, linodeID, timeoutSeconds, func() (resultDiag diag.Diagnostics) {
+			tflog.Info(ctx, "Deleting instance disk")
+			p, err := client.NewEventPollerWithSecondary(
+				ctx,
+				linodeID,
+				linodego.EntityLinode,
+				id,
+				linodego.ActionDiskDelete,
 			)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to initialize event poller", err.Error())
+				return
+			}
+
+			tflog.Debug(ctx, "client.DeleteInstanceDisk(...)")
+			if err := client.DeleteInstanceDisk(ctx, linodeID, id); err != nil {
+				resp.Diagnostics.AddError(
+					fmt.Sprintf("Failed to delete Linode instance disk %d", id), err.Error(),
+				)
+				return
+			}
+
+			if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to wait for Linode instance disk deletion to finish", err.Error(),
+				)
+				return
+			}
+
 			return
-		}
-
-		if err := helper.ShutDownInstanceSync(
-			ctx, client, linodeID, timeoutSeconds,
-		); err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to shutdown Linode instance %d", linodeID),
-				err.Error(),
-			)
-		}
-	}
-
-	tflog.Info(ctx, "Deleting instance disk")
-	p, err := client.NewEventPollerWithSecondary(
-		ctx,
-		linodeID,
-		linodego.EntityLinode,
-		id,
-		linodego.ActionDiskDelete,
+		},
 	)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to initialize event poller", err.Error())
-		return
-	}
-
-	tflog.Debug(ctx, "client.DeleteInstanceDisk(...)")
-	if err := client.DeleteInstanceDisk(ctx, linodeID, id); err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete Linode instance disk %d", id), err.Error(),
-		)
-		return
-	}
-
-	if _, err := p.WaitForFinished(ctx, timeoutSeconds); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to wait for Linode instance disk deletion to finish", err.Error(),
-		)
-		return
-	}
-
-	// Reboot the instance if necessary
-	if instanceStatus == linodego.InstanceRunning {
-		if err := helper.BootInstanceSync(
-			ctx, client, linodeID, 0, timeoutSeconds,
-		); err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to boot Linode instance %d", linodeID), err.Error(),
-			)
-		}
-	}
+	resp.Diagnostics.Append(d...)
 }
 
 func (r *Resource) ImportState(
