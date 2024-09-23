@@ -37,6 +37,7 @@ var testImageBytesNew = []byte{
 }
 
 var testRegion string
+var testRegions []string
 
 func init() {
 	resource.AddTestSweepers("linode_image", &resource.Sweeper{
@@ -44,12 +45,13 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	regions, err := acceptance.GetRegionsWithCaps([]string{"Object Storage"}, "core")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testRegion = region
+	testRegion = regions[1]
+	testRegions = regions
 }
 
 func sweep(prefix string) error {
@@ -220,10 +222,10 @@ func TestAccImage_replicate(t *testing.T) {
 
 	resName := "linode_image.foobar"
 	imageName := acctest.RandomWithPrefix("tf_test")
-	// Override the testRegion to be a fixed value because we need to make sure these three regions are different
-	testRegion = "us-east"
-	replicateRegion := "eu-west"
-	replicateNewRegion := "us-central"
+
+	if len(testRegions) < 4 {
+		t.Skipf("Not enough number of capable regions for image replication test. Skipping now...")
+	}
 
 	file, err := createTempFile("tf-test-image-replicate-file", testImageBytes)
 	if err != nil {
@@ -239,7 +241,7 @@ func TestAccImage_replicate(t *testing.T) {
 		CheckDestroy:             checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Replicate(t, imageName, file.Name(), testRegion, replicateRegion),
+				Config: tmpl.Replicate(t, imageName, file.Name(), testRegion, testRegions[0]),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -248,7 +250,7 @@ func TestAccImage_replicate(t *testing.T) {
 			},
 			{
 				// Remove the one of the available region and replicate the image in a new region
-				Config: tmpl.Replicate(t, imageName, file.Name(), testRegion, replicateNewRegion),
+				Config: tmpl.Replicate(t, imageName, file.Name(), testRegion, testRegions[2]),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resName, &image),
 					resource.TestCheckResourceAttr(resName, "label", imageName),
@@ -257,7 +259,7 @@ func TestAccImage_replicate(t *testing.T) {
 			},
 			{
 				// Remove all available region and replicate the image in new regions
-				Config: tmpl.Replicate(t, imageName, file.Name(), "us-west", "us-mia"),
+				Config: tmpl.Replicate(t, imageName, file.Name(), testRegions[0], testRegions[3]),
 				ExpectError: regexp.MustCompile(
 					"At least one available region must be specified"),
 			},
