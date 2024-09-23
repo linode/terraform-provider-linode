@@ -361,15 +361,14 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 
 			declaredTaints := expandNodePoolTaints(helper.ExpandObjectSet(declaredPool["taint"].(*schema.Set)))
 
-			// length comparison here is for handling the case of nil vs empty slice
-			if !reflect.DeepEqual(declaredTaints, apiPool.Taints) && len(declaredTaints) != len(apiPool.Taints) {
+			if helper.CompareSets(helper.TypedSliceToAny(declaredTaints), helper.TypedSliceToAny(apiPool.Taints)) {
 				continue
 			}
 
 			declaredLabels := helper.StringAnyMapToTyped[string](declaredPool["labels"].(map[string]any))
 
 			// length comparison here is for handling the case of nil vs empty slice
-			if !reflect.DeepEqual(declaredLabels, apiPool.Labels) && len(declaredLabels) != len(apiPool.Labels) {
+			if !reflect.DeepEqual(declaredLabels, apiPool.Labels) && !(len(declaredLabels) == 0 && len(apiPool.Labels) == 0) {
 				continue
 			}
 
