@@ -1,0 +1,5 @@
+{{ define "lke_types_data_basic" }}
+
+data "linode_lke_types" "foobar" {}
+
+{{ end }}
