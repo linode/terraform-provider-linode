@@ -1,4 +1,4 @@
-package lketypes
+package nbtypes
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_lke_types",
+				Name:   "linode_nb_types",
 				Schema: &frameworkDataSourceSchema,
 			},
 		),
@@ -29,9 +29,9 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_lke_types")
+	tflog.Debug(ctx, "Read data.linode_nb_types")
 
-	var data LKETypeFilterModel
+	var data NodeBalancerTypeFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -46,23 +46,23 @@ func (r *DataSource) Read(
 	data.ID = id
 
 	result, d := filterConfig.GetAndFilter(
-		ctx, r.Meta.Client, data.Filters, listLKETypes, data.Order, data.OrderBy)
+		ctx, r.Meta.Client, data.Filters, listNodeBalancerTypes, data.Order, data.OrderBy)
 	if d != nil {
 		resp.Diagnostics.Append(d)
 		return
 	}
 
-	data.parseLKETypes(helper.AnySliceToTyped[linodego.LKEType](result))
+	data.parseNodeBalancerTypes(helper.AnySliceToTyped[linodego.NodeBalancerType](result))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listLKETypes(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
-	tflog.Debug(ctx, "Listing LKE types", map[string]any{
+func listNodeBalancerTypes(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+	tflog.Debug(ctx, "Listing Node Balancer types", map[string]any{
 		"filter_header": filter,
 	})
 
-	types, err := client.ListLKETypes(ctx, &linodego.ListOptions{
+	types, err := client.ListNodeBalancerTypes(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})
 	if err != nil {

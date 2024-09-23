@@ -1,4 +1,4 @@
-package lketypes
+package nbtypes
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,33 +14,30 @@ type DataSourceModel struct {
 	Label        types.String `tfsdk:"label"`
 	Price        types.List   `tfsdk:"price"`
 	RegionPrices types.List   `tfsdk:"region_prices"`
-	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
-func (data *DataSourceModel) ParseLKEType(lkeType *linodego.LKEType,
+func (data *DataSourceModel) ParseNodeBalancerType(nbType *linodego.NodeBalancerType,
 ) diag.Diagnostics {
-	data.ID = types.StringValue(lkeType.ID)
+	data.ID = types.StringValue(nbType.ID)
 
-	price, diags := FlattenPrice(lkeType.Price)
+	price, diags := FlattenPrice(nbType.Price)
 	if diags.HasError() {
 		return diags
 	}
 	data.Price = *price
 
-	data.Label = types.StringValue(lkeType.Label)
+	data.Label = types.StringValue(nbType.Label)
 
-	regionPrices, d := FlattenRegionPrices(lkeType.RegionPrices)
+	regionPrices, d := FlattenRegionPrices(nbType.RegionPrices)
 	if d.HasError() {
 		return d
 	}
 	data.RegionPrices = *regionPrices
 
-	data.Transfer = types.Int64Value(int64(lkeType.Transfer))
-
 	return nil
 }
 
-func FlattenPrice(price linodego.LKETypePrice) (
+func FlattenPrice(price linodego.NodeBalancerTypePrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -66,7 +63,7 @@ func FlattenPrice(price linodego.LKETypePrice) (
 	return &resultList, nil
 }
 
-func FlattenRegionPrices(prices []linodego.LKETypeRegionPrice) (
+func FlattenRegionPrices(prices []linodego.NodeBalancerTypeRegionPrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make([]attr.Value, len(prices))
@@ -91,7 +88,7 @@ func FlattenRegionPrices(prices []linodego.LKETypeRegionPrice) (
 	return &priceList, d
 }
 
-type LKETypeFilterModel struct {
+type NodeBalancerTypeFilterModel struct {
 	ID      types.String                     `tfsdk:"id"`
 	Order   types.String                     `tfsdk:"order"`
 	OrderBy types.String                     `tfsdk:"order_by"`
@@ -99,14 +96,14 @@ type LKETypeFilterModel struct {
 	Types   []DataSourceModel                `tfsdk:"types"`
 }
 
-func (model *LKETypeFilterModel) parseLKETypes(lkeTypes []linodego.LKEType,
+func (model *NodeBalancerTypeFilterModel) parseNodeBalancerTypes(nbTypes []linodego.NodeBalancerType,
 ) diag.Diagnostics {
-	result := make([]DataSourceModel, len(lkeTypes))
+	result := make([]DataSourceModel, len(nbTypes))
 
-	for i := range lkeTypes {
+	for i := range nbTypes {
 		var m DataSourceModel
 
-		diags := m.ParseLKEType(&lkeTypes[i])
+		diags := m.ParseNodeBalancerType(&nbTypes[i])
 		if diags.HasError() {
 			return diags
 		}

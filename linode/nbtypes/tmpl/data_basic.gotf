@@ -1,0 +1,5 @@
+{{ define "nb_types_data_basic" }}
+
+data "linode_nb_types" "foobar" {}
+
+{{ end }}

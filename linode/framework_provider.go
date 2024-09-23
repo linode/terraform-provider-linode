@@ -3,8 +3,6 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -53,6 +51,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfigs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
@@ -75,6 +74,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/volume"
 	"github.com/linode/terraform-provider-linode/v2/linode/volumes"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpc"
+	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnet"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnets"
@@ -254,6 +254,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domain.NewDataSource,
 		user.NewDataSource,
 		nbconfig.NewDataSource,
+		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
 		instancetypes.NewDataSource,
 		image.NewDataSource,
