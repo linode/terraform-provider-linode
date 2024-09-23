@@ -1,0 +1,15 @@
+{{ define "instance_with_reserved_ip" }}
+
+resource "linode_instance" "foobar" {
+    label  = "{{ .Label }}"
+    type   = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image  = "{{ .Image }}"
+
+    root_pass = "{{ .RootPass }}"
+    authorized_keys = ["{{ .PubKey }}"]
+
+    ipv4 = [{{ range $index, $ip := .IPv4 }}{{ if $index }}, {{ end }}"{{ $ip }}"{{ end }}]
+}
+
+{{ end }}

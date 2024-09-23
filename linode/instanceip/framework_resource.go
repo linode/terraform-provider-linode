@@ -54,13 +54,59 @@ func (r *Resource) Create(
 	isPublic := plan.Public.ValueBool()
 
 	client := r.Meta.Client
-	ip, err := client.AddInstanceIPAddress(ctx, linodeID, isPublic)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to created instance (%d) IP", linodeID),
-			err.Error(),
-		)
-		return
+	var ip *linodego.InstanceIP
+	var err error
+
+	if !plan.Address.IsNull() && !plan.Address.IsUnknown() {
+		// Assign a reserved IP
+		createOpts := linodego.InstanceReserveIPOptions{
+			Type:    "ipv4",
+			Public:  isPublic,
+			Address: plan.Address.ValueString(),
+		}
+		_, err = client.AddReservedIPToInstance(ctx, linodeID, createOpts)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to assign reserved IP to instance (%d)", linodeID),
+				err.Error(),
+			)
+			return
+		}
+
+		// Fetch the IP information after assigning
+		instanceIPs, err := client.GetInstanceIPAddresses(ctx, linodeID)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to fetch IP addresses for instance (%d)", linodeID),
+				err.Error(),
+			)
+			return
+		}
+
+		// Find the assigned IP in the instance's IP addresses
+		for _, instanceIP := range instanceIPs.IPv4.Public {
+			if instanceIP.Address == plan.Address.ValueString() {
+				ip = instanceIP
+				break
+			}
+		}
+		if ip == nil {
+			resp.Diagnostics.AddError(
+				"Failed to find assigned IP",
+				fmt.Sprintf("Could not find the assigned IP %s in instance (%d) IP addresses", plan.Address.ValueString(), linodeID),
+			)
+			return
+		}
+	} else {
+		// Allocate a new IP
+		ip, err = client.AddInstanceIPAddress(ctx, linodeID, isPublic)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to allocate new IP for instance (%d)", linodeID),
+				err.Error(),
+			)
+			return
+		}
 	}
 
 	if !plan.RDNS.IsNull() && !plan.RDNS.IsUnknown() {
@@ -84,11 +130,6 @@ func (r *Resource) Create(
 			)
 			return
 		}
-	}
-
-	if ip == nil {
-		resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the instance ip")
-		return
 	}
 
 	resp.Diagnostics.Append(plan.FlattenInstanceIP(ctx, *ip, true)...)
@@ -294,4 +335,19 @@ func populateLogAttributes(ctx context.Context, data *InstanceIPModel) context.C
 		"linode_id": data.LinodeID.ValueInt64(),
 		"address":   data.ID.ValueString(),
 	})
+}
+
+func addReservedIPToInstance(ctx context.Context, client linodego.Client, instanceID int, ip string) error {
+	opts := linodego.InstanceReserveIPOptions{
+		Type:    "ipv4",
+		Public:  true,
+		Address: ip,
+	}
+
+	_, err := client.AddReservedIPToInstance(ctx, instanceID, opts)
+	if err != nil {
+		return fmt.Errorf("failed to add IP %s to Linode instance %d: %s", ip, instanceID, err)
+	}
+
+	return nil
 }

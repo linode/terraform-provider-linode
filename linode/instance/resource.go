@@ -188,6 +188,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		),
 	}
 
+	// Add this new section to handle IPv4 addresses
+	if ipv4Raw, ok := d.GetOk("ipv4"); ok {
+		ipv4Set := ipv4Raw.(*schema.Set)
+		for _, ip := range ipv4Set.List() {
+			createOpts.Ipv4 = append(createOpts.Ipv4, ip.(string))
+		}
+	}
+
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
 		for _, tag := range tagsRaw.(*schema.Set).List() {
 			createOpts.Tags = append(createOpts.Tags, tag.(string))
