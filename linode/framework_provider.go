@@ -73,6 +73,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/vlan"
 	"github.com/linode/terraform-provider-linode/v2/linode/volume"
 	"github.com/linode/terraform-provider-linode/v2/linode/volumes"
+	"github.com/linode/terraform-provider-linode/v2/linode/volumetypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpc"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcs"
@@ -278,6 +279,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vpcsubnets.NewDataSource,
 		vpcs.NewDataSource,
 		volumes.NewDataSource,
+		volumetypes.NewDataSource,
 		accountavailability.NewDataSource,
 		nbconfigs.NewDataSource,
 		ipv6ranges.NewDataSource,

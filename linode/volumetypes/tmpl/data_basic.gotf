@@ -1,0 +1,5 @@
+{{ define "volume_types_data_basic" }}
+
+data "linode_volume_types" "foobar" {}
+
+{{ end }}
