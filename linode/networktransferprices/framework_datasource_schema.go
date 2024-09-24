@@ -1,4 +1,4 @@
-package nbtypes
+package networktransferprices
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -24,11 +24,11 @@ var regionPriceObjectType = types.ObjectType{
 
 var Attributes = map[string]schema.Attribute{
 	"id": schema.StringAttribute{
-		Description: "The unique ID assigned to this Node Balancer type.",
+		Description: "The unique ID assigned to this Network Transfer Price.",
 		Required:    true,
 	},
 	"label": schema.StringAttribute{
-		Description: "The Node Balancer Type's label.",
+		Description: "The Network Transfer Price's label.",
 		Computed:    true,
 		Optional:    true,
 	},
@@ -38,7 +38,7 @@ var Attributes = map[string]schema.Attribute{
 		ElementType: priceObjectType,
 	},
 	"region_prices": schema.ListAttribute{
-		Description: "A list of region-specific prices for this Node Balancer type.",
+		Description: "A list of region-specific prices for this Network Transfer Price.",
 		Computed:    true,
 		ElementType: regionPriceObjectType,
 	},
@@ -48,7 +48,7 @@ var Attributes = map[string]schema.Attribute{
 	},
 }
 
-var nodebalancerTypeSchema = schema.NestedBlockObject{
+var networkTransferPriceSchema = schema.NestedBlockObject{
 	Attributes: Attributes,
 }
 
@@ -69,8 +69,8 @@ var frameworkDataSourceSchema = schema.Schema{
 	Blocks: map[string]schema.Block{
 		"filter": filterConfig.Schema(),
 		"types": schema.ListNestedBlock{
-			Description:  "The returned list of Node Balancer types.",
-			NestedObject: nodebalancerTypeSchema,
+			Description:  "The returned list of Network Transfer Prices.",
+			NestedObject: networkTransferPriceSchema,
 		},
 	},
 }

@@ -1,0 +1,5 @@
+{{ define "network_transfer_prices_data_basic" }}
+
+data "linode_network_transfer_prices" "foobar" {}
+
+{{ end }}

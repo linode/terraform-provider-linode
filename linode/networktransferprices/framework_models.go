@@ -1,4 +1,4 @@
-package nbtypes
+package networktransferprices
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -17,30 +17,30 @@ type DataSourceModel struct {
 	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
-func (data *DataSourceModel) ParseNodeBalancerType(nbType *linodego.NodeBalancerType,
+func (data *DataSourceModel) ParseNetworkTransferPrice(networkTransferPrice *linodego.NetworkTransferPrice,
 ) diag.Diagnostics {
-	data.ID = types.StringValue(nbType.ID)
+	data.ID = types.StringValue(networkTransferPrice.ID)
 
-	price, diags := FlattenPrice(nbType.Price)
+	price, diags := FlattenPrice(networkTransferPrice.Price)
 	if diags.HasError() {
 		return diags
 	}
 	data.Price = *price
 
-	data.Label = types.StringValue(nbType.Label)
+	data.Label = types.StringValue(networkTransferPrice.Label)
 
-	regionPrices, d := FlattenRegionPrices(nbType.RegionPrices)
+	regionPrices, d := FlattenRegionPrices(networkTransferPrice.RegionPrices)
 	if d.HasError() {
 		return d
 	}
 	data.RegionPrices = *regionPrices
 
-	data.Transfer = types.Int64Value(int64(nbType.Transfer))
+	data.Transfer = types.Int64Value(int64(networkTransferPrice.Transfer))
 
 	return nil
 }
 
-func FlattenPrice(price linodego.NodeBalancerTypePrice) (
+func FlattenPrice(price linodego.NetworkTransferTypePrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -66,7 +66,7 @@ func FlattenPrice(price linodego.NodeBalancerTypePrice) (
 	return &resultList, nil
 }
 
-func FlattenRegionPrices(prices []linodego.NodeBalancerTypeRegionPrice) (
+func FlattenRegionPrices(prices []linodego.NetworkTransferTypeRegionPrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make([]attr.Value, len(prices))
@@ -91,7 +91,7 @@ func FlattenRegionPrices(prices []linodego.NodeBalancerTypeRegionPrice) (
 	return &priceList, d
 }
 
-type NodeBalancerTypeFilterModel struct {
+type NetworkTransferPriceFilterModel struct {
 	ID      types.String                     `tfsdk:"id"`
 	Order   types.String                     `tfsdk:"order"`
 	OrderBy types.String                     `tfsdk:"order_by"`
@@ -99,14 +99,14 @@ type NodeBalancerTypeFilterModel struct {
 	Types   []DataSourceModel                `tfsdk:"types"`
 }
 
-func (model *NodeBalancerTypeFilterModel) parseNodeBalancerTypes(nbTypes []linodego.NodeBalancerType,
+func (model *NetworkTransferPriceFilterModel) parseNetworkTransferPrices(networkTransferPrices []linodego.NetworkTransferPrice,
 ) diag.Diagnostics {
-	result := make([]DataSourceModel, len(nbTypes))
+	result := make([]DataSourceModel, len(networkTransferPrices))
 
-	for i := range nbTypes {
+	for i := range networkTransferPrices {
 		var m DataSourceModel
 
-		diags := m.ParseNodeBalancerType(&nbTypes[i])
+		diags := m.ParseNetworkTransferPrice(&networkTransferPrices[i])
 		if diags.HasError() {
 			return diags
 		}

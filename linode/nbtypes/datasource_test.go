@@ -25,6 +25,7 @@ func TestAccDataSourceNodeBalancerTypes_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "types.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "types.0.id", "nodebalancer"),
 					resource.TestCheckResourceAttr(dataSourceName, "types.0.label", "NodeBalancer"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.transfer"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.region_prices.0.id"),

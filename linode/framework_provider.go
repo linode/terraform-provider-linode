@@ -53,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
@@ -239,6 +240,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		profile.NewDataSource,
 		nb.NewDataSource,
 		networkingip.NewDataSource,
+		networktransferprices.NewDataSource,
 		lkeversions.NewDataSource,
 		regions.NewDataSource,
 		ipv6range.NewDataSource,
