@@ -32,7 +32,7 @@ type NodePoolUpdates struct {
 }
 
 func ReconcileLKENodePoolSpecs(
-	oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec,
+	ctx context.Context, oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec,
 ) (NodePoolUpdates, error) {
 	result := NodePoolUpdates{
 		ToCreate: make([]linodego.LKENodePoolCreateOptions, 0),
@@ -122,12 +122,12 @@ func ReconcileLKENodePoolSpecs(
 			Tags:  &newSpecs[i].Tags,
 		}
 
-		if !reflect.DeepEqual(newSpec.Taints, oldSpec.Taints) {
+		if !helper.CompareSets(helper.TypedSliceToAny(newSpec.Taints), helper.TypedSliceToAny(oldSpec.Taints)) {
 			taints := expandNodePoolTaints(newSpec.Taints)
 			updateOpts.Taints = &taints
 		}
 
-		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) {
+		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) && !(len(newSpec.Labels) == 0 && len(oldSpec.Labels) == 0) {
 			labels := linodego.LKENodePoolLabels(newSpecs[i].Labels)
 			updateOpts.Labels = &labels
 		}
@@ -282,7 +282,8 @@ func recycleLKECluster(ctx context.Context, meta *helper.ProviderMeta, id int, p
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
-func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interface{}) ([]linodego.LKENodePool, error) {
+func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, declaredPools []interface{}) ([]linodego.LKENodePool, error) {
+	tflog.Info(ctx, "Enter matchPoolsWithSchema helper function")
 	result := make([]linodego.LKENodePool, len(declaredPools))
 
 	// Contains all unpaired pools returned by the API
@@ -361,14 +362,16 @@ func matchPoolsWithSchema(pools []linodego.LKENodePool, declaredPools []interfac
 
 			declaredTaints := expandNodePoolTaints(helper.ExpandObjectSet(declaredPool["taint"].(*schema.Set)))
 
-			if helper.CompareSets(helper.TypedSliceToAny(declaredTaints), helper.TypedSliceToAny(apiPool.Taints)) {
+			if !helper.CompareSets(helper.TypedSliceToAny(declaredTaints), helper.TypedSliceToAny(apiPool.Taints)) {
 				continue
 			}
 
 			declaredLabels := helper.StringAnyMapToTyped[string](declaredPool["labels"].(map[string]any))
 
-			// length comparison here is for handling the case of nil vs empty slice
-			if !reflect.DeepEqual(declaredLabels, apiPool.Labels) && !(len(declaredLabels) == 0 && len(apiPool.Labels) == 0) {
+			// - Length comparison is for handling the case of nil vs empty slice
+			// - Converting `apiPool.Labels` back to original (non-alias) type to make `reflect.DeepEqual` to really compare them
+			if !reflect.DeepEqual(declaredLabels, map[string]string(apiPool.Labels)) &&
+				!(len(declaredLabels) == 0 && len(apiPool.Labels) == 0) {
 				continue
 			}
 
