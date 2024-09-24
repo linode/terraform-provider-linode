@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
 )
 
@@ -48,7 +49,7 @@ func FlattenPrice(price linodego.NodeBalancerTypePrice) (
 	result["hourly"] = types.Float64Value(float64(price.Hourly))
 	result["monthly"] = types.Float64Value(float64(price.Monthly))
 
-	obj, diag := types.ObjectValue(priceObjectType.AttrTypes, result)
+	obj, diag := types.ObjectValue(helper.PriceObjectType.AttrTypes, result)
 	if diag.HasError() {
 		return nil, diag
 	}
@@ -56,7 +57,7 @@ func FlattenPrice(price linodego.NodeBalancerTypePrice) (
 	objList := []attr.Value{obj}
 
 	resultList, diag := types.ListValue(
-		priceObjectType,
+		helper.PriceObjectType,
 		objList,
 	)
 	if diag.HasError() {
@@ -72,7 +73,7 @@ func FlattenRegionPrices(prices []linodego.NodeBalancerTypeRegionPrice) (
 	result := make([]attr.Value, len(prices))
 
 	for i, price := range prices {
-		obj, d := types.ObjectValue(regionPriceObjectType.AttrTypes, map[string]attr.Value{
+		obj, d := types.ObjectValue(helper.RegionPriceObjectType.AttrTypes, map[string]attr.Value{
 			"id":      types.StringValue(price.ID),
 			"hourly":  types.Float64Value(float64(price.Hourly)),
 			"monthly": types.Float64Value(float64(price.Monthly)),
@@ -85,7 +86,7 @@ func FlattenRegionPrices(prices []linodego.NodeBalancerTypeRegionPrice) (
 	}
 
 	priceList, d := basetypes.NewListValue(
-		regionPriceObjectType,
+		helper.RegionPriceObjectType,
 		result,
 	)
 	return &priceList, d
