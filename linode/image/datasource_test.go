@@ -44,8 +44,6 @@ func TestAccDataSourceImage_replicate(t *testing.T) {
 
 	resourceName := "data.linode_image.foobar"
 	imageName := acctest.RandomWithPrefix("tf_test")
-	// TODO: Use random region once image gen2 works globally or with specific capabilities
-	replicateRegion := "eu-west"
 
 	file, err := createTempFile("tf-test-image-data-replicate-file", testImageBytes)
 	if err != nil {
@@ -60,7 +58,7 @@ func TestAccDataSourceImage_replicate(t *testing.T) {
 		CheckDestroy: checkImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataReplicate(t, imageName, file.Name(), testRegion, replicateRegion),
+				Config: tmpl.DataReplicate(t, imageName, file.Name(), testRegion, testRegions[0]),
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resourceName, nil),
 					resource.TestCheckResourceAttr(resourceName, "label", imageName),

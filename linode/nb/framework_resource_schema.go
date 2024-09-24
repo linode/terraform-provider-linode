@@ -106,9 +106,6 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "When this NodeBalancer was last updated.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"tags": schema.SetAttribute{
 			ElementType: types.StringType,

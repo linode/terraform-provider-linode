@@ -62,6 +62,11 @@ func TestAccResourceInstanceDisk_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "status", "ready"),
 
 					resource.TestCheckResourceAttrSet(resName, "linode_id"),
+
+					resource.TestCheckResourceAttrPair(
+						resName, "disk_encryption",
+						"linode_instance.foobar", "disk_encryption",
+					),
 				),
 			},
 			// Resize up
@@ -135,7 +140,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 
 	resName := "linode_instance_disk.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	var instance linodego.Instance
 
