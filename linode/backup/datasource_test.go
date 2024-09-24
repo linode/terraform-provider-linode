@@ -34,7 +34,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 
 	resourceName := "data.linode_instance_backups.foobar"
 
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	var instance linodego.Instance
 	var snapshot *linodego.InstanceSnapshot

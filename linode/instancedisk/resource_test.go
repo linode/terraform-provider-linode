@@ -127,7 +127,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 
 	resName := "linode_instance_disk.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	var instance linodego.Instance
 
