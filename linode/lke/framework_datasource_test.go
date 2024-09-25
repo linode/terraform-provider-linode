@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/lke/tmpl"
-	nodepooltmpl "github.com/linode/terraform-provider-linode/v2/linode/lkenodepool/tmpl"
 )
 
 const dataSourceClusterName = "data.linode_lke_cluster.test"
@@ -19,7 +18,6 @@ func TestAccDataSourceLKECluster_taints_labels(t *testing.T) {
 
 	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		poolTag := acctest.RandomWithPrefix("tf_test_")
 		resource.Test(tRetry, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -27,33 +25,19 @@ func TestAccDataSourceLKECluster_taints_labels(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.DataTaintsLabels(
-						t, &nodepooltmpl.TemplateData{
-							K8sVersion:   k8sVersionLatest,
-							Region:       testRegion,
-							PoolNodeType: "g6-standard-1",
-							NodeCount:    1,
-							ClusterLabel: clusterName,
-							Taints: []nodepooltmpl.TaintData{
-								{
-									Effect: "PreferNoSchedule",
-									Key:    "foo",
-									Value:  "bar",
-								},
+						t, clusterName, k8sVersionLatest, testRegion, []tmpl.TaintData{
+							{
+								Effect: "PreferNoSchedule",
+								Key:    "foo",
+								Value:  "bar",
 							},
-							PoolTag: poolTag,
-							Labels:  map[string]string{"foo": "bar"},
 						},
+						map[string]string{"foo": "bar"},
 					),
 					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.1.nodes.#", "1"),
-						acceptance.AnyOfTestCheckFunc(
-							resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.taints.#", "1"),
-							resource.TestCheckResourceAttr(dataSourceClusterName, "pools.1.taints.#", "1"),
-						),
-						acceptance.AnyOfTestCheckFunc(
-							resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.labels.foo", "bar"),
-							resource.TestCheckResourceAttr(dataSourceClusterName, "pools.1.labels.foo", "bar"),
-						),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.nodes.#", "1"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.taints.#", "1"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.labels.foo", "bar"),
 					),
 				},
 			},

@@ -123,7 +123,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 
-	matchedPools, err := matchPoolsWithSchema(pools, declaredPools)
+	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {
 		return diag.Errorf("failed to match api pools with schema: %s", err)
 	}
@@ -178,6 +178,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		createOpts.NodePools = append(createOpts.NodePools, linodego.LKENodePoolCreateOptions{
 			Type:       poolSpec["type"].(string),
 			Tags:       helper.ExpandStringSet(poolSpec["tags"].(*schema.Set)),
+			Taints:     expandNodePoolTaints(helper.ExpandObjectSet(poolSpec["taint"].(*schema.Set))),
+			Labels:     helper.StringAnyMapToTyped[string](poolSpec["labels"].(map[string]any)),
 			Count:      count,
 			Autoscaler: autoscaler,
 		})
@@ -281,6 +283,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	oldPools, newPools := d.GetChange("pool")
 
 	updates, err := ReconcileLKENodePoolSpecs(
+		ctx,
 		expandLinodeLKENodePoolSpecs(oldPools.([]any), false),
 		expandLinodeLKENodePoolSpecs(newPools.([]any), true),
 	)
