@@ -3,6 +3,7 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -222,6 +223,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		firewall.NewResource,
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
+		networkreservedips.NewResource,
 	}
 }
 
@@ -286,5 +288,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
+		networkreservedips.NewDataSource,
 	}
 }
