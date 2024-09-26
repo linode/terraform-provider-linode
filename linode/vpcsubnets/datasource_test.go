@@ -13,6 +13,19 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnets/tmpl"
 )
 
+func TestSmokeTests_vpcsubnets(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccDataSourceVPCSubnets_basic_smoke", TestAccDataSourceVPCSubnets_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 	t.Parallel()
 

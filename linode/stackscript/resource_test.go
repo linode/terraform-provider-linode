@@ -48,6 +48,19 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestSmokeTests_stackscript(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceStackscript_basic_smoke", TestAccResourceStackscript_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccResourceStackscript_basic_smoke(t *testing.T) {
 	t.Parallel()
 
