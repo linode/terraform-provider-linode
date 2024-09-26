@@ -34,7 +34,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
-	config := tmpl.Basic(t, nodeName, testRegion, acctest.RandString(12))
+	config := tmpl.Basic(t, nodeName, testRegion, acctest.RandString(64))
 
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
@@ -68,7 +68,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 
 	resName := "linode_nodebalancer_node.foonode"
 	nodeName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

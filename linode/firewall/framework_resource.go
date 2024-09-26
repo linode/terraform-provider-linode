@@ -100,6 +100,11 @@ func (r *Resource) Read(
 
 	ctx = populateLogAttributes(ctx, state)
 
+	// TODO: cleanup when Crossplane fixes it
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+		return
+	}
+
 	id := helper.FrameworkSafeStringToInt(state.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -126,11 +131,6 @@ func (r *Resource) Read(
 
 	refreshRules(ctx, client, id, &state, &resp.Diagnostics, false)
 	refreshDevices(ctx, client, id, &state, &resp.Diagnostics, false)
-
-	// TODO: cleanup when Crossplane fixes it
-	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
-		return
-	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

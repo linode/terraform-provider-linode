@@ -1,10 +1,9 @@
 {{ define "lke_cluster_data_taints_labels" }}
 
-{{ template "nodepool_template" . }}
+{{ template "lke_cluster_taints_labels" . }}
 
 data "linode_lke_cluster" "test" {
-    depends_on = [ linode_lke_node_pool.foobar ]
-    id = linode_lke_cluster.nodepool_test_cluster.id
+    id = linode_lke_cluster.test.id
 }
 
 {{ end }}

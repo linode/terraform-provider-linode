@@ -64,13 +64,26 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestSmokeTests_instance(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceInstance_basic_smoke", TestAccResourceInstance_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccResourceInstance_basic_smoke(t *testing.T) {
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(16)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -107,7 +120,7 @@ func TestAccResourceInstance_watchdogDisabled(t *testing.T) {
 
 	resName := "linode_instance.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -136,7 +149,7 @@ func TestAccResourceInstance_authorizedUsers(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -169,7 +182,7 @@ func TestAccResourceInstance_validateAuthorizedKeys(t *testing.T) {
 	t.Parallel()
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -335,7 +348,7 @@ func TestAccResourceInstance_configInterfaces(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -405,7 +418,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -504,7 +517,6 @@ func TestAccResourceInstance_disk(t *testing.T) {
 					checkComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
-
 			{
 				ResourceName:            resName,
 				ImportState:             true,
@@ -521,7 +533,7 @@ func TestAccResourceInstance_diskImage(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -561,7 +573,7 @@ func TestAccResourceInstance_diskPair(t *testing.T) {
 	var instance linodego.Instance
 	var instanceDisk linodego.InstanceDisk
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -602,7 +614,7 @@ func TestAccResourceInstance_diskAndConfig(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -646,7 +658,7 @@ func TestAccResourceInstance_disksAndConfigs(t *testing.T) {
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -698,7 +710,7 @@ func TestAccResourceInstance_volumeAndConfig(t *testing.T) {
 	var instanceDisk linodego.InstanceDisk
 	var volume linodego.Volume
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -814,7 +826,7 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -991,7 +1003,7 @@ func TestAccResourceInstance_upsizeWithoutDisk(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1164,7 +1176,7 @@ func TestAccResourceInstance_diskResize(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1207,7 +1219,7 @@ func TestAccResourceInstance_withDiskLinodeUpsize(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1250,7 +1262,7 @@ func TestAccResourceInstance_withDiskLinodeDownsize(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1294,7 +1306,7 @@ func TestAccResourceInstance_downsizeWithoutDisk(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1328,7 +1340,7 @@ func TestAccResourceInstance_fullDiskSwapUpsize(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	stackScriptName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1392,7 +1404,7 @@ func TestAccResourceInstance_swapUpsize(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1431,7 +1443,7 @@ func TestAccResourceInstance_swapDownsize(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
 
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1468,7 +1480,7 @@ func TestAccResourceInstance_diskResizeAndExpanded(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1517,7 +1529,7 @@ func TestAccResourceInstance_diskSlotReorder(t *testing.T) {
 	)
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1574,7 +1586,7 @@ func TestAccResourceInstance_privateNetworking(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	resName := "linode_instance.foobar"
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1675,7 +1687,7 @@ func TestAccResourceInstance_stackScriptDisk(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1901,7 +1913,7 @@ func TestAccResourceInstance_powerStateConfigUpdates(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -1943,7 +1955,7 @@ func TestAccResourceInstance_powerStateConfigBooted(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2068,7 +2080,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2099,6 +2111,7 @@ func TestAccResourceInstance_userData(t *testing.T) {
 }
 
 func TestAccResourceInstance_requestQuantity(t *testing.T) {
+	t.Skip("firewall no longer available in old test provider")
 	t.Parallel()
 
 	const maxRequestsPerSecond = 3.0
@@ -2112,7 +2125,7 @@ func TestAccResourceInstance_requestQuantity(t *testing.T) {
 
 	provider, providerMap := acceptance.CreateTestProvider()
 
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	acceptance.ModifyProviderMeta(provider,
 		func(ctx context.Context, config *helper.ProviderMeta) error {
@@ -2166,7 +2179,7 @@ func TestAccResourceInstance_firewallOnCreation(t *testing.T) {
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall"}, "core")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2321,7 +2334,7 @@ func TestAccResourceInstance_migration(t *testing.T) {
 
 	t.Parallel()
 
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
@@ -2519,7 +2532,7 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 	resName := "linode_instance.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(16)
+	rootPass := acctest.RandString(64)
 
 	// Resolve a region that supports disk encryption
 	targetRegion, err := acceptance.GetRandomRegionWithCaps(
@@ -2619,9 +2632,6 @@ func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 		}
 
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
-		if err != nil {
-			return err
-		}
 
 		instanceIPs, err := client.GetInstanceIPAddresses(context.Background(), id)
 		if err != nil {

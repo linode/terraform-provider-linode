@@ -22,7 +22,21 @@ func ExpandStringSet(set *schema.Set) []string {
 	return ExpandStringList(set.List())
 }
 
-func ExpandIntList(list []interface{}) []int {
+func ExpandObjectList(list []any) []map[string]any {
+	slice := make([]map[string]any, 0, len(list))
+	for _, s := range list {
+		if val, ok := s.(map[string]any); ok {
+			slice = append(slice, val)
+		}
+	}
+	return slice
+}
+
+func ExpandObjectSet(set *schema.Set) []map[string]any {
+	return ExpandObjectList(set.List())
+}
+
+func ExpandIntList(list []any) []int {
 	slice := make([]int, 0, len(list))
 	for _, n := range list {
 		if val, ok := n.(int); ok {
