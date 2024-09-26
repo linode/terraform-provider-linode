@@ -192,7 +192,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if ipv4Raw, ok := d.GetOk("ipv4"); ok {
 		ipv4Set := ipv4Raw.(*schema.Set)
 		for _, ip := range ipv4Set.List() {
-			createOpts.Ipv4 = append(createOpts.Ipv4, ip.(string))
+			createOpts.IPv4 = append(createOpts.IPv4, ip.(string))
 		}
 	}
 

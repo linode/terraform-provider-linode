@@ -64,7 +64,7 @@ func (r *Resource) Create(
 			Public:  isPublic,
 			Address: plan.Address.ValueString(),
 		}
-		_, err = client.AddReservedIPToInstance(ctx, linodeID, createOpts)
+		_, err = client.AssignInstanceReservedIP(ctx, linodeID, createOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to assign reserved IP to instance (%d)", linodeID),
@@ -344,7 +344,7 @@ func addReservedIPToInstance(ctx context.Context, client linodego.Client, instan
 		Address: ip,
 	}
 
-	_, err := client.AddReservedIPToInstance(ctx, instanceID, opts)
+	_, err := client.AssignInstanceReservedIP(ctx, instanceID, opts)
 	if err != nil {
 		return fmt.Errorf("failed to add IP %s to Linode instance %d: %s", ip, instanceID, err)
 	}
