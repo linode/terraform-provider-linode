@@ -336,18 +336,3 @@ func populateLogAttributes(ctx context.Context, data *InstanceIPModel) context.C
 		"address":   data.ID.ValueString(),
 	})
 }
-
-func addReservedIPToInstance(ctx context.Context, client linodego.Client, instanceID int, ip string) error {
-	opts := linodego.InstanceReserveIPOptions{
-		Type:    "ipv4",
-		Public:  true,
-		Address: ip,
-	}
-
-	_, err := client.AssignInstanceReservedIP(ctx, instanceID, opts)
-	if err != nil {
-		return fmt.Errorf("failed to add IP %s to Linode instance %d: %s", ip, instanceID, err)
-	}
-
-	return nil
-}
