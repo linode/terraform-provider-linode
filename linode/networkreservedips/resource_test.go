@@ -1,4 +1,4 @@
-//go:build integration || instance
+//go:build integration || networkreservedips
 
 package networkreservedips_test
 

@@ -1,3 +1,5 @@
+//go:build integration || networkreservedips
+
 package networkreservedips_test
 
 import (
