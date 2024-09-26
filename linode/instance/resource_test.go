@@ -517,7 +517,6 @@ func TestAccResourceInstance_disk(t *testing.T) {
 					checkComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
-
 			{
 				ResourceName:            resName,
 				ImportState:             true,
