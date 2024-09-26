@@ -128,43 +128,6 @@ func TestAccInstanceIP_noApply(t *testing.T) {
 	})
 }
 
-// func TestAccInstanceIP_addReservedIP(t *testing.T) {
-// 	t.Parallel()
-
-// 	var instance linodego.Instance
-// 	name := acctest.RandomWithPrefix("tf_test")
-// 	reservedIP := "45.33.74.65" // Replace with an actual reserved IP address
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:                 func() { acceptance.PreCheck(t) },
-// 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-// 		CheckDestroy:             acceptance.CheckInstanceDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: tmpl.Basic(t, name, testRegion, false),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-// 				),
-// 			},
-// 			{
-// 				Config: tmpl.AddReservedIP(t, name, testRegion, reservedIP),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-// 					resource.TestCheckResourceAttr(testInstanceIPResName, "address", reservedIP),
-// 					resource.TestCheckResourceAttr(testInstanceIPResName, "public", "true"),
-// 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "linode_id"),
-// 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "gateway"),
-// 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "subnet_mask"),
-// 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "prefix"),
-// 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "rdns"),
-// 					resource.TestCheckResourceAttr(testInstanceIPResName, "region", testRegion),
-// 					resource.TestCheckResourceAttr(testInstanceIPResName, "type", "ipv4"),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
 func TestAccInstanceIP_addReservedIP(t *testing.T) {
 	t.Parallel()
 
