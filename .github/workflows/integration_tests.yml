@@ -81,7 +81,7 @@ jobs:
   process-upload-report:
     runs-on: ubuntu-latest
     needs: [integration_tests]
-    if: always() # Run even if previous job fails
+    if: always() && github.repository == 'linode/terraform-provider-linode' # Run even if integration tests fail and only on main repository
 
     steps:
       - name: Checkout code
@@ -150,7 +150,7 @@ jobs:
   notify-slack:
     runs-on: ubuntu-latest
     needs: [integration_tests]
-    if: always()
+    if: always() && github.repository == 'linode/terraform-provider-linode' # Run even if integration tests fail and only on main repository
 
     steps:
       - name: Notify Slack
