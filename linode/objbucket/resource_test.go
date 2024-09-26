@@ -171,6 +171,20 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestSmokeTests_objbucket(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceBucket_basic_legacy_smoke", TestAccResourceBucket_basic_legacy_smoke},
+		{"TestAccResourceBucket_basic_smoke", TestAccResourceBucket_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
 	t.Parallel()
 

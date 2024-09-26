@@ -16,7 +16,7 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 
 	resName := "data.linode_instances.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -94,7 +94,7 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	tagName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

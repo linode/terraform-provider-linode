@@ -29,6 +29,26 @@ func AnySliceToTyped[T any](obj []any) []T {
 	return result
 }
 
+func StringTypedMapToAny[T any](m map[string]T) map[string]any {
+	result := make(map[string]any, len(m))
+
+	for k, v := range m {
+		result[k] = v
+	}
+
+	return result
+}
+
+func StringAnyMapToTyped[T any](m map[string]any) map[string]T {
+	result := make(map[string]T, len(m))
+
+	for k, v := range m {
+		result[k] = v.(T)
+	}
+
+	return result
+}
+
 func StringAliasSliceToStringSlice[T ~string](obj []T) ([]string, error) {
 	var result []string
 

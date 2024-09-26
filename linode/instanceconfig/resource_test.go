@@ -62,7 +62,7 @@ func TestAccResourceInstanceConfig_deviceBlock(t *testing.T) {
 
 	resName := "linode_instance_config.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	devicesCheck := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
@@ -129,7 +129,7 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 	resName := "linode_instance_config.foobar"
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -213,7 +213,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 
 	resName := "linode_instance_config.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -272,7 +272,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 		config1Name := "linode_instance_config.foobar1"
 		config2Name := "linode_instance_config.foobar2"
 		instanceName := acctest.RandomWithPrefix("tf_test")
-		rootPass := acctest.RandString(12)
+		rootPass := acctest.RandString(64)
 
 		resource.Test(retryT, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -326,7 +326,7 @@ func TestAccResourceInstanceConfig_provisioner(t *testing.T) {
 
 	resName := "linode_instance_config.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -358,7 +358,7 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 	resName := "linode_instance_config.foobar"
 	networkDSName := "data.linode_instance_networking.foobar"
 	instanceName := acctest.RandomWithPrefix("tf-test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -457,7 +457,7 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 	instanceResName := "linode_instance.foobar"
 
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

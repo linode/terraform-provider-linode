@@ -29,6 +29,19 @@ func init() {
 	testRegion = region
 }
 
+func TestSmokeTests_instancedisk(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceInstanceDisk_basic_smoke", TestAccResourceInstanceDisk_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccResourceInstanceDisk_basic_smoke(t *testing.T) {
 	t.Parallel()
 
@@ -127,7 +140,7 @@ func TestAccResourceInstanceDisk_bootedResize(t *testing.T) {
 
 	resName := "linode_instance_disk.foobar"
 	label := acctest.RandomWithPrefix("tf_test")
-	rootPass := acctest.RandString(12)
+	rootPass := acctest.RandString(64)
 
 	var instance linodego.Instance
 

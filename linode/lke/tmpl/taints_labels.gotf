@@ -1,0 +1,31 @@
+{{ define "lke_cluster_taints_labels" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{ .Label }}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{ .K8sVersion }}"
+    tags        = ["test"]
+
+    pool {
+        type  = "g6-standard-1"
+        count = 1
+        tags  = ["test"]
+
+{{ range $taint := .Taints }}
+        taint {
+            effect = "{{ $taint.Effect }}"
+            key    = "{{ $taint.Key }}"
+            value  = "{{ $taint.Value }}"
+        }
+{{ end }}
+
+{{ range $key, $val := .Labels }}
+        labels = {
+            "{{ $key }}" = "{{ $val }}"
+        }
+{{ end }}
+    }
+}
+
+{{ end }}
+
