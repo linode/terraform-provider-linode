@@ -13,6 +13,19 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/regions/tmpl"
 )
 
+func TestSmokeTests_firewall(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccDataSourceRegions_basic_smoke", TestAccDataSourceRegions_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccDataSourceRegions_basic_smoke(t *testing.T) {
 	t.Parallel()
 

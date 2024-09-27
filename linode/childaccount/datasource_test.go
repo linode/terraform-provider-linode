@@ -10,6 +10,19 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/childaccount/tmpl"
 )
 
+func TestSmokeTests_childaccount(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccDataSourceChildAccount_basic_smoke", TestAccDataSourceChildAccount_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccDataSourceChildAccount_basic_smoke(t *testing.T) {
 	t.Parallel()
 
