@@ -18,11 +18,11 @@ type DataSourceModel struct {
 	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
-func (data *DataSourceModel) ParseNodeBalancerType(nbType *linodego.NodeBalancerType,
+func (data *DataSourceModel) parseNodeBalancerType(nbType *linodego.NodeBalancerType,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(nbType.ID)
 
-	price, diags := FlattenPrice(nbType.Price)
+	price, diags := flattenPrice(nbType.Price)
 	if diags.HasError() {
 		return diags
 	}
@@ -30,7 +30,7 @@ func (data *DataSourceModel) ParseNodeBalancerType(nbType *linodego.NodeBalancer
 
 	data.Label = types.StringValue(nbType.Label)
 
-	regionPrices, d := FlattenRegionPrices(nbType.RegionPrices)
+	regionPrices, d := flattenRegionPrices(nbType.RegionPrices)
 	if d.HasError() {
 		return d
 	}
@@ -41,7 +41,7 @@ func (data *DataSourceModel) ParseNodeBalancerType(nbType *linodego.NodeBalancer
 	return nil
 }
 
-func FlattenPrice(price linodego.NodeBalancerTypePrice) (
+func flattenPrice(price linodego.NodeBalancerTypePrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -67,7 +67,7 @@ func FlattenPrice(price linodego.NodeBalancerTypePrice) (
 	return &resultList, nil
 }
 
-func FlattenRegionPrices(prices []linodego.NodeBalancerTypeRegionPrice) (
+func flattenRegionPrices(prices []linodego.NodeBalancerTypeRegionPrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make([]attr.Value, len(prices))
@@ -107,7 +107,7 @@ func (model *NodeBalancerTypeFilterModel) parseNodeBalancerTypes(nbTypes []linod
 	for i := range nbTypes {
 		var m DataSourceModel
 
-		diags := m.ParseNodeBalancerType(&nbTypes[i])
+		diags := m.parseNodeBalancerType(&nbTypes[i])
 		if diags.HasError() {
 			return diags
 		}

@@ -18,11 +18,11 @@ type DataSourceModel struct {
 	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
-func (data *DataSourceModel) ParseVolumeType(volumeType *linodego.VolumeType,
+func (data *DataSourceModel) parseVolumeType(volumeType *linodego.VolumeType,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(volumeType.ID)
 
-	price, diags := FlattenPrice(volumeType.Price)
+	price, diags := flattenPrice(volumeType.Price)
 	if diags.HasError() {
 		return diags
 	}
@@ -30,7 +30,7 @@ func (data *DataSourceModel) ParseVolumeType(volumeType *linodego.VolumeType,
 
 	data.Label = types.StringValue(volumeType.Label)
 
-	regionPrices, d := FlattenRegionPrices(volumeType.RegionPrices)
+	regionPrices, d := flattenRegionPrices(volumeType.RegionPrices)
 	if d.HasError() {
 		return d
 	}
@@ -41,7 +41,7 @@ func (data *DataSourceModel) ParseVolumeType(volumeType *linodego.VolumeType,
 	return nil
 }
 
-func FlattenPrice(price linodego.VolumeTypePrice) (
+func flattenPrice(price linodego.VolumeTypePrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -67,7 +67,7 @@ func FlattenPrice(price linodego.VolumeTypePrice) (
 	return &resultList, nil
 }
 
-func FlattenRegionPrices(prices []linodego.VolumeTypeRegionPrice) (
+func flattenRegionPrices(prices []linodego.VolumeTypeRegionPrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make([]attr.Value, len(prices))
@@ -107,7 +107,7 @@ func (model *VolumeTypeFilterModel) parseVolumeTypes(volumeTypes []linodego.Volu
 	for i := range volumeTypes {
 		var m DataSourceModel
 
-		diags := m.ParseVolumeType(&volumeTypes[i])
+		diags := m.parseVolumeType(&volumeTypes[i])
 		if diags.HasError() {
 			return diags
 		}

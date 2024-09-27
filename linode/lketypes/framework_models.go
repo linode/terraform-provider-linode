@@ -18,11 +18,11 @@ type DataSourceModel struct {
 	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
-func (data *DataSourceModel) ParseLKEType(lkeType *linodego.LKEType,
+func (data *DataSourceModel) parseLKEType(lkeType *linodego.LKEType,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(lkeType.ID)
 
-	price, diags := FlattenPrice(lkeType.Price)
+	price, diags := flattenPrice(lkeType.Price)
 	if diags.HasError() {
 		return diags
 	}
@@ -30,7 +30,7 @@ func (data *DataSourceModel) ParseLKEType(lkeType *linodego.LKEType,
 
 	data.Label = types.StringValue(lkeType.Label)
 
-	regionPrices, d := FlattenRegionPrices(lkeType.RegionPrices)
+	regionPrices, d := flattenRegionPrices(lkeType.RegionPrices)
 	if d.HasError() {
 		return d
 	}
@@ -41,7 +41,7 @@ func (data *DataSourceModel) ParseLKEType(lkeType *linodego.LKEType,
 	return nil
 }
 
-func FlattenPrice(price linodego.LKETypePrice) (
+func flattenPrice(price linodego.LKETypePrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -67,7 +67,7 @@ func FlattenPrice(price linodego.LKETypePrice) (
 	return &resultList, nil
 }
 
-func FlattenRegionPrices(prices []linodego.LKETypeRegionPrice) (
+func flattenRegionPrices(prices []linodego.LKETypeRegionPrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make([]attr.Value, len(prices))
@@ -107,7 +107,7 @@ func (model *LKETypeFilterModel) parseLKETypes(lkeTypes []linodego.LKEType,
 	for i := range lkeTypes {
 		var m DataSourceModel
 
-		diags := m.ParseLKEType(&lkeTypes[i])
+		diags := m.parseLKEType(&lkeTypes[i])
 		if diags.HasError() {
 			return diags
 		}

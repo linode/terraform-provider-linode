@@ -18,11 +18,11 @@ type DataSourceModel struct {
 	Transfer     types.Int64  `tfsdk:"transfer"`
 }
 
-func (data *DataSourceModel) ParseNetworkTransferPrice(networkTransferPrice *linodego.NetworkTransferPrice,
+func (data *DataSourceModel) parseNetworkTransferPrice(networkTransferPrice *linodego.NetworkTransferPrice,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(networkTransferPrice.ID)
 
-	price, diags := FlattenPrice(networkTransferPrice.Price)
+	price, diags := flattenPrice(networkTransferPrice.Price)
 	if diags.HasError() {
 		return diags
 	}
@@ -30,7 +30,7 @@ func (data *DataSourceModel) ParseNetworkTransferPrice(networkTransferPrice *lin
 
 	data.Label = types.StringValue(networkTransferPrice.Label)
 
-	regionPrices, d := FlattenRegionPrices(networkTransferPrice.RegionPrices)
+	regionPrices, d := flattenRegionPrices(networkTransferPrice.RegionPrices)
 	if d.HasError() {
 		return d
 	}
@@ -41,7 +41,7 @@ func (data *DataSourceModel) ParseNetworkTransferPrice(networkTransferPrice *lin
 	return nil
 }
 
-func FlattenPrice(price linodego.NetworkTransferTypePrice) (
+func flattenPrice(price linodego.NetworkTransferTypePrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -67,7 +67,7 @@ func FlattenPrice(price linodego.NetworkTransferTypePrice) (
 	return &resultList, nil
 }
 
-func FlattenRegionPrices(prices []linodego.NetworkTransferTypeRegionPrice) (
+func flattenRegionPrices(prices []linodego.NetworkTransferTypeRegionPrice) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make([]attr.Value, len(prices))
@@ -107,7 +107,7 @@ func (model *NetworkTransferPriceFilterModel) parseNetworkTransferPrices(network
 	for i := range networkTransferPrices {
 		var m DataSourceModel
 
-		diags := m.ParseNetworkTransferPrice(&networkTransferPrices[i])
+		diags := m.parseNetworkTransferPrice(&networkTransferPrices[i])
 		if diags.HasError() {
 			return diags
 		}
