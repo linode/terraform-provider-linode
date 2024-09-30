@@ -11,8 +11,8 @@ var networkTransferPriceSchema = schema.NestedBlockObject{
 }
 
 var filterConfig = frameworkfilter.Config{
-	"id":    {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"label": {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"label":    {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeString},
+	"transfer": {APIFilterable: true, TypeFunc: frameworkfilter.FilterTypeInt},
 }
 
 var frameworkDataSourceSchema = schema.Schema{

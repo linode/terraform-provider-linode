@@ -1,5 +1,10 @@
 {{ define "lke_types_data_basic" }}
 
-data "linode_lke_types" "foobar" {}
+data "linode_lke_types" "foobar" {
+    filter {
+        name = "label"
+        values = ["LKE Standard Availability"]
+    }
+}
 
 {{ end }}

@@ -1,5 +1,10 @@
 {{ define "volume_types_data_basic" }}
 
-data "linode_volume_types" "foobar" {}
+data "linode_volume_types" "foobar" {
+    filter {
+        name = "label"
+        values = ["Storage Volume"]
+    }
+}
 
 {{ end }}
