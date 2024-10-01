@@ -11,7 +11,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.1
 	github.com/aws/smithy-go v1.21.0
-	github.com/go-resty/resty/v2 v2.14.0
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-hclog v1.6.3
@@ -126,4 +125,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/linode/linodego => /Users/lgarber/Projects/dx-devenv/repos/linodego
+replace github.com/linode/linodego => github.com/ezilber-akamai/linodego v0.0.0-20240930141345-5d250dc71a49
