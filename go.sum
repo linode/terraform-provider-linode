@@ -61,8 +61,8 @@ github.com/emicklei/go-restful/v3 v3.9.0 h1:XwGDlfxEnQZzuopoqxwSEllNcCOM9DhhFyhF
 github.com/emicklei/go-restful/v3 v3.9.0/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRry+4bhvbpWn3mrbc=
 github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
-github.com/ezilber-akamai/linodego v0.0.0-20240930141345-5d250dc71a49 h1:8lCC9jx71n4q5Qf2/zj6TymUSUgdLWhMCzr46XN/Joc=
-github.com/ezilber-akamai/linodego v0.0.0-20240930141345-5d250dc71a49/go.mod h1:gPNQmFRzAFNnevDF/D8dOolj+2h/JGvr7d1Num2w+K8=
+github.com/ezilber-akamai/linodego v0.0.0-20241001205100-b140b952aa8e h1:oi3FomHQGsG9QMpECdeKiowuVqVS4p5RgNsoZ4bYTcQ=
+github.com/ezilber-akamai/linodego v0.0.0-20241001205100-b140b952aa8e/go.mod h1:gPNQmFRzAFNnevDF/D8dOolj+2h/JGvr7d1Num2w+K8=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=

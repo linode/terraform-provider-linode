@@ -37,7 +37,7 @@ func ImageUpload500Retry() func(response *http.Response, err error) bool {
 
 func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *http.Response, err error) bool {
 	return func(response *http.Response, _ error) bool {
-		if response.StatusCode != statusCode || response.Request == nil {
+		if response == nil || response.StatusCode != statusCode || response.Request == nil {
 			return false
 		}
 
