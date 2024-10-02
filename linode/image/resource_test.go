@@ -36,8 +36,10 @@ var testImageBytesNew = []byte{
 	0xe4, 0x02, 0x00, 0x7a, 0x7a, 0x6f, 0xed, 0x03, 0x00, 0x00, 0x00,
 }
 
-var testRegion string
-var testRegions []string
+var (
+	testRegion  string
+	testRegions []string
+)
 
 func init() {
 	resource.AddTestSweepers("linode_image", &resource.Sweeper{

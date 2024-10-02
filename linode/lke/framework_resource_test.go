@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -279,7 +281,11 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 
 				var opts linodego.LKEClusterUpdateOptions
 
-				if err := json.Unmarshal([]byte(request.Body.(string)), &opts); err != nil {
+				body, err := request.GetBody()
+				require.NoError(t, err)
+				defer body.Close()
+
+				if err := json.NewDecoder(body).Decode(&opts); err != nil {
 					t.Fatal(err)
 				}
 
