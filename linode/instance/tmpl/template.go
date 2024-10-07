@@ -28,6 +28,7 @@ type TemplateData struct {
 	AssignedGroup   string
 
 	DiskEncryption *linodego.InstanceDiskEncryption
+	IPv4           []string
 }
 
 func Basic(t *testing.T, label, pubKey, region string, rootPass string) string {
@@ -731,4 +732,21 @@ func WithPG(t *testing.T, label, region, assignedGroup string, groups []string) 
 			PlacementGroups: groups,
 			AssignedGroup:   assignedGroup,
 		})
+}
+
+func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string, reservedIP string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_with_reserved_ip", TemplateData{
+			Label:    label,
+			PubKey:   pubKey,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+			IPv4:     []string{reservedIP},
+		})
+
+	// Add this debug logging
+	t.Logf("Generated Terraform config for WithReservedIP:\n%s", generatedConfig)
+
+	return generatedConfig
 }
