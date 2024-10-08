@@ -356,7 +356,7 @@ func (state *FirewallResourceModel) RulesAndPoliciesHaveChanges(
 func (state *FirewallResourceModel) LinodesOrNodeBalancersHaveChanges(
 	ctx context.Context, plan FirewallResourceModel,
 ) bool {
-	return !state.Linodes.Equal(plan.Linodes) || state.NodeBalancers.Equal(plan.NodeBalancers)
+	return !state.Linodes.Equal(plan.Linodes) || !state.NodeBalancers.Equal(plan.NodeBalancers)
 }
 
 func FlattenFirewallRules(

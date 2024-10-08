@@ -1,7 +1,10 @@
 package helper
 
 import (
+	"fmt"
+	"reflect"
 	"slices"
+	"sort"
 	"strings"
 	"time"
 )
@@ -72,7 +75,7 @@ func ValidateSubset(superset, subset []any) bool {
 // Check if two slices are equivalent without considering ordering,
 // assuming no duplicated items are in the sets.
 func CompareSets(a, b []any) bool {
-	return ValidateSubset(a, b) && ValidateSubset(b, a)
+	return CompareSlices(true, true, a, b)
 }
 
 // Check if two string slices are equivalent without considering ordering,
@@ -94,4 +97,20 @@ func CompareScopes(s1, s2 string) bool {
 	s1List := strings.Split(s1, " ")
 	s2List := strings.Split(s2, " ")
 	return StringListElementsEqual(s1List, s2List)
+}
+
+func CompareSlices(ignoreNil, unordered bool, a, b []any) bool {
+	if ignoreNil && len(a) == 0 && len(b) == 0 {
+		return true
+	}
+
+	if unordered {
+		less := func(i, j int) bool {
+			return fmt.Sprintf("%v", a[i]) < fmt.Sprintf("%v", a[j])
+		}
+		sort.Slice(a, less)
+		sort.Slice(b, less)
+	}
+
+	return reflect.DeepEqual(a, b)
 }

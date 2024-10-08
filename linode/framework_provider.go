@@ -3,8 +3,6 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -46,13 +44,16 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/lke"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeclusters"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
+	"github.com/linode/terraform-provider-linode/v2/linode/lketypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions"
 	"github.com/linode/terraform-provider-linode/v2/linode/nb"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfig"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbconfigs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbnode"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
+	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
@@ -73,7 +74,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/vlan"
 	"github.com/linode/terraform-provider-linode/v2/linode/volume"
 	"github.com/linode/terraform-provider-linode/v2/linode/volumes"
+	"github.com/linode/terraform-provider-linode/v2/linode/volumetypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpc"
+	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnet"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnets"
@@ -238,6 +241,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		profile.NewDataSource,
 		nb.NewDataSource,
 		networkingip.NewDataSource,
+		networktransferprices.NewDataSource,
 		lkeversions.NewDataSource,
 		regions.NewDataSource,
 		ipv6range.NewDataSource,
@@ -254,6 +258,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		domain.NewDataSource,
 		user.NewDataSource,
 		nbconfig.NewDataSource,
+		nbtypes.NewDataSource,
 		instancetype.NewDataSource,
 		instancetypes.NewDataSource,
 		image.NewDataSource,
@@ -277,12 +282,14 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		vpcsubnets.NewDataSource,
 		vpcs.NewDataSource,
 		volumes.NewDataSource,
+		volumetypes.NewDataSource,
 		accountavailability.NewDataSource,
 		nbconfigs.NewDataSource,
 		ipv6ranges.NewDataSource,
 		domains.NewDataSource,
 		lke.NewDataSource,
 		lkeclusters.NewDataSource,
+		lketypes.NewDataSource,
 		placementgroup.NewDataSource,
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,

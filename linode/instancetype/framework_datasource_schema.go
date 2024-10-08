@@ -4,27 +4,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
-
-var priceObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"hourly":  types.Float64Type,
-		"monthly": types.Float64Type,
-	},
-}
-
-var regionPriceObjectType = types.ObjectType{
-	AttrTypes: map[string]attr.Type{
-		"id":      types.StringType,
-		"hourly":  types.Float64Type,
-		"monthly": types.Float64Type,
-	},
-}
 
 var backupsObjectType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"price":         types.ListType{ElemType: priceObjectType},
-		"region_prices": types.ListType{ElemType: regionPriceObjectType},
+		"price":         types.ListType{ElemType: helper.PriceObjectType},
+		"region_prices": types.ListType{ElemType: helper.RegionPriceObjectType},
 	},
 }
 
@@ -56,7 +42,7 @@ var Attributes = map[string]schema.Attribute{
 	"price": schema.ListAttribute{
 		Description: "Cost in US dollars, broken down into hourly and monthly charges.",
 		Computed:    true,
-		ElementType: priceObjectType,
+		ElementType: helper.PriceObjectType,
 	},
 	"addons": schema.ListAttribute{
 		Description: "Information about the optional Backup service offered for Linodes.",
@@ -66,7 +52,7 @@ var Attributes = map[string]schema.Attribute{
 	"region_prices": schema.ListAttribute{
 		Description: "A list of region-specific prices for this plan.",
 		Computed:    true,
-		ElementType: regionPriceObjectType,
+		ElementType: helper.RegionPriceObjectType,
 	},
 	"network_out": schema.Int64Attribute{
 		Description: "The Mbits outbound bandwidth allocation.",
