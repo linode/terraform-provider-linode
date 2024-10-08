@@ -68,7 +68,7 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 		Transport: NewAPILoggerTransport(
 			logging.NewSubsystemLoggingHTTPTransport(
 				APILoggerSubsystem,
-				http.DefaultTransport,
+				httpTransport,
 			),
 		),
 	}
