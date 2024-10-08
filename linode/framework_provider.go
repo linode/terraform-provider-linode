@@ -2,8 +2,7 @@ package linode
 
 import (
 	"context"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedips"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcips"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -54,6 +53,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
