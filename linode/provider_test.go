@@ -20,6 +20,7 @@ func TestAccProvider_Overrides(t *testing.T) {
 token = 54321
 api_url = https://cool.linode.com
 api_version = v4reallycoolapiversion
+api_cert_path = cert.pem
 
 [cool]
 token = %s
