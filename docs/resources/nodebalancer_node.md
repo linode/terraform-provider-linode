@@ -16,49 +16,49 @@ The Linode Guide, [Create a NodeBalancer with Terraform](https://www.linode.com/
 The following example shows how one might use this resource to configure NodeBalancer Nodes attached to Linode instances.
 
 ```hcl
-resource "linode_instance" "web" {
-    count = "3"
-    label = "web-${count.index + 1}"
-    image = "linode/ubuntu22.04"
-    region = "us-east"
-    type = "g6-standard-1"
-    authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
-    root_pass = "terraform-test"
+resource "linode_instance" "foo" {
+  count           = "2"
+  label           = "web-${count.index + 1}"
+  image           = "linode/ubuntu24.04"
+  region          = "us-mia"
+  type            = "g6-standard-1"
+  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+  root_pass       = "terraform-test"
 
-    private_ip = true
+  private_ip = true
 }
 
 resource "linode_nodebalancer" "foobar" {
-    label = "mynodebalancer"
-    region = "us-east"
-    client_conn_throttle = 20
+  label                = "mynodebalancer"
+  region               = "us-mia"
+  client_conn_throttle = 20
 }
 
 resource "linode_nodebalancer_config" "foofig" {
-    nodebalancer_id = linode_nodebalancer.foobar.id
-    port = 80
-    protocol = "http"
-    check = "http"
-    check_path = "/foo"
-    check_attempts = 3
-    check_timeout = 30
-    stickiness = "http_cookie"
-    algorithm = "source"
+  nodebalancer_id = linode_nodebalancer.foobar.id
+  port            = 80
+  protocol        = "http"
+  check           = "http"
+  check_path      = "/foo"
+  check_attempts  = 3
+  check_timeout   = 30
+  stickiness      = "http_cookie"
+  algorithm       = "source"
 }
 
 resource "linode_nodebalancer_node" "foonode" {
-    count = "3"
-    nodebalancer_id = linode_nodebalancer.foobar.id
-    config_id = linode_nodebalancer_config.foofig.id
-    address = "${element(linode_instance.web.*.private_ip_address, count.index)}:80"
-    label = "mynodebalancernode"
-    weight = 50
+  count           = "2"
+  nodebalancer_id = linode_nodebalancer.foobar.id
+  config_id       = linode_nodebalancer_config.foofig.id
+  address         = "${element(linode_instance.foo.*.private_ip_address, count.index)}:80"
+  label           = "mynodebalancernode"
+  weight          = 50
 
   lifecycle {
     // Tell Terraform to implicitly recreate the NodeBalancer node when
     // the target instance has been marked for recreation.
     // See: https://github.com/linode/terraform-provider-linode/issues/1224
-    replace_triggered_by = [linode_instance.foo.id]
+    replace_triggered_by = [linode_instance.foo]
   }
 }
 ```
