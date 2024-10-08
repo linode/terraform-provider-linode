@@ -30,6 +30,7 @@ type Config struct {
 	AccessToken string
 	APIURL      string
 	APIVersion  string
+	APICAPath   string
 	UAPrefix    string
 
 	ConfigPath    string
@@ -55,15 +56,21 @@ type Config struct {
 
 // Client returns a fully initialized Linode client.
 func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
-	loggingTransport := NewAPILoggerTransport(
-		logging.NewSubsystemLoggingHTTPTransport(
-			APILoggerSubsystem,
-			http.DefaultTransport,
-		),
-	)
+	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
+
+	if c.APICAPath != "" {
+		if err := AddRootCAToTransport(c.APICAPath, httpTransport); err != nil {
+			return nil, fmt.Errorf("failed to add root CA %s to HTTP transport: %w", c.APICAPath, err)
+		}
+	}
 
 	oauth2Client := &http.Client{
-		Transport: loggingTransport,
+		Transport: NewAPILoggerTransport(
+			logging.NewSubsystemLoggingHTTPTransport(
+				APILoggerSubsystem,
+				http.DefaultTransport,
+			),
+		),
 	}
 
 	client := linodego.NewClient(oauth2Client)

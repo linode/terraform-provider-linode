@@ -140,6 +140,10 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "The version of Linode API.",
 			},
+			"api_ca_path": schema.StringAttribute{
+				Optional:    true,
+				Description: "The path to a Linode API CA file to trust.",
+			},
 			"skip_instance_ready_poll": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to be running.",
