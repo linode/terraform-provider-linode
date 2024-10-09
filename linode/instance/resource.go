@@ -136,8 +136,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		if compliantOnly, ok := d.GetOk("placement_group.0.compliant_only"); ok {
 			placementGroupMap["compliant_only"] = compliantOnly.(bool)
 		}
-		d.Set("placement_group", []map[string]interface{}{placementGroupMap})
 	}
+	d.Set("placement_group", []map[string]interface{}{placementGroupMap})
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)
 	d.Set("disk", disks)
