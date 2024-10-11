@@ -258,7 +258,13 @@ func (fp *FrameworkProvider) InitProvider(
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
 
 	if !lpm.APICAPath.IsNull() {
-		if err := helper.AddRootCAToTransport(lpm.APICAPath.ValueString(), httpTransport); err != nil {
+		caPath, err := helper.ExpandPath(lpm.APICAPath.ValueString())
+		if err != nil {
+			diags.AddError("Failed to expand api_ca_path", err.Error())
+			return
+		}
+
+		if err := helper.AddRootCAToTransport(caPath, httpTransport); err != nil {
 			diags.AddError("Failed to add root CA to HTTP transport", err.Error())
 			return
 		}

@@ -59,7 +59,12 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
 
 	if c.APICAPath != "" {
-		if err := AddRootCAToTransport(c.APICAPath, httpTransport); err != nil {
+		caPath, err := ExpandPath(c.APICAPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to expand api_ca_path: %w", err)
+		}
+
+		if err := AddRootCAToTransport(caPath, httpTransport); err != nil {
 			return nil, fmt.Errorf("failed to add root CA %s to HTTP transport: %w", c.APICAPath, err)
 		}
 	}
