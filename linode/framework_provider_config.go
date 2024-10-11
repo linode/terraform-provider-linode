@@ -285,8 +285,14 @@ func (fp *FrameworkProvider) InitProvider(
 		tflog.Info(ctx, "Using Linode profile", map[string]any{
 			"config_path": lpm.ConfigPath,
 		})
+
+		configPathExpanded, err := helper.ExpandPath(configPath)
+		if err != nil {
+			diags.AddError("Failed to expand config path", err.Error())
+		}
+
 		err = client.LoadConfig(&linodego.LoadConfigOptions{
-			Path:    configPath,
+			Path:    configPathExpanded,
 			Profile: configProfile,
 		})
 		if err != nil {

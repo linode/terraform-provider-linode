@@ -84,11 +84,16 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 
 	// Load the config file if it exists
 	if _, err := os.Stat(c.ConfigPath); err == nil {
+		configPath, err := ExpandPath(c.ConfigPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to expand config path: %w", err)
+		}
+
 		tflog.Info(ctx, "Using Linode profile", map[string]any{
 			"config_path": c.ConfigPath,
 		})
 		err = client.LoadConfig(&linodego.LoadConfigOptions{
-			Path:    c.ConfigPath,
+			Path:    configPath,
 			Profile: c.ConfigProfile,
 		})
 		if err != nil {
