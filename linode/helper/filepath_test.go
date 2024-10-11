@@ -18,4 +18,8 @@ func TestExpandPath(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, filepath.Join(homePath, "foo", "bar"), expandedPath)
+
+	expandedPath, err = ExpandPath("")
+	require.NoError(t, err)
+	require.Equal(t, "", expandedPath)
 }
