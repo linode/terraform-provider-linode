@@ -11,6 +11,7 @@ func GetFrameworkProviderModelFromSDKv2ProviderConfig(config *Config) *Framework
 		AccessToken:                  types.StringValue(config.AccessToken),
 		APIURL:                       types.StringValue(config.APIURL),
 		APIVersion:                   types.StringValue(config.APIVersion),
+		APICAPath:                    types.StringValue(config.APICAPath),
 		UAPrefix:                     types.StringValue(config.UAPrefix),
 		ConfigPath:                   types.StringValue(config.ConfigPath),
 		ConfigProfile:                types.StringValue(config.ConfigProfile),
@@ -34,6 +35,7 @@ type FrameworkProviderModel struct {
 	AccessToken types.String `tfsdk:"token"`
 	APIURL      types.String `tfsdk:"url"`
 	APIVersion  types.String `tfsdk:"api_version"`
+	APICAPath   types.String `tfsdk:"api_ca_path"`
 	UAPrefix    types.String `tfsdk:"ua_prefix"`
 
 	ConfigPath    types.String `tfsdk:"config_path"`

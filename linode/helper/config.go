@@ -30,6 +30,7 @@ type Config struct {
 	AccessToken string
 	APIURL      string
 	APIVersion  string
+	APICAPath   string
 	UAPrefix    string
 
 	ConfigPath    string
@@ -55,15 +56,26 @@ type Config struct {
 
 // Client returns a fully initialized Linode client.
 func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
-	loggingTransport := NewAPILoggerTransport(
-		logging.NewSubsystemLoggingHTTPTransport(
-			APILoggerSubsystem,
-			http.DefaultTransport,
-		),
-	)
+	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
+
+	if c.APICAPath != "" {
+		caPath, err := ExpandPath(c.APICAPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to expand api_ca_path: %w", err)
+		}
+
+		if err := AddRootCAToTransport(caPath, httpTransport); err != nil {
+			return nil, fmt.Errorf("failed to add root CA %s to HTTP transport: %w", c.APICAPath, err)
+		}
+	}
 
 	oauth2Client := &http.Client{
-		Transport: loggingTransport,
+		Transport: NewAPILoggerTransport(
+			logging.NewSubsystemLoggingHTTPTransport(
+				APILoggerSubsystem,
+				httpTransport,
+			),
+		),
 	}
 
 	client := linodego.NewClient(oauth2Client)
@@ -72,11 +84,16 @@ func (c *Config) Client(ctx context.Context) (*linodego.Client, error) {
 
 	// Load the config file if it exists
 	if _, err := os.Stat(c.ConfigPath); err == nil {
+		configPath, err := ExpandPath(c.ConfigPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to expand config path: %w", err)
+		}
+
 		tflog.Info(ctx, "Using Linode profile", map[string]any{
 			"config_path": c.ConfigPath,
 		})
 		err = client.LoadConfig(&linodego.LoadConfigOptions{
-			Path:    c.ConfigPath,
+			Path:    configPath,
 			Profile: c.ConfigProfile,
 		})
 		if err != nil {
