@@ -2,7 +2,6 @@ package networkreservedips
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -78,9 +77,6 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 	} else {
 		// List all reserved IPs
 		filter := ""
-		if !data.Region.IsNull() {
-			filter = fmt.Sprintf("{\"region\":\"%s\"}", data.Region.ValueString())
-		}
 		ips, err := d.Meta.Client.ListReservedIPAddresses(ctx, &linodego.ListOptions{Filter: filter})
 		if err != nil {
 			resp.Diagnostics.AddError(
