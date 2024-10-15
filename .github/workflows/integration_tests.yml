@@ -107,8 +107,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [integration_tests]
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
       - name: Install Linode CLI
-        run: pip install linode-cli
+        run: |
+          pip install linode-cli
 
       - name: Create Firewall and Attach to Instances
         run: |
