@@ -119,8 +119,15 @@ jobs:
       - name: Create Firewall and Attach to Instances
         run: |
           FIREWALL_ID=$(linode-cli firewalls create --label "e2e-fw-$(date +%s)" --rules.inbound_policy "DROP" --rules.outbound_policy "ACCEPT" --text --format=id --no-headers)
+          echo "Created Firewall with ID: $FIREWALL_ID"
+          
           for instance_id in $(linode-cli linodes list --format "id" --text --no-header); do
-            linode-cli firewalls device-create "$FIREWALL_ID" --id "$instance_id" --type linode
+            echo "Attaching firewall to instance: $instance_id"
+            if linode-cli firewalls device-create "$FIREWALL_ID" --id "$instance_id" --type linode; then
+              echo "Firewall attached to instance $instance_id successfully."
+            else
+              echo "An error occurred while attaching firewall to instance $instance_id. Skipping..."
+            fi
           done
         env:
           LINODE_CLI_TOKEN: ${{ secrets.LINODE_TOKEN_USER_4 }} # only Matrix test user 4 runs LKE tests
