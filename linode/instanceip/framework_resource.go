@@ -72,31 +72,6 @@ func (r *Resource) Create(
 			)
 			return
 		}
-
-		// Fetch the IP information after assigning
-		instanceIPs, err := client.GetInstanceIPAddresses(ctx, linodeID)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to fetch IP addresses for instance (%d)", linodeID),
-				err.Error(),
-			)
-			return
-		}
-
-		// Find the assigned IP in the instance's IP addresses
-		for _, instanceIP := range instanceIPs.IPv4.Public {
-			if instanceIP.Address == plan.Address.ValueString() {
-				ip = instanceIP
-				break
-			}
-		}
-		if ip == nil {
-			resp.Diagnostics.AddError(
-				"Failed to find assigned IP",
-				fmt.Sprintf("Could not find the assigned IP %s in instance (%d) IP addresses", plan.Address.ValueString(), linodeID),
-			)
-			return
-		}
 	} else {
 		// Allocate a new IP
 		ip, err = client.AddInstanceIPAddress(ctx, linodeID, isPublic)

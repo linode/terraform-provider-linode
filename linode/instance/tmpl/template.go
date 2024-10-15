@@ -744,9 +744,5 @@ func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string, reserv
 			RootPass: rootPass,
 			IPv4:     []string{reservedIP},
 		})
-
-	// Add this debug logging
-	t.Logf("Generated Terraform config for WithReservedIP:\n%s", generatedConfig)
-
 	return generatedConfig
 }
