@@ -190,6 +190,13 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		),
 	}
 
+	if ipv4Raw, ok := d.GetOk("ipv4"); ok {
+		ipv4Set := ipv4Raw.(*schema.Set)
+		for _, ip := range ipv4Set.List() {
+			createOpts.IPv4 = append(createOpts.IPv4, ip.(string))
+		}
+	}
+
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
 		for _, tag := range tagsRaw.(*schema.Set).List() {
 			createOpts.Tags = append(createOpts.Tags, tag.(string))
@@ -818,6 +825,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if err != nil {
 			return diag.Errorf("failed to share ipv4 addresses with instance: %s", err)
 		}
+	}
+
+	if d.HasChange("ipv4") {
+		// Log a warning that direct IP changes are not supported
+		return diag.Errorf("Changing IPv4 addresses after instance creation is not directly supported. The attempted change will be ignored.")
 	}
 
 	// Don't reboot if the Linode should be powered off
