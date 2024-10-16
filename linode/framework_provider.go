@@ -53,6 +53,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedip"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
@@ -229,6 +231,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		firewall.NewResource,
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
+		networkreservedip.NewResource,
 	}
 }
 
@@ -297,5 +300,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
+		networkreservedip.NewDataSourceFetch,
+		networkreservedips.NewDataSourceList,
 	}
 }
