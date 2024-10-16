@@ -1,4 +1,4 @@
-package networkreservedips
+package networkreservedip
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"

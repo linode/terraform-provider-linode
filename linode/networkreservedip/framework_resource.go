@@ -1,4 +1,4 @@
-package networkreservedips
+package networkreservedip
 
 import (
 	"context"
@@ -29,26 +29,20 @@ type Resource struct {
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Debug(ctx, "Starting Create for linode_reserved_ip")
-	var plan ReservedIPModel
+	var data ReservedIPModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, "Error getting plan", map[string]interface{}{
-			"error": resp.Diagnostics.Errors(),
-		})
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, &plan)
+	ctx = populateLogAttributes(ctx, &data)
 
 	client := r.Meta.Client
 	reserveIP, err := client.ReserveIPAddress(ctx, linodego.ReserveIPOptions{
-		Region: plan.Region.ValueString(),
+		Region: data.Region.ValueString(),
 	})
 	if err != nil {
-		tflog.Error(ctx, "Failed to reserve IP address", map[string]interface{}{
-			"error": err.Error(),
-		})
 		resp.Diagnostics.AddError(
 			"Failed to reserve IP address",
 			err.Error(),
@@ -57,60 +51,41 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	if reserveIP == nil {
-		tflog.Error(ctx, "Received nil pointer for reserved IP")
 		resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the reserved ip")
 		return
 	}
 
-	tflog.Debug(ctx, "Successfully reserved IP address", map[string]interface{}{
-		"address": reserveIP.Address,
-		"region":  reserveIP.Region,
-	})
-
-	plan.ID = types.StringValue(reserveIP.Address)
+	data.ID = types.StringValue(reserveIP.Address)
 	tflog.Debug(ctx, "Setting ID for reserved IP", map[string]interface{}{
-		"id": plan.ID.ValueString(),
+		"id": data.ID.ValueString(),
 	})
 
-	diags := plan.FlattenReservedIP(ctx, *reserveIP, true)
+	diags := data.FlattenReservedIP(ctx, *reserveIP, true)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, "Error flattening reserved IP", map[string]interface{}{
-			"error": resp.Diagnostics.Errors(),
-		})
 		return
 	}
 
-	diags = resp.State.Set(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		tflog.Error(ctx, "Error setting state for reserved IP", map[string]interface{}{
-			"error": resp.Diagnostics.Errors(),
-		})
-	} else {
-		tflog.Debug(ctx, "Successfully set state for reserved IP", map[string]interface{}{
-			"id": plan.ID.ValueString(),
-		})
-	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Debug(ctx, "Read linode_reserved_ip")
-	var state ReservedIPModel
+	var data ReservedIPModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
+	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, data.ID, resp) {
 		return
 	}
 
-	ctx = populateLogAttributes(ctx, &state)
+	ctx = populateLogAttributes(ctx, &data)
 
 	client := r.Meta.Client
-	address := state.Address.ValueString()
+	address := data.Address.ValueString()
 
 	reservedIP, err := client.GetReservedIPAddress(ctx, address)
 	if err != nil {
@@ -119,7 +94,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 				"Reserved IP No Longer Exists",
 				fmt.Sprintf(
 					"Removing reserved IP %s from state because it no longer exists",
-					state.ID.ValueString(),
+					data.ID.ValueString(),
 				),
 			)
 			resp.State.RemoveResource(ctx)
@@ -135,13 +110,16 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	if reservedIP == nil {
-		resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the reserved ip")
+	// if reservedIP == nil {
+	// 	resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the reserved ip")
+	// 	return
+	// }
+
+	resp.Diagnostics.Append(data.FlattenReservedIP(ctx, *reservedIP, false)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resp.Diagnostics.Append(state.FlattenReservedIP(ctx, *reservedIP, false)...)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

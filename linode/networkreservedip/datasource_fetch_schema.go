@@ -1,4 +1,4 @@
-package networkreservedips
+package networkreservedip
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -36,7 +36,7 @@ var reservedIPObjectType = types.ObjectType{
 	},
 }
 
-var frameworkDataSourceSchema = schema.Schema{
+var frameworkDataSourceFetchSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"region": schema.StringAttribute{
 			Description: "The Region in which to reserve the IP address.",
@@ -44,6 +44,7 @@ var frameworkDataSourceSchema = schema.Schema{
 		},
 		"address": schema.StringAttribute{
 			Description: "The reserved IP address.",
+			Computed:    true,
 			Optional:    true,
 		},
 		"gateway": schema.StringAttribute{
@@ -81,11 +82,6 @@ var frameworkDataSourceSchema = schema.Schema{
 		"id": schema.StringAttribute{
 			Description: "The unique ID of the reserved IP address.",
 			Computed:    true,
-		},
-		"reserved_ips": schema.ListAttribute{
-			Description: "A list of all reserved IPs.",
-			Computed:    true,
-			ElementType: reservedIPObjectType,
 		},
 	},
 }
