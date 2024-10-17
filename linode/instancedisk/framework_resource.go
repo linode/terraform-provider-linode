@@ -119,34 +119,35 @@ func (r *Resource) Create(
 		return
 	}
 
+	diskID := disk.ID
 	// Add resource to TF states earlier to prevent
 	// dangling resources (resources created but not managed by TF)
-	AddDiskResource(ctx, *disk, resp, plan)
+	AddDiskResource(ctx, diskID, resp, plan)
 
-	ctx = tflog.SetField(ctx, "disk_id", disk.ID)
+	ctx = tflog.SetField(ctx, "disk_id", diskID)
 
 	_, err = p.WaitForFinished(ctx, timeoutSeconds)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to Wait for the Disk Creation Event on Linode Disk (%d)", disk.ID),
+			fmt.Sprintf("Failed to Wait for the Disk Creation Event on Linode Disk (%d)", diskID),
 			err.Error(),
 		)
 	}
 
 	if _, err := client.WaitForInstanceDiskStatus(
-		ctx, linodeID, disk.ID, linodego.DiskReady, timeoutSeconds,
+		ctx, linodeID, diskID, linodego.DiskReady, timeoutSeconds,
 	); err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to Wait for Disk (%d) to be Ready", disk.ID), err.Error(),
+			fmt.Sprintf("Failed to Wait for Disk (%d) to be Ready", diskID), err.Error(),
 		)
 	}
 
 	// get latest status of the disk
 	tflog.Trace(ctx, "client.GetInstanceDisk(...)")
-	disk, err = client.GetInstanceDisk(ctx, linodeID, disk.ID)
+	disk, err = client.GetInstanceDisk(ctx, linodeID, diskID)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to Get Disk %d of Linode Instance %d", disk.ID, linodeID),
+			fmt.Sprintf("Failed to Get Disk %d of Linode Instance %d", diskID, linodeID),
 			err.Error(),
 		)
 	}
