@@ -15,8 +15,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-func AddDiskResource(ctx context.Context, diskID int, resp *resource.CreateResponse, plan ResourceModel) {
-	resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(strconv.Itoa(diskID)))
+func AddDiskResource(ctx context.Context, disk linodego.InstanceDisk, resp *resource.CreateResponse, plan ResourceModel) {
+	resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(strconv.Itoa(disk.ID)))
 	resp.State.SetAttribute(ctx, path.Root("linode_id"), plan.LinodeID)
 }
 

@@ -122,7 +122,7 @@ func (r *Resource) Create(
 	diskID := disk.ID
 	// Add resource to TF states earlier to prevent
 	// dangling resources (resources created but not managed by TF)
-	AddDiskResource(ctx, diskID, resp, plan)
+	AddDiskResource(ctx, *disk, resp, plan)
 
 	ctx = tflog.SetField(ctx, "disk_id", diskID)
 
