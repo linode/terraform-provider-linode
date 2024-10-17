@@ -46,6 +46,7 @@ func flattenInstance(
 	result["watchdog_enabled"] = instance.WatchdogEnabled
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
+	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
 	result["host_uuid"] = instance.HostUUID
 	result["has_user_data"] = instance.HasUserData
@@ -215,6 +216,7 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	result["watchdog_enabled"] = instance.WatchdogEnabled
 	result["group"] = instance.Group
 	result["tags"] = instance.Tags
+	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
 	result["host_uuid"] = instance.HostUUID
 	result["backups"] = flattenInstanceBackups(*instance)

@@ -75,6 +75,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `tags` - A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
+* `capabilities` - A list of capabilities of this Linode instance.
+
 * `private_ip` - If true, the Linode has private networking enabled, allowing use of the 192.168.128.0/17 network within the Linode's region.
   
 * `alerts.0.cpu` - The percentage of CPU usage required to trigger an alert. If the average CPU usage over two hours exceeds this value, we'll send you an alert. If this is set to 0, the alert is disabled.

@@ -64,3 +64,8 @@ func DataBasic(t *testing.T, volume, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"volume_data_basic", TemplateData{Label: volume, Region: region})
 }
+
+func DataWithBlockStorageEncryption(t *testing.T, volume, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"volume_data_with_block_storage_encryption", TemplateData{Label: volume, Region: region})
+}
