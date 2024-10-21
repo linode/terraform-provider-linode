@@ -266,7 +266,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 3, func(t *testing.T) {
 		var instance linodego.Instance
 
 		config1Name := "linode_instance_config.foobar1"
@@ -274,7 +274,7 @@ func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 		instanceName := acctest.RandomWithPrefix("tf_test")
 		rootPass := acctest.RandString(64)
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkDestroy,

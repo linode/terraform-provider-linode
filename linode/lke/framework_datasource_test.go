@@ -16,9 +16,9 @@ const dataSourceClusterName = "data.linode_lke_cluster.test"
 func TestAccDataSourceLKECluster_taints_labels(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -48,9 +48,9 @@ func TestAccDataSourceLKECluster_taints_labels(t *testing.T) {
 func TestAccDataSourceLKECluster_basic(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -83,9 +83,9 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 func TestAccDataSourceLKECluster_autoscaler(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -118,12 +118,12 @@ func TestAccDataSourceLKECluster_autoscaler(t *testing.T) {
 func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		testIPv4 := "0.0.0.0/0"
 		testIPv6 := "2001:db8::/32"
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
