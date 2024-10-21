@@ -183,7 +183,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(t, resource.TestCase{
+		resource.Test(retryT, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
