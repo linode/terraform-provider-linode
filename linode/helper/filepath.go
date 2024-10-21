@@ -3,15 +3,16 @@ package helper
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 )
+
+const pathSeparatorString = string(os.PathSeparator)
 
 // ExpandPath expands the given path, replacing ~'s with the user's
 // home directory.
 // NOTE: This does not implement feature-complete tilde expansion.
 func ExpandPath(path string) (string, error) {
-	segments := strings.Split(path, string(os.PathSeparator))
+	segments := strings.Split(path, pathSeparatorString)
 
 	if segments[0] == "~" {
 		homePath, err := os.UserHomeDir()
@@ -22,5 +23,7 @@ func ExpandPath(path string) (string, error) {
 		segments[0] = homePath
 	}
 
-	return filepath.Join(segments...), nil
+	// We don't use filepath.Join(...) here because it does not
+	// support rebuilding paths starting with `/`.
+	return strings.Join(segments, pathSeparatorString), nil
 }
