@@ -623,6 +623,15 @@ func DataBasic(t *testing.T, label, region string, rootPass string) string {
 		})
 }
 
+func DataWithBlockStorageEncryption(t *testing.T, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_with_block_storage_encryption", TemplateData{
+			Label:    label,
+			Region:   region,
+			RootPass: rootPass,
+		})
+}
+
 func DataWithPG(t *testing.T, label, region, assignedGroup string, groups []string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_with_pg", TemplateData{

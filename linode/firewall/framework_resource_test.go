@@ -57,6 +57,19 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestSmokeTests_firewall(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccLinodeFirewall_basic", TestAccLinodeFirewall_basic},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccLinodeFirewall_basic(t *testing.T) {
 	t.Parallel()
 
@@ -105,7 +118,7 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 				ResourceName:            testFirewallResName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created"},
+				ImportStateVerifyIgnore: []string{"created", "updated"},
 			},
 		},
 	})
@@ -141,7 +154,7 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 				ResourceName:            testFirewallResName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created"},
+				ImportStateVerifyIgnore: []string{"created", "updated"},
 			},
 		},
 	})
@@ -212,7 +225,7 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 				ResourceName:            testFirewallResName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created"},
+				ImportStateVerifyIgnore: []string{"created", "updated"},
 			},
 		},
 	})
@@ -250,7 +263,7 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 				ResourceName:            testFirewallResName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created"},
+				ImportStateVerifyIgnore: []string{"created", "updated"},
 			},
 		},
 	})
@@ -449,9 +462,10 @@ func TestAccLinodeFirewall_noIPv6(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      testFirewallResName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            testFirewallResName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"created", "updated"},
 			},
 		},
 	})
@@ -483,7 +497,7 @@ func TestAccLinodeFirewall_noRules(t *testing.T) {
 				ResourceName:            testFirewallResName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created"},
+				ImportStateVerifyIgnore: []string{"created", "updated"},
 			},
 		},
 	})

@@ -80,6 +80,10 @@ This section outlines commonly used provider configuration options.
 
   The Linode API version can also be specified using the `LINODE_API_VERSION` environment variable.
 
+* `api_ca_path` (Optional) The path to a CA file to trust when making API requests.
+
+  The Linode API CA file path can also be specified using the `LINODE_CA` environment variable.
+
 * `obj_access_key` - (Optional) The access key to be used in [linode_object_storage_bucket](/docs/resources/object_storage_bucket.md) and [linode_object_storage_object](/docs/resources/object_storage_object.md).
 
   The Object Access Key can also be specified using the `LINODE_OBJ_ACCESS_KEY` shell environment variable.

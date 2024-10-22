@@ -64,6 +64,19 @@ func sweep(prefix string) error {
 	return nil
 }
 
+func TestSmokeTests_instance(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceInstance_basic_smoke", TestAccResourceInstance_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccResourceInstance_basic_smoke(t *testing.T) {
 	t.Parallel()
 
@@ -504,7 +517,6 @@ func TestAccResourceInstance_disk(t *testing.T) {
 					checkComputeInstanceDisk(&instance, "disk", 3000),
 				),
 			},
-
 			{
 				ResourceName:            resName,
 				ImportState:             true,

@@ -164,6 +164,19 @@ func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterv
 	}
 }
 
+func TestSmokeTests_lke(t *testing.T) {
+	tests := []struct {
+		name string
+		test func(*testing.T)
+	}{
+		{"TestAccResourceLKECluster_basic_smoke", TestAccResourceLKECluster_basic_smoke},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.test)
+	}
+}
+
 func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 	t.Parallel()
 
@@ -587,5 +600,98 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 				),
 			},
 		},
+	})
+}
+
+func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
+	t.Parallel()
+
+	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(tRetry, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					// create a cluster with taints and labels
+					Config: tmpl.DataTaintsLabels(
+						t, clusterName, k8sVersionLatest, testRegion, []tmpl.TaintData{
+							{
+								Effect: "PreferNoSchedule",
+								Key:    "foo",
+								Value:  "bar",
+							},
+						},
+						map[string]string{"foo": "bar"},
+					),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.effect", "PreferNoSchedule"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.key", "foo"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.value", "bar"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.labels.foo", "bar"),
+					),
+				},
+				{
+					// update taints and labels values
+					Config: tmpl.DataTaintsLabels(
+						t, clusterName, k8sVersionLatest, testRegion, []tmpl.TaintData{
+							{
+								Effect: "PreferNoSchedule",
+								Key:    "baz",
+								Value:  "qux",
+							},
+						},
+						map[string]string{"baz": "qux"},
+					),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.effect", "PreferNoSchedule"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.key", "baz"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.value", "qux"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.labels.baz", "qux"),
+					),
+				},
+				{
+					// remove taints and labels
+					Config: tmpl.DataTaintsLabels(t, clusterName, k8sVersionLatest, testRegion, nil, nil),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "0"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.labels.#", "0"),
+					),
+				},
+				{
+					// add taints and labels back
+					Config: tmpl.DataTaintsLabels(
+						t, clusterName, k8sVersionLatest, testRegion, []tmpl.TaintData{
+							{
+								Effect: "PreferNoSchedule",
+								Key:    "foo",
+								Value:  "bar",
+							},
+						},
+						map[string]string{"foo": "bar"},
+					),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.effect", "PreferNoSchedule"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.key", "foo"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.value", "bar"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.labels.foo", "bar"),
+					),
+				},
+				{
+					ResourceName:            resourceClusterName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"pool.0.nodes.0.status"},
+				},
+			},
+		})
 	})
 }
