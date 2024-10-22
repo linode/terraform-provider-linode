@@ -861,7 +861,7 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	// This test can occasionally fail while running the entire test suite in parallel
-	acceptance.RunTestWithRetries(t, 3, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,

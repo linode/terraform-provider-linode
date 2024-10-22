@@ -13,7 +13,7 @@ type TemplateData struct {
 	Region      string
 }
 
-func DataBasic(t *testing.T, data TemplateData) string {
+func DataBasic(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_backups_data_basic", data)
 }

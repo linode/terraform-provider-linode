@@ -57,7 +57,7 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 
 	dataSourceName := "data.linode_lke_clusters.test"
 
-	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },

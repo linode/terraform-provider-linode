@@ -188,7 +188,7 @@ func TestSmokeTests_objbucket(t *testing.T) {
 func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
@@ -218,7 +218,7 @@ func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
 func TestAccResourceBucket_basic_smoke(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
@@ -248,7 +248,7 @@ func TestAccResourceBucket_basic_smoke(t *testing.T) {
 func TestAccResourceBucket_access(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
@@ -283,7 +283,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 func TestAccResourceBucket_versioning(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
@@ -317,7 +317,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 func TestAccResourceBucket_lifecycle(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
@@ -378,7 +378,7 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -424,7 +424,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -469,7 +469,7 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 	resName := "linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -498,7 +498,7 @@ func TestAccResourceBucket_update(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	resName := "linode_object_storage_bucket.foobar"
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -530,7 +530,7 @@ func TestAccResourceBucket_credsConfiged(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -557,7 +557,7 @@ func TestAccResourceBucket_tempKeys(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -584,7 +584,7 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,

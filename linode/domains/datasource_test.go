@@ -18,7 +18,7 @@ func TestAccDataSourceDomains_basic(t *testing.T) {
 
 	domainName := acctest.RandomWithPrefix("tf-test") + ".example"
 
-	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,

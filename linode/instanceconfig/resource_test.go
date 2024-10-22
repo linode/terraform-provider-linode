@@ -266,7 +266,7 @@ func TestAccResourceInstanceConfig_booted(t *testing.T) {
 func TestAccResourceInstanceConfig_bootedSwap(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 3, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		var instance linodego.Instance
 
 		config1Name := "linode_instance_config.foobar1"

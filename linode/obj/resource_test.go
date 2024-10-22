@@ -60,7 +60,7 @@ func TestAccResourceObject_basic_cluster(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	acceptance.RunTestWithRetries(t, 6, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
@@ -115,7 +115,7 @@ func TestAccResourceObject_basic(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	acceptance.RunTestWithRetries(t, 6, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
@@ -150,7 +150,7 @@ func TestAccResourceObject_credsConfiged(t *testing.T) {
 
 	content := "test_creds_configed"
 
-	acceptance.RunTestWithRetries(t, 6, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
@@ -175,7 +175,7 @@ func TestAccResourceObject_tempKeys(t *testing.T) {
 
 	content := "test_temp_keys"
 
-	acceptance.RunTestWithRetries(t, 6, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 

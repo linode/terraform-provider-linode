@@ -24,7 +24,7 @@ const testRegion = "eu-central"
 func TestAccIPv6Range_basic(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 3, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resName := "linode_ipv6_range.foobar"
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
@@ -62,7 +62,7 @@ func TestAccIPv6Range_basic(t *testing.T) {
 func TestAccIPv6Range_routeTarget(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 3, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resName := "linode_ipv6_range.foobar"
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
@@ -115,7 +115,7 @@ func TestAccIPv6Range_noID(t *testing.T) {
 func TestAccIPv6Range_reassignment(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 3, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resName := "linode_ipv6_range.foobar"
 		instance1ResName := "linode_instance.foobar"
 		instance2ResName := "linode_instance.foobar2"
@@ -180,7 +180,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 	t.Parallel()
 
 	// Occasionally IPv6 range deletions take a bit to replicate
-	acceptance.RunTestWithRetries(t, 3, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(t, resource.TestCase{
@@ -273,7 +273,7 @@ func checkIPv6RangeNoDuplicates(s *terraform.State) error {
 	return nil
 }
 
-func validateInstanceIPv6Assignments(t *testing.T, assignedID, unassignedID int) {
+func validateInstanceIPv6Assignments(t testing.TB, assignedID, unassignedID int) {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	assignedNetworking, err := client.GetInstanceIPAddresses(context.Background(), assignedID)

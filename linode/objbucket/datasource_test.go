@@ -17,7 +17,7 @@ func TestAccDataSourceBucket_basic(t *testing.T) {
 	resourceName := "data.linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
@@ -47,7 +47,7 @@ func TestAccDataSourceBucket_basic_cluster(t *testing.T) {
 	resourceName := "data.linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestWithRetries(t, 5, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,

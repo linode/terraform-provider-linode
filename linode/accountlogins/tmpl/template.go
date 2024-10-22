@@ -13,12 +13,12 @@ type TemplateData struct {
 	Status     string
 }
 
-func DataBasic(t *testing.T) string {
+func DataBasic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_logins_data_basic", nil)
 }
 
-func DataFilterRestricted(t *testing.T, username, ip, status string, restricted bool) string {
+func DataFilterRestricted(t testing.TB, username, ip, status string, restricted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_logins_data_filter_by_restricted", TemplateData{
 			Username:   username,
@@ -28,7 +28,7 @@ func DataFilterRestricted(t *testing.T, username, ip, status string, restricted 
 		})
 }
 
-func DataFilterUsername(t *testing.T, username, ip, status string, restricted bool) string {
+func DataFilterUsername(t testing.TB, username, ip, status string, restricted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_logins_data_filter_by_username", TemplateData{
 			Username:   username,
@@ -38,7 +38,7 @@ func DataFilterUsername(t *testing.T, username, ip, status string, restricted bo
 		})
 }
 
-func DataFilterIP(t *testing.T, username, ip, status string, restricted bool) string {
+func DataFilterIP(t testing.TB, username, ip, status string, restricted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_logins_data_filter_by_ip", TemplateData{
 			Username:   username,
@@ -48,7 +48,7 @@ func DataFilterIP(t *testing.T, username, ip, status string, restricted bool) st
 		})
 }
 
-func DataFilterStatus(t *testing.T, username, ip, status string, restricted bool) string {
+func DataFilterStatus(t testing.TB, username, ip, status string, restricted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_logins_data_filter_by_status", TemplateData{
 			Username:   username,

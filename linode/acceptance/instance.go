@@ -71,7 +71,7 @@ func CheckInstanceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func AssertInstanceReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
+func AssertInstanceReboot(t testing.TB, shouldRestart bool, instance *linodego.Instance) func() {
 	t.Helper()
 
 	return func() {

@@ -16,7 +16,7 @@ const dataSourceClusterName = "data.linode_lke_cluster.test"
 func TestAccDataSourceLKECluster_taints_labels(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -48,7 +48,7 @@ func TestAccDataSourceLKECluster_taints_labels(t *testing.T) {
 func TestAccDataSourceLKECluster_basic(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -83,7 +83,7 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 func TestAccDataSourceLKECluster_autoscaler(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -118,7 +118,7 @@ func TestAccDataSourceLKECluster_autoscaler(t *testing.T) {
 func TestAccDataSourceLKECluster_controlPlane(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestWithRetries(t, 2, func(t *testing.T) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		testIPv4 := "0.0.0.0/0"
 		testIPv6 := "2001:db8::/32"
