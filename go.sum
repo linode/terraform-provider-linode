@@ -193,6 +193,8 @@ github.com/linode/linodego v0.0.0-20241015160627-9bbcf49f9b8f h1:+ddtcUR+uMCwM/L
 github.com/linode/linodego v0.0.0-20241015160627-9bbcf49f9b8f/go.mod h1:2yzmY6pegPBDgx2HDllmt0eIk2IlzqcgK6NR0wFCFRY=
 github.com/linode/linodego v1.41.0 h1:GcP7JIBr9iLRJ9FwAtb9/WCT1DuPJS/xUApapfdjtiY=
 github.com/linode/linodego v1.41.0/go.mod h1:Ow4/XZ0yvWBzt3iAHwchvhSx30AyLintsSMvvQ2/SJY=
+github.com/linode/linodego v1.42.0 h1:ZSbi4MtvwrfB9Y6bknesorvvueBGGilcmh2D5dq76RM=
+github.com/linode/linodego v1.42.0/go.mod h1:2yzmY6pegPBDgx2HDllmt0eIk2IlzqcgK6NR0wFCFRY=
 github.com/linode/linodego/k8s v1.25.2 h1:PY6S0sAD3xANVvM9WY38bz9GqMTjIbytC8IJJ9Cv23o=
 github.com/linode/linodego/k8s v1.25.2/go.mod h1:DC1XCSRZRGsmaa/ggpDPSDUmOM6aK1bhSIP6+f9Cwhc=
 github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
