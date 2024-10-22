@@ -57,6 +57,9 @@ func (t *WrappedT) Fail() {
 
 func (t *WrappedT) FailNow() {
 	t.Fail()
+
+	// This is necessary to prevent further closure execution.
+	// lintignore: R009
 	panic(nil)
 }
 
