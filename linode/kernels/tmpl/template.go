@@ -10,21 +10,21 @@ type TemplateData struct {
 	Id string
 }
 
-func DataBasic(t *testing.T, id string) string {
+func DataBasic(t testing.TB, id string) string {
 	return acceptance.ExecuteTemplate(t,
 		"kernels_data_basic", TemplateData{
 			Id: id,
 		})
 }
 
-func DataFilter(t *testing.T, id string) string {
+func DataFilter(t testing.TB, id string) string {
 	return acceptance.ExecuteTemplate(t,
 		"kernels_data_filter", TemplateData{
 			Id: id,
 		})
 }
 
-func DataFilterEmpty(t *testing.T, id string) string {
+func DataFilterEmpty(t testing.TB, id string) string {
 	return acceptance.ExecuteTemplate(t,
 		"kernels_data_filter_empty", TemplateData{
 			Id: id,

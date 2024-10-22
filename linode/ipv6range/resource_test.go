@@ -24,11 +24,11 @@ const testRegion = "eu-central"
 func TestAccIPv6Range_basic(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resName := "linode_ipv6_range.foobar"
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
@@ -62,11 +62,11 @@ func TestAccIPv6Range_basic(t *testing.T) {
 func TestAccIPv6Range_routeTarget(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resName := "linode_ipv6_range.foobar"
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
@@ -115,7 +115,7 @@ func TestAccIPv6Range_noID(t *testing.T) {
 func TestAccIPv6Range_reassignment(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resName := "linode_ipv6_range.foobar"
 		instance1ResName := "linode_instance.foobar"
 		instance2ResName := "linode_instance.foobar2"
@@ -125,7 +125,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 		var instance1 linodego.Instance
 		var instance2 linodego.Instance
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
@@ -180,7 +180,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 	t.Parallel()
 
 	// Occasionally IPv6 range deletions take a bit to replicate
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		instLabel := acctest.RandomWithPrefix("tf_test")
 
 		resource.Test(t, resource.TestCase{
@@ -273,7 +273,7 @@ func checkIPv6RangeNoDuplicates(s *terraform.State) error {
 	return nil
 }
 
-func validateInstanceIPv6Assignments(t *testing.T, assignedID, unassignedID int) {
+func validateInstanceIPv6Assignments(t testing.TB, assignedID, unassignedID int) {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	assignedNetworking, err := client.GetInstanceIPAddresses(context.Background(), assignedID)

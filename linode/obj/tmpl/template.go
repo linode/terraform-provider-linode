@@ -18,7 +18,7 @@ type TemplateData struct {
 	Source  string
 }
 
-func BasicWithCluster(t *testing.T, name, cluster, keyName, content, source string) string {
+func BasicWithCluster(t testing.TB, name, cluster, keyName, content, source string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_basic", TemplateData{
 			Bucket:  objectbucket.TemplateData{Label: name, Cluster: cluster},
@@ -29,7 +29,7 @@ func BasicWithCluster(t *testing.T, name, cluster, keyName, content, source stri
 		})
 }
 
-func Basic(t *testing.T, name, region, keyName, content, source string) string {
+func Basic(t testing.TB, name, region, keyName, content, source string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_basic", TemplateData{
 			Bucket:  objectbucket.TemplateData{Label: name, Region: region},
@@ -40,7 +40,7 @@ func Basic(t *testing.T, name, region, keyName, content, source string) string {
 		})
 }
 
-func Updates(t *testing.T, name, region, keyName, content, source string) string {
+func Updates(t testing.TB, name, region, keyName, content, source string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_updates", TemplateData{
 			Bucket:  objectbucket.TemplateData{Label: name, Region: region},
@@ -51,7 +51,7 @@ func Updates(t *testing.T, name, region, keyName, content, source string) string
 		})
 }
 
-func CredsConfiged(t *testing.T, name, region, keyName, content string) string {
+func CredsConfiged(t testing.TB, name, region, keyName, content string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_creds_configed", TemplateData{
 			Bucket:  objectbucket.TemplateData{Label: name, Region: region},
@@ -61,7 +61,7 @@ func CredsConfiged(t *testing.T, name, region, keyName, content string) string {
 		})
 }
 
-func TempKeys(t *testing.T, name, region, keyName, content string) string {
+func TempKeys(t testing.TB, name, region, keyName, content string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_object_temp_keys", TemplateData{
 			Bucket:  objectbucket.TemplateData{Label: name, Region: region},

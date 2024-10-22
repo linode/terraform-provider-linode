@@ -12,7 +12,7 @@ type TemplateData struct {
 	Region string
 }
 
-func Basic(t *testing.T, label, ipv4, region string) string {
+func Basic(t testing.TB, label, ipv4, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_basic", TemplateData{
 			Label:  label,
@@ -21,7 +21,7 @@ func Basic(t *testing.T, label, ipv4, region string) string {
 		})
 }
 
-func Updates(t *testing.T, label, ipv4, region string) string {
+func Updates(t testing.TB, label, ipv4, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_updates", TemplateData{
 			Label:  label,
@@ -30,7 +30,7 @@ func Updates(t *testing.T, label, ipv4, region string) string {
 		})
 }
 
-func DataBasic(t *testing.T, label, ipv4, region string) string {
+func DataBasic(t testing.TB, label, ipv4, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_data_basic", TemplateData{
 			Label:  label,
@@ -39,7 +39,7 @@ func DataBasic(t *testing.T, label, ipv4, region string) string {
 		})
 }
 
-func Attached(t *testing.T, label, ipv4, region string) string {
+func Attached(t testing.TB, label, ipv4, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnet_attached", TemplateData{
 			Label:  label,

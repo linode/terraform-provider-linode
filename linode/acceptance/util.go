@@ -149,7 +149,7 @@ func TestProvider(t *testing.T) {
 	}
 }
 
-func PreCheck(t *testing.T) {
+func PreCheck(t testing.TB) {
 	t.Helper()
 
 	if v := os.Getenv("LINODE_TOKEN"); v == "" {
@@ -157,7 +157,7 @@ func PreCheck(t *testing.T) {
 	}
 }
 
-func OptInTest(t *testing.T) {
+func OptInTest(t testing.TB) {
 	t.Helper()
 
 	if _, ok := optInTests[t.Name()]; !ok {
@@ -165,7 +165,7 @@ func OptInTest(t *testing.T) {
 	}
 }
 
-func LongRunningTest(t *testing.T) {
+func LongRunningTest(t testing.TB) {
 	t.Helper()
 
 	shouldRunStr := os.Getenv(runLongTestsEnvVar)
@@ -183,7 +183,7 @@ func LongRunningTest(t *testing.T) {
 	}
 }
 
-func GetSSHClient(t *testing.T, user, addr string) (client *ssh.Client) {
+func GetSSHClient(t testing.TB, user, addr string) (client *ssh.Client) {
 	t.Helper()
 
 	signer, err := ssh.ParsePrivateKey([]byte(privateKeyMaterial))
@@ -526,7 +526,7 @@ func AnyOfTestCheckFunc(funcs ...resource.TestCheckFunc) resource.TestCheckFunc 
 	}
 }
 
-func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string {
+func ExecuteTemplate(t testing.TB, templateName string, data interface{}) string {
 	t.Helper()
 
 	var b bytes.Buffer
@@ -539,7 +539,7 @@ func ExecuteTemplate(t *testing.T, templateName string, data interface{}) string
 	return b.String()
 }
 
-func CreateTempFile(t *testing.T, name, content string) *os.File {
+func CreateTempFile(t testing.TB, name, content string) *os.File {
 	file, err := os.CreateTemp(os.TempDir(), name)
 	if err != nil {
 		t.Fatalf("failed to create temp file: %s", err)

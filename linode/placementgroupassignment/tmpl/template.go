@@ -12,7 +12,7 @@ type TemplateData struct {
 	AssignmentExists bool
 }
 
-func Basic(t *testing.T, label, region string, assignmentExists bool) string {
+func Basic(t testing.TB, label, region string, assignmentExists bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"placement_group_assignment_basic", TemplateData{
 			Label:            label,

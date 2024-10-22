@@ -14,7 +14,7 @@ type TemplateData struct {
 	RootPass string
 }
 
-func Basic(t *testing.T, label, region string, size int) string {
+func Basic(t testing.TB, label, region string, size int) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_basic", TemplateData{
 			Label:  label,
@@ -23,7 +23,7 @@ func Basic(t *testing.T, label, region string, size int) string {
 		})
 }
 
-func Complex(t *testing.T, label, region string, size int) string {
+func Complex(t testing.TB, label, region string, size int) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_basic", TemplateData{
 			Label:  label,
@@ -33,7 +33,7 @@ func Complex(t *testing.T, label, region string, size int) string {
 		})
 }
 
-func BootedResize(t *testing.T, label, region string, size int, rootPass string) string {
+func BootedResize(t testing.TB, label, region string, size int, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_booted_resize", TemplateData{
 			Label:    label,

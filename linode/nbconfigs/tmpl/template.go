@@ -12,7 +12,7 @@ type TemplateData struct {
 	Port   int
 }
 
-func DataBasic(t *testing.T, label, region string) string {
+func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nb_configs_data_basic", TemplateData{
 			Label:  label,
@@ -20,7 +20,7 @@ func DataBasic(t *testing.T, label, region string) string {
 		})
 }
 
-func DataFilter(t *testing.T, label, region string, port int) string {
+func DataFilter(t testing.TB, label, region string, port int) string {
 	return acceptance.ExecuteTemplate(t,
 		"nb_configs_data_filter", TemplateData{
 			Label:  label,

@@ -10,7 +10,7 @@ type TemplateData struct {
 	ID string
 }
 
-func DataBasic(t *testing.T, id string) string {
+func DataBasic(t testing.TB, id string) string {
 	return acceptance.ExecuteTemplate(t,
 		"obj_cluster_data_basic", TemplateData{ID: id})
 }

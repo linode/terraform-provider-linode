@@ -28,7 +28,7 @@ func init() {
 	testRegion = region
 }
 
-func preConfigVLANPoll(t *testing.T, vlanName string) func() {
+func preConfigVLANPoll(t testing.TB, vlanName string) func() {
 	return func() {
 		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 		if _, err := waitForVLANWithLabel(client, vlanName, 30); err != nil {

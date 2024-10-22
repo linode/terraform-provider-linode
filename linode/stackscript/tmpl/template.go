@@ -11,17 +11,17 @@ type TemplateData struct {
 	Script string
 }
 
-func Basic(t *testing.T, label string) string {
+func Basic(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"stackscript_basic", TemplateData{Label: label})
 }
 
-func CodeChange(t *testing.T, label string) string {
+func CodeChange(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"stackscript_code_change", TemplateData{Label: label})
 }
 
-func DataBasic(t *testing.T, script string) string {
+func DataBasic(t testing.TB, script string) string {
 	return acceptance.ExecuteTemplate(t,
 		"stackscript_data_basic", TemplateData{
 			Script: script,

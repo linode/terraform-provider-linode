@@ -13,7 +13,7 @@ type TemplateDataBasic struct {
 	IPv4_2 string
 }
 
-func DataBasic(t *testing.T, label, region, ipv4_1, ipv4_2 string) string {
+func DataBasic(t testing.TB, label, region, ipv4_1, ipv4_2 string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_ips_data_basic", TemplateDataBasic{
 			Label:  label,

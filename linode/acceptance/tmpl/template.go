@@ -8,7 +8,7 @@ import (
 
 // ProviderNoPoll is used to configure the provider to disable instance
 // polling.
-func ProviderNoPoll(t *testing.T) string {
+func ProviderNoPoll(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"provider_no_poll", nil,
 	)

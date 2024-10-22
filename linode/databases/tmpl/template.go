@@ -13,7 +13,7 @@ type TemplateData struct {
 	Label  string
 }
 
-func ByLabel(t *testing.T, engineVersion, instLabel, dsLabel, region string) string {
+func ByLabel(t testing.TB, engineVersion, instLabel, dsLabel, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_label", TemplateData{
 			DB:    databasemysqltmpl.TemplateData{Engine: engineVersion, Label: instLabel, Region: region},
@@ -21,7 +21,7 @@ func ByLabel(t *testing.T, engineVersion, instLabel, dsLabel, region string) str
 		})
 }
 
-func ByEngine(t *testing.T, engineVersion, label, engine, region string) string {
+func ByEngine(t testing.TB, engineVersion, label, engine, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"databases_data_by_engine", TemplateData{
 			DB:     databasemysqltmpl.TemplateData{Engine: engineVersion, Label: label, Region: region},

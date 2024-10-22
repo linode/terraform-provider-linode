@@ -8,7 +8,7 @@ import (
 
 type TemplateData struct{}
 
-func DataBasic(t *testing.T) string {
+func DataBasic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"profile_data_basic", nil)
 }

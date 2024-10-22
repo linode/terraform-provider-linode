@@ -27,6 +27,6 @@ type TemplateData struct {
 	Labels            map[string]string
 }
 
-func Generate(t *testing.T, data *TemplateData) string {
+func Generate(t testing.TB, data *TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "nodepool_template", *data)
 }
