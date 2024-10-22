@@ -597,7 +597,7 @@ func UserData(t testing.TB, label, region string, rootPass string) string {
 }
 
 func DiskEncryption(
-	t *testing.T,
+	t testing.TB,
 	label,
 	region,
 	rootPass string,
@@ -618,6 +618,15 @@ func DataBasic(t testing.TB, label, region string, rootPass string) string {
 		"instance_data_basic", TemplateData{
 			Label:    label,
 			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		})
+}
+
+func DataWithBlockStorageEncryption(t testing.TB, label, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_data_with_block_storage_encryption", TemplateData{
+			Label:    label,
 			Region:   region,
 			RootPass: rootPass,
 		})
