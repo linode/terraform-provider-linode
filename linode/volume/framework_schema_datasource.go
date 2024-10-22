@@ -48,6 +48,11 @@ var VolumeAttributes = map[string]schema.Attribute{
 		Description: "Datetime string representing when the Volume was last updated.",
 		Computed:    true,
 	},
+	"encryption": schema.StringAttribute{
+		Description: "Whether Block Storage Disk Encryption is enabled or disabled on this Volume. " +
+			"Note: Block Storage Disk Encryption is not currently available to all users.",
+		Computed: true,
+	},
 }
 
 var frameworkDataSourceSchema = schema.Schema{
