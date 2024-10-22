@@ -23,7 +23,6 @@ func RunTestWithRetries(t testing.TB, maxAttempts int, f func(t *WrappedT)) {
 		func() {
 			defer func() {
 				if r := recover(); r != nil {
-					t.Logf("panic: %v", r)
 					closurePanic = true
 				}
 			}()
