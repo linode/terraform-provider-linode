@@ -64,7 +64,7 @@ func (r *Resource) Create(
 			Public:  isPublic,
 			Address: plan.Address.ValueString(),
 		}
-		_, err = client.AssignInstanceReservedIP(ctx, linodeID, createOpts)
+		ip, err = client.AssignInstanceReservedIP(ctx, linodeID, createOpts)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				fmt.Sprintf("Failed to assign reserved IP to instance (%d)", linodeID),
