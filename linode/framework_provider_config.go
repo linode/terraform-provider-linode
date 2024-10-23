@@ -157,6 +157,13 @@ func (fp *FrameworkProvider) HandleDefaults(
 		)
 	}
 
+	if lpm.APICAPath.IsNull() {
+		lpm.APICAPath = GetStringFromEnv(
+			linodego.APIHostCert,
+			types.StringNull(),
+		)
+	}
+
 	if lpm.SkipInstanceReadyPoll.IsNull() {
 		lpm.SkipInstanceReadyPoll = types.BoolValue(false)
 	}
@@ -229,17 +236,6 @@ func (fp *FrameworkProvider) InitProvider(
 		return
 	}
 
-	loggingTransport := helper.NewAPILoggerTransport(
-		logging.NewSubsystemLoggingHTTPTransport(
-			helper.APILoggerSubsystem,
-			http.DefaultTransport,
-		),
-	)
-
-	oauth2Client := &http.Client{
-		Transport: loggingTransport,
-	}
-
 	accessToken := lpm.AccessToken.ValueString()
 	APIURL := lpm.APIURL.ValueString()
 	APIVersion := lpm.APIVersion.ValueString()
@@ -259,14 +255,44 @@ func (fp *FrameworkProvider) InitProvider(
 	eventPollMilliseconds := lpm.EventPollMilliseconds.ValueInt64()
 	// LKENodeReadyPollMilliseconds := lpm.LKEEventPollMilliseconds.ValueInt64()
 
+	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
+
+	if !lpm.APICAPath.IsNull() {
+		caPath, err := helper.ExpandPath(lpm.APICAPath.ValueString())
+		if err != nil {
+			diags.AddError("Failed to expand api_ca_path", err.Error())
+			return
+		}
+
+		if err := helper.AddRootCAToTransport(caPath, httpTransport); err != nil {
+			diags.AddError("Failed to add root CA to HTTP transport", err.Error())
+			return
+		}
+	}
+
+	oauth2Client := &http.Client{
+		Transport: helper.NewAPILoggerTransport(
+			logging.NewSubsystemLoggingHTTPTransport(
+				helper.APILoggerSubsystem,
+				httpTransport,
+			),
+		),
+	}
+
 	client := linodego.NewClient(oauth2Client)
 	// Load the config file if it exists
 	if _, err := os.Stat(configPath); err == nil {
 		tflog.Info(ctx, "Using Linode profile", map[string]any{
 			"config_path": lpm.ConfigPath,
 		})
+
+		configPathExpanded, err := helper.ExpandPath(configPath)
+		if err != nil {
+			diags.AddError("Failed to expand config path", err.Error())
+		}
+
 		err = client.LoadConfig(&linodego.LoadConfigOptions{
-			Path:    configPath,
+			Path:    configPathExpanded,
 			Profile: configProfile,
 		})
 		if err != nil {

@@ -60,6 +60,11 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Description: "The version of Linode API.",
 			},
+			"api_ca_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The path to a Linode API CA file to trust.",
+			},
 
 			"skip_instance_ready_poll": {
 				Type:        schema.TypeBool,
@@ -178,6 +183,12 @@ func handleDefault(config *helper.Config, d *schema.ResourceData) diag.Diagnosti
 		config.APIVersion = v.(string)
 	} else {
 		config.APIVersion = os.Getenv("LINODE_API_VERSION")
+	}
+
+	if v, ok := d.GetOk("api_ca_path"); ok {
+		config.APICAPath = v.(string)
+	} else {
+		config.APICAPath = os.Getenv(linodego.APIHostCert)
 	}
 
 	if v, ok := d.GetOk("config_path"); ok {
