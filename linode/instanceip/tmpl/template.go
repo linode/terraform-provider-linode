@@ -30,12 +30,3 @@ func NoBoot(t *testing.T, instanceLabel, region string, applyImmediately bool) s
 			Region:           region,
 		})
 }
-
-func AddReservedIP(t *testing.T, instanceLabel, region string, address string) string {
-	return acceptance.ExecuteTemplate(t,
-		"instance_ip_add_reservedIP", TemplateData{
-			Label:   instanceLabel,
-			Region:  region,
-			Address: address,
-		})
-}
