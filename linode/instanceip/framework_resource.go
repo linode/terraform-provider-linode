@@ -153,7 +153,6 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 	ip, err := client.GetInstanceIPAddress(ctx, linodeID, address)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
