@@ -10,6 +10,7 @@ type TemplateData struct {
 	Label            string
 	ApplyImmediately bool
 	Region           string
+	Address          string
 }
 
 func Basic(t *testing.T, instanceLabel, region string, applyImmediately bool) string {
