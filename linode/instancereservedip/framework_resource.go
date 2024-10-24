@@ -1,4 +1,4 @@
-package instanceip
+package instancereservedip
 
 import (
 	"context"
@@ -16,7 +16,7 @@ func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
-				Name:   "linode_instance_ip",
+				Name:   "linode_instance_reserved_ip",
 				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},
@@ -54,13 +54,24 @@ func (r *Resource) Create(
 	isPublic := plan.Public.ValueBool()
 
 	client := r.Meta.Client
-	ip, err := client.AddInstanceIPAddress(ctx, linodeID, isPublic)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to created instance (%d) IP", linodeID),
-			err.Error(),
-		)
-		return
+	var ip *linodego.InstanceIP
+	var err error
+
+	if !plan.Address.IsNull() && !plan.Address.IsUnknown() {
+		// Assign a reserved IP
+		createOpts := linodego.InstanceReserveIPOptions{
+			Type:    "ipv4",
+			Public:  isPublic,
+			Address: plan.Address.ValueString(),
+		}
+		ip, err = client.AssignInstanceReservedIP(ctx, linodeID, createOpts)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to assign reserved IP to instance (%d)", linodeID),
+				err.Error(),
+			)
+			return
+		}
 	}
 
 	if !plan.RDNS.IsNull() && !plan.RDNS.IsUnknown() {
@@ -84,11 +95,6 @@ func (r *Resource) Create(
 			)
 			return
 		}
-	}
-
-	if ip == nil {
-		resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the instance ip")
-		return
 	}
 
 	resp.Diagnostics.Append(plan.FlattenInstanceIP(ctx, *ip, true)...)
