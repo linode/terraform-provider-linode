@@ -105,10 +105,5 @@ var frameworkResourceSchema = schema.Schema{
 			Computed: true,
 			Default:  booldefault.StaticBool(false),
 		},
-
-		"reserved": schema.BoolAttribute{
-			Description: "The reservation status of the IP address",
-			Computed:    true,
-		},
 	},
 }

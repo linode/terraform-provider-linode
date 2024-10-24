@@ -31,6 +31,7 @@ type InstanceIPModel struct {
 	Type             types.String `tfsdk:"type"`
 	ApplyImmediately types.Bool   `tfsdk:"apply_immediately"`
 	IPVPCNAT1To1     types.List   `tfsdk:"vpc_nat_1_1"`
+	Reserved         types.Bool   `tfsdk:"reserved"`
 }
 
 func (m *InstanceIPModel) FlattenInstanceIP(
@@ -48,6 +49,7 @@ func (m *InstanceIPModel) FlattenInstanceIP(
 	m.Prefix = helper.KeepOrUpdateInt64(m.Prefix, int64(ip.Prefix), preserveKnown)
 
 	m.RDNS = helper.KeepOrUpdateString(m.RDNS, ip.RDNS, preserveKnown)
+	m.Reserved = helper.KeepOrUpdateBool(m.Reserved, ip.Reserved, preserveKnown)
 
 	m.Region = helper.KeepOrUpdateString(m.Region, ip.Region, preserveKnown)
 	m.SubnetMask = helper.KeepOrUpdateString(m.SubnetMask, ip.SubnetMask, preserveKnown)
@@ -97,6 +99,7 @@ func (m *InstanceIPModel) CopyFrom(
 	m.Prefix = helper.KeepOrUpdateValue(m.Prefix, other.Prefix, preserveKnown)
 
 	m.RDNS = helper.KeepOrUpdateValue(m.RDNS, other.RDNS, preserveKnown)
+	m.Reserved = helper.KeepOrUpdateValue(m.Reserved, other.Reserved, preserveKnown)
 
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
 	m.SubnetMask = helper.KeepOrUpdateValue(m.SubnetMask, other.SubnetMask, preserveKnown)
