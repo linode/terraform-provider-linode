@@ -110,11 +110,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	// if reservedIP == nil {
-	// 	resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the reserved ip")
-	// 	return
-	// }
-
 	resp.Diagnostics.Append(data.FlattenReservedIP(ctx, *reservedIP, false)...)
 	if resp.Diagnostics.HasError() {
 		return
