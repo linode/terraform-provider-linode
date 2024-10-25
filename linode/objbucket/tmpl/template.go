@@ -119,7 +119,7 @@ func ForceDelete(t testing.TB, label, region string) string {
 		})
 }
 
-func ForceDelete_Empty(t *testing.T) string {
+func ForceDelete_Empty(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t, "object_bucket_force_delete_empty", nil)
 }
 
