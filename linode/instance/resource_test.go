@@ -2927,3 +2927,54 @@ func TestAccResourceInstance_withReservedIP(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	resourceName := "linode_instance.foobar"
+	testRegion := "us-east"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16)
+	reservedIP := "172.104.17.36" // Use a test IP or fetch a real reserved IP
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithReservedIP(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass, reservedIP),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttr(resourceName, "label", instanceName),
+					resource.TestCheckResourceAttr(resourceName, "ipv4.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "ipv4.0", reservedIP),
+				),
+			},
+			{
+				Config: " ", // Empty config to trigger instance deletion
+				Check: resource.ComposeTestCheckFunc(
+					func(s *terraform.State) error {
+						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						// Check if the instance is deleted
+						_, err := client.GetInstance(context.Background(), instance.ID)
+						if err == nil {
+							return fmt.Errorf("Linode instance %d still exists", instance.ID)
+						}
+						if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
+							return fmt.Errorf("Error requesting Linode instance %d: %s", instance.ID, err)
+						}
+						// Check if the Reserved IP still exists and is reserved
+						ip, err := client.GetIPAddress(context.Background(), reservedIP)
+						if err != nil {
+							return fmt.Errorf("Error checking if Reserved IP still exists: %s", err)
+						}
+						if !ip.Reserved {
+							return fmt.Errorf("Reserved IP %s is no longer reserved after instance deletion", reservedIP)
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
