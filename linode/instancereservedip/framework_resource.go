@@ -136,7 +136,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_instance_ip")
+	tflog.Debug(ctx, "Read linode_instance_reserved_ip")
 	var state InstanceIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -151,43 +151,31 @@ func (r *Resource) Read(
 	ctx = populateLogAttributes(ctx, &state)
 
 	client := r.Meta.Client
-	address := state.Address.ValueString()
-	linodeID := helper.FrameworkSafeInt64ToInt(
-		state.LinodeID.ValueInt64(),
-		&resp.Diagnostics,
-	)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	address := state.ID.ValueString() // Use ID as address
 
-	ip, err := client.GetInstanceIPAddress(ctx, linodeID, address)
+	ip, err := client.GetIPAddress(ctx, address)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
-				"Instance IP No Longer Exists",
-				fmt.Sprintf(
-					"Removing instance IP %s from state because it no longer exists",
-					state.ID.ValueString(),
-				),
+				"Reserved IP No Longer Exists",
+				fmt.Sprintf("Removing reserved IP %s from state because it no longer exists", state.ID.ValueString()),
 			)
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError(
-			"Unable to Refresh the Instance IP",
-			fmt.Sprintf(
-				"Error finding the specified Instance IP: %s",
-				err.Error(),
-			),
+			"Unable to Refresh Reserved IP",
+			fmt.Sprintf("Error finding the specified Reserved IP: %s", err.Error()),
 		)
 		return
 	}
 
 	if ip == nil {
-		resp.Diagnostics.AddError("nil Pointer", "received nil pointer of the instance ip")
+		resp.Diagnostics.AddError("nil Pointer", "received nil pointer for reserved IP")
 		return
 	}
 
+	// Populate state with fetched data
 	resp.Diagnostics.Append(state.FlattenInstanceIP(ctx, *ip, false)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
