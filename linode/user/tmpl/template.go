@@ -13,7 +13,7 @@ type TemplateData struct {
 	InstLabel  string
 }
 
-func Basic(t *testing.T, username, email string, restricted bool) string {
+func Basic(t testing.TB, username, email string, restricted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_basic", TemplateData{
 			Username:   username,
@@ -22,7 +22,7 @@ func Basic(t *testing.T, username, email string, restricted bool) string {
 		})
 }
 
-func Grants(t *testing.T, username, email string) string {
+func Grants(t testing.TB, username, email string) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_grants", TemplateData{
 			Username: username,
@@ -30,7 +30,7 @@ func Grants(t *testing.T, username, email string) string {
 		})
 }
 
-func GrantsUpdate(t *testing.T, username, email, instance string) string {
+func GrantsUpdate(t testing.TB, username, email, instance string) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_grants_update", TemplateData{
 			Username:  username,
@@ -39,17 +39,17 @@ func GrantsUpdate(t *testing.T, username, email, instance string) string {
 		})
 }
 
-func DataBasic(t *testing.T) string {
+func DataBasic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_data_basic", nil)
 }
 
-func DataNoUser(t *testing.T) string {
+func DataNoUser(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"user_data_nouser", nil)
 }
 
-func DataGrants(t *testing.T, username, email string) string {
+func DataGrants(t testing.TB, username, email string) string {
 	return acceptance.ExecuteTemplate(t,
 		"data_grants", TemplateData{
 			Username: username,

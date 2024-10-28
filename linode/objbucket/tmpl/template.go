@@ -21,22 +21,22 @@ type TemplateData struct {
 	Region  string
 }
 
-func Basic(t *testing.T, label, region string) string {
+func Basic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_basic", TemplateData{Label: label, Region: region})
 }
 
-func BasicLegacy(t *testing.T, label, cluster string) string {
+func BasicLegacy(t testing.TB, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_basic", TemplateData{Label: label, Cluster: cluster})
 }
 
-func Updates(t *testing.T, label, region string) string {
+func Updates(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_updates", TemplateData{Label: label, Region: region})
 }
 
-func Access(t *testing.T, label, cluster, acl string, cors bool) string {
+func Access(t testing.TB, label, cluster, acl string, cors bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_access", TemplateData{
 			Label:       label,
@@ -46,7 +46,7 @@ func Access(t *testing.T, label, cluster, acl string, cors bool) string {
 		})
 }
 
-func Cert(t *testing.T, label, region, cert, privKey string) string {
+func Cert(t testing.TB, label, region, cert, privKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cert", TemplateData{
 			Label:   label,
@@ -56,7 +56,7 @@ func Cert(t *testing.T, label, region, cert, privKey string) string {
 		})
 }
 
-func Versioning(t *testing.T, label, cluster, keyName string, versioning bool) string {
+func Versioning(t testing.TB, label, cluster, keyName string, versioning bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_versioning", TemplateData{
 			Key:        objkey.TemplateData{Label: keyName},
@@ -66,7 +66,7 @@ func Versioning(t *testing.T, label, cluster, keyName string, versioning bool) s
 		})
 }
 
-func LifeCycle(t *testing.T, label, cluster, keyName string) string {
+func LifeCycle(t testing.TB, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle", TemplateData{
 			Key:     objkey.TemplateData{Label: keyName},
@@ -75,7 +75,7 @@ func LifeCycle(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
-func LifeCycleNoID(t *testing.T, label, cluster, keyName string) string {
+func LifeCycleNoID(t testing.TB, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_no_id", TemplateData{
 			Key:     objkey.TemplateData{Label: keyName},
@@ -84,7 +84,7 @@ func LifeCycleNoID(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
-func LifeCycleUpdates(t *testing.T, label, cluster, keyName string) string {
+func LifeCycleUpdates(t testing.TB, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_updates", TemplateData{
 			Key:     objkey.TemplateData{Label: keyName},
@@ -93,7 +93,7 @@ func LifeCycleUpdates(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
-func LifeCycleRemoved(t *testing.T, label, cluster, keyName string) string {
+func LifeCycleRemoved(t testing.TB, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_removed", TemplateData{
 			Key:     objkey.TemplateData{Label: keyName},
@@ -102,7 +102,7 @@ func LifeCycleRemoved(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
-func TempKeys(t *testing.T, label, cluster, keyName string) string {
+func TempKeys(t testing.TB, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_temp_keys", TemplateData{
 			Key:     objkey.TemplateData{Label: keyName},
@@ -111,7 +111,7 @@ func TempKeys(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
-func ForceDelete(t *testing.T, label, region string) string {
+func ForceDelete(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_force_delete", TemplateData{
 			Label:  label,
@@ -119,11 +119,11 @@ func ForceDelete(t *testing.T, label, region string) string {
 		})
 }
 
-func ForceDelete_Empty(t *testing.T) string {
+func ForceDelete_Empty(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t, "object_bucket_force_delete_empty", nil)
 }
 
-func ClusterDataBasic(t *testing.T, label, cluster string) string {
+func ClusterDataBasic(t testing.TB, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_cluster_data_basic", TemplateData{
 			Label:   label,
@@ -131,7 +131,7 @@ func ClusterDataBasic(t *testing.T, label, cluster string) string {
 		})
 }
 
-func CredsConfiged(t *testing.T, label, cluster, keyName string) string {
+func CredsConfiged(t testing.TB, label, cluster, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_creds_configed", TemplateData{
 			Key:     objkey.TemplateData{Label: keyName},
@@ -140,7 +140,7 @@ func CredsConfiged(t *testing.T, label, cluster, keyName string) string {
 		})
 }
 
-func DataBasicWithCluster(t *testing.T, label, cluster string) string {
+func DataBasicWithCluster(t testing.TB, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_data_basic", TemplateData{
 			Label:   label,
@@ -148,7 +148,7 @@ func DataBasicWithCluster(t *testing.T, label, cluster string) string {
 		})
 }
 
-func DataBasic(t *testing.T, label, region string) string {
+func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_data_basic", TemplateData{
 			Label:  label,

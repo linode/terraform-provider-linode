@@ -11,7 +11,7 @@ type TemplateData struct {
 	SSHKey string
 }
 
-func Basic(t *testing.T, label, sshKey string) string {
+func Basic(t testing.TB, label, sshKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"sshkey_basic", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func Basic(t *testing.T, label, sshKey string) string {
 		})
 }
 
-func Updates(t *testing.T, label, sshKey string) string {
+func Updates(t testing.TB, label, sshKey string) string {
 	return acceptance.ExecuteTemplate(t,
 		"sshkey_updates", TemplateData{
 			Label:  label,
@@ -27,7 +27,7 @@ func Updates(t *testing.T, label, sshKey string) string {
 		})
 }
 
-func DataBasic(t *testing.T, label string) string {
+func DataBasic(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"sshkey_data_basic", TemplateData{Label: label})
 }

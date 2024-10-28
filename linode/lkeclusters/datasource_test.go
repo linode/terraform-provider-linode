@@ -57,9 +57,9 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 
 	dataSourceName := "data.linode_lke_clusters.test"
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,

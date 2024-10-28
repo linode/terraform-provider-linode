@@ -13,7 +13,7 @@ type TemplateData struct {
 	InterfaceIPv4 string
 }
 
-func DataBasic(t *testing.T, instanceLabel, region string) string {
+func DataBasic(t testing.TB, instanceLabel, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_networking_data_basic", TemplateData{
 			Label:  instanceLabel,
@@ -21,7 +21,7 @@ func DataBasic(t *testing.T, instanceLabel, region string) string {
 		})
 }
 
-func DataVPC(t *testing.T, label, region, subnetIPv4, interfaceIPv4 string) string {
+func DataVPC(t testing.TB, label, region, subnetIPv4, interfaceIPv4 string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_networking_data_vpc", TemplateData{
 			Label:         label,

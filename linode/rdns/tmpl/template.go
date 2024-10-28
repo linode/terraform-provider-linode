@@ -14,7 +14,7 @@ type TemplateData struct {
 	WaitForAvailable bool
 }
 
-func Basic(t *testing.T, label, region string, waitForAvailable bool) string {
+func Basic(t testing.TB, label, region string, waitForAvailable bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_basic", TemplateData{
 			Label:            label,
@@ -23,7 +23,7 @@ func Basic(t *testing.T, label, region string, waitForAvailable bool) string {
 		})
 }
 
-func Changed(t *testing.T, label, region string, waitForAvailable bool) string {
+func Changed(t testing.TB, label, region string, waitForAvailable bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_changed", TemplateData{
 			Label:            label,
@@ -32,7 +32,7 @@ func Changed(t *testing.T, label, region string, waitForAvailable bool) string {
 		})
 }
 
-func Deleted(t *testing.T, label, region string) string {
+func Deleted(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_deleted", TemplateData{
 			Label:  label,
@@ -40,7 +40,7 @@ func Deleted(t *testing.T, label, region string) string {
 		})
 }
 
-func WithTimeout(t *testing.T, label, region, createTimeout, updateTimeout string) string {
+func WithTimeout(t testing.TB, label, region, createTimeout, updateTimeout string) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_with_timeout", TemplateData{
 			Label:         label,
@@ -50,7 +50,7 @@ func WithTimeout(t *testing.T, label, region, createTimeout, updateTimeout strin
 		})
 }
 
-func WithTimeoutUpdated(t *testing.T, label, region, createTimeout, updateTimeout string) string {
+func WithTimeoutUpdated(t testing.TB, label, region, createTimeout, updateTimeout string) string {
 	return acceptance.ExecuteTemplate(t,
 		"rdns_with_timeout_updated", TemplateData{
 			Label:         label,

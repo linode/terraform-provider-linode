@@ -12,7 +12,7 @@ type TemplateData struct {
 	IPv4   string
 }
 
-func DataBasic(t *testing.T, label, region, ipv4 string) string {
+func DataBasic(t testing.TB, label, region, ipv4 string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnets_data_basic", TemplateData{
 			Label:  label,
@@ -21,7 +21,7 @@ func DataBasic(t *testing.T, label, region, ipv4 string) string {
 		})
 }
 
-func DataFilterLabel(t *testing.T, label, region, ipv4 string) string {
+func DataFilterLabel(t testing.TB, label, region, ipv4 string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_subnets_data_filter_label", TemplateData{
 			Label:  label,
