@@ -8,6 +8,13 @@ import (
 
 var frameworkResourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Description: "The ID of the reserved IP address, which will be the IP address itself.",
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"region": schema.StringAttribute{
 			Description: "The Region in which to reserve the IP address.",
 			Required:    true,
@@ -50,10 +57,6 @@ var frameworkResourceSchema = schema.Schema{
 		},
 		"reserved": schema.BoolAttribute{
 			Description: "Whether this IP is reserved or not.",
-			Computed:    true,
-		},
-		"id": schema.StringAttribute{
-			Description: "The unique ID of the reserved IP address.",
 			Computed:    true,
 		},
 	},
