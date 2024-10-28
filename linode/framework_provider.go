@@ -33,6 +33,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/images"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
+	"github.com/linode/terraform-provider-linode/v2/linode/instanceips"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedip"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
@@ -300,5 +301,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		childaccounts.NewDataSource,
 		networkreservedip.NewDataSourceFetch,
 		networkreservedips.NewDataSourceList,
+		instanceips.NewDataSource,
 	}
 }

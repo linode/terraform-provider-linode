@@ -1,0 +1,15 @@
+{{ define "instance_ips_basic" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image = "linode/debian12"
+}
+
+data "linode_instance_ips" "test" {
+    id = linode_instance.foobar.id
+}
+
+{{ end }}
