@@ -231,6 +231,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		placementgroupassignment.NewResource,
 		instancereservedip.NewResource,
 		networkreservedip.NewResource,
+		networkingip.NewResource,
 	}
 }
 
