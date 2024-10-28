@@ -85,7 +85,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	ctx = populateLogAttributes(ctx, &data)
 
 	client := r.Meta.Client
-	address := data.Address.ValueString()
+	address := data.ID.ValueString()
 
 	reservedIP, err := client.GetReservedIPAddress(ctx, address)
 	if err != nil {
