@@ -23,10 +23,17 @@ var frameworkResourceSchema = schema.Schema{
 		"rdns": schema.StringAttribute{
 			Description: "The reverse DNS assigned to this address. For public IPv4 addresses, this will be set " +
 				"to a default value provided by Linode if not explicitly set.",
-			Required: true,
+			// Required: true,
+			Optional: true,
+			Computed: true,
 			Validators: []validator.String{
 				stringvalidator.LengthBetween(3, 254),
 			},
+		},
+		"reserved": schema.BoolAttribute{
+			Description: "Whether the IP address is reserved.",
+			Optional:    true,
+			Computed:    true,
 		},
 		"wait_for_available": schema.BoolAttribute{
 			Description: "If true, the RDNS assignment will be retried within the operation timeout period.",
