@@ -15,18 +15,22 @@ func updateIPAddress(
 	ctx context.Context,
 	client *linodego.Client,
 	address string,
-	opts linodego.IPAddressUpdateOptions,
+	desiredRDNS *string,
 	waitForAvailable bool,
 ) (*linodego.InstanceIP, error) {
+	updateOpts := linodego.IPAddressUpdateOptions{
+		RDNS: desiredRDNS,
+	}
+
 	if waitForAvailable {
-		return updateIPAddressWithRetries(ctx, client, address, opts, time.Second*5)
+		return updateIPAddressWithRetries(ctx, client, address, updateOpts, time.Second*5)
 	}
 
 	tflog.Debug(ctx, "client.UpdateIPAddress(...)", map[string]any{
-		"options": opts,
+		"options": updateOpts,
 	})
 
-	return client.UpdateIPAddress(ctx, address, opts)
+	return client.UpdateIPAddress(ctx, address, updateOpts)
 }
 
 func updateIPAddressWithRetries(ctx context.Context, client *linodego.Client, address string,

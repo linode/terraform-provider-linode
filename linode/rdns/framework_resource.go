@@ -90,59 +90,22 @@ func (r *Resource) Create(
 		)
 	}
 
-	updateOpts := linodego.IPAddressUpdateOptions{}
-
-	if !plan.RDNS.IsNull() {
-		rdnsValue := plan.RDNS.ValueString()
-		if rdnsValue != "" {
-			updateOpts.RDNS = &rdnsValue
-		}
-	}
-
-	if !plan.Reserved.IsNull() && plan.Reserved.ValueBool() {
-		updateOpts.Reserved = plan.Reserved.ValueBool()
-	}
-
-	// Only call updateIPAddress if there are options to update
-	if updateOpts.RDNS != nil || !plan.Reserved.IsNull() {
-		// Log updateOpts before calling updateIPAddress
-		tflog.Info(ctx, "UpdateOpts before calling updateIPAddress", map[string]interface{}{
-			"RDNS":     updateOpts.RDNS,
-			"Reserved": updateOpts.Reserved,
-		})
-		ip, err = updateIPAddress(
-			ctx,
-			client,
-			plan.Address.ValueString(),
-			updateOpts,
-			plan.WaitForAvailable.ValueBool(),
+	ip, err = updateIPAddress(
+		ctx,
+		client,
+		plan.Address.ValueString(),
+		plan.RDNS.ValueStringPointer(),
+		plan.WaitForAvailable.ValueBool(),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to create Linode RDNS",
+			err.Error(),
 		)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to update Linode IP",
-				err.Error(),
-			)
-			return
-		}
+		return
 	}
 
-	// Log IP fields before FlattenInstanceIP
-	tflog.Info(ctx, "IP details before FlattenInstanceIP", map[string]interface{}{
-		"Address":    ip.Address,
-		"Gateway":    ip.Gateway,
-		"SubnetMask": ip.SubnetMask,
-		"Prefix":     ip.Prefix,
-		"Type":       ip.Type,
-		"Public":     ip.Public,
-		"LinodeID":   ip.LinodeID,
-		"Region":     ip.Region,
-		"RDNS":       ip.RDNS,
-		"Reserved":   ip.Reserved,
-	})
-
-	// Update the plan with the latest IP information
 	plan.FlattenInstanceIP(ip, true)
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -224,15 +187,7 @@ func (r *Resource) Update(
 	resourceUpdated := false
 
 	if !state.RDNS.Equal(plan.RDNS) {
-		rdnsValue := plan.RDNS.ValueString()
-		if rdnsValue != "" {
-			updateOpts.RDNS = &rdnsValue
-			resourceUpdated = true
-		}
-	}
-
-	if !state.Reserved.Equal(plan.Reserved) {
-		updateOpts.Reserved = plan.Reserved.ValueBool()
+		updateOpts.RDNS = plan.RDNS.ValueStringPointer()
 		resourceUpdated = true
 	}
 
@@ -241,12 +196,12 @@ func (r *Resource) Update(
 			ctx,
 			client,
 			plan.Address.ValueString(),
-			updateOpts,
+			plan.RDNS.ValueStringPointer(),
 			plan.WaitForAvailable.ValueBool(),
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Failed to update the Linode IP",
+				"Failed to update the Linode RDNS",
 				err.Error(),
 			)
 			return
