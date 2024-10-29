@@ -41,8 +41,7 @@ var frameworkResourceSchema = schema.Schema{
 
 		"address": schema.StringAttribute{
 			Description: "The resulting IPv4 address.",
-			Optional:    true,
-			Computed:    true,
+			Required:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
