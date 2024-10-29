@@ -55,6 +55,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingips"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkipassignment"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedip"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices"
@@ -232,6 +233,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		instancereservedip.NewResource,
 		networkreservedip.NewResource,
 		networkingip.NewResource,
+		networkipassignment.NewResource,
 	}
 }
 
