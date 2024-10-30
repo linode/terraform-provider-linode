@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func DataBasic(t *testing.T, volume, region string) string {
+func DataBasic(t testing.TB, volume, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"volumes_data_basic", TemplateData{Label: volume, Region: region})
 }

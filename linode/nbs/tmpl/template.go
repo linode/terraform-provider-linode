@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func DataBasic(t *testing.T, label, region string) string {
+func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nbs_data_basic", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func DataBasic(t *testing.T, label, region string) string {
 		})
 }
 
-func DataFilterEmpty(t *testing.T, label, region string) string {
+func DataFilterEmpty(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nbs_data_filter_empty", TemplateData{
 			Label:  label,
@@ -27,7 +27,7 @@ func DataFilterEmpty(t *testing.T, label, region string) string {
 		})
 }
 
-func DataFilter(t *testing.T, label, region string) string {
+func DataFilter(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nbs_data_filter", TemplateData{
 			Label:  label,
@@ -35,7 +35,7 @@ func DataFilter(t *testing.T, label, region string) string {
 		})
 }
 
-func DataOrder(t *testing.T, label, region string) string {
+func DataOrder(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nbs_data_order", TemplateData{
 			Label:  label,

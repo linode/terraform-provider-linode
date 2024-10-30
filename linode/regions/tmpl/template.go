@@ -12,12 +12,12 @@ type TemplateData struct {
 	Capabilities string
 }
 
-func DataBasic(t *testing.T) string {
+func DataBasic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"regions_data_basic", nil)
 }
 
-func DataFilterCountry(t *testing.T, country, status string, capabilities string) string {
+func DataFilterCountry(t testing.TB, country, status string, capabilities string) string {
 	return acceptance.ExecuteTemplate(t,
 		"regions_data_filter_by_country", TemplateData{
 			Country:      country,
@@ -26,7 +26,7 @@ func DataFilterCountry(t *testing.T, country, status string, capabilities string
 		})
 }
 
-func DataFilterStatus(t *testing.T, country, status string, capabilities string) string {
+func DataFilterStatus(t testing.TB, country, status string, capabilities string) string {
 	return acceptance.ExecuteTemplate(t,
 		"regions_data_filter_by_status", TemplateData{
 			Country:      country,
@@ -35,7 +35,7 @@ func DataFilterStatus(t *testing.T, country, status string, capabilities string)
 		})
 }
 
-func DataFilterCapabilities(t *testing.T, country, status string, capabilities string) string {
+func DataFilterCapabilities(t testing.TB, country, status string, capabilities string) string {
 	return acceptance.ExecuteTemplate(t,
 		"regions_data_filter_by_capabilities", TemplateData{
 			Country:      country,

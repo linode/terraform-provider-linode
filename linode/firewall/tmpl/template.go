@@ -22,7 +22,7 @@ type TemplateData struct {
 	Label string
 }
 
-func Basic(t *testing.T, label, devicePrefix, region string) string {
+func Basic(t testing.TB, label, devicePrefix, region string) string {
 	resources := []ResourceTemplateData{
 		{
 			Prefix:   devicePrefix,
@@ -41,7 +41,7 @@ func Basic(t *testing.T, label, devicePrefix, region string) string {
 		})
 }
 
-func Updates(t *testing.T, label, devicePrefix, region string) string {
+func Updates(t testing.TB, label, devicePrefix, region string) string {
 	resources := []ResourceTemplateData{
 		{
 			Prefix:   devicePrefix,
@@ -67,14 +67,14 @@ func Updates(t *testing.T, label, devicePrefix, region string) string {
 		})
 }
 
-func Minimum(t *testing.T, label string) string {
+func Minimum(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_minimum", TemplateData{
 			Label: label,
 		})
 }
 
-func MultipleRules(t *testing.T, label, devicePrefix, region string) string {
+func MultipleRules(t testing.TB, label, devicePrefix, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_multiple_rules", TemplateData{
 			Label: label,
@@ -90,28 +90,28 @@ func MultipleRules(t *testing.T, label, devicePrefix, region string) string {
 		})
 }
 
-func NoDevice(t *testing.T, label string) string {
+func NoDevice(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_no_device", TemplateData{
 			Label: label,
 		})
 }
 
-func NoIPv6(t *testing.T, label string) string {
+func NoIPv6(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_no_ipv6", TemplateData{
 			Label: label,
 		})
 }
 
-func NoRules(t *testing.T, label string) string {
+func NoRules(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_no_rules", TemplateData{
 			Label: label,
 		})
 }
 
-func DataBasic(t *testing.T, label, devicePrefix, region string) string {
+func DataBasic(t testing.TB, label, devicePrefix, region string) string {
 	resources := []ResourceTemplateData{
 		{
 			Prefix:   devicePrefix,

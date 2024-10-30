@@ -21,7 +21,7 @@ type InstanceTemplateData struct {
 	RootPass string
 }
 
-func Basic(t *testing.T, nodebalancer, region string, rootPass string) string {
+func Basic(t testing.TB, nodebalancer, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_basic",
 		TemplateData{
@@ -41,7 +41,7 @@ func Basic(t *testing.T, nodebalancer, region string, rootPass string) string {
 		})
 }
 
-func Updates(t *testing.T, nodebalancer, region string, rootPass string) string {
+func Updates(t testing.TB, nodebalancer, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_updates",
 		TemplateData{
@@ -61,7 +61,7 @@ func Updates(t *testing.T, nodebalancer, region string, rootPass string) string 
 		})
 }
 
-func DataBasic(t *testing.T, nodebalancer, region string, rootPass string) string {
+func DataBasic(t testing.TB, nodebalancer, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"nodebalancer_node_data_basic",
 		TemplateData{

@@ -30,7 +30,7 @@ type TemplateData struct {
 	DiskEncryption *linodego.InstanceDiskEncryption
 }
 
-func Basic(t *testing.T, label, pubKey, region string, rootPass string) string {
+func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_basic", TemplateData{
 			Label:    label,
@@ -41,7 +41,7 @@ func Basic(t *testing.T, label, pubKey, region string, rootPass string) string {
 		})
 }
 
-func Updates(t *testing.T, label, region string) string {
+func Updates(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_updates", TemplateData{
 			Label:  label,
@@ -50,7 +50,7 @@ func Updates(t *testing.T, label, region string) string {
 		})
 }
 
-func WatchdogDisabled(t *testing.T, label, region string, rootPass string) string {
+func WatchdogDisabled(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_watchdog_disabled", TemplateData{
 			Label:    label,
@@ -60,7 +60,7 @@ func WatchdogDisabled(t *testing.T, label, region string, rootPass string) strin
 		})
 }
 
-func WithType(t *testing.T, label, pubKey, typ, region string, rootPass string) string {
+func WithType(t testing.TB, label, pubKey, typ, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_type", TemplateData{
 			Label:    label,
@@ -72,7 +72,7 @@ func WithType(t *testing.T, label, pubKey, typ, region string, rootPass string) 
 		})
 }
 
-func WithSwapSize(t *testing.T, label, pubKey, region string, swapSize int, rootPass string) string {
+func WithSwapSize(t testing.TB, label, pubKey, region string, swapSize int, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_swap_size", TemplateData{
 			Label:    label,
@@ -84,7 +84,7 @@ func WithSwapSize(t *testing.T, label, pubKey, region string, swapSize int, root
 		})
 }
 
-func FullDisk(t *testing.T, label, pubKey, stackScriptName, region string, swapSize int, rootPass string) string {
+func FullDisk(t testing.TB, label, pubKey, stackScriptName, region string, swapSize int, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_full_disk", TemplateData{
 			Label:           label,
@@ -97,7 +97,7 @@ func FullDisk(t *testing.T, label, pubKey, stackScriptName, region string, swapS
 		})
 }
 
-func WithConfig(t *testing.T, label, region string) string {
+func WithConfig(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_config", TemplateData{
 			Label:  label,
@@ -106,7 +106,7 @@ func WithConfig(t *testing.T, label, region string) string {
 		})
 }
 
-func MultipleConfigs(t *testing.T, label, region string) string {
+func MultipleConfigs(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_multiple_configs", TemplateData{
 			Label:  label,
@@ -115,7 +115,7 @@ func MultipleConfigs(t *testing.T, label, region string) string {
 		})
 }
 
-func Interfaces(t *testing.T, label, region string) string {
+func Interfaces(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces", TemplateData{
 			Label:  label,
@@ -124,7 +124,7 @@ func Interfaces(t *testing.T, label, region string) string {
 		})
 }
 
-func InterfacesUpdate(t *testing.T, label, region string) string {
+func InterfacesUpdate(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces_update", TemplateData{
 			Label:  label,
@@ -133,7 +133,7 @@ func InterfacesUpdate(t *testing.T, label, region string) string {
 		})
 }
 
-func InterfacesUpdateEmpty(t *testing.T, label, region string) string {
+func InterfacesUpdateEmpty(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_interfaces_update_empty", TemplateData{
 			Label:  label,
@@ -142,7 +142,7 @@ func InterfacesUpdateEmpty(t *testing.T, label, region string) string {
 		})
 }
 
-func ConfigInterfaces(t *testing.T, label, region string, rootPass string) string {
+func ConfigInterfaces(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces", TemplateData{
 			Label:    label,
@@ -152,7 +152,7 @@ func ConfigInterfaces(t *testing.T, label, region string, rootPass string) strin
 		})
 }
 
-func ConfigInterfacesMultiple(t *testing.T, label, region string, rootPass string) string {
+func ConfigInterfacesMultiple(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_multiple", TemplateData{
 			Label:    label,
@@ -162,7 +162,7 @@ func ConfigInterfacesMultiple(t *testing.T, label, region string, rootPass strin
 		})
 }
 
-func ConfigInterfacesUpdate(t *testing.T, label, region string, rootPass string) string {
+func ConfigInterfacesUpdate(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_update", TemplateData{
 			Label:    label,
@@ -172,7 +172,7 @@ func ConfigInterfacesUpdate(t *testing.T, label, region string, rootPass string)
 		})
 }
 
-func ConfigInterfacesUpdateNoReboot(t *testing.T, label, region string, rootPass string) string {
+func ConfigInterfacesUpdateNoReboot(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_update_no_reboot", TemplateData{
 			Label:    label,
@@ -182,7 +182,7 @@ func ConfigInterfacesUpdateNoReboot(t *testing.T, label, region string, rootPass
 		})
 }
 
-func ConfigInterfacesUpdateEmpty(t *testing.T, label, region string, rootPass string) string {
+func ConfigInterfacesUpdateEmpty(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_interfaces_update_empty", TemplateData{
 			Label:    label,
@@ -192,7 +192,7 @@ func ConfigInterfacesUpdateEmpty(t *testing.T, label, region string, rootPass st
 		})
 }
 
-func ConfigUpdates(t *testing.T, label, region string) string {
+func ConfigUpdates(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_updates", TemplateData{
 			Label:  label,
@@ -201,7 +201,7 @@ func ConfigUpdates(t *testing.T, label, region string) string {
 		})
 }
 
-func ConfigsAllUpdated(t *testing.T, label, region string) string {
+func ConfigsAllUpdated(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_configs_all_updated", TemplateData{
 			Label:  label,
@@ -210,7 +210,7 @@ func ConfigsAllUpdated(t *testing.T, label, region string) string {
 		})
 }
 
-func RawDisk(t *testing.T, label, region string) string {
+func RawDisk(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_raw_disk", TemplateData{
 			Label:  label,
@@ -219,7 +219,7 @@ func RawDisk(t *testing.T, label, region string) string {
 		})
 }
 
-func RawDiskDeleted(t *testing.T, label, region string) string {
+func RawDiskDeleted(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_raw_disk_deleted", TemplateData{
 			Label:  label,
@@ -228,7 +228,7 @@ func RawDiskDeleted(t *testing.T, label, region string) string {
 		})
 }
 
-func Tag(t *testing.T, label, region string) string {
+func Tag(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag", TemplateData{
 			Label:  label,
@@ -237,7 +237,7 @@ func Tag(t *testing.T, label, region string) string {
 		})
 }
 
-func TagUpdate(t *testing.T, label, region string) string {
+func TagUpdate(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag_update", TemplateData{
 			Label:  label,
@@ -246,7 +246,7 @@ func TagUpdate(t *testing.T, label, region string) string {
 		})
 }
 
-func TagUpdateCaseChange(t *testing.T, label, region string) string {
+func TagUpdateCaseChange(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag_update_case_change", TemplateData{
 			Label:  label,
@@ -255,7 +255,7 @@ func TagUpdateCaseChange(t *testing.T, label, region string) string {
 		})
 }
 
-func TagVolume(t *testing.T, label, tag, region string) string {
+func TagVolume(t testing.TB, label, tag, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_tag_volume", TemplateData{
 			Label:  label,
@@ -265,7 +265,7 @@ func TagVolume(t *testing.T, label, tag, region string) string {
 		})
 }
 
-func RawDiskExpanded(t *testing.T, label, region string) string {
+func RawDiskExpanded(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_raw_disk_expanded", TemplateData{
 			Label:  label,
@@ -274,7 +274,7 @@ func RawDiskExpanded(t *testing.T, label, region string) string {
 		})
 }
 
-func Disk(t *testing.T, label, pubKey, region string, rootPass string) string {
+func Disk(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk", TemplateData{
 			Label:    label,
@@ -285,7 +285,7 @@ func Disk(t *testing.T, label, pubKey, region string, rootPass string) string {
 		})
 }
 
-func DiskMultiple(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskMultiple(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_multiple", TemplateData{
 			Label:    label,
@@ -296,7 +296,7 @@ func DiskMultiple(t *testing.T, label, pubKey, region string, rootPass string) s
 		})
 }
 
-func DiskConfig(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskConfig(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_config", TemplateData{
 			Label:    label,
@@ -307,7 +307,7 @@ func DiskConfig(t *testing.T, label, pubKey, region string, rootPass string) str
 		})
 }
 
-func DiskConfigExpanded(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskConfigExpanded(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_config_expanded", TemplateData{
 			Label:    label,
@@ -318,7 +318,7 @@ func DiskConfigExpanded(t *testing.T, label, pubKey, region string, rootPass str
 		})
 }
 
-func DiskConfigResized(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskConfigResized(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_config_resized", TemplateData{
 			Label:    label,
@@ -329,7 +329,7 @@ func DiskConfigResized(t *testing.T, label, pubKey, region string, rootPass stri
 		})
 }
 
-func DiskConfigResizedExpanded(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskConfigResizedExpanded(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_config_resized_expanded", TemplateData{
 			Label:    label,
@@ -340,7 +340,7 @@ func DiskConfigResizedExpanded(t *testing.T, label, pubKey, region string, rootP
 		})
 }
 
-func DiskConfigReordered(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskConfigReordered(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_config_reordered", TemplateData{
 			Label:    label,
@@ -351,7 +351,7 @@ func DiskConfigReordered(t *testing.T, label, pubKey, region string, rootPass st
 		})
 }
 
-func DiskConfigMultiple(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskConfigMultiple(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_config_multiple", TemplateData{
 			Label:    label,
@@ -362,7 +362,7 @@ func DiskConfigMultiple(t *testing.T, label, pubKey, region string, rootPass str
 		})
 }
 
-func DiskBootImage(t *testing.T, label, image, region string) string {
+func DiskBootImage(t testing.TB, label, image, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_boot_image", TemplateData{
 			Label:  label,
@@ -371,7 +371,7 @@ func DiskBootImage(t *testing.T, label, image, region string) string {
 		})
 }
 
-func VolumeConfig(t *testing.T, label, pubKey, region string, rootPass string) string {
+func VolumeConfig(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_volume_config", TemplateData{
 			Label:    label,
@@ -382,7 +382,7 @@ func VolumeConfig(t *testing.T, label, pubKey, region string, rootPass string) s
 		})
 }
 
-func PrivateImage(t *testing.T, label, region string) string {
+func PrivateImage(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_private_image", TemplateData{
 			Label:  label,
@@ -391,7 +391,7 @@ func PrivateImage(t *testing.T, label, region string) string {
 		})
 }
 
-func NoImage(t *testing.T, label, region string) string {
+func NoImage(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_no_image", TemplateData{
 			Label:  label,
@@ -400,7 +400,7 @@ func NoImage(t *testing.T, label, region string) string {
 		})
 }
 
-func PrivateNetworking(t *testing.T, label, pubKey, region string, rootPass string) string {
+func PrivateNetworking(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_private_networking", TemplateData{
 			Label:    label,
@@ -411,7 +411,7 @@ func PrivateNetworking(t *testing.T, label, pubKey, region string, rootPass stri
 		})
 }
 
-func AuthorizedUsers(t *testing.T, label, pubKey, region string, rootPass string) string {
+func AuthorizedUsers(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_authorized_users", TemplateData{
 			Label:    label,
@@ -422,7 +422,7 @@ func AuthorizedUsers(t *testing.T, label, pubKey, region string, rootPass string
 		})
 }
 
-func AuthorizedKeysEmpty(t *testing.T, label, region string) string {
+func AuthorizedKeysEmpty(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_authorized_keys_empty", TemplateData{
 			Label:  label,
@@ -431,7 +431,7 @@ func AuthorizedKeysEmpty(t *testing.T, label, region string) string {
 		})
 }
 
-func DiskAuthorizedKeysEmpty(t *testing.T, label, region string, rootPass string) string {
+func DiskAuthorizedKeysEmpty(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_authorized_keys_empty", TemplateData{
 			Label:    label,
@@ -441,7 +441,7 @@ func DiskAuthorizedKeysEmpty(t *testing.T, label, region string, rootPass string
 		})
 }
 
-func StackScript(t *testing.T, label, region string) string {
+func StackScript(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_stackscript", TemplateData{
 			Label:  label,
@@ -450,7 +450,7 @@ func StackScript(t *testing.T, label, region string) string {
 		})
 }
 
-func DiskStackScript(t *testing.T, label, pubKey, region string, rootPass string) string {
+func DiskStackScript(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_disk_stackscript", TemplateData{
 			Label:    label,
@@ -461,7 +461,7 @@ func DiskStackScript(t *testing.T, label, pubKey, region string, rootPass string
 		})
 }
 
-func BootState(t *testing.T, label, region string, booted bool) string {
+func BootState(t testing.TB, label, region string, booted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state", TemplateData{
 			Label:  label,
@@ -471,7 +471,7 @@ func BootState(t *testing.T, label, region string, booted bool) string {
 		})
 }
 
-func BootStateNoImage(t *testing.T, label, region string, booted bool) string {
+func BootStateNoImage(t testing.TB, label, region string, booted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state_noimage", TemplateData{
 			Label:  label,
@@ -480,7 +480,7 @@ func BootStateNoImage(t *testing.T, label, region string, booted bool) string {
 		})
 }
 
-func BootStateInterface(t *testing.T, label, region string, booted bool) string {
+func BootStateInterface(t testing.TB, label, region string, booted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state_interface", TemplateData{
 			Label:  label,
@@ -490,7 +490,7 @@ func BootStateInterface(t *testing.T, label, region string, booted bool) string 
 		})
 }
 
-func BootStateConfig(t *testing.T, label, region string, booted bool, rootPass string) string {
+func BootStateConfig(t testing.TB, label, region string, booted bool, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_boot_state_config", TemplateData{
 			Label:    label,
@@ -501,7 +501,7 @@ func BootStateConfig(t *testing.T, label, region string, booted bool, rootPass s
 		})
 }
 
-func TypeChangeDisk(t *testing.T, label, instanceType, region string, resizeDisk bool) string {
+func TypeChangeDisk(t testing.TB, label, instanceType, region string, resizeDisk bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_type_change_disk", TemplateData{
 			Label:      label,
@@ -512,7 +512,7 @@ func TypeChangeDisk(t *testing.T, label, instanceType, region string, resizeDisk
 		})
 }
 
-func TypeChangeDiskExplicit(t *testing.T, label, instanceType, region string, resizeDisk bool) string {
+func TypeChangeDiskExplicit(t testing.TB, label, instanceType, region string, resizeDisk bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_type_change_disk_explicit", TemplateData{
 			Label:      label,
@@ -522,7 +522,7 @@ func TypeChangeDiskExplicit(t *testing.T, label, instanceType, region string, re
 		})
 }
 
-func TypeChangeDiskNone(t *testing.T, label, instanceType, region string, resizeDisk bool) string {
+func TypeChangeDiskNone(t testing.TB, label, instanceType, region string, resizeDisk bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_type_change_disk_none", TemplateData{
 			Label:      label,
@@ -532,7 +532,7 @@ func TypeChangeDiskNone(t *testing.T, label, instanceType, region string, resize
 		})
 }
 
-func TypeChangeWarm(t *testing.T, label, instanceType, region string, resizeDisk bool) string {
+func TypeChangeWarm(t testing.TB, label, instanceType, region string, resizeDisk bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_type_change_warm", TemplateData{
 			Label:      label,
@@ -543,7 +543,7 @@ func TypeChangeWarm(t *testing.T, label, instanceType, region string, resizeDisk
 		})
 }
 
-func IPv4Sharing(t *testing.T, label, region string) string {
+func IPv4Sharing(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ipv4_sharing", TemplateData{
 			Label:  label,
@@ -551,7 +551,7 @@ func IPv4Sharing(t *testing.T, label, region string) string {
 		})
 }
 
-func IPv4SharingEmpty(t *testing.T, label, region string) string {
+func IPv4SharingEmpty(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ipv4_sharing_empty", TemplateData{
 			Label:  label,
@@ -559,7 +559,7 @@ func IPv4SharingEmpty(t *testing.T, label, region string) string {
 		})
 }
 
-func IPv4SharingAllocation(t *testing.T, label, region string) string {
+func IPv4SharingAllocation(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ipv4_sharing_allocation", TemplateData{
 			Label:  label,
@@ -567,7 +567,7 @@ func IPv4SharingAllocation(t *testing.T, label, region string) string {
 		})
 }
 
-func IPv4SharingBadInput(t *testing.T, label, region string) string {
+func IPv4SharingBadInput(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ipv4_sharing_bad_input", TemplateData{
 			Label:  label,
@@ -575,7 +575,7 @@ func IPv4SharingBadInput(t *testing.T, label, region string) string {
 		})
 }
 
-func ManyLinodes(t *testing.T, label, pubKey, region string, rootPass string) string {
+func ManyLinodes(t testing.TB, label, pubKey, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_many_linodes", TemplateData{
 			Label:    label,
@@ -586,7 +586,7 @@ func ManyLinodes(t *testing.T, label, pubKey, region string, rootPass string) st
 		})
 }
 
-func UserData(t *testing.T, label, region string, rootPass string) string {
+func UserData(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_userdata", TemplateData{
 			Label:    label,
@@ -597,7 +597,7 @@ func UserData(t *testing.T, label, region string, rootPass string) string {
 }
 
 func DiskEncryption(
-	t *testing.T,
+	t testing.TB,
 	label,
 	region,
 	rootPass string,
@@ -613,7 +613,7 @@ func DiskEncryption(
 		})
 }
 
-func DataBasic(t *testing.T, label, region string, rootPass string) string {
+func DataBasic(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_basic", TemplateData{
 			Label:    label,
@@ -623,7 +623,7 @@ func DataBasic(t *testing.T, label, region string, rootPass string) string {
 		})
 }
 
-func DataWithBlockStorageEncryption(t *testing.T, label, region string, rootPass string) string {
+func DataWithBlockStorageEncryption(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_with_block_storage_encryption", TemplateData{
 			Label:    label,
@@ -632,7 +632,7 @@ func DataWithBlockStorageEncryption(t *testing.T, label, region string, rootPass
 		})
 }
 
-func DataWithPG(t *testing.T, label, region, assignedGroup string, groups []string) string {
+func DataWithPG(t testing.TB, label, region, assignedGroup string, groups []string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_with_pg", TemplateData{
 			Label:           label,
@@ -642,7 +642,7 @@ func DataWithPG(t *testing.T, label, region, assignedGroup string, groups []stri
 		})
 }
 
-func DataMultiple(t *testing.T, label, tag, region string, rootPass string) string {
+func DataMultiple(t testing.TB, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple", TemplateData{
 			Label:    label,
@@ -653,7 +653,7 @@ func DataMultiple(t *testing.T, label, tag, region string, rootPass string) stri
 		})
 }
 
-func DataMultipleOrder(t *testing.T, label, tag, region string, rootPass string) string {
+func DataMultipleOrder(t testing.TB, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple_order", TemplateData{
 			Label:    label,
@@ -664,7 +664,7 @@ func DataMultipleOrder(t *testing.T, label, tag, region string, rootPass string)
 		})
 }
 
-func DataMultipleRegex(t *testing.T, label, tag, region string, rootPass string) string {
+func DataMultipleRegex(t testing.TB, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_multiple_regex", TemplateData{
 			Label:    label,
@@ -675,7 +675,7 @@ func DataMultipleRegex(t *testing.T, label, tag, region string, rootPass string)
 		})
 }
 
-func DataClientFilter(t *testing.T, label, tag, region string, rootPass string) string {
+func DataClientFilter(t testing.TB, label, tag, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_data_clientfilter", TemplateData{
 			Label:    label,
@@ -686,7 +686,7 @@ func DataClientFilter(t *testing.T, label, tag, region string, rootPass string) 
 		})
 }
 
-func FirewallOnCreation(t *testing.T, label, region string, rootPass string) string {
+func FirewallOnCreation(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_firewall_on_creation", TemplateData{
 			Label:    label,
@@ -696,7 +696,7 @@ func FirewallOnCreation(t *testing.T, label, region string, rootPass string) str
 		})
 }
 
-func VPCInterface(t *testing.T, label, region string) string {
+func VPCInterface(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_vpc_interface", TemplateData{
 			Label:  label,
@@ -705,7 +705,7 @@ func VPCInterface(t *testing.T, label, region string) string {
 		})
 }
 
-func VPCAndPublicInterfaces(t *testing.T, label, region string) string {
+func VPCAndPublicInterfaces(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_vpc_public_interface", TemplateData{
 			Label:  label,
@@ -714,7 +714,7 @@ func VPCAndPublicInterfaces(t *testing.T, label, region string) string {
 		})
 }
 
-func PublicAndVPCInterfaces(t *testing.T, label, region string) string {
+func PublicAndVPCInterfaces(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_public_vpc_interface", TemplateData{
 			Label:  label,
@@ -723,7 +723,7 @@ func PublicAndVPCInterfaces(t *testing.T, label, region string) string {
 		})
 }
 
-func PublicInterface(t *testing.T, label, region string) string {
+func PublicInterface(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_public_interface", TemplateData{
 			Label:  label,
@@ -732,7 +732,7 @@ func PublicInterface(t *testing.T, label, region string) string {
 		})
 }
 
-func WithPG(t *testing.T, label, region, assignedGroup string, groups []string) string {
+func WithPG(t testing.TB, label, region, assignedGroup string, groups []string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_pg", TemplateData{
 			Label:           label,

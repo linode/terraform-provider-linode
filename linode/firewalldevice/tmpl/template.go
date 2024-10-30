@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func Basic(t *testing.T, label, region string) string {
+func Basic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_device_basic", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func Basic(t *testing.T, label, region string) string {
 		})
 }
 
-func Detached(t *testing.T, label, region string) string {
+func Detached(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_device_detached", TemplateData{
 			Label:  label,
@@ -27,7 +27,7 @@ func Detached(t *testing.T, label, region string) string {
 		})
 }
 
-func WithNodeBalancer(t *testing.T, label, region string) string {
+func WithNodeBalancer(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"firewall_device_with_nodebalancer", TemplateData{
 			Label:  label,
