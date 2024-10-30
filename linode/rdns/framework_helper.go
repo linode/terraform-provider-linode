@@ -15,13 +15,9 @@ func updateIPAddress(
 	ctx context.Context,
 	client *linodego.Client,
 	address string,
-	desiredRDNS *string,
+	updateOpts linodego.IPAddressUpdateOptions,
 	waitForAvailable bool,
 ) (*linodego.InstanceIP, error) {
-	updateOpts := linodego.IPAddressUpdateOptions{
-		RDNS: desiredRDNS,
-	}
-
 	if waitForAvailable {
 		return updateIPAddressWithRetries(ctx, client, address, updateOpts, time.Second*5)
 	}
