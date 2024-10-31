@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkingip/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkingips/tmpl"
 )
 
 var testRegion string
@@ -26,7 +26,7 @@ func init() {
 func TestAccDataSourceNetworkingIP_list(t *testing.T) {
 	t.Parallel()
 
-	dataResourceName := "data.linode_networking_ip.list"
+	dataResourceName := "data.linode_networking_ips.list"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -55,7 +55,7 @@ func TestAccDataSourceNetworkingIP_list(t *testing.T) {
 func TestAccDataSourceNetworkingIP_filterReserved(t *testing.T) {
 	t.Parallel()
 
-	dataResourceName := "data.linode_networking_ip.filtered"
+	dataResourceName := "data.linode_networking_ips.filtered"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
