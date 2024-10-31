@@ -1,0 +1,6 @@
+{{ define "networking_ip_data_list" }}
+
+data "linode_networking_ip" "list" {
+}
+
+{{ end }}

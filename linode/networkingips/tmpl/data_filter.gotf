@@ -1,0 +1,7 @@
+{{ define "networking_ip_data_filtered" }}
+
+data "linode_networking_ip" "filtered" {
+  filter_reserved = true
+}
+
+{{ end }}
