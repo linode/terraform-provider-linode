@@ -666,6 +666,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			&client,
 			instance,
 			d.Get("region").(string),
+			d.Get("migration_upgrade").(bool),
 		)
 		if err != nil {
 			return diag.Errorf("failed to migrate instance: %s", err)

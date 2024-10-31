@@ -494,6 +494,14 @@ var resourceSchema = map[string]*schema.Schema{
 		// This is necessary to prevent instances created pre-disk-encryption from being recreated.
 		Computed: true,
 	},
+	"migration_upgrade": {
+		Type: schema.TypeBool,
+		Description: "When initiating a cross DC migration, setting this value to true " +
+			"will also ensure that the Linode is upgraded to the latest generation of " +
+			"hardware that corresponds to your Linode's Type, if any free upgrades are " +
+			"available for it.",
+		Optional: true,
+	},
 	"lke_cluster_id": {
 		Type:        schema.TypeInt,
 		Description: "If applicable, the ID of the LKE cluster this Instance is a node of.",
