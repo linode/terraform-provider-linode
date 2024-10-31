@@ -1,0 +1,18 @@
+{{ define "networking_ip_reserved_assigned" }}
+
+resource "linode_instance" "test" {
+    label = "{{.Label}}"
+    group = "tf_test"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image = "linode/debian12"
+}
+
+resource "linode_networking_ip" "reserved_ip" {
+  linode_id = linode_instance.test.id
+  public    = true
+  type      = "ipv4"
+  reserved  = true
+}
+
+{{ end }}
