@@ -1,0 +1,22 @@
+{{ define "instance_networking_data_basic_with_reserved" }}
+
+resource "linode_instance" "foobar" {
+    label = "{{.Label}}"
+    type = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image = "linode/debian12"
+}
+
+resource "linode_networking_ip" "reserved_ip" {
+  region   = "{{ .Region }}"
+  public   = true
+  type     = "ipv4"
+  reserved = true
+  linode_id = linode_instance.foobar.id
+}
+
+data "linode_instance_networking" "test" {
+    linode_id = linode_instance.foobar.id
+}
+
+{{ end }}

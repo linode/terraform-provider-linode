@@ -30,3 +30,11 @@ func DataVPC(t *testing.T, label, region, subnetIPv4, interfaceIPv4 string) stri
 			InterfaceIPv4: interfaceIPv4,
 		})
 }
+
+func DataBasic_withReservedField(t *testing.T, instanceLabel, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_networking_data_basic_with_reserved", TemplateData{
+			Label:  instanceLabel,
+			Region: region,
+		})
+}
