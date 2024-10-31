@@ -1,4 +1,4 @@
-package instancereservedip
+package instancereservedipassignment
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package instancereservedip
+package instancereservedipassignment
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"

@@ -1,6 +1,6 @@
-//go:build integration || instancereservedip
+//go:build integration || instancereservedipassignment
 
-package instancereservedip_test
+package instancereservedipassignment_test
 
 import (
 	"log"
@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedip/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedipassignment/tmpl"
 )
 
-const testInstanceIPResName = "linode_instance_reserved_ip.test"
+const testInstanceIPResName = "linode_reserved_ip_assign.test"
 
 var testRegion string
 

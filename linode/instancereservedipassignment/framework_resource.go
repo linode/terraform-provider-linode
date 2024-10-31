@@ -1,4 +1,4 @@
-package instancereservedip
+package instancereservedipassignment
 
 import (
 	"context"
@@ -16,7 +16,7 @@ func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
-				Name:   "linode_instance_reserved_ip",
+				Name:   "linode_reserved_ip_assign",
 				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},

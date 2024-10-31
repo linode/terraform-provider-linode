@@ -34,7 +34,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedip"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedipassignment"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
@@ -226,7 +226,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		firewall.NewResource,
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
-		instancereservedip.NewResource,
+		instancereservedipassignment.NewResource,
 	}
 }
 

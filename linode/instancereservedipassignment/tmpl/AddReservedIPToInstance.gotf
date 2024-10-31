@@ -8,7 +8,7 @@ resource "linode_instance" "foobar" {
     image = "linode/debian12"
 }
 
-resource "linode_instance_reserved_ip" "test" {
+resource "linode_reserved_ip_assign" "test" {
     linode_id = linode_instance.foobar.id
     public = true
     address = "{{ .Address}}"
