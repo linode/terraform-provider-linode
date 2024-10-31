@@ -24,29 +24,3 @@ func NetworkingIPReservedAssigned(t *testing.T, label string, region string) str
 			Region: region,
 		})
 }
-
-func NetworkingIPReserved(t *testing.T, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"networking_ip_reserved",
-		TemplateData{
-			Region: region,
-		})
-}
-
-func NetworkingIPEphemeral(t *testing.T, label string, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"networking_ip_ephemeral",
-		TemplateData{
-			Label:  label,
-			Region: region,
-		})
-}
-
-func NetworkingIPEphemeralAssigned(t *testing.T, label string, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"networking_ip_ephemeral_assigned",
-		TemplateData{
-			Label:  label,
-			Region: region,
-		})
-}
