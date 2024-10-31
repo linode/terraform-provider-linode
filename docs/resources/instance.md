@@ -66,6 +66,23 @@ resource "linode_instance" "web" {
 }
 ```
 
+### Linode Instance with Reserved IP Address
+
+You can add a VPC or VLAN interface directly to a Linode instance resource.
+
+```hcl
+resource "linode_instance" "web" {
+  label           = "simple_instance"
+  image           = "linode/ubuntu22.04"
+  region          = "us-central"
+  type            = "g6-standard-1"
+  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
+  root_pass       = "this-is-not-a-safe-password"
+  ipv4 = ["existing-reserved-ip"]
+  
+}
+```
+
 ### Linode Instance with Explicit Configs and Disks
 
 Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance. This can be used to provision multiple disks and volumes during Instance creation.
@@ -195,6 +212,8 @@ The following arguments are supported:
   * **NOTE: Disk encryption may not currently be available to all users.**
 
 * `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
+
+* `ipv4` - (Optional) The reserved ipv4 address that the linode will be created with.
 
 ### Simplified Resource Arguments
 
