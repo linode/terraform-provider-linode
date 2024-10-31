@@ -33,7 +33,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_instance_ip")
+	tflog.Debug(ctx, "Create linode_reserved_ip_assign")
 	var plan InstanceIPModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
