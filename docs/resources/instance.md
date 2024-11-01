@@ -66,23 +66,6 @@ resource "linode_instance" "web" {
 }
 ```
 
-### Linode Instance with Reserved IP Address
-
-You can create a linode instance with a desired reserved IP address using this configuration.
-
-```hcl
-resource "linode_instance" "web" {
-  label           = "simple_instance"
-  image           = "linode/ubuntu22.04"
-  region          = "us-central"
-  type            = "g6-standard-1"
-  authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
-  root_pass       = "this-is-not-a-safe-password"
-  ipv4 = ["existing-reserved-ip"]
-  
-}
-```
-
 ### Linode Instance with Explicit Configs and Disks
 
 Using explicit Instance Configs and Disks it is possible to create a more elaborate Linode instance. This can be used to provision multiple disks and volumes during Instance creation.
@@ -140,8 +123,6 @@ resource "linode_instance_config" "boot_config" {
 ```
 
 ### Linode Instance Assigned to a Placement Group
-
-**NOTE: Placement Groups may not currently be available to all users.**
 
 The following example shows how one might use this resource to configure a Linode instance assigned to a
 Placement Group.
@@ -212,8 +193,6 @@ The following arguments are supported:
   * **NOTE: Disk encryption may not currently be available to all users.**
 
 * `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
-
-* `ipv4` - (Optional) The reserved ipv4 address that the linode will be created with.
 
 ### Simplified Resource Arguments
 
@@ -402,7 +381,7 @@ This Linode Instance resource exports the following attributes:
 
     * `window` - The window ('W0'-'W22') in which your backups will be taken, in UTC. A backups window is a two-hour span of time in which the backup may occur. For example, 'W10' indicates that your backups should be taken between 10:00 and 12:00. If you do not choose a backup window, one will be selected for you automatically.  If not set manually, when backups are initially enabled this may come back as Scheduling until the window is automatically selected.
 
-* `placement_group` - Information about the Placement Group this Linode is assigned to. NOTE: Placement Groups may not currently be available to all users.
+* `placement_group` - Information about the Placement Group this Linode is assigned to.
 
   * `id` - The ID of the Placement Group.
 
