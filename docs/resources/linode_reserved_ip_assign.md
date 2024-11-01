@@ -23,8 +23,6 @@ resource "linode_instance" "web" {
   type            = "g6-standard-1"
   authorized_keys = ["ssh-rsa AAAA...Gw== user@example.local"]
   root_pass       = "this-is-not-a-safe-password"
-  ipv4 = ["existing-reserved-ip"]
-  
 }
 
 
