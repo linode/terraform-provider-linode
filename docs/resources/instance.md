@@ -68,7 +68,7 @@ resource "linode_instance" "web" {
 
 ### Linode Instance with Reserved IP Address
 
-You can add a VPC or VLAN interface directly to a Linode instance resource.
+You can create a linode instance with a desired reserved IP address using this configuration.
 
 ```hcl
 resource "linode_instance" "web" {
