@@ -26,8 +26,8 @@ resource "linode_instance" "web" {
 }
 
 
-resource "linode_instance_ip" "foo" {
-    linode_id = linode_instance.foo.id
+resource "linode_reserved_ip_assign" "foo" {
+    linode_id = linode_instance.web.id
     public = true
     address = "desired_reservd_ip_address"
 }
@@ -77,5 +77,10 @@ In addition to all arguments above, the following attributes are exported:
 
 * `reserved` - The reservation status of the IP address.
 
+## Import
 
+Reserved IP addresses assigned to linode instance can be imported using the reserved IP address `address`, e.g.
 
+```sh
+terraform import linode_reserved_ip_assign.example_reserved_ip <reserved_ip_address>
+```
