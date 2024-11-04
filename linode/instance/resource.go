@@ -15,6 +15,8 @@ import (
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
+// Instance creation with reserved IPv4 is for internal use only : please refer to KB page for more information.
+
 const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
 	LinodeInstanceUpdateTimeout = time.Hour
