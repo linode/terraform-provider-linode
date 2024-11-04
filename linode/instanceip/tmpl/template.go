@@ -13,7 +13,7 @@ type TemplateData struct {
 	Address          string
 }
 
-func Basic(t *testing.T, instanceLabel, region string, applyImmediately bool) string {
+func Basic(t testing.TB, instanceLabel, region string, applyImmediately bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ip_basic", TemplateData{
 			Label:            instanceLabel,
@@ -22,7 +22,7 @@ func Basic(t *testing.T, instanceLabel, region string, applyImmediately bool) st
 		})
 }
 
-func NoBoot(t *testing.T, instanceLabel, region string, applyImmediately bool) string {
+func NoBoot(t testing.TB, instanceLabel, region string, applyImmediately bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ip_no_boot", TemplateData{
 			Label:            instanceLabel,

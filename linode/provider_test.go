@@ -1,4 +1,4 @@
-//go:build integration || vpcsubnets
+//go:build integration || provider
 
 package linode_test
 
@@ -20,6 +20,7 @@ func TestAccProvider_Overrides(t *testing.T) {
 token = 54321
 api_url = https://cool.linode.com
 api_version = v4reallycoolapiversion
+api_cert_path = cert.pem
 
 [cool]
 token = %s
@@ -74,7 +75,7 @@ api_version = v4beta
 	}
 }
 
-func createTestConfig(t *testing.T, conf string) *os.File {
+func createTestConfig(t testing.TB, conf string) *os.File {
 	file, err := os.CreateTemp("", "linode")
 	if err != nil {
 		t.Fatal(err)
@@ -90,7 +91,7 @@ func createTestConfig(t *testing.T, conf string) *os.File {
 	return file
 }
 
-func getEnvToken(t *testing.T) string {
+func getEnvToken(t testing.TB) string {
 	token, ok := os.LookupEnv("LINODE_TOKEN")
 	if !ok {
 		t.Fatal("LINODE_TOKEN must be specified")
