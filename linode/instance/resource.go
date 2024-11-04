@@ -112,6 +112,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
+	d.Set("capabilities", instance.Capabilities)
 	d.Set("booted", isInstanceBooted(instance))
 	d.Set("host_uuid", instance.HostUUID)
 	d.Set("has_user_data", instance.HasUserData)
@@ -137,6 +138,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 			placementGroupMap["compliant_only"] = compliantOnly.(bool)
 		}
 		d.Set("placement_group", []map[string]interface{}{placementGroupMap})
+	} else {
+		d.Set("placement_group", nil)
 	}
 
 	disks, swapSize := flattenInstanceDisks(instanceDisks)

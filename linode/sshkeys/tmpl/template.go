@@ -11,7 +11,7 @@ type TemplateData struct {
 	SSHKey string
 }
 
-func DataBasic(t *testing.T, label, ssh_key string) string {
+func DataBasic(t testing.TB, label, ssh_key string) string {
 	return acceptance.ExecuteTemplate(t,
 		"ssh_keys_basic", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func DataBasic(t *testing.T, label, ssh_key string) string {
 		})
 }
 
-func DataFilter(t *testing.T, label, ssh_key string) string {
+func DataFilter(t testing.TB, label, ssh_key string) string {
 	return acceptance.ExecuteTemplate(t,
 		"ssh_keys_filter", TemplateData{
 			Label:  label,
@@ -27,7 +27,7 @@ func DataFilter(t *testing.T, label, ssh_key string) string {
 		})
 }
 
-func DataFilterEmpty(t *testing.T, label, ssh_key string) string {
+func DataFilterEmpty(t testing.TB, label, ssh_key string) string {
 	return acceptance.ExecuteTemplate(t,
 		"ssh_keys_filter_empty", TemplateData{
 			Label:  label,
@@ -35,7 +35,7 @@ func DataFilterEmpty(t *testing.T, label, ssh_key string) string {
 		})
 }
 
-func DataAll(t *testing.T, label, ssh_key string) string {
+func DataAll(t testing.TB, label, ssh_key string) string {
 	return acceptance.ExecuteTemplate(t,
 		"ssh_keys_all", TemplateData{
 			Label:  label,

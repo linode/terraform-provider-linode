@@ -128,7 +128,7 @@ func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 
 // waitForAllNodesReady waits for every Node in every NodePool of the LKE Cluster to be in
 // a ready state.
-func waitForAllNodesReady(t *testing.T, cluster *linodego.LKECluster, pollInterval, timeout time.Duration) {
+func waitForAllNodesReady(t testing.TB, cluster *linodego.LKECluster, pollInterval, timeout time.Duration) {
 	t.Helper()
 
 	ctx := context.Background()
@@ -180,9 +180,9 @@ func TestSmokeTests_lke(t *testing.T) {
 func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -229,9 +229,9 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 
 	var cluster linodego.LKECluster
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -295,10 +295,10 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 			return nil
 		})
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		newClusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:  func() { acceptance.PreCheck(t) },
 			Providers: providerMap,
 			Steps: []resource.TestStep{
@@ -332,10 +332,10 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		newClusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -379,9 +379,9 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 
 	var cluster linodego.LKECluster
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -425,10 +425,10 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		// newClusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -500,14 +500,14 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		testIPv4 := "0.0.0.0/0"
 		testIPv6 := "2001:db8::/32"
 		testIPv4Updated := "203.0.113.1"
 		testIPv6Updated := "2001:db8:1234:abcd::/64"
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
@@ -606,9 +606,9 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 2, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,

@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func DataBasic(t *testing.T, label, region string) string {
+func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"ipv6ranges_data_basic", TemplateData{
 			Label:  label,

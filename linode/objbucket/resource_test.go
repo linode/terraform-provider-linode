@@ -188,11 +188,11 @@ func TestSmokeTests_objbucket(t *testing.T) {
 func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -218,11 +218,11 @@ func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
 func TestAccResourceBucket_basic_smoke(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -248,11 +248,11 @@ func TestAccResourceBucket_basic_smoke(t *testing.T) {
 func TestAccResourceBucket_access(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -283,12 +283,12 @@ func TestAccResourceBucket_access(t *testing.T) {
 func TestAccResourceBucket_versioning(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -317,12 +317,12 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 func TestAccResourceBucket_lifecycle(t *testing.T) {
 	t.Parallel()
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resName := "linode_object_storage_bucket.foobar"
 		objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 		objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-		resource.Test(retryT, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -378,8 +378,8 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -424,8 +424,8 @@ func TestAccResourceBucket_cert(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -469,8 +469,8 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 	resName := "linode_object_storage_bucket.foobar"
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -498,8 +498,8 @@ func TestAccResourceBucket_update(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	resName := "linode_object_storage_bucket.foobar"
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -530,8 +530,8 @@ func TestAccResourceBucket_credsConfiged(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -557,8 +557,8 @@ func TestAccResourceBucket_tempKeys(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -584,8 +584,8 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 	objectStorageBucketName := acctest.RandomWithPrefix("tf-test")
 	objectStorageKeyName := acctest.RandomWithPrefix("tf-test")
 
-	acceptance.RunTestRetry(t, 5, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
@@ -612,19 +612,19 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 
 						keys, err := client.CreateObjectStorageKey(context.Background(), createOpts)
 						if err != nil {
-							retryT.Errorf("error creating obj keys in PreConfig func: %v", err)
+							t.Errorf("error creating obj keys in PreConfig func: %v", err)
 						}
 						defer client.DeleteObjectStorageKey(context.Background(), keys.ID)
 
 						bucket, err := client.GetObjectStorageBucket(context.Background(), testRegion, objectStorageBucketName)
 						if err != nil {
-							retryT.Errorf("error getting obj bucket in PreConfig func: %v", err)
+							t.Errorf("error getting obj bucket in PreConfig func: %v", err)
 						}
 
 						endpoint := helper.ComputeS3EndpointFromBucket(context.Background(), *bucket)
 						s3client, err := helper.S3Connection(context.Background(), endpoint, keys.AccessKey, keys.SecretKey)
 						if err != nil {
-							retryT.Errorf("error connecting s3 in PreConfig func: %v", err)
+							t.Errorf("error connecting s3 in PreConfig func: %v", err)
 						}
 
 						contentBytes := []byte("delete test")

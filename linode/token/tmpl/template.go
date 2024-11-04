@@ -20,17 +20,17 @@ type TemplateNewScopesData struct {
 	Scopes string
 }
 
-func Basic(t *testing.T, label string) string {
+func Basic(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"token_basic", TemplateData{Label: label})
 }
 
-func Updates(t *testing.T, label string) string {
+func Updates(t testing.TB, label string) string {
 	return acceptance.ExecuteTemplate(t,
 		"token_updates", TemplateData{Label: label})
 }
 
-func RecreateNewScopes(t *testing.T, label, scopes string) string {
+func RecreateNewScopes(t testing.TB, label, scopes string) string {
 	return acceptance.ExecuteTemplate(t,
 		"token_recreate_new_scopes", TemplateNewScopesData{
 			TemplateData: TemplateData{Label: label},
@@ -38,7 +38,7 @@ func RecreateNewScopes(t *testing.T, label, scopes string) string {
 		})
 }
 
-func RecreateNewExpiryDate(t *testing.T, label, expiry string) string {
+func RecreateNewExpiryDate(t testing.TB, label, expiry string) string {
 	return acceptance.ExecuteTemplate(t,
 		"token_recreate_new_expiry_date", TemplateNewExpiryData{
 			TemplateData: TemplateData{Label: label},

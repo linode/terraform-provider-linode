@@ -13,12 +13,12 @@ type TemplateData struct {
 	Region           string
 }
 
-func DataBasic(t *testing.T, name, version, region string) string {
+func DataBasic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_clusters_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
-func DataFilter(t *testing.T, name, version, region string) string {
+func DataFilter(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_clusters_data_filter", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
