@@ -12,12 +12,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
 )
 
-type IPVPCNAT1To1Model struct {
-	Address  types.String `tfsdk:"address"`
-	SubnetID types.Int64  `tfsdk:"subnet_id"`
-	VPCID    types.Int64  `tfsdk:"vpc_id"`
-}
-
 type InstanceIPModel struct {
 	ID               types.String `tfsdk:"id"`
 	LinodeID         types.Int64  `tfsdk:"linode_id"`
