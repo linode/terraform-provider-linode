@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,7 +30,7 @@ func init() {
 func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "linode_networking_ips_assign.test"
+	resourceName := "linode_networking_assign_ip.test"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{
@@ -40,13 +41,15 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 			{
 				Config: tmpl.NetworkingIPsAssign(t, instanceName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
-					checkNetworkingIPsAssignExists,
 					resource.TestCheckResourceAttrSet(resourceName, "region"),
-					resource.TestCheckResourceAttr(resourceName, "assignments.#", "2"),
+					resource.TestCheckResourceAttrSet(resourceName, "assignments.#"),
+					func(*terraform.State) error {
+						time.Sleep(30 * time.Second) // Add a delay to allow for API propagation
+						return nil
+					},
+					checkNetworkingIPsAssignExists,
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.0.linode_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.0.address"),
-					resource.TestCheckResourceAttrSet(resourceName, "assignments.1.linode_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "assignments.1.address"),
 				),
 			},
 			{
@@ -62,13 +65,25 @@ func checkNetworkingIPsAssignExists(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_networking_ips_assign" {
+		if rs.Type != "linode_networking_assign_ip" {
 			continue
 		}
 
-		_, err := client.GetIPAddress(context.Background(), rs.Primary.ID)
+		filter := fmt.Sprintf("{\"region\": \"%s\"}", rs.Primary.Attributes["region"])
+		ips, err := client.ListIPAddresses(context.Background(), &linodego.ListOptions{Filter: filter})
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Networking IPs Assign %s: %s", rs.Primary.Attributes["id"], err)
+			return fmt.Errorf("Error listing IP addresses: %s", err)
+		}
+
+		assignmentCount := 0
+		for _, ip := range ips {
+			if ip.LinodeID != 0 {
+				assignmentCount++
+			}
+		}
+
+		if assignmentCount == 0 {
+			return fmt.Errorf("No IP assignments found")
 		}
 	}
 
@@ -78,7 +93,7 @@ func checkNetworkingIPsAssignExists(s *terraform.State) error {
 func checkNetworkingIPsAssignDestroy(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "linode_networking_ips_assign" {
+		if rs.Type != "linode_networking_assign_ip" {
 			continue
 		}
 

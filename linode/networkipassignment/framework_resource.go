@@ -28,7 +28,7 @@ type Resource struct {
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	tflog.Debug(ctx, "Create linode_networking_ip")
+	tflog.Debug(ctx, "Create linode_networking_assign_ip")
 	var plan NetworkingIPModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -39,7 +39,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	client := r.Meta.Client
 
 	if len(plan.Assignments) > 0 {
-		// Handle IP assignment
 		tflog.Info(ctx, "Assigning IP addresses", map[string]interface{}{
 			"assignments": plan.Assignments,
 		})
@@ -66,15 +65,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			return
 		}
 
-		// Only set the necessary fields for IP assignment
 		plan.ID = types.StringValue(plan.Assignments[0].Address.ValueString())
-
-		plan.Assignments = plan.Assignments
-		plan.Reserved = plan.Reserved
-		// plan.Address = plan.Assignments[0].Address
-		plan.LinodeID = plan.Assignments[0].LinodeID
 		plan.Region = types.StringValue(assignOpts.Region)
-
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
@@ -91,64 +83,50 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 	client := r.Meta.Client
 
-	// Fetch the IP address details
-	ip, err := client.GetIPAddress(ctx, state.ID.ValueString())
-	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			resp.Diagnostics.AddWarning(
-				"IP Address No Longer Exists",
-				fmt.Sprintf("Removing IP address %s from state because it no longer exists", state.ID.ValueString()),
+	// Initialize a slice to store all assignments
+	allAssignments := []AssignmentModel{}
+
+	// Iterate through all assignments in the current state
+	for _, assignment := range state.Assignments {
+		ip, err := client.GetIPAddress(ctx, assignment.Address.ValueString())
+		if err != nil {
+			if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+				// If the IP is not found, skip it
+				continue
+			}
+			resp.Diagnostics.AddError(
+				"Error reading IP Address",
+				fmt.Sprintf("Could not read IP address %s: %s", assignment.Address.ValueString(), err),
 			)
-			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError(
-			"Error reading IP Address",
-			fmt.Sprintf("Could not read IP address %s: %s", state.ID.ValueString(), err),
-		)
-		return
-	}
 
-	// Update state with the latest information
-	state.ID = types.StringValue(ip.Address)
-	state.Address = types.StringValue(ip.Address)
-	state.LinodeID = types.Int64Value(int64(ip.LinodeID))
-	state.Region = types.StringValue(ip.Region)
-	state.Public = types.BoolValue(ip.Public)
-	state.Type = types.StringValue(string(ip.Type))
-	state.Reserved = types.BoolValue(ip.Reserved)
+		// Add the assignment to our slice
+		allAssignments = append(allAssignments, AssignmentModel{
+			Address:  types.StringValue(ip.Address),
+			LinodeID: types.Int64Value(int64(ip.LinodeID)),
+		})
 
-	// Handle assignments
-	if ip.LinodeID != 0 {
-		state.Assignments = []AssignmentModel{
-			{
-				Address:  types.StringValue(ip.Address),
-				LinodeID: types.Int64Value(int64(ip.LinodeID)),
-			},
+		// If this is the first assignment, use it to set the main resource attributes
+		if len(allAssignments) == 1 {
+			state.ID = types.StringValue(ip.Address)
+			state.Address = types.StringValue(ip.Address)
+			state.LinodeID = types.Int64Value(int64(ip.LinodeID))
+			state.Region = types.StringValue(ip.Region)
+			state.Public = types.BoolValue(ip.Public)
+			state.Type = types.StringValue(string(ip.Type))
+			state.Reserved = types.BoolValue(ip.Reserved)
 		}
-	} else {
-		state.Assignments = []AssignmentModel{}
 	}
 
-	// Ensure all computed fields are set, even if they're empty or zero values
-	if state.Region.IsNull() {
-		state.Region = types.StringValue("")
-	}
-	if state.Public.IsNull() {
-		state.Public = types.BoolValue(false)
-	}
-	if state.Type.IsNull() {
-		state.Type = types.StringValue("")
-	}
-	if state.Reserved.IsNull() {
-		state.Reserved = types.BoolValue(false)
-	}
+	// Update the state with all assignments
+	state.Assignments = allAssignments
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	tflog.Debug(ctx, "Update linode_networking_ip")
+	tflog.Debug(ctx, "Update linode_networking_assign_ip")
 	var plan, state NetworkingIPModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -188,22 +166,16 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		plan.Address = plan.Assignments[0].Address
 	}
 
-	// Re-read the IP address to get the latest state
-	ip, err := client.GetIPAddress(ctx, plan.Address.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading updated IP Address",
-			fmt.Sprintf("Could not read updated IP address %s: %s", plan.Address.ValueString(), err),
-		)
+	// Re-read the state to get the latest information
+	readResp := resource.ReadResponse{State: resp.State}
+	if readResp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(readResp.Diagnostics...)
 		return
 	}
-	plan.FlattenIPAddress(ip)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tflog.Debug(ctx, "Delete linode_networking_ip")
+	tflog.Debug(ctx, "Delete linode_networking_assign_ip")
 	var state NetworkingIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)

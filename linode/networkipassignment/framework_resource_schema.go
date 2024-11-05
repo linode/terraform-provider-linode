@@ -20,7 +20,6 @@ var frameworkResourceSchema = schema.Schema{
 		"linode_id": schema.Int64Attribute{
 			Description: "The ID of the Linode to allocate an IPv4 address for. Required when reserved is false or not set.",
 			Optional:    true,
-			Computed:    true,
 		},
 		"reserved": schema.BoolAttribute{
 			Description: "Whether the IPv4 address should be reserved.",
