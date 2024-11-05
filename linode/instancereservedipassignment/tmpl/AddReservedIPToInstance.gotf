@@ -1,11 +1,14 @@
 {{ define "instance_ip_add_reservedIP" }}
 
+{{ template "e2e_test_firewall" . }}
+
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
     type = "g6-nanode-1"
     region = "{{ .Region }}"
     image = "linode/debian12"
+    firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
 resource "linode_reserved_ip_assign" "test" {

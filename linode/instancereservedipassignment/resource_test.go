@@ -32,7 +32,6 @@ func TestAccInstanceIP_addReservedIP(t *testing.T) {
 	var instance linodego.Instance
 	name := acctest.RandomWithPrefix("tf_test")
 	reservedIP := "50.116.51.242" // Replace with your actual reserved IP address
-	testRegion = "us-east"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
