@@ -13,7 +13,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedipassignment/tmpl"
 )
 
-const testInstanceIPResName = "linode_reserved_ip_assign.test"
+const testInstanceIPResName = "linode_reserved_ip_assignment.test"
 
 var testRegion string
 
