@@ -13,7 +13,7 @@ type TemplateData struct {
 	InstLabel  string
 }
 
-func DataBasic(t *testing.T, username, email string) string {
+func DataBasic(t testing.TB, username, email string) string {
 	return acceptance.ExecuteTemplate(t,
 		"users_data_basic", TemplateData{
 			Username: username,
@@ -21,7 +21,7 @@ func DataBasic(t *testing.T, username, email string) string {
 		})
 }
 
-func DataClientFilter(t *testing.T, username, email string) string {
+func DataClientFilter(t testing.TB, username, email string) string {
 	return acceptance.ExecuteTemplate(t,
 		"users_data_clientfilter", TemplateData{
 			Username: username,
@@ -29,7 +29,7 @@ func DataClientFilter(t *testing.T, username, email string) string {
 		})
 }
 
-func DataSubstring(t *testing.T, username, email string) string {
+func DataSubstring(t testing.TB, username, email string) string {
 	return acceptance.ExecuteTemplate(t,
 		"users_data_substring", TemplateData{
 			Username: username,

@@ -17,7 +17,7 @@ type TemplateData struct {
 	SSLConnection   bool
 }
 
-func Basic(t *testing.T, label, engine, region string) string {
+func Basic(t testing.TB, label, engine, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_mysql_basic", TemplateData{
 			Engine: engine,
@@ -26,17 +26,17 @@ func Basic(t *testing.T, label, engine, region string) string {
 		})
 }
 
-func Complex(t *testing.T, data TemplateData) string {
+func Complex(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_mysql_complex", data)
 }
 
-func ComplexUpdates(t *testing.T, data TemplateData) string {
+func ComplexUpdates(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_mysql_complex_updates", data)
 }
 
-func DataBasic(t *testing.T, data TemplateData) string {
+func DataBasic(t testing.TB, data TemplateData) string {
 	return acceptance.ExecuteTemplate(t,
 		"database_mysql_data_basic", data)
 }

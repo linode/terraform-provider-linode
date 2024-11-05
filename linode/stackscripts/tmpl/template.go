@@ -11,7 +11,7 @@ type TemplateData struct {
 	Script string
 }
 
-func DataBasic(t *testing.T, label, script string) string {
+func DataBasic(t testing.TB, label, script string) string {
 	return acceptance.ExecuteTemplate(t,
 		"stackscripts_data_basic", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func DataBasic(t *testing.T, label, script string) string {
 		})
 }
 
-func DataSubString(t *testing.T, label, script string) string {
+func DataSubString(t testing.TB, label, script string) string {
 	return acceptance.ExecuteTemplate(t,
 		"stackscripts_data_substring", TemplateData{
 			Label:  label,
@@ -27,7 +27,7 @@ func DataSubString(t *testing.T, label, script string) string {
 		})
 }
 
-func DataLatest(t *testing.T, label, script string) string {
+func DataLatest(t testing.TB, label, script string) string {
 	return acceptance.ExecuteTemplate(t,
 		"stackscripts_data_latest", TemplateData{
 			Label:  label,
@@ -35,7 +35,7 @@ func DataLatest(t *testing.T, label, script string) string {
 		})
 }
 
-func DataClientFilter(t *testing.T, label, script string) string {
+func DataClientFilter(t testing.TB, label, script string) string {
 	return acceptance.ExecuteTemplate(t,
 		"stackscripts_data_clientfilter", TemplateData{
 			Label:  label,
