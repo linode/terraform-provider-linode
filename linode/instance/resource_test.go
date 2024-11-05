@@ -30,8 +30,9 @@ func init() {
 		F:    sweep,
 	})
 
+	// TODO:: Add linodego.CapabilityDiskEncryption back when it is enabled
 	region, err := acceptance.GetRandomRegionWithCaps([]string{
-		linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
+		linodego.CapabilityVlans, linodego.CapabilityVPCs,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)
@@ -2526,7 +2527,10 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 	})
 }
 
+// TODO:: Un-skip this test once diskencryption is enabled
 func TestAccResourceInstance_diskEncryption(t *testing.T) {
+	t.Skip("Skip disk encryption tests until it is enabled in region")
+
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
