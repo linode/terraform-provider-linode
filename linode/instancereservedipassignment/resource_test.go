@@ -3,7 +3,6 @@
 package instancereservedipassignment_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -18,20 +17,21 @@ const testInstanceIPResName = "linode_reserved_ip_assignment.test"
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	// region, err := acceptance.GetRandomRegionWithCaps(nil, "core")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	region := "us-east"
 	testRegion = region
 }
 
 func TestAccInstanceIP_addReservedIP(t *testing.T) {
+	acceptance.OptInTest(t)
 	t.Parallel()
 
 	var instance linodego.Instance
 	name := acctest.RandomWithPrefix("tf_test")
-	reservedIP := "50.116.51.242" // Replace with your actual reserved IP address
+	reservedIP := "50.116.48.72" // Replace with your actual reserved IP address
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
