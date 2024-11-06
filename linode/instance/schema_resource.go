@@ -335,6 +335,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"to get additional IPv4 addresses.",
 		Optional: true,
 		Computed: true,
+		ForceNew: true,
 	},
 
 	"private_ip": {

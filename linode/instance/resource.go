@@ -830,11 +830,6 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	if d.HasChange("ipv4") {
-		// Log a warning that direct IP changes are not supported
-		return diag.Errorf("Changing IPv4 addresses after instance creation is not directly supported. The attempted change will be ignored.")
-	}
-
 	// Don't reboot if the Linode should be powered off
 	if !bootedNull && !booted {
 		rebootInstance = false
