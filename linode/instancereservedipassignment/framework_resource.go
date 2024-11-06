@@ -146,6 +146,7 @@ func (r *Resource) Read(
 		return
 	}
 
+	// TODO: cleanup when Crossplane fixes it
 	if helper.FrameworkAttemptRemoveResourceForEmptyID(ctx, state.ID, resp) {
 		return
 	}
