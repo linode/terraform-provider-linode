@@ -99,7 +99,7 @@ func (r *Resource) Create(
 		}
 	}
 
-	resp.Diagnostics.Append(plan.FlattenInstanceIP(ctx, *ip, true)...)
+	resp.Diagnostics.Append(plan.flattenInstanceIP(ctx, *ip, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -179,7 +179,7 @@ func (r *Resource) Read(
 	}
 
 	// Populate state with fetched data
-	resp.Diagnostics.Append(state.FlattenInstanceIP(ctx, *ip, false)...)
+	resp.Diagnostics.Append(state.flattenInstanceIP(ctx, *ip, false)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -233,7 +233,7 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		resp.Diagnostics.Append(plan.FlattenInstanceIP(ctx, *ip, true)...)
+		resp.Diagnostics.Append(plan.flattenInstanceIP(ctx, *ip, true)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
