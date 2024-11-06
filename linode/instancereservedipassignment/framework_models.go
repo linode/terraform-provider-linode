@@ -28,7 +28,7 @@ type InstanceIPModel struct {
 	Reserved         types.Bool   `tfsdk:"reserved"`
 }
 
-func (m *InstanceIPModel) FlattenInstanceIP(
+func (m *InstanceIPModel) flattenInstanceIP(
 	ctx context.Context,
 	ip linodego.InstanceIP,
 	preserveKnown bool,
