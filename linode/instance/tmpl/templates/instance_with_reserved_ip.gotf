@@ -2,6 +2,10 @@
 
 {{ template "e2e_test_firewall" . }}
 
+resource "linode_reserved_ip" "test" {
+  region = "{{ .Region }}"
+}
+
 resource "linode_instance" "foobar" {
     label  = "{{ .Label }}"
     type   = "g6-nanode-1"
@@ -12,7 +16,7 @@ resource "linode_instance" "foobar" {
     root_pass = "{{ .RootPass }}"
     authorized_keys = ["{{ .PubKey }}"]
 
-    ipv4 = [{{ range $index, $ip := .IPv4 }}{{ if $index }}, {{ end }}"{{ $ip }}"{{ end }}]
+    ipv4 = [linode_reserved_ip.test.address]
 }
 
 {{ end }}

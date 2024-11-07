@@ -28,7 +28,6 @@ type TemplateData struct {
 	AssignedGroup   string
 
 	DiskEncryption *linodego.InstanceDiskEncryption
-	IPv4           []string
 }
 
 func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
@@ -743,7 +742,7 @@ func WithPG(t testing.TB, label, region, assignedGroup string, groups []string) 
 		})
 }
 
-func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string, reservedIP string) string {
+func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string) string {
 	generatedConfig := acceptance.ExecuteTemplate(t,
 		"instance_with_reserved_ip", TemplateData{
 			Label:    label,
@@ -751,7 +750,6 @@ func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string, reserv
 			Image:    acceptance.TestImageLatest,
 			Region:   region,
 			RootPass: rootPass,
-			IPv4:     []string{reservedIP},
 		})
 	return generatedConfig
 }
