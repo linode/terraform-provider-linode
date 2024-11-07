@@ -41,8 +41,6 @@ The following arguments are supported:
 
 * `nodebalancer_id` - (Required) The ID of the NodeBalancer to access.
 
-* `region` - (Required) The region where this nodebalancer_config will be deployed.  Examples are `"us-east"`, `"us-west"`, `"ap-south"`, etc. See all regions [here](https://api.linode.com/v4/regions). *Changing `region` forces the creation of a new Linode NodeBalancer Config.*.
-
 - - -
 
 * `protocol` - (Optional) The protocol this port is configured to serve. If this is set to https you must include an ssl_cert and an ssl_key. (`http`, `https`, `tcp`) (Defaults to `http`)
