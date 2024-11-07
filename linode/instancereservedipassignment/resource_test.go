@@ -22,7 +22,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	region := "us-east"
+	region = "us-east"
 	testRegion = region
 }
 
