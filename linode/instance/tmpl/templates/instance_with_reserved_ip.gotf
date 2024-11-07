@@ -1,5 +1,6 @@
 {{ define "instance_with_reserved_ip" }}
 
+
 {{ template "e2e_test_firewall" . }}
 
 resource "linode_instance" "foobar" {
@@ -8,7 +9,6 @@ resource "linode_instance" "foobar" {
     region = "{{ .Region }}"
     image  = "{{ .Image }}"
     firewall_id = linode_firewall.e2e_test_firewall.id
-
     root_pass = "{{ .RootPass }}"
     authorized_keys = ["{{ .PubKey }}"]
 
