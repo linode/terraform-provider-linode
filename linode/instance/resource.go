@@ -15,6 +15,8 @@ import (
 	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
 )
 
+// Instance creation with reserved IPv4 is for internal use only : please refer to KB page for more information.
+
 const (
 	LinodeInstanceCreateTimeout = 15 * time.Minute
 	LinodeInstanceUpdateTimeout = time.Hour
@@ -189,6 +191,13 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		DiskEncryption: linodego.InstanceDiskEncryption(
 			d.Get("disk_encryption").(string),
 		),
+	}
+
+	if ipv4Raw, ok := d.GetOk("ipv4"); ok {
+		ipv4Set := ipv4Raw.(*schema.Set)
+		for _, ip := range ipv4Set.List() {
+			createOpts.IPv4 = append(createOpts.IPv4, ip.(string))
+		}
 	}
 
 	if tagsRaw, tagsOk := d.GetOk("tags"); tagsOk {
