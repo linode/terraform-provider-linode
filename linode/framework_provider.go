@@ -237,10 +237,8 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		volume.NewResource,
 		vpc.NewResource,
 		vpcsubnet.NewResource,
-		networkreservedip.NewResource,
 		networkingip.NewResource,
 		networkipassignment.NewResource,
-
 	}
 }
 
