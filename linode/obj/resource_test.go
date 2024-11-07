@@ -60,11 +60,11 @@ func TestAccResourceObject_basic_cluster(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,
@@ -115,11 +115,11 @@ func TestAccResourceObject_basic(t *testing.T) {
 	contentSource := acceptance.CreateTempFile(t, "tf-test-obj-source", content)
 	contentSourceUpdated := acceptance.CreateTempFile(t, "tf-test-obj-source-updated", contentUpdated)
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,
@@ -150,11 +150,11 @@ func TestAccResourceObject_credsConfiged(t *testing.T) {
 
 	content := "test_creds_configed"
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,
@@ -175,11 +175,11 @@ func TestAccResourceObject_tempKeys(t *testing.T) {
 
 	content := "test_temp_keys"
 
-	acceptance.RunTestRetry(t, 6, func(tRetry *acceptance.TRetry) {
+	acceptance.RunTestWithRetries(t, 6, func(t *acceptance.WrappedT) {
 		bucketName := acctest.RandomWithPrefix("tf-test")
 		keyName := acctest.RandomWithPrefix("tf_test")
 
-		resource.Test(tRetry, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             checkObjectDestroy,

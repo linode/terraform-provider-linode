@@ -34,7 +34,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/instancedisk"
 	"github.com/linode/terraform-provider-linode/v2/linode/instanceip"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedip"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancereservedipassignment"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancesharedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetype"
 	"github.com/linode/terraform-provider-linode/v2/linode/instancetypes"
@@ -148,6 +148,10 @@ func (p *FrameworkProvider) Schema(
 				Optional:    true,
 				Description: "The version of Linode API.",
 			},
+			"api_ca_path": schema.StringAttribute{
+				Optional:    true,
+				Description: "The path to a Linode API CA file to trust.",
+			},
 			"skip_instance_ready_poll": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Skip waiting for a linode_instance resource to be running.",
@@ -209,31 +213,34 @@ func (p *FrameworkProvider) Schema(
 
 func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		token.NewResource,
-		stackscript.NewResource,
-		rdns.NewResource,
-		objkey.NewResource,
-		sshkey.NewResource,
-		ipv6range.NewResource,
-		nb.NewResource,
 		accountsettings.NewResource,
-		vpcsubnet.NewResource,
-		vpc.NewResource,
-		instanceip.NewResource,
-		firewalldevice.NewResource,
-		volume.NewResource,
-		instancesharedips.NewResource,
-		instancedisk.NewResource,
-		lkenodepool.NewResource,
-		image.NewResource,
-		nbconfig.NewResource,
 		firewall.NewResource,
+		firewalldevice.NewResource,
+		image.NewResource,
+		instancedisk.NewResource,
+		instanceip.NewResource,
+		instancesharedips.NewResource,
+		ipv6range.NewResource,
+		lkenodepool.NewResource,
+		nb.NewResource,
+		nbconfig.NewResource,
+		nbnode.NewResource,
+		objkey.NewResource,
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
-		instancereservedip.NewResource,
+		instancereservedipassignment.NewResource,
+		networkreservedip.NewResource,
+		rdns.NewResource,
+		sshkey.NewResource,
+		stackscript.NewResource,
+		token.NewResource,
+		volume.NewResource,
+		vpc.NewResource,
+		vpcsubnet.NewResource,
 		networkreservedip.NewResource,
 		networkingip.NewResource,
 		networkipassignment.NewResource,
+
 	}
 }
 

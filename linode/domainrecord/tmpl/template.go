@@ -16,7 +16,7 @@ type TemplateData struct {
 	TTL int
 }
 
-func Basic(t *testing.T, domainRecord string) string {
+func Basic(t testing.TB, domainRecord string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_basic", TemplateData{
 			Domain: domain.TemplateData{Domain: domainRecord + ".example"},
@@ -24,7 +24,7 @@ func Basic(t *testing.T, domainRecord string) string {
 		})
 }
 
-func Updates(t *testing.T, domainRecord string) string {
+func Updates(t testing.TB, domainRecord string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_updates", TemplateData{
 			Domain: domain.TemplateData{Domain: domainRecord + ".example"},
@@ -32,21 +32,21 @@ func Updates(t *testing.T, domainRecord string) string {
 		})
 }
 
-func ANoName(t *testing.T, d string) string {
+func ANoName(t testing.TB, d string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_a_noname", TemplateData{
 			Domain: domain.TemplateData{Domain: d},
 		})
 }
 
-func AAAANoName(t *testing.T, d string) string {
+func AAAANoName(t testing.TB, d string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_aaaa_noname", TemplateData{
 			Domain: domain.TemplateData{Domain: d},
 		})
 }
 
-func CAANoName(t *testing.T, d string) string {
+func CAANoName(t testing.TB, d string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_caa_noname", TemplateData{
 			Domain: domain.TemplateData{Domain: d},
@@ -54,7 +54,7 @@ func CAANoName(t *testing.T, d string) string {
 		})
 }
 
-func TTL(t *testing.T, domainRecord string, ttlSec int) string {
+func TTL(t testing.TB, domainRecord string, ttlSec int) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_ttl", TemplateData{
 			Domain: domain.TemplateData{Domain: domainRecord + ".example"},
@@ -63,7 +63,7 @@ func TTL(t *testing.T, domainRecord string, ttlSec int) string {
 		})
 }
 
-func SRV(t *testing.T, domainName string, target string) string {
+func SRV(t testing.TB, domainName string, target string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_srv", TemplateData{
 			Domain: domain.TemplateData{Domain: domainName},
@@ -71,7 +71,7 @@ func SRV(t *testing.T, domainName string, target string) string {
 		})
 }
 
-func WithDomain(t *testing.T, domainName, domainRecord string) string {
+func WithDomain(t testing.TB, domainName, domainRecord string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_with_domain", TemplateData{
 			Domain: domain.TemplateData{Domain: domainName},
@@ -79,28 +79,28 @@ func WithDomain(t *testing.T, domainName, domainRecord string) string {
 		})
 }
 
-func DataBasic(t *testing.T, domainName string) string {
+func DataBasic(t testing.TB, domainName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_data_basic", TemplateData{
 			Domain: domain.TemplateData{Domain: domainName},
 		})
 }
 
-func DataID(t *testing.T, domainName string) string {
+func DataID(t testing.TB, domainName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_data_id", TemplateData{
 			Domain: domain.TemplateData{Domain: domainName},
 		})
 }
 
-func DataSRV(t *testing.T, domainName string) string {
+func DataSRV(t testing.TB, domainName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_data_srv", TemplateData{
 			Domain: domain.TemplateData{Domain: domainName},
 		})
 }
 
-func DataCAA(t *testing.T, domainName string) string {
+func DataCAA(t testing.TB, domainName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_record_data_caa", TemplateData{
 			Domain: domain.TemplateData{Domain: domainName},

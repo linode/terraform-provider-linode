@@ -14,7 +14,7 @@ type TemplateData struct {
 	RootPass string
 }
 
-func Basic(t *testing.T, label, region string) string {
+func Basic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_basic", TemplateData{
 			Label:  label,
@@ -22,7 +22,7 @@ func Basic(t *testing.T, label, region string) string {
 		})
 }
 
-func Complex(t *testing.T, label, region string, rootPass string) string {
+func Complex(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_complex", TemplateData{
 			Label:    label,
@@ -31,7 +31,7 @@ func Complex(t *testing.T, label, region string, rootPass string) string {
 		})
 }
 
-func ComplexUpdates(t *testing.T, label, region string, rootPass string, booted bool) string {
+func ComplexUpdates(t testing.TB, label, region string, rootPass string, booted bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_complex_updates", TemplateData{
 			Label:    label,
@@ -41,7 +41,7 @@ func ComplexUpdates(t *testing.T, label, region string, rootPass string, booted 
 		})
 }
 
-func Booted(t *testing.T, label, region string, booted bool, rootPass string) string {
+func Booted(t testing.TB, label, region string, booted bool, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_booted", TemplateData{
 			Label:    label,
@@ -51,7 +51,7 @@ func Booted(t *testing.T, label, region string, booted bool, rootPass string) st
 		})
 }
 
-func BootedSwap(t *testing.T, label, region string, swap bool, rootPass string) string {
+func BootedSwap(t testing.TB, label, region string, swap bool, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_booted_swap", TemplateData{
 			Label:    label,
@@ -61,7 +61,7 @@ func BootedSwap(t *testing.T, label, region string, swap bool, rootPass string) 
 		})
 }
 
-func Provisioner(t *testing.T, label, region string, rootPass string) string {
+func Provisioner(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_config_provisioner", TemplateData{
 			Label:    label,
@@ -70,7 +70,7 @@ func Provisioner(t *testing.T, label, region string, rootPass string) string {
 		})
 }
 
-func DeviceBlock(t *testing.T, label, region string, rootPass string) string {
+func DeviceBlock(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"instance_config_device_block", TemplateData{
@@ -81,7 +81,7 @@ func DeviceBlock(t *testing.T, label, region string, rootPass string) string {
 	)
 }
 
-func DeviceNamedBlock(t *testing.T, label, region string, rootPass string) string {
+func DeviceNamedBlock(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"instance_config_device_named_block", TemplateData{
@@ -92,7 +92,7 @@ func DeviceNamedBlock(t *testing.T, label, region string, rootPass string) strin
 	)
 }
 
-func VPCInterface(t *testing.T, label, region string, rootPass string) string {
+func VPCInterface(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"vpc_interface", TemplateData{
@@ -103,7 +103,7 @@ func VPCInterface(t *testing.T, label, region string, rootPass string) string {
 	)
 }
 
-func VPCInterfaceUpdated(t *testing.T, label, region string, rootPass string) string {
+func VPCInterfaceUpdated(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"vpc_interface_update", TemplateData{
@@ -114,7 +114,7 @@ func VPCInterfaceUpdated(t *testing.T, label, region string, rootPass string) st
 	)
 }
 
-func VPCInterfaceRemoved(t *testing.T, label, region string, rootPass string) string {
+func VPCInterfaceRemoved(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"vpc_interface_remove", TemplateData{
@@ -125,7 +125,7 @@ func VPCInterfaceRemoved(t *testing.T, label, region string, rootPass string) st
 	)
 }
 
-func VPCInterfaceSwapped(t *testing.T, label, region string, rootPass string) string {
+func VPCInterfaceSwapped(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"vpc_interface_swap", TemplateData{
@@ -136,7 +136,7 @@ func VPCInterfaceSwapped(t *testing.T, label, region string, rootPass string) st
 	)
 }
 
-func VPCInterfaceOnly(t *testing.T, label, region string, rootPass string) string {
+func VPCInterfaceOnly(t testing.TB, label, region string, rootPass string) string {
 	return acceptance.ExecuteTemplate(
 		t,
 		"vpc_interface_only", TemplateData{

@@ -12,17 +12,17 @@ type TemplateData struct {
 	NetworkHelper        bool
 }
 
-func Basic(t *testing.T) string {
+func Basic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_settings_basic", nil)
 }
 
-func DataBasic(t *testing.T) string {
+func DataBasic(t testing.TB) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_settings_data_basic", nil)
 }
 
-func Updates(t *testing.T, longviewSubscription string, backupsEnabled, networkHelper bool) string {
+func Updates(t testing.TB, longviewSubscription string, backupsEnabled, networkHelper bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_settings_updates", TemplateData{
 			LongviewSubscription: longviewSubscription,

@@ -50,6 +50,41 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
+	t.Parallel()
+
+	resName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	// Resolve a region with support for Block Storage Encryption
+	targetRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Linodes", "Block Storage Encryption"},
+		"core",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataWithBlockStorageEncryption(t, instanceName, targetRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
+					resource.TestCheckTypeSetElemAttr(resName, "instances.0.capabilities.*", "Block Storage Encryption"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceInstances_withPG(t *testing.T) {
 	t.Parallel()
 

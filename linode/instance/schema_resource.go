@@ -267,6 +267,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "An array of tags applied to this object. Tags are for organizational purposes only.",
 		Computed:    true,
 	},
+	"capabilities": {
+		Type:        schema.TypeSet,
+		Elem:        &schema.Schema{Type: schema.TypeString},
+		Computed:    true,
+		Description: "A list of capabilities of this Linode instance.",
+	},
 	"boot_config_label": {
 		Type:        schema.TypeString,
 		Description: "The Label of the Instance Config that should be used to boot the Linode instance.",
@@ -325,10 +331,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{Type: schema.TypeString},
 		Description: "This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address upon " +
-			"creation, and may get a single private IPv4 address if needed. You may need to open a support ticket " +
+			"creation, and may get a single private IPv4 address if needed. You could pass a reserved IPv4 address here to create a linode with a particular reserved IP address. You may need to open a support ticket " +
 			"to get additional IPv4 addresses.",
 		Optional: true,
 		Computed: true,
+		ForceNew: true,
 	},
 
 	"private_ip": {

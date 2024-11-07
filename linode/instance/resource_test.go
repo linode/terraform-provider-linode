@@ -30,8 +30,9 @@ func init() {
 		F:    sweep,
 	})
 
+	// TODO:: Add linodego.CapabilityDiskEncryption back when it is enabled
 	region, err := acceptance.GetRandomRegionWithCaps([]string{
-		linodego.CapabilityVlans, linodego.CapabilityVPCs, linodego.CapabilityDiskEncryption,
+		linodego.CapabilityVlans, linodego.CapabilityVPCs,
 	}, "core")
 	if err != nil {
 		log.Fatal(err)
@@ -861,8 +862,8 @@ func TestAccResourceInstance_configUpdate(t *testing.T) {
 	resName := "linode_instance.foobar"
 
 	// This test can occasionally fail while running the entire test suite in parallel
-	acceptance.RunTestRetry(t, 3, func(retryT *acceptance.TRetry) {
-		resource.Test(retryT, resource.TestCase{
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
 			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 			CheckDestroy:             acceptance.CheckInstanceDestroy,
@@ -2526,7 +2527,10 @@ func TestAccResourceInstance_pgAssignment(t *testing.T) {
 	})
 }
 
+// TODO:: Un-skip this test once diskencryption is enabled
 func TestAccResourceInstance_diskEncryption(t *testing.T) {
+	t.Skip("Skip disk encryption tests until it is enabled in region")
+
 	t.Parallel()
 
 	resName := "linode_instance.foobar"
@@ -2899,10 +2903,8 @@ func TestAccResourceInstance_withReservedIP(t *testing.T) {
 
 	var instance linodego.Instance
 	resourceName := "linode_instance.foobar"
-	testRegion = "us-east"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(16)
-	reservedIP := "50.116.51.242" // Use a test IP or fetch a real reserved IP
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2922,7 +2924,7 @@ func TestAccResourceInstance_withReservedIP(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "migration_type", "resize_disk"},
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "migration_type", "resize_disk", "firewall_id"},
 			},
 		},
 	})

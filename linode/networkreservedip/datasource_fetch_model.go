@@ -32,25 +32,3 @@ func (data *DataSourceFetchModel) parseIP(ip *linodego.InstanceIP) {
 	data.LinodeID = types.Int64Value(int64(ip.LinodeID))
 	data.Reserved = types.BoolValue(ip.Reserved)
 }
-
-// func (m *ReservedIPModel) CopyFrom(
-// 	ctx context.Context,
-// 	other ReservedIPModel,
-// 	preserveKnown bool,
-// ) diag.Diagnostics {
-// 	var diags diag.Diagnostics
-
-// 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
-// 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
-// 	m.Address = helper.KeepOrUpdateValue(m.Address, other.Address, preserveKnown)
-// 	m.Gateway = helper.KeepOrUpdateValue(m.Gateway, other.Gateway, preserveKnown)
-// 	m.SubnetMask = helper.KeepOrUpdateValue(m.SubnetMask, other.SubnetMask, preserveKnown)
-// 	m.Prefix = helper.KeepOrUpdateValue(m.Prefix, other.Prefix, preserveKnown)
-// 	m.Type = helper.KeepOrUpdateValue(m.Type, other.Type, preserveKnown)
-// 	m.Public = helper.KeepOrUpdateValue(m.Public, other.Public, preserveKnown)
-// 	m.RDNS = helper.KeepOrUpdateValue(m.RDNS, other.RDNS, preserveKnown)
-// 	m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, other.LinodeID, preserveKnown)
-// 	m.Reserved = helper.KeepOrUpdateValue(m.Reserved, other.Reserved, preserveKnown)
-
-// 	return diags
-// }
