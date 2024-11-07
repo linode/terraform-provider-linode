@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func DataAll(t *testing.T, label, region string) string {
+func DataAll(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"data_linode_firewalls_all", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func DataAll(t *testing.T, label, region string) string {
 		})
 }
 
-func DataFilter(t *testing.T, label, region string) string {
+func DataFilter(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"data_linode_firewalls_filter", TemplateData{
 			Label:  label,

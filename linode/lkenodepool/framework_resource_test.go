@@ -451,7 +451,7 @@ func containsTagWithPrefix(pool linodego.LKENodePool, prefix string) bool {
 	return false
 }
 
-func createResourceConfig(t *testing.T, data *tmpl.TemplateData) string {
+func createResourceConfig(t testing.TB, data *tmpl.TemplateData) string {
 	return acceptanceTmpl.ProviderNoPoll(t) + tmpl.Generate(t, data)
 }
 

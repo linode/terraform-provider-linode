@@ -10,7 +10,7 @@ type TemplateData struct {
 	Region string
 }
 
-func DataBasic(t *testing.T, region string) string {
+func DataBasic(t testing.TB, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"account_availability_data_basic", TemplateData{
 			Region: region,

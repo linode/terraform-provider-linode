@@ -10,42 +10,42 @@ type TemplateData struct {
 	Domain string
 }
 
-func Basic(t *testing.T, domain string) string {
+func Basic(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_basic", TemplateData{Domain: domain})
 }
 
-func Updates(t *testing.T, domain string) string {
+func Updates(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_updates", TemplateData{Domain: domain})
 }
 
-func RoundedSec(t *testing.T, domain string) string {
+func RoundedSec(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_rounded_sec", TemplateData{Domain: domain})
 }
 
-func ZeroSec(t *testing.T, domain string) string {
+func ZeroSec(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_zero_sec", TemplateData{Domain: domain})
 }
 
-func IPS(t *testing.T, domain string) string {
+func IPS(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_ips", TemplateData{Domain: domain})
 }
 
-func IPSUpdates(t *testing.T, domain string) string {
+func IPSUpdates(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_ips_updates", TemplateData{Domain: domain})
 }
 
-func DataBasic(t *testing.T, domain string) string {
+func DataBasic(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_data_basic", TemplateData{Domain: domain})
 }
 
-func DataByID(t *testing.T, domain string) string {
+func DataByID(t testing.TB, domain string) string {
 	return acceptance.ExecuteTemplate(t,
 		"domain_data_byid", TemplateData{Domain: domain})
 }

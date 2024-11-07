@@ -11,7 +11,7 @@ type TemplateData struct {
 	Region string
 }
 
-func Basic(t *testing.T, label, region string) string {
+func Basic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_basic", TemplateData{
 			Label:  label,
@@ -19,7 +19,7 @@ func Basic(t *testing.T, label, region string) string {
 		})
 }
 
-func Updates(t *testing.T, label, region string) string {
+func Updates(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_updates", TemplateData{
 			Label:  label,
@@ -27,7 +27,7 @@ func Updates(t *testing.T, label, region string) string {
 		})
 }
 
-func DataBasic(t *testing.T, label, region string) string {
+func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"vpc_data_basic", TemplateData{
 			Label:  label,
