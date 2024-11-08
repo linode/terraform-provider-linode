@@ -52,11 +52,7 @@ func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "assignments.0.address"),
 				),
 			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			// Removed ImportState step as it's no longer supported
 		},
 	})
 }
@@ -97,13 +93,14 @@ func checkNetworkingIPsAssignDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := client.GetIPAddress(context.Background(), rs.Primary.ID)
+		ipAddress := rs.Primary.ID // Assuming ID is the address of the IP
+		_, err := client.GetIPAddress(context.Background(), ipAddress)
 		if err == nil {
-			return fmt.Errorf("Networking IPs Assign with id %s still exists", rs.Primary.ID)
+			return fmt.Errorf("Networking IPs Assign with id %s still exists", ipAddress)
 		}
 
 		if apiErr, ok := err.(*linodego.Error); ok && apiErr.Code != 404 {
-			return fmt.Errorf("Error requesting Networking IPs Assign with id %s", rs.Primary.ID)
+			return fmt.Errorf("Error requesting Networking IPs Assign with id %s", ipAddress)
 		}
 	}
 

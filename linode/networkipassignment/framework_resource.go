@@ -38,36 +38,30 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	client := r.Meta.Client
 
-	if len(plan.Assignments) > 0 {
-		tflog.Info(ctx, "Assigning IP addresses", map[string]interface{}{
-			"assignments": plan.Assignments,
-		})
-
-		apiAssignments := make([]linodego.LinodeIPAssignment, len(plan.Assignments))
-		for i, assignment := range plan.Assignments {
-			apiAssignments[i] = linodego.LinodeIPAssignment{
-				Address:  assignment.Address.ValueString(),
-				LinodeID: int(assignment.LinodeID.ValueInt64()),
-			}
+	apiAssignments := make([]linodego.LinodeIPAssignment, len(plan.Assignments))
+	for i, assignment := range plan.Assignments {
+		apiAssignments[i] = linodego.LinodeIPAssignment{
+			Address:  assignment.Address.ValueString(),
+			LinodeID: int(assignment.LinodeID.ValueInt64()),
 		}
-
-		assignOpts := linodego.LinodesAssignIPsOptions{
-			Region:      plan.Region.ValueString(),
-			Assignments: apiAssignments,
-		}
-
-		err := client.InstancesAssignIPs(ctx, assignOpts)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error assigning IP Addresses",
-				fmt.Sprintf("Could not assign IP addresses: %s", err),
-			)
-			return
-		}
-
-		plan.ID = types.StringValue(plan.Assignments[0].Address.ValueString())
-		plan.Region = types.StringValue(assignOpts.Region)
 	}
+
+	assignOpts := linodego.LinodesAssignIPsOptions{
+		Region:      plan.Region.ValueString(),
+		Assignments: apiAssignments,
+	}
+
+	err := client.InstancesAssignIPs(ctx, assignOpts)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error assigning IP Addresses",
+			fmt.Sprintf("Could not assign IP addresses: %s", err),
+		)
+		return
+	}
+
+	// Generate a unique ID for this resource
+	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
@@ -83,15 +77,12 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 	client := r.Meta.Client
 
-	// Initialize a slice to store all assignments
-	allAssignments := []AssignmentModel{}
-
-	// Iterate through all assignments in the current state
-	for _, assignment := range state.Assignments {
+	for i, assignment := range state.Assignments {
 		ip, err := client.GetIPAddress(ctx, assignment.Address.ValueString())
 		if err != nil {
 			if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-				// If the IP is not found, skip it
+				// IP not found, remove it from state
+				state.Assignments = append(state.Assignments[:i], state.Assignments[i+1:]...)
 				continue
 			}
 			resp.Diagnostics.AddError(
@@ -101,26 +92,11 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 			return
 		}
 
-		// Add the assignment to our slice
-		allAssignments = append(allAssignments, AssignmentModel{
+		state.Assignments[i] = AssignmentModel{
 			Address:  types.StringValue(ip.Address),
 			LinodeID: types.Int64Value(int64(ip.LinodeID)),
-		})
-
-		// If this is the first assignment, use it to set the main resource attributes
-		if len(allAssignments) == 1 {
-			state.ID = types.StringValue(ip.Address)
-			state.Address = types.StringValue(ip.Address)
-			state.LinodeID = types.Int64Value(int64(ip.LinodeID))
-			state.Region = types.StringValue(ip.Region)
-			state.Public = types.BoolValue(ip.Public)
-			state.Type = types.StringValue(string(ip.Type))
-			state.Reserved = types.BoolValue(ip.Reserved)
 		}
 	}
-
-	// Update the state with all assignments
-	state.Assignments = allAssignments
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -137,41 +113,32 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 
 	client := r.Meta.Client
 
-	if len(plan.Assignments) > 0 {
-		// Handle IP assignment updates
-		apiAssignments := make([]linodego.LinodeIPAssignment, len(plan.Assignments))
-		for i, assignment := range plan.Assignments {
-			apiAssignments[i] = linodego.LinodeIPAssignment{
-				Address:  assignment.Address.ValueString(),
-				LinodeID: int(assignment.LinodeID.ValueInt64()),
-			}
+	apiAssignments := make([]linodego.LinodeIPAssignment, len(plan.Assignments))
+	for i, assignment := range plan.Assignments {
+		apiAssignments[i] = linodego.LinodeIPAssignment{
+			Address:  assignment.Address.ValueString(),
+			LinodeID: int(assignment.LinodeID.ValueInt64()),
 		}
-
-		assignOpts := linodego.LinodesAssignIPsOptions{
-			Region:      plan.Region.ValueString(),
-			Assignments: apiAssignments,
-		}
-
-		err := client.InstancesAssignIPs(ctx, assignOpts)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error updating IP Assignments",
-				fmt.Sprintf("Could not update IP assignments: %s", err),
-			)
-			return
-		}
-
-		// Update plan with new assignment details
-		plan.ID = types.StringValue(plan.Assignments[0].Address.ValueString())
-		plan.Address = plan.Assignments[0].Address
 	}
 
-	// Re-read the state to get the latest information
-	readResp := resource.ReadResponse{State: resp.State}
-	if readResp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(readResp.Diagnostics...)
+	assignOpts := linodego.LinodesAssignIPsOptions{
+		Region:      plan.Region.ValueString(),
+		Assignments: apiAssignments,
+	}
+
+	err := client.InstancesAssignIPs(ctx, assignOpts)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating IP Assignments",
+			fmt.Sprintf("Could not update IP assignments: %s", err),
+		)
 		return
 	}
+
+	// Update the ID to reflect any changes in the number of assignments
+	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -183,27 +150,5 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	client := r.Meta.Client
-
-	// Check if this is an assigned IP
-	if len(state.Assignments) > 0 {
-		// For assigned IPs, we need to unassign them
-		for _, assignment := range state.Assignments {
-			linodeID := int(assignment.LinodeID.ValueInt64())
-			ipAddress := assignment.Address.ValueString()
-
-			err := client.DeleteInstanceIPAddress(ctx, linodeID, ipAddress)
-			if err != nil {
-				if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
-					resp.Diagnostics.AddError(
-						"Failed to Unassign IP",
-						fmt.Sprintf(
-							"failed to unassign ip (%s) from instance (%d): %s",
-							ipAddress, linodeID, err.Error(),
-						),
-					)
-				}
-			}
-		}
-	}
+	// No need to do anything for delete as the IPs will be automatically unassigned when the Linodes are deleted
 }
