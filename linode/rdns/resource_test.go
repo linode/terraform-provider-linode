@@ -206,6 +206,32 @@ func TestAccResourceRDNS_waitForAvailableWithTimeout(t *testing.T) {
 	})
 }
 
+func TestAccResourceRDNS_unreservedToReserved(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_rdns.foobar"
+	linodeLabel := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.UnreservedToReserved(t, linodeLabel, testRegion, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "reserved", "true"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"rdns", "wait_for_available", "firewall_id"},
+			},
+		},
+	})
+}
+
 func checkRDNSExists(s *terraform.State) error {
 	client := acceptance.TestAccFrameworkProvider.Meta.Client
 

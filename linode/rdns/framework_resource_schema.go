@@ -31,7 +31,6 @@ var frameworkResourceSchema = schema.Schema{
 		"reserved": schema.BoolAttribute{
 			Description: "Whether the IP address is reserved.",
 			Optional:    true,
-			Computed:    true,
 		},
 		"wait_for_available": schema.BoolAttribute{
 			Description: "If true, the RDNS assignment will be retried within the operation timeout period.",

@@ -49,7 +49,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	if !plan.Reserved.IsNull() {
 		reserved := plan.Reserved.ValueBool()
-		updateOpts.Reserved = reserved
+		updateOpts.Reserved = &reserved
 	}
 
 	ip, err := updateIPAddress(
@@ -111,7 +111,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 
 	if !plan.Reserved.IsNull() {
 		reserved := plan.Reserved.ValueBool()
-		updateOpts.Reserved = reserved
+		updateOpts.Reserved = &reserved
 	}
 
 	ip, err := updateIPAddress(
@@ -140,9 +140,10 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	client := r.Meta.Client
+	falseValue := false
 	updateOpts := linodego.IPAddressUpdateOptions{
 		RDNS:     nil,
-		Reserved: false,
+		Reserved: &falseValue,
 	}
 
 	_, err := client.UpdateIPAddress(ctx, state.Address.ValueString(), updateOpts)

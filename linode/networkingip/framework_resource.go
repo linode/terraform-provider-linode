@@ -41,7 +41,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	if !plan.Public.IsNull() {
 		// Handle IP creation
 		createOpts := linodego.LinodeReserveIPOptions{
-			Type:   "ipv4",
+			Type:   plan.Type.ValueString(),
 			Public: plan.Public.ValueBool(),
 		}
 
