@@ -35,6 +35,7 @@ Tips for a faster merge:
 * make sure that tests pass.
 * make sure your commits are atomic, [addressing one change per commit](https://chris.beams.io/posts/git-commit/).
 * add tests!
+* make sure your commits are [signed](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
 
 ## Code of Conduct
 
