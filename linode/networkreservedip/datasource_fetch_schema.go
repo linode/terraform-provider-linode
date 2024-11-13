@@ -2,22 +2,7 @@ package networkreservedip
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
-
-type ReservedIPObject struct {
-	ID         types.String `tfsdk:"id"`
-	Address    types.String `tfsdk:"address"`
-	Region     types.String `tfsdk:"region"`
-	Gateway    types.String `tfsdk:"gateway"`
-	SubnetMask types.String `tfsdk:"subnet_mask"`
-	Prefix     types.Int64  `tfsdk:"prefix"`
-	Type       types.String `tfsdk:"type"`
-	Public     types.Bool   `tfsdk:"public"`
-	RDNS       types.String `tfsdk:"rdns"`
-	LinodeID   types.Int64  `tfsdk:"linode_id"`
-	Reserved   types.Bool   `tfsdk:"reserved"`
-}
 
 var frameworkDataSourceFetchSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
