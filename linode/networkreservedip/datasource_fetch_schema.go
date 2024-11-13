@@ -12,8 +12,7 @@ var frameworkDataSourceFetchSchema = schema.Schema{
 		},
 		"address": schema.StringAttribute{
 			Description: "The reserved IP address.",
-			Computed:    true,
-			Optional:    true,
+			Required:    true,
 		},
 		"gateway": schema.StringAttribute{
 			Description: "The default gateway for this address.",
