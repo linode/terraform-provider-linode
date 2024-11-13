@@ -184,7 +184,7 @@ The following arguments are supported:
 
 * `migration_type` - (Optional) The type of migration to use when updating the type or region of a Linode. (`cold`, `warm`; default `cold`)
 
-* `upgrade` - (Optional) When initiating a cross DC migration, setting this value to true will also ensure that the Linode is upgraded to the latest generation of hardware that corresponds to your Linode's Type, if any free upgrades are available for it.
+* `migration_upgrade` - (Optional) When initiating a cross DC migration, setting this value to true will also ensure that the Linode is upgraded to the latest generation of hardware that corresponds to your Linode's Type, if any free upgrades are available for it. If no free upgrades are available, and this value is set to true, then the endpoint will return a 400 error code and the migration will not be performed.
 
 * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
 
