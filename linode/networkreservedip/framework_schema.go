@@ -1,9 +1,12 @@
 package networkreservedip
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -41,6 +44,14 @@ var frameworkResourceSchema = schema.Schema{
 		"type": schema.StringAttribute{
 			Description: "The type of address this is (ipv4, ipv6, ipv6/pool, ipv6/range).",
 			Computed:    true,
+		},
+		"vpc_nat_1_1": schema.ListAttribute{
+			Description: "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",
+			Computed:    true,
+			ElementType: instancenetworking.VPCNAT1To1Type,
+			Validators: []validator.List{
+				listvalidator.SizeAtMost(1),
+			},
 		},
 		"public": schema.BoolAttribute{
 			Description: "Whether this is a public or private IP address.",

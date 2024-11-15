@@ -1,9 +1,0 @@
-{{ define "reserved_ip_data_list" }}
-
-data "linode_reserved_ip_list" "test" {}
-
-output "reserved_ips" {
-  value = data.linode_reserved_ip_list.test.reserved_ips
-}
-
-{{ end }}

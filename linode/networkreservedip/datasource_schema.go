@@ -1,10 +1,13 @@
 package networkreservedip
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
 )
 
-var frameworkDataSourceFetchSchema = schema.Schema{
+var frameworkDataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"region": schema.StringAttribute{
 			Description: "The Region in which to reserve the IP address.",
@@ -33,6 +36,14 @@ var frameworkDataSourceFetchSchema = schema.Schema{
 		"public": schema.BoolAttribute{
 			Description: "Whether this is a public or private IP address.",
 			Computed:    true,
+		},
+		"vpc_nat_1_1": schema.ListAttribute{
+			Description: "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",
+			Computed:    true,
+			ElementType: instancenetworking.VPCNAT1To1Type,
+			Validators: []validator.List{
+				listvalidator.SizeAtMost(1),
+			},
 		},
 		"rdns": schema.StringAttribute{
 			Description: "The reverse DNS assigned to this address.",

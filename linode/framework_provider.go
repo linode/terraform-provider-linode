@@ -303,7 +303,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
-		networkreservedip.NewDataSourceFetch,
-		networkreservedips.NewDataSourceList,
+		networkreservedip.NewDataSource,
+		networkreservedips.NewDataSource,
 	}
 }

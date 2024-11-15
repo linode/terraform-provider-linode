@@ -4,7 +4,7 @@ resource "linode_reserved_ip" "test" {
   region = "{{ .Region }}"
 }
 
-data "linode_reserved_ip_fetch" "test" {
+data "linode_reserved_ip" "test" {
   address = linode_reserved_ip.test.address
 }
 

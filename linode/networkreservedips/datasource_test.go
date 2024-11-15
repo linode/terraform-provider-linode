@@ -13,7 +13,7 @@ import (
 func TestAccDataSource_reservedIPList(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "data.linode_reserved_ip_list.test"
+	resourceName := "data.linode_reserved_ips.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

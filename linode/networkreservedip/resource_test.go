@@ -45,6 +45,7 @@ func TestAccResource_reserveIP(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "address"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "reserved", "true"),
 				),
 			},
 		},

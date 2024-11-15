@@ -7,5 +7,5 @@ import (
 )
 
 func DataList(t *testing.T) string {
-	return acceptance.ExecuteTemplate(t, "reserved_ip_data_list", nil)
+	return acceptance.ExecuteTemplate(t, "reserved_ips_data", nil)
 }

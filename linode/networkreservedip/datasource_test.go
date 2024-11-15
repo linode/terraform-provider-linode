@@ -13,7 +13,7 @@ import (
 func TestAccDataSource_reservedIP(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "data.linode_reserved_ip_fetch.test"
+	resourceName := "data.linode_reserved_ip.test"
 	region, _ := acceptance.GetRandomRegionWithCaps([]string{"linodes"}, "core")
 
 	resource.Test(t, resource.TestCase{
