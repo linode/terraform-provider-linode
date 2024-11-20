@@ -6,6 +6,7 @@ on:
 
 jobs:
   notify:
+    if: github.repository == 'linode/terraform-provider-linode'
     runs-on: ubuntu-latest
     steps:
       - name: Notify Slack - Main Message
