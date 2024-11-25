@@ -62,7 +62,6 @@ func (r *Resource) Read(
 	tflog.Debug(ctx, "Read linode_account_settings")
 
 	client := r.Meta.Client
-
 	var data AccountSettingsModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
