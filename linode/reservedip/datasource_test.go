@@ -1,13 +1,13 @@
-//go:build integration || networkreservedip
+//go:build integration || reservedip
 
-package networkreservedip_test
+package reservedip_test
 
 import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedip/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/reservedip/tmpl"
 )
 
 func TestAccDataSource_reservedIP(t *testing.T) {

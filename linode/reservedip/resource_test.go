@@ -1,6 +1,6 @@
-//go:build integration || networkreservedip
+//go:build integration || reservedip
 
-package networkreservedip_test
+package reservedip_test
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkreservedip/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/reservedip/tmpl"
 )
 
 var testRegion string

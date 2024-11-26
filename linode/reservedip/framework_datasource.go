@@ -1,4 +1,4 @@
-package networkreservedip
+package reservedip
 
 import (
 	"context"

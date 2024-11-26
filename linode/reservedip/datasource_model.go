@@ -1,4 +1,4 @@
-package networkreservedip
+package reservedip
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
