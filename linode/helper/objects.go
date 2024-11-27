@@ -12,6 +12,7 @@ import (
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
@@ -24,6 +25,15 @@ func GetRegionOrCluster(d *schema.ResourceData) (regionOrCluster string) {
 		regionOrCluster = d.Get("cluster").(string)
 	}
 	return
+}
+
+func FwS3Connection(ctx context.Context, endpoint, accessKey, secretKey string, diags *diag.Diagnostics) *s3.Client {
+	s3client, err := S3Connection(ctx, endpoint, accessKey, secretKey)
+	if err != nil {
+		diags.AddError("Failed to Create S3 Connection", err.Error())
+	}
+
+	return s3client
 }
 
 func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*s3.Client, error) {

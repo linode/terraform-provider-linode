@@ -4,11 +4,20 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	sdkv2diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -19,12 +28,31 @@ type ObjectKeys struct {
 	SecretKey string
 }
 
-func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {
-	return helper.SetLogFieldBulk(ctx, map[string]any{
-		"bucket":     d.Get("bucket"),
-		"cluster":    d.Get("cluster"),
-		"object_key": d.Get("key"),
-	})
+func getS3ClientFromModel(
+	ctx context.Context,
+	client *linodego.Client,
+	config *helper.FrameworkProviderModel,
+	data ResourceModel,
+	permission string,
+	diags *diag.Diagnostics,
+) (*s3.Client, func()) {
+	keys, teardownKeys := data.GetObjectStorageKeys(ctx, client, config, permission, diags)
+	if diags.HasError() {
+		return nil, teardownKeys
+	}
+
+	s3client := helper.FwS3Connection(
+		ctx,
+		data.Endpoint.ValueString(),
+		keys.AccessKey,
+		keys.SecretKey,
+		diags,
+	)
+	if diags.HasError() {
+		return nil, teardownKeys
+	}
+
+	return s3client, teardownKeys
 }
 
 // getObjKeysFromProvider gets obj_access_key and obj_secret_key from provider configuration.
@@ -36,7 +64,7 @@ func getObjKeysFromProvider(
 	keys.AccessKey = config.ObjAccessKey
 	keys.SecretKey = config.ObjSecretKey
 
-	return keys, checkObjKeysConfigured(keys)
+	return keys, keys.Ok()
 }
 
 func isCluster(regionOrCluster string) bool {
@@ -45,14 +73,55 @@ func isCluster(regionOrCluster string) bool {
 	return re.MatchString(regionOrCluster)
 }
 
+// fwCreateTempKeys creates temporary Object Storage Keys to use.
+// The temporary keys are scoped only to the target cluster and bucket with limited permissions.
+// Keys only exist for the duration of the apply time.
+func fwCreateTempKeys(
+	ctx context.Context,
+	client *linodego.Client,
+	bucket, regionOrCluster, permissions string,
+	diags *diag.Diagnostics,
+) *linodego.ObjectStorageKey {
+	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
+
+	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
+		BucketName:  bucket,
+		Permissions: permissions,
+	}
+
+	if isCluster(regionOrCluster) {
+		tflog.Warn(ctx, "Cluster is deprecated for Linode Object Storage service, please consider switch to using region.")
+		tempBucketAccess.Cluster = regionOrCluster
+	} else {
+		tflog.Info(ctx, fmt.Sprintf("%q Is Region", regionOrCluster))
+		tempBucketAccess.Region = regionOrCluster
+	}
+
+	createOpts := linodego.ObjectStorageKeyCreateOptions{
+		Label:        fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
+		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
+	}
+
+	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]interface{}{
+		"options": createOpts,
+	})
+
+	keys, err := client.CreateObjectStorageKey(ctx, createOpts)
+	if err != nil {
+		diags.AddError("Failed to Create Object Storage Key", err.Error())
+	}
+
+	return keys
+}
+
 // createTempKeys creates temporary Object Storage Keys to use.
 // The temporary keys are scoped only to the target cluster and bucket with limited permissions.
 // Keys only exist for the duration of the apply time.
 func createTempKeys(
 	ctx context.Context,
-	client linodego.Client,
+	client *linodego.Client,
 	bucket, regionOrCluster, permissions string,
-) (*linodego.ObjectStorageKey, diag.Diagnostics) {
+) (*linodego.ObjectStorageKey, sdkv2diag.Diagnostics) {
 	tflog.Debug(ctx, "Create temporary object storage access keys implicitly.")
 
 	tempBucketAccess := linodego.ObjectStorageKeyBucketAccess{
@@ -78,21 +147,21 @@ func createTempKeys(
 
 	keys, err := client.CreateObjectStorageKey(ctx, createOpts)
 	if err != nil {
-		return nil, diag.FromErr(err)
+		return nil, sdkv2diag.FromErr(err)
 	}
 
 	return keys, nil
 }
 
 // checkObjKeysConfigured checks whether AccessKey and SecretKey both exist.
-func checkObjKeysConfigured(keys ObjectKeys) bool {
+func (keys ObjectKeys) Ok() bool {
 	return keys.AccessKey != "" && keys.SecretKey != ""
 }
 
 // cleanUpTempKeys deleted the temporarily created object keys.
 func cleanUpTempKeys(
 	ctx context.Context,
-	client linodego.Client,
+	client *linodego.Client,
 	keyId int,
 ) {
 	tflog.Trace(ctx, "Clean up temporary keys: client.DeleteObjectStorageKey(...)", map[string]interface{}{
@@ -116,7 +185,7 @@ func GetObjKeys(
 	config *helper.Config,
 	client linodego.Client,
 	bucket, regionOrCluster, permission string,
-) (ObjectKeys, diag.Diagnostics, func()) {
+) (ObjectKeys, sdkv2diag.Diagnostics, func()) {
 	var teardownTempKeysCleanUp func() = nil
 
 	objKeys := ObjectKeys{
@@ -124,21 +193,21 @@ func GetObjKeys(
 		SecretKey: d.Get("secret_key").(string),
 	}
 
-	if !checkObjKeysConfigured(objKeys) {
+	if !objKeys.Ok() {
 		// If object keys don't exist in the resource configuration, firstly look for the keys from provider configuration
 		if providerKeys, ok := getObjKeysFromProvider(objKeys, config); ok {
 			objKeys = providerKeys
 		} else if config.ObjUseTempKeys {
 			// Implicitly create temporary object storage keys
-			keys, diag := createTempKeys(ctx, client, bucket, regionOrCluster, permission)
+			keys, diag := createTempKeys(ctx, &client, bucket, regionOrCluster, permission)
 			if diag != nil {
 				return objKeys, diag, nil
 			}
 			objKeys.AccessKey = keys.AccessKey
 			objKeys.SecretKey = keys.SecretKey
-			teardownTempKeysCleanUp = func() { cleanUpTempKeys(ctx, client, keys.ID) }
+			teardownTempKeysCleanUp = func() { cleanUpTempKeys(ctx, &client, keys.ID) }
 		} else {
-			return objKeys, diag.Errorf(
+			return objKeys, sdkv2diag.Errorf(
 				"access_key and secret_key are required.",
 			), nil
 		}
@@ -152,7 +221,8 @@ func putObjectWithRetries(
 	s3client *s3.Client,
 	putInput *s3.PutObjectInput,
 	retryDuration time.Duration,
-) error {
+	diags *diag.Diagnostics,
+) {
 	tflog.Debug(ctx, "Attempting to put object with retries")
 
 	ticker := time.NewTicker(retryDuration)
@@ -169,19 +239,126 @@ func putObjectWithRetries(
 				tflog.Debug(ctx,
 					fmt.Sprintf(
 						"Failed to put Bucket (%v) Object (%v): %s. Retrying...",
-						putInput.Bucket,
-						putInput.Key,
+						aws.ToString(putInput.Bucket),
+						aws.ToString(putInput.Key),
 						err.Error(),
 					),
 				)
 				continue
 			}
 
-			return nil
+			return
 
 		case <-ctx.Done():
 			// The timeout for this context will implicitly be handled by Terraform
-			return fmt.Errorf("failed to put the object: %s", ctx.Err())
+			diags.AddError("Failed to Put the Object", ctx.Err().Error())
+			return
 		}
+	}
+}
+
+func getQuotesTrimmedETag(
+	obj s3.HeadObjectOutput,
+) *string {
+	if obj.ETag != nil {
+		result := strings.Trim(*obj.ETag, `"`)
+		return &result
+	}
+	return nil
+}
+
+func deleteObject(ctx context.Context, client *s3.Client, bucket, key, version string, force bool) error {
+	tflog.Debug(ctx, "deleting the object key")
+	deleteObjectInput := &s3.DeleteObjectInput{
+		Bucket:                    &bucket,
+		Key:                       &key,
+		BypassGovernanceRetention: aws.Bool(force),
+	}
+	if version != "" {
+		deleteObjectInput.VersionId = &version
+	}
+
+	tflog.Debug(ctx, "client.DeleteObject(...)", map[string]any{"options": deleteObjectInput})
+	_, err := client.DeleteObject(ctx, deleteObjectInput)
+	if err != nil {
+		msg := fmt.Sprintf("failed to delete object version (%s): %s", version, err)
+		tflog.Error(ctx, msg)
+		if !helper.IsObjNotFoundErr(err) {
+			return fmt.Errorf("%s: %w", msg, err)
+		}
+	}
+	return nil
+}
+
+func flattenObjectMetadata(metadata map[string]string) map[string]attr.Value {
+	metadataObject := make(map[string]attr.Value, len(metadata))
+	for key, value := range metadata {
+		key := strings.ToLower(key)
+		metadataObject[key] = types.StringValue(value)
+	}
+
+	return metadataObject
+}
+
+func deleteBucketNotFound(diags diag.Diagnostics) diag.Diagnostics {
+	return slices.DeleteFunc(diags, func(d diag.Diagnostic) bool {
+		return strings.Contains(d.Detail(), "Bucket not found")
+	})
+}
+
+func AddObjectResource(
+	ctx context.Context,
+	resp *resource.CreateResponse,
+	plan ResourceModel,
+) {
+	plan.GenerateObjectStorageObjectID(true, true)
+	resp.State.SetAttribute(ctx, path.Root("bucket"), plan.Bucket)
+	resp.State.SetAttribute(ctx, path.Root("key"), plan.Key)
+	resp.State.SetAttribute(ctx, path.Root("cluster"), plan.Cluster)
+	resp.State.SetAttribute(ctx, path.Root("region"), plan.Region)
+}
+
+func fwPutObject(
+	ctx context.Context,
+	data ResourceModel,
+	s3client *s3.Client,
+	diags *diag.Diagnostics,
+) {
+	tflog.Debug(ctx, "getting object body from resource data")
+
+	body := data.getObjectBody(diags)
+	if diags.HasError() {
+		return
+	}
+	defer body.Close()
+
+	bucket := data.Bucket.ValueString()
+	key := data.Key.ValueString()
+
+	putInput := &s3.PutObjectInput{
+		Bucket: &bucket,
+		Key:    &key,
+		Body:   body,
+
+		CacheControl:            data.CacheControl.ValueStringPointer(),
+		ContentDisposition:      data.ContentDisposition.ValueStringPointer(),
+		ContentEncoding:         data.ContentEncoding.ValueStringPointer(),
+		ContentLanguage:         data.ContentLanguage.ValueStringPointer(),
+		ContentType:             data.ContentType.ValueStringPointer(),
+		WebsiteRedirectLocation: data.WebsiteRedirect.ValueStringPointer(),
+	}
+
+	if data.ACL.ValueString() != "" {
+		putInput.ACL = s3types.ObjectCannedACL(data.ACL.ValueString())
+	}
+
+	if !data.Metadata.IsNull() && !data.Metadata.IsUnknown() {
+		data.Metadata.ElementsAs(ctx, &putInput.Metadata, false)
+		tflog.Debug(ctx, fmt.Sprintf("got Metadata: %v", putInput.Metadata))
+	}
+
+	putObjectWithRetries(ctx, s3client, putInput, time.Second*5, diags)
+	if diags.HasError() {
+		return
 	}
 }
