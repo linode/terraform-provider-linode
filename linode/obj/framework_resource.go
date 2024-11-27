@@ -280,11 +280,21 @@ func (r *Resource) Delete(
 
 	if !state.VersionID.IsNull() {
 		tflog.Debug(ctx, "versioning was enabled for this object, deleting all versions and delete markers")
-		helper.DeleteAllObjectVersionsAndDeleteMarkers(ctx, s3client, bucket, key, force, true)
+
+		err := helper.DeleteAllObjectVersionsAndDeleteMarkers(ctx, s3client, bucket, key, force, true)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to Delete All Object Versions and Deletion Markers in the Versioned Bucket",
+				err.Error(),
+			)
+		}
 	} else {
 		tflog.Debug(ctx, "versioning was disabled for this object, simply delete the object")
-		deleteObject(ctx, s3client, bucket, strings.TrimPrefix(key, "/"), "", force)
 
+		err := deleteObject(ctx, s3client, bucket, strings.TrimPrefix(key, "/"), "", force)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to Delete the Object", err.Error())
+		}
 	}
 }
 
