@@ -65,6 +65,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/rdns"
 	"github.com/linode/terraform-provider-linode/v2/linode/region"
 	"github.com/linode/terraform-provider-linode/v2/linode/regions"
+	"github.com/linode/terraform-provider-linode/v2/linode/reservedip"
+	"github.com/linode/terraform-provider-linode/v2/linode/reservedips"
 	"github.com/linode/terraform-provider-linode/v2/linode/sshkey"
 	"github.com/linode/terraform-provider-linode/v2/linode/sshkeys"
 	"github.com/linode/terraform-provider-linode/v2/linode/stackscript"
@@ -225,6 +227,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		placementgroup.NewResource,
 		placementgroupassignment.NewResource,
 		instancereservedipassignment.NewResource,
+		reservedip.NewResource,
 		rdns.NewResource,
 		sshkey.NewResource,
 		stackscript.NewResource,
@@ -300,5 +303,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
+		reservedip.NewDataSource,
+		reservedips.NewDataSource,
 	}
 }

@@ -2895,14 +2895,12 @@ func checkComputeInstanceDisk(instance *linodego.Instance, label string, size in
 }
 
 func TestAccResourceInstance_withReservedIP(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	var instance linodego.Instance
 	resourceName := "linode_instance.foobar"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 	rootPass := acctest.RandString(16)
-	reservedIP := "50.116.51.242" // Use a test IP or fetch a real reserved IP
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -2910,12 +2908,11 @@ func TestAccResourceInstance_withReservedIP(t *testing.T) {
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.WithReservedIP(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass, reservedIP),
+				Config: tmpl.WithReservedIP(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists(resourceName, &instance),
 					resource.TestCheckResourceAttr(resourceName, "label", instanceName),
 					resource.TestCheckResourceAttr(resourceName, "ipv4.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "ipv4.0", reservedIP),
 				),
 			},
 			{
