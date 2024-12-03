@@ -10,14 +10,12 @@ type TemplateData struct {
 	Label            string
 	ApplyImmediately bool
 	Region           string
-	Address          string
 }
 
-func AddReservedIP(t *testing.T, instanceLabel, region string, address string) string {
+func AddReservedIP(t *testing.T, instanceLabel, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_ip_add_reservedIP", TemplateData{
-			Label:   instanceLabel,
-			Region:  region,
-			Address: address,
+			Label:  instanceLabel,
+			Region: region,
 		})
 }

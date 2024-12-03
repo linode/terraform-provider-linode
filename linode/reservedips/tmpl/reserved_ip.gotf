@@ -1,0 +1,9 @@
+{{ define "reserved_ips_data" }}
+
+data "linode_reserved_ips" "test" {}
+
+output "reserved_ips" {
+  value = data.linode_reserved_ips.test.reserved_ips
+}
+
+{{ end }}

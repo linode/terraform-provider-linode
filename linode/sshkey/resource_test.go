@@ -78,6 +78,33 @@ func TestAccResourceSSHKey_basic(t *testing.T) {
 	})
 }
 
+func TestAccResourceSSHKey_space_in_label(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_sshkey.foobar"
+	sshkeyName := acctest.RandomWithPrefix("tf_test") + " "
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkSSHKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Basic(t, sshkeyName, acceptance.PublicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					checkSSHKeyExists,
+					resource.TestCheckResourceAttr(resName, "label", sshkeyName),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccResourceSSHKey_update(t *testing.T) {
 	t.Parallel()
 	resName := "linode_sshkey.foobar"
