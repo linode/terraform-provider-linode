@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.68.0
 	github.com/aws/smithy-go v1.22.1
-	github.com/go-resty/resty/v2 v2.15.3
+	github.com/go-resty/resty/v2 v2.16.1
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-hclog v1.6.3
@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.17.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
-	github.com/linode/linodego v1.43.0
+	github.com/linode/linodego v1.43.1-0.20241125184627-90fe250d602a
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.29.0
@@ -125,5 +125,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-
