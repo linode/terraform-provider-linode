@@ -20,6 +20,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v2/linode/databases"
 	"github.com/linode/terraform-provider-linode/v2/linode/domain"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
@@ -235,6 +236,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		volume.NewResource,
 		vpc.NewResource,
 		vpcsubnet.NewResource,
+		databasepostgresqlv2.NewResource,
 	}
 }
 
