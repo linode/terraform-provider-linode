@@ -1,4 +1,4 @@
-package networkipassignment
+package networkingipassignment
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"

@@ -1,4 +1,4 @@
-package networkipassignment_test
+package networkingipassignment_test
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkipassignment/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkingipassignment/tmpl"
 )
 
 var testRegion string

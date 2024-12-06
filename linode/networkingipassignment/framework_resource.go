@@ -1,4 +1,4 @@
-package networkipassignment
+package networkingipassignment
 
 import (
 	"context"
@@ -15,7 +15,7 @@ func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
-				Name:   "linode_networking_assign_ip",
+				Name:   "linode_networking_ip_assignment",
 				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 			},

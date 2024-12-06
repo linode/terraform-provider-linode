@@ -28,7 +28,7 @@ resource "linode_networking_ip" "reserved_ip2" {
   reserved = true
 }
 
-resource "linode_networking_assign_ip" "test" {
+resource "linode_networking_ip_assignment" "test" {
     region = "{{ .Region }}"
     assignments = [
         {

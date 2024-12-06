@@ -60,12 +60,3 @@ func WithTimeoutUpdated(t testing.TB, label, region, createTimeout, updateTimeou
 			UpdateTimeout: updateTimeout,
 		})
 }
-
-func UnreservedToReserved(t testing.TB, label, region string, reserved bool) string {
-	return acceptance.ExecuteTemplate(t,
-		"rdns_unreserved_to_reserved", TemplateData{
-			Label:    label,
-			Region:   region,
-			Reserved: reserved,
-		})
-}
