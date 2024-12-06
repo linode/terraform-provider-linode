@@ -37,7 +37,7 @@ resource "linode_object_storage_bucket" "mybucket" {
   access_key = linode_object_storage_key.mykey.access_key
   secret_key = linode_object_storage_key.mykey.secret_key
 
-  cluster = "us-east-1"
+  region  = "us-mia"
   label   = "mybucket"
 
   lifecycle_rule {
@@ -63,7 +63,7 @@ provider "linode" {
 
 resource "linode_object_storage_bucket" "mybucket" {
   # no need to specify the keys with the resource
-  cluster = "us-east-1"
+  region  = "us-mia"
   label   = "mybucket"
 
   lifecycle_rule {
@@ -81,7 +81,7 @@ provider "linode" {
 
 resource "linode_object_storage_bucket" "mybucket" {
   # no need to specify the keys with the resource
-  cluster = "us-east-1"
+  region  = "us-mia"
   label   = "mybucket"
 
   lifecycle_rule {
