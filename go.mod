@@ -1,8 +1,6 @@
 module github.com/linode/terraform-provider-linode/v2
 
-go 1.22.0
-
-toolchain go1.22.5
+go 1.23.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.32.6
@@ -125,3 +123,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/linode/linodego => github.com/ezilber-akamai/linodego v0.0.0-20241202200116-8acd7eb1ae45
