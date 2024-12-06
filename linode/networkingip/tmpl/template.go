@@ -15,3 +15,12 @@ func DataBasic(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"networking_ip_data_basic", TemplateData{Label: label, Region: region})
 }
+
+func NetworkingIPReservedAssigned(t *testing.T, label string, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"networking_ip_reserved_assigned",
+		TemplateData{
+			Label:  label,
+			Region: region,
+		})
+}
