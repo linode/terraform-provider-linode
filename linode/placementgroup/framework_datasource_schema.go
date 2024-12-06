@@ -1,8 +1,16 @@
 package placementgroup
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+var pgMigrationInstanceObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"linode_id": types.Int64Type,
+	},
+}
 
 var DataSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
@@ -43,6 +51,23 @@ var DataSourceSchema = schema.Schema{
 					"is_compliant": schema.BoolAttribute{
 						Description: "Whether this Linode is currently compliant with the group's placement group type.",
 						Computed:    true,
+					},
+				},
+			},
+		},
+		"migrations": schema.ListNestedBlock{
+			Description: "A list of migration objects associated with the placement group. Empty if no migrations exist.",
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"inbound": schema.ListAttribute{
+						Description: "The compute instances being migrated into the placement group.",
+						Computed:    true,
+						ElementType: pgMigrationInstanceObjectType,
+					},
+					"outbound": schema.ListAttribute{
+						Description: "The compute instances being migrated out of the placement group.",
+						Computed:    true,
+						ElementType: pgMigrationInstanceObjectType,
 					},
 				},
 			},
