@@ -1,0 +1,12 @@
+{{ define "reserved_ip_data_basic" }}
+
+resource "linode_reserved_ip" "test" {
+  region = "{{ .Region }}"
+}
+
+data "linode_reserved_ip" "test" {
+  address = linode_reserved_ip.test.address
+}
+
+{{ end }}
+

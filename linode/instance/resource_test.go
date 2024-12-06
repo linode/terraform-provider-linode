@@ -2893,3 +2893,34 @@ func checkComputeInstanceDisk(instance *linodego.Instance, label string, size in
 		return fmt.Errorf("Disk not found: %s", label)
 	}
 }
+
+func TestAccResourceInstance_withReservedIP(t *testing.T) {
+	t.Parallel()
+
+	var instance linodego.Instance
+	resourceName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	rootPass := acctest.RandString(16)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.WithReservedIP(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resourceName, &instance),
+					resource.TestCheckResourceAttr(resourceName, "label", instanceName),
+					resource.TestCheckResourceAttr(resourceName, "ipv4.#", "1"),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "migration_type", "resize_disk", "firewall_id"},
+			},
+		},
+	})
+}

@@ -353,6 +353,8 @@ This Linode Instance resource exports the following attributes:
 
 * `status` - The status of the instance, indicating the current readiness state. (`running`, `offline`, ...)
 
+* `id` - The ID of the Linode.
+
 * `ip_address` - A string containing the Linode's public IP address.
 
 * `private_ip_address` - This Linode's Private IPv4 Address, if enabled.  The regional private IP address range, 192.168.128.0/17, is shared by all Linode Instances in a region.

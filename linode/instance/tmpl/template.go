@@ -741,3 +741,15 @@ func WithPG(t testing.TB, label, region, assignedGroup string, groups []string) 
 			AssignedGroup:   assignedGroup,
 		})
 }
+
+func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string) string {
+	generatedConfig := acceptance.ExecuteTemplate(t,
+		"instance_with_reserved_ip", TemplateData{
+			Label:    label,
+			PubKey:   pubKey,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		})
+	return generatedConfig
+}
