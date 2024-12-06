@@ -22,27 +22,24 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	region = "us-east"
 	testRegion = region
 }
 
 func TestAccInstanceIP_addReservedIP(t *testing.T) {
-	acceptance.OptInTest(t)
 	t.Parallel()
 
 	var instance linodego.Instance
 	name := acctest.RandomWithPrefix("tf_test")
-	reservedIP := "50.116.48.7223" // Replace with your actual reserved IP address
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		CheckDestroy:             acceptance.CheckInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.AddReservedIP(t, name, testRegion, reservedIP),
+				Config: tmpl.AddReservedIP(t, name, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					resource.TestCheckResourceAttr(testInstanceIPResName, "address", reservedIP),
+					resource.TestCheckResourceAttrSet(testInstanceIPResName, "address"),
 					resource.TestCheckResourceAttr(testInstanceIPResName, "public", "true"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "linode_id"),
 					resource.TestCheckResourceAttrSet(testInstanceIPResName, "gateway"),
