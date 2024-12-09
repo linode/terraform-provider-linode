@@ -121,7 +121,32 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
+	client := r.Meta.Client
+
+	var reservedValue *bool
+	if !plan.Reserved.IsNull() {
+		value := plan.Reserved.ValueBool()
+		reservedValue = &value
+	}
+
+	updateOpts := linodego.IPAddressUpdateOptions{
+		Reserved: reservedValue,
+	}
+
+	ipAddress := state.Address.ValueString()
+
+	ip, err := client.UpdateIPAddress(ctx, ipAddress, updateOpts)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to Update IP Address",
+			fmt.Sprintf("Could not update reserved status of IP address: %s", err),
+		)
+		return
+	}
+
+	// Update state with the API response
+	plan.FlattenIPAddress(ip)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
