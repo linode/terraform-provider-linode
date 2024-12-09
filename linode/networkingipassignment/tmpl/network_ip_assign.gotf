@@ -1,0 +1,45 @@
+{{ define "networking_ips_assign" }}
+
+resource "linode_instance" "test1" {
+    label  = "{{ .Label }}-1"
+    type   = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image  = "linode/alpine3.19"
+}
+
+resource "linode_instance" "test2" {
+    label  = "{{ .Label }}-2"
+    type   = "g6-nanode-1"
+    region = "{{ .Region }}"
+    image  = "linode/alpine3.19"
+}
+
+resource "linode_networking_ip" "reserved_ip1" {
+  public   = true
+  type     = "ipv4"
+  region   = "{{ .Region }}"
+  reserved = true
+}
+
+resource "linode_networking_ip" "reserved_ip2" {
+  public   = true
+  type     = "ipv4"
+  region   = "{{ .Region }}" 
+  reserved = true
+}
+
+resource "linode_networking_ip_assignment" "test" {
+    region = "{{ .Region }}"
+    assignments = [
+        {
+            linode_id = linode_instance.test1.id
+            address   = linode_networking_ip.reserved_ip1.address
+        },
+        {
+            linode_id = linode_instance.test2.id
+            address   = linode_networking_ip.reserved_ip2.address
+        }
+    ]
+}
+
+{{ end }}
