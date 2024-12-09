@@ -55,7 +55,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingips"
-	"github.com/linode/terraform-provider-linode/v2/linode/networkipassignment"
+"github.com/linode/terraform-provider-linode/v2/linode/networkingipassignment"
 	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
