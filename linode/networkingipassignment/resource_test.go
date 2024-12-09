@@ -30,7 +30,7 @@ func init() {
 func TestAccResourceNetworkingIPsAssign(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "linode_networking_assign_ip.test"
+	resourceName := "linode_networking_ip_assignment.test"
 	instanceName := acctest.RandomWithPrefix("tf_test")
 
 	resource.Test(t, resource.TestCase{

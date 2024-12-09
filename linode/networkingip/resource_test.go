@@ -47,3 +47,35 @@ func TestAccResourceNetworkingIP_reserved(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceNetworkingIP_reserveToUnreserve(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_networking_ip.test_ip"
+	linodeLabel := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.NetworkingIPReserveTest(t, linodeLabel, testRegion, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "reserved", "true"),
+				),
+			},
+			{
+				Config: tmpl.NetworkingIPReserveTest(t, linodeLabel, testRegion, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "reserved", "false"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"wait_for_available"},
+			},
+		},
+	})
+}
