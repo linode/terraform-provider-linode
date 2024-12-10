@@ -30,22 +30,6 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (data *DataSourceModel) parseIP(ip *linodego.InstanceIP) {
-	data.Address = types.StringValue(ip.Address)
-	data.Gateway = types.StringValue(ip.Gateway)
-	data.SubnetMask = types.StringValue(ip.SubnetMask)
-	data.Prefix = types.Int64Value(int64(ip.Prefix))
-	data.Type = types.StringValue(string(ip.Type))
-	data.Public = types.BoolValue(ip.Public)
-	data.RDNS = types.StringValue(ip.RDNS)
-	data.LinodeID = types.Int64Value(int64(ip.LinodeID))
-	data.Region = types.StringValue(ip.Region)
-
-	id, _ := json.Marshal(ip)
-	data.Reserved = types.BoolValue(ip.Reserved)
-	data.ID = types.StringValue(string(id))
-}
-
 type DataSourceModel struct {
 	Address        types.String `tfsdk:"address"`
 	Gateway        types.String `tfsdk:"gateway"`
