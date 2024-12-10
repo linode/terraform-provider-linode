@@ -38,43 +38,31 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	client := r.Meta.Client
 
-	if !plan.Public.IsNull() {
-		// Handle IP creation
-		createOpts := linodego.AllocateReserveIPOptions{
-			Type:   plan.Type.ValueString(),
-			Public: plan.Public.ValueBool(),
-		}
-
-		if !plan.LinodeID.IsNull() {
-			createOpts.LinodeID = int(plan.LinodeID.ValueInt64())
-		}
-
-		if !plan.Reserved.IsNull() {
-			createOpts.Reserved = plan.Reserved.ValueBool()
-		}
-
-		if !plan.Region.IsNull() {
-			createOpts.Region = plan.Region.ValueString()
-		}
-
-		ip, err := client.AllocateReserveIP(ctx, createOpts)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error creating IP Address",
-				fmt.Sprintf("Could not create IP address: %s", err),
-			)
-			return
-		}
-
-		// Only set the necessary fields after creation
-		plan.ID = types.StringValue(ip.Address)
-		plan.Address = types.StringValue(ip.Address)
-		plan.LinodeID = types.Int64Value(int64(ip.LinodeID))
-		plan.Public = types.BoolValue(ip.Public)
-		plan.Reserved = types.BoolValue(ip.Reserved)
-		plan.Region = types.StringValue(ip.Region)
+	createOpts := linodego.AllocateReserveIPOptions{
+		Type:   plan.Type.ValueString(),
+		Public: plan.Public.ValueBool(),
 	}
 
+	if !plan.LinodeID.IsNull() {
+		createOpts.LinodeID = int(plan.LinodeID.ValueInt64())
+	}
+	if !plan.Reserved.IsNull() {
+		createOpts.Reserved = plan.Reserved.ValueBool()
+	}
+	if !plan.Region.IsNull() {
+		createOpts.Region = plan.Region.ValueString()
+	}
+
+	ip, err := client.AllocateReserveIP(ctx, createOpts)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating IP Address",
+			fmt.Sprintf("Could not create IP address: %s", err),
+		)
+		return
+	}
+
+	plan.FlattenIPAddress(ctx, ip, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -89,7 +77,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 	client := r.Meta.Client
 
-	// For created/reserved IPs
 	ip, err := client.GetIPAddress(ctx, state.ID.ValueString())
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
@@ -103,11 +90,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("API Response for IP read: %+v", ip))
-	tflog.Debug(ctx, fmt.Sprintf("API Response Reserved status: %t", ip.Reserved))
-
-	state.FlattenIPAddress(ip)
-
+	state.FlattenIPAddress(ctx, ip, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
@@ -133,9 +116,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		Reserved: reservedValue,
 	}
 
-	ipAddress := state.Address.ValueString()
-
-	ip, err := client.UpdateIPAddress(ctx, ipAddress, updateOpts)
+	ip, err := client.UpdateIPAddress(ctx, state.Address.ValueString(), updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Update IP Address",
@@ -144,8 +125,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
-	// Update state with the API response
-	plan.FlattenIPAddress(ip)
+	plan.FlattenIPAddress(ctx, ip, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

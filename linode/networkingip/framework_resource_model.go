@@ -1,8 +1,11 @@
 package networkingip
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 type NetworkingIPModel struct {
@@ -15,16 +18,18 @@ type NetworkingIPModel struct {
 	Type     types.String `tfsdk:"type"`
 }
 
-func (m *NetworkingIPModel) FlattenIPAddress(ip *linodego.InstanceIP) {
-	m.ID = types.StringValue(ip.Address)
+func (m *NetworkingIPModel) FlattenIPAddress(ctx context.Context, ip *linodego.InstanceIP, preserveKnown bool) {
+	m.ID = helper.KeepOrUpdateString(m.ID, ip.Address, preserveKnown)
+
 	if ip.LinodeID != 0 {
-		m.LinodeID = types.Int64Value(int64(ip.LinodeID))
+		m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, types.Int64Value(int64(ip.LinodeID)), preserveKnown)
 	} else {
-		m.LinodeID = types.Int64Null()
+		m.LinodeID = helper.KeepOrUpdateValue(m.LinodeID, types.Int64Null(), preserveKnown)
 	}
-	m.Reserved = types.BoolValue(ip.Reserved)
-	m.Region = types.StringValue(ip.Region)
-	m.Public = types.BoolValue(ip.Public)
-	m.Address = types.StringValue(ip.Address)
-	m.Type = types.StringValue(string(ip.Type))
+
+	m.Reserved = helper.KeepOrUpdateValue(m.Reserved, types.BoolValue(ip.Reserved), preserveKnown)
+	m.Region = helper.KeepOrUpdateString(m.Region, ip.Region, preserveKnown)
+	m.Public = helper.KeepOrUpdateValue(m.Public, types.BoolValue(ip.Public), preserveKnown)
+	m.Address = helper.KeepOrUpdateString(m.Address, ip.Address, preserveKnown)
+	m.Type = helper.KeepOrUpdateString(m.Type, string(ip.Type), preserveKnown)
 }
