@@ -12,6 +12,7 @@ type TemplateData struct {
 	CreateTimeout    string
 	UpdateTimeout    string
 	WaitForAvailable bool
+	Reserved         bool
 }
 
 func Basic(t testing.TB, label, region string, waitForAvailable bool) string {

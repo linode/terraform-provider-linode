@@ -37,6 +37,7 @@ func (data *DataSourceModel) parseIP(ip *linodego.InstanceIP) {
 	data.RDNS = types.StringValue(ip.RDNS)
 	data.LinodeID = types.Int64Value(int64(ip.LinodeID))
 	data.Region = types.StringValue(ip.Region)
+	data.Reserved = types.BoolValue(ip.Reserved)
 
 	id, _ := json.Marshal(ip)
 
@@ -51,6 +52,7 @@ type DataSourceModel struct {
 	Type       types.String `tfsdk:"type"`
 	Public     types.Bool   `tfsdk:"public"`
 	RDNS       types.String `tfsdk:"rdns"`
+	Reserved   types.Bool   `tfsdk:"reserved"`
 	LinodeID   types.Int64  `tfsdk:"linode_id"`
 	Region     types.String `tfsdk:"region"`
 	ID         types.String `tfsdk:"id"`

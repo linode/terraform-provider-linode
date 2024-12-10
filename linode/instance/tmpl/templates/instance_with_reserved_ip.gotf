@@ -12,7 +12,6 @@ resource "linode_instance" "foobar" {
     region = "{{ .Region }}"
     image  = "{{ .Image }}"
     firewall_id = linode_firewall.e2e_test_firewall.id
-
     root_pass = "{{ .RootPass }}"
     authorized_keys = ["{{ .PubKey }}"]
 
