@@ -90,7 +90,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	state.FlattenIPAddress(ctx, ip, true)
+	state.FlattenIPAddress(ctx, ip, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
@@ -107,9 +107,9 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	client := r.Meta.Client
 
 	var reservedValue *bool
-	if !plan.Reserved.IsNull() {
-		value := plan.Reserved.ValueBool()
-		reservedValue = &value
+	if plan.Reserved != state.Reserved {
+		value := plan.Reserved.ValueBoolPointer()
+		reservedValue = value
 	}
 
 	updateOpts := linodego.IPAddressUpdateOptions{
@@ -140,15 +140,35 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	client := r.Meta.Client
 
-	// For created/reserved IPs
+	// Regular assigned ephemeral IP address
 	if !state.Reserved.ValueBool() {
-		// This is a regular IP address
+		// This is a regular ephemeral IP address
 		linodeID := helper.FrameworkSafeInt64ToInt(state.LinodeID.ValueInt64(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		err := client.DeleteInstanceIPAddress(ctx, linodeID, state.Address.ValueString())
+		// Check if this is the only public IP on the Linode
+		ips, err := client.GetInstanceIPAddresses(ctx, linodeID)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to List IPs",
+				fmt.Sprintf("failed to list IP addresses for Linode (%d): %s", linodeID, err.Error()),
+			)
+			return
+		}
+
+		// If this is the only public IP, skip deletion to avoid the "must have at least one public IP" error
+		if len(ips.IPv4.Public) == 1 {
+			resp.Diagnostics.AddWarning(
+				"Cannot Delete Last IP",
+				"Linode must have at least one public IP address. The last IP cannot be deleted.",
+			)
+			return
+		}
+
+		// Proceed with deleting the IP if it's not the only one
+		err = client.DeleteInstanceIPAddress(ctx, linodeID, state.Address.ValueString())
 		if err != nil {
 			if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 				resp.Diagnostics.AddError(
@@ -161,10 +181,32 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 			}
 		}
 	} else {
-		// This is a reserved IP address
-		err := client.DeleteReservedIPAddress(ctx, state.Address.ValueString())
-		if err != nil {
-			if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+		// Reserved IP address
+		// If the IP is currently assigned (reserved but used)
+		if state.LinodeID.ValueInt64() != 0 {
+			// It's an assigned reserved IP, we can delete it regardless of being the only IP
+			linodeID := helper.FrameworkSafeInt64ToInt(state.LinodeID.ValueInt64(), &resp.Diagnostics)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			// Delete the reserved IP (this will turn it into an ephemeral IP if it's the only IP)
+			err := client.DeleteReservedIPAddress(ctx, state.Address.ValueString())
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to Delete Assigned Reserved IP",
+					fmt.Sprintf(
+						"failed to delete assigned reserved ip (%s) from linode (%d): %s",
+						state.Address.ValueString(), linodeID, err.Error(),
+					),
+				)
+			}
+			return
+		} else {
+			// Reserved IP (unassigned) that needs to be deleted
+			// If it's a reserved IP but it is not assigned to a Linode, proceed with deletion
+			err := client.DeleteReservedIPAddress(ctx, state.Address.ValueString())
+			if err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to Delete Reserved IP",
 					fmt.Sprintf(

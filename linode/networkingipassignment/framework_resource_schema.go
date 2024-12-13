@@ -32,6 +32,7 @@ var frameworkResourceSchema = schema.Schema{
 			Optional: true,
 			PlanModifiers: []planmodifier.List{
 				listplanmodifier.UseStateForUnknown(), // Ensure the list uses state when unknown.
+				listplanmodifier.RequiresReplace(),
 			},
 		},
 	},
