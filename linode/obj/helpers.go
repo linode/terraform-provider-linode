@@ -332,14 +332,12 @@ func fwPutObject(
 	}
 	defer body.Close()
 
-	bucket := data.Bucket.ValueString()
-	key := data.Key.ValueString()
-
 	putInput := &s3.PutObjectInput{
-		Bucket: &bucket,
-		Key:    &key,
 		Body:   body,
+		Bucket: data.Bucket.ValueStringPointer(),
+		Key:    data.Key.ValueStringPointer(),
 
+		ACL:                     s3types.ObjectCannedACL(data.ACL.ValueString()),
 		CacheControl:            data.CacheControl.ValueStringPointer(),
 		ContentDisposition:      data.ContentDisposition.ValueStringPointer(),
 		ContentEncoding:         data.ContentEncoding.ValueStringPointer(),
@@ -348,11 +346,7 @@ func fwPutObject(
 		WebsiteRedirectLocation: data.WebsiteRedirect.ValueStringPointer(),
 	}
 
-	if data.ACL.ValueString() != "" {
-		putInput.ACL = s3types.ObjectCannedACL(data.ACL.ValueString())
-	}
-
-	if !data.Metadata.IsNull() && !data.Metadata.IsUnknown() {
+	if len(data.Metadata.Elements()) > 0 {
 		data.Metadata.ElementsAs(ctx, &putInput.Metadata, false)
 		tflog.Debug(ctx, fmt.Sprintf("got Metadata: %v", putInput.Metadata))
 	}

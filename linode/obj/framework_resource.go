@@ -96,23 +96,17 @@ func RefreshObject(
 ) {
 	tflog.Debug(ctx, "enter RefreshObject")
 
-	bucket := data.Bucket.ValueString()
-	key := data.Key.ValueString()
-
 	if diags.HasError() {
 		return
 	}
 
 	headObjectInput := &s3.HeadObjectInput{
-		Bucket: &bucket,
-		Key:    &key,
+		Bucket: data.Bucket.ValueStringPointer(),
+		Key:    data.Key.ValueStringPointer(),
 	}
 
 	tflog.Debug(ctx, "getting object header", map[string]any{"HeadObjectInput": headObjectInput})
-	headOutput, err := s3client.HeadObject(
-		ctx,
-		headObjectInput,
-	)
+	headOutput, err := s3client.HeadObject(ctx, headObjectInput)
 	if err != nil {
 		if helper.IsObjNotFoundErr(err) && removeResource != nil {
 			removeResource(ctx)
