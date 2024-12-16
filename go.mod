@@ -29,7 +29,7 @@ require (
 	github.com/linode/linodego v1.43.1-0.20241125184627-90fe250d602a
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.30.0
+	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.32.0
 	golang.org/x/sync v0.10.0
 )
