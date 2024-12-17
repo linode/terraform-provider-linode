@@ -160,27 +160,8 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 			return
 		}
 
-		// Check if this is the only public IP on the Linode
-		ips, err := client.GetInstanceIPAddresses(ctx, linodeID)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to List IPs",
-				fmt.Sprintf("failed to list IP addresses for Linode (%d): %s", linodeID, err.Error()),
-			)
-			return
-		}
-
-		// If this is the only public IP, skip deletion to avoid the "must have at least one public IP" error
-		if len(ips.IPv4.Public) == 1 {
-			resp.Diagnostics.AddWarning(
-				"Cannot Delete Last IP",
-				"Linode must have at least one public IP address. The last IP cannot be deleted.",
-			)
-			return
-		}
-
 		// Proceed with deleting the IP if it's not the only one
-		err = client.DeleteInstanceIPAddress(ctx, linodeID, state.Address.ValueString())
+		err := client.DeleteInstanceIPAddress(ctx, linodeID, state.Address.ValueString())
 		if err != nil {
 			if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
 				resp.Diagnostics.AddError(
