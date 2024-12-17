@@ -93,6 +93,8 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: resourceImportStateID,
+				// TODO:: remove when API response for updated timestamp is consistent
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})
