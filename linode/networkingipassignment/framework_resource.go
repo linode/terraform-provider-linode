@@ -102,47 +102,10 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 }
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	tflog.Debug(ctx, "Update linode_networking_assign_ip")
-	var plan, state NetworkingIPModel
-
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	client := r.Meta.Client
-
-	apiAssignments := make([]linodego.LinodeIPAssignment, len(plan.Assignments))
-	for i, assignment := range plan.Assignments {
-		apiAssignments[i] = linodego.LinodeIPAssignment{
-			Address:  assignment.Address.ValueString(),
-			LinodeID: int(assignment.LinodeID.ValueInt64()),
-		}
-	}
-
-	assignOpts := linodego.LinodesAssignIPsOptions{
-		Region:      plan.Region.ValueString(),
-		Assignments: apiAssignments,
-	}
-
-	err := client.InstancesAssignIPs(ctx, assignOpts)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error updating IP Assignments",
-			fmt.Sprintf("Could not update IP assignments: %s", err),
-		)
-		return
-	}
-
-	// Update the ID to reflect any changes in the number of assignments
-	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tflog.Debug(ctx, "Delete linode_networking_assign_ip")
+	tflog.Debug(ctx, "Delete linode_networking_assignments")
 	var state NetworkingIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -150,5 +113,37 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	// No need to do anything for delete as the IPs will be automatically unassigned when the Linodes are deleted
+	client := r.Meta.Client
+
+	// Iterate through all assignments and unassign each IP
+	for _, assignment := range state.Assignments {
+		linodeID := helper.FrameworkSafeInt64ToInt(assignment.LinodeID.ValueInt64(), &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		ipAddress := assignment.Address.ValueString()
+		if ipAddress == "" {
+			resp.Diagnostics.AddWarning(
+				"Invalid IP Address",
+				"An IP address in the assignment list is empty or invalid. Skipping.",
+			)
+			continue
+		}
+
+		// Unassign the IP address from the Linode
+		err := client.DeleteInstanceIPAddress(ctx, linodeID, ipAddress)
+		if err != nil {
+			// Log and continue with the next IP address if an error occurs
+			resp.Diagnostics.AddError(
+				"Failed to Unassign IP Address",
+				fmt.Sprintf("Error unassigning IP address %s from Linode %d: %s", ipAddress, linodeID, err),
+			)
+			continue
+		}
+
+		tflog.Debug(ctx, fmt.Sprintf("Successfully unassigned IP %s from Linode %d", ipAddress, linodeID))
+	}
+
+	resp.State.RemoveResource(ctx)
 }

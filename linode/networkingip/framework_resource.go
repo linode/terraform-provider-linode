@@ -77,20 +77,32 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 	client := r.Meta.Client
 
-	ip, err := client.GetIPAddress(ctx, state.ID.ValueString())
+	// Use ListIPAddresses as a workaround to retrieve the specific private IP address
+	// since GetIPAddress doesnt retrieve private IP addresses
+	ips, err := client.ListIPAddresses(ctx, nil)
 	if err != nil {
-		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			resp.State.RemoveResource(ctx)
-			return
-		}
 		resp.Diagnostics.AddError(
-			"Error reading IP Address",
-			fmt.Sprintf("Could not read IP address %s: %s", state.ID.ValueString(), err),
+			"Error reading IP Addresses",
+			fmt.Sprintf("Could not list IP addresses: %s", err),
 		)
 		return
 	}
 
-	state.FlattenIPAddress(ctx, ip, false)
+	var foundIP *linodego.InstanceIP
+	for _, ip := range ips {
+		if ip.Address == state.ID.ValueString() {
+			foundIP = &ip
+			break
+		}
+	}
+
+	if foundIP == nil {
+		// IP address not found; remove the resource from the state
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	state.FlattenIPAddress(ctx, foundIP, false)
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
