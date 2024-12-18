@@ -124,11 +124,11 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		reservedValue = value
 	}
 
-	updateOpts := linodego.IPAddressUpdateOptions{
+	updateOpts := linodego.IPAddressUpdateOptionsV2{
 		Reserved: reservedValue,
 	}
 
-	ip, err := client.UpdateIPAddress(ctx, state.Address.ValueString(), updateOpts)
+	ip, err := client.UpdateIPAddressV2(ctx, state.Address.ValueString(), updateOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Update IP Address",
