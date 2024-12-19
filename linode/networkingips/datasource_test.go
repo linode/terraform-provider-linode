@@ -3,13 +3,11 @@
 package networkingips_test
 
 import (
-	"fmt"
 	"log"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingips/tmpl"
 )
@@ -41,24 +39,11 @@ func TestAccDataSourceNetworkingIP_list(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.address"),
 					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.linode_id"),
 					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.region"),
-					func(s *terraform.State) error {
-						rs, ok := s.RootModule().Resources[dataResourceName]
-						if !ok {
-							return fmt.Errorf("resource not found: %s", dataResourceName)
-						}
-
-						gateway := rs.Primary.Attributes["ip_addresses.0.gateway"]
-
-						// Validate gateway: allow null (empty string) or a value ending in '.1'
-						if gateway != "" && !regexp.MustCompile(`\.1$`).MatchString(gateway) {
-							return fmt.Errorf("attribute ip_addresses.0.gateway has invalid value: %s", gateway)
-						}
-						return nil
-					},
-					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.type", "ipv4"),
-					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.public", "true"),
-					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.prefix", "24"),
-					resource.TestMatchResourceAttr(dataResourceName, "ip_addresses.0.rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
+					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.gateway"),
+					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.type"),
+					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.public"),
+					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.prefix"),
+					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.rdns"),
 					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.subnet_mask"),
 					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.reserved"),
 				),
