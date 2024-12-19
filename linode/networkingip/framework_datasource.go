@@ -2,7 +2,6 @@ package networkingip
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -37,10 +36,8 @@ func (data *DataSourceModel) parseIP(ip *linodego.InstanceIP) {
 	data.RDNS = types.StringValue(ip.RDNS)
 	data.LinodeID = types.Int64Value(int64(ip.LinodeID))
 	data.Region = types.StringValue(ip.Region)
-
-	id, _ := json.Marshal(ip)
-
-	data.ID = types.StringValue(string(id))
+	data.Reserved = types.BoolValue(ip.Reserved)
+	data.ID = types.StringValue(ip.Address)
 }
 
 type DataSourceModel struct {
@@ -51,6 +48,7 @@ type DataSourceModel struct {
 	Type       types.String `tfsdk:"type"`
 	Public     types.Bool   `tfsdk:"public"`
 	RDNS       types.String `tfsdk:"rdns"`
+	Reserved   types.Bool   `tfsdk:"reserved"`
 	LinodeID   types.Int64  `tfsdk:"linode_id"`
 	Region     types.String `tfsdk:"region"`
 	ID         types.String `tfsdk:"id"`
@@ -72,10 +70,29 @@ func (d *DataSource) Read(
 
 	ctx = tflog.SetField(ctx, "address", data.Address.ValueString())
 
-	ip, err := d.Meta.Client.GetIPAddress(ctx, data.Address.ValueString())
+	// Workaround: Use GetIPAddresses and filter for the specific address
+	ips, err := d.Meta.Client.ListIPAddresses(ctx, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get IP Address: %s", err.Error(),
+			"Unable to list IP Addresses",
+			err.Error(),
+		)
+		return
+	}
+
+	var ip *linodego.InstanceIP
+	for _, candidate := range ips {
+		if candidate.Address == data.Address.ValueString() {
+			ip = &candidate
+			break
+		}
+	}
+
+	// If the IP address is not found, return an error
+	if ip == nil {
+		resp.Diagnostics.AddError(
+			"IP Address Not Found",
+			"Could not find the specified IP address in the list of retrieved IPs.",
 		)
 		return
 	}

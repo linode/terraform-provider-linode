@@ -1,14 +1,32 @@
-package networkingip
+package networkingips
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+var updatedIPObjectType = types.ObjectType{
+	AttrTypes: map[string]attr.Type{
+		"address":     types.StringType,
+		"region":      types.StringType,
+		"gateway":     types.StringType,
+		"subnet_mask": types.StringType,
+		"prefix":      types.Int64Type,
+		"type":        types.StringType,
+		"public":      types.BoolType,
+		"rdns":        types.StringType,
+		"linode_id":   types.Int64Type,
+		"reserved":    types.BoolType,
+	},
+}
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"address": schema.StringAttribute{
 			Description: "The IP address.",
-			Required:    true,
+			// Required:    true,
+			Optional: true,
 		},
 		"gateway": schema.StringAttribute{
 			Description: "The default gateway for this address.",
@@ -43,14 +61,22 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The Region this IP address resides in.",
 			Computed:    true,
 		},
-		"reserved": schema.BoolAttribute{
-			Description: "Whether the IPv4 address should be reserved.",
-			Computed:    true,
-		},
-
 		"id": schema.StringAttribute{
 			Description: "A unique identifier for this datasource.",
 			Computed:    true,
+		},
+		"reserved": schema.BoolAttribute{
+			Computed:    true,
+			Description: "Whether this IP is reserved or not.",
+		},
+		"ip_addresses": schema.ListAttribute{
+			Description: "A list of all IPs.",
+			Computed:    true,
+			ElementType: updatedIPObjectType,
+		},
+		"filter_reserved": schema.BoolAttribute{
+			Description: "Filter IPs by reserved status.",
+			Optional:    true,
 		},
 	},
 }

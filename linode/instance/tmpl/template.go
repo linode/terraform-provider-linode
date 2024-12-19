@@ -1,6 +1,7 @@
 package tmpl
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/linode/linodego"
@@ -752,4 +753,12 @@ func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string) string
 			RootPass: rootPass,
 		})
 	return generatedConfig
+}
+
+func OnlyReservedIP(t *testing.T, region string) string {
+	return fmt.Sprintf(`
+resource "linode_reserved_ip" "test" {
+	region = "%s"
+}
+`, region)
 }
