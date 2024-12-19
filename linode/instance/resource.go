@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"time"
 
@@ -92,17 +93,30 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	public, private := instanceNetwork.IPv4.Public, instanceNetwork.IPv4.Private
 
 	if len(public) > 0 {
-		d.Set("ip_address", public[0].Address)
+		oldIP, ok := d.GetOk("ip_address")
 
-		d.SetConnInfo(map[string]string{
-			"type": "ssh",
-			"host": public[0].Address,
-		})
+		if !ok || !slices.ContainsFunc(
+			public, func(newIP *linodego.InstanceIP) bool {
+				return newIP.Address == oldIP.(string)
+			},
+		) {
+			setPublicIPAddress(d, public[0].Address)
+		}
 	}
 
 	if len(private) > 0 {
 		d.Set("private_ip", true)
-		d.Set("private_ip_address", private[0].Address)
+
+		oldIP, ok := d.GetOk("private_ip_address")
+
+		if !ok || !slices.ContainsFunc(
+			private, func(newIP *linodego.InstanceIP) bool {
+				return newIP.Address == oldIP.(string)
+			},
+		) {
+			d.Set("private_ip_address", private[0].Address)
+		}
+
 	} else {
 		d.Set("private_ip", false)
 	}
@@ -322,7 +336,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		if private := privateIP(*address); private {
 			d.Set("private_ip_address", address.String())
 		} else {
-			d.Set("ip_address", address.String())
+			setPublicIPAddress(d, address.String())
 		}
 	}
 
