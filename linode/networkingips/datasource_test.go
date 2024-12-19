@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,29 +39,47 @@ func TestAccDataSourceNetworkingIP_list(t *testing.T) {
 				Config: tmpl.DataList(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.#"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.address"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.linode_id"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.region"),
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources[dataResourceName]
 						if !ok {
 							return fmt.Errorf("resource not found: %s", dataResourceName)
 						}
 
-						gateway := rs.Primary.Attributes["ip_addresses.0.gateway"]
-
-						// Validate gateway: allow null (empty string) or a value ending in '.1'
-						if gateway != "" && !regexp.MustCompile(`\.1$`).MatchString(gateway) {
-							return fmt.Errorf("attribute ip_addresses.0.gateway has invalid value: %s", gateway)
+						numAddresses, err := strconv.Atoi(rs.Primary.Attributes["ip_addresses.#"])
+						if err != nil {
+							return fmt.Errorf("failed to parse ip_addresses.#: %v", err)
 						}
-						return nil
+
+						for i := 0; i < numAddresses; i++ {
+							prefix := fmt.Sprintf("ip_addresses.%d.", i)
+
+							// Check if all required fields are set
+							if rs.Primary.Attributes[prefix+"gateway"] != "" &&
+								rs.Primary.Attributes[prefix+"rdns"] != "" &&
+								rs.Primary.Attributes[prefix+"address"] != "" &&
+								rs.Primary.Attributes[prefix+"linode_id"] != "" &&
+								rs.Primary.Attributes[prefix+"region"] != "" &&
+								rs.Primary.Attributes[prefix+"type"] != "" &&
+								rs.Primary.Attributes[prefix+"public"] != "" &&
+								rs.Primary.Attributes[prefix+"prefix"] != "" &&
+								rs.Primary.Attributes[prefix+"subnet_mask"] != "" &&
+								rs.Primary.Attributes[prefix+"reserved"] != "" {
+
+								// Perform assertions for the selected IP address
+								if !regexp.MustCompile(`\.1$`).MatchString(rs.Primary.Attributes[prefix+"gateway"]) {
+									return fmt.Errorf("attribute %sgateway has invalid value: %s", prefix, rs.Primary.Attributes[prefix+"gateway"])
+								}
+
+								if !regexp.MustCompile(`.ip.linodeusercontent.com$`).MatchString(rs.Primary.Attributes[prefix+"rdns"]) {
+									return fmt.Errorf("attribute %srdns has invalid value: %s", prefix, rs.Primary.Attributes[prefix+"rdns"])
+								}
+
+								return nil
+							}
+						}
+
+						return fmt.Errorf("no IP address found with all attributes set")
 					},
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.type"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.public"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.prefix"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.rdns"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.subnet_mask"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.reserved"),
 				),
 			},
 		},
