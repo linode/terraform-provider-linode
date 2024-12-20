@@ -2,6 +2,7 @@ package objkey
 
 import (
 	"context"
+	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -73,11 +74,16 @@ func (plan ResourceModel) GetCreateOptions(ctx context.Context) (opts linodego.O
 	return
 }
 
-func getObjectStorageKeyRegionIDs(regions []linodego.ObjectStorageKeyRegion) []string {
+func getObjectStorageKeyRegionIDsSet(regions []linodego.ObjectStorageKeyRegion) []string {
 	regionIDs := make([]string, len(regions))
 	for i, r := range regions {
 		regionIDs[i] = r.ID
 	}
+
+	// deduplicate
+	slices.Sort(regionIDs)
+	regionIDs = slices.Compact(regionIDs)
+
 	return regionIDs
 }
 
@@ -107,7 +113,7 @@ func (rm *ResourceModel) FlattenObjectStorageKey(
 		rm.SecretKey = helper.KeepOrUpdateString(rm.SecretKey, key.SecretKey, preserveKnown)
 	}
 
-	newRegions := getObjectStorageKeyRegionIDs(key.Regions)
+	newRegions := getObjectStorageKeyRegionIDsSet(key.Regions)
 	rm.Regions = helper.KeepOrUpdateStringSet(rm.Regions, newRegions, preserveKnown, diags)
 
 	rm.BucketAccess = FlattenBucketAccessEntries(key.BucketAccess, rm.BucketAccess, preserveKnown)
