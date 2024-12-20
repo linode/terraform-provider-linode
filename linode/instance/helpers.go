@@ -1051,6 +1051,7 @@ func applyInstanceMigration(
 	client *linodego.Client,
 	instance *linodego.Instance,
 	targetRegion string,
+	upgrade bool,
 ) (*linodego.Instance, error) {
 	migrationType := linodego.InstanceMigrationType(
 		d.Get("migration_type").(string),
@@ -1069,8 +1070,9 @@ func applyInstanceMigration(
 	}
 
 	migrateOpts := linodego.InstanceMigrateOptions{
-		Region: targetRegion,
-		Type:   migrationType,
+		Region:  targetRegion,
+		Type:    migrationType,
+		Upgrade: &upgrade,
 	}
 
 	tflog.Debug(ctx, "client.MigrateInstance(...)", map[string]any{
