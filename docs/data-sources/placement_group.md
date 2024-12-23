@@ -41,13 +41,14 @@ In addition to all arguments above, the following attributes are exported:
 
 * `migrations` - Any Linodes that are being migrated to or from the placement group.
 
-    * `inbound` - A list of the Linodes the system is migrating into the placement group.
- 
-        * `linode_id` - The unique identifier for the Linode being migrated into the placement group.
+  * `inbound` - A list of the Linodes the system is migrating into the placement group.
 
-    * `outbound` A list of the Linodes the system is migrating out of the placement group.
+    * `linode_id` - The unique identifier for the Linode being migrated into the placement group.
 
-        * `linode_id` - The unique identifier for the Linode being migrated out of the placement group.
+  * `outbound` A list of the Linodes the system is migrating out of the placement group.
+
+    * `linode_id` - The unique identifier for the Linode being migrated out of the placement group.
+
 ### Members
 
 Represents a single Linode assigned to a Placement Group.
