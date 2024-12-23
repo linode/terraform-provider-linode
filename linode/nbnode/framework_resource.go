@@ -32,6 +32,8 @@ type Resource struct {
 
 func AddNodeResource(ctx context.Context, node linodego.NodeBalancerNode, resp *resource.CreateResponse, plan ResourceModel) {
 	resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(strconv.Itoa(node.ID)))
+	resp.State.SetAttribute(ctx, path.Root("nodebalancer_id"), types.StringValue(strconv.Itoa(node.NodeBalancerID)))
+	resp.State.SetAttribute(ctx, path.Root("config_id"), types.StringValue(strconv.Itoa(node.ConfigID)))
 }
 
 func (r *Resource) Create(
@@ -112,7 +114,7 @@ func (r *Resource) Read(
 			resp.Diagnostics.AddWarning(
 				"The NodeBalancer Node No Longer Exists",
 				fmt.Sprintf(
-					"Removing Linode Token with ID %v from state because it no longer exists", id,
+					"Removing NodeBalancer Node with ID %v from state because it no longer exists", id,
 				),
 			)
 			resp.State.RemoveResource(ctx)

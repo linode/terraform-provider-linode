@@ -15,7 +15,7 @@ Provides a Linode Object Storage Object resource. This can be used to create, mo
 ```hcl
 resource "linode_object_storage_object" "object" {
     bucket  = "my-bucket"
-    cluster = "us-east-1"
+    region  = "us-mia"
     key     = "my-object"
 
     secret_key = linode_object_storage_key.my_key.secret_key
@@ -31,7 +31,7 @@ resource "linode_object_storage_object" "object" {
 ```hcl
 resource "linode_object_storage_object" "object" {
     bucket  = "my-bucket"
-    cluster = "us-east-1"
+    region  = "us-mia"
     key     = "my-object"
 
     secret_key = linode_object_storage_key.my_key.secret_key
@@ -55,7 +55,7 @@ provider "linode" {
 resource "linode_object_storage_object" "object" {
     # no need to specify the keys with the resource
     bucket  = "my-bucket"
-    cluster = "us-east-1"
+    region  = "us-mia"
     key     = "my-object"
     source = pathexpand("~/files/log.txt")
 }
@@ -71,7 +71,7 @@ provider "linode" {
 resource "linode_object_storage_object" "object" {
     # no need to specify the keys with the resource
     bucket  = "my-bucket"
-    cluster = "us-east-1"
+    region  = "us-mia"
     key     = "my-object"
     source = pathexpand("~/files/log.txt")
 }

@@ -2,7 +2,6 @@ package token
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -72,10 +71,9 @@ var frameworkResourceSchema = schema.Schema{
 						sr planmodifier.StringRequest,
 						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
 					) {
-						rrifr.RequiresReplace = !helper.CompareTimeStrings(
+						rrifr.RequiresReplace = !helper.CompareRFC3339TimeStrings(
 							sr.PlanValue.ValueString(),
 							sr.StateValue.ValueString(),
-							time.RFC3339,
 						)
 					},
 					RequireReplacementWhenScopesChangedDescription,

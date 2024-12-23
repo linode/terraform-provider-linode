@@ -43,6 +43,11 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The Region this IP address resides in.",
 			Computed:    true,
 		},
+		"reserved": schema.BoolAttribute{
+			Description: "Whether the IPv4 address should be reserved.",
+			Computed:    true,
+		},
+
 		"id": schema.StringAttribute{
 			Description: "A unique identifier for this datasource.",
 			Computed:    true,
