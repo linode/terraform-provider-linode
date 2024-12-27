@@ -55,20 +55,18 @@ var DataSourceSchema = schema.Schema{
 				},
 			},
 		},
-		"migrations": schema.ListNestedBlock{
-			Description: "A list of migration objects associated with the placement group. Empty if no migrations exist.",
-			NestedObject: schema.NestedBlockObject{
-				Attributes: map[string]schema.Attribute{
-					"inbound": schema.ListAttribute{
-						Description: "The compute instances being migrated into the placement group.",
-						Computed:    true,
-						ElementType: pgMigrationInstanceObjectType,
-					},
-					"outbound": schema.ListAttribute{
-						Description: "The compute instances being migrated out of the placement group.",
-						Computed:    true,
-						ElementType: pgMigrationInstanceObjectType,
-					},
+		"migrations": schema.SingleNestedBlock{
+			Description: "An object representing migrations associated with the placement group. Contains inbound and outbound migration lists.",
+			Attributes: map[string]schema.Attribute{
+				"inbound": schema.ListAttribute{
+					Description: "The compute instances being migrated into the placement group.",
+					Computed:    true,
+					ElementType: pgMigrationInstanceObjectType,
+				},
+				"outbound": schema.ListAttribute{
+					Description: "The compute instances being migrated out of the placement group.",
+					Computed:    true,
+					ElementType: pgMigrationInstanceObjectType,
 				},
 			},
 		},
