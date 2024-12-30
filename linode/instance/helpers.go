@@ -35,6 +35,14 @@ func getDeadlineSeconds(ctx context.Context, d *schema.ResourceData) int {
 	return int(duration.Seconds())
 }
 
+func setPublicIPAddress(d *schema.ResourceData, ip string) {
+	d.Set("ip_address", ip)
+	d.SetConnInfo(map[string]string{
+		"type": "ssh",
+		"host": ip,
+	})
+}
+
 func createInstanceConfigsFromSet(
 	ctx context.Context,
 	client linodego.Client,

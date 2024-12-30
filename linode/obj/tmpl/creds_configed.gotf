@@ -13,13 +13,13 @@ resource "linode_object_storage_object" "creds_configed" {
     provider = linode.creds_configed
 
     bucket     = linode_object_storage_bucket.foobar.label
-    {{if .Region }}
+    {{ if .Region }}
     region     = "{{.Region}}"
-    {{else}}
+    {{ else }}
     cluster    = "{{ .Cluster }}"
-    {{end}}
+    {{ end }}
     key        = "test_creds_configed"
-    content    = "{{.Content}}"
+    content    = "{{ .Content }}"
 }
 
 {{ end }}

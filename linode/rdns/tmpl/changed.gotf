@@ -5,7 +5,7 @@
 resource "linode_instance" "foobar" {
     label = "{{.Label}}"
     group = "tf_test"
-    image = "linode/alpine3.18"
+    image = "linode/alpine3.20"
     type = "g6-standard-1"
     region = "{{ .Region }}"
     firewall_id = linode_firewall.e2e_test_firewall.id

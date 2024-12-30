@@ -55,7 +55,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/nbs"
 	"github.com/linode/terraform-provider-linode/v2/linode/nbtypes"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingip"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkingipassignment"
+	"github.com/linode/terraform-provider-linode/v2/linode/networkingips"
 	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices"
+	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
@@ -114,6 +117,7 @@ func (p *FrameworkProvider) Metadata(
 	resp *provider.MetadataResponse,
 ) {
 	resp.TypeName = "linode"
+	resp.Version = p.ProviderVersion
 }
 
 func (p *FrameworkProvider) Schema(
@@ -237,6 +241,9 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		vpc.NewResource,
 		vpcsubnet.NewResource,
 		databasepostgresqlv2.NewResource,
+		networkingip.NewResource,
+		networkingipassignment.NewResource,
+		obj.NewResource,
 	}
 }
 
@@ -305,6 +312,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		placementgroups.NewDataSource,
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
+		networkingips.NewDataSource,
 		reservedip.NewDataSource,
 		reservedips.NewDataSource,
 	}
