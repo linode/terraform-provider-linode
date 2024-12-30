@@ -339,27 +339,34 @@ func (r *Resource) Update(
 			return
 		}
 
-		tflog.Debug(ctx, "client.UpdatePostgresDatabase(...)", map[string]any{
-			"options": updateOpts,
-		})
-		if _, err := client.UpdatePostgresDatabase(ctx, id, updateOpts); err != nil {
+		updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
+		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to update database (%d)", id),
+				"Failed to create EventPoller for database",
 				err.Error(),
 			)
 			return
 		}
 
-		// TODO: Poll for update event to complete
-		if err := client.WaitForDatabaseStatus(
-			ctx,
-			id,
-			linodego.DatabaseEngineTypePostgres,
-			linodego.DatabaseStatusActive,
-			60*60,
-		); err != nil {
+		tflog.Debug(ctx, "client.UpdatePostgresDatabase(...)", map[string]any{
+			"options": updateOpts,
+		})
+		if _, err := client.UpdatePostgresDatabase(ctx, id, updateOpts); err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to wait for database(%d) active", id),
+				"Failed to update database",
+				err.Error(),
+			)
+			return
+		}
+
+		timeoutSeconds := helper.FrameworkSafeFloat64ToInt(updateTimeout.Seconds(), &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to poll for database update event to finish",
 				err.Error(),
 			)
 			return
@@ -419,7 +426,7 @@ func (r *Resource) Delete(
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to delete the database (%s)", data.ID.ValueString()),
+				"Failed to delete the database",
 				err.Error(),
 			)
 		}
