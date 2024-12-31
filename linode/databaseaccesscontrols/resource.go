@@ -6,7 +6,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -98,41 +97,48 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil
 }
 
-func updateDBAllowListByEngine(ctx context.Context, client linodego.Client, d *schema.ResourceData,
-	engine string, id int, allowList []string,
+func updateDBAllowListByEngine(
+	ctx context.Context,
+	client linodego.Client,
+	d *schema.ResourceData,
+	engine string,
+	id int,
+	allowList []string,
 ) error {
-	var createdDate *time.Time
+	updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to create update EventPoller: %w", err)
+	}
 
 	switch engine {
 	case "mysql":
-		db, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
+		if _, err := client.UpdateMySQLDatabase(ctx, id, linodego.MySQLUpdateOptions{
 			AllowList: &allowList,
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 
-		createdDate = db.Created
 	case "postgresql":
-		db, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
+		if _, err := client.UpdatePostgresDatabase(ctx, id, linodego.PostgresUpdateOptions{
 			AllowList: &allowList,
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
-
-		createdDate = db.Created
 
 	default:
 		return fmt.Errorf("invalid database engine: %s", engine)
 	}
+
 	timeoutSeconds, err := helper.SafeFloat64ToInt(d.Timeout(schema.TimeoutUpdate).Seconds())
 	if err != nil {
 		return err
 	}
 
-	return helper.WaitForDatabaseUpdated(ctx, client, id, linodego.DatabaseEngineType(engine),
-		createdDate, timeoutSeconds)
+	if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+		return fmt.Errorf("failed to wait for update event completion: %w", err)
+	}
+
+	return nil
 }
 
 func getDBAllowListByEngine(ctx context.Context, client linodego.Client, engine string, id int) ([]string, error) {
