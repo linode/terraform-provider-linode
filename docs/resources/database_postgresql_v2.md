@@ -13,7 +13,7 @@ Please keep in mind that Managed Databases can take up to half an hour to provis
 
 ## Example Usage
 
-Creating a simple PostgreSQL database:
+Creating a simple PostgreSQL database that does not allow connections:
 
 ```hcl
 resource "linode_database_postgresql_v2" "foobar" {
@@ -21,6 +21,19 @@ resource "linode_database_postgresql_v2" "foobar" {
   engine_id = "postgresql/16"
   region = "us-mia"
   type = "g6-nanode-1"
+}
+```
+
+Creating a simple PostgreSQL database that allows connections from all IPv4 addresses:
+
+```hcl
+resource "linode_database_postgresql_v2" "foobar" {
+  label = "mydatabase"
+  engine_id = "postgresql/16"
+  region = "us-mia"
+  type = "g6-nanode-1"
+  
+  allowed_ips = ["0.0.0.0/0"]
 }
 ```
 

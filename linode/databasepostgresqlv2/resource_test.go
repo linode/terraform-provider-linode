@@ -114,8 +114,7 @@ func TestAccResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "version"),
 
-					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(resName, "allow_list.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "0"),
 
 					resource.TestCheckResourceAttrSet(resName, "updates.day_of_week"),
 					resource.TestCheckResourceAttrSet(resName, "updates.duration"),
@@ -310,8 +309,7 @@ func TestAccResource_fork(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resNameSource, "updated"),
 					resource.TestCheckResourceAttrSet(resNameSource, "version"),
 
-					resource.TestCheckResourceAttr(resNameSource, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(resNameSource, "allow_list.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(resNameSource, "allow_list.#", "0"),
 
 					resource.TestCheckResourceAttrSet(resNameSource, "updates.day_of_week"),
 					resource.TestCheckResourceAttrSet(resNameSource, "updates.duration"),
@@ -382,8 +380,7 @@ func TestAccResource_fork(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resNameFork, "updated"),
 					resource.TestCheckResourceAttrSet(resNameFork, "version"),
 
-					resource.TestCheckResourceAttr(resNameFork, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(resNameFork, "allow_list.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(resNameFork, "allow_list.#", "0"),
 
 					resource.TestCheckResourceAttrSet(resNameFork, "updates.day_of_week"),
 					resource.TestCheckResourceAttrSet(resNameFork, "updates.duration"),
