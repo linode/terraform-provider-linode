@@ -332,6 +332,14 @@ func isConfigBooted(
 	//
 	// In this case, we want to preserve the existing booted value from state.
 	if currentConfig == 0 {
+		tflog.Info(
+			ctx,
+			"booted: The instance is online but a boot event could not be resolved. "+
+				"The previous value from state will be used.",
+			map[string]any{
+				"assumed_value": previousValue,
+			},
+		)
 		return previousValue, nil
 	}
 
