@@ -310,13 +310,30 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 	return err
 }
 
-func isConfigBooted(ctx context.Context, client *linodego.Client,
-	instance *linodego.Instance, configID int,
+func isConfigBooted(
+	ctx context.Context,
+	client *linodego.Client,
+	instance *linodego.Instance,
+	configID int,
+	previousValue bool,
 ) (bool, error) {
+	if !helper.IsInstanceInBootedState(instance.Status) {
+		return false, nil
+	}
+
 	currentConfig, err := helper.GetCurrentBootedConfig(ctx, client, instance.ID)
 	if err != nil {
 		return false, fmt.Errorf("failed to get current booted config id: %s", err)
 	}
 
-	return helper.IsInstanceInBootedState(instance.Status) && currentConfig == configID, nil
+	// If the last booted config couldn't be resolved,
+	// we assume the event either expired (older than 90 days)
+	// or the instance was transferred across accounts.
+	//
+	// In this case, we want to preserve the existing booted value from state.
+	if currentConfig == 0 {
+		return previousValue, nil
+	}
+
+	return currentConfig == configID, nil
 }
