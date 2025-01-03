@@ -80,7 +80,10 @@ func getObjectStorageKeyRegionIDsSet(regions []linodego.ObjectStorageKeyRegion) 
 		regionIDs[i] = r.ID
 	}
 
-	// deduplicate
+	// Deduplicate regions
+	//
+	// Considering migrating to `someMap.Keys()` when upgrading to Go 1.23
+	// https://pkg.go.dev/maps@master#Keys
 	slices.Sort(regionIDs)
 	regionIDs = slices.Compact(regionIDs)
 
