@@ -17,7 +17,7 @@ type IPAddressModel struct {
 	SubnetMask types.String `tfsdk:"subnet_mask"`
 	Public     types.Bool   `tfsdk:"public"`
 	LinodeID   types.Int64  `tfsdk:"linode_id"`
-	Reserved   types.Bool   `tsdk:"reserved"`
+	Reserved   types.Bool   `tfsdk:"reserved"`
 }
 
 func (m *IPAddressModel) ParseIP(ip linodego.InstanceIP) {

@@ -71,10 +71,6 @@ var frameworkDatasourceSchema = schema.Schema{
 						Description: "The Region this IP address resides in.",
 						Computed:    true,
 					},
-					"id": schema.StringAttribute{
-						Description: "A unique identifier for this datasource.",
-						Computed:    true,
-					},
 					"reserved": schema.BoolAttribute{
 						Computed:    true,
 						Description: "Whether this IP is reserved or not.",
