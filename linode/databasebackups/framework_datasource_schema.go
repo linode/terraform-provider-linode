@@ -38,7 +38,7 @@ var backupSchema = schema.NestedBlockObject{
 }
 
 var frameworkDataSourceSchema = schema.Schema{
-	DeprecationMessage: "This resource has been deprecated.",
+	DeprecationMessage: "This data source has been deprecated.",
 	Attributes: map[string]schema.Attribute{
 		"database_id": schema.Int64Attribute{
 			Description: "The ID of the Managed Database.",
