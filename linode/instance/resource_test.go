@@ -2932,7 +2932,7 @@ func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
 	testRegion := "us-east"
 	reservedIP := ""
 	instanceName := acctest.RandomWithPrefix("tf_test")
-	ipResourceName := "linode_reserved_ip.test"
+	ipResourceName := "linode_networking_ip.test"
 	rootPass := acctest.RandString(16)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
