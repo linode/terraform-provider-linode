@@ -2,8 +2,11 @@
 
 {{ template "e2e_test_firewall" . }}
 
-resource "linode_reserved_ip" "test" {
+resource "linode_networking_ip" "test" {
+  type = "ipv4"
   region = "{{ .Region }}"
+  public = true
+  reserved = true
 }
 
 resource "linode_instance" "foobar" {
@@ -15,7 +18,7 @@ resource "linode_instance" "foobar" {
     root_pass = "{{ .RootPass }}"
     authorized_keys = ["{{ .PubKey }}"]
 
-    ipv4 = [linode_reserved_ip.test.address]
+    ipv4 = [linode_networking_ip.test.address]
 }
 
 {{ end }}

@@ -11,14 +11,17 @@ resource "linode_instance" "foobar" {
     firewall_id = linode_firewall.e2e_test_firewall.id
 }
 
-resource "linode_reserved_ip" "test" {
+resource "linode_networking_ip" "test" {
+  type = "ipv4"
   region = "{{ .Region }}"
+  public = true
+  reserved = true
 }
 
 resource "linode_reserved_ip_assignment" "test" {
     linode_id = linode_instance.foobar.id
     public = true
-    address = linode_reserved_ip.test.address
+    address = linode_networking_ip.test.address
 }
 
 {{ end }}
