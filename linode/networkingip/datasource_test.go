@@ -49,6 +49,7 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 					resource.TestMatchResourceAttr(dataResourceName, "gateway", regexp.MustCompile(`\.1$`)),
 					resource.TestCheckResourceAttr(dataResourceName, "type", "ipv4"),
 					resource.TestCheckResourceAttr(dataResourceName, "public", "true"),
+					resource.TestCheckResourceAttrSet(dataResourceName, "reserved"),
 					resource.TestCheckResourceAttr(dataResourceName, "prefix", "24"),
 					resource.TestMatchResourceAttr(dataResourceName, "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
 				),

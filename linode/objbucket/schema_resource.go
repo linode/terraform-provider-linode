@@ -57,7 +57,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "If true, the bucket will be created with CORS enabled for all origins.",
 		Optional:    true,
-		Default:     true,
+		Computed:    true,
 	},
 	"lifecycle_rule": {
 		Type:        schema.TypeList,

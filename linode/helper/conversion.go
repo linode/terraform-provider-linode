@@ -49,7 +49,7 @@ func StringAnyMapToTyped[T any](m map[string]any) map[string]T {
 	return result
 }
 
-func StringAliasSliceToStringSlice[T ~string](obj []T) ([]string, error) {
+func StringAliasSliceToStringSlice[T ~string](obj []T) []string {
 	var result []string
 
 	for _, v := range obj {
@@ -57,7 +57,7 @@ func StringAliasSliceToStringSlice[T ~string](obj []T) ([]string, error) {
 		result = append(result, strValue)
 	}
 
-	return result, nil
+	return result
 }
 
 func StringToInt64(s string, diags *diag.Diagnostics) int64 {
