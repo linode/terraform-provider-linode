@@ -2,8 +2,6 @@ module github.com/linode/terraform-provider-linode/v2
 
 go 1.23.0
 
-toolchain go1.22.5
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.32.8
 	github.com/aws/aws-sdk-go-v2/config v1.28.5
