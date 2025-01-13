@@ -1,8 +1,6 @@
 module github.com/linode/terraform-provider-linode/tools
 
-go 1.22.1
-
-toolchain go1.22.6
+go 1.23
 
 require (
 	github.com/bflad/tfproviderlint v0.30.0

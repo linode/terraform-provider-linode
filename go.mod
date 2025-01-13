@@ -1,8 +1,6 @@
 module github.com/linode/terraform-provider-linode/v2
 
-go 1.22.0
-
-toolchain go1.22.5
+go 1.23
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.32.8
@@ -26,7 +24,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.17.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
-	github.com/linode/linodego v1.44.1
+	github.com/linode/linodego v1.45.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.32.0
@@ -102,7 +100,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.15.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/oauth2 v0.24.0 // indirect
+	golang.org/x/oauth2 v0.25.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

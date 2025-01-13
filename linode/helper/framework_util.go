@@ -2,7 +2,9 @@ package helper
 
 import (
 	"context"
+	"log"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -27,4 +29,16 @@ func FrameworkAttemptRemoveResourceForEmptyID(
 	resp.State.RemoveResource(ctx)
 
 	return true
+}
+
+// FrameworkMust panics if the diag in the given result has an error.
+// This is helpful for error handling package-level vars.
+//
+// e.g. helper.Must(foo())
+func FrameworkMust[T any](result T, d diag.Diagnostics) T {
+	if d.HasError() {
+		log.Fatal(d.Errors())
+	}
+
+	return result
 }
