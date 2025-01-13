@@ -2,18 +2,17 @@ package networkingips
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
+
+type DataSource struct {
+	helper.BaseDataSource
+}
 
 func NewDataSource() datasource.DataSource {
 	return &DataSource{
@@ -26,104 +25,57 @@ func NewDataSource() datasource.DataSource {
 	}
 }
 
-type DataSource struct {
-	helper.BaseDataSource
-}
-
-type DataSourceModel struct {
-	Address        types.String `tfsdk:"address"`
-	Gateway        types.String `tfsdk:"gateway"`
-	SubnetMask     types.String `tfsdk:"subnet_mask"`
-	Prefix         types.Int64  `tfsdk:"prefix"`
-	Type           types.String `tfsdk:"type"`
-	Public         types.Bool   `tfsdk:"public"`
-	RDNS           types.String `tfsdk:"rdns"`
-	LinodeID       types.Int64  `tfsdk:"linode_id"`
-	Region         types.String `tfsdk:"region"`
-	ID             types.String `tfsdk:"id"`
-	Reserved       types.Bool   `tfsdk:"reserved"`
-	IPAddresses    types.List   `tfsdk:"ip_addresses"`
-	FilterReserved types.Bool   `tfsdk:"filter_reserved"`
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_networking_ip")
+	tflog.Debug(ctx, "Read data.linode_networking_ips")
 
-	var data DataSourceModel
+	var data FilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if data.Address.IsNull() {
+	id, diag := filterConfig.GenerateID(data.Filters)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+		return
+	}
+	data.ID = id
 
-		// List all IP addresses with filter on reservation status
-
-		filter, err := buildFilter(data)
-		if err != nil {
-			resp.Diagnostics.AddError("Unable to build filter", err.Error())
-			return
-		}
-
-		tflog.Debug(ctx, "Generated filter", map[string]interface{}{
-			"filter": filter,
-		})
-
-		opts := &linodego.ListOptions{Filter: filter}
-		ips, err := d.Meta.Client.ListIPAddresses(ctx, opts)
-		if err != nil {
-			resp.Diagnostics.AddError("Unable to list IP Addresses", err.Error())
-			return
-		}
-
-		ipList := make([]attr.Value, len(ips))
-		for i, ip := range ips {
-			ipObj := map[string]attr.Value{
-				"address":     types.StringValue(ip.Address),
-				"region":      types.StringValue(ip.Region),
-				"gateway":     types.StringValue(ip.Gateway),
-				"subnet_mask": types.StringValue(ip.SubnetMask),
-				"prefix":      types.Int64Value(int64(ip.Prefix)),
-				"type":        types.StringValue(string(ip.Type)),
-				"public":      types.BoolValue(ip.Public),
-				"rdns":        types.StringValue(ip.RDNS),
-				"linode_id":   types.Int64Value(int64(ip.LinodeID)),
-				"reserved":    types.BoolValue(ip.Reserved),
-			}
-			ipList[i] = types.ObjectValueMust(updatedIPObjectType.AttrTypes, ipObj)
-		}
-
-		var diags diag.Diagnostics
-		data.IPAddresses, diags = types.ListValue(updatedIPObjectType, ipList)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	result, diag := filterConfig.GetAndFilter(
+		ctx, d.Meta.Client, data.Filters, listFunc,
+		data.Order, data.OrderBy)
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+		return
 	}
 
+	resp.Diagnostics.Append(data.parseIPAddresses(helper.AnySliceToTyped[linodego.InstanceIP](result))...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func buildFilter(data DataSourceModel) (string, error) {
-	filters := make(map[string]string)
+func listFunc(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
+	tflog.Trace(ctx, "client.ListIPAddresses(...)", map[string]any{
+		"filter": filter,
+	})
 
-	if !data.FilterReserved.IsNull() {
-		filters["reserved"] = fmt.Sprintf("%t", data.FilterReserved.ValueBool())
-	}
-
-	if len(filters) == 0 {
-		return "", nil
-	}
-
-	jsonFilter, err := json.Marshal(filters)
+	images, err := client.ListIPAddresses(ctx, &linodego.ListOptions{
+		Filter: filter,
+	})
 	if err != nil {
-		return "", fmt.Errorf("error creating filter: %v", err)
+		return nil, err
 	}
 
-	return string(jsonFilter), nil
+	return helper.TypedSliceToAny(images), nil
 }
