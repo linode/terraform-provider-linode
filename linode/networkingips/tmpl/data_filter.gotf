@@ -1,7 +1,19 @@
 {{ define "networking_ip_data_filtered" }}
 
+resource "linode_networking_ip" "test" {
+    type = "ipv4"
+    region = "us-mia"
+    reserved = true
+    public = true
+}
+
 data "linode_networking_ips" "filtered" {
-  filter_reserved = true
+    depends_on = [linode_networking_ip.test]
+
+    filter {
+        name = "reserved"
+        values = ["true"]
+    }
 }
 
 {{ end }}

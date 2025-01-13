@@ -757,8 +757,11 @@ func WithReservedIP(t *testing.T, label, pubKey, region, rootPass string) string
 
 func OnlyReservedIP(t *testing.T, region string) string {
 	return fmt.Sprintf(`
-resource "linode_reserved_ip" "test" {
+resource "linode_networking_ip" "test" {
+	type = "ipv4"
 	region = "%s"
+	public = true
+	reserved = true
 }
 `, region)
 }
