@@ -49,11 +49,11 @@ resource "linode_database_mysql_v2" "foobar" {
   allow_list = ["10.0.0.3/32"]
   cluster_size = 3
 
-  updates {
+  updates = {
     duration = 4
     frequency = "weekly"
     hour_of_day = 22
-    week_of_month = 2
+    day_of_week = 3
   }
 }
 ```
