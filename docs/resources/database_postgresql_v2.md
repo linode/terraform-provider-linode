@@ -49,7 +49,7 @@ resource "linode_database_postgresql_v2" "foobar" {
   allow_list = ["10.0.0.3/32"]
   cluster_size = 3
 
-  updates {
+  updates = {
     duration = 4
     frequency = "weekly"
     hour_of_day = 22
