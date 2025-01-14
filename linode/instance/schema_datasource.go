@@ -151,6 +151,11 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "The amount of network transfer this Linode is allotted each month.",
 				},
+				"accelerated_devices": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The number of VPUs this Linode Type offers.",
+				},
 			},
 		},
 	},

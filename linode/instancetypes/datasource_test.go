@@ -31,6 +31,7 @@ func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.memory"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.transfer"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.vcpus"),
+					resource.TestCheckResourceAttrSet(resourceName, "types.0.accelerated_devices"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.monthly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.hourly"),

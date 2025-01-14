@@ -191,10 +191,11 @@ func flattenInstanceConfigs(
 
 func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
 	return []map[string]int{{
-		"vcpus":    instance.Specs.VCPUs,
-		"disk":     instance.Specs.Disk,
-		"memory":   instance.Specs.Memory,
-		"transfer": instance.Specs.Transfer,
+		"vcpus":               instance.Specs.VCPUs,
+		"disk":                instance.Specs.Disk,
+		"memory":              instance.Specs.Memory,
+		"transfer":            instance.Specs.Transfer,
+		"accelerated_devices": instance.Specs.AcceleratedDevices,
 	}}
 }
 
