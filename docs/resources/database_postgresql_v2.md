@@ -53,7 +53,7 @@ resource "linode_database_postgresql_v2" "foobar" {
     duration = 4
     frequency = "weekly"
     hour_of_day = 22
-    week_of_month = 2
+    day_of_week = 2
   }
 }
 ```
