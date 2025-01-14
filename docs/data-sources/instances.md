@@ -121,6 +121,8 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `specs.0.accelerated_devices` - The number of VPUs this Linode has access to.
 
+* `specs.0.gpus` - The number of GPUs this Linode has access to.
+
 * `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
 
 * [`disk`](#disks) - A list of disks associated with the Linode.

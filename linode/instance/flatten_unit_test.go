@@ -346,6 +346,7 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 			Memory:             4096,
 			Transfer:           2000,
 			AcceleratedDevices: 3,
+			GPUs:               2,
 		},
 	}
 
@@ -358,6 +359,7 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 			"memory":              4096,
 			"transfer":            2000,
 			"accelerated_devices": 3,
+			"gpus":                2,
 		},
 	}
 

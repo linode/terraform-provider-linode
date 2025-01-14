@@ -196,6 +196,7 @@ func flattenInstanceSpecs(instance linodego.Instance) []map[string]int {
 		"memory":              instance.Specs.Memory,
 		"transfer":            instance.Specs.Transfer,
 		"accelerated_devices": instance.Specs.AcceleratedDevices,
+		"gpus":                instance.Specs.GPUs,
 	}}
 }
 
