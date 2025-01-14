@@ -62,6 +62,7 @@ func TestAccDataSourceLKECluster_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceClusterName, "region", testRegion),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "k8s_version", k8sVersionLatest),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(dataSourceClusterName, "tier", "standard"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.#", "1"),
 						resource.TestCheckResourceAttr(dataSourceClusterName, "pools.0.type", "g6-standard-1"),
