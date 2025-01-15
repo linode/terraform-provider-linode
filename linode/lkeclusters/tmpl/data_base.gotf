@@ -5,6 +5,7 @@ resource "linode_lke_cluster" "test" {
     region      = "{{ .Region }}"
     k8s_version = "{{.K8sVersion}}"
     tags        = ["test"]
+    tier = "standard"
 
     pool {
         type  = "g6-standard-2"
@@ -13,14 +14,15 @@ resource "linode_lke_cluster" "test" {
 }
 
 resource "linode_lke_cluster" "test2" {
-    label       = "2-{{.Label}}"
+    label       = "{{.Label}}-2"
     region      = "{{ .Region }}"
     k8s_version = "{{.K8sVersion}}"
     tags        = ["test-2"]
+    tier = "standard"
 
     pool {
         type  = "g6-standard-2"
-        count = 3
+        count = 1
     }
 }
 
