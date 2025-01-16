@@ -95,9 +95,13 @@ The Linode User resource exports the following attributes:
 
 * `add_nodebalancers` - If true, this User may add NodeBalancers.
 
+* `add_placement_groups` - If true, this User may add Placement Groups.
+
 * `add_stackscritps` - If true, this User may add StackScripts.
 
 * `add_volumes` - If true, this User may add Volumes.
+
+* `add_vpcs` - If true, this User may add Virtual Private Clouds (VPCs).
 
 * `cancel_account` - If true, this User may cancel the entire Account.
 

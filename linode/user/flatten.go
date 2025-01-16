@@ -42,8 +42,10 @@ func flattenGrantsGlobal(global *linodego.GlobalUserGrants) map[string]interface
 	result["add_linodes"] = global.AddLinodes
 	result["add_longview"] = global.AddLongview
 	result["add_nodebalancers"] = global.AddNodeBalancers
+	result["add_placement_groups"] = global.AddPlacementGroups
 	result["add_stackscripts"] = global.AddStackScripts
 	result["add_volumes"] = global.AddVolumes
+	result["add_vpcs"] = global.AddVPCs
 	result["cancel_account"] = global.CancelAccount
 	result["longview_subscription"] = global.LongviewSubscription
 
