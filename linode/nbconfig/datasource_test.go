@@ -39,6 +39,8 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "check_interval"),
 					resource.TestCheckResourceAttrSet(resName, "check_passive"),
+					resource.TestCheckResourceAttrSet(resName, "udp_check_port"),
+					resource.TestCheckResourceAttrSet(resName, "udp_session_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "cipher_suite"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_common"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_ciphersuite"),

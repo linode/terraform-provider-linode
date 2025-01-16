@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.72.2
 	github.com/aws/smithy-go v1.22.1
-	github.com/go-resty/resty/v2 v2.16.2
+	github.com/go-resty/resty/v2 v2.16.3
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-hclog v1.6.3
@@ -31,6 +31,8 @@ require (
 	golang.org/x/net v0.34.0
 	golang.org/x/sync v0.10.0
 )
+
+replace github.com/linode/linodego => github.com/linode/linodego v0.0.0-20250115202254-23f71617a419
 
 require (
 	github.com/ProtonMail/go-crypto v1.1.0-alpha.2 // indirect
