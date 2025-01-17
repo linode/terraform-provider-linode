@@ -192,6 +192,10 @@ The following arguments are supported:
 
   * **NOTE: Disk encryption may not currently be available to all users.**
 
+* `ipv4` - (Optional) A set of reserved IPv4 addresses to assign to this Linode on creation.
+
+  * **NOTE: IP reservation is not currently available to all users.**
+
 * `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
 
 ### Simplified Resource Arguments
