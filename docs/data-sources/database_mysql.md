@@ -6,6 +6,8 @@ description: |-
 
 # Data Source: linode\_database\_mysql
 
+~> **DEPRECATION NOTICE:** This data source has been deprecated. Please use [linode_database_mysql_v2](database_mysql_v2.html.markdown) for all future implementations.
+
 Provides information about a Linode MySQL Database.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-databases-instances).
 
