@@ -34,6 +34,26 @@ resource "linode_object_storage_key" "foobar" {
 }
 ```
 
+The following example shows how to grant a key the explicit access to multiple buckets.
+
+```hcl
+resource "linode_object_storage_key" "foo" {
+  label = "image-access"
+
+  bucket_access {
+    bucket_name = "foobar1"
+    cluster = "us-east-1"
+    permissions = "read_write"
+  }
+
+  bucket_access {
+    bucket_name = "foobar2"
+    cluster = "us-east-1"
+    permissions = "read_write"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
