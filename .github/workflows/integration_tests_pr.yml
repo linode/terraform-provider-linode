@@ -2,20 +2,24 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      module:
-        description: 'The module to be tested.'
-        required: true
-        default: 'linode/...'
+      test_suite:
+        description: "Specify  test suite to run from inside 'linode/' directory. Examples: 'account', 'domain', etc. If not provided, all suites are executed"
+        required: false
+        default: 'integration'
       sha:
-        description: 'The hash value of the commit.'
+        description: 'Specify commit hash to test. This value is mandatory to ensure the tests run against a specific commit'
         required: true
       pull_request_number:
-        description: 'The number of the PR.'
+        description: 'Specify pull request number associated with the commit. Optional, but recommended when providing a commit hash (sha)'
         required: false
       run_long_tests:
-        description: 'Setting this value will skip long running tests (e.g. Database related cases): (true|false)'
+        description: 'Choose whether to run long-duration tests that may take additional time. Set to "true" to enable long tests e.g. database related cases. Default is "false"'
         required: false
-        default: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 
 name: Integration tests on PR
@@ -55,7 +59,7 @@ jobs:
 
       - run: make deps
 
-      - run: make PKG_NAME="${{ inputs.module }}" int-test
+      - run: make TEST_SUITE="${{ inputs.test_suite }}" test-int
         if: ${{ steps.disallowed-character-check.outputs.result == 'pass' }}
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
