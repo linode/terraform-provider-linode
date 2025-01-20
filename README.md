@@ -62,16 +62,17 @@ In order to run the full suite of Acceptance tests, run `make test-int`. Accepta
 make test-int
 ```
 
-Use the following command template to execute specific Acceptance test
+Use the following command template to execute specific Acceptance test, 
 
 ```shell
-make ARGS="-run TestAccResourceVolume_basic" test-int
+# PKG_NAME is the directory in linode/ that contains the corresponding TEST_CASE
+make PKG_NAME="volume" TEST_CASE="TestAccResourceVolume_basic" test-int
 ```
 
 Use the following command template to execute particular Acceptance tests within a specific package
 
 ```shell
-make TEST_TAGS="volume" test-int
+make TEST_SUITE="volume" test-int
 ```
 
 There are a number of useful flags and variables to aid in debugging.
