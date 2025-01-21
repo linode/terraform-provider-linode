@@ -11,8 +11,9 @@ import (
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
-		Schema:      dataSourceSchema,
-		ReadContext: readDataSource,
+		DeprecationMessage: "This data source has been deprecated.",
+		Schema:             dataSourceSchema,
+		ReadContext:        readDataSource,
 	}
 }
 

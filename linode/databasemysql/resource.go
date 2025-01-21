@@ -36,6 +36,8 @@ func Resource() *schema.Resource {
 			Update: schema.DefaultTimeout(updateDBTimeout),
 			Delete: schema.DefaultTimeout(deleteDBTimeout),
 		},
+		DeprecationMessage: "This resource has been deprecated. " +
+			"Please use linode_database_mysql_v2 for all future implementations.",
 	}
 }
 
