@@ -76,7 +76,7 @@ The `linode_database_mysql_v2` data source exports the following attributes:
 * [`updates`](#updates) - Configuration settings for automated patch update maintenance for the Managed Database.
 
 * `version` - The Managed Database engine version. (e.g. `13.2`)
-* 
+
 ## pending_updates
 
 The following arguments are exposed by each entry in the `pending_updates` attribute:
