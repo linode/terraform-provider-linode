@@ -313,5 +313,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
 		networkingips.NewDataSource,
+		databasepostgresqlv2.NewDataSource,
 	}
 }

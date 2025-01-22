@@ -41,9 +41,12 @@ type ModelPendingUpdate struct {
 	PlannedFor  timetypes.RFC3339 `tfsdk:"planned_for"`
 }
 
-type Model struct {
+type ResourceModel struct {
+	Model
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
+}
 
+type Model struct {
 	ID types.String `tfsdk:"id"`
 
 	AllowList     types.Set         `tfsdk:"allow_list"`
