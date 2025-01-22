@@ -57,7 +57,7 @@ func TestAccDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "region", testRegion),
 					resource.TestCheckResourceAttr(dataSourceName, "ssl_connection", "true"),
 					resource.TestCheckResourceAttr(dataSourceName, "status", "active"),
-					resource.TestCheckResourceAttr(dataSourceName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(dataSourceName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "updated"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "version"),
 
