@@ -62,10 +62,10 @@ func TestAccDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "version"),
 
 					resource.TestCheckResourceAttr(dataSourceName, "allow_list.#", "1"),
-					resource.TestCheckResourceAttr(dataSourceName, "allow_list.0", "10.0.0.4/32"),
+					resource.TestCheckResourceAttr(dataSourceName, "allow_list.0", "10.0.0.3/32"),
 
-					resource.TestCheckResourceAttr(dataSourceName, "updates.hour_of_day", "2"),
-					resource.TestCheckResourceAttr(dataSourceName, "updates.day_of_week", "3"),
+					resource.TestCheckResourceAttr(dataSourceName, "updates.hour_of_day", "3"),
+					resource.TestCheckResourceAttr(dataSourceName, "updates.day_of_week", "2"),
 					resource.TestCheckResourceAttr(dataSourceName, "updates.duration", "4"),
 					resource.TestCheckResourceAttr(dataSourceName, "updates.frequency", "weekly"),
 
