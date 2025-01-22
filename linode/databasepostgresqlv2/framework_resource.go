@@ -111,6 +111,31 @@ func (r *Resource) Create(
 
 	createPoller.EntityID = db.ID
 
+	tflog.Debug(ctx, "Waiting for database to finish provisioning")
+
+	if _, err := createPoller.WaitForFinished(ctx, int(createTimeout.Seconds())); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to wait for PostgreSQL database to finish creating",
+			err.Error(),
+		)
+	}
+
+	// Sometimes the creation event finishes before the status becomes `active`
+	tflog.Debug(ctx, "Waiting for database to enter active status", map[string]any{
+		"options": createOpts,
+	})
+
+	if err = client.WaitForDatabaseStatus(
+		ctx,
+		db.ID,
+		linodego.DatabaseEngineTypePostgres,
+		linodego.DatabaseStatusActive,
+		int(createTimeout.Seconds()),
+	); err != nil {
+		resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
+		return
+	}
+
 	// The `updates` field can only be changed using PUT requests
 	updates := data.GetUpdates(ctx, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -139,31 +164,6 @@ func (r *Resource) Create(
 			)
 			return
 		}
-	}
-
-	tflog.Debug(ctx, "Waiting for database to finish provisioning")
-
-	if _, err := createPoller.WaitForFinished(ctx, int(createTimeout.Seconds())); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to wait for PostgreSQL database to finish creating",
-			err.Error(),
-		)
-	}
-
-	// Sometimes the creation event finishes before the status becomes `active`
-	tflog.Debug(ctx, "Waiting for database to enter active status", map[string]any{
-		"options": createOpts,
-	})
-
-	if err = client.WaitForDatabaseStatus(
-		ctx,
-		db.ID,
-		linodego.DatabaseEngineTypePostgres,
-		linodego.DatabaseStatusActive,
-		int(createTimeout.Seconds()),
-	); err != nil {
-		resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
-		return
 	}
 
 	resp.Diagnostics.Append(data.Refresh(ctx, client, db.ID, true)...)
