@@ -13,17 +13,18 @@ import (
 )
 
 type DataSourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Label        types.String `tfsdk:"label"`
-	Disk         types.Int64  `tfsdk:"disk"`
-	Class        types.String `tfsdk:"class"`
-	Price        types.List   `tfsdk:"price"`
-	Addons       types.List   `tfsdk:"addons"`
-	RegionPrices types.List   `tfsdk:"region_prices"`
-	NetworkOut   types.Int64  `tfsdk:"network_out"`
-	Memory       types.Int64  `tfsdk:"memory"`
-	Transfer     types.Int64  `tfsdk:"transfer"`
-	VCPUs        types.Int64  `tfsdk:"vcpus"`
+	ID                 types.String `tfsdk:"id"`
+	Label              types.String `tfsdk:"label"`
+	Disk               types.Int64  `tfsdk:"disk"`
+	Class              types.String `tfsdk:"class"`
+	Price              types.List   `tfsdk:"price"`
+	Addons             types.List   `tfsdk:"addons"`
+	RegionPrices       types.List   `tfsdk:"region_prices"`
+	NetworkOut         types.Int64  `tfsdk:"network_out"`
+	Memory             types.Int64  `tfsdk:"memory"`
+	Transfer           types.Int64  `tfsdk:"transfer"`
+	VCPUs              types.Int64  `tfsdk:"vcpus"`
+	AcceleratedDevices types.Int64  `tfsdk:"accelerated_devices"`
 }
 
 func (data *DataSourceModel) ParseLinodeType(
@@ -57,6 +58,7 @@ func (data *DataSourceModel) ParseLinodeType(
 	data.Memory = types.Int64Value(int64(linodeType.Memory))
 	data.Transfer = types.Int64Value(int64(linodeType.Transfer))
 	data.VCPUs = types.Int64Value(int64(linodeType.VCPUs))
+	data.AcceleratedDevices = types.Int64Value(int64(linodeType.AcceleratedDevices))
 
 	return nil
 }

@@ -1,4 +1,4 @@
-package databasepostgresqlv2
+package databasemysqlv2
 
 import (
 	"context"
@@ -41,12 +41,9 @@ type ModelPendingUpdate struct {
 	PlannedFor  timetypes.RFC3339 `tfsdk:"planned_for"`
 }
 
-type ResourceModel struct {
-	Model
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
-}
-
 type Model struct {
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
+
 	ID types.String `tfsdk:"id"`
 
 	AllowList     types.Set         `tfsdk:"allow_list"`
@@ -88,26 +85,26 @@ func (m *Model) Refresh(
 ) (d diag.Diagnostics) {
 	tflog.SetField(ctx, "id", dbID)
 
-	tflog.Debug(ctx, "Refreshing the PostgreSQL database...")
+	tflog.Debug(ctx, "Refreshing the MySQL database...")
 
-	tflog.Debug(ctx, "client.GetPostgresDatabase(...)")
-	db, err := client.GetPostgresDatabase(ctx, dbID)
+	tflog.Debug(ctx, "client.GetMySQLDatabase(...)")
+	db, err := client.GetMySQLDatabase(ctx, dbID)
 	if err != nil {
-		d.AddError("Failed to refresh PostgreSQL database", err.Error())
+		d.AddError("Failed to refresh MySQL database", err.Error())
 		return
 	}
 
-	tflog.Debug(ctx, "client.GetPostgresDatabaseSSL(...)")
-	dbSSL, err := client.GetPostgresDatabaseSSL(ctx, dbID)
+	tflog.Debug(ctx, "client.GetMySQLDatabaseSSL(...)")
+	dbSSL, err := client.GetMySQLDatabaseSSL(ctx, dbID)
 	if err != nil {
-		d.AddError("Failed to refresh PostgreSQL database SSL", err.Error())
+		d.AddError("Failed to refresh MySQL database SSL", err.Error())
 		return
 	}
 
-	tflog.Debug(ctx, "client.GetPostgresDatabaseCredentials(...)")
-	dbCreds, err := client.GetPostgresDatabaseCredentials(ctx, dbID)
+	tflog.Debug(ctx, "client.GetMySQLDatabaseCredentials(...)")
+	dbCreds, err := client.GetMySQLDatabaseCredentials(ctx, dbID)
 	if err != nil {
-		d.AddError("Failed to refresh PostgreSQL database credentials", err.Error())
+		d.AddError("Failed to refresh MySQL database credentials", err.Error())
 		return
 	}
 
@@ -117,9 +114,9 @@ func (m *Model) Refresh(
 
 func (m *Model) Flatten(
 	ctx context.Context,
-	db *linodego.PostgresDatabase,
-	ssl *linodego.PostgresDatabaseSSL,
-	creds *linodego.PostgresDatabaseCredential,
+	db *linodego.MySQLDatabase,
+	ssl *linodego.MySQLDatabaseSSL,
+	creds *linodego.MySQLDatabaseCredential,
 	preserveKnown bool,
 ) (d diag.Diagnostics) {
 	m.ID = helper.KeepOrUpdateString(m.ID, strconv.Itoa(db.ID), preserveKnown)
@@ -139,7 +136,10 @@ func (m *Model) Flatten(
 	m.Label = helper.KeepOrUpdateString(m.Label, db.Label, preserveKnown)
 	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime), preserveKnown)
 	m.Platform = helper.KeepOrUpdateString(m.Platform, string(db.Platform), preserveKnown)
-	m.Port = helper.KeepOrUpdateInt64(m.Port, int64(db.Port), preserveKnown)
+
+	// TODO
+	m.Port = helper.KeepOrUpdateInt64(m.Port, int64(0), preserveKnown)
+
 	m.Region = helper.KeepOrUpdateString(m.Region, db.Region, preserveKnown)
 	m.RootPassword = helper.KeepOrUpdateString(m.RootPassword, creds.Password, preserveKnown)
 	m.RootUsername = helper.KeepOrUpdateString(m.RootUsername, creds.Username, preserveKnown)

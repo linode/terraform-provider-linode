@@ -53,7 +53,6 @@ func init() {
 }
 
 func TestAccResourceDatabaseAccessControls_MySQL(t *testing.T) {
-	acceptance.LongRunningTest(t)
 	t.Parallel()
 
 	resName := "linode_database_access_controls.foobar"

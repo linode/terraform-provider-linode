@@ -24,7 +24,7 @@ type TemplateData struct {
 func Basic(t testing.TB, label, region, engine, nodeType string) string {
 	return acceptance.ExecuteTemplate(
 		t,
-		"database_postgresql_v2_basic",
+		"database_mysql_v2_basic",
 		TemplateData{
 			Label:    label,
 			Region:   region,
@@ -40,7 +40,7 @@ func Complex(
 ) string {
 	return acceptance.ExecuteTemplate(
 		t,
-		"database_postgresql_v2_complex",
+		"database_mysql_v2_complex",
 		data,
 	)
 }
@@ -48,23 +48,12 @@ func Complex(
 func Fork(t testing.TB, label, region, engine, nodeType string) string {
 	return acceptance.ExecuteTemplate(
 		t,
-		"database_postgresql_v2_fork",
+		"database_mysql_v2_fork",
 		TemplateData{
 			Label:    label,
 			Region:   region,
 			EngineID: engine,
 			Type:     nodeType,
 		},
-	)
-}
-
-func Data(
-	t testing.TB,
-	data TemplateData,
-) string {
-	return acceptance.ExecuteTemplate(
-		t,
-		"database_postgresql_v2_data",
-		data,
 	)
 }

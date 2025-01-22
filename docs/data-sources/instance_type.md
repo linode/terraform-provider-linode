@@ -58,3 +58,5 @@ The Linode Instance Type resource exports the following attributes:
 * `transfer` - The monthly outbound transfer amount, in MB.
 
 * `vcpus` - The number of VCPU cores this Linode Type offers.
+
+* `accelerated_devices` - The number of VPUs this Linode Type offers.

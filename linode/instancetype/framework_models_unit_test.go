@@ -13,16 +13,17 @@ import (
 
 func TestParseLinodeType(t *testing.T) {
 	mockLinodeType := &linodego.LinodeType{
-		ID:         "g6-standard-2",
-		Disk:       81920,
-		Class:      linodego.ClassStandard,
-		Label:      "Linode 4GB",
-		NetworkOut: 1000,
-		Memory:     4096,
-		Transfer:   4000,
-		VCPUs:      2,
-		GPUs:       0,
-		Successor:  "",
+		ID:                 "g6-standard-2",
+		Disk:               81920,
+		Class:              linodego.ClassStandard,
+		Label:              "Linode 4GB",
+		NetworkOut:         1000,
+		Memory:             4096,
+		Transfer:           4000,
+		VCPUs:              2,
+		GPUs:               0,
+		AcceleratedDevices: 3,
+		Successor:          "",
 		Price: &linodego.LinodePrice{
 			Hourly:  0.03,
 			Monthly: 20,
@@ -50,4 +51,5 @@ func TestParseLinodeType(t *testing.T) {
 	assert.Equal(t, types.Int64Value(4096), data.Memory)
 	assert.Equal(t, types.Int64Value(4000), data.Transfer)
 	assert.Equal(t, types.Int64Value(2), data.VCPUs)
+	assert.Equal(t, types.Int64Value(3), data.AcceleratedDevices)
 }

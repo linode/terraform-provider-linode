@@ -70,6 +70,10 @@ var Attributes = map[string]schema.Attribute{
 		Description: "The number of VCPU cores this Linode Type offers.",
 		Computed:    true,
 	},
+	"accelerated_devices": schema.Int64Attribute{
+		Description: "The number of VPUs this Linode Type offers.",
+		Computed:    true,
+	},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
