@@ -40,7 +40,7 @@ func TestAccDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "id"),
 
 					resource.TestCheckResourceAttrSet(dataSourceName, "ca_cert"),
-					resource.TestCheckResourceAttr(dataSourceName, "cluster_size", "3"),
+					resource.TestCheckResourceAttr(dataSourceName, "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "created"),
 					resource.TestCheckResourceAttr(dataSourceName, "encrypted", "true"),
 					resource.TestCheckResourceAttr(dataSourceName, "engine", "mysql"),
