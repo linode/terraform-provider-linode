@@ -61,11 +61,12 @@ func TestFlattenInstanceAlerts(t *testing.T) {
 		Hypervisor:  "kvm",
 		HostUUID:    "3a3ddd59d9a78bb8de041391075df44de62bfec8",
 		Specs: &linodego.InstanceSpec{
-			Disk:     81920,
-			GPUs:     0,
-			Memory:   4096,
-			Transfer: 4000,
-			VCPUs:    2,
+			Disk:               81920,
+			GPUs:               0,
+			Memory:             4096,
+			Transfer:           4000,
+			VCPUs:              2,
+			AcceleratedDevices: 3,
 		},
 		WatchdogEnabled: true,
 		Tags:            []string{"example tag", "another example"},
@@ -340,10 +341,12 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 		Type:   "g6-standard-1",
 		Status: linodego.InstanceRunning,
 		Specs: &linodego.InstanceSpec{
-			VCPUs:    2,
-			Disk:     50,
-			Memory:   4096,
-			Transfer: 2000,
+			VCPUs:              2,
+			Disk:               50,
+			Memory:             4096,
+			Transfer:           2000,
+			AcceleratedDevices: 3,
+			GPUs:               2,
 		},
 	}
 
@@ -351,10 +354,12 @@ func TestFlattenInstanceSpecs(t *testing.T) {
 
 	expected := []map[string]int{
 		{
-			"vcpus":    2,
-			"disk":     50,
-			"memory":   4096,
-			"transfer": 2000,
+			"vcpus":               2,
+			"disk":                50,
+			"memory":              4096,
+			"transfer":            2000,
+			"accelerated_devices": 3,
+			"gpus":                2,
 		},
 	}
 

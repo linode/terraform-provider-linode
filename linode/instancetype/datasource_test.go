@@ -68,6 +68,11 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
+						"accelerated_devices",
+						strconv.FormatInt(int64(targetType.AcceleratedDevices), 10),
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
 						"network_out",
 						strconv.FormatInt(int64(targetType.NetworkOut), 10),
 					),

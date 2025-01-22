@@ -136,8 +136,16 @@ func createTempKeys(
 		tempBucketAccess.Region = regionOrCluster
 	}
 
+	// Bucket key labels are a maximum of 50 characters - if the bucket name is
+	// too long, then truncate it.
+	// We use 16 characters for `temp__{timestamp}`, so the maximum length of a
+	// full bucket name is 34.
+	bucketLabel := bucket
+	if len(bucketLabel) > 34 {
+		bucketLabel = bucketLabel[:34]
+	}
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
-		Label:        fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
+		Label:        fmt.Sprintf("temp_%s_%v", bucketLabel, time.Now().Unix()),
 		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
 	}
 

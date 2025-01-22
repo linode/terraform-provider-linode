@@ -3,8 +3,6 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlv2"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -21,6 +19,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlv2"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v2/linode/databases"
@@ -314,5 +313,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		childaccounts.NewDataSource,
 		networkingips.NewDataSource,
 		databasemysqlv2.NewDataSource,
+		databasepostgresqlv2.NewDataSource,
 	}
 }

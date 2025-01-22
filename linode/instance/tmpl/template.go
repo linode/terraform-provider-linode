@@ -42,6 +42,17 @@ func Basic(t testing.TB, label, pubKey, region string, rootPass string) string {
 		})
 }
 
+func VPU(t testing.TB, label, pubKey, region string, rootPass string) string {
+	return acceptance.ExecuteTemplate(t,
+		"instance_vpu", TemplateData{
+			Label:    label,
+			PubKey:   pubKey,
+			Image:    acceptance.TestImageLatest,
+			Region:   region,
+			RootPass: rootPass,
+		})
+}
+
 func Updates(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_updates", TemplateData{
