@@ -15,7 +15,7 @@ func TestAccDataSource_basic(t *testing.T) {
 	t.Parallel()
 
 	label := acctest.RandomWithPrefix("tf_test")
-	dataSourceName := "data.linode_database_mysqlsql_v2.foobar"
+	dataSourceName := "data.linode_database_mysql_v2.foobar"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
