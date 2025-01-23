@@ -2,7 +2,10 @@ package obj
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"hash/crc32"
+	"io"
 	"regexp"
 	"slices"
 	"strings"
@@ -340,10 +343,32 @@ func fwPutObject(
 	}
 	defer body.Close()
 
+	sumHandler := crc32.NewIEEE()
+	if _, err := io.Copy(sumHandler, body); err != nil {
+		diags.AddError(
+			"Failed to calculate object body CRC32 sum",
+			err.Error(),
+		)
+		return
+	}
+
+	encodedSum := base64.StdEncoding.EncodeToString(sumHandler.Sum(nil))
+
+	// Seek the beginning of the body for uploading
+	if _, err := body.Seek(0, 0); err != nil {
+		diags.AddError(
+			"Failed to seek beginning of object body",
+			err.Error(),
+		)
+		return
+	}
+
 	putInput := &s3.PutObjectInput{
 		Body:   body,
 		Bucket: data.Bucket.ValueStringPointer(),
 		Key:    data.Key.ValueStringPointer(),
+
+		ChecksumCRC32: &encodedSum,
 
 		ACL:                     s3types.ObjectCannedACL(data.ACL.ValueString()),
 		CacheControl:            data.CacheControl.ValueStringPointer(),
