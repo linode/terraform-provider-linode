@@ -235,8 +235,10 @@ func expandGrantsGlobal(global map[string]interface{}) linodego.GlobalUserGrants
 	result.AddLinodes = global["add_linodes"].(bool)
 	result.AddLongview = global["add_longview"].(bool)
 	result.AddNodeBalancers = global["add_nodebalancers"].(bool)
+	result.AddPlacementGroups = global["add_placement_groups"].(bool)
 	result.AddStackScripts = global["add_stackscripts"].(bool)
 	result.AddVolumes = global["add_volumes"].(bool)
+	result.AddVPCs = global["add_vpcs"].(bool)
 	result.CancelAccount = global["cancel_account"].(bool)
 	result.LongviewSubscription = global["longview_subscription"].(bool)
 
