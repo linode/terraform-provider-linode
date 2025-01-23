@@ -66,7 +66,7 @@ The following arguments are supported:
 
 * `check_passive` - (Optional) If true, any response from this backend with a 5xx status code will be enough for it to be considered unhealthy and taken out of rotation.
 
-* `udp_check_port` - (Optional) Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic.
+* `udp_check_port` - (Optional) Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic. Defaults to 80.
 
 * `cipher_suite` - (Optional) What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary.
 
