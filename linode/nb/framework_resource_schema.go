@@ -74,6 +74,15 @@ var frameworkResourceSchema = schema.Schema{
 			Computed: true,
 			Default:  int64default.StaticInt64(0),
 		},
+		"client_udp_sess_throttle": schema.Int64Attribute{
+			Description: "Throttle UDP sessions per second (0-20). Set to 0 (zero) to disable throttling.",
+			Validators: []validator.Int64{
+				int64validator.Between(0, 20),
+			},
+			Optional: true,
+			Computed: true,
+			Default:  int64default.StaticInt64(0),
+		},
 		"firewall_id": schema.Int64Attribute{
 			Description: "ID for the firewall you'd like to use with this NodeBalancer.",
 			Optional:    true,
