@@ -2,7 +2,10 @@ package obj
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"hash/crc32"
+	"io"
 	"regexp"
 	"slices"
 	"strings"
@@ -136,8 +139,16 @@ func createTempKeys(
 		tempBucketAccess.Region = regionOrCluster
 	}
 
+	// Bucket key labels are a maximum of 50 characters - if the bucket name is
+	// too long, then truncate it.
+	// We use 16 characters for `temp__{timestamp}`, so the maximum length of a
+	// full bucket name is 34.
+	bucketLabel := bucket
+	if len(bucketLabel) > 34 {
+		bucketLabel = bucketLabel[:34]
+	}
 	createOpts := linodego.ObjectStorageKeyCreateOptions{
-		Label:        fmt.Sprintf("temp_%s_%v", bucket, time.Now().Unix()),
+		Label:        fmt.Sprintf("temp_%s_%v", bucketLabel, time.Now().Unix()),
 		BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{tempBucketAccess},
 	}
 
@@ -332,10 +343,32 @@ func fwPutObject(
 	}
 	defer body.Close()
 
+	sumHandler := crc32.NewIEEE()
+	if _, err := io.Copy(sumHandler, body); err != nil {
+		diags.AddError(
+			"Failed to calculate object body CRC32 sum",
+			err.Error(),
+		)
+		return
+	}
+
+	encodedSum := base64.StdEncoding.EncodeToString(sumHandler.Sum(nil))
+
+	// Seek the beginning of the body for uploading
+	if _, err := body.Seek(0, 0); err != nil {
+		diags.AddError(
+			"Failed to seek beginning of object body",
+			err.Error(),
+		)
+		return
+	}
+
 	putInput := &s3.PutObjectInput{
 		Body:   body,
 		Bucket: data.Bucket.ValueStringPointer(),
 		Key:    data.Key.ValueStringPointer(),
+
+		ChecksumCRC32: &encodedSum,
 
 		ACL:                     s3types.ObjectCannedACL(data.ACL.ValueString()),
 		CacheControl:            data.CacheControl.ValueStringPointer(),

@@ -15,16 +15,17 @@ import (
 func TestParseInstanceTypes(t *testing.T) {
 	mockTypes := []linodego.LinodeType{
 		{
-			ID:         "g6-standard-2",
-			Disk:       81920,
-			Class:      linodego.ClassStandard,
-			Label:      "Linode 4GB",
-			NetworkOut: 1000,
-			Memory:     4096,
-			Transfer:   4000,
-			VCPUs:      2,
-			GPUs:       0,
-			Successor:  "",
+			ID:                 "g6-standard-2",
+			Disk:               81920,
+			Class:              linodego.ClassStandard,
+			Label:              "Linode 4GB",
+			NetworkOut:         1000,
+			Memory:             4096,
+			Transfer:           4000,
+			VCPUs:              2,
+			AcceleratedDevices: 3,
+			GPUs:               0,
+			Successor:          "",
 			Price: &linodego.LinodePrice{
 				Hourly:  0.03,
 				Monthly: 20,
@@ -81,6 +82,7 @@ func TestParseInstanceTypes(t *testing.T) {
 		assert.Equal(t, model.Types[i].Memory, types.Int64Value(int64(mockType.Memory)), "Memory size doesn't match")
 		assert.Equal(t, model.Types[i].Transfer, types.Int64Value(int64(mockType.Transfer)), "Transfer size doesn't match")
 		assert.Equal(t, model.Types[i].VCPUs, types.Int64Value(int64(mockType.VCPUs)), "VCPUs count doesn't match")
+		assert.Equal(t, model.Types[i].AcceleratedDevices, types.Int64Value(int64(mockType.AcceleratedDevices)), "Accelerated devices count doesn't match")
 
 		// Assertions for Price
 		assert.NotNil(t, model.Types[i].Price, "Price should not be nil")

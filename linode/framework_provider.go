@@ -19,7 +19,9 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlv2"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v2/linode/databases"
 	"github.com/linode/terraform-provider-linode/v2/linode/domain"
 	"github.com/linode/terraform-provider-linode/v2/linode/domainrecord"
@@ -236,9 +238,11 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		volume.NewResource,
 		vpc.NewResource,
 		vpcsubnet.NewResource,
+		databasepostgresqlv2.NewResource,
 		networkingip.NewResource,
 		networkingipassignment.NewResource,
 		obj.NewResource,
+		databasemysqlv2.NewResource,
 	}
 }
 
@@ -308,5 +312,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
 		networkingips.NewDataSource,
+		databasemysqlv2.NewDataSource,
+		databasepostgresqlv2.NewDataSource,
 	}
 }

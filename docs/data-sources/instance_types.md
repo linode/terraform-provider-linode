@@ -88,6 +88,8 @@ Each Linode Instance type will be stored in the `types` attribute and will expor
 
 * `vcpus` - The number of VCPU cores this Linode Type offers.
 
+* `accelerated_devices` - The number of VPUs this Linode Type offers.
+
 ## Filterable Fields
 
 * `class`

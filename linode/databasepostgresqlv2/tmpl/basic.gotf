@@ -1,0 +1,10 @@
+{{ define "database_postgresql_v2_basic" }}
+
+resource "linode_database_postgresql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "g6-nanode-1"
+    engine_id = "{{ .EngineID }}"
+}
+
+{{ end }}

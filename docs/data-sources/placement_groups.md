@@ -66,6 +66,16 @@ Each Linode Placement Group will be stored in the `placement_groups` attribute a
 
   * `is_compliant` - Whether this Linode is currently compliant with the group's placement group type.
 
+* `migrations` - Any Linodes that are being migrated to or from the placement group.
+
+  * `inbound` - A list of the Linodes the system is migrating into the placement group.
+
+    * `linode_id` - The unique identifier for the Linode being migrated into the placement group.
+
+  * `outbound` A list of the Linodes the system is migrating out of the placement group.
+
+    * `linode_id` - The unique identifier for the Linode being migrated out of the placement group.
+
 ## Filterable Fields
 
 * `id`

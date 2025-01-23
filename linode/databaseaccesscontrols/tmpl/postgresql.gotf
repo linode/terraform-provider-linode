@@ -1,6 +1,6 @@
 {{ define "database_access_controls_postgresql" }}
 
-resource "linode_database_postgresql" "foobar" {
+resource "linode_database_postgresql_v2" "foobar" {
     engine_id = "{{.Engine}}"
     label = "{{.Label}}"
     region = "{{ .Region }}"
@@ -8,7 +8,7 @@ resource "linode_database_postgresql" "foobar" {
 }
 
 resource "linode_database_access_controls" "foobar" {
-    database_id = linode_database_postgresql.foobar.id
+    database_id = linode_database_postgresql_v2.foobar.id
     database_type = "postgresql"
 
     allow_list = ["{{.AllowedIP}}"]

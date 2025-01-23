@@ -51,6 +51,8 @@ func S3Connection(ctx context.Context, endpoint, accessKey, secretKey string) (*
 	}
 	s3Client := s3.NewFromConfig(awsSDKConfig, func(opts *s3.Options) {
 		opts.BaseEndpoint = aws.String("https://" + endpoint)
+
+		opts.DisableLogOutputChecksumValidationSkipped = true
 	})
 	return s3Client, nil
 }

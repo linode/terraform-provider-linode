@@ -1,0 +1,14 @@
+{{ define "database_mysql_v2_fork" }}
+
+{{ template "database_mysql_v2_basic" . }}
+
+resource "linode_database_mysql_v2" "fork" {
+    label = "{{.Label}}-fork"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    fork_source = linode_database_mysql_v2.foobar.id
+}
+
+{{ end }}
