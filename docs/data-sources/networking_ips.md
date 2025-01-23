@@ -31,9 +31,7 @@ data "linode_networking_ips" "filtered" {
 
 The following arguments are supported:
 
-* `latest` - (Optional) If true, only the latest image will be returned. Images without a valid `created` field are not included in the result.
-
-* [`filter`](#filter) - (Optional) A set of filters used to select Linode images that meet certain requirements.
+* [`filter`](#filter) - (Optional) A set of filters used to select IP addresses that meet certain requirements.
 
 * `order_by` - (Optional) The attribute to order the results by. See the [Filterable Fields section](#filterable-fields) for a list of valid fields.
 
@@ -49,7 +47,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-Each Linode image will be stored in the `ip_addresses` attribute and will export the following attributes:
+Each IP address will be stored in the `ip_addresses` attribute and will export the following attributes:
 
 * `address` - The IP address.
 
