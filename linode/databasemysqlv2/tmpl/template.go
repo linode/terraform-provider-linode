@@ -57,3 +57,14 @@ func Fork(t testing.TB, label, region, engine, nodeType string) string {
 		},
 	)
 }
+
+func Data(
+	t testing.TB,
+	data TemplateData,
+) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_mysql_v2_data",
+		data,
+	)
+}

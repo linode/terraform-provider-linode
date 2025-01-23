@@ -50,7 +50,7 @@ func (r *Resource) Create(
 ) {
 	tflog.Debug(ctx, "Create linode_database_mysql_v2")
 
-	var data Model
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -185,7 +185,7 @@ func (r *Resource) Read(
 ) {
 	tflog.Debug(ctx, "Read linode_database_mysql_v2")
 
-	var data Model
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -242,7 +242,7 @@ func (r *Resource) Update(
 	tflog.Debug(ctx, "Update linode_database_mysql_v2")
 
 	client := r.Meta.Client
-	var plan, state Model
+	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -378,7 +378,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	plan.CopyFrom(&state, true)
+	plan.CopyFrom(&state.Model, true)
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan
@@ -398,7 +398,7 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete linode_database_mysql_v2")
 
 	client := r.Meta.Client
-	var data Model
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -434,6 +434,6 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, data Model) context.Context {
+func populateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return tflog.SetField(ctx, "id", data.ID)
 }

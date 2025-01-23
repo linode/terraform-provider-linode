@@ -1,20 +1,20 @@
 ---
-page_title: "Linode: linode_database_postgresql_v2"
+page_title: "Linode: linode_database_mysql_v2"
 description: |-
-  Provides information about a Linode PostgreSQL Database.
+  Provides information about a Linode MySQL Database.
 ---
 
-# Data Source: linode\_database\_postgresql\_v2
+# Data Source: linode\_database\_mysql\_v2
 
-Provides information about a Linode PostgreSQL Database.
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-databases-postgre-sql-instance-backups).
+Provides information about a Linode MySQL Database.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-databases-mysql-instance).
 
 ## Example Usage
 
-Get information about a PostgreSQL database:
+Get information about a MySQL database:
 
 ```hcl
-data "linode_database_postgresql_v2" "my-db" {
+data "linode_database_mysql_v2" "my-db" {
   id = 12345
 }
 ```
@@ -23,11 +23,11 @@ data "linode_database_postgresql_v2" "my-db" {
 
 The following arguments are supported:
 
-* `id` - The ID of the PostgreSQL database.
+* `id` - The ID of the MySQL database.
 
 ## Attributes Reference
 
-The `linode_database_postgresql_v2` data source exports the following attributes:
+The `linode_database_mysql_v2` data source exports the following attributes:
 
 * `allow_list` - A list of IP addresses that can access the Managed Database. Each item can be a single IP address or a range in CIDR format. Use `linode_database_access_controls` to manage your allow list separately.
 
@@ -39,9 +39,9 @@ The `linode_database_postgresql_v2` data source exports the following attributes
 
 * `encrypted` - Whether the Managed Databases is encrypted.
 
-* `engine` - The Managed Database engine. (e.g. `postgresql`)
+* `engine` - The Managed Database engine. (e.g. `mysql`)
 
-* `engine_id` - The Managed Database engine in engine/version format. (e.g. `postgresql/16`)
+* `engine_id` - The Managed Database engine in engine/version format. (e.g. `mysql`)
 
 * `fork_restore_time` - The database timestamp from which it was restored.
 
