@@ -6,6 +6,15 @@ on:
       parallel_value:
         description: 'Number of parallel test executions for every user'
         required: false
+      run_long_tests:
+        description: 'Choose whether to run long-duration tests that may take additional time. Set to "true" to enable long tests e.g. database related cases. Default is "false"'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
   push:
     branches:
       - main
@@ -156,7 +165,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python dependencies
-        run: pip3 install requests wheel boto3
+        run: pip3 install requests wheel boto3==1.35.99
 
       - name: Download test report
         uses: actions/download-artifact@v4
