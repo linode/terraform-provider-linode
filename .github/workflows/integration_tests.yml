@@ -2,11 +2,11 @@ name: Integration Tests
 
 on:
   workflow_dispatch:
-  inputs:
-    parallel_value:
-      description: 'Number of parallel test executions for every user'
-      required: false
-      default: '10'
+    inputs:
+      parallel_value:
+        description: 'Number of parallel test executions for every user'
+        required: false
+        default: '10'
   push:
     branches:
       - main
