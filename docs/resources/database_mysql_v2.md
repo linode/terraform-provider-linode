@@ -1,35 +1,35 @@
 ---
-page_title: "Linode: linode_database_postgresql_v2"
+page_title: "Linode: linode_database_mysql_v2"
 description: |-
-  Manages a Linode PostgreSQL Database.
+  Manages a Linode MySQL Database.
 ---
 
-# linode\_database\_postgresql\_v2
+# linode\_database\_mysql\_v2
 
-Provides a Linode PostgreSQL Database resource. This can be used to create, modify, and delete Linode PostgreSQL Databases.
-For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-databases-postgre-sql-instances).
+Provides a Linode MySQL Database resource. This can be used to create, modify, and delete Linode MySQL Databases.
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-databases-mysql-instances).
 
 Please keep in mind that Managed Databases can take up to half an hour to provision.
 
 ## Example Usage
 
-Creating a simple PostgreSQL database that does not allow connections:
+Creating a simple MySQL database that does not allow connections:
 
 ```hcl
-resource "linode_database_postgresql_v2" "foobar" {
+resource "linode_database_mysql_v2" "foobar" {
   label = "mydatabase"
-  engine_id = "postgresql/16"
+  engine_id = "mysql/8"
   region = "us-mia"
   type = "g6-nanode-1"
 }
 ```
 
-Creating a simple PostgreSQL database that allows connections from all IPv4 addresses:
+Creating a simple MySQL database that allows connections from all IPv4 addresses:
 
 ```hcl
-resource "linode_database_postgresql_v2" "foobar" {
+resource "linode_database_mysql_v2" "foobar" {
   label = "mydatabase"
-  engine_id = "postgresql/16"
+  engine_id = "mysql/8"
   region = "us-mia"
   type = "g6-nanode-1"
   
@@ -37,12 +37,12 @@ resource "linode_database_postgresql_v2" "foobar" {
 }
 ```
 
-Creating a complex PostgreSQL database:
+Creating a complex MySQL database:
 
 ```hcl
-resource "linode_database_postgresql_v2" "foobar" {
+resource "linode_database_mysql_v2" "foobar" {
   label = "mydatabase"
-  engine_id = "postgresql/16"
+  engine_id = "mysql/8"
   region = "us-mia"
   type = "g6-nanode-1"
 
@@ -53,17 +53,17 @@ resource "linode_database_postgresql_v2" "foobar" {
     duration = 4
     frequency = "weekly"
     hour_of_day = 22
-    day_of_week = 2
+    day_of_week = 3
   }
 }
 ```
 
-Creating a forked PostgreSQL database:
+Creating a forked MySQL database:
 
 ```hcl
-resource "linode_database_postgresql_v2" "foobar" {
+resource "linode_database_mysql_v2" "foobar" {
   label = "mydatabase"
-  engine_id = "postgresql/16"
+  engine_id = "mysql/8"
   region = "us-mia"
   type = "g6-nanode-1"
 
@@ -75,7 +75,7 @@ resource "linode_database_postgresql_v2" "foobar" {
 
 The following arguments are supported:
 
-* `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `postgresql/16`)
+* `engine_id` - (Required) The Managed Database engine in engine/version format. (e.g. `mysql`)
 
 * `label` - (Required) A unique, user-defined string referring to the Managed Database.
 
@@ -107,7 +107,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `encrypted` - Whether the Managed Databases is encrypted.
 
-* `engine` - The Managed Database engine. (e.g. `postgresql`)
+* `engine` - The Managed Database engine. (e.g. `mysql`)
 
 * `host_primary` - The primary host for the Managed Database.
 
@@ -157,8 +157,8 @@ The following arguments are supported in the `updates` specification block:
 
 ## Import
 
-Linode PostgreSQL Databases can be imported using the `id`, e.g.
+Linode MySQL Databases can be imported using the `id`, e.g.
 
 ```sh
-terraform import linode_database_postgresql_v2.foobar 1234567
+terraform import linode_database_mysql_v2.foobar 1234567
 ```

@@ -192,6 +192,10 @@ The following arguments are supported:
 
   * **NOTE: Disk encryption may not currently be available to all users.**
 
+* `ipv4` - (Optional) A set of reserved IPv4 addresses to assign to this Linode on creation.
+
+  * **NOTE: IP reservation is not currently available to all users.**
+
 * `group` - (Optional, Deprecated) A deprecated property denoting a group label for this Linode. We recommend using the `tags` attribute instead.
 
 ### Simplified Resource Arguments
@@ -370,6 +374,10 @@ This Linode Instance resource exports the following attributes:
 * `specs.0.memory` - The amount of RAM, in MB, this Linode has access to. Typically a Linode will choose to boot with all of its available RAM, but this can be configured in a Config profile.
 
 * `specs.0.vcpus` - The number of vcpus this Linode has access to. Typically a Linode will choose to boot with all of its available vcpus, but this can be configured in a Config Profile.
+
+* `specs.0.accelerated_devices` - The number of VPUs this Linode has access to.
+
+* `specs.0.gpus` - The number of GPUs this Linode has access to.
 
 * `specs.0.transfer` - The amount of network transfer this Linode is allotted each month.
 

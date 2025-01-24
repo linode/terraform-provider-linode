@@ -1,0 +1,9 @@
+{{ define "database_postgresql_v2_data" }}
+
+{{ template "database_postgresql_v2_complex" . }}
+
+data "linode_database_postgresql_v2" "foobar" {
+    id = linode_database_postgresql_v2.foobar.id
+}
+
+{{ end }}

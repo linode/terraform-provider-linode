@@ -1,4 +1,4 @@
-package databasepostgresqlv2
+package databasemysqlv2
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func NewResource() resource.Resource {
 	return &Resource{
 		BaseResource: helper.NewBaseResource(
 			helper.BaseResourceConfig{
-				Name:   "linode_database_postgresql_v2",
+				Name:   "linode_database_mysql_v2",
 				IDType: types.StringType,
 				Schema: &frameworkResourceSchema,
 				TimeoutOpts: &timeouts.Opts{
@@ -48,7 +48,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Create linode_database_mysql_v2")
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -67,7 +67,7 @@ func (r *Resource) Create(
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	createOpts := linodego.PostgresCreateOptions{
+	createOpts := linodego.MySQLCreateOptions{
 		Label:       data.Label.ValueString(),
 		Region:      data.Region.ValueString(),
 		Type:        data.Type.ValueString(),
@@ -90,14 +90,14 @@ func (r *Resource) Create(
 		return
 	}
 
-	tflog.Debug(ctx, "client.CreatePostgresDatabase(...)", map[string]any{
+	tflog.Debug(ctx, "client.CreateMySQLDatabase(...)", map[string]any{
 		"options": createOpts,
 	})
 
-	db, err := client.CreatePostgresDatabase(ctx, createOpts)
+	db, err := client.CreateMySQLDatabase(ctx, createOpts)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to create PostgreSQL database",
+			"Failed to create MySQL database",
 			err.Error(),
 		)
 		return
@@ -115,7 +115,7 @@ func (r *Resource) Create(
 
 	if _, err := createPoller.WaitForFinished(ctx, int(createTimeout.Seconds())); err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to wait for PostgreSQL database to finish creating",
+			"Failed to wait for MySQL database to finish creating",
 			err.Error(),
 		)
 	}
@@ -128,11 +128,11 @@ func (r *Resource) Create(
 	if err = client.WaitForDatabaseStatus(
 		ctx,
 		db.ID,
-		linodego.DatabaseEngineTypePostgres,
+		linodego.DatabaseEngineTypeMySQL,
 		linodego.DatabaseStatusActive,
 		int(createTimeout.Seconds()),
 	); err != nil {
-		resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
+		resp.Diagnostics.AddError("Failed to wait for MySQL database active", err.Error())
 		return
 	}
 
@@ -143,23 +143,23 @@ func (r *Resource) Create(
 	}
 
 	if updates != nil {
-		updateOpts := linodego.PostgresUpdateOptions{Updates: updates.ToLinodego(resp.Diagnostics)}
+		updateOpts := linodego.MySQLUpdateOptions{Updates: updates.ToLinodego(resp.Diagnostics)}
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		tflog.Debug(ctx, "client.UpdatePostgresDatabase(...)", map[string]any{
+		tflog.Debug(ctx, "client.UpdateMySQLDatabase(...)", map[string]any{
 			"options": updateOpts,
 		})
 
-		db, err = client.UpdatePostgresDatabase(
+		db, err = client.UpdateMySQLDatabase(
 			ctx,
 			db.ID,
 			updateOpts,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Failed to update PostgreSQL database",
+				"Failed to update MySQL database",
 				err.Error(),
 			)
 			return
@@ -183,7 +183,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Read linode_database_mysql_v2")
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -204,15 +204,15 @@ func (r *Resource) Read(
 		return
 	}
 
-	tflog.Debug(ctx, "client.GetPostgresDatabase(...)")
+	tflog.Debug(ctx, "client.GetMySQLDatabase(...)")
 
-	db, err := client.GetPostgresDatabase(ctx, id)
+	db, err := client.GetMySQLDatabase(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"Database no longer exists",
 				fmt.Sprintf(
-					"Removing PostgreSQL database with ID %v from state because it no longer exists",
+					"Removing MySQL database with ID %v from state because it no longer exists",
 					id,
 				),
 			)
@@ -239,7 +239,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Update linode_database_mysql_v2")
 
 	client := r.Meta.Client
 	var plan, state ResourceModel
@@ -262,7 +262,7 @@ func (r *Resource) Update(
 
 	ctx = populateLogAttributes(ctx, state)
 
-	var updateOpts linodego.PostgresUpdateOptions
+	var updateOpts linodego.MySQLUpdateOptions
 	shouldUpdate := false
 
 	// `label` field updates
@@ -348,10 +348,10 @@ func (r *Resource) Update(
 			return
 		}
 
-		tflog.Debug(ctx, "client.UpdatePostgresDatabase(...)", map[string]any{
+		tflog.Debug(ctx, "client.UpdateMySQLDatabase(...)", map[string]any{
 			"options": updateOpts,
 		})
-		if _, err := client.UpdatePostgresDatabase(ctx, id, updateOpts); err != nil {
+		if _, err := client.UpdateMySQLDatabase(ctx, id, updateOpts); err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to update database",
 				err.Error(),
@@ -395,7 +395,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Delete linode_database_mysql_v2")
 
 	client := r.Meta.Client
 	var data ResourceModel
@@ -421,8 +421,8 @@ func (r *Resource) Delete(
 		return
 	}
 
-	tflog.Debug(ctx, "client.DeletePostgresDatabase(...)")
-	err := client.DeletePostgresDatabase(ctx, id)
+	tflog.Debug(ctx, "client.DeleteMySQLDatabase(...)")
+	err := client.DeleteMySQLDatabase(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); (ok && lerr.Code != 404) || !ok {
 			resp.Diagnostics.AddError(
