@@ -81,8 +81,8 @@ test-int: fmt-check generate-ip-env
 	TF_ACC=1 \
 	LINODE_API_VERSION="v4beta" \
 	RUN_LONG_TESTS=$(if $(RUN_LONG_TESTS),$(RUN_LONG_TESTS),false) \
-	set -o pipefail && go test --tags=$(if $(TEST_SUITE),$(TEST_SUITE),"integration") -v ./$(if $(PKG_NAME),linode/$(PKG_NAME),linode/...) \
-	-count $(if $(COUNT),$(COUNT),1) -timeout $(if $(TIMEOUT),$(TIMEOUT),240m) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel $(if $(PARALLEL),$(PARALLEL),10) $(if $(TEST_CASE),-run $(TEST_CASE)) $(if $(TEST_ARGS),$(TEST_ARGS)) | sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"
+	bash -c 'set -o pipefail && go test --tags=$(if $(TEST_SUITE),$(TEST_SUITE),"integration") -v ./$(if $(PKG_NAME),linode/$(PKG_NAME),linode/...) \
+	-count $(if $(COUNT),$(COUNT),1) -timeout $(if $(TIMEOUT),$(TIMEOUT),240m) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel $(if $(PARALLEL),$(PARALLEL),10) $(if $(TEST_CASE),-run $(TEST_CASE)) $(if $(TEST_ARGS),$(TEST_ARGS)) | sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"'
 
 .PHONY: test-smoke
 test-smoke: fmt-check generate-ip-env
@@ -92,9 +92,8 @@ test-smoke: fmt-check generate-ip-env
 	RUN_LONG_TESTS=$(RUN_LONG_TESTS) \
 	TF_VAR_ipv4_addr=$(shell grep PUBLIC_IPV4 $(IP_ENV_FILE) | cut -d '=' -f2 | tr -d '[:space:]') \
 	TF_VAR_ipv6_addr=$(shell grep PUBLIC_IPV6 $(IP_ENV_FILE) | cut -d '=' -f2 | tr -d '[:space:]') \
-	set -o pipefail && go test -v ./linode/... -run TestSmokeTests -tags=integration \
-	-count $(if $(COUNT),$(COUNT),1) -timeout $(if $(TIMEOUT),$(TIMEOUT),240m) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel $(if $(PARALLEL),$(PARALLEL),10) $(if $(TEST_ARGS),$(TEST_ARGS)) | sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"
-
+	bash -c 'set -o pipefail && go test -v ./linode/... -run TestSmokeTests -tags=integration \
+	-count $(if $(COUNT),$(COUNT),1) -timeout $(if $(TIMEOUT),$(TIMEOUT),240m) -ldflags="-X=github.com/linode/terraform-provider-linode/v2/version.ProviderVersion=acc" -parallel $(if $(PARALLEL),$(PARALLEL),10) $(if $(TEST_ARGS),$(TEST_ARGS)) | sed -e "/testing: warning: no tests to run/,+1d" -e "/\[no test files\]/d" -e "/\[no tests to run\]/d"'
 
 MARKDOWNLINT_IMG := 06kellyjac/markdownlint-cli
 MARKDOWNLINT_TAG := 0.28.1
