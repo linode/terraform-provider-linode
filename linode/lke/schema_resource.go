@@ -67,6 +67,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "The desired Kubernetes tier.",
+		ForceNew:    true,
 	},
 	"pool": {
 		Type: schema.TypeList,
