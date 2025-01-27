@@ -77,7 +77,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          make TEST_SUITE="${{ env.TEST_SUITE }}" PARALLEL="${{ github.event.inputs.parallel_value || '10' }}" test-int | go-junit-report -set-exit-code -iocopy -out $REPORT_FILENAME
+          make TEST_SUITE="${{ env.TEST_SUITE }}" PARALLEL="${{ github.event.inputs.parallel_value || '5' }}" test-int | go-junit-report -set-exit-code -iocopy -out $REPORT_FILENAME
         env:
           LINODE_TOKEN: ${{ env.LINODE_TOKEN }}
 
