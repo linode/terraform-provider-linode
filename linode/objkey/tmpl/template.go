@@ -31,3 +31,8 @@ func Limited(t testing.TB, label, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_key_limited", TemplateData{Label: label, Region: region})
 }
+
+func AllRegions(t testing.TB, label string) string {
+	return acceptance.ExecuteTemplate(t,
+		"object_key_all_regions", TemplateData{Label: label})
+}

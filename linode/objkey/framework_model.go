@@ -12,8 +12,9 @@ import (
 )
 
 type RegionDetail struct {
-	ID         types.String `tfsdk:"id"`
-	S3Endpoint types.String `tfsdk:"s3_endpoint"`
+	ID           types.String `tfsdk:"id"`
+	S3Endpoint   types.String `tfsdk:"s3_endpoint"`
+	EndpointType types.String `tfsdk:"endpoint_type"`
 }
 
 type BucketAccessModelEntry struct {
@@ -133,6 +134,7 @@ func (rm *ResourceModel) FlattenObjectStorageKey(
 func FlattenRegionDetail(region linodego.ObjectStorageKeyRegion) (regionDetail RegionDetail) {
 	regionDetail.ID = types.StringValue(region.ID)
 	regionDetail.S3Endpoint = types.StringValue(region.S3Endpoint)
+	regionDetail.EndpointType = types.StringValue(string(region.EndpointType))
 	return
 }
 

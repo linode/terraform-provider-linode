@@ -15,10 +15,12 @@ type TemplateData struct {
 	CORSEnabled bool
 	Versioning  bool
 
-	Cert    string
-	PrivKey string
-	Cluster string
-	Region  string
+	Cert         string
+	PrivKey      string
+	Cluster      string
+	Region       string
+	EndpointType string
+	EndpointURL  string
 }
 
 func Basic(t testing.TB, label, region string) string {
@@ -29,6 +31,26 @@ func Basic(t testing.TB, label, region string) string {
 func BasicLegacy(t testing.TB, label, cluster string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_basic", TemplateData{Label: label, Cluster: cluster})
+}
+
+func EndpointURL(t testing.TB, label, region, endpointURL string) string {
+	return acceptance.ExecuteTemplate(
+		t, "object_bucket_endpoint_url", TemplateData{
+			Label:       label,
+			Region:      region,
+			EndpointURL: endpointURL,
+		},
+	)
+}
+
+func EndpointType(t testing.TB, label, region, endpointType string) string {
+	return acceptance.ExecuteTemplate(
+		t, "object_bucket_endpoint_type", TemplateData{
+			Label:        label,
+			Region:       region,
+			EndpointType: endpointType,
+		},
+	)
 }
 
 func Updates(t testing.TB, label, region string) string {

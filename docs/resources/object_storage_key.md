@@ -93,3 +93,5 @@ This resource exports the following attributes:
   * `id` - The ID of the region.
 
   * `s3_endpoint` - The S3-compatible hostname you can use to access the Object Storage buckets in this region.
+
+  * `endpoint_type` - The type of `s3_endpoint` available to the user in this region. See [Endpoint types](https://techdocs.akamai.com/cloud-computing/docs/object-storage#endpoint-type) for more information.

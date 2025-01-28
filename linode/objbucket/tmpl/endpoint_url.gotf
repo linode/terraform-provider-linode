@@ -1,0 +1,9 @@
+{{ define "object_bucket_endpoint_url" }}
+
+resource "linode_object_storage_bucket" "foobar" {
+    label    = "{{ .Label }}"
+    region   = "{{ .Region }}"
+    s3_endpoint = "{{ .EndpointURL }}"
+}
+
+{{ end }}
