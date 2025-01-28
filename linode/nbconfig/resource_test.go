@@ -60,6 +60,8 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "check_interval"),
 					resource.TestCheckResourceAttrSet(resName, "check_passive"),
+					resource.TestCheckResourceAttrSet(resName, "udp_check_port"),
+					resource.TestCheckResourceAttrSet(resName, "udp_session_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "cipher_suite"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_common"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_ciphersuite"),
@@ -150,6 +152,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "check_attempts", "3"),
 					resource.TestCheckResourceAttr(resName, "check_timeout", "30"),
 					resource.TestCheckResourceAttr(resName, "check_interval", "31"),
+					resource.TestCheckResourceAttr(resName, "udp_check_port", "1234"),
 					resource.TestCheckResourceAttr(resName, "check_passive", "false"),
 
 					resource.TestCheckResourceAttr(resName, "stickiness", string(linodego.StickinessHTTPCookie)),
