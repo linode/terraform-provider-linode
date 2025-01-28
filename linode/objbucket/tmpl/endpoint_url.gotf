@@ -3,7 +3,7 @@
 resource "linode_object_storage_bucket" "foobar" {
     label    = "{{ .Label }}"
     region   = "{{ .Region }}"
-    endpoint = "{{ .EndpointURL }}"
+    s3_endpoint = "{{ .EndpointURL }}"
 }
 
 {{ end }}

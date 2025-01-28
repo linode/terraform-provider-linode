@@ -39,6 +39,12 @@ var resourceSchema = map[string]*schema.Schema{
 	"endpoint": {
 		Type:        schema.TypeString,
 		Description: "The endpoint for the bucket used for s3 connections.",
+		Deprecated:  "Use `s3_endpoint` instead",
+		Computed:    true,
+	},
+	"s3_endpoint": {
+		Type:        schema.TypeString,
+		Description: "The endpoint for the bucket used for s3 connections.",
 		Optional:    true,
 		Computed:    true,
 		ForceNew:    true,

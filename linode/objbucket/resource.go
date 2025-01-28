@@ -130,6 +130,7 @@ func readResource(
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
 	d.Set("endpoint", bucket.S3Endpoint)
+	d.Set("s3_endpoint", bucket.S3Endpoint)
 	d.Set("endpoint_type", bucket.EndpointType)
 
 	return nil
@@ -155,7 +156,7 @@ func createResource(
 		createOpts.CorsEnabled = &corsEnabledBool
 	}
 
-	if endpoint, ok := d.GetOk("endpoint"); ok {
+	if endpoint, ok := d.GetOk("s3_endpoint"); ok {
 		createOpts.S3Endpoint = endpoint.(string)
 	}
 
@@ -178,6 +179,7 @@ func createResource(
 	}
 
 	d.Set("endpoint", bucket.S3Endpoint)
+	d.Set("s3_endpoint", bucket.S3Endpoint)
 
 	if bucket.Region != "" {
 		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
