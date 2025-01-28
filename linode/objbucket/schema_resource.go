@@ -39,7 +39,16 @@ var resourceSchema = map[string]*schema.Schema{
 	"endpoint": {
 		Type:        schema.TypeString,
 		Description: "The endpoint for the bucket used for s3 connections.",
+		Optional:    true,
 		Computed:    true,
+		ForceNew:    true,
+	},
+	"endpoint_type": {
+		Type:        schema.TypeString,
+		Description: "The type of the S3 endpoint available in this region.",
+		Optional:    true,
+		Computed:    true,
+		ForceNew:    true,
 	},
 	"label": {
 		Type:        schema.TypeString,
