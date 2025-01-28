@@ -194,6 +194,7 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "standard"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),

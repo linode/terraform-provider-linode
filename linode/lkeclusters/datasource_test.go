@@ -79,6 +79,7 @@ func TestAccDataSourceLKEClusters_basic(t *testing.T) {
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.k8s_version", k8sVersionLatest),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.status", "ready"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tags.#", "1"),
+						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.tier", "standard"),
 						resource.TestCheckResourceAttr(dataSourceName, "lke_clusters.0.control_plane.high_availability", "false"),
 					),
 				},

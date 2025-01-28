@@ -119,6 +119,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("region", cluster.Region)
 	d.Set("tags", cluster.Tags)
 	d.Set("status", cluster.Status)
+	d.Set("tier", cluster.Tier)
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
@@ -148,6 +149,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		Label:      d.Get("label").(string),
 		Region:     d.Get("region").(string),
 		K8sVersion: d.Get("k8s_version").(string),
+	}
+
+	if tier, ok := d.GetOk("tier"); ok {
+		createOpts.Tier = tier.(string)
 	}
 
 	if len(controlPlane) > 0 {

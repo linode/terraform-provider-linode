@@ -64,6 +64,8 @@ Each LKE Cluster will be stored in the `lke_clusters` attribute and will export 
 
 * `region` - This Kubernetes cluster's location.
 
+* `tier` - The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
+
 * `control_plane.high_availability` - Whether High Availability is enabled for the cluster Control Plane.
 
 To get more information about a cluster, i.e. node pools, please refer to the [linode_lke_cluster](lke_cluster.html.markdown) data source.

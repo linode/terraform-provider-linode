@@ -8,6 +8,11 @@ data "linode_lke_clusters" "test" {
         name = "label"
         values = ["{{.Label}}"]
     }
+
+    filter {
+        name = "tier"
+        values = ["standard"]
+    }
 }
 
 {{ end }}

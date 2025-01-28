@@ -5,6 +5,7 @@ resource "linode_lke_cluster" "test" {
     region      = "{{ .Region }}"
     k8s_version = "{{.K8sVersion}}"
     tags        = ["test"]
+    tier = "standard"
 
     pool {
         type  = "g6-standard-1"
