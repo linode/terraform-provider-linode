@@ -1,0 +1,5 @@
+{{ define "objendpoints_data_basic" }}
+
+data "linode_object_storage_endpoints" "test" {}
+
+{{ end }}

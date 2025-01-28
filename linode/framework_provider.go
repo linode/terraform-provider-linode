@@ -62,6 +62,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/v2/linode/objendpoints"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment"
@@ -314,5 +315,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		networkingips.NewDataSource,
 		databasemysqlv2.NewDataSource,
 		databasepostgresqlv2.NewDataSource,
+		objendpoints.NewDataSource,
 	}
 }
