@@ -105,6 +105,12 @@ func resourceLinodeUserGrantsGlobal() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"add_placement_groups": {
+				Type:        schema.TypeBool,
+				Description: "If true, this User may add Placement Groups.",
+				Optional:    true,
+				Default:     false,
+			},
 			"add_stackscripts": {
 				Type:        schema.TypeBool,
 				Description: "If true, this User may add StackScripts.",
@@ -114,6 +120,12 @@ func resourceLinodeUserGrantsGlobal() *schema.Resource {
 			"add_volumes": {
 				Type:        schema.TypeBool,
 				Description: "If true, this User may add Volumes.",
+				Optional:    true,
+				Default:     false,
+			},
+			"add_vpcs": {
+				Type:        schema.TypeBool,
+				Description: "If true, this User may add Virtual Private Clouds (VPCs).",
 				Optional:    true,
 				Default:     false,
 			},

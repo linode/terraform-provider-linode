@@ -98,7 +98,11 @@ In addition to all the arguments above, the following attributes are exported.
 
 * `add_nodebalancers` - (optional) If true, this User may add NodeBalancers.
 
+* `add_placement_groups` - (optional) If true, this User may add Placement Groups.
+
 * `add_stackscripts` - (optional) If true, this User may add StackScripts.
+
+* `add_vpcs` - (optional) If true, this User may add Virtual Private Clouds (VPCs).
 
 * `cancel_account` - (optional) If true, this User may cancel the entire Account.
 
