@@ -12,6 +12,7 @@ For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/li
 ## Example Usage
 
 Get an endpoint of E3 type (highest performance and capacity) of Linode Object Storage services:
+
 ```hcl
 data "linode_object_storage_endpoints" "test" {
     filter {
@@ -26,6 +27,7 @@ output "high-performance-obj-endpoint" {
 ```
 
 Get a list of all available endpoints of Linode Object Storage services.
+
 ```hcl
 data "linode_object_storage_endpoints" "test" {}
 
