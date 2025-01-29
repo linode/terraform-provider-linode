@@ -161,7 +161,7 @@ func FlattenBucketAccessEntries(
 	}
 
 	for i := range resultEntries {
-		if i > len(entries) {
+		if i >= len(entries) {
 			break
 		}
 

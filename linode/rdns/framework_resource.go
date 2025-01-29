@@ -181,13 +181,9 @@ func (r *Resource) Update(
 	defer cancel()
 
 	client := r.Meta.Client
-
-	var updateOpts linodego.IPAddressUpdateOptions
-
 	resourceUpdated := false
 
 	if !state.RDNS.Equal(plan.RDNS) {
-		updateOpts.RDNS = plan.RDNS.ValueStringPointer()
 		resourceUpdated = true
 	}
 
