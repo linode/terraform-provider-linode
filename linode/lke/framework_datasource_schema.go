@@ -64,6 +64,10 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 			Description: "When this Kubernetes cluster was updated.",
 		},
+		"tier": schema.StringAttribute{
+			Computed:    true,
+			Description: "The desired Kubernetes tier.",
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"control_plane": schema.ListNestedBlock{
