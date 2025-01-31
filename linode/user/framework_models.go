@@ -114,6 +114,13 @@ func (data *DataSourceModel) ParseUserGrants(
 	}
 	data.NodebalancerGrant = *nodebalancerGrants
 
+	// PlacementGroup
+	placementGroupGrants, diags := flattenGrantEntities(ctx, userGrants.PlacementGroup)
+	if diags.HasError() {
+		return diags
+	}
+	data.PlacementGroupGrant = *placementGroupGrants
+
 	// Stackscript
 	stackscriptGrants, diags := flattenGrantEntities(ctx, userGrants.StackScript)
 	if diags.HasError() {
@@ -128,6 +135,13 @@ func (data *DataSourceModel) ParseUserGrants(
 	}
 	data.VolumeGrant = *volumeGrants
 
+	// VPC
+	vpcGrants, diags := flattenGrantEntities(ctx, userGrants.VPC)
+	if diags.HasError() {
+		return diags
+	}
+	data.VPCGrant = *vpcGrants
+
 	// Database
 	databaseGrants, diags := flattenGrantEntities(ctx, userGrants.Database)
 	if diags.HasError() {
@@ -137,7 +151,7 @@ func (data *DataSourceModel) ParseUserGrants(
 
 	// Global
 
-	globalGrants, diags := flattenGlobalGrants(ctx, userGrants.Global)
+	globalGrants, diags := flattenGlobalGrants(userGrants.Global)
 	if diags.HasError() {
 		return diags
 	}
@@ -155,11 +169,13 @@ func (data *DataSourceModel) ParseNonUserGrants() {
 	data.LinodeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.LongviewGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.NodebalancerGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.PlacementGroupGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.StackscriptGrant = types.SetNull(linodeUserGrantsEntityObjectType)
+	data.VPCGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 	data.VolumeGrant = types.SetNull(linodeUserGrantsEntityObjectType)
 }
 
-func flattenGlobalGrants(ctx context.Context, grants linodego.GlobalUserGrants) (
+func flattenGlobalGrants(grants linodego.GlobalUserGrants) (
 	*basetypes.ListValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
