@@ -95,8 +95,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		d.Set("linode_grant", flattenGrantsEntities(grants.Linode))
 		d.Set("longview_grant", flattenGrantsEntities(grants.Longview))
 		d.Set("nodebalancer_grant", flattenGrantsEntities(grants.NodeBalancer))
+		d.Set("placement_group_grant", flattenGrantsEntities(grants.PlacementGroup))
 		d.Set("stackscript_grant", flattenGrantsEntities(grants.StackScript))
 		d.Set("volume_grant", flattenGrantsEntities(grants.Volume))
+		d.Set("vpc_grant", flattenGrantsEntities(grants.VPC))
 	}
 
 	d.Set("username", username)

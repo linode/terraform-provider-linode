@@ -66,9 +66,13 @@ The following arguments are sets of [entity grants](#entity-grants):
 
 * `nodebalancer_grant` - (optional) The NodeBalancers the user has permissions access to.
 
+* `placement_group_grant` - (optional) The Placement Groups the user has permissions access to.
+
 * `stackscript_grant` - (optional) The StackScripts the user has permissions access to.
 
 * `volume_grant` - (optional) The volumes the user has permissions access to.
+
+* `vpc_grant` - (optional) The Virtual Private Clouds (VPCs) the user has permissions access to.
 
 ## Attributes Reference
 
