@@ -181,13 +181,8 @@ func (r *Resource) Update(
 	defer cancel()
 
 	client := r.Meta.Client
-	resourceUpdated := false
 
 	if !state.RDNS.Equal(plan.RDNS) {
-		resourceUpdated = true
-	}
-
-	if resourceUpdated {
 		ip, err := updateIPAddress(
 			ctx,
 			client,
