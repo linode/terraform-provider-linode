@@ -58,13 +58,13 @@ func Updates(t testing.TB, label, region string) string {
 		"object_bucket_updates", TemplateData{Label: label, Region: region})
 }
 
-func Access(t testing.TB, label, cluster, acl string, cors bool) string {
+func Access(t testing.TB, label, region, acl string, cors bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_access", TemplateData{
 			Label:       label,
 			ACL:         acl,
 			CORSEnabled: cors,
-			Cluster:     cluster,
+			Region:      region,
 		})
 }
 
@@ -78,58 +78,58 @@ func Cert(t testing.TB, label, region, cert, privKey string) string {
 		})
 }
 
-func Versioning(t testing.TB, label, cluster, keyName string, versioning bool) string {
+func Versioning(t testing.TB, label, region, keyName string, versioning bool) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_versioning", TemplateData{
 			Key:        objkey.TemplateData{Label: keyName},
 			Label:      label,
 			Versioning: versioning,
-			Cluster:    cluster,
+			Region:     region,
 		})
 }
 
-func LifeCycle(t testing.TB, label, cluster, keyName string) string {
+func LifeCycle(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func LifeCycleNoID(t testing.TB, label, cluster, keyName string) string {
+func LifeCycleNoID(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_no_id", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func LifeCycleUpdates(t testing.TB, label, cluster, keyName string) string {
+func LifeCycleUpdates(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_updates", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func LifeCycleRemoved(t testing.TB, label, cluster, keyName string) string {
+func LifeCycleRemoved(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_lifecycle_removed", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
-func TempKeys(t testing.TB, label, cluster, keyName string) string {
+func TempKeys(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_temp_keys", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 
@@ -153,12 +153,12 @@ func ClusterDataBasic(t testing.TB, label, cluster string) string {
 		})
 }
 
-func CredsConfiged(t testing.TB, label, cluster, keyName string) string {
+func CredsConfiged(t testing.TB, label, region, keyName string) string {
 	return acceptance.ExecuteTemplate(t,
 		"object_bucket_creds_configed", TemplateData{
-			Key:     objkey.TemplateData{Label: keyName},
-			Label:   label,
-			Cluster: cluster,
+			Key:    objkey.TemplateData{Label: keyName},
+			Label:  label,
+			Region: region,
 		})
 }
 

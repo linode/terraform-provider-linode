@@ -339,7 +339,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Access(t, objectStorageBucketName, testCluster, "public-read", true),
+					Config: tmpl.Access(t, objectStorageBucketName, testRegion, "public-read", true),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -348,7 +348,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Access(t, objectStorageBucketName, testCluster, "private", false),
+					Config: tmpl.Access(t, objectStorageBucketName, testRegion, "private", false),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -375,7 +375,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Versioning(t, objectStorageBucketName, testCluster, objectStorageKeyName, true),
+					Config: tmpl.Versioning(t, objectStorageBucketName, testRegion, objectStorageKeyName, true),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -383,7 +383,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.Versioning(t, objectStorageBucketName, testCluster, objectStorageKeyName, false),
+					Config: tmpl.Versioning(t, objectStorageBucketName, testRegion, objectStorageKeyName, false),
 					Check: resource.ComposeTestCheckFunc(
 						checkBucketExists,
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
@@ -409,7 +409,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.LifeCycle(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Config: tmpl.LifeCycle(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
@@ -424,7 +424,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Config: tmpl.LifeCycleUpdates(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
@@ -439,7 +439,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.LifeCycleRemoved(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Config: tmpl.LifeCycleRemoved(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
@@ -466,7 +466,7 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Config: tmpl.LifeCycleNoID(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
@@ -615,7 +615,7 @@ func TestAccResourceBucket_credsConfiged(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.CredsConfiged(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Config: tmpl.CredsConfiged(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
@@ -642,7 +642,7 @@ func TestAccResourceBucket_tempKeys(t *testing.T) {
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.TempKeys(t, objectStorageBucketName, testCluster, objectStorageKeyName),
+					Config: tmpl.TempKeys(t, objectStorageBucketName, testRegion, objectStorageKeyName),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resName, "label", objectStorageBucketName),
 						resource.TestCheckResourceAttr(resName, "cluster", testCluster),
