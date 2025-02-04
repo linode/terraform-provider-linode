@@ -626,8 +626,15 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 		endpoints[i], endpoints[j] = endpoints[j], endpoints[i]
 	})
 
-	for i := range endpoints {
-		if endpoints[i].S3Endpoint != nil {
+	for i, e := range endpoints {
+		// Linode Object Storage clusters with E2 and E3 (Object Storage gen2) endpoints
+		// doesn't support API call with only `cluster` rather than `region`.
+		// Only selecting E1 (Object Storage gen1) here to make sure tests always pass.
+		//
+		// TODO:
+		// Remove this condition when E1 is deprecated in the future
+		// or test cases with `cluster` are removed.
+		if e.S3Endpoint != nil && e.EndpointType == linodego.ObjectStorageEndpointE1 {
 			result := endpoints[i]
 			return &result, nil
 		}
