@@ -97,6 +97,8 @@ The following arguments are supported:
 
 * `external_pool_tags` - (Optional) A set of node pool tags to ignore when planning and applying this cluster. This prevents externally managed node pools from being deleted or unintentionally updated on subsequent applies. See [Externally Managed Node Pools](#externally-managed-node-pools) for more details.
 
+* `tier` - (Optional) The desired Kubernetes tier. (**Note: v4beta only and may not currently be available to all users.**)
+
 ### pool
 
 ~> **Notice** Due to limitations in Terraform, the order of pools in the `linode_lke_cluster` resource is treated as significant.
