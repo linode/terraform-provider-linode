@@ -10,6 +10,12 @@ import (
 )
 
 func CompareTimeStrings(t1, t2, timeFormat string) bool {
+	// time.Parse(...) does not support parsing empty string times,
+	// but this is a valid case in certain scenarios.
+	if t1 == "" && t2 == "" {
+		return true
+	}
+
 	parsedT1, err := time.Parse(timeFormat, t1)
 	if err != nil {
 		return false
