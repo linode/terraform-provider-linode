@@ -320,6 +320,12 @@ func TestAccResource_fork(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            resNameSource,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated"},
+			},
+			{
 				PreConfig: func() {
 					// Poll for the source database to be restorable
 					ctx := context.Background()
@@ -391,14 +397,10 @@ func TestAccResource_fork(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resNameSource,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				ResourceName:      resNameFork,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resNameFork,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})

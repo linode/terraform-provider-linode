@@ -257,9 +257,10 @@ func TestAccResource_complex(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})
@@ -318,6 +319,11 @@ func TestAccResource_fork(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resNameSource, "pending_updates.#", "0"),
 				),
+			},
+			{
+				ResourceName:      resNameSource,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				PreConfig: func() {
@@ -391,14 +397,10 @@ func TestAccResource_fork(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resNameSource,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				ResourceName:      resNameFork,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resNameFork,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated"},
 			},
 		},
 	})
