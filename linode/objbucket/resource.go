@@ -79,13 +79,10 @@ func readResource(
 	}
 
 	tflog.Debug(ctx, "getting bucket access info")
-	access, err := client.GetObjectStorageBucketAccess(ctx, regionOrCluster, label)
+	access, err := client.GetObjectStorageBucketAccessV2(ctx, regionOrCluster, label)
 	if err != nil {
 		return diag.Errorf("failed to find the access config for the specified Linode ObjectStorageBucket: %s", err)
 	}
-
-	// Functionality requiring direct S3 API access
-	endpoint := helper.ComputeS3EndpointFromBucket(ctx, *bucket)
 
 	_, versioningPresent := d.GetOk("versioning")
 	_, lifecyclePresent := d.GetOk("lifecycle_rule")
@@ -105,7 +102,7 @@ func readResource(
 			defer teardownKeysCleanUp()
 		}
 
-		s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
+		s3Client, err := helper.S3Connection(ctx, bucket.S3Endpoint, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -132,7 +129,9 @@ func readResource(
 	d.Set("hostname", bucket.Hostname)
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
-	d.Set("endpoint", endpoint)
+	d.Set("endpoint", bucket.S3Endpoint)
+	d.Set("s3_endpoint", bucket.S3Endpoint)
+	d.Set("endpoint_type", bucket.EndpointType)
 
 	return nil
 }
@@ -146,18 +145,31 @@ func createResource(
 
 	label := d.Get("label").(string)
 	acl := d.Get("acl").(string)
-	corsEnabled := d.Get("cors_enabled").(bool)
 
 	createOpts := linodego.ObjectStorageBucketCreateOptions{
-		Label:       label,
-		ACL:         linodego.ObjectStorageACL(acl),
-		CorsEnabled: &corsEnabled,
+		Label: label,
+		ACL:   linodego.ObjectStorageACL(acl),
+	}
+
+	if corsEnabled, ok := d.GetOk("cors_enabled"); ok {
+		corsEnabledBool := corsEnabled.(bool)
+		createOpts.CorsEnabled = &corsEnabledBool
+	}
+
+	if endpoint, ok := d.GetOk("s3_endpoint"); ok {
+		createOpts.S3Endpoint = endpoint.(string)
+	}
+
+	if endpointType, ok := d.GetOk("endpoint_type"); ok {
+		createOpts.EndpointType = linodego.ObjectStorageEndpointType(endpointType.(string))
 	}
 
 	if region, ok := d.GetOk("region"); ok {
 		createOpts.Region = region.(string)
-	} else {
-		createOpts.Cluster = d.Get("cluster").(string)
+	}
+
+	if cluster, ok := d.GetOk("cluster"); ok {
+		createOpts.Cluster = cluster.(string)
 	}
 
 	tflog.Debug(ctx, "client.CreateObjectStorageBucket(...)", map[string]any{"options": createOpts})
@@ -166,7 +178,8 @@ func createResource(
 		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
-	d.Set("endpoint", helper.ComputeS3EndpointFromBucket(ctx, *bucket))
+	d.Set("endpoint", bucket.S3Endpoint)
+	d.Set("s3_endpoint", bucket.S3Endpoint)
 
 	if bucket.Region != "" {
 		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
@@ -455,7 +468,7 @@ func updateBucketCert(
 	}
 
 	uploadOptions := expandBucketCert(certSpec[0])
-	if _, err := client.UploadObjectStorageBucketCert(ctx, regionOrCluster, label, uploadOptions); err != nil {
+	if _, err := client.UploadObjectStorageBucketCertV2(ctx, regionOrCluster, label, uploadOptions); err != nil {
 		return fmt.Errorf("failed to upload new bucket cert: %s", err)
 	}
 	return nil

@@ -585,6 +585,64 @@ func ModifyProviderMeta(provider *schema.Provider, modifier ProviderMetaModifier
 	}
 }
 
+func GetEndpointType(e linodego.ObjectStorageEndpoint) string {
+	return string(e.EndpointType)
+}
+
+func GetEndpointRegion(e linodego.ObjectStorageEndpoint) string {
+	return e.Region
+}
+
+func GetEndpointCluster(e linodego.ObjectStorageEndpoint) (string, error) {
+	if e.S3Endpoint == nil {
+		return "", fmt.Errorf(
+			"the %q type endpoint is nil for region %q for the user",
+			e.EndpointType, e.Region,
+		)
+	}
+
+	endpointURL := *e.S3Endpoint
+	splittedURL := strings.Split(endpointURL, ".")
+	if len(splittedURL) == 0 {
+		return "", fmt.Errorf("invalid s3 endpoint received: %v", splittedURL)
+	}
+
+	return strings.Split(endpointURL, ".")[0], nil
+}
+
+// Get an Object Storage services endpoint with non-nil S3Endpoint
+func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
+	client, err := GetTestClient()
+	if err != nil {
+		return nil, err
+	}
+
+	endpoints, err := client.ListObjectStorageEndpoints(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	rand.Shuffle(len(endpoints), func(i, j int) {
+		endpoints[i], endpoints[j] = endpoints[j], endpoints[i]
+	})
+
+	for i, e := range endpoints {
+		// Linode Object Storage clusters with E2 and E3 (Object Storage gen2) endpoints
+		// doesn't support API call with only `cluster` rather than `region`.
+		// Only selecting E1 (Object Storage gen1) here to make sure tests always pass.
+		//
+		// TODO:
+		// Remove this condition when E1 is deprecated in the future
+		// or test cases with `cluster` are removed.
+		if e.S3Endpoint != nil && e.EndpointType == linodego.ObjectStorageEndpointE1 {
+			result := endpoints[i]
+			return &result, nil
+		}
+	}
+
+	return nil, errors.New("failed to get an object storage endpoint")
+}
+
 // GetRegionsWithCaps returns a list of region IDs that support the given capabilities
 // Parameters:
 // - capabilities: Required capabilities that the regions must support.
