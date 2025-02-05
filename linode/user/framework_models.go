@@ -73,77 +73,77 @@ func (data *DataSourceModel) ParseUserGrants(
 	ctx context.Context, userGrants *linodego.UserGrants,
 ) diag.Diagnostics {
 	// Domain
-	domainGrants, diags := flattenGrantEntities(ctx, userGrants.Domain)
+	domainGrants, diags := flattenGrantEntities(userGrants.Domain)
 	if diags.HasError() {
 		return diags
 	}
 	data.DomainGrant = *domainGrants
 
 	// Firewall
-	firewallGrants, diags := flattenGrantEntities(ctx, userGrants.Firewall)
+	firewallGrants, diags := flattenGrantEntities(userGrants.Firewall)
 	if diags.HasError() {
 		return diags
 	}
 	data.FirewallGrant = *firewallGrants
 
 	// Image
-	imageGrants, diags := flattenGrantEntities(ctx, userGrants.Image)
+	imageGrants, diags := flattenGrantEntities(userGrants.Image)
 	if diags.HasError() {
 		return diags
 	}
 	data.ImageGrant = *imageGrants
 
 	// Linode
-	linodeGrants, diags := flattenGrantEntities(ctx, userGrants.Linode)
+	linodeGrants, diags := flattenGrantEntities(userGrants.Linode)
 	if diags.HasError() {
 		return diags
 	}
 	data.LinodeGrant = *linodeGrants
 
 	// Longview
-	longviewGrants, diags := flattenGrantEntities(ctx, userGrants.Longview)
+	longviewGrants, diags := flattenGrantEntities(userGrants.Longview)
 	if diags.HasError() {
 		return diags
 	}
 	data.LongviewGrant = *longviewGrants
 
 	// Nodebalancer
-	nodebalancerGrants, diags := flattenGrantEntities(ctx, userGrants.NodeBalancer)
+	nodebalancerGrants, diags := flattenGrantEntities(userGrants.NodeBalancer)
 	if diags.HasError() {
 		return diags
 	}
 	data.NodebalancerGrant = *nodebalancerGrants
 
 	// PlacementGroup
-	placementGroupGrants, diags := flattenGrantEntities(ctx, userGrants.PlacementGroup)
+	placementGroupGrants, diags := flattenGrantEntities(userGrants.PlacementGroup)
 	if diags.HasError() {
 		return diags
 	}
 	data.PlacementGroupGrant = *placementGroupGrants
 
 	// Stackscript
-	stackscriptGrants, diags := flattenGrantEntities(ctx, userGrants.StackScript)
+	stackscriptGrants, diags := flattenGrantEntities(userGrants.StackScript)
 	if diags.HasError() {
 		return diags
 	}
 	data.StackscriptGrant = *stackscriptGrants
 
 	// Volume
-	volumeGrants, diags := flattenGrantEntities(ctx, userGrants.Volume)
+	volumeGrants, diags := flattenGrantEntities(userGrants.Volume)
 	if diags.HasError() {
 		return diags
 	}
 	data.VolumeGrant = *volumeGrants
 
 	// VPC
-	vpcGrants, diags := flattenGrantEntities(ctx, userGrants.VPC)
+	vpcGrants, diags := flattenGrantEntities(userGrants.VPC)
 	if diags.HasError() {
 		return diags
 	}
 	data.VPCGrant = *vpcGrants
 
 	// Database
-	databaseGrants, diags := flattenGrantEntities(ctx, userGrants.Database)
+	databaseGrants, diags := flattenGrantEntities(userGrants.Database)
 	if diags.HasError() {
 		return diags
 	}
@@ -218,7 +218,7 @@ func flattenGlobalGrants(grants linodego.GlobalUserGrants) (
 	return &resultList, nil
 }
 
-func flattenGrantEntity(ctx context.Context, entity linodego.GrantedEntity) (
+func flattenGrantEntity(entity linodego.GrantedEntity) (
 	*basetypes.ObjectValue, diag.Diagnostics,
 ) {
 	result := make(map[string]attr.Value)
@@ -235,13 +235,13 @@ func flattenGrantEntity(ctx context.Context, entity linodego.GrantedEntity) (
 	return &obj, nil
 }
 
-func flattenGrantEntities(ctx context.Context, entities []linodego.GrantedEntity) (
+func flattenGrantEntities(entities []linodego.GrantedEntity) (
 	*basetypes.SetValue, diag.Diagnostics,
 ) {
 	resultSet := make([]attr.Value, len(entities))
 
 	for i, entity := range entities {
-		result, diag := flattenGrantEntity(ctx, entity)
+		result, diag := flattenGrantEntity(entity)
 		if diag.HasError() {
 			return nil, diag
 		}

@@ -111,17 +111,31 @@ func TestParseUserGrants(t *testing.T) {
 				Permissions: "read_only",
 			},
 		},
-		StackScript: []linodego.GrantedEntity{
+		PlacementGroup: []linodego.GrantedEntity{
 			{
 				ID:          105,
+				Label:       "example-placement-group",
+				Permissions: "read_only",
+			},
+		},
+		StackScript: []linodego.GrantedEntity{
+			{
+				ID:          106,
 				Label:       "example-stackscript",
 				Permissions: "read_write",
 			},
 		},
 		Volume: []linodego.GrantedEntity{
 			{
-				ID:          106,
+				ID:          107,
 				Label:       "example-volume",
+				Permissions: "read_only",
+			},
+		},
+		VPC: []linodego.GrantedEntity{
+			{
+				ID:          108,
+				Label:       "example-vpc",
 				Permissions: "read_only",
 			},
 		},
