@@ -44,14 +44,16 @@ var resourceSchema = map[string]*schema.Schema{
 		MaxItems:    1,
 		Elem:        resourceLinodeUserGrantsGlobal(),
 	},
-	"domain_grant":       resourceLinodeUserGrantsEntitySet(),
-	"firewall_grant":     resourceLinodeUserGrantsEntitySet(),
-	"image_grant":        resourceLinodeUserGrantsEntitySet(),
-	"linode_grant":       resourceLinodeUserGrantsEntitySet(),
-	"longview_grant":     resourceLinodeUserGrantsEntitySet(),
-	"nodebalancer_grant": resourceLinodeUserGrantsEntitySet(),
-	"stackscript_grant":  resourceLinodeUserGrantsEntitySet(),
-	"volume_grant":       resourceLinodeUserGrantsEntitySet(),
+	"domain_grant":          resourceLinodeUserGrantsEntitySet(),
+	"firewall_grant":        resourceLinodeUserGrantsEntitySet(),
+	"image_grant":           resourceLinodeUserGrantsEntitySet(),
+	"linode_grant":          resourceLinodeUserGrantsEntitySet(),
+	"longview_grant":        resourceLinodeUserGrantsEntitySet(),
+	"nodebalancer_grant":    resourceLinodeUserGrantsEntitySet(),
+	"placement_group_grant": resourceLinodeUserGrantsEntitySet(),
+	"stackscript_grant":     resourceLinodeUserGrantsEntitySet(),
+	"volume_grant":          resourceLinodeUserGrantsEntitySet(),
+	"vpc_grant":             resourceLinodeUserGrantsEntitySet(),
 }
 
 func resourceLinodeUserGrantsGlobal() *schema.Resource {
@@ -105,6 +107,12 @@ func resourceLinodeUserGrantsGlobal() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"add_placement_groups": {
+				Type:        schema.TypeBool,
+				Description: "If true, this User may add Placement Groups.",
+				Optional:    true,
+				Default:     false,
+			},
 			"add_stackscripts": {
 				Type:        schema.TypeBool,
 				Description: "If true, this User may add StackScripts.",
@@ -114,6 +122,12 @@ func resourceLinodeUserGrantsGlobal() *schema.Resource {
 			"add_volumes": {
 				Type:        schema.TypeBool,
 				Description: "If true, this User may add Volumes.",
+				Optional:    true,
+				Default:     false,
+			},
+			"add_vpcs": {
+				Type:        schema.TypeBool,
+				Description: "If true, this User may add Virtual Private Clouds (VPCs).",
 				Optional:    true,
 				Default:     false,
 			},
