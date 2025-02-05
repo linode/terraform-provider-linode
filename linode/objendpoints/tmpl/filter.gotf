@@ -1,0 +1,10 @@
+{{ define "objendpoints_data_filter" }}
+
+data "linode_object_storage_endpoints" "test" {
+    filter {
+        name = "endpoint_type"
+        values = ["{{ .EndpointType }}"]
+    }
+}
+
+{{ end }}

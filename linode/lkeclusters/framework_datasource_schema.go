@@ -16,6 +16,7 @@ var filterConfig = frameworkfilter.Config{
 	"created": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 	"updated": {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 	"status":  {APIFilterable: false, TypeFunc: helper.FilterTypeString},
+	"tier":    {APIFilterable: false, TypeFunc: helper.FilterTypeString},
 }
 
 var frameworkDatasourceSchema = schema.Schema{
@@ -66,6 +67,10 @@ var frameworkDatasourceSchema = schema.Schema{
 					"status": schema.StringAttribute{
 						Computed:    true,
 						Description: "The status of the cluster.",
+					},
+					"tier": schema.StringAttribute{
+						Computed:    true,
+						Description: "The desired Kubernetes tier.",
 					},
 				},
 				Blocks: map[string]schema.Block{
