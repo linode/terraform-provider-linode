@@ -532,6 +532,13 @@ func replicateImage(
 		var replicaRegionWaitList []string
 
 		image, err = client.GetImage(ctx, imageID)
+		if err != nil {
+			diags.AddError(
+				fmt.Sprintf("Failed to get image %v", imageID),
+				err.Error(),
+			)
+			return nil, diags
+		}
 		for _, region := range image.Regions {
 			// remove pending deletion replicas from the wait list
 			if region.Status != linodego.ImageRegionStatusPendingDeletion {
