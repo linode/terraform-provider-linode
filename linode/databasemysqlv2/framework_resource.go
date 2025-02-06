@@ -372,6 +372,16 @@ func (r *Resource) Update(
 			return
 		}
 
+		// This is a workaround for events not being properly emitted for resizes.
+		// TODO: Remove once above issue is fixed
+		if err := client.WaitForDatabaseStatus(ctx, id, linodego.DatabaseEngineTypeMySQL, "active", timeoutSeconds); err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to poll for database to reach active status",
+				err.Error(),
+			)
+			return
+		}
+
 		resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
 		if resp.Diagnostics.HasError() {
 			return
