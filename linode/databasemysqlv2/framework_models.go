@@ -139,10 +139,7 @@ func (m *Model) Flatten(
 	m.Label = helper.KeepOrUpdateString(m.Label, db.Label, preserveKnown)
 	m.OldestRestoreTime = helper.KeepOrUpdateValue(m.OldestRestoreTime, timetypes.NewRFC3339TimePointerValue(db.OldestRestoreTime), preserveKnown)
 	m.Platform = helper.KeepOrUpdateString(m.Platform, string(db.Platform), preserveKnown)
-
-	// TODO
-	m.Port = helper.KeepOrUpdateInt64(m.Port, int64(0), preserveKnown)
-
+	m.Port = helper.KeepOrUpdateInt64(m.Port, int64(db.Port), preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, db.Region, preserveKnown)
 	m.RootPassword = helper.KeepOrUpdateString(m.RootPassword, creds.Password, preserveKnown)
 	m.RootUsername = helper.KeepOrUpdateString(m.RootUsername, creds.Username, preserveKnown)
