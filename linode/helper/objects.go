@@ -66,7 +66,7 @@ func S3ConnectionFromData(
 	accessKey, secretKey string,
 ) (*s3.Client, error) {
 	tflog.Debug(ctx, "Creating Object Storage client from resource data")
-	endpoint := d.Get("endpoint").(string)
+	endpoint := d.Get("s3_endpoint").(string)
 	if endpoint == "" {
 		var err error
 		if endpoint, err = ComputeS3Endpoint(ctx, d, meta); err != nil {
