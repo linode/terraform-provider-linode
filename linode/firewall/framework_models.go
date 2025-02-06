@@ -374,7 +374,7 @@ func FlattenFirewallRules(
 	}
 
 	for i := range knownRules {
-		if i > len(rules) {
+		if i >= len(rules) {
 			break
 		}
 

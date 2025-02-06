@@ -26,13 +26,17 @@ var (
 )
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"}, "core")
+	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster = region + "-1"
-	testRegion = region
+	testCluster, err = acceptance.GetEndpointCluster(*endpoint)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = acceptance.GetEndpointRegion(*endpoint)
 }
 
 func TestAccResourceObject_basic_cluster(t *testing.T) {

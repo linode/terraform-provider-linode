@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -137,9 +136,7 @@ func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client 
 		return
 	}
 
-	plan.Endpoint = types.StringValue(
-		strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label)),
-	)
+	plan.Endpoint = types.StringValue(bucket.S3Endpoint)
 }
 
 func (data *ResourceModel) GenerateObjectStorageObjectID(apply bool, preserveKnown bool) string {

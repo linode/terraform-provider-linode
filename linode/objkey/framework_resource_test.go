@@ -12,7 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -30,13 +33,17 @@ func init() {
 		F:    sweep,
 	})
 
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Object Storage"}, "core")
+	endpoint, err := acceptance.GetRandomObjectStorageEndpoint()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testCluster = region + "-1"
-	testRegion = region
+	testCluster, err = acceptance.GetEndpointCluster(*endpoint)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testRegion = acceptance.GetEndpointRegion(*endpoint)
 }
 
 func sweep(prefix string) error {
@@ -83,6 +90,41 @@ func TestAccResourceObjectKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "secret_key"),
 					resource.TestCheckResourceAttr(resName, "limited", "false"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccResourceObjectKey_all_regions(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_object_storage_key.foobar"
+	objectStorageKeyLabel := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkObjectKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.AllRegions(t, objectStorageKeyLabel),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("regions"),
+						knownvalue.SetSizeExact(21),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("access_key"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("secret_key"),
+						knownvalue.NotNull(),
+					),
+				},
 			},
 		},
 	})
