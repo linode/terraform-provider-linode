@@ -323,7 +323,7 @@ func TestAccResource_fork(t *testing.T) {
 				ResourceName:            resNameSource,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 			{
 				PreConfig: func() {
@@ -400,7 +400,7 @@ func TestAccResource_fork(t *testing.T) {
 				ResourceName:            resNameFork,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
