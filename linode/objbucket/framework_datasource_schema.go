@@ -32,6 +32,14 @@ var frameworkDatasourceSchema = schema.Schema{
 				),
 			},
 		},
+		"endpoint_type": schema.StringAttribute{
+			Description: "The type of the S3 endpoint of the bucket.",
+			Computed:    true,
+		},
+		"s3_endpoint": schema.StringAttribute{
+			Description: "The S3 endpoint URL of the bucket, based on the `endpoint_type` and `region`.",
+			Computed:    true,
+		},
 		"created": schema.StringAttribute{
 			Description: "When this bucket was created.",
 			Computed:    true,

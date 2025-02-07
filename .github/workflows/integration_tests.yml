@@ -1,7 +1,20 @@
 name: Integration Tests
 
 on:
-  workflow_dispatch: null
+  workflow_dispatch:
+    inputs:
+      parallel_value:
+        description: 'Number of parallel test executions for every user'
+        required: false
+      run_long_tests:
+        description: 'Choose whether to run long-duration tests that may take additional time. Set to "true" to enable long tests e.g. database related cases. Default is "false"'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
   push:
     branches:
       - main
@@ -37,24 +50,24 @@ jobs:
       - name: Install go-junit-report
         run: go install github.com/jstemmer/go-junit-report/v2@latest
 
-      # Note: test tags are not in alphabetical order, it was divided to optimize test execution time
+      # Note: test suites are not in alphabetical order, it was divided to optimize test execution time
       - name: Set Test Scope for each Account
         run: |
           case "${{ matrix.user }}" in 
             "USER_1")
-              echo "TEST_TAGS=acceptance,backup,domain,domainrecord,domains,domainzonefile,helper,instance,provider" >> $GITHUB_ENV
+              echo "TEST_SUITE=acceptance,backup,domain,domainrecord,domains,domainzonefile,helper,instance,provider" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_TAGS=databasemysqlv2,firewall,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets" >> $GITHUB_ENV
+              echo "TEST_SUITE=databasemysqlv2,firewall,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
-              echo "TEST_TAGS=databasepostgresqlv2,instanceconfig,instancedisk,instanceip,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
+              echo "TEST_SUITE=databasepostgresqlv2,instanceconfig,instancedisk,instanceip,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
-              echo "TEST_TAGS=lke,lkeclusters,lkenodepool,lkeversions,obj,objbucket,placementgroup,placementgroups,placementgorupassignment,token,user,users" >> $GITHUB_ENV
+              echo "TEST_SUITE=lke,lkeclusters,lkenodepool,lkeversions,obj,objbucket,placementgroup,placementgroups,placementgorupassignment,token,user,users" >> $GITHUB_ENV
               echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_4 }}" >> $GITHUB_ENV
               ;;
           esac
@@ -64,7 +77,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          make TEST_TAGS="${{ env.TEST_TAGS }}" int-test | go-junit-report -set-exit-code -iocopy -out $REPORT_FILENAME
+          make TEST_SUITE="${{ env.TEST_SUITE }}" PARALLEL="${{ github.event.inputs.parallel_value || '5' }}" test-int | go-junit-report -set-exit-code -iocopy -out $REPORT_FILENAME
         env:
           LINODE_TOKEN: ${{ env.LINODE_TOKEN }}
 
@@ -152,7 +165,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python dependencies
-        run: pip3 install requests wheel boto3
+        run: pip3 install requests wheel boto3==1.35.99
 
       - name: Download test report
         uses: actions/download-artifact@v4

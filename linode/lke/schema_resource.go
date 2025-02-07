@@ -63,6 +63,13 @@ var resourceSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "The status of the cluster.",
 	},
+	"tier": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The desired Kubernetes tier.",
+		ForceNew:    true,
+	},
 	"pool": {
 		Type: schema.TypeList,
 		Elem: &schema.Resource{

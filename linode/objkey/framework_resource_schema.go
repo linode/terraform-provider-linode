@@ -16,8 +16,9 @@ import (
 
 var RegionDetailType = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"id":          types.StringType,
-		"s3_endpoint": types.StringType,
+		"id":            types.StringType,
+		"s3_endpoint":   types.StringType,
+		"endpoint_type": types.StringType,
 	},
 }
 

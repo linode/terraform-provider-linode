@@ -111,6 +111,10 @@ For example, `us-mia-1` cluster can be translated into `us-mia` region. Exactly 
   * configured by [`obj_secret_key`](../index.md#configuration-reference) in the provider configuration;
   * or, generated implicitly at apply-time if [`obj_use_temp_keys`](../index.md#configuration-reference) at provider-level is set.
 
+* `endpoint_type` - (Optional) The type of `s3_endpoint` available to the user in this region. See [Endpoint types](https://techdocs.akamai.com/cloud-computing/docs/object-storage#endpoint-type) for more information.
+
+* `s3_endpoint` - (Optional) The user's s3 endpoint URL, based on the `endpoint_type` and `region`.
+
 * `cors_enabled` - (Optional) If true, the bucket will have CORS enabled for all origins.
 
 * `versioning` - (Optional) Whether to enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket. (Requires `access_key` and `secret_key`)
