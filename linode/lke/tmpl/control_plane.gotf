@@ -8,9 +8,9 @@ resource "linode_lke_cluster" "test" {
     tier = "standard"
 
     control_plane {
-        high_availability = {{.HighAvailability}}
+        high_availability = {{ .HighAvailability }}
         acl {
-            enabled = "{{.ACLEnabled}}"
+            enabled = {{ .ACLEnabled }}
             addresses {
                 ipv4 = ["{{.IPv4}}"]
                 ipv6 = ["{{.IPv6}}"]

@@ -206,23 +206,26 @@ func parseControlPlane(
 
 	if aclResp != nil {
 		acl := aclResp.ACL
-		var aclAddresses LKEControlPlaneACLAddresses
-
-		ipv4, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
-		if diags.HasError() {
-			return cp, diags
-		}
-		aclAddresses.IPv4 = ipv4
-
-		ipv6, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
-		if diags.HasError() {
-			return cp, diags
-		}
-		aclAddresses.IPv6 = ipv6
-
 		var cpACL LKEControlPlaneACL
+
+		if acl.Addresses != nil {
+			ipv4, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
+			if diags.HasError() {
+				return cp, diags
+			}
+
+			ipv6, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
+			if diags.HasError() {
+				return cp, diags
+			}
+
+			cpACL.Addresses = []LKEControlPlaneACLAddresses{{
+				IPv4: ipv4,
+				IPv6: ipv6,
+			}}
+		}
+
 		cpACL.Enabled = types.BoolValue(acl.Enabled)
-		cpACL.Addresses = []LKEControlPlaneACLAddresses{aclAddresses}
 		cp.ACL = []LKEControlPlaneACL{cpACL}
 	} else {
 		cp.ACL = []LKEControlPlaneACL{}
