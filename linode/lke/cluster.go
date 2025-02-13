@@ -493,21 +493,22 @@ func flattenNodePoolTaints(taints []linodego.LKENodePoolTaint) []map[string]stri
 }
 
 func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]interface{} {
-	flattened := make(map[string]interface{})
+	flattened := make(map[string]any)
 	if aclResp != nil {
 		acl := aclResp.ACL
-		flattenACL := func() []map[string]interface{} {
-			flattenedAddresses := make(map[string]interface{})
-			flattenedAddresses["ipv4"] = acl.Addresses.IPv4
-			flattenedAddresses["ipv6"] = acl.Addresses.IPv6
 
-			flattenedACL := make(map[string]interface{})
-			flattenedACL["enabled"] = acl.Enabled
-			flattenedACL["addresses"] = []map[string]interface{}{flattenedAddresses}
+		flattenedACL := make(map[string]any)
+		flattenedACL["enabled"] = acl.Enabled
 
-			return []map[string]interface{}{flattenedACL}
+		if acl.Addresses != nil {
+			flattenedAddresses := map[string]any{
+				"ipv4": acl.Addresses.IPv4,
+				"ipv6": acl.Addresses.IPv6,
+			}
+			flattenedACL["addresses"] = []map[string]any{flattenedAddresses}
 		}
-		flattened["acl"] = flattenACL()
+
+		flattened["acl"] = []map[string]any{flattenedACL}
 	}
 
 	flattened["high_availability"] = controlPlane.HighAvailability
