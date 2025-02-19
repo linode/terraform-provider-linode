@@ -14,21 +14,15 @@ For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/li
 The following example shows how one might use this resource to create an Object Storage Bucket:
 
 ```hcl
-data "linode_object_storage_cluster" "primary" {
-  id = "us-east-1"
-}
-
 resource "linode_object_storage_bucket" "foobar" {
-  cluster = data.linode_object_storage_cluster.primary.id
-  label = "mybucket"
+  region = "us-mia"
+  label  = "mybucket"
 }
-
 ```
 
 Creating an Object Storage Bucket with Lifecycle rules:
 
 ```hcl
-
 resource "linode_object_storage_key" "mykey" {
   label = "image-access"
 }
