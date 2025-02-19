@@ -339,14 +339,16 @@ func (r *Resource) Update(
 			return
 		}
 
-		updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to create EventPoller for database",
-				err.Error(),
-			)
-			return
-		}
+		// Update events are not currently working properly so we are switching to status polling for the time being
+		// TODO: Uncomment once above issue is fixed
+		//updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
+		//if err != nil {
+		//	resp.Diagnostics.AddError(
+		//		"Failed to create EventPoller for database",
+		//		err.Error(),
+		//	)
+		//	return
+		//}
 
 		tflog.Debug(ctx, "client.UpdateMySQLDatabase(...)", map[string]any{
 			"options": updateOpts,
@@ -364,13 +366,15 @@ func (r *Resource) Update(
 			return
 		}
 
-		if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to poll for database update event to finish",
-				err.Error(),
-			)
-			return
-		}
+		// Update events are not currently working properly so we are switching to status polling for the time being
+		// TODO: Uncomment once above issue is fixed
+		//if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+		//	resp.Diagnostics.AddError(
+		//		"Failed to poll for database update event to finish",
+		//		err.Error(),
+		//	)
+		//	return
+		//}
 
 		// This is a workaround for events not being properly emitted for resizes.
 		// TODO: Remove once above issue is fixed
