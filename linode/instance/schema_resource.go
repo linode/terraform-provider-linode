@@ -114,9 +114,6 @@ var InterfaceSchema = &schema.Resource{
 			Type:        schema.TypeString,
 			Description: "The type of interface.",
 			Required:    true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringInSlice([]string{"public", "vlan", "vpc"}, true),
-			),
 		},
 		"ipam_address": {
 			Type: schema.TypeString,
