@@ -69,7 +69,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.Errorf("failed to get credentials for the specified mysql database: %s", err)
 	}
 
-	d.Set("engine_id", helper.CreateDatabaseEngineSlug(db.Engine, db.Version))
+	d.Set("engine_id", helper.CreateLegacyDatabaseEngineSlug(db.Engine, db.Version))
 	d.Set("engine", db.Engine)
 	d.Set("label", db.Label)
 	d.Set("region", db.Region)

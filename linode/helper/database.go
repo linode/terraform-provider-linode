@@ -83,6 +83,10 @@ func FlattenDayOfWeek(day linodego.DatabaseDayOfWeek) string {
 	return dayOfWeekKeyToStr[day]
 }
 
+func CreateLegacyDatabaseEngineSlug(engine, version string) string {
+	return fmt.Sprintf("%s/%s", engine, version)
+}
+
 func CreateDatabaseEngineSlug(engine, version string) string {
 	return fmt.Sprintf("%s/%s", engine, strings.Split(version, ".")[0])
 }
