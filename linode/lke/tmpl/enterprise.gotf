@@ -1,0 +1,17 @@
+{{ define "lke_cluster_enterprise" }}
+
+resource "linode_lke_cluster" "test" {
+    label       = "{{.Label}}"
+    region      = "{{ .Region }}"
+    k8s_version = "{{.K8sVersion}}"
+    tags        = ["test"]
+    tier = "enterprise"
+
+    pool {
+        type  = "g6-standard-1"
+        count = 3
+        tags  = ["test"]
+    }
+}
+
+{{ end }}

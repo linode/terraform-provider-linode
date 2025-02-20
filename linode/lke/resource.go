@@ -24,6 +24,7 @@ const (
 	createLKETimeout = 35 * time.Minute
 	updateLKETimeout = 40 * time.Minute
 	deleteLKETimeout = 15 * time.Minute
+	TierEnterprise   = "enterprise"
 )
 
 func Resource() *schema.Resource {
@@ -109,9 +110,14 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
 
-	dashboard, err := client.GetLKEClusterDashboard(ctx, id)
-	if err != nil {
-		return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
+	// LKE Enterprise does not have a dashboard URL.
+	if cluster.Tier != TierEnterprise {
+		dashboard, err := client.GetLKEClusterDashboard(ctx, id)
+		if err != nil {
+			return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
+		}
+
+		d.Set("dashboard_url", dashboard.URL)
 	}
 
 	d.Set("label", cluster.Label)
@@ -121,7 +127,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("status", cluster.Status)
 	d.Set("tier", cluster.Tier)
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
-	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
@@ -212,7 +217,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	// NOTE: This routine has a short retry period because we want to raise
 	// and meaningful errors quickly.
 	diag.FromErr(retry.RetryContext(ctx, time.Second*25, func() *retry.RetryError {
-		tflog.Trace(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
+		tflog.Debug(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
 			"condition": "ClusterHasReadyNode",
 		})
 
@@ -220,6 +225,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			TimeoutSeconds: 15 * 60,
 		}, k8scondition.ClusterHasReadyNode)
 		if err != nil {
+			tflog.Debug(ctx, err.Error())
 			return retry.RetryableError(err)
 		}
 
