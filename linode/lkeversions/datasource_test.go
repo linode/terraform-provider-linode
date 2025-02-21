@@ -10,7 +10,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions/tmpl"
 )
 
-func TestAccDataSourceLinodeLkeVersions_basic(t *testing.T) {
+func TestAccDataSourceLinodeLkeVersions_NoTier(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "data.linode_lke_versions.foobar"
@@ -20,9 +20,30 @@ func TestAccDataSourceLinodeLkeVersions_basic(t *testing.T) {
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t),
+				Config: tmpl.DataNoTier(t),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "versions.0.id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceLinodeLkeVersions_Tier(t *testing.T) {
+	t.Parallel()
+
+	resourceName := "data.linode_lke_versions.foobar"
+	tier := "enterprise"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataTier(t, tier),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "versions.0.id"),
+					resource.TestCheckResourceAttr(resourceName, "versions.0.tier", tier),
 				),
 			},
 		},
