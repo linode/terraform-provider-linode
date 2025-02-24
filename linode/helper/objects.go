@@ -80,9 +80,9 @@ func S3ConnectionFromData(
 func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interface{}) (string, error) {
 	tflog.Debug(ctx, "Getting Object Storage bucket from resource data")
 	regionOrCluster := GetRegionOrCluster(d)
-	bucket := d.Get("bucket").(string)
+	bucketLabel := d.Get("label").(string)
 
-	b, err := meta.(*ProviderMeta).Client.GetObjectStorageBucket(ctx, regionOrCluster, bucket)
+	b, err := meta.(*ProviderMeta).Client.GetObjectStorageBucket(ctx, regionOrCluster, bucketLabel)
 	if err != nil {
 		return "", fmt.Errorf("failed to find the specified Linode ObjectStorageBucket: %s", err)
 	}
