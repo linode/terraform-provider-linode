@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -612,4 +613,27 @@ func expandNodePoolTaints(poolTaints []map[string]any) []linodego.LKENodePoolTai
 		}
 	}
 	return taints
+}
+
+func waitForLKEKubeConfig(ctx context.Context, client linodego.Client, intervalMS int, clusterID int) error {
+	ticker := time.NewTicker(time.Duration(intervalMS) * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			_, err := client.GetLKEClusterKubeconfig(ctx, clusterID)
+			if err != nil {
+				if strings.Contains(err.Error(), "Cluster kubeconfig is not yet available") {
+					continue
+				} else {
+					return fmt.Errorf("failed to get Kubeconfig for LKE cluster %d: %w", clusterID, err)
+				}
+			} else {
+				return nil
+			}
+		case <-ctx.Done():
+			return fmt.Errorf("Error waiting for Cluster %d kubeconfig: %w", clusterID, ctx.Err())
+		}
+	}
 }

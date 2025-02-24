@@ -209,6 +209,17 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
+	// Currently the enterprise cluster kube config takes long time to generate.
+	// Wait for it to be ready before start waiting for nodes and allow a longer timeout for retrying
+	// to avoid context exceeded or canceled before getting a meaningful result.
+	var retryContextTimeout time.Duration
+	if cluster.Tier == TierEnterprise {
+		retryContextTimeout = time.Second * 120
+		waitForLKEKubeConfig(ctx, client, meta.(*helper.ProviderMeta).Config.EventPollMilliseconds, cluster.ID)
+	} else {
+		retryContextTimeout = time.Second * 25
+	}
+
 	ctx = tflog.SetField(ctx, "cluster_id", cluster.ID)
 	tflog.Debug(ctx, "Waiting for a single LKE cluster node to be ready")
 
@@ -216,7 +227,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	// a cluster is created. We should retry accordingly.
 	// NOTE: This routine has a short retry period because we want to raise
 	// and meaningful errors quickly.
-	diag.FromErr(retry.RetryContext(ctx, time.Second*25, func() *retry.RetryError {
+	diag.FromErr(retry.RetryContext(ctx, retryContextTimeout, func() *retry.RetryError {
 		tflog.Debug(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
 			"condition": "ClusterHasReadyNode",
 		})

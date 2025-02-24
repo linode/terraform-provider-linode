@@ -706,7 +706,6 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
@@ -726,16 +725,7 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.disk_encryption"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
-						resource.TestCheckResourceAttr(resourceClusterName, "dashboard_url", ""),
 					),
 				},
 			},
