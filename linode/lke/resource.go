@@ -25,6 +25,7 @@ const (
 	updateLKETimeout = 40 * time.Minute
 	deleteLKETimeout = 15 * time.Minute
 	TierEnterprise   = "enterprise"
+	TierStandard     = "standard"
 )
 
 func Resource() *schema.Resource {
@@ -110,8 +111,8 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
 
-	// LKE Enterprise does not have a dashboard URL.
-	if cluster.Tier != TierEnterprise {
+	// Only standard LKE has a dashboard URL
+	if cluster.Tier == TierStandard {
 		dashboard, err := client.GetLKEClusterDashboard(ctx, id)
 		if err != nil {
 			return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)

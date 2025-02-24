@@ -71,8 +71,8 @@ func (r *DataSource) Read(
 
 	var dashboard *linodego.LKEClusterDashboard
 
-	// LKE Enterprise does not have a dashboard URL.
-	if cluster.Tier != TierEnterprise {
+	// Only standard LKE has a dashboard URL
+	if cluster.Tier == TierStandard {
 		dashboard, err = client.GetLKEClusterDashboard(ctx, clusterId)
 		if err != nil {
 			resp.Diagnostics.AddError(
