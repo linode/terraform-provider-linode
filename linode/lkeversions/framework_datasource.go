@@ -40,7 +40,7 @@ func (d *DataSource) Read(
 	}
 
 	// Check if Tier is populated
-	if data.Tier.ValueString() == "" {
+	if data.Tier.IsNull() {
 		// If Tier is not populated, use ListLKEVersions
 		tflog.Trace(ctx, "client.ListLKEVersions(...)")
 		versions, err := client.ListLKEVersions(ctx, nil)

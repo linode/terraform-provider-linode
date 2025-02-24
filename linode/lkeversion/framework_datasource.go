@@ -38,7 +38,7 @@ func (d DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *
 	}
 
 	// Check if Tier is populated
-	if data.Tier.ValueString() == "" {
+	if data.Tier.IsNull() {
 		// If Tier is not populated, use GetLKEVersion
 		versionInfo, err := client.GetLKEVersion(ctx, data.ID.ValueString())
 		if err != nil {

@@ -1,7 +1,9 @@
 package lkeversions
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion"
 )
 
@@ -17,8 +19,10 @@ var frameworkDatasourceSchema = schema.Schema{
 		},
 		"tier": schema.StringAttribute{
 			Description: "The tier of the LKE versions, either standard or enterprise.",
-			Computed:    true,
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.OneOf("standard", "enterprise"),
+			},
 		},
 	},
 	Blocks: map[string]schema.Block{

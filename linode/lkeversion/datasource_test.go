@@ -37,7 +37,8 @@ func TestAccDataSourceLinodeLkeVersion_NoTier(t *testing.T) {
 				Config: tmpl.DataNoTier(t, version.ID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", version.ID),
-					resource.TestCheckNoResourceAttr(resourceName, "tier")),
+					resource.TestCheckNoResourceAttr(resourceName, "tier"),
+				),
 			},
 		},
 	})
@@ -71,7 +72,8 @@ func TestAccDataSourceLinodeLkeVersion_Tier(t *testing.T) {
 				Config: tmpl.DataTier(t, version.ID, tier),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", version.ID),
-					resource.TestCheckResourceAttr(resourceName, "tier", "enterprise")),
+					resource.TestCheckResourceAttr(resourceName, "tier", tier),
+				),
 			},
 		},
 	})

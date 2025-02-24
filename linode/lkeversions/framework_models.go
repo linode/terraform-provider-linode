@@ -1,6 +1,8 @@
 package lkeversions
 
 import (
+	"encoding/json"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
@@ -30,6 +32,9 @@ func (model *DataSourceModel) parseLKEVersions(lkeVersions []linodego.LKEVersion
 
 	model.Versions = result
 
+	id, _ := json.Marshal(lkeVersions)
+	model.ID = types.StringValue(string(id))
+
 	return nil
 }
 
@@ -49,6 +54,9 @@ func (model *DataSourceModel) parseLKETierVersions(lkeTierVersions []linodego.LK
 	}
 
 	model.Versions = result
+
+	id, _ := json.Marshal(lkeTierVersions)
+	model.ID = types.StringValue(string(id))
 
 	return nil
 }
