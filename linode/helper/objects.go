@@ -95,12 +95,6 @@ func ComputeS3EndpointFromBucket(ctx context.Context, bucket linodego.ObjectStor
 	return strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label))
 }
 
-func BuildObjectStorageObjectID(d *schema.ResourceData) string {
-	bucket := d.Get("bucket").(string)
-	key := d.Get("key").(string)
-	return fmt.Sprintf("%s/%s", bucket, key)
-}
-
 func IsObjNotFoundErr(err error) bool {
 	tflog.Debug(
 		context.Background(),
@@ -199,11 +193,11 @@ func DeleteAllObjects(
 }
 
 // deleteAllObjectVersions deletes all versions of a given object
-func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, key string, bypassRetention, ignoreNotFound bool) error {
+func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, prefix string, bypassRetention, ignoreNotFound bool) error {
 	tflog.Debug(ctx, fmt.Sprintf("Deleting all versions and deletion marker in bucket '%s'", bucket))
 	paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
 		Bucket: aws.String(bucket),
-		Prefix: aws.String(key),
+		Prefix: aws.String(prefix),
 	})
 
 	var objectsToDelete []s3types.ObjectIdentifier
