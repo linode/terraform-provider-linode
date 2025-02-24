@@ -215,7 +215,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	var retryContextTimeout time.Duration
 	if cluster.Tier == TierEnterprise {
 		retryContextTimeout = time.Second * 120
-		waitForLKEKubeConfig(ctx, client, meta.(*helper.ProviderMeta).Config.EventPollMilliseconds, cluster.ID)
+		err = waitForLKEKubeConfig(ctx, client, meta.(*helper.ProviderMeta).Config.EventPollMilliseconds, cluster.ID)
+		if err != nil {
+			return diag.Errorf("failed to get LKE cluster kubeconfig: %s", err)
+		}
 	} else {
 		retryContextTimeout = time.Second * 25
 	}
