@@ -696,3 +696,39 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 		})
 	})
 }
+
+func TestAccResourceLKECluster_enterprise(t *testing.T) {
+	t.Parallel()
+
+	k8sVersionEnterprise := "v1.31.1+lke1"
+
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+					),
+				},
+			},
+		})
+	})
+}
