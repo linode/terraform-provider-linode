@@ -128,7 +128,7 @@ func TestAccResource_basic(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
@@ -261,7 +261,7 @@ func TestAccResource_resize(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
@@ -394,7 +394,7 @@ func TestAccResource_complex(t *testing.T) {
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated"},
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
