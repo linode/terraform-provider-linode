@@ -1,6 +1,8 @@
 package databasemysqlv2
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
 var (
@@ -40,7 +43,6 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-
 		"engine_id": schema.StringAttribute{
 			Required:    true,
 			Description: "The unique ID of the database engine and version to use. (e.g. mysql/8)",
@@ -69,7 +71,6 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-
 		"allow_list": schema.SetAttribute{
 			ElementType: types.StringType,
 			Optional:    true,
@@ -104,7 +105,20 @@ var frameworkResourceSchema = schema.Schema{
 			CustomType:  timetypes.RFC3339Type{},
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
-				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						sr planmodifier.StringRequest,
+						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						rrifr.RequiresReplace = !helper.CompareRFC3339TimeStrings(
+							sr.PlanValue.ValueString(),
+							sr.StateValue.ValueString(),
+						)
+					},
+					"Triggers replacement when `fork_restore_time` changes",
+					"Changing `fork_restore_time` forces a new resource.",
+				),
 			},
 		},
 		"fork_source": schema.Int64Attribute{
@@ -122,7 +136,6 @@ var frameworkResourceSchema = schema.Schema{
 			Optional:       true,
 			PlanModifiers:  []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
 		},
-
 		"created": schema.StringAttribute{
 			Description: "When this Managed Database was created.",
 			Computed:    true,

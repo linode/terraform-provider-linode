@@ -754,9 +754,21 @@ func changeInstanceType(
 	diskResize bool,
 	d *schema.ResourceData,
 ) (*linodego.Instance, error) {
-	instance, err := ensureInstanceOffline(ctx, client, instanceID, getDeadlineSeconds(ctx, d))
-	if err != nil {
-		return nil, err
+	var err error
+	var instance *linodego.Instance
+
+	if migrationType == linodego.ColdMigration {
+		// Cold migration: Ensure instance is offline
+		instance, err = ensureInstanceOffline(ctx, client, instanceID, getDeadlineSeconds(ctx, d))
+		if err != nil {
+			return nil, fmt.Errorf("failed to shut down instance for cold migration: %w", err)
+		}
+	} else {
+		// Warm migration: Get the current instance state
+		instance, err = client.GetInstance(ctx, instanceID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch instance details for warm migration: %w", err)
+		}
 	}
 
 	var primaryDisk *linodego.InstanceDisk

@@ -94,6 +94,11 @@ func AutoscalerNoCount(t testing.TB, name, version, region string) string {
 		})
 }
 
+func Enterprise(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
 func DataBasic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})

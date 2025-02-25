@@ -45,7 +45,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
 
-* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster.
+* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster. LKE Enterprise does not have a dashboard URL.
 
 * `pools` - Node pools associated with this cluster.
 
@@ -93,7 +93,7 @@ In addition to all arguments above, the following attributes are exported:
 
   * `high_availability` - Whether High Availability is enabled for the cluster Control Plane.
   
-  * `acl` - The ACL configuration for an LKE cluster's control plane. **NOTE: Control Plane ACLs may not currently be available to all users.**
+  * `acl` - The ACL configuration for an LKE cluster's control plane.
 
     * `enabled` - The default policy. A value of true means a default policy of DENY. A value of false means a default policy of ALLOW.
 

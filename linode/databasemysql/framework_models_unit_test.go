@@ -53,8 +53,11 @@ func TestParseMySQLDatabase(t *testing.T) {
 	assert.Equal(t, types.StringValue("lin-123-456-mysql-primary-private.servers.linodedb.net"), data.HostSecondary)
 	assert.Equal(t, types.StringValue("us-east"), data.Region)
 	assert.Equal(t, types.StringValue("g6-dedicated-2"), data.Type)
+
 	assert.Equal(t, types.StringValue("mysql"), data.Engine)
 	assert.Equal(t, types.StringValue("8.0.26"), data.Version)
+	assert.Equal(t, types.StringValue("mysql/8.0.26"), data.EngineID)
+
 	assert.Equal(t, types.Int64Value(3), data.ClusterSize)
 	assert.Equal(t, types.StringValue("semi_synch"), data.ReplicationType)
 	assert.Equal(t, types.BoolValue(true), data.SSLConnection)

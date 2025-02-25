@@ -179,7 +179,11 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.Pools = lkePools
 
-	data.Kubeconfig = types.StringValue(kubeconfig.KubeConfig)
+	if kubeconfig != nil {
+		data.Kubeconfig = types.StringValue(kubeconfig.KubeConfig)
+	} else {
+		data.Kubeconfig = types.StringNull()
+	}
 
 	var urls []string
 	for _, e := range endpoints {
@@ -192,7 +196,11 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.APIEndpoints = apiEndpoints
 
-	data.DashboardURL = types.StringValue(dashboard.URL)
+	if dashboard != nil {
+		data.DashboardURL = types.StringValue(dashboard.URL)
+	} else {
+		data.DashboardURL = types.StringNull()
+	}
 
 	return nil
 }
@@ -206,23 +214,26 @@ func parseControlPlane(
 
 	if aclResp != nil {
 		acl := aclResp.ACL
-		var aclAddresses LKEControlPlaneACLAddresses
-
-		ipv4, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
-		if diags.HasError() {
-			return cp, diags
-		}
-		aclAddresses.IPv4 = ipv4
-
-		ipv6, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
-		if diags.HasError() {
-			return cp, diags
-		}
-		aclAddresses.IPv6 = ipv6
-
 		var cpACL LKEControlPlaneACL
+
+		if acl.Addresses != nil {
+			ipv4, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv4)
+			if diags.HasError() {
+				return cp, diags
+			}
+
+			ipv6, diags := types.SetValueFrom(ctx, types.StringType, acl.Addresses.IPv6)
+			if diags.HasError() {
+				return cp, diags
+			}
+
+			cpACL.Addresses = []LKEControlPlaneACLAddresses{{
+				IPv4: ipv4,
+				IPv6: ipv6,
+			}}
+		}
+
 		cpACL.Enabled = types.BoolValue(acl.Enabled)
-		cpACL.Addresses = []LKEControlPlaneACLAddresses{aclAddresses}
 		cp.ACL = []LKEControlPlaneACL{cpACL}
 	} else {
 		cp.ACL = []LKEControlPlaneACL{}
