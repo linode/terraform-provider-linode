@@ -179,7 +179,11 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.Pools = lkePools
 
-	data.Kubeconfig = types.StringValue(kubeconfig.KubeConfig)
+	if kubeconfig != nil {
+		data.Kubeconfig = types.StringValue(kubeconfig.KubeConfig)
+	} else {
+		data.Kubeconfig = types.StringNull()
+	}
 
 	var urls []string
 	for _, e := range endpoints {
@@ -192,7 +196,11 @@ func (data *LKEDataModel) parseLKEAttributes(
 	}
 	data.APIEndpoints = apiEndpoints
 
-	data.DashboardURL = types.StringValue(dashboard.URL)
+	if dashboard != nil {
+		data.DashboardURL = types.StringValue(dashboard.URL)
+	} else {
+		data.DashboardURL = types.StringNull()
+	}
 
 	return nil
 }
