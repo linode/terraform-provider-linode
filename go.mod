@@ -3,32 +3,32 @@ module github.com/linode/terraform-provider-linode/v2
 go 1.23.0
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.36.1
+	github.com/aws/aws-sdk-go-v2 v1.36.2
 	github.com/aws/aws-sdk-go-v2/config v1.29.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.59
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.4
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.76.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.77.1
 	github.com/aws/smithy-go v1.22.2
 	github.com/go-resty/resty/v2 v2.16.3
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-version v1.7.0
-	github.com/hashicorp/terraform-plugin-framework v1.13.0
+	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-framework-nettypes v0.2.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.5.0
 	github.com/hashicorp/terraform-plugin-framework-timetypes v0.5.0
-	github.com/hashicorp/terraform-plugin-framework-validators v0.16.0
+	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.26.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
 	github.com/linode/linodego v1.47.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.33.0
-	golang.org/x/net v0.34.0
+	golang.org/x/crypto v0.34.0
+	golang.org/x/net v0.35.0
 	golang.org/x/sync v0.11.0
 )
 
@@ -36,16 +36,16 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.8 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.10 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.28 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.32 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.32 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.33 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.33 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.32 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.5.6 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.13 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.13 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.33 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.6.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.14 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.14 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.15 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.14 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.14 // indirect

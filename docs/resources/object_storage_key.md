@@ -42,13 +42,13 @@ resource "linode_object_storage_key" "foo" {
 
   bucket_access {
     bucket_name = "foobar1"
-    cluster = "us-east-1"
+    region      = "us-mia"
     permissions = "read_write"
   }
 
   bucket_access {
     bucket_name = "foobar2"
-    cluster = "us-east-1"
+    region      = "gb-lon"
     permissions = "read_write"
   }
 }

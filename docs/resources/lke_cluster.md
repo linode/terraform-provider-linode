@@ -61,8 +61,6 @@ resource "linode_lke_cluster" "test" {
     control_plane {
         high_availability = true
       
-        # NOTE: Control Plane ACLs may not currently be available to
-        # all users.
         acl {
             enabled = true
             addresses {
@@ -127,7 +125,7 @@ The following arguments are supported in the `control_plane` specification block
 
 * `high_availability` - (Optional) Defines whether High Availability is enabled for the cluster Control Plane. This is an **irreversible** change.
 
-* [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane. **NOTE: Control Plane ACLs may not currently be available to  all users.**
+* [`acl`](#acl) - (Optional) Defines the ACL configuration for an LKE cluster's control plane.
 
 ### acl
 
@@ -157,7 +155,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `kubeconfig` - The base64 encoded kubeconfig for the Kubernetes cluster.
 
-* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster.
+* `dashboard_url` - The Kubernetes Dashboard access URL for this cluster. LKE Enterprise does not have a dashboard URL.
 
 * `pool` - Additional nested attributes:
 

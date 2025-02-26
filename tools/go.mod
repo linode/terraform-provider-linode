@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.2
 
 require (
-	github.com/bflad/tfproviderlint v0.30.0
+	github.com/bflad/tfproviderlint v0.31.0
 	github.com/golangci/golangci-lint v1.64.4
 	mvdan.cc/gofumpt v0.7.0
 )
