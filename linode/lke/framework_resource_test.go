@@ -527,14 +527,14 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, true),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "false"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "true"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Updated),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6Updated),
 					),
