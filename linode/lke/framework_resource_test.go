@@ -696,3 +696,25 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 		})
 	})
 }
+
+func TestAccResourceLKECluster_apl(t *testing.T) {
+	t.Parallel()
+
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.APLEnabled(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "apl_enabled", "true"),
+					),
+				},
+			},
+		})
+	})
+}

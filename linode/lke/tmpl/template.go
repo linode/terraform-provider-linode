@@ -127,3 +127,8 @@ func DataTaintsLabels(t testing.TB, name, version, region string, taints []Taint
 			Taints:     taints,
 		})
 }
+
+func APLEnabled(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_apl_enabled", TemplateData{Label: name, K8sVersion: version, Region: region})
+}

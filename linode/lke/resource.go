@@ -124,6 +124,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 
+	if cluster.APLEnabled != nil {
+		d.Set("apl_enabled", cluster.APLEnabled)
+	}
+
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {
 		return diag.Errorf("failed to match api pools with schema: %s", err)
@@ -153,6 +157,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if tier, ok := d.GetOk("tier"); ok {
 		createOpts.Tier = tier.(string)
+	}
+
+	if aplEnabled, ok := d.GetOk("apl_enabled"); ok {
+		createOpts.APLEnabled = aplEnabled.(bool)
 	}
 
 	if len(controlPlane) > 0 {
