@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -493,21 +494,22 @@ func flattenNodePoolTaints(taints []linodego.LKENodePoolTaint) []map[string]stri
 }
 
 func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]interface{} {
-	flattened := make(map[string]interface{})
+	flattened := make(map[string]any)
 	if aclResp != nil {
 		acl := aclResp.ACL
-		flattenACL := func() []map[string]interface{} {
-			flattenedAddresses := make(map[string]interface{})
-			flattenedAddresses["ipv4"] = acl.Addresses.IPv4
-			flattenedAddresses["ipv6"] = acl.Addresses.IPv6
 
-			flattenedACL := make(map[string]interface{})
-			flattenedACL["enabled"] = acl.Enabled
-			flattenedACL["addresses"] = []map[string]interface{}{flattenedAddresses}
+		flattenedACL := make(map[string]any)
+		flattenedACL["enabled"] = acl.Enabled
 
-			return []map[string]interface{}{flattenedACL}
+		if acl.Addresses != nil {
+			flattenedAddresses := map[string]any{
+				"ipv4": acl.Addresses.IPv4,
+				"ipv6": acl.Addresses.IPv6,
+			}
+			flattenedACL["addresses"] = []map[string]any{flattenedAddresses}
 		}
-		flattened["acl"] = flattenACL()
+
+		flattened["acl"] = []map[string]any{flattenedACL}
 	}
 
 	flattened["high_availability"] = controlPlane.HighAvailability
@@ -611,4 +613,27 @@ func expandNodePoolTaints(poolTaints []map[string]any) []linodego.LKENodePoolTai
 		}
 	}
 	return taints
+}
+
+func waitForLKEKubeConfig(ctx context.Context, client linodego.Client, intervalMS int, clusterID int) error {
+	ticker := time.NewTicker(time.Duration(intervalMS) * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			_, err := client.GetLKEClusterKubeconfig(ctx, clusterID)
+			if err != nil {
+				if strings.Contains(err.Error(), "Cluster kubeconfig is not yet available") {
+					continue
+				} else {
+					return fmt.Errorf("failed to get Kubeconfig for LKE cluster %d: %w", clusterID, err)
+				}
+			} else {
+				return nil
+			}
+		case <-ctx.Done():
+			return fmt.Errorf("Error waiting for Cluster %d kubeconfig: %w", clusterID, ctx.Err())
+		}
+	}
 }

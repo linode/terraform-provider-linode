@@ -24,6 +24,8 @@ const (
 	createLKETimeout = 35 * time.Minute
 	updateLKETimeout = 40 * time.Minute
 	deleteLKETimeout = 15 * time.Minute
+	TierEnterprise   = "enterprise"
+	TierStandard     = "standard"
 )
 
 func Resource() *schema.Resource {
@@ -109,9 +111,14 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	flattenedControlPlane := flattenLKEClusterControlPlane(cluster.ControlPlane, acl)
 
-	dashboard, err := client.GetLKEClusterDashboard(ctx, id)
-	if err != nil {
-		return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
+	// Only standard LKE has a dashboard URL
+	if cluster.Tier == TierStandard {
+		dashboard, err := client.GetLKEClusterDashboard(ctx, id)
+		if err != nil {
+			return diag.Errorf("failed to get dashboard URL for LKE cluster %d: %s", id, err)
+		}
+
+		d.Set("dashboard_url", dashboard.URL)
 	}
 
 	d.Set("label", cluster.Label)
@@ -121,7 +128,6 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("status", cluster.Status)
 	d.Set("tier", cluster.Tier)
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
-	d.Set("dashboard_url", dashboard.URL)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
 
 	if cluster.APLEnabled != nil {
@@ -212,6 +218,20 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	d.SetId(strconv.Itoa(cluster.ID))
 
+	// Currently the enterprise cluster kube config takes long time to generate.
+	// Wait for it to be ready before start waiting for nodes and allow a longer timeout for retrying
+	// to avoid context exceeded or canceled before getting a meaningful result.
+	var retryContextTimeout time.Duration
+	if cluster.Tier == TierEnterprise {
+		retryContextTimeout = time.Second * 120
+		err = waitForLKEKubeConfig(ctx, client, meta.(*helper.ProviderMeta).Config.EventPollMilliseconds, cluster.ID)
+		if err != nil {
+			return diag.Errorf("failed to get LKE cluster kubeconfig: %s", err)
+		}
+	} else {
+		retryContextTimeout = time.Second * 25
+	}
+
 	ctx = tflog.SetField(ctx, "cluster_id", cluster.ID)
 	tflog.Debug(ctx, "Waiting for a single LKE cluster node to be ready")
 
@@ -219,8 +239,8 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	// a cluster is created. We should retry accordingly.
 	// NOTE: This routine has a short retry period because we want to raise
 	// and meaningful errors quickly.
-	diag.FromErr(retry.RetryContext(ctx, time.Second*25, func() *retry.RetryError {
-		tflog.Trace(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
+	diag.FromErr(retry.RetryContext(ctx, retryContextTimeout, func() *retry.RetryError {
+		tflog.Debug(ctx, "client.WaitForLKEClusterCondition(...)", map[string]any{
 			"condition": "ClusterHasReadyNode",
 		})
 
@@ -228,6 +248,7 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 			TimeoutSeconds: 15 * 60,
 		}, k8scondition.ClusterHasReadyNode)
 		if err != nil {
+			tflog.Debug(ctx, err.Error())
 			return retry.RetryableError(err)
 		}
 

@@ -51,6 +51,10 @@ func TestParsePostgresDatabase(t *testing.T) {
 	assert.Equal(t, types.StringValue("active"), data.Status)
 	assert.Equal(t, types.StringValue("example-db"), data.Label)
 
+	assert.Equal(t, types.StringValue("postgresql"), data.Engine)
+	assert.Equal(t, types.StringValue("13.2"), data.Version)
+	assert.Equal(t, types.StringValue("postgresql/13.2"), data.EngineID)
+
 	assert.Contains(t, data.AllowList.String(), "203.0.113.1/32")
 	assert.Contains(t, data.AllowList.String(), "192.0.1.0/24")
 

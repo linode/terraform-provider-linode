@@ -125,9 +125,143 @@ func TestAccResource_basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+			},
+		},
+	})
+}
+
+func TestAccResource_resize(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_database_mysql_v2.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Complex(
+					t,
+					tmpl.TemplateData{
+						Label:       label,
+						Region:      testRegion,
+						EngineID:    testEngine,
+						Type:        "g6-nanode-1",
+						AllowedIP:   "10.0.0.3/32",
+						ClusterSize: 1,
+						Updates: tmpl.TemplateDataUpdates{
+							HourOfDay: 3,
+							DayOfWeek: 2,
+							Duration:  4,
+							Frequency: "weekly",
+						},
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
+					resource.TestCheckResourceAttr(resName, "engine", "mysql"),
+					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
+					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
+					resource.TestCheckNoResourceAttr(resName, "fork_source"),
+					resource.TestCheckResourceAttrSet(resName, "host_primary"),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttrSet(resName, "members.%"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "platform", "rdbms-default"),
+					resource.TestCheckResourceAttrSet(resName, "port"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
+					resource.TestCheckResourceAttr(resName, "status", "active"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttrSet(resName, "version"),
+
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "10.0.0.3/32"),
+
+					resource.TestCheckResourceAttr(resName, "updates.day_of_week", "2"),
+					resource.TestCheckResourceAttr(resName, "updates.duration", "4"),
+					resource.TestCheckResourceAttr(resName, "updates.frequency", "weekly"),
+					resource.TestCheckResourceAttr(resName, "updates.hour_of_day", "3"),
+
+					resource.TestCheckResourceAttr(resName, "pending_updates.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.Complex(
+					t,
+					tmpl.TemplateData{
+						Label:       label,
+						Region:      testRegion,
+						EngineID:    testEngine,
+						Type:        "g6-standard-1",
+						AllowedIP:   "10.0.0.3/32",
+						ClusterSize: 1,
+						Updates: tmpl.TemplateDataUpdates{
+							HourOfDay: 3,
+							DayOfWeek: 2,
+							Duration:  4,
+							Frequency: "weekly",
+						},
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
+					resource.TestCheckResourceAttr(resName, "engine", "mysql"),
+					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
+					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
+					resource.TestCheckNoResourceAttr(resName, "fork_source"),
+					resource.TestCheckResourceAttrSet(resName, "host_primary"),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttrSet(resName, "members.%"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "platform", "rdbms-default"),
+					resource.TestCheckResourceAttrSet(resName, "port"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
+					resource.TestCheckResourceAttr(resName, "status", "active"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttrSet(resName, "version"),
+
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "10.0.0.3/32"),
+
+					resource.TestCheckResourceAttr(resName, "updates.day_of_week", "2"),
+					resource.TestCheckResourceAttr(resName, "updates.duration", "4"),
+					resource.TestCheckResourceAttr(resName, "updates.frequency", "weekly"),
+					resource.TestCheckResourceAttr(resName, "updates.hour_of_day", "3"),
+
+					resource.TestCheckResourceAttr(resName, "pending_updates.#", "0"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
@@ -207,7 +341,7 @@ func TestAccResource_complex(t *testing.T) {
 						Label:       label,
 						Region:      testRegion,
 						EngineID:    testEngine,
-						Type:        "g6-standard-1",
+						Type:        "g6-nanode-1",
 						AllowedIP:   "10.0.0.4/32",
 						ClusterSize: 3,
 						Updates: tmpl.TemplateDataUpdates{
@@ -241,7 +375,7 @@ func TestAccResource_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 					resource.TestCheckResourceAttr(resName, "status", "active"),
-					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "version"),
 
@@ -257,9 +391,10 @@ func TestAccResource_complex(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
