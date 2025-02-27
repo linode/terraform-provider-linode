@@ -9,8 +9,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.77.1
 	github.com/aws/smithy-go v1.22.2
-	github.com/go-resty/resty/v2 v2.16.5
-	github.com/google/go-cmp v0.6.0
+	github.com/go-resty/resty/v2 v2.16.3
+	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-version v1.7.0
@@ -27,7 +27,7 @@ require (
 	github.com/linode/linodego v1.47.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.34.0
 	golang.org/x/net v0.35.0
 	golang.org/x/sync v0.11.0
 )
