@@ -7,6 +7,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion/tmpl"
 )
@@ -35,10 +38,18 @@ func TestAccDataSourceLinodeLkeVersion_NoTier(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataNoTier(t, version.ID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", version.ID),
-					resource.TestCheckNoResourceAttr(resourceName, "tier"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("id"),
+						knownvalue.StringExact(version.ID),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("tier"),
+						knownvalue.Null(),
+					),
+				},
 			},
 		},
 	})
@@ -70,10 +81,18 @@ func TestAccDataSourceLinodeLkeVersion_Tier(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataTier(t, version.ID, tier),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", version.ID),
-					resource.TestCheckResourceAttr(resourceName, "tier", tier),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("id"),
+						knownvalue.StringExact(version.ID),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("tier"),
+						knownvalue.StringExact(tier),
+					),
+				},
 			},
 		},
 	})

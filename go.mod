@@ -24,15 +24,13 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
-	github.com/linode/linodego v1.47.0
+	github.com/linode/linodego v1.48.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.34.0
 	golang.org/x/net v0.35.0
 	golang.org/x/sync v0.11.0
 )
-
-replace github.com/linode/linodego v1.47.0 => github.com/linode/linodego v0.0.0-20250220161103-aca4bdd4d205
 
 require (
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
