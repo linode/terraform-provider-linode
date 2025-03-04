@@ -48,7 +48,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -183,7 +183,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -239,7 +239,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	client := r.Meta.Client
 	var plan, state ResourceModel
@@ -409,7 +409,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	client := r.Meta.Client
 	var data ResourceModel
