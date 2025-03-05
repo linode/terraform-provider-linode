@@ -196,6 +196,7 @@ jobs:
         run: |
           filename=$(ls | grep -E '^[0-9]{12}_terraform_merged_report.xml$') 
           test_output=$(python3 e2e_scripts/tod_scripts/generate_test_summary.py "${filename}")
+          echo "$test_output"
           {
             echo 'summary<<EOF'
             echo "$test_output"
@@ -208,6 +209,7 @@ jobs:
     if: always() # && github.repository == 'linode/terraform-provider-linode' # Run even if integration tests fail and only on main repository
     steps:
       - name: Notify Slack
+        id: main_message
         uses: slackapi/slack-github-action@v2.0.0
         with:
           method: chat.postMessage
@@ -218,7 +220,7 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: ":rocket: *${{ github.workflow }} Completed in: ${{ github.repository }}* :white_check_mark:"
+                  text: ":rocket: *${{ github.workflow }} Completed in: ${{ github.repository }}* ${{ needs.integration_tests.result == 'success' && ':white_check_mark:' || ':failed:' }}"
               - type: divider
               - type: section
                 fields:
