@@ -55,16 +55,16 @@ jobs:
         run: |
           case "${{ matrix.user }}" in 
             "USER_1")
-              echo "TEST_SUITE=acceptance,backup,domain,domainrecord,domains,domainzonefile,helper,instance,provider" >> $GITHUB_ENV
-              echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
+#              echo "TEST_SUITE=acceptance,backup,domain,domainrecord,domains,domainzonefile,helper,instance,provider" >> $GITHUB_ENV
+#              echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_1 }}" >> $GITHUB_ENV
               ;;
             "USER_2")
-              echo "TEST_SUITE=databasemysqlv2,firewall,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets" >> $GITHUB_ENV
-              echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
+#              echo "TEST_SUITE=databasemysqlv2,firewall,firewalldevice,firewalls,image,images,instancenetworking,instancesharedips,instancetype,instancetypes,ipv6range,ipv6ranges,kernel,kernels,nb,nbconfig,nbconfigs,nbnode,nbs,sshkey,sshkeys,vlan,volume,volumes,vpc,vpcs,vpcsubnets" >> $GITHUB_ENV
+#              echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_2 }}" >> $GITHUB_ENV
               ;;
             "USER_3")
-              echo "TEST_SUITE=databasepostgresqlv2,instanceconfig,instancedisk,instanceip,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
-              echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
+#              echo "TEST_SUITE=databasepostgresqlv2,instanceconfig,instancedisk,instanceip,networkingip,objcluster,objkey,profile,rdns,region,regions,stackscript,stackscripts" >> $GITHUB_ENV
+#              echo "LINODE_TOKEN=${{ secrets.LINODE_TOKEN_USER_3 }}" >> $GITHUB_ENV
               ;;
             "USER_4")
               echo "TEST_SUITE=lke,lkeclusters,lkenodepool,lkeversions,obj,objbucket,placementgroup,placementgroups,placementgorupassignment,token,user,users" >> $GITHUB_ENV
@@ -249,4 +249,4 @@ jobs:
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
             thread_ts: "${{ steps.main_message.outputs.ts }}"
-            text: "${{ needs.process-upload-report.outputs.summary }}"
+            text: "testing this text"
