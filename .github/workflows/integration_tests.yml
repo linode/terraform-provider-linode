@@ -249,4 +249,4 @@ jobs:
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
             thread_ts: "${{ steps.main_message.outputs.ts }}"
-            text: "testing this text"
+            text: "${{ needs.process-upload-report.outputs.summary }}"
