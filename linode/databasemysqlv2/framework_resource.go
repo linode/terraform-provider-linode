@@ -299,6 +299,26 @@ func (r *Resource) Update(
 
 	ctx = populateLogAttributes(ctx, state)
 
+	// Suspend or resume the database if necessary
+	// NOTE: Other fields cannot be updated if suspended = true
+	if err := helper.ReconcileDatabaseSuspensionSync(
+		ctx,
+		client,
+		id,
+		linodego.DatabaseEngineTypeMySQL,
+		state.Suspended.ValueBool(),
+		plan.Suspended.ValueBool(),
+		client.SuspendMySQLDatabase,
+		client.ResumeMySQLDatabase,
+		updateTimeout,
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to reconcile database suspension",
+			err.Error(),
+		)
+		return
+	}
+
 	var updateOpts linodego.MySQLUpdateOptions
 	shouldUpdate := false
 
@@ -417,24 +437,6 @@ func (r *Resource) Update(
 			)
 			return
 		}
-	}
-
-	if err := helper.ReconcileDatabaseSuspensionSync(
-		ctx,
-		client,
-		id,
-		linodego.DatabaseEngineTypeMySQL,
-		state.Suspended.ValueBool(),
-		plan.Suspended.ValueBool(),
-		client.SuspendMySQLDatabase,
-		client.ResumeMySQLDatabase,
-		updateTimeout,
-	); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to reconcile database suspension",
-			err.Error(),
-		)
-		return
 	}
 
 	resp.Diagnostics.Append(

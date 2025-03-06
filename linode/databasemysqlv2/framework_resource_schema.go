@@ -170,10 +170,16 @@ var frameworkResourceSchema = schema.Schema{
 		"host_primary": schema.StringAttribute{
 			Description: "The primary host for the Managed Database.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"host_secondary": schema.StringAttribute{
 			Description: "The secondary/private host for the Managed Database.",
 			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"members": schema.MapAttribute{
 			ElementType: types.StringType,
@@ -184,6 +190,9 @@ var frameworkResourceSchema = schema.Schema{
 			Description: "The oldest time to which a database can be restored.",
 			Computed:    true,
 			CustomType:  timetypes.RFC3339Type{},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"pending_updates": schema.SetAttribute{
 			Description:   "A set of pending updates.",
