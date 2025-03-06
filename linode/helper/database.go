@@ -197,7 +197,8 @@ func DatabaseStatusIsSuspended(databaseStatus linodego.DatabaseStatus) bool {
 
 type databaseSuspensionFunc func(context.Context, int) error
 
-// ReconcileDatabaseSuspensionSync synchronously suspends or resumes a
+// ReconcileDatabaseSuspensionSync synchronously suspends or resumes a database using the given functions
+// depending on the given current and desired suspension statuses.
 func ReconcileDatabaseSuspensionSync(
 	ctx context.Context,
 	client *linodego.Client,
