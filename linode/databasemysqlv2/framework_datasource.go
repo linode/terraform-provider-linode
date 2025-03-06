@@ -45,7 +45,14 @@ func (d *DataSource) Read(
 
 	ctx = tflog.SetField(ctx, "id", id)
 
-	resp.Diagnostics.Append(data.Refresh(ctx, client, id, false)...)
+	resp.Diagnostics.Append(
+		data.Refresh(
+			ctx,
+			client,
+			id,
+			false,
+		)...,
+	)
 	if resp.Diagnostics.HasError() {
 		return
 	}

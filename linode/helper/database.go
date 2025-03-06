@@ -189,3 +189,55 @@ func FlattenDatabaseMaintenanceWindow(ctx context.Context, maintenance linodego.
 
 	return &resultList, nil
 }
+
+// DatabaseStatusIsSuspended returns whether the given status is a "suspended" state.
+func DatabaseStatusIsSuspended(databaseStatus linodego.DatabaseStatus) bool {
+	return databaseStatus == linodego.DatabaseStatusSuspended || databaseStatus == linodego.DatabaseStatusSuspending
+}
+
+type databaseSuspensionFunc func(context.Context, int) error
+
+// ReconcileDatabaseSuspensionSync synchronously suspends or resumes a
+func ReconcileDatabaseSuspensionSync(
+	ctx context.Context,
+	client *linodego.Client,
+	databaseID int,
+	databaseEngine linodego.DatabaseEngineType,
+	databaseSuspended bool,
+	desiredSuspensionStatus bool,
+	suspendFunc databaseSuspensionFunc,
+	resumeFunc databaseSuspensionFunc,
+	timeout time.Duration,
+) error {
+	var operationFunc databaseSuspensionFunc
+	var desiredStatus linodego.DatabaseStatus
+
+	if databaseSuspended && !desiredSuspensionStatus {
+		operationFunc = resumeFunc
+		desiredStatus = linodego.DatabaseStatusActive
+	} else if !databaseSuspended && desiredSuspensionStatus {
+		operationFunc = suspendFunc
+		desiredStatus = linodego.DatabaseStatusSuspended
+	}
+
+	if operationFunc == nil {
+		// Nothing to do here
+		return nil
+	}
+
+	if err := operationFunc(ctx, databaseID); err != nil {
+		return fmt.Errorf("failed to reconcile suspension of database: %w", err)
+	}
+
+	if err := client.WaitForDatabaseStatus(
+		ctx,
+		databaseID,
+		databaseEngine,
+		desiredStatus,
+		int(timeout.Seconds()),
+	); err != nil {
+		return fmt.Errorf("failed to wait for database status %s: %w", desiredStatus, err)
+	}
+
+	return nil
+}
