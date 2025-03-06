@@ -158,11 +158,16 @@ func (m *Model) Flatten(
 	// SSL and credentials may be nil if the database is suspended
 	if ssl != nil {
 		m.CACert = helper.KeepOrUpdateString(m.CACert, string(ssl.CACertificate), preserveKnown)
+	} else {
+		m.CACert = helper.KeepOrUpdateValue(m.CACert, types.StringNull(), preserveKnown)
 	}
 
 	if creds != nil {
 		m.RootPassword = helper.KeepOrUpdateString(m.RootPassword, creds.Password, preserveKnown)
 		m.RootUsername = helper.KeepOrUpdateString(m.RootUsername, creds.Username, preserveKnown)
+	} else {
+		m.RootPassword = helper.KeepOrUpdateValue(m.RootPassword, types.StringNull(), preserveKnown)
+		m.RootUsername = helper.KeepOrUpdateValue(m.RootUsername, types.StringNull(), preserveKnown)
 	}
 
 	m.AllowList = helper.KeepOrUpdateSet(
