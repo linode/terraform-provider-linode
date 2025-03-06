@@ -52,7 +52,7 @@ func (d DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
 	} else {
 		// If Tier is populated, use GetLKETierVersion
 		versionInfo, err := client.GetLKETierVersion(ctx, data.Tier.ValueString(), data.ID.ValueString())
@@ -67,6 +67,7 @@ func (d DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -24,11 +24,6 @@ func TestAccDataSourceLinodeLkeVersions_NoTier(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataNoTier(t),
-				//Check: resource.ComposeTestCheckFunc(
-				//	resource.TestCheckResourceAttrSet(resourceName, "versions.0.id"),
-				//	resource.TestCheckNoResourceAttr(resourceName, "versions.0.tier"),
-				//	resource.TestCheckNoResourceAttr(resourceName, "tier"),
-				//),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resourceName,

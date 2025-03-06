@@ -55,8 +55,6 @@ func (d *DataSource) Read(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	} else {
 		// If Tier is populated, use ListLKETierVersions
 		tflog.Trace(ctx, "client.ListLKETierVersions(...)")
@@ -72,7 +70,7 @@ func (d *DataSource) Read(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
