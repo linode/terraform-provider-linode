@@ -568,9 +568,9 @@ func TestAccResource_suspension(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet(resName, "id"),
 
-					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
-					resource.TestCheckResourceAttrSet(resName, "root_password"),
-					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckNoResourceAttr(resName, "ca_cert"),
+					resource.TestCheckNoResourceAttr(resName, "root_password"),
+					resource.TestCheckNoResourceAttr(resName, "root_username"),
 					resource.TestCheckResourceAttr(resName, "status", "suspended"),
 					resource.TestCheckResourceAttr(resName, "suspended", "true"),
 				),
@@ -599,10 +599,39 @@ func TestAccResource_suspension(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+				Config: tmpl.Suspension(
+					t,
+					tmpl.TemplateData{
+						Label:     label,
+						Region:    testRegion,
+						EngineID:  testEngine,
+						Type:      "g6-nanode-1",
+						Suspended: true,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "suspended"),
+					resource.TestCheckResourceAttr(resName, "suspended", "true"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"updated",
+					"oldest_restore_time",
+
+					// These fields will be populated with null when importing a suspended database
+					"ca_cert", "root_password", "root_username",
+				},
 			},
 		},
 	})

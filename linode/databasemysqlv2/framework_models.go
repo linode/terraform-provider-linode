@@ -159,15 +159,21 @@ func (m *Model) Flatten(
 	if ssl != nil {
 		m.CACert = helper.KeepOrUpdateString(m.CACert, string(ssl.CACertificate), preserveKnown)
 	} else {
-		m.CACert = helper.KeepOrUpdateValue(m.CACert, types.StringNull(), preserveKnown)
+		// We always enable perserveKnown here because it will otherwise
+		// result in an inconsistent state when a database is suspended.
+		// The alternative would be to make these fields not UseStateForUnknown(),
+		// but that would prevent users from using these fields to initialize
+		// a database provider during the same apply as a DB update under
+		// certain circumstances.
+		m.CACert = helper.KeepOrUpdateValue(m.CACert, types.StringNull(), true)
 	}
 
 	if creds != nil {
 		m.RootPassword = helper.KeepOrUpdateString(m.RootPassword, creds.Password, preserveKnown)
 		m.RootUsername = helper.KeepOrUpdateString(m.RootUsername, creds.Username, preserveKnown)
 	} else {
-		m.RootPassword = helper.KeepOrUpdateValue(m.RootPassword, types.StringNull(), preserveKnown)
-		m.RootUsername = helper.KeepOrUpdateValue(m.RootUsername, types.StringNull(), preserveKnown)
+		m.RootPassword = helper.KeepOrUpdateValue(m.RootPassword, types.StringNull(), true)
+		m.RootUsername = helper.KeepOrUpdateValue(m.RootUsername, types.StringNull(), true)
 	}
 
 	m.AllowList = helper.KeepOrUpdateSet(
