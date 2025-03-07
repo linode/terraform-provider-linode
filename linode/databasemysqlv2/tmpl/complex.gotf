@@ -9,6 +9,8 @@ resource "linode_database_mysql_v2" "foobar" {
     allow_list = ["{{ .AllowedIP }}"]
     cluster_size = {{ .ClusterSize }}
 
+    suspended = {{ .Suspended }}
+
     updates = {
         hour_of_day = {{ .Updates.HourOfDay }}
         day_of_week = {{ .Updates.DayOfWeek }}
