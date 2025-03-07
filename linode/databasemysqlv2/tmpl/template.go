@@ -59,6 +59,17 @@ func Fork(t testing.TB, label, region, engine, nodeType string) string {
 	)
 }
 
+func Suspension(
+	t testing.TB,
+	data TemplateData,
+) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_mysql_v2_suspension",
+		data,
+	)
+}
+
 func Data(
 	t testing.TB,
 	data TemplateData,

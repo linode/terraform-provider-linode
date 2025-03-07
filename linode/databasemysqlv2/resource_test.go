@@ -391,68 +391,6 @@ func TestAccResource_complex(t *testing.T) {
 				),
 			},
 			{
-				Config: tmpl.Complex(
-					t,
-					tmpl.TemplateData{
-						Label:       label,
-						Region:      testRegion,
-						EngineID:    testEngine,
-						Type:        "g6-nanode-1",
-						AllowedIP:   "10.0.0.4/32",
-						ClusterSize: 3,
-						Suspended:   true,
-						Updates: tmpl.TemplateDataUpdates{
-							HourOfDay: 2,
-							DayOfWeek: 3,
-							Duration:  4,
-							Frequency: "weekly",
-						},
-					},
-				),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckMySQLDatabaseExists(resName, nil),
-
-					resource.TestCheckResourceAttrSet(resName, "id"),
-
-					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
-					resource.TestCheckResourceAttrSet(resName, "root_password"),
-					resource.TestCheckResourceAttrSet(resName, "root_username"),
-					resource.TestCheckResourceAttr(resName, "status", "suspended"),
-					resource.TestCheckResourceAttr(resName, "suspended", "true"),
-				),
-			},
-			{
-				Config: tmpl.Complex(
-					t,
-					tmpl.TemplateData{
-						Label:       label,
-						Region:      testRegion,
-						EngineID:    testEngine,
-						Type:        "g6-nanode-1",
-						AllowedIP:   "10.0.0.4/32",
-						ClusterSize: 3,
-						Suspended:   false,
-						Updates: tmpl.TemplateDataUpdates{
-							HourOfDay: 2,
-							DayOfWeek: 3,
-							Duration:  4,
-							Frequency: "weekly",
-						},
-					},
-				),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckMySQLDatabaseExists(resName, nil),
-
-					resource.TestCheckResourceAttrSet(resName, "id"),
-
-					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
-					resource.TestCheckResourceAttrSet(resName, "root_password"),
-					resource.TestCheckResourceAttrSet(resName, "root_username"),
-					resource.TestCheckResourceAttr(resName, "status", "active"),
-					resource.TestCheckResourceAttr(resName, "suspended", "false"),
-				),
-			},
-			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -595,6 +533,73 @@ func TestAccResource_fork(t *testing.T) {
 			},
 			{
 				ResourceName:            resNameFork,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+			},
+		},
+	})
+}
+
+func TestAccResource_suspension(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_database_mysql_v2.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Suspension(
+					t,
+					tmpl.TemplateData{
+						Label:     label,
+						Region:    testRegion,
+						EngineID:  testEngine,
+						Type:      "g6-nanode-1",
+						Suspended: true,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "suspended"),
+					resource.TestCheckResourceAttr(resName, "suspended", "true"),
+				),
+			},
+			{
+				Config: tmpl.Suspension(
+					t,
+					tmpl.TemplateData{
+						Label:     label,
+						Region:    testRegion,
+						EngineID:  testEngine,
+						Type:      "g6-nanode-1",
+						Suspended: false,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "active"),
+					resource.TestCheckResourceAttr(resName, "suspended", "false"),
+				),
+			},
+			{
+				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
