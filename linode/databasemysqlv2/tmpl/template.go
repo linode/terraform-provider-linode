@@ -18,6 +18,7 @@ type TemplateData struct {
 	Type        string
 	AllowedIP   string
 	ClusterSize int
+	Suspended   bool
 	Updates     TemplateDataUpdates
 }
 

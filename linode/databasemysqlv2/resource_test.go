@@ -391,6 +391,68 @@ func TestAccResource_complex(t *testing.T) {
 				),
 			},
 			{
+				Config: tmpl.Complex(
+					t,
+					tmpl.TemplateData{
+						Label:       label,
+						Region:      testRegion,
+						EngineID:    testEngine,
+						Type:        "g6-nanode-1",
+						AllowedIP:   "10.0.0.4/32",
+						ClusterSize: 3,
+						Suspended:   true,
+						Updates: tmpl.TemplateDataUpdates{
+							HourOfDay: 2,
+							DayOfWeek: 3,
+							Duration:  4,
+							Frequency: "weekly",
+						},
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "suspended"),
+					resource.TestCheckResourceAttr(resName, "suspended", "true"),
+				),
+			},
+			{
+				Config: tmpl.Complex(
+					t,
+					tmpl.TemplateData{
+						Label:       label,
+						Region:      testRegion,
+						EngineID:    testEngine,
+						Type:        "g6-nanode-1",
+						AllowedIP:   "10.0.0.4/32",
+						ClusterSize: 3,
+						Suspended:   false,
+						Updates: tmpl.TemplateDataUpdates{
+							HourOfDay: 2,
+							DayOfWeek: 3,
+							Duration:  4,
+							Frequency: "weekly",
+						},
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "active"),
+					resource.TestCheckResourceAttr(resName, "suspended", "false"),
+				),
+			},
+			{
 				ResourceName:            resName,
 				ImportState:             true,
 				ImportStateVerify:       true,
