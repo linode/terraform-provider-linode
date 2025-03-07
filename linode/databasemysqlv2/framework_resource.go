@@ -184,14 +184,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(
-		data.Refresh(
-			ctx,
-			client,
-			db.ID,
-			true,
-		)...,
-	)
+	resp.Diagnostics.Append(data.Refresh(ctx, client, db.ID, true)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -251,14 +244,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(
-		data.Refresh(
-			ctx,
-			client,
-			db.ID,
-			false,
-		)...,
-	)
+	resp.Diagnostics.Append(data.Refresh(ctx, client, db.ID, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -439,14 +425,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	resp.Diagnostics.Append(
-		plan.Refresh(
-			ctx,
-			client,
-			id,
-			false,
-		)...,
-	)
+	resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
