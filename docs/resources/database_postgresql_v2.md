@@ -129,6 +129,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - The operating status of the Managed Database.
 
+* `suspended` - Whether this Managed Database should be suspended.
+
 * `updated` - When this Managed Database was last updated.
 
 * `version` - The Managed Database engine version. (e.g. `13.2`)

@@ -3,6 +3,8 @@ package databasemysqlv2
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -82,9 +84,10 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"ca_cert": schema.StringAttribute{
-			Description: "The base64-encoded SSL CA certificate for the Managed Database.",
-			Computed:    true,
-			Sensitive:   true,
+			Description:   "The base64-encoded SSL CA certificate for the Managed Database.",
+			Computed:      true,
+			Sensitive:     true,
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"cluster_size": schema.Int64Attribute{
 			Optional:    true,
@@ -128,6 +131,13 @@ var frameworkResourceSchema = schema.Schema{
 				int64planmodifier.UseStateForUnknown(),
 				int64planmodifier.RequiresReplace(),
 			},
+		},
+		"suspended": schema.BoolAttribute{
+			Description:   "Whether this database is suspended.",
+			Computed:      true,
+			Optional:      true,
+			Default:       booldefault.StaticBool(false),
+			PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 		},
 		"updates": schema.ObjectAttribute{
 			Description:    "Configuration settings for automated patch update maintenance for the Managed Database.",

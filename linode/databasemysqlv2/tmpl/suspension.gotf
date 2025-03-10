@@ -1,0 +1,12 @@
+{{ define "database_mysql_v2_suspension" }}
+
+resource "linode_database_mysql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    suspended = {{ .Suspended }}
+}
+
+{{ end }}

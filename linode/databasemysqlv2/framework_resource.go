@@ -166,6 +166,22 @@ func (r *Resource) Create(
 		}
 	}
 
+	if err := helper.ReconcileDatabaseSuspensionSync(
+		ctx,
+		client,
+		db.ID,
+		linodego.DatabaseEngineTypeMySQL,
+		false,
+		data.Suspended.ValueBool(),
+		createTimeout,
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to reconcile database suspension",
+			err.Error(),
+		)
+		return
+	}
+
 	resp.Diagnostics.Append(data.Refresh(ctx, client, db.ID, true)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -251,6 +267,11 @@ func (r *Resource) Update(
 		return
 	}
 
+	id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	updateTimeout, diags := plan.Timeouts.Update(ctx, DefaultUpdateTimeout)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -261,6 +282,24 @@ func (r *Resource) Update(
 	defer cancel()
 
 	ctx = populateLogAttributes(ctx, state)
+
+	// Suspend or resume the database if necessary
+	// NOTE: Other fields cannot be updated if suspended = true
+	if err := helper.ReconcileDatabaseSuspensionSync(
+		ctx,
+		client,
+		id,
+		linodego.DatabaseEngineTypeMySQL,
+		state.Suspended.ValueBool(),
+		plan.Suspended.ValueBool(),
+		updateTimeout,
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to reconcile database suspension",
+			err.Error(),
+		)
+		return
+	}
 
 	var updateOpts linodego.MySQLUpdateOptions
 	shouldUpdate := false
@@ -334,11 +373,6 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
 		// Update events are not currently working properly so we are switching to status polling for the time being
 		// TODO: Uncomment once above issue is fixed
 		//updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
@@ -385,11 +419,11 @@ func (r *Resource) Update(
 			)
 			return
 		}
+	}
 
-		resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	plan.CopyFrom(&state.Model, true)

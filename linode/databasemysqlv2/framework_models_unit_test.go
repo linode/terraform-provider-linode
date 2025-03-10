@@ -106,6 +106,8 @@ func TestModel_Flatten(t *testing.T) {
 	require.Equal(t, currentTimeFWValue, model.Updated)
 	require.Equal(t, currentTimeFWValue, model.OldestRestoreTime)
 
+	require.Equal(t, false, model.Suspended.ValueBool())
+
 	require.Equal(t, int64(1), updates.DayOfWeek.ValueInt64())
 	require.Equal(t, int64(1), updates.Duration.ValueInt64())
 	require.Equal(t, "weekly", updates.Frequency.ValueString())

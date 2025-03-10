@@ -69,6 +69,8 @@ The `linode_database_mysql_v2` data source exports the following attributes:
 
 * `status` - The operating status of the Managed Database.
 
+* `suspended` - Whether this Managed Database is suspended.
+
 * `type` - The Linode Instance type used for the nodes of the Managed Database.
 
 * `updated` - When this Managed Database was last updated.

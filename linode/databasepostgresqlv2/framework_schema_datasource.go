@@ -122,6 +122,10 @@ var frameworkDatasourceSchema = schema.Schema{
 			Computed:    true,
 			Description: "The operating status of the Managed Database.",
 		},
+		"suspended": schema.BoolAttribute{
+			Description: "Whether this database is suspended.",
+			Computed:    true,
+		},
 		"updated": schema.StringAttribute{
 			Description: "When this Managed Database was last updated.",
 			Computed:    true,
