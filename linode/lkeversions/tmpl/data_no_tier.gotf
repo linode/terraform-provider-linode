@@ -1,4 +1,4 @@
-{{ define "lke_versions_data_basic" }}
+{{ define "lke_versions_data_no_tier" }}
 
 data "linode_lke_versions" "foobar" {}
 
