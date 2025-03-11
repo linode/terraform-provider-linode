@@ -129,10 +129,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("tier", cluster.Tier)
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
-
-	if cluster.APLEnabled != nil {
-		d.Set("apl_enabled", cluster.APLEnabled)
-	}
+	d.Set("apl_enabled", cluster.APLEnabled)
 
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {

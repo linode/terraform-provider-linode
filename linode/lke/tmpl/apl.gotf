@@ -9,7 +9,7 @@ resource "linode_lke_cluster" "test" {
     apl_enabled = "true"
 
     pool {
-        type  = "g6-standard-1"
+        type  = "g6-dedicated-4"
         count = 3
         tags  = ["test"]
     }
