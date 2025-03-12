@@ -1,8 +1,9 @@
-//go:build integration || lkeversions
+//go:build integration || lkeversion
 
-package lkeversions_test
+package lkeversion_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -10,30 +11,38 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkeversions/tmpl"
+	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion/tmpl"
 )
 
-func TestAccDataSourceLinodeLkeVersions_NoTier(t *testing.T) {
+func TestAccDataSourceLinodeLkeVersion_NoTier(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "data.linode_lke_versions.foobar"
+	resourceName := "data.linode_lke_version.foobar"
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Resolve an LKE version
+	versions, err := client.ListLKEVersions(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("failed to list lke versions: %s", err)
+	}
+
+	version := versions[0]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataNoTier(t),
+				Config: tmpl.DataNoTier(t, version.ID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("versions").AtSliceIndex(0).AtMapKey("id"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("versions").AtSliceIndex(0).AtMapKey("tier"),
-						knownvalue.Null(),
+						tfjsonpath.New("id"),
+						knownvalue.StringExact(version.ID),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -46,28 +55,37 @@ func TestAccDataSourceLinodeLkeVersions_NoTier(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceLinodeLkeVersions_Tier(t *testing.T) {
+func TestAccDataSourceLinodeLkeVersion_Tier(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "data.linode_lke_versions.foobar"
+	resourceName := "data.linode_lke_version.foobar"
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	tier := "enterprise"
+
+	// Resolve an LKE version
+	versions, err := client.ListLKETierVersions(context.Background(), tier, nil)
+	if err != nil {
+		t.Fatalf("failed to list lke versions: %s", err)
+	}
+
+	version := versions[0]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataTier(t, tier),
+				Config: tmpl.DataTier(t, version.ID, tier),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("versions").AtSliceIndex(0).AtMapKey("id"),
-						knownvalue.NotNull(),
-					),
-					statecheck.ExpectKnownValue(
-						resourceName,
-						tfjsonpath.New("versions").AtSliceIndex(0).AtMapKey("tier"),
-						knownvalue.StringExact(tier),
+						tfjsonpath.New("id"),
+						knownvalue.StringExact(version.ID),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
