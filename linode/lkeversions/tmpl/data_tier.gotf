@@ -1,7 +1,0 @@
-{{ define "lke_versions_data_tier" }}
-
-data "linode_lke_versions" "foobar" {
-    tier = "{{.Tier}}"
-}
-
-{{ end }}

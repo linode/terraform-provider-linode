@@ -67,7 +67,6 @@ type Model struct {
 	RootUsername  types.String      `tfsdk:"root_username"`
 	SSLConnection types.Bool        `tfsdk:"ssl_connection"`
 	Status        types.String      `tfsdk:"status"`
-	Suspended     types.Bool        `tfsdk:"suspended"`
 	Type          types.String      `tfsdk:"type"`
 	Updated       timetypes.RFC3339 `tfsdk:"updated"`
 	Version       types.String      `tfsdk:"version"`
@@ -98,28 +97,21 @@ func (m *Model) Refresh(
 		return
 	}
 
-	var ssl *linodego.PostgresDatabaseSSL
-	var creds *linodego.PostgresDatabaseCredential
-
-	if !helper.DatabaseStatusIsSuspended(db.Status) {
-		// SSL and credentials endpoints return 400s while a DB is suspended
-
-		tflog.Debug(ctx, "client.GetPostgresDatabaseSSL(...)")
-		ssl, err = client.GetPostgresDatabaseSSL(ctx, dbID)
-		if err != nil {
-			d.AddError("Failed to refresh PostgreSQL database SSL", err.Error())
-			return
-		}
-
-		tflog.Debug(ctx, "client.GetPostgresDatabaseCredentials(...)")
-		creds, err = client.GetPostgresDatabaseCredentials(ctx, dbID)
-		if err != nil {
-			d.AddError("Failed to refresh PostgreSQL database credentials", err.Error())
-			return
-		}
+	tflog.Debug(ctx, "client.GetPostgresDatabaseSSL(...)")
+	dbSSL, err := client.GetPostgresDatabaseSSL(ctx, dbID)
+	if err != nil {
+		d.AddError("Failed to refresh PostgreSQL database SSL", err.Error())
+		return
 	}
 
-	m.Flatten(ctx, db, ssl, creds, preserveKnown)
+	tflog.Debug(ctx, "client.GetPostgresDatabaseCredentials(...)")
+	dbCreds, err := client.GetPostgresDatabaseCredentials(ctx, dbID)
+	if err != nil {
+		d.AddError("Failed to refresh PostgreSQL database credentials", err.Error())
+		return
+	}
+
+	m.Flatten(ctx, db, dbSSL, dbCreds, preserveKnown)
 	return
 }
 
@@ -132,6 +124,7 @@ func (m *Model) Flatten(
 ) (d diag.Diagnostics) {
 	m.ID = helper.KeepOrUpdateString(m.ID, strconv.Itoa(db.ID), preserveKnown)
 
+	m.CACert = helper.KeepOrUpdateString(m.CACert, string(ssl.CACertificate), preserveKnown)
 	m.ClusterSize = helper.KeepOrUpdateInt64(m.ClusterSize, int64(db.ClusterSize), preserveKnown)
 	m.Created = helper.KeepOrUpdateValue(m.Created, timetypes.NewRFC3339TimePointerValue(db.Created), preserveKnown)
 	m.Encrypted = helper.KeepOrUpdateBool(m.Encrypted, db.Encrypted, preserveKnown)
@@ -148,33 +141,13 @@ func (m *Model) Flatten(
 	m.Platform = helper.KeepOrUpdateString(m.Platform, string(db.Platform), preserveKnown)
 	m.Port = helper.KeepOrUpdateInt64(m.Port, int64(db.Port), preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, db.Region, preserveKnown)
+	m.RootPassword = helper.KeepOrUpdateString(m.RootPassword, creds.Password, preserveKnown)
+	m.RootUsername = helper.KeepOrUpdateString(m.RootUsername, creds.Username, preserveKnown)
 	m.SSLConnection = helper.KeepOrUpdateBool(m.SSLConnection, db.SSLConnection, preserveKnown)
 	m.Status = helper.KeepOrUpdateString(m.Status, string(db.Status), preserveKnown)
-	m.Suspended = helper.KeepOrUpdateBool(m.Suspended, helper.DatabaseStatusIsSuspended(db.Status), preserveKnown)
 	m.Type = helper.KeepOrUpdateString(m.Type, db.Type, preserveKnown)
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, timetypes.NewRFC3339TimePointerValue(db.Updated), preserveKnown)
 	m.Version = helper.KeepOrUpdateString(m.Version, db.Version, preserveKnown)
-
-	// SSL and credentials may be nil if the database is suspended
-	if ssl != nil {
-		m.CACert = helper.KeepOrUpdateString(m.CACert, string(ssl.CACertificate), preserveKnown)
-	} else {
-		// We always enable perserveKnown here because it will otherwise
-		// result in an inconsistent state when a database is suspended.
-		// The alternative would be to make these fields not UseStateForUnknown(),
-		// but that would prevent users from using these fields to initialize
-		// a database provider during the same apply as a DB update under
-		// certain circumstances.
-		m.CACert = helper.KeepOrUpdateValue(m.CACert, types.StringNull(), true)
-	}
-
-	if creds != nil {
-		m.RootPassword = helper.KeepOrUpdateString(m.RootPassword, creds.Password, preserveKnown)
-		m.RootUsername = helper.KeepOrUpdateString(m.RootUsername, creds.Username, preserveKnown)
-	} else {
-		m.RootPassword = helper.KeepOrUpdateValue(m.RootPassword, types.StringNull(), true)
-		m.RootUsername = helper.KeepOrUpdateValue(m.RootUsername, types.StringNull(), true)
-	}
 
 	m.AllowList = helper.KeepOrUpdateSet(
 		types.StringType,
@@ -296,7 +269,6 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.RootUsername = helper.KeepOrUpdateValue(m.RootUsername, other.RootUsername, preserveKnown)
 	m.SSLConnection = helper.KeepOrUpdateValue(m.SSLConnection, other.SSLConnection, preserveKnown)
 	m.Status = helper.KeepOrUpdateValue(m.Status, other.Status, preserveKnown)
-	m.Suspended = helper.KeepOrUpdateValue(m.Suspended, other.Suspended, preserveKnown)
 	m.Type = helper.KeepOrUpdateValue(m.Type, other.Type, preserveKnown)
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
 	m.Updates = helper.KeepOrUpdateValue(m.Updates, other.Updates, preserveKnown)

@@ -3,8 +3,6 @@ package linode
 import (
 	"context"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -262,7 +260,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nb.NewDataSource,
 		networkingip.NewDataSource,
 		networktransferprices.NewDataSource,
-		lkeversion.NewDataSource,
 		lkeversions.NewDataSource,
 		regions.NewDataSource,
 		ipv6range.NewDataSource,

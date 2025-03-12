@@ -102,8 +102,7 @@ func readResource(
 			defer teardownKeysCleanUp()
 		}
 
-		endpoint := getS3Endpoint(ctx, *bucket)
-		s3Client, err := helper.S3Connection(ctx, endpoint, objKeys.AccessKey, objKeys.SecretKey)
+		s3Client, err := helper.S3Connection(ctx, bucket.S3Endpoint, objKeys.AccessKey, objKeys.SecretKey)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -124,16 +123,14 @@ func readResource(
 		d.SetId(fmt.Sprintf("%s:%s", bucket.Cluster, bucket.Label))
 	}
 
-	endpoint := getS3Endpoint(ctx, *bucket)
-
 	d.Set("cluster", bucket.Cluster)
 	d.Set("region", bucket.Region)
 	d.Set("label", bucket.Label)
 	d.Set("hostname", bucket.Hostname)
 	d.Set("acl", access.ACL)
 	d.Set("cors_enabled", access.CorsEnabled)
-	d.Set("endpoint", endpoint)
-	d.Set("s3_endpoint", endpoint)
+	d.Set("endpoint", bucket.S3Endpoint)
+	d.Set("s3_endpoint", bucket.S3Endpoint)
 	d.Set("endpoint_type", bucket.EndpointType)
 
 	return nil
@@ -181,10 +178,8 @@ func createResource(
 		return diag.Errorf("failed to create a Linode ObjectStorageBucket: %s", err)
 	}
 
-	endpoint := getS3Endpoint(ctx, *bucket)
-
-	d.Set("endpoint", endpoint)
-	d.Set("s3_endpoint", endpoint)
+	d.Set("endpoint", bucket.S3Endpoint)
+	d.Set("s3_endpoint", bucket.S3Endpoint)
 
 	if bucket.Region != "" {
 		d.SetId(fmt.Sprintf("%s:%s", bucket.Region, bucket.Label))
