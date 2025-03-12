@@ -1,0 +1,12 @@
+{{ define "database_postgresql_v2_suspension" }}
+
+resource "linode_database_postgresql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    suspended = {{ .Suspended }}
+}
+
+{{ end }}
