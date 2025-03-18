@@ -129,6 +129,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("tier", cluster.Tier)
 	d.Set("kubeconfig", kubeconfig.KubeConfig)
 	d.Set("api_endpoints", flattenLKEClusterAPIEndpoints(endpoints))
+	d.Set("apl_enabled", cluster.APLEnabled)
 
 	matchedPools, err := matchPoolsWithSchema(ctx, pools, declaredPools)
 	if err != nil {
@@ -159,6 +160,10 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if tier, ok := d.GetOk("tier"); ok {
 		createOpts.Tier = tier.(string)
+	}
+
+	if aplEnabled, ok := d.GetOk("apl_enabled"); ok {
+		createOpts.APLEnabled = aplEnabled.(bool)
 	}
 
 	if len(controlPlane) > 0 {
