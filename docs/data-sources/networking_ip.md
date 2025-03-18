@@ -48,3 +48,11 @@ The Linode Network IP Address resource exports the following attributes:
 * `region` - The Region this IP address resides in. See all regions [here](https://api.linode.com/v4/regions).
 
 * `reserved` - Whether this IP address is a reserved IP.
+
+* `vpc_nat_1_1` - Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.
+
+    * `address` - The IPv4 address that is configured as a 1:1 NAT for this VPC interface.
+
+    * `subnet_id` - The `id` of the VPC Subnet for this Interface.
+
+    * `vpc_id` - The `id` of the VPC configured for this Interface.
