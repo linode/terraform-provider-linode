@@ -3,6 +3,7 @@ package networkingips
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
 )
 
 var filterConfig = frameworkfilter.Config{
@@ -74,6 +75,11 @@ var frameworkDatasourceSchema = schema.Schema{
 					"reserved": schema.BoolAttribute{
 						Computed:    true,
 						Description: "Whether this IP is reserved or not.",
+					},
+					"vpc_nat_1_1": schema.ObjectAttribute{
+						Description:    "Contains information about the NAT 1:1 mapping of a public IP address to a VPC subnet.",
+						Computed:       true,
+						AttributeTypes: instancenetworking.VPCNAT1To1Type.AttrTypes,
 					},
 				},
 			},
