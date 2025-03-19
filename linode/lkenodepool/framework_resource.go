@@ -34,7 +34,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_lke_node_pool")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 	var data NodePoolModel
 	client := r.Meta.Client
 
@@ -89,7 +89,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_lke_node_pool")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 	var plan NodePoolModel
 	client := r.Meta.Client
 
@@ -158,7 +158,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_lke_node_pool")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 	var state, plan NodePoolModel
 	client := r.Meta.Client
 
@@ -227,7 +227,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_lke_node_pool")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var data NodePoolModel
 	client := r.Meta.Client
 
@@ -266,7 +266,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	tflog.Debug(ctx, "Import linode_lke_node_pool")
+	tflog.Debug(ctx, "Import "+r.Config.Name)
 
 	helper.ImportStateWithMultipleIDs(
 		ctx,

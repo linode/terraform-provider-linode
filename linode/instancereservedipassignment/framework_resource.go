@@ -35,7 +35,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_reserved_ip_assignment")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 	var plan InstanceIPModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -138,7 +138,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_instance_reserved_ip")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 	var state InstanceIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -188,6 +188,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 	var plan InstanceIPModel
 	var state InstanceIPModel
 
@@ -255,6 +256,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var state InstanceIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
