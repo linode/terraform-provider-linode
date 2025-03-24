@@ -230,7 +230,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_vpc_subnet")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	var data VPCSubnetModel
 	client := r.Meta.Client
