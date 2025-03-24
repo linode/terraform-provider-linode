@@ -46,7 +46,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read "+d.Config.Name)
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 	client := d.Meta.Client
 
 	var data DataSourceModel
