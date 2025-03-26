@@ -23,10 +23,11 @@ import (
 )
 
 var (
-	k8sVersions        []string
-	k8sVersionLatest   string
-	k8sVersionPrevious string
-	testRegion         string
+	k8sVersions          []string
+	k8sVersionLatest     string
+	k8sVersionPrevious   string
+	k8sVersionEnterprise string
+	testRegion           string
 )
 
 const resourceClusterName = "linode_lke_cluster.test"
@@ -74,6 +75,17 @@ func init() {
 	}
 
 	testRegion = region
+
+	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(enterpriseVersions) < 1 {
+		log.Print("no enterprise k8s versions found")
+	} else {
+		k8sVersionEnterprise = enterpriseVersions[0].ID
+	}
 }
 
 func sweep(prefix string) error {
@@ -700,7 +712,9 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 func TestAccResourceLKECluster_enterprise(t *testing.T) {
 	t.Parallel()
 
-	k8sVersionEnterprise := "v1.31.1+lke1"
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
 
 	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
 	if err != nil {

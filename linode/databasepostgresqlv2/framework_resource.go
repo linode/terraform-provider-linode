@@ -6,9 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
-
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -48,7 +47,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -166,6 +165,22 @@ func (r *Resource) Create(
 		}
 	}
 
+	if err := helper.ReconcileDatabaseSuspensionSync(
+		ctx,
+		client,
+		db.ID,
+		linodego.DatabaseEngineTypePostgres,
+		false,
+		data.Suspended.ValueBool(),
+		createTimeout,
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to reconcile database suspension",
+			err.Error(),
+		)
+		return
+	}
+
 	resp.Diagnostics.Append(data.Refresh(ctx, client, db.ID, true)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -183,7 +198,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var data ResourceModel
 	client := r.Meta.Client
@@ -239,7 +254,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	client := r.Meta.Client
 	var plan, state ResourceModel
@@ -247,6 +262,11 @@ func (r *Resource) Update(
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -261,6 +281,24 @@ func (r *Resource) Update(
 	defer cancel()
 
 	ctx = populateLogAttributes(ctx, state)
+
+	// Suspend or resume the database if necessary
+	// NOTE: Other fields cannot be updated if suspended = true
+	if err := helper.ReconcileDatabaseSuspensionSync(
+		ctx,
+		client,
+		id,
+		linodego.DatabaseEngineTypePostgres,
+		state.Suspended.ValueBool(),
+		plan.Suspended.ValueBool(),
+		updateTimeout,
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to reconcile database suspension",
+			err.Error(),
+		)
+		return
+	}
 
 	var updateOpts linodego.PostgresUpdateOptions
 	shouldUpdate := false
@@ -334,11 +372,6 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate {
-		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
 		// Update events are not currently working properly so we are switching to status polling for the time being
 		// TODO: Uncomment once above issue is fixed
 		//updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
@@ -385,11 +418,11 @@ func (r *Resource) Update(
 			)
 			return
 		}
+	}
 
-		resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	plan.CopyFrom(&state.Model, true)
@@ -409,7 +442,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	client := r.Meta.Client
 	var data ResourceModel

@@ -28,7 +28,7 @@ type Resource struct {
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	tflog.Debug(ctx, "Create linode_networking_assign_ip")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 	var plan NetworkingIPModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -67,7 +67,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tflog.Debug(ctx, "Read linode_networking_assign_ip")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 	var state NetworkingIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -105,7 +105,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tflog.Debug(ctx, "Delete linode_networking_assignments")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var state NetworkingIPModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
