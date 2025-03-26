@@ -25,7 +25,7 @@ type DataSource struct {
 }
 
 func (d DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	tflog.Debug(ctx, "Read data.linode_lke_version")
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
 	client := d.Meta.Client
 

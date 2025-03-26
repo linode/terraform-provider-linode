@@ -31,7 +31,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_vpcs")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
 	var data VPCFilterModel
 

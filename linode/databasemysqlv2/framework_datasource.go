@@ -28,7 +28,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_database_mysql_v2")
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
 	client := d.Meta.Client
 	var data Model

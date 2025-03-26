@@ -33,7 +33,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_vpc_subnets")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 	var data VPCSubnetFilterModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

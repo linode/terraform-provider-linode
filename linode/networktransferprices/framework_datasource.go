@@ -29,7 +29,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_network_transfer_prices")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 
 	var data NetworkTransferPriceFilterModel
 
