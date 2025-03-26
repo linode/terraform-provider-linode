@@ -6,6 +6,12 @@ import (
 	"log"
 	"testing"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
@@ -34,19 +40,65 @@ func TestAccResourceNetworkingIP_ephemeral(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NetworkingIPReservedAssigned(t, label, testRegion, 0, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "reserved", "false"),
-					resource.TestCheckResourceAttr(resourceName, "public", "true"),
-					resource.TestCheckResourceAttr(resourceName, "type", "ipv4"),
-					resource.TestCheckResourceAttrSet(resourceName, "address"),
-					resource.TestCheckResourceAttrSet(resourceName, "gateway"),
-					resource.TestCheckResourceAttrPair(resourceName, "linode_id", "linode_instance.test.0", "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "prefix"),
-					resource.TestCheckResourceAttrSet(resourceName, "region"),
-					resource.TestCheckResourceAttrSet(resourceName, "rdns"),
-					resource.TestCheckResourceAttrSet(resourceName, "subnet_mask"),
-					resource.TestCheckNoResourceAttr(resourceName, "vpc_nat_1_1"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("reserved"),
+						knownvalue.Bool(false),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("public"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("ipv4"),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("gateway"),
+						knownvalue.NotNull(),
+					),
+					statecheck.CompareValuePairs(
+						resourceName,
+						tfjsonpath.New("linode_id"),
+						"linode_instance.test[0]",
+						tfjsonpath.New("id"),
+						helper.TypeAgnosticComparer(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("prefix"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("rdns"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnet_mask"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_nat_1_1"),
+						knownvalue.Null(),
+					),
+				},
 			},
 		},
 	})
@@ -65,19 +117,65 @@ func TestAccResourceNetworkingIP_reserved(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NetworkingIPReservedAssigned(t, label, testRegion, 0, true),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "reserved", "true"),
-					resource.TestCheckResourceAttr(resourceName, "public", "true"),
-					resource.TestCheckResourceAttr(resourceName, "type", "ipv4"),
-					resource.TestCheckResourceAttrSet(resourceName, "address"),
-					resource.TestCheckResourceAttrSet(resourceName, "gateway"),
-					resource.TestCheckResourceAttrPair(resourceName, "linode_id", "linode_instance.test.0", "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "prefix"),
-					resource.TestCheckResourceAttrSet(resourceName, "region"),
-					resource.TestCheckResourceAttrSet(resourceName, "rdns"),
-					resource.TestCheckResourceAttrSet(resourceName, "subnet_mask"),
-					resource.TestCheckNoResourceAttr(resourceName, "vpc_nat_1_1"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("reserved"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("public"),
+						knownvalue.Bool(true),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("ipv4"),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("address"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("gateway"),
+						knownvalue.NotNull(),
+					),
+					statecheck.CompareValuePairs(
+						resourceName,
+						tfjsonpath.New("linode_id"),
+						"linode_instance.test[0]",
+						tfjsonpath.New("id"),
+						helper.TypeAgnosticComparer(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("prefix"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("region"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("rdns"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("subnet_mask"),
+						knownvalue.NotNull(),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
+						tfjsonpath.New("vpc_nat_1_1"),
+						knownvalue.Null(),
+					),
+				},
 			},
 		},
 	})
@@ -103,13 +201,20 @@ func TestAccResourceNetworkingIP_reservedEphemeralReassignment(t *testing.T) {
 					0,
 					true,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						resName, "linode_id",
-						"linode_instance.test.0", "id",
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						resName,
+						tfjsonpath.New("linode_id"),
+						"linode_instance.test[0]",
+						tfjsonpath.New("id"),
+						helper.TypeAgnosticComparer(),
 					),
-					resource.TestCheckResourceAttr(resName, "reserved", "true"),
-				),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("reserved"),
+						knownvalue.Bool(true),
+					),
+				},
 			},
 			// Make the IP ephemeral
 			{
@@ -120,13 +225,20 @@ func TestAccResourceNetworkingIP_reservedEphemeralReassignment(t *testing.T) {
 					0,
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(
-						resName, "linode_id",
-						"linode_instance.test.0", "id",
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						resName,
+						tfjsonpath.New("linode_id"),
+						"linode_instance.test[0]",
+						tfjsonpath.New("id"),
+						helper.TypeAgnosticComparer(),
 					),
-					resource.TestCheckResourceAttr(resName, "reserved", "false"),
-				),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("reserved"),
+						knownvalue.Bool(false),
+					),
+				},
 			},
 			// Attempt to reassign the ephemeral IP; expect RequiresReplace
 			{
@@ -150,13 +262,20 @@ func TestAccResourceNetworkingIP_reservedEphemeralReassignment(t *testing.T) {
 					1,
 					true,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "reserved", "true"),
-					resource.TestCheckResourceAttrPair(
-						resName, "linode_id",
-						"linode_instance.test.1", "id",
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						resName,
+						tfjsonpath.New("linode_id"),
+						"linode_instance.test[1]",
+						tfjsonpath.New("id"),
+						helper.TypeAgnosticComparer(),
 					),
-				),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("reserved"),
+						knownvalue.Bool(true),
+					),
+				},
 			},
 			{
 				ResourceName:            resName,
