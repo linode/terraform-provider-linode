@@ -13,11 +13,18 @@ import (
 )
 
 func NewDataSource() datasource.DataSource {
-	return &DataSource{}
+	return &DataSource{
+		BaseDataSource: helper.NewBaseDataSource(
+			helper.BaseDataSourceConfig{
+				Name:   "linode_account_login",
+				Schema: &frameworkDataSourceSchema,
+			},
+		),
+	}
 }
 
 type DataSource struct {
-	client *linodego.Client
+	helper.BaseDataSource
 }
 
 func (data *DatasourceModel) parseAccountLogin(accountLogin *linodego.Login) {
@@ -29,24 +36,6 @@ func (data *DatasourceModel) parseAccountLogin(accountLogin *linodego.Login) {
 	data.Status = types.StringValue(accountLogin.Status)
 }
 
-func (d *DataSource) Configure(
-	ctx context.Context,
-	req datasource.ConfigureRequest,
-	resp *datasource.ConfigureResponse,
-) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	meta := helper.GetDataSourceMeta(req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	d.client = meta.Client
-}
-
 type DatasourceModel struct {
 	Datetime   types.String `tfsdk:"datetime"`
 	ID         types.Int64  `tfsdk:"id"`
@@ -56,29 +45,13 @@ type DatasourceModel struct {
 	Status     types.String `tfsdk:"status"`
 }
 
-func (d *DataSource) Metadata(
-	ctx context.Context,
-	req datasource.MetadataRequest,
-	resp *datasource.MetadataResponse,
-) {
-	resp.TypeName = "linode_account_login"
-}
-
-func (d *DataSource) Schema(
-	ctx context.Context,
-	req datasource.SchemaRequest,
-	resp *datasource.SchemaResponse,
-) {
-	resp.Schema = frameworkDataSourceSchema
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_account_login")
-	client := d.client
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
+	client := d.Meta.Client
 
 	var data DatasourceModel
 
