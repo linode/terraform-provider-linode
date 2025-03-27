@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,25 +30,40 @@ func (d *caseInsensitiveSetPlanModifier) MarkdownDescription(ctx context.Context
 
 func (d *caseInsensitiveSetPlanModifier) PlanModifySet(ctx context.Context, req planmodifier.SetRequest, resp *planmodifier.SetResponse) {
 	oldEntryMap := make(map[string]string)
-	resultList := make([]string, 0)
+	resultList := make([]attr.Value, 0) // Use attr.Value to store both known and unknown values
 
+	// Store existing state values in a map, if they are known
 	for _, elem := range req.StateValue.Elements() {
-		elemStr := elem.(types.String).ValueString()
-		oldEntryMap[strings.ToLower(elemStr)] = elemStr
+		strElem, ok := elem.(types.String)
+		if !ok || strElem.IsUnknown() || strElem.IsNull() {
+			continue // Skip unknown or null values
+		}
+		oldEntryMap[strings.ToLower(strElem.ValueString())] = strElem.ValueString()
 	}
 
+	// Process planned values, ensuring unknown values are preserved
 	for _, elem := range req.PlanValue.Elements() {
-		elemStr := elem.(types.String).ValueString()
-		oldElem, ok := oldEntryMap[strings.ToLower(elemStr)]
-
+		strElem, ok := elem.(types.String)
 		if !ok {
-			resultList = append(resultList, elemStr)
+			resultList = append(resultList, elem) // Preserve unknown or incompatible values
+			continue
+		}
+		if strElem.IsUnknown() || strElem.IsNull() {
+			resultList = append(resultList, strElem) // Keep unknown values unchanged
 			continue
 		}
 
-		resultList = append(resultList, oldElem)
+		// Normalize case if an old value exists, otherwise keep the new value
+		oldElem, ok := oldEntryMap[strings.ToLower(strElem.ValueString())]
+		if !ok {
+			resultList = append(resultList, strElem)
+			continue
+		}
+
+		resultList = append(resultList, types.StringValue(oldElem))
 	}
 
+	// Convert resultList back into a Set type
 	v, diags := types.SetValueFrom(ctx, types.StringType, resultList)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
