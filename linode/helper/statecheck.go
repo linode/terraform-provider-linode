@@ -27,7 +27,7 @@ func (typeAgnosticComparer) CompareValues(values ...any) error {
 		}
 
 		if lastNormalizedValue != nil && normalizedValue != *lastNormalizedValue {
-			return fmt.Errorf("found difference: %s != %s", normalizedValue, lastNormalizedValue)
+			return fmt.Errorf("found difference: %s != %s", normalizedValue, *lastNormalizedValue)
 		}
 
 		lastNormalizedValue = &normalizedValue
