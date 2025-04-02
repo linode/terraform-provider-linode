@@ -563,7 +563,7 @@ func expandACLOptions(aclOptions map[string]interface{}) (*linodego.LKEClusterCo
 		(result.Addresses != nil &&
 			((result.Addresses.IPv4 != nil && len(*result.Addresses.IPv4) > 0) ||
 				(result.Addresses.IPv6 != nil && len(*result.Addresses.IPv6) > 0))) {
-		return nil, diag.Errorf("addresses are not acceptable when ACL is disabled.")
+		return nil, diag.Errorf("addresses are not acceptable when ACL is disabled")
 	}
 
 	return &result, nil

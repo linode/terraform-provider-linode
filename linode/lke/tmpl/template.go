@@ -132,3 +132,10 @@ func DataTaintsLabels(t testing.TB, name, version, region string, taints []Taint
 			Taints:     taints,
 		})
 }
+
+func ACLDisabledAddressesDisallowed(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_acl_disabled_addresses_disallowed",
+		TemplateData{Label: name, K8sVersion: version, Region: region},
+	)
+}

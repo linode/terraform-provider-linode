@@ -746,3 +746,20 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 		})
 	})
 }
+
+func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.ACLDisabledAddressesDisallowed(t, clusterName, k8sVersionLatest, testRegion),
+				ExpectError: regexp.MustCompile("addresses are not acceptable when ACL is disabled"),
+			},
+		},
+	})
+}
