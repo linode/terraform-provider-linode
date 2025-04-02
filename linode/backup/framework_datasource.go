@@ -29,7 +29,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_instance_backups")
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
 	var data DataSourceModel
 	client := d.Meta.Client
