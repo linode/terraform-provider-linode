@@ -268,7 +268,7 @@ func (pool *NodePoolModel) shouldUpdateLKENodePoolAutoscaler(
 	var shouldUpdate bool
 
 	if len(pool.Autoscaler) > 0 {
-		if len(state.Autoscaler) < 0 ||
+		if len(state.Autoscaler) == 0 ||
 			(len(state.Autoscaler) > 0 && (!state.Autoscaler[0].Min.Equal(pool.Autoscaler[0].Min) ||
 				!state.Autoscaler[0].Max.Equal(pool.Autoscaler[0].Max))) {
 			autoscaler.Enabled = true

@@ -84,13 +84,15 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
+	state := NodePoolModel{ID: types.StringValue("123")}
 
 	var updateOpts linodego.LKENodePoolUpdateOptions
 	var diags diag.Diagnostics
 
-	nodePoolModel.SetNodePoolUpdateOptions(context.Background(), &updateOpts, &diags, "enterprise")
+	shouldUpdate := nodePoolModel.SetNodePoolUpdateOptions(context.Background(), &updateOpts, &diags, &state, "enterprise")
 
 	assert.False(t, diags.HasError())
+	assert.True(t, shouldUpdate)
 	assert.Equal(t, 3, updateOpts.Count)
 	assert.Contains(t, *updateOpts.Tags, "production")
 	assert.Contains(t, *updateOpts.Tags, "web-server")
