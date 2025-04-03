@@ -303,6 +303,7 @@ func (r *Resource) Update(
 
 	var updateOpts linodego.MySQLUpdateOptions
 	shouldUpdate := false
+	shouldResize := false
 
 	// `label` field updates
 	if !state.Label.Equal(plan.Label) {
@@ -324,7 +325,7 @@ func (r *Resource) Update(
 
 	// `type` field updates
 	if !state.Type.Equal(plan.Type) {
-		shouldUpdate = true
+		shouldResize = true
 		updateOpts.Type = plan.Type.ValueString()
 	}
 
@@ -364,7 +365,7 @@ func (r *Resource) Update(
 
 	// `cluster_size` field updates
 	if !state.ClusterSize.Equal(plan.ClusterSize) {
-		shouldUpdate = true
+		shouldResize = true
 
 		updateOpts.ClusterSize = helper.FrameworkSafeInt64ToInt(plan.ClusterSize.ValueInt64(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
@@ -372,17 +373,33 @@ func (r *Resource) Update(
 		}
 	}
 
-	if shouldUpdate {
-		// Update events are not currently working properly so we are switching to status polling for the time being
-		// TODO: Uncomment once above issue is fixed
-		//updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
-		//if err != nil {
-		//	resp.Diagnostics.AddError(
-		//		"Failed to create EventPoller for database",
-		//		err.Error(),
-		//	)
-		//	return
-		//}
+	if shouldUpdate || shouldResize {
+		var updatePoller *linodego.EventPoller = nil
+		var updatePollerErr error = nil
+		var resizePoller *linodego.EventPoller = nil
+		var resizePollerErr error = nil
+
+		if shouldUpdate {
+			updatePoller, updatePollerErr = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
+			if updatePollerErr != nil {
+				resp.Diagnostics.AddError(
+					"Failed to create update EventPoller for database",
+					updatePollerErr.Error(),
+				)
+				return
+			}
+		}
+
+		if shouldResize {
+			resizePoller, resizePollerErr = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseResize)
+			if resizePollerErr != nil {
+				resp.Diagnostics.AddError(
+					"Failed to create resize EventPoller for database",
+					resizePollerErr.Error(),
+				)
+				return
+			}
+		}
 
 		tflog.Debug(ctx, "client.UpdateMySQLDatabase(...)", map[string]any{
 			"options": updateOpts,
@@ -400,24 +417,24 @@ func (r *Resource) Update(
 			return
 		}
 
-		// Update events are not currently working properly so we are switching to status polling for the time being
-		// TODO: Uncomment once above issue is fixed
-		//if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
-		//	resp.Diagnostics.AddError(
-		//		"Failed to poll for database update event to finish",
-		//		err.Error(),
-		//	)
-		//	return
-		//}
+		if updatePoller != nil {
+			if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to poll for database update event to finish",
+					err.Error(),
+				)
+				return
+			}
+		}
 
-		// This is a workaround for events not being properly emitted for resizes.
-		// TODO: Remove once above issue is fixed
-		if err := client.WaitForDatabaseStatus(ctx, id, linodego.DatabaseEngineTypeMySQL, "active", timeoutSeconds); err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to poll for database to reach active status",
-				err.Error(),
-			)
-			return
+		if resizePoller != nil {
+			if _, err := resizePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to poll for database resize event to finish",
+					err.Error(),
+				)
+				return
+			}
 		}
 	}
 
