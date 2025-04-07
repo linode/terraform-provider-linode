@@ -411,6 +411,75 @@ func TestAccResourceNodePool_taints_labels(t *testing.T) {
 	})
 }
 
+func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_lke_node_pool.foobar"
+	clusterLabel := acctest.RandomWithPrefix("tf_test_")
+	poolTag := acctest.RandomWithPrefix("tf_test_")
+
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		log.Fatalf("failed to get client: %s", err)
+	}
+
+	versions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(versions) < 1 {
+		t.Skip("No enterprise k8s versions found for test. Skipping now...")
+	}
+
+	enterpriseK8sVersion := versions[0].ID
+
+	region, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	templateData := createTemplateData()
+	templateData.ClusterLabel = clusterLabel
+	templateData.PoolTag = poolTag
+	templateData.K8sVersion = enterpriseK8sVersion
+	templateData.Region = region
+	templateData.UpdateStrategy = "on_recycle"
+	createConfig := createEnterpriseResourceConfig(t, &templateData)
+	templateData.UpdateStrategy = "rolling_update"
+	updateConfig := createEnterpriseResourceConfig(t, &templateData)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             checkNodePoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "k8s_version", enterpriseK8sVersion),
+					resource.TestCheckResourceAttr(resName, "update_strategy", "on_recycle"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+			{
+				Config: updateConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "k8s_version", enterpriseK8sVersion),
+					resource.TestCheckResourceAttr(resName, "update_strategy", "rolling_update"),
+				),
+			},
+		},
+	})
+}
+
 func checkNodePoolExists(s *terraform.State) error {
 	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
 	clusterID, poolID, err := extractIDs(s)
@@ -453,6 +522,10 @@ func containsTagWithPrefix(pool linodego.LKENodePool, prefix string) bool {
 
 func createResourceConfig(t testing.TB, data *tmpl.TemplateData) string {
 	return acceptanceTmpl.ProviderNoPoll(t) + tmpl.Generate(t, data)
+}
+
+func createEnterpriseResourceConfig(t testing.TB, data *tmpl.TemplateData) string {
+	return acceptanceTmpl.ProviderNoPoll(t) + tmpl.EnterpriseBasic(t, data)
 }
 
 func createTemplateData() tmpl.TemplateData {
