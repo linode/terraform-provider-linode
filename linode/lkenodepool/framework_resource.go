@@ -81,7 +81,7 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	tflog.Trace(ctx, "Read linode_lke_node_pool done")
+	tflog.Trace(ctx, "Read "+r.Config.Name+" done")
 }
 
 func (r *Resource) Create(
@@ -233,7 +233,7 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Trace(ctx, "Update linode_lke_node_pool done")
+	tflog.Trace(ctx, "Update "+r.Config.Name+" done")
 }
 
 func (r *Resource) Delete(
