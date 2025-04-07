@@ -66,7 +66,7 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	var createOpts linodego.LKENodePoolCreateOptions
 	var diags diag.Diagnostics
 
-	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags)
+	nodePoolModel.SetNodePoolCreateOptions(context.Background(), &createOpts, &diags, "enterprise")
 
 	assert.False(t, diags.HasError())
 	assert.Equal(t, 3, createOpts.Count)
@@ -77,17 +77,22 @@ func TestSetNodePoolCreateOptions(t *testing.T) {
 	assert.True(t, createOpts.Autoscaler.Enabled)
 	assert.Equal(t, 1, createOpts.Autoscaler.Min)
 	assert.Equal(t, 5, createOpts.Autoscaler.Max)
+
+	assert.Equal(t, "k8s_version", *createOpts.K8sVersion)
+	assert.Equal(t, "on_recycle", string(*createOpts.UpdateStrategy))
 }
 
 func TestSetNodePoolUpdateOptions(t *testing.T) {
 	nodePoolModel := createNodePoolModel()
+	state := NodePoolModel{ID: types.StringValue("123")}
 
 	var updateOpts linodego.LKENodePoolUpdateOptions
 	var diags diag.Diagnostics
 
-	nodePoolModel.SetNodePoolUpdateOptions(context.Background(), &updateOpts, &diags)
+	shouldUpdate := nodePoolModel.SetNodePoolUpdateOptions(context.Background(), &updateOpts, &diags, &state, "enterprise")
 
 	assert.False(t, diags.HasError())
+	assert.True(t, shouldUpdate)
 	assert.Equal(t, 3, updateOpts.Count)
 	assert.Contains(t, *updateOpts.Tags, "production")
 	assert.Contains(t, *updateOpts.Tags, "web-server")
@@ -95,6 +100,9 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 	assert.True(t, updateOpts.Autoscaler.Enabled)
 	assert.Equal(t, 1, updateOpts.Autoscaler.Min)
 	assert.Equal(t, 5, updateOpts.Autoscaler.Max)
+
+	assert.Equal(t, "k8s_version", *updateOpts.K8sVersion)
+	assert.Equal(t, "on_recycle", string(*updateOpts.UpdateStrategy))
 }
 
 func createNodePoolModel() *NodePoolModel {
@@ -117,6 +125,8 @@ func createNodePoolModel() *NodePoolModel {
 				Max: types.Int64Value(5),
 			},
 		},
+		K8sVersion:     types.StringValue("k8s_version"),
+		UpdateStrategy: types.StringValue("on_recycle"),
 	}
 
 	nodePoolModel.Labels = types.MapValueMust(types.StringType, map[string]attr.Value{})
