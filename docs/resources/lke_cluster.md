@@ -157,6 +157,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `dashboard_url` - The Kubernetes Dashboard access URL for this cluster. LKE Enterprise does not have a dashboard URL.
 
+* `apl_enabled` - Enables the App Platform Layer
+
 * `pool` - Additional nested attributes:
 
   * `id` - The ID of the Node Pool.

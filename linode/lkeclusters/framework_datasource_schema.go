@@ -55,6 +55,11 @@ var frameworkDatasourceSchema = schema.Schema{
 						Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. " +
 							"The latest supported patch version will be deployed.",
 					},
+					"apl_enabled": schema.BoolAttribute{
+						Description: "Enables the App Platform Layer for this cluster. " +
+							"Note: v4beta only and may not currently be available to all users.",
+						Computed: true,
+					},
 					"tags": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
