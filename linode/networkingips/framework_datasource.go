@@ -30,7 +30,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_networking_ips")
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
 	var data FilterModel
 

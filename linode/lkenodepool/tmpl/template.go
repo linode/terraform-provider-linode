@@ -25,8 +25,13 @@ type TemplateData struct {
 	AutoscalerMax     int
 	Taints            []TaintData
 	Labels            map[string]string
+	UpdateStrategy    string
 }
 
 func Generate(t testing.TB, data *TemplateData) string {
 	return acceptance.ExecuteTemplate(t, "nodepool_template", *data)
+}
+
+func EnterpriseBasic(t testing.TB, data *TemplateData) string {
+	return acceptance.ExecuteTemplate(t, "lke_e_nodepool", *data)
 }

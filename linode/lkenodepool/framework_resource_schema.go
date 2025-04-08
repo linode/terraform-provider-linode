@@ -1,6 +1,8 @@
 package lkenodepool
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -81,6 +83,43 @@ var resourceSchema = schema.Schema{
 			Computed:    true,
 			Default:     helper.EmptyMapDefault(types.StringType),
 		},
+		"k8s_version": schema.StringAttribute{
+			Description: "The k8s version of the nodes in this node pool. " +
+				"For LKE enterprise only and may not currently available to all users.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.RequiresReplaceIf(
+					func(
+						ctx context.Context,
+						sr planmodifier.StringRequest,
+						rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+					) {
+						var strategy string
+						sr.Plan.GetAttribute(ctx, path.Root("update_strategy"), &strategy)
+						rrifr.RequiresReplace = strategy == "rolling_update"
+					},
+					"Triggers replacement when `k8s_version` is changed and `update_strategy` is rolling_update",
+					"Changing `k8s_version` with a Rolling Update strategy forces a new resource.",
+				),
+			},
+		},
+		"update_strategy": schema.StringAttribute{
+			Description: "The strategy for updating the node pool k8s version. " +
+				"For LKE enterprise only and may not currently available to all users.",
+			Optional: true,
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+			Validators: []validator.String{
+				stringvalidator.OneOf(
+					string(linodego.LKENodePoolOnRecycle),
+					string(linodego.LKENodePoolRollingUpdate),
+				),
+			},
+		},
 	},
 	Blocks: map[string]schema.Block{
 		"autoscaler": schema.ListNestedBlock{
@@ -91,10 +130,12 @@ var resourceSchema = schema.Schema{
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
 					"min": schema.Int64Attribute{
-						Required: true,
+						Optional:    true,
+						Description: "The minimum number of nodes to automatically scale to.",
 					},
 					"max": schema.Int64Attribute{
-						Required: true,
+						Optional:    true,
+						Description: "The maximum number of nodes to automatically scale to.",
 					},
 				},
 			},

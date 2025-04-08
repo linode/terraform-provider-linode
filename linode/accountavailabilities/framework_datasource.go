@@ -30,7 +30,7 @@ func (r *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_account_availabilities")
+	tflog.Debug(ctx, "Read data."+r.Config.Name)
 	var data AccountAvailabilityFilterModel
 
 	client := r.Meta.Client
