@@ -15,6 +15,14 @@ The following example shows how one might use this data source to access informa
 
 ```hcl
 data "linode_lke_versions" "example" {}
+
+output "example_output" {
+  value = data.linode_lke_versions.example
+}
+
+output "example_output_first_version" {
+  value = data.linode_lke_versions.example.versions[0]
+}
 ```
 
 The following example shows how one might use this data source to access information about a Linode LKE Version
@@ -23,7 +31,15 @@ with additional information about the Linode LKE Version's tier (`enterprise` or
 > **_NOTE:_**  This functionality may not be currently available to all users and can only be used with v4beta.
 
 ```hcl
-data "linode_lke_versions" "example" {tier = "enterprise"}
+data "linode_lke_versions" "example_enterprise" {tier = "enterprise"}
+
+output "example_enterprise_output" {
+  value = data.linode_lke_versions.example_enterprise
+}
+
+output "example_enterprise_output_first_version" {
+  value = data.linode_lke_versions.example_enterprise.versions[0]
+}
 ```
 
 ## Argument Reference
