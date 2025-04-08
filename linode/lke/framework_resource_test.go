@@ -552,7 +552,7 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, true),
 
 					// Expect a 400 response when attempting to disable HA
 					ExpectError: regexp.MustCompile("\\[400]"),
