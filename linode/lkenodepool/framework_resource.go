@@ -81,7 +81,7 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-	tflog.Trace(ctx, "Read linode_lke_node_pool done")
+	tflog.Trace(ctx, "Read "+r.Config.Name+" done")
 }
 
 func (r *Resource) Create(
@@ -98,18 +98,23 @@ func (r *Resource) Create(
 		return
 	}
 
-	var createOpts linodego.LKENodePoolCreateOptions
-
-	plan.SetNodePoolCreateOptions(ctx, &createOpts, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	clusterID := helper.FrameworkSafeInt64ToInt(
 		plan.ClusterID.ValueInt64(),
 		&resp.Diagnostics,
 	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	cluster, err := client.GetLKECluster(ctx, clusterID)
+	if err != nil {
+		resp.Diagnostics.AddError("error getting cluster", err.Error())
+		return
+	}
+
+	var createOpts linodego.LKENodePoolCreateOptions
+
+	plan.SetNodePoolCreateOptions(ctx, &createOpts, &resp.Diagnostics, cluster.Tier)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -172,41 +177,50 @@ func (r *Resource) Update(
 		return
 	}
 
-	var updateOpts linodego.LKENodePoolUpdateOptions
-
-	plan.SetNodePoolUpdateOptions(ctx, &updateOpts, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	clusterID, poolID := state.ExtractClusterAndNodePoolIDs(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Debug(ctx, "client.UpdateLKENodePool(...)", map[string]any{
-		"cluster_id": clusterID,
-		"options":    updateOpts,
-	})
-	pool, err := client.UpdateLKENodePool(ctx, clusterID, poolID, updateOpts)
+	cluster, err := client.GetLKECluster(ctx, clusterID)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating a Linode Node Pool", err.Error())
+		resp.Diagnostics.AddError("error getting cluster", err.Error())
 		return
 	}
 
-	tflog.Debug(ctx, "waiting for node pool to enter ready status")
-	readyPool, err := WaitForNodePoolReady(ctx,
-		*client,
-		int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
-		clusterID,
-		pool.ID,
-	)
-	if err != nil {
-		resp.Diagnostics.AddError("Linode Node Pool is not ready after update", err.Error())
+	var updateOpts linodego.LKENodePoolUpdateOptions
+
+	shouldUpdate := plan.SetNodePoolUpdateOptions(ctx, &updateOpts, &resp.Diagnostics, &state, cluster.Tier)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	plan.FlattenLKENodePool(ctx, readyPool, true, &resp.Diagnostics)
+	if shouldUpdate {
+		tflog.Debug(ctx, "client.UpdateLKENodePool(...)", map[string]any{
+			"cluster_id": clusterID,
+			"options":    updateOpts,
+		})
+		pool, err := client.UpdateLKENodePool(ctx, clusterID, poolID, updateOpts)
+		if err != nil {
+			resp.Diagnostics.AddError("Error updating a Linode Node Pool", err.Error())
+			return
+		}
+
+		tflog.Debug(ctx, "waiting for node pool to enter ready status")
+		readyPool, err := WaitForNodePoolReady(ctx,
+			*client,
+			int(r.Meta.Config.EventPollMilliseconds.ValueInt64()),
+			clusterID,
+			pool.ID,
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("Linode Node Pool is not ready after update", err.Error())
+			return
+		}
+		plan.FlattenLKENodePool(ctx, readyPool, true, &resp.Diagnostics)
+	}
+
+	plan.CopyFrom(state, true)
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan
@@ -219,7 +233,7 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Trace(ctx, "Update linode_lke_node_pool done")
+	tflog.Trace(ctx, "Update "+r.Config.Name+" done")
 }
 
 func (r *Resource) Delete(

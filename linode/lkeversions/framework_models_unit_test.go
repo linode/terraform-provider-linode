@@ -3,10 +3,11 @@
 package lkeversions
 
 import (
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestParseLKEVersions(t *testing.T) {

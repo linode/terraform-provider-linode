@@ -93,6 +93,10 @@ The following arguments are supported:
 
 * `labels` - (Optional) A map attribute containing key-value pairs to be added as labels to nodes in the node pool. Labels help classify your nodes and to easily select subsets of objects. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
 
+* `k8s_version` - (Optional) The k8s version of the nodes in this node pool. For LKE enterprise only and may not currently available to all users even under v4beta.
+
+* `update_strategy` - (Optional) The strategy for updating the node pool k8s version. For LKE enterprise only and may not currently available to all users even under v4beta.
+
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
 * [`taint`](#taint) - (Optional) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. To learn more, review [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).

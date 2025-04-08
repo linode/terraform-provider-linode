@@ -167,7 +167,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if len(controlPlane) > 0 {
-		expandedControlPlane := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		if diags.HasError() {
+			return diags
+		}
+
 		createOpts.ControlPlane = &expandedControlPlane
 	}
 
@@ -278,7 +282,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	controlPlane := d.Get("control_plane").([]interface{})
 	if len(controlPlane) > 0 {
-		expandedControlPlane := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		expandedControlPlane, diags := expandControlPlaneOptions(controlPlane[0].(map[string]interface{}))
+		if diags.HasError() {
+			return diags
+		}
+
 		updateOpts.ControlPlane = &expandedControlPlane
 	}
 

@@ -28,7 +28,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_lke_versions")
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
 	client := d.Meta.Client
 
