@@ -373,28 +373,26 @@ func (r *Resource) Update(
 	}
 
 	if shouldUpdate || shouldResize {
-		var updatePoller *linodego.EventPoller = nil
-		var updatePollerErr error = nil
-		var resizePoller *linodego.EventPoller = nil
-		var resizePollerErr error = nil
+		var updatePoller, resizePoller *linodego.EventPoller
+		var err error
 
 		if shouldUpdate {
-			updatePoller, updatePollerErr = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
-			if updatePollerErr != nil {
+			updatePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
+			if err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to create update EventPoller for database",
-					updatePollerErr.Error(),
+					err.Error(),
 				)
 				return
 			}
 		}
 
 		if shouldResize {
-			resizePoller, resizePollerErr = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseResize)
-			if resizePollerErr != nil {
+			resizePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseResize)
+			if err != nil {
 				resp.Diagnostics.AddError(
 					"Failed to create resize EventPoller for database",
-					resizePollerErr.Error(),
+					err.Error(),
 				)
 				return
 			}
