@@ -28,6 +28,7 @@ var resourceSchema = map[string]*schema.Schema{
 			"Note: v4beta only and may not currently be available to all users.",
 		Optional: true,
 		Computed: true,
+		ForceNew: true,
 	},
 	"tags": {
 		Type:        schema.TypeSet,
