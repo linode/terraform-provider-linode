@@ -765,7 +765,8 @@ func TestAccResourceLKECluster_apl(t *testing.T) {
 				},
 			},
 		})
-  }
+	})
+}
 
 func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
 	t.Parallel()
