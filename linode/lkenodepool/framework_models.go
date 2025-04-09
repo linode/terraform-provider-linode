@@ -24,6 +24,8 @@ type NodePoolModel struct {
 	Autoscaler     []NodePoolAutoscalerModel `tfsdk:"autoscaler"`
 	Taints         []NodePoolTaintModel      `tfsdk:"taint"`
 	Labels         types.Map                 `tfsdk:"labels"`
+	K8sVersion     types.String              `tfsdk:"k8s_version"`
+	UpdateStrategy types.String              `tfsdk:"update_strategy"`
 }
 
 type NodePoolAutoscalerModel struct {
@@ -122,9 +124,22 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 		diags.Append(errs...)
 	}
 	pool.Nodes = helper.KeepOrUpdateValue(pool.Nodes, *nodePoolLinodes, preserveKnown)
+
+	pool.K8sVersion = helper.KeepOrUpdateStringPointer(pool.K8sVersion, p.K8sVersion, preserveKnown)
+
+	if p.UpdateStrategy != nil {
+		pool.UpdateStrategy = helper.KeepOrUpdateString(pool.UpdateStrategy, string(*p.UpdateStrategy), preserveKnown)
+	} else {
+		pool.UpdateStrategy = helper.KeepOrUpdateString(pool.UpdateStrategy, "", preserveKnown)
+	}
 }
 
-func (pool *NodePoolModel) SetNodePoolCreateOptions(ctx context.Context, p *linodego.LKENodePoolCreateOptions, diags *diag.Diagnostics) {
+func (pool *NodePoolModel) SetNodePoolCreateOptions(
+	ctx context.Context,
+	p *linodego.LKENodePoolCreateOptions,
+	diags *diag.Diagnostics,
+	tier string,
+) {
 	p.Count = helper.FrameworkSafeInt64ToInt(
 		pool.Count.ValueInt64(),
 		diags,
@@ -143,33 +158,82 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(ctx context.Context, p *lino
 	p.Taints = pool.getLKENodePoolTaints()
 
 	pool.Labels.ElementsAs(ctx, &p.Labels, false)
+
+	if tier == "enterprise" {
+		p.K8sVersion = pool.K8sVersion.ValueStringPointer()
+		p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
+	}
 }
 
-func (pool *NodePoolModel) SetNodePoolUpdateOptions(ctx context.Context, p *linodego.LKENodePoolUpdateOptions, diags *diag.Diagnostics) {
-	p.Count = helper.FrameworkSafeInt64ToInt(
-		pool.Count.ValueInt64(),
-		diags,
-	)
-	if diags.HasError() {
-		return
+func (pool *NodePoolModel) SetNodePoolUpdateOptions(
+	ctx context.Context,
+	p *linodego.LKENodePoolUpdateOptions,
+	diags *diag.Diagnostics,
+	state *NodePoolModel,
+	tier string,
+) bool {
+	var shouldUpdate bool
+
+	if !state.Count.Equal(pool.Count) {
+		p.Count = helper.FrameworkSafeInt64ToInt(
+			pool.Count.ValueInt64(),
+			diags,
+		)
+		if diags.HasError() {
+			return false
+		}
+
+		shouldUpdate = true
 	}
 
-	if !pool.Tags.IsNull() {
-		diags.Append(pool.Tags.ElementsAs(ctx, &p.Tags, false)...)
-		if diags.HasError() {
-			return
+	if !state.Tags.Equal(pool.Tags) {
+		if !pool.Tags.IsNull() {
+			diags.Append(pool.Tags.ElementsAs(ctx, &p.Tags, false)...)
+			if diags.HasError() {
+				return false
+			}
+		}
+
+		shouldUpdate = true
+	}
+
+	autoscaler, asNeedsUpdate := pool.shouldUpdateLKENodePoolAutoscaler(p.Count, state, diags)
+	if diags.HasError() {
+		return false
+	}
+
+	if asNeedsUpdate {
+		p.Autoscaler = autoscaler
+		if p.Autoscaler.Enabled && p.Count == 0 {
+			p.Count = p.Autoscaler.Min
 		}
 	}
 
-	p.Autoscaler = pool.getLKENodePoolAutoscaler(p.Count, diags)
-	if p.Autoscaler.Enabled && p.Count == 0 {
-		p.Count = p.Autoscaler.Min
+	shouldUpdate = shouldUpdate || asNeedsUpdate
+
+	if !(len(state.Taints) == 0 && len(pool.Taints) == 0) {
+		taints := pool.getLKENodePoolTaints()
+		p.Taints = &taints
+		shouldUpdate = true
 	}
 
-	taints := pool.getLKENodePoolTaints()
-	p.Taints = &taints
+	if !state.Labels.Equal(pool.Labels) {
+		pool.Labels.ElementsAs(ctx, &p.Labels, false)
+	}
 
-	pool.Labels.ElementsAs(ctx, &p.Labels, false)
+	if tier == "enterprise" {
+		if !state.K8sVersion.Equal(pool.K8sVersion) {
+			p.K8sVersion = pool.K8sVersion.ValueStringPointer()
+			shouldUpdate = true
+		}
+
+		if !state.UpdateStrategy.Equal(pool.UpdateStrategy) {
+			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
+			shouldUpdate = true
+		}
+	}
+
+	return shouldUpdate
 }
 
 func (pool *NodePoolModel) ExtractClusterAndNodePoolIDs(diags *diag.Diagnostics) (int, int) {
@@ -195,6 +259,35 @@ func (pool *NodePoolModel) getLKENodePoolAutoscaler(count int, diags *diag.Diagn
 	return &autoscaler
 }
 
+func (pool *NodePoolModel) shouldUpdateLKENodePoolAutoscaler(
+	count int,
+	state *NodePoolModel,
+	diags *diag.Diagnostics,
+) (*linodego.LKENodePoolAutoscaler, bool) {
+	var autoscaler linodego.LKENodePoolAutoscaler
+	var shouldUpdate bool
+
+	if len(pool.Autoscaler) > 0 {
+		if len(state.Autoscaler) == 0 ||
+			(len(state.Autoscaler) > 0 && (!state.Autoscaler[0].Min.Equal(pool.Autoscaler[0].Min) ||
+				!state.Autoscaler[0].Max.Equal(pool.Autoscaler[0].Max))) {
+			autoscaler.Enabled = true
+			autoscaler.Min = helper.FrameworkSafeInt64ToInt(pool.Autoscaler[0].Min.ValueInt64(), diags)
+			autoscaler.Max = helper.FrameworkSafeInt64ToInt(pool.Autoscaler[0].Max.ValueInt64(), diags)
+
+			shouldUpdate = true
+		}
+	} else if len(state.Autoscaler) > 0 {
+		autoscaler.Enabled = false
+		autoscaler.Min = count
+		autoscaler.Max = count
+
+		shouldUpdate = true
+	}
+
+	return &autoscaler, shouldUpdate
+}
+
 func (taint NodePoolTaintModel) getLKENodePoolTaint() linodego.LKENodePoolTaint {
 	return linodego.LKENodePoolTaint{
 		Effect: linodego.LKENodePoolTaintEffect(taint.Effect.ValueString()),
@@ -211,4 +304,22 @@ func (pool *NodePoolModel) getLKENodePoolTaints() []linodego.LKENodePoolTaint {
 	}
 
 	return taints
+}
+
+func (data *NodePoolModel) CopyFrom(other NodePoolModel, preserveKnown bool) {
+	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
+	data.ClusterID = helper.KeepOrUpdateValue(data.ClusterID, other.ClusterID, preserveKnown)
+	data.Count = helper.KeepOrUpdateValue(data.Count, other.Count, preserveKnown)
+	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
+	data.DiskEncryption = helper.KeepOrUpdateValue(data.DiskEncryption, other.DiskEncryption, preserveKnown)
+	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
+	data.Nodes = helper.KeepOrUpdateValue(data.Nodes, other.Nodes, preserveKnown)
+	data.Labels = helper.KeepOrUpdateValue(data.Labels, other.Labels, preserveKnown)
+	data.K8sVersion = helper.KeepOrUpdateValue(data.K8sVersion, other.K8sVersion, preserveKnown)
+	data.UpdateStrategy = helper.KeepOrUpdateValue(data.UpdateStrategy, other.UpdateStrategy, preserveKnown)
+
+	if !preserveKnown {
+		data.Autoscaler = other.Autoscaler
+		data.Taints = other.Taints
+	}
 }
