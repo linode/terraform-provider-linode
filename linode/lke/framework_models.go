@@ -22,6 +22,7 @@ type LKEDataModel struct {
 	Region       types.String      `tfsdk:"region"`
 	Status       types.String      `tfsdk:"status"`
 	K8sVersion   types.String      `tfsdk:"k8s_version"`
+	APLEnabled   types.Bool        `tfsdk:"apl_enabled"`
 	Tags         types.Set         `tfsdk:"tags"`
 	Tier         types.String      `tfsdk:"tier"`
 	ControlPlane []LKEControlPlane `tfsdk:"control_plane"`
@@ -99,6 +100,7 @@ func (data *LKEDataModel) parseLKEAttributes(
 	data.Region = types.StringValue(cluster.Region)
 	data.Status = types.StringValue(string(cluster.Status))
 	data.K8sVersion = types.StringValue(cluster.K8sVersion)
+	data.APLEnabled = types.BoolValue(cluster.APLEnabled)
 	data.Tier = types.StringValue(cluster.Tier)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, cluster.Tags)
