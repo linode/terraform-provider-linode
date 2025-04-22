@@ -31,6 +31,7 @@ type LKEClusterModel struct {
 	Tags         types.Set            `tfsdk:"tags"`
 	ControlPlane LKEControlPlaneModel `tfsdk:"control_plane"`
 	Tier         types.String         `tfsdk:"tier"`
+	AplEnabled   types.Bool           `tfsdk:"apl_enabled"`
 }
 
 type LKEControlPlaneModel struct {
