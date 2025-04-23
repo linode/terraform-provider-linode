@@ -97,7 +97,7 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `status` - The status of the instance, indicating the current readiness state. (`running`, `offline`, ...)
 
-* `ip_address` - A string containing the Linode's public IP address.
+* `ip_address` - (Deprecated) A string containing the Linode's public IP address.
 
 * `private_ip_address` - This Linode's Private IPv4 Address, if enabled.  The regional private IP address range, 192.168.128.0/17, is shared by all Linode Instances in a region.
 
