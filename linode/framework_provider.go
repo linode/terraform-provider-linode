@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlconfig"
+
 	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -318,6 +320,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		networkingips.NewDataSource,
 		databasemysqlv2.NewDataSource,
 		databasepostgresqlv2.NewDataSource,
+		databasemysqlconfig.NewDataSource,
 		objendpoints.NewDataSource,
 	}
 }
