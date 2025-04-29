@@ -1,8 +1,9 @@
 package tmpl
 
 import (
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"testing"
+
+	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
 func DataBasic(t testing.TB) string {
