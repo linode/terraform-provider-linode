@@ -53,9 +53,3 @@ Each Linode Object Storage quota will be stored in the `quotas` attribute and wi
 * `quota_limit` - The maximum quantity of the `resource_metric` allowed by the quota.
 
 * `resource_metric` - The specific Object Storage resource for the quota.
-
-* `quota_usage` - The usage data for a specific Object Storage related quota on your account.
-
-    * `quota_limit` - The maximum quantity allowed by the quota.
-
-    * `usage` - The quantity of the Object Storage resource currently in use.
