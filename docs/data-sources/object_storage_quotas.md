@@ -16,8 +16,8 @@ The following example shows how one might use this data source to list and filte
 ```hcl
 data "linode_object_storage_quotas" "max_buckets_quotas" {
     filter {
-    name = "quota_name"
-    values = ["max_buckets"]
+    name = "endpoint_type"
+    values = ["E0"]
   }
 }
 ```
