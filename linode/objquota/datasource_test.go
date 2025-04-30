@@ -3,6 +3,8 @@
 package objquota_test
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -15,13 +17,28 @@ func TestAccDataSourceObjQuota_basic(t *testing.T) {
 
 	resourceName := "data.linode_object_storage_quota.foobar"
 
+	client, err := acceptance.GetTestClient()
+	if err != nil {
+		fmt.Errorf("Error getting client: %s", err.Error())
+	}
+
+	quotas, err := client.ListObjectStorageQuotas(context.Background(), nil)
+	if err != nil {
+		fmt.Errorf("Error listing quotas: %s", err.Error())
+	}
+
+	if len(quotas) < 1 {
+		t.Skipf("No available Object Storage quota for testing. Skipping now...")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataBasic(t),
+				Config: tmpl.DataBasic(t, quotas[0].QuotaID),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "id", quotas[0].QuotaID),
 					resource.TestCheckResourceAttrSet(resourceName, "quota_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoint_type"),
 					resource.TestCheckResourceAttrSet(resourceName, "s3_endpoint"),

@@ -6,7 +6,13 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 )
 
-func DataBasic(t testing.TB) string {
+type TemplateData struct {
+	ID string
+}
+
+func DataBasic(t testing.TB, id string) string {
 	return acceptance.ExecuteTemplate(t,
-		"object_quota_data_basic", nil)
+		"object_quota_data_basic", TemplateData{
+			ID: id,
+		})
 }
