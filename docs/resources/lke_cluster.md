@@ -16,7 +16,7 @@ Creating a basic LKE cluster:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-central"
     tags        = ["prod"]
 
@@ -32,7 +32,7 @@ Creating an LKE cluster with autoscaler:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-central"
     tags        = ["prod"]
 
@@ -54,7 +54,7 @@ Creating an LKE cluster with control plane:
 ```terraform
 resource "linode_lke_cluster" "test" {
     label       = "my-cluster"     
-    k8s_version = "1.28"           
+    k8s_version = "1.32"           
     region      = "us-central"     
     tags        = ["prod"]         
 
@@ -82,7 +82,7 @@ Creating an LKE cluster with labeled node pools:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-central"
     tags        = ["prod"]
 
@@ -307,7 +307,7 @@ locals {
 
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-mia"
     
     # This tells the Linode provider to ignore 
