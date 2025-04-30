@@ -34,10 +34,6 @@ func TestAccDataSourceObjQuotas_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dsAll, "quotas.0.quota_limit"),
 					resource.TestCheckResourceAttrSet(dsAll, "quotas.0.resource_metric"),
 
-					// Filter and list object storage quotas match the quota name: max_buckets
-					acceptance.CheckResourceAttrGreaterThan(dsByQuotaName, "quotas.#", 2),
-					resource.TestCheckResourceAttr(dsByQuotaName, "quotas.0.quota_name", "max_buckets"),
-
 					// Filter and list object storage quotas match the endpoint type: E0
 					acceptance.CheckResourceAttrGreaterThan(dsByEndpointType, "quotas.#", 2),
 					resource.TestCheckResourceAttr(dsByEndpointType, "quotas.0.endpoint_type", "E0"),

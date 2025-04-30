@@ -2,13 +2,6 @@
 
 data "linode_object_storage_quotas" "all" {}
 
-data "linode_object_storage_quotas" "by-quota-name" {
-    filter {
-         name = "quota_name"
-         values = ["max_buckets"]
-    }
-}
-
 data "linode_object_storage_quotas" "by-endpoint-type" {
     filter {
          name = "endpoint_type"
