@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
+
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -24,6 +26,41 @@ type ModelUpdates struct {
 	Duration  types.Int64  `tfsdk:"duration"`
 	Frequency types.String `tfsdk:"frequency"`
 	HourOfDay types.Int64  `tfsdk:"hour_of_day"`
+}
+
+type ModelEngineConfig struct {
+	BinlogRetentionPeriod types.Int64             `tfsdk:"binlog_retention_period"`
+	MySQL                 *ModelEngineConfigMySQL `tfsdk:"mysql"`
+}
+
+type ModelEngineConfigMySQL struct {
+	ConnectTimeout               types.Int64   `tfsdk:"connect_timeout"`
+	DefaultTimeZone              types.String  `tfsdk:"default_time_zone"`
+	GroupConcatMaxLen            types.Float64 `tfsdk:"group_concat_max_len"`
+	InformationSchemaStatsExpiry types.Int64   `tfsdk:"information_schema_stats_expiry"`
+	InnoDBChangeBufferMaxSize    types.Int64   `tfsdk:"innodb_change_buffer_max_size"`
+	InnoDBFlushNeighbors         types.Int64   `tfsdk:"innodb_flush_neighbors"`
+	InnoDBFTMinTokenSize         types.Int64   `tfsdk:"innodb_ft_min_token_size"`
+	InnoDBFTServerStopwordTable  types.String  `tfsdk:"innodb_ft_server_stopword_table"`
+	InnoDBLockWaitTimeout        types.Int64   `tfsdk:"innodb_lock_wait_timeout"`
+	InnoDBLogBufferSize          types.Int64   `tfsdk:"innodb_log_buffer_size"`
+	InnoDBOnlineAlterLogMaxSize  types.Int64   `tfsdk:"innodb_online_alter_log_max_size"`
+	InnoDBReadIOThreads          types.Int64   `tfsdk:"innodb_read_io_threads"`
+	InnoDBRollbackOnTimeout      types.Bool    `tfsdk:"innodb_rollback_on_timeout"`
+	InnoDBThreadConcurrency      types.Int64   `tfsdk:"innodb_thread_concurrency"`
+	InnoDBWriteIOThreads         types.Int64   `tfsdk:"innodb_write_io_threads"`
+	InteractiveTimeout           types.Int64   `tfsdk:"interactive_timeout"`
+	InternalTmpMemStorageEngine  types.String  `tfsdk:"internal_tmp_mem_storage_engine"`
+	MaxAllowedPacket             types.Int64   `tfsdk:"max_allowed_packet"`
+	MaxHeapTableSize             types.Int64   `tfsdk:"max_heap_table_size"`
+	NetBufferLength              types.Int64   `tfsdk:"net_buffer_length"`
+	NetReadTimeout               types.Int64   `tfsdk:"net_read_timeout"`
+	NetWriteTimeout              types.Int64   `tfsdk:"net_write_timeout"`
+	SortBufferSize               types.Int64   `tfsdk:"sort_buffer_size"`
+	SQLMode                      types.String  `tfsdk:"sql_mode"`
+	SQLRequirePrimaryKey         types.Bool    `tfsdk:"sql_require_primary_key"`
+	TmpTableSize                 types.Int64   `tfsdk:"tmp_table_size"`
+	WaitTimeout                  types.Int64   `tfsdk:"wait_timeout"`
 }
 
 func (m ModelUpdates) ToLinodego(d diag.Diagnostics) *linodego.DatabaseMaintenanceWindow {
@@ -79,6 +116,8 @@ type Model struct {
 
 	Updates        types.Object `tfsdk:"updates"`
 	PendingUpdates types.Set    `tfsdk:"pending_updates"`
+
+	EngineConfig *ModelEngineConfig `tfsdk:"engine_config"`
 }
 
 func (m *Model) Refresh(
@@ -239,6 +278,41 @@ func (m *Model) Flatten(
 	d.Append(rd...)
 	m.Updates = helper.KeepOrUpdateValue(m.Updates, updatesObject, preserveKnown)
 
+	engineConfigModel := ModelEngineConfig{
+		BinlogRetentionPeriod: int64OrNull(db.EngineConfig.BinlogRetentionPeriod),
+		MySQL: &ModelEngineConfigMySQL{
+			ConnectTimeout:               int64OrNull(db.EngineConfig.MySQL.ConnectTimeout),
+			DefaultTimeZone:              stringOrNull(db.EngineConfig.MySQL.DefaultTimeZone),
+			GroupConcatMaxLen:            float64OrNull(db.EngineConfig.MySQL.GroupConcatMaxLen),
+			InformationSchemaStatsExpiry: int64OrNull(db.EngineConfig.MySQL.InformationSchemaStatsExpiry),
+			InnoDBChangeBufferMaxSize:    int64OrNull(db.EngineConfig.MySQL.InnoDBChangeBufferMaxSize),
+			InnoDBFlushNeighbors:         int64OrNull(db.EngineConfig.MySQL.InnoDBFlushNeighbors),
+			InnoDBFTMinTokenSize:         int64OrNull(db.EngineConfig.MySQL.InnoDBFTMinTokenSize),
+			InnoDBFTServerStopwordTable:  stringOrNull(db.EngineConfig.MySQL.InnoDBFTServerStopwordTable),
+			InnoDBLockWaitTimeout:        int64OrNull(db.EngineConfig.MySQL.InnoDBLockWaitTimeout),
+			InnoDBLogBufferSize:          int64OrNull(db.EngineConfig.MySQL.InnoDBLogBufferSize),
+			InnoDBOnlineAlterLogMaxSize:  int64OrNull(db.EngineConfig.MySQL.InnoDBOnlineAlterLogMaxSize),
+			InnoDBReadIOThreads:          int64OrNull(db.EngineConfig.MySQL.InnoDBReadIOThreads),
+			InnoDBRollbackOnTimeout:      boolOrNull(db.EngineConfig.MySQL.InnoDBRollbackOnTimeout),
+			InnoDBThreadConcurrency:      int64OrNull(db.EngineConfig.MySQL.InnoDBThreadConcurrency),
+			InnoDBWriteIOThreads:         int64OrNull(db.EngineConfig.MySQL.InnoDBWriteIOThreads),
+			InteractiveTimeout:           int64OrNull(db.EngineConfig.MySQL.InteractiveTimeout),
+			InternalTmpMemStorageEngine:  stringOrNull(db.EngineConfig.MySQL.InternalTmpMemStorageEngine),
+			MaxAllowedPacket:             int64OrNull(db.EngineConfig.MySQL.MaxAllowedPacket),
+			MaxHeapTableSize:             int64OrNull(db.EngineConfig.MySQL.MaxHeapTableSize),
+			NetBufferLength:              int64OrNull(db.EngineConfig.MySQL.NetBufferLength),
+			NetReadTimeout:               int64OrNull(db.EngineConfig.MySQL.NetReadTimeout),
+			NetWriteTimeout:              int64OrNull(db.EngineConfig.MySQL.NetWriteTimeout),
+			SortBufferSize:               int64OrNull(db.EngineConfig.MySQL.SortBufferSize),
+			SQLMode:                      stringOrNull(db.EngineConfig.MySQL.SQLMode),
+			SQLRequirePrimaryKey:         boolOrNull(db.EngineConfig.MySQL.SQLRequirePrimaryKey),
+			TmpTableSize:                 int64OrNull(db.EngineConfig.MySQL.TmpTableSize),
+			WaitTimeout:                  int64OrNull(db.EngineConfig.MySQL.WaitTimeout),
+		},
+	}
+
+	m.EngineConfig = &engineConfigModel
+
 	pendingObjects := helper.MapSlice(
 		db.Updates.Pending,
 		func(pending linodego.DatabaseMaintenanceWindowPending) types.Object {
@@ -301,6 +375,10 @@ func (m *Model) CopyFrom(other *Model, preserveKnown bool) {
 	m.Updated = helper.KeepOrUpdateValue(m.Updated, other.Updated, preserveKnown)
 	m.Updates = helper.KeepOrUpdateValue(m.Updates, other.Updates, preserveKnown)
 	m.Version = helper.KeepOrUpdateValue(m.Version, other.Version, preserveKnown)
+
+	if !preserveKnown {
+		m.EngineConfig = other.EngineConfig
+	}
 }
 
 // GetFork returns the linodego.DatabaseFork for this model if specified, else nil.
@@ -367,4 +445,144 @@ func (m *Model) GetUpdates(ctx context.Context, d diag.Diagnostics) *ModelUpdate
 	)
 
 	return &result
+}
+
+// GetAttributeCapable abstracts over tfsdk.Plan and tfsdk.State, allowing access to attribute values via the GetAttribute method
+type GetAttributeCapable interface {
+	GetAttribute(ctx context.Context, path path.Path, target interface{}) diag.Diagnostics
+}
+
+// GetEngineConfig returns the ModelEngineConfig for this model if specified, else nil.
+func (m *ModelEngineConfig) GetEngineConfig(d diag.Diagnostics, data GetAttributeCapable) *linodego.MySQLDatabaseEngineConfig {
+	var engineConfig linodego.MySQLDatabaseEngineConfig
+
+	if m == nil || ((m.BinlogRetentionPeriod.IsNull() || m.BinlogRetentionPeriod.IsUnknown()) && m.MySQL == nil) {
+		return nil
+	}
+
+	binlogRetentionPeriod := helper.FrameworkSafeInt64PointerToIntPointer(m.BinlogRetentionPeriod.ValueInt64Pointer(), &d)
+	engineConfig.BinlogRetentionPeriod = binlogRetentionPeriod
+
+	var engineConfigMySQL linodego.MySQLDatabaseEngineConfigMySQL
+
+	connectTimeout := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.ConnectTimeout.ValueInt64Pointer(), &d)
+	engineConfigMySQL.ConnectTimeout = connectTimeout
+
+	defaultTimeZone := m.MySQL.DefaultTimeZone.ValueStringPointer()
+	engineConfigMySQL.DefaultTimeZone = defaultTimeZone
+
+	groupConcatMaxLen := m.MySQL.GroupConcatMaxLen.ValueFloat64Pointer()
+	engineConfigMySQL.GroupConcatMaxLen = groupConcatMaxLen
+
+	informationSchemaStatsExpiry := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InformationSchemaStatsExpiry.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InformationSchemaStatsExpiry = informationSchemaStatsExpiry
+
+	innodbChangeBufferMaxSize := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBChangeBufferMaxSize.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBChangeBufferMaxSize = innodbChangeBufferMaxSize
+
+	innodbFlushNeighbors := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBFlushNeighbors.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBFlushNeighbors = innodbFlushNeighbors
+
+	innodbFTMinTokenSize := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBFTMinTokenSize.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBFTMinTokenSize = innodbFTMinTokenSize
+
+	innodbFTServerStopwordTable := m.MySQL.InnoDBFTServerStopwordTable.ValueStringPointer()
+	engineConfigMySQL.InnoDBFTServerStopwordTable = innodbFTServerStopwordTable
+
+	innodbLockWaitTimeout := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBLockWaitTimeout.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBLockWaitTimeout = innodbLockWaitTimeout
+
+	innodbLogBufferSize := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBLogBufferSize.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBLogBufferSize = innodbLogBufferSize
+
+	innodbOnlineAlterLogMaxSize := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBOnlineAlterLogMaxSize.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBOnlineAlterLogMaxSize = innodbOnlineAlterLogMaxSize
+
+	innodbReadIOThreads := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBReadIOThreads.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBReadIOThreads = innodbReadIOThreads
+
+	innodbRollbackOnTimeout := m.MySQL.InnoDBRollbackOnTimeout.ValueBoolPointer()
+	engineConfigMySQL.InnoDBRollbackOnTimeout = innodbRollbackOnTimeout
+
+	innodbThreadConcurrency := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBThreadConcurrency.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBThreadConcurrency = innodbThreadConcurrency
+
+	innodbWriteIOThreads := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InnoDBWriteIOThreads.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InnoDBWriteIOThreads = innodbWriteIOThreads
+
+	interactiveTimeout := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.InteractiveTimeout.ValueInt64Pointer(), &d)
+	engineConfigMySQL.InteractiveTimeout = interactiveTimeout
+
+	internalTmpMemStorageEngine := m.MySQL.InternalTmpMemStorageEngine.ValueStringPointer()
+	engineConfigMySQL.InternalTmpMemStorageEngine = internalTmpMemStorageEngine
+
+	maxAllowedPacket := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.MaxAllowedPacket.ValueInt64Pointer(), &d)
+	engineConfigMySQL.MaxAllowedPacket = maxAllowedPacket
+
+	maxHeapTableSize := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.MaxHeapTableSize.ValueInt64Pointer(), &d)
+	engineConfigMySQL.MaxHeapTableSize = maxHeapTableSize
+
+	netBufferLength := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.NetBufferLength.ValueInt64Pointer(), &d)
+	engineConfigMySQL.NetBufferLength = netBufferLength
+
+	netReadTimeout := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.NetReadTimeout.ValueInt64Pointer(), &d)
+	engineConfigMySQL.NetReadTimeout = netReadTimeout
+
+	netWriteTimeout := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.NetWriteTimeout.ValueInt64Pointer(), &d)
+	engineConfigMySQL.NetWriteTimeout = netWriteTimeout
+
+	sortBufferSize := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.SortBufferSize.ValueInt64Pointer(), &d)
+	engineConfigMySQL.SortBufferSize = sortBufferSize
+
+	var sqlMode types.String
+	diags := data.GetAttribute(context.Background(), path.Root("engine_config").AtName("mysql").AtName("sql_mode"), &sqlMode)
+	d.Append(diags...)
+	if !sqlMode.IsNull() && !sqlMode.IsUnknown() {
+		engineConfigMySQL.SQLMode = sqlMode.ValueStringPointer()
+	}
+
+	var sqlRequirePrimaryKey types.Bool
+	diags = data.GetAttribute(context.Background(), path.Root("engine_config").AtName("mysql").AtName("sql_require_primary_key"), &sqlRequirePrimaryKey)
+	d.Append(diags...)
+	if !sqlRequirePrimaryKey.IsNull() && !sqlRequirePrimaryKey.IsUnknown() {
+		engineConfigMySQL.SQLRequirePrimaryKey = sqlRequirePrimaryKey.ValueBoolPointer()
+	}
+
+	tmpTableSize := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.TmpTableSize.ValueInt64Pointer(), &d)
+	engineConfigMySQL.TmpTableSize = tmpTableSize
+
+	waitTimeout := helper.FrameworkSafeInt64PointerToIntPointer(m.MySQL.WaitTimeout.ValueInt64Pointer(), &d)
+	engineConfigMySQL.WaitTimeout = waitTimeout
+
+	engineConfig.MySQL = &engineConfigMySQL
+
+	return &engineConfig
+}
+
+func int64OrNull(v *int) types.Int64 {
+	if v != nil {
+		return types.Int64Value(int64(*v))
+	}
+	return types.Int64Null()
+}
+
+func float64OrNull(v *float64) types.Float64 {
+	if v != nil {
+		return types.Float64Value(*v)
+	}
+	return types.Float64Null()
+}
+
+func stringOrNull(v *string) types.String {
+	if v != nil {
+		return types.StringValue(*v)
+	}
+	return types.StringNull()
+}
+
+func boolOrNull(v *bool) types.Bool {
+	if v != nil {
+		return types.BoolValue(*v)
+	}
+	return types.BoolNull()
 }

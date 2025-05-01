@@ -2,17 +2,54 @@ package databasemysqlv2
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var (
+	engineConfigMySQLAttributes = map[string]attr.Type{
+		"connect_timeout":                  types.Int64Type,
+		"default_time_zone":                types.StringType,
+		"group_concat_max_len":             types.Float64Type,
+		"information_schema_stats_expiry":  types.Int64Type,
+		"innodb_change_buffer_max_size":    types.Int64Type,
+		"innodb_flush_neighbors":           types.Int64Type,
+		"innodb_ft_min_token_size":         types.Int64Type,
+		"innodb_ft_server_stopword_table":  types.StringType,
+		"innodb_lock_wait_timeout":         types.Int64Type,
+		"innodb_log_buffer_size":           types.Int64Type,
+		"innodb_online_alter_log_max_size": types.Int64Type,
+		"innodb_read_io_threads":           types.Int64Type,
+		"innodb_rollback_on_timeout":       types.BoolType,
+		"innodb_thread_concurrency":        types.Int64Type,
+		"innodb_write_io_threads":          types.Int64Type,
+		"interactive_timeout":              types.Int64Type,
+		"internal_tmp_mem_storage_engine":  types.StringType,
+		"max_allowed_packet":               types.Int64Type,
+		"max_heap_table_size":              types.Int64Type,
+		"net_buffer_length":                types.Int64Type,
+		"net_read_timeout":                 types.Int64Type,
+		"net_write_timeout":                types.Int64Type,
+		"sort_buffer_size":                 types.Int64Type,
+		"sql_mode":                         types.StringType,
+		"sql_require_primary_key":          types.BoolType,
+		"tmp_table_size":                   types.Int64Type,
+		"wait_timeout":                     types.Int64Type,
+	}
+
+	engineConfigAttributes = map[string]attr.Type{
+		"binlog_retention_period": types.Int64Type,
+		"mysql":                   types.ObjectType{AttrTypes: engineConfigMySQLAttributes},
+	}
 )
 
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Description: "The id of the VPC.",
+			Description: "The id of the MySQL Database.",
 			Required:    true,
 		},
-
 		"engine_id": schema.StringAttribute{
 			Description: "The unique ID of the database engine and version to use. (e.g. mysql/8)",
 			Computed:    true,
@@ -29,7 +66,6 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The Linode Instance type used by the Managed Database for its nodes.",
 			Computed:    true,
 		},
-
 		"allow_list": schema.SetAttribute{
 			ElementType: types.StringType,
 			Computed:    true,
@@ -59,7 +95,6 @@ var frameworkDatasourceSchema = schema.Schema{
 			AttributeTypes: updatesAttributes,
 			Computed:       true,
 		},
-
 		"created": schema.StringAttribute{
 			Description: "When this Managed Database was created.",
 			Computed:    true,
@@ -134,6 +169,11 @@ var frameworkDatasourceSchema = schema.Schema{
 		"version": schema.StringAttribute{
 			Description: "The Managed Database engine version.",
 			Computed:    true,
+		},
+		"engine_config": schema.ObjectAttribute{
+			Description:    "The current values for the custom configuration options for the MySQL Managed Database.",
+			AttributeTypes: engineConfigAttributes,
+			Computed:       true,
 		},
 	},
 }

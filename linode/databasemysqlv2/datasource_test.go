@@ -70,6 +70,9 @@ func TestAccDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "updates.frequency", "weekly"),
 
 					resource.TestCheckResourceAttr(dataSourceName, "pending_updates.#", "0"),
+
+					resource.TestCheckResourceAttr(dataSourceName, "engine_config.mysql.sql_mode", "ANSI,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,STRICT_ALL_TABLES"),
+					resource.TestCheckResourceAttr(dataSourceName, "engine_config.mysql.sql_require_primary_key", "true"),
 				),
 			},
 		},

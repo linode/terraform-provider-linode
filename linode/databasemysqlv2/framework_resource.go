@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -54,6 +56,7 @@ func (r *Resource) Create(
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -68,13 +71,14 @@ func (r *Resource) Create(
 	defer cancel()
 
 	createOpts := linodego.MySQLCreateOptions{
-		Label:       data.Label.ValueString(),
-		Region:      data.Region.ValueString(),
-		Type:        data.Type.ValueString(),
-		Engine:      data.EngineID.ValueString(),
-		ClusterSize: helper.FrameworkSafeInt64ToInt(data.ClusterSize.ValueInt64(), &resp.Diagnostics),
-		Fork:        data.GetFork(resp.Diagnostics),
-		AllowList:   data.GetAllowList(ctx, resp.Diagnostics),
+		Label:        data.Label.ValueString(),
+		Region:       data.Region.ValueString(),
+		Type:         data.Type.ValueString(),
+		Engine:       data.EngineID.ValueString(),
+		ClusterSize:  helper.FrameworkSafeInt64ToInt(data.ClusterSize.ValueInt64(), &resp.Diagnostics),
+		Fork:         data.GetFork(resp.Diagnostics),
+		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
+		EngineConfig: data.EngineConfig.GetEngineConfig(resp.Diagnostics, req.Plan),
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -339,6 +343,21 @@ func (r *Resource) Update(
 		}
 
 		updateOpts.Updates = updates.ToLinodego(resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	// `engine_config` field updates
+	if !cmp.Equal(state.EngineConfig, plan.EngineConfig) {
+		shouldUpdate = true
+
+		engineConfig := plan.EngineConfig.GetEngineConfig(resp.Diagnostics, req.Plan)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateOpts.EngineConfig = engineConfig
 		if resp.Diagnostics.HasError() {
 			return
 		}
