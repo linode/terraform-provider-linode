@@ -30,5 +30,9 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "A string describing the status of this account's Object Storage service enrollment.",
 			Computed:    true,
 		},
+		"interfaces_for_new_linodes": schema.StringAttribute{
+			Description: "What kind of interfaces are allowed for new Linode instances.",
+			Computed:    true,
+		},
 	},
 }
