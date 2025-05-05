@@ -16,8 +16,8 @@ The following example shows how one might use this data source to list and filte
 ```hcl
 data "linode_object_storage_quotas" "max_buckets_quotas" {
     filter {
-    name = "endpoint_type"
-    values = ["E0"]
+      name = "endpoint_type"
+      values = ["E0"]
   }
 }
 ```
@@ -53,3 +53,19 @@ Each Linode Object Storage quota will be stored in the `quotas` attribute and wi
 * `quota_limit` - The maximum quantity of the `resource_metric` allowed by the quota.
 
 * `resource_metric` - The specific Object Storage resource for the quota.
+
+## Filterable Fields
+
+* `id`
+
+* `quota_name`
+
+* `endpoint_type`
+
+* `s3_endpoint`
+
+* `description`
+
+* `quota_limit`
+
+* `resource_metric`
