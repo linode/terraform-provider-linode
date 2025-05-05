@@ -34,7 +34,7 @@ require (
 	golang.org/x/sync v0.13.0
 )
 
-replace github.com/linode/linodego => github.com/linode/linodego v0.0.0-20250425143543-6fe99dad1b61
+replace github.com/linode/linodego => github.com/ezilber-akamai/linodego v0.0.0-20250505192340-a99863103991
 
 require (
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
