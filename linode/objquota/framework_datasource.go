@@ -38,13 +38,13 @@ func (d *DataSource) Read(
 		return
 	}
 
-	id := data.ID.ValueString()
+	quotaID := data.QuotaID.ValueString()
 
 	ctx = helper.SetLogFieldBulk(ctx, map[string]any{
-		"quota_id": id,
+		"quota_id": quotaID,
 	})
 
-	quota, err := client.GetObjectStorageQuota(ctx, id)
+	quota, err := client.GetObjectStorageQuota(ctx, quotaID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get the Object Storage Quota: %s", err.Error(),
@@ -52,7 +52,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	usage, err := client.GetObjectStorageQuotaUsage(ctx, id)
+	usage, err := client.GetObjectStorageQuotaUsage(ctx, quotaID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get the Object Storage Quota Usage: %s", err.Error(),

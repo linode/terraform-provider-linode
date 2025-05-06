@@ -15,7 +15,7 @@ The following example shows how one might use this data source to access informa
 
 ```hcl
 data "linode_object_storage_quota" "my_quota" {
-    id = "obj-buckets-br-gru-1.linodeobjects.com"
+  quota_id = "obj-buckets-br-gru-1.linodeobjects.com"
 }
 ```
 
@@ -23,7 +23,7 @@ data "linode_object_storage_quota" "my_quota" {
 
 The following arguments are supported:
 
-* `id` - (Required) The Object Storage quota ID.
+* `quota_id` - (Required) The Object Storage quota ID.
 
 ## Attributes Reference
 
@@ -46,3 +46,5 @@ The Linode Object Storage quota data source exports the following attributes:
   * `quota_limit` - The maximum quantity allowed by the quota.
   
   * `usage` - The quantity of the Object Storage resource currently in use.
+
+* `id` - The unique ID of the Object Storage quota data source.

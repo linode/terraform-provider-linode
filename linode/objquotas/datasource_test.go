@@ -36,7 +36,7 @@ func TestAccDataSourceObjQuotas_basic(t *testing.T) {
 					// Check the first element of the Object Storage quotas
 					statecheck.ExpectKnownValue(
 						dsAll,
-						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("id"),
+						tfjsonpath.New("quotas").AtSliceIndex(0).AtMapKey("quota_id"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(

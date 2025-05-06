@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/hashicorp/terraform-plugin-testing v1.12.0
-	github.com/linode/linodego v1.49.0
+	github.com/linode/linodego v1.50.0
 	github.com/linode/linodego/k8s v1.25.2
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.37.0
@@ -126,5 +126,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/linode/linodego => github.com/linode/linodego v1.49.1-0.20250424200421-cd9bb698b732

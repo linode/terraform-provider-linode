@@ -48,6 +48,11 @@ func TestAccDataSourceObjQuota_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
+						tfjsonpath.New("quota_id"),
+						knownvalue.StringExact(quotas[0].QuotaID),
+					),
+					statecheck.ExpectKnownValue(
+						resourceName,
 						tfjsonpath.New("quota_name"),
 						knownvalue.NotNull(),
 					),

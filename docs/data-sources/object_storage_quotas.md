@@ -40,7 +40,7 @@ The following arguments are supported:
 
 Each Linode Object Storage quota will be stored in the `quotas` attribute and will export the following attributes:
 
-* `id` - The ID of the Object Storage quota.
+* `quota_id` - The ID of the Object Storage quota.
 
 * `quota_name` - The name of the Object Storage quota.
 
@@ -56,7 +56,7 @@ Each Linode Object Storage quota will be stored in the `quotas` attribute and wi
 
 ## Filterable Fields
 
-* `id`
+* `quota_id`
 
 * `quota_name`
 

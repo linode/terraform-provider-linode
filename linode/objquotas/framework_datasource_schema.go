@@ -8,7 +8,7 @@ import (
 var filterConfig = frameworkfilter.Config{
 	"quota_name":      {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"s3_endpoint":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
-	"id":              {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
+	"quota_id":        {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"endpoint_type":   {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"description":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeString},
 	"quota_limit":     {APIFilterable: false, TypeFunc: frameworkfilter.FilterTypeInt},
@@ -28,7 +28,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "The returned list of Object Storage quotas.",
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
+					"quota_id": schema.StringAttribute{
 						Description: "The ID of the Object Storage quota.",
 						Required:    true,
 					},

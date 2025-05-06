@@ -11,6 +11,7 @@ import (
 
 type DataSourceModel struct {
 	ID             types.String `tfsdk:"id"`
+	QuotaID        types.String `tfsdk:"quota_id"`
 	QuotaName      types.String `tfsdk:"quota_name"`
 	EndpointType   types.String `tfsdk:"endpoint_type"`
 	S3Endpoint     types.String `tfsdk:"s3_endpoint"`
@@ -31,6 +32,7 @@ func (data *DataSourceModel) parseObjectStorageQuota(
 	usage *linodego.ObjectStorageQuotaUsage,
 ) diag.Diagnostics {
 	data.ID = types.StringValue(quota.QuotaID)
+	data.QuotaID = types.StringValue(quota.QuotaID)
 	data.QuotaName = types.StringValue(quota.QuotaName)
 	data.EndpointType = types.StringValue(quota.EndpointType)
 	data.S3Endpoint = types.StringValue(quota.S3Endpoint)

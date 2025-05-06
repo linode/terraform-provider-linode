@@ -8,7 +8,7 @@ import (
 
 var FrameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
-		"id": schema.StringAttribute{
+		"quota_id": schema.StringAttribute{
 			Description: "The ID of the Object Storage quota.",
 			Required:    true,
 		},
@@ -40,6 +40,10 @@ var FrameworkDatasourceSchema = schema.Schema{
 			Description:    "The usage data for a specific Object Storage related quota on your account.",
 			Computed:       true,
 			AttributeTypes: quotaUsageAttributes,
+		},
+		"id": schema.StringAttribute{
+			Description: "The unique ID of the Object Storage quota data source.",
+			Computed:    true,
 		},
 	},
 }

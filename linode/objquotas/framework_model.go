@@ -13,7 +13,7 @@ type ObjectStorageQuotaFilterModel struct {
 }
 
 type ObjectStorageQuotaModel struct {
-	ID             types.String `tfsdk:"id"`
+	QuotaID        types.String `tfsdk:"quota_id"`
 	QuotaName      types.String `tfsdk:"quota_name"`
 	EndpointType   types.String `tfsdk:"endpoint_type"`
 	S3Endpoint     types.String `tfsdk:"s3_endpoint"`
@@ -30,7 +30,7 @@ func (model *ObjectStorageQuotaFilterModel) parseQuotas(
 	for i, quota := range quotas {
 		var quotaModel ObjectStorageQuotaModel
 
-		quotaModel.ID = types.StringValue(quota.QuotaID)
+		quotaModel.QuotaID = types.StringValue(quota.QuotaID)
 		quotaModel.QuotaName = types.StringValue(quota.QuotaName)
 		quotaModel.EndpointType = types.StringValue(quota.EndpointType)
 		quotaModel.S3Endpoint = types.StringValue(quota.S3Endpoint)
