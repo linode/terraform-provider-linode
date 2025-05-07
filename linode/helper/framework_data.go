@@ -74,6 +74,10 @@ func KeepOrUpdateInt64Pointer(original types.Int64, updated *int64, preserveKnow
 	return KeepOrUpdateValue(original, types.Int64PointerValue(updated), preserveKnown)
 }
 
+func KeepOrUpdateInt32Pointer(original types.Int32, updated *int32, preserveKnown bool) types.Int32 {
+	return KeepOrUpdateValue(original, types.Int32PointerValue(updated), preserveKnown)
+}
+
 func KeepOrUpdateFloat64Pointer(original types.Float64, updated *float64, preserveKnown bool) types.Float64 {
 	return KeepOrUpdateValue(original, types.Float64PointerValue(updated), preserveKnown)
 }
