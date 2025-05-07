@@ -102,6 +102,7 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
+					resource.TestMatchResourceAttr(resName, "ipv6", regexp.MustCompile(`/128$`)),
 				),
 			},
 
