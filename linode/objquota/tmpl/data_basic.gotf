@@ -1,0 +1,7 @@
+{{ define "object_quota_data_basic" }}
+
+data "linode_object_storage_quota" "foobar" {
+    quota_id = "{{ .QuotaID }}"
+}
+
+{{ end }}
