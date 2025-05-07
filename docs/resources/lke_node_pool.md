@@ -58,7 +58,7 @@ resource "linode_lke_node_pool" "my-pool" {
 
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-mia"
 
     labels = {
