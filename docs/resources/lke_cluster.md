@@ -4,7 +4,7 @@ description: |-
   Manages a Linode instance.
 ---
 
-# linode\_lke_cluster
+# linode\_lke\_cluster
 
 Manages an LKE cluster.
 For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/post-lke-cluster).
@@ -16,7 +16,7 @@ Creating a basic LKE cluster:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-central"
     tags        = ["prod"]
 
@@ -32,7 +32,7 @@ Creating an LKE cluster with autoscaler:
 ```terraform
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-central"
     tags        = ["prod"]
 
@@ -54,7 +54,7 @@ Creating an LKE cluster with control plane:
 ```terraform
 resource "linode_lke_cluster" "test" {
     label       = "my-cluster"     
-    k8s_version = "1.28"           
+    k8s_version = "1.32"           
     region      = "us-central"     
     tags        = ["prod"]         
 
@@ -73,6 +73,35 @@ resource "linode_lke_cluster" "test" {
     pool {
         type  = "g6-standard-2"
         count = 1
+    }
+}
+```
+
+Creating an LKE cluster with labeled node pools:
+
+```terraform
+resource "linode_lke_cluster" "my-cluster" {
+    label       = "my-cluster"
+    k8s_version = "1.32"
+    region      = "us-central"
+    tags        = ["prod"]
+
+    pool {
+        type  = "g6-standard-2"
+        count = 2
+        labels = {
+            "role" = "database"
+            "environment" = "production"
+        }
+    }
+
+    pool {
+        type  = "g6-standard-1"
+        count = 3
+        labels = {
+            "role" = "application"
+            "environment" = "production"
+        }
     }
 }
 ```
@@ -108,6 +137,18 @@ The following arguments are supported in the `pool` specification block:
 * `type` - (Required) A Linode Type for all of the nodes in the Node Pool. See all node types [here](https://api.linode.com/v4/linode/types).
 
 * `count` - (Required; Optional with `autoscaler`) The number of nodes in the Node Pool. If undefined with an autoscaler the initial node count will equal the autoscaler minimum.
+
+* `labels` - (Optional) A map of key/value pairs to apply to all nodes in the pool. Labels are used to identify and organize Kubernetes resources within your cluster.
+
+* `tags` - (Optional) A set of tags applied to this node pool. Tags can be used to flag node pools as externally managed. See [Externally Managed Node Pools](#externally-managed-node-pools) for more details.
+
+* `taint` - (Optional) Kubernetes taints to add to node pool nodes. Taints help control how pods are scheduled onto nodes, specifically allowing them to repel certain pods. See [Add Labels and Taints to your LKE Node Pools](https://www.linode.com/docs/products/compute/kubernetes/guides/deploy-and-manage-cluster-with-the-linode-api/#add-labels-and-taints-to-your-lke-node-pools).
+
+  * `effect` - (Required) The Kubernetes taint effect. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`. For the descriptions of these values, see [Kubernetes Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/).
+
+  * `key` - (Required) The Kubernetes taint key.
+
+  * `value` - (Required) The Kubernetes taint value.
 
 * [`autoscaler`](#autoscaler) - (Optional) If defined, an autoscaler will be enabled with the given configuration.
 
@@ -266,7 +307,7 @@ locals {
 
 resource "linode_lke_cluster" "my-cluster" {
     label       = "my-cluster"
-    k8s_version = "1.28"
+    k8s_version = "1.32"
     region      = "us-mia"
     
     # This tells the Linode provider to ignore 
