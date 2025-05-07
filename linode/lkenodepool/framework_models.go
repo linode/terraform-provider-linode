@@ -163,7 +163,7 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 		if !pool.K8sVersion.IsNull() && !pool.K8sVersion.IsUnknown() {
 			p.K8sVersion = pool.K8sVersion.ValueStringPointer()
 		}
-		if !pool.UpdateStrategy.IsNull() && !pool.K8sVersion.IsUnknown() {
+		if !pool.UpdateStrategy.IsNull() && !pool.UpdateStrategy.IsUnknown() {
 			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
 		}
 	}
@@ -223,6 +223,7 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 	if !state.Labels.Equal(pool.Labels) {
 		pool.Labels.ElementsAs(ctx, &p.Labels, false)
+		shouldUpdate = true
 	}
 
 	if tier == "enterprise" {
