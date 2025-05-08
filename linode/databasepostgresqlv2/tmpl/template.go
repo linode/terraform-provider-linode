@@ -148,6 +148,17 @@ func EngineConfig(
 	)
 }
 
+func EngineConfigUpdate(
+	t testing.TB,
+	data TemplateDataEngineConfig,
+) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_postgresql_v2_engine_config_update",
+		data,
+	)
+}
+
 func DataEngineConfig(
 	t testing.TB,
 	data TemplateDataEngineConfig,

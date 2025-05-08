@@ -799,6 +799,55 @@ func TestAccResource_engineConfig(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "true"),
 				),
 			},
+			// Verify that omitting the nullable field EngineConfigMySQLInnoDBFTServerStopwordTable does not affect other engine config fields in the Terraform output
+			{
+				Config: tmpl.EngineConfigNullableField(
+					t,
+					tmpl.TemplateDataEngineConfig{
+						Label:                             label,
+						Region:                            testRegion,
+						EngineID:                          testEngine,
+						Type:                              "g6-nanode-1",
+						EngineConfigBinlogRetentionPeriod: 1800,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckMySQLDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					// Updated EngineConfigBinlogRetentionPeriod field assertion
+					resource.TestCheckResourceAttr(resName, "engine_config_binlog_retention_period", "1800"),
+					// Retained fields
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_connect_timeout", "30"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_default_time_zone", "+05:00"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_group_concat_max_len", "4096"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_information_schema_stats_expiry", "18000"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_change_buffer_max_size", "15"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_flush_neighbors", "1"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_ft_min_token_size", "8"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_lock_wait_timeout", "300"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_log_buffer_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_online_alter_log_max_size", "1342177280"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_read_io_threads", "6"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_rollback_on_timeout", "true"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_thread_concurrency", "20"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_innodb_write_io_threads", "10"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_interactive_timeout", "900"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_internal_tmp_mem_storage_engine", "MEMORY"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_allowed_packet", "134217728"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_max_heap_table_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_buffer_length", "32768"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_read_timeout", "90"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_net_write_timeout", "90"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sort_buffer_size", "1048576"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_tmp_table_size", "67108864"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_wait_timeout", "43200"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_mode", "STRICT_TRANS_TABLES,ANSI"),
+					resource.TestCheckResourceAttr(resName, "engine_config_mysql_sql_require_primary_key", "true"),
+					// Nullable field EngineConfigMySQLInnoDBFTServerStopwordTable assertion
+					resource.TestCheckNoResourceAttr(resName, "engine_config_mysql_innodb_ft_server_stopword_table"),
+				),
+			},
 			{
 				ResourceName:            resName,
 				ImportState:             true,

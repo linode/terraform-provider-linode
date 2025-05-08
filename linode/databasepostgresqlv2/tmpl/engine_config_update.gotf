@@ -1,0 +1,12 @@
+{{ define "database_postgresql_v2_engine_config_update" }}
+
+resource "linode_database_postgresql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    engine_config_pg_autovacuum_analyze_scale_factor          = {{ .EngineConfigPGAutovacuumAnalyzeScaleFactor }}
+}
+
+{{ end }}

@@ -93,6 +93,17 @@ func EngineConfig(
 	)
 }
 
+func EngineConfigNullableField(
+	t testing.TB,
+	data TemplateDataEngineConfig,
+) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_mysql_v2_engine_config_nullable_field",
+		data,
+	)
+}
+
 func Fork(t testing.TB, label, region, engine, nodeType string) string {
 	return acceptance.ExecuteTemplate(
 		t,
