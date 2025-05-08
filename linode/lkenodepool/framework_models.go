@@ -178,15 +178,16 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 ) bool {
 	var shouldUpdate bool
 
-	if !state.Count.Equal(pool.Count) {
-		p.Count = helper.FrameworkSafeInt64ToInt(
-			pool.Count.ValueInt64(),
-			diags,
-		)
-		if diags.HasError() {
-			return false
-		}
+	plannedCount := helper.FrameworkSafeInt64ToInt(
+		pool.Count.ValueInt64(),
+		diags,
+	)
+	if diags.HasError() {
+		return false
+	}
 
+	if !state.Count.Equal(pool.Count) {
+		p.Count = plannedCount
 		shouldUpdate = true
 	}
 
@@ -209,7 +210,9 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 	if asNeedsUpdate {
 		p.Autoscaler = autoscaler
 
-		if p.Autoscaler.Enabled && p.Count == 0 {
+		// If autoscaling is enabled and the user hasn't configured a
+		// valid node count, use the autoscaler's minimum.
+		if p.Autoscaler.Enabled && plannedCount == 0 {
 			p.Count = p.Autoscaler.Min
 		}
 	}
