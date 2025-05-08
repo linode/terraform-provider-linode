@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -67,13 +69,14 @@ func (r *Resource) Create(
 	defer cancel()
 
 	createOpts := linodego.PostgresCreateOptions{
-		Label:       data.Label.ValueString(),
-		Region:      data.Region.ValueString(),
-		Type:        data.Type.ValueString(),
-		Engine:      data.EngineID.ValueString(),
-		ClusterSize: helper.FrameworkSafeInt64ToInt(data.ClusterSize.ValueInt64(), &resp.Diagnostics),
-		Fork:        data.GetFork(resp.Diagnostics),
-		AllowList:   data.GetAllowList(ctx, resp.Diagnostics),
+		Label:        data.Label.ValueString(),
+		Region:       data.Region.ValueString(),
+		Type:         data.Type.ValueString(),
+		Engine:       data.EngineID.ValueString(),
+		ClusterSize:  helper.FrameworkSafeInt64ToInt(data.ClusterSize.ValueInt64(), &resp.Diagnostics),
+		Fork:         data.GetFork(resp.Diagnostics),
+		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
+		EngineConfig: data.GetEngineConfig(resp.Diagnostics),
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -340,6 +343,72 @@ func (r *Resource) Update(
 		updateOpts.Updates = updates.ToLinodego(resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
+		}
+	}
+
+	engineConfigFields := []bool{
+		!cmp.Equal(state.EngineConfigPGAutovacuumAnalyzeScaleFactor, plan.EngineConfigPGAutovacuumAnalyzeScaleFactor),
+		!cmp.Equal(state.EngineConfigPGAutovacuumAnalyzeThreshold, plan.EngineConfigPGAutovacuumAnalyzeThreshold),
+		!cmp.Equal(state.EngineConfigPGAutovacuumMaxWorkers, plan.EngineConfigPGAutovacuumMaxWorkers),
+		!cmp.Equal(state.EngineConfigPGAutovacuumNaptime, plan.EngineConfigPGAutovacuumNaptime),
+		!cmp.Equal(state.EngineConfigPGAutovacuumVacuumCostDelay, plan.EngineConfigPGAutovacuumVacuumCostDelay),
+		!cmp.Equal(state.EngineConfigPGAutovacuumVacuumCostLimit, plan.EngineConfigPGAutovacuumVacuumCostLimit),
+		!cmp.Equal(state.EngineConfigPGAutovacuumVacuumScaleFactor, plan.EngineConfigPGAutovacuumVacuumScaleFactor),
+		!cmp.Equal(state.EngineConfigPGAutovacuumVacuumThreshold, plan.EngineConfigPGAutovacuumVacuumThreshold),
+		!cmp.Equal(state.EngineConfigPGBGWriterDelay, plan.EngineConfigPGBGWriterDelay),
+		!cmp.Equal(state.EngineConfigPGBGWriterFlushAfter, plan.EngineConfigPGBGWriterFlushAfter),
+		!cmp.Equal(state.EngineConfigPGBGWriterLRUMaxpages, plan.EngineConfigPGBGWriterLRUMaxpages),
+		!cmp.Equal(state.EngineConfigPGBGWriterLRUMultiplier, plan.EngineConfigPGBGWriterLRUMultiplier),
+		!cmp.Equal(state.EngineConfigPGDeadlockTimeout, plan.EngineConfigPGDeadlockTimeout),
+		!cmp.Equal(state.EngineConfigPGDefaultToastCompression, plan.EngineConfigPGDefaultToastCompression),
+		!cmp.Equal(state.EngineConfigPGIdleInTransactionSessionTimeout, plan.EngineConfigPGIdleInTransactionSessionTimeout),
+		!cmp.Equal(state.EngineConfigPGJIT, plan.EngineConfigPGJIT),
+		!cmp.Equal(state.EngineConfigPGMaxFilesPerProcess, plan.EngineConfigPGMaxFilesPerProcess),
+		!cmp.Equal(state.EngineConfigPGMaxLocksPerTransaction, plan.EngineConfigPGMaxLocksPerTransaction),
+		!cmp.Equal(state.EngineConfigPGMaxLogicalReplicationWorkers, plan.EngineConfigPGMaxLogicalReplicationWorkers),
+		!cmp.Equal(state.EngineConfigPGMaxParallelWorkers, plan.EngineConfigPGMaxParallelWorkers),
+		!cmp.Equal(state.EngineConfigPGMaxParallelWorkersPerGather, plan.EngineConfigPGMaxParallelWorkersPerGather),
+		!cmp.Equal(state.EngineConfigPGMaxPredLocksPerTransaction, plan.EngineConfigPGMaxPredLocksPerTransaction),
+		!cmp.Equal(state.EngineConfigPGMaxReplicationSlots, plan.EngineConfigPGMaxReplicationSlots),
+		!cmp.Equal(state.EngineConfigPGMaxSlotWALKeepSize, plan.EngineConfigPGMaxSlotWALKeepSize),
+		!cmp.Equal(state.EngineConfigPGMaxStackDepth, plan.EngineConfigPGMaxStackDepth),
+		!cmp.Equal(state.EngineConfigPGMaxStandbyArchiveDelay, plan.EngineConfigPGMaxStandbyArchiveDelay),
+		!cmp.Equal(state.EngineConfigPGMaxStandbyStreamingDelay, plan.EngineConfigPGMaxStandbyStreamingDelay),
+		!cmp.Equal(state.EngineConfigPGMaxWALSenders, plan.EngineConfigPGMaxWALSenders),
+		!cmp.Equal(state.EngineConfigPGMaxWorkerProcesses, plan.EngineConfigPGMaxWorkerProcesses),
+		!cmp.Equal(state.EngineConfigPGPasswordEncryption, plan.EngineConfigPGPasswordEncryption),
+		!cmp.Equal(state.EngineConfigPGPGPartmanBGWInterval, plan.EngineConfigPGPGPartmanBGWInterval),
+		!cmp.Equal(state.EngineConfigPGPGPartmanBGWRole, plan.EngineConfigPGPGPartmanBGWRole),
+		!cmp.Equal(state.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan, plan.EngineConfigPGPGStatMonitorPGSMEnableQueryPlan),
+		!cmp.Equal(state.EngineConfigPGPGStatMonitorPGSMMaxBuckets, plan.EngineConfigPGPGStatMonitorPGSMMaxBuckets),
+		!cmp.Equal(state.EngineConfigPGPGStatStatementsTrack, plan.EngineConfigPGPGStatStatementsTrack),
+		!cmp.Equal(state.EngineConfigPGTempFileLimit, plan.EngineConfigPGTempFileLimit),
+		!cmp.Equal(state.EngineConfigPGTimezone, plan.EngineConfigPGTimezone),
+		!cmp.Equal(state.EngineConfigPGTrackActivityQuerySize, plan.EngineConfigPGTrackActivityQuerySize),
+		!cmp.Equal(state.EngineConfigPGTrackCommitTimestamp, plan.EngineConfigPGTrackCommitTimestamp),
+		!cmp.Equal(state.EngineConfigPGTrackFunctions, plan.EngineConfigPGTrackFunctions),
+		!cmp.Equal(state.EngineConfigPGTrackIOTiming, plan.EngineConfigPGTrackIOTiming),
+		!cmp.Equal(state.EngineConfigPGWALSenderTimeout, plan.EngineConfigPGWALSenderTimeout),
+		!cmp.Equal(state.EngineConfigPGWALWriterDelay, plan.EngineConfigPGWALWriterDelay),
+		!cmp.Equal(state.EngineConfigPGStatMonitorEnable, plan.EngineConfigPGStatMonitorEnable),
+		!cmp.Equal(state.EngineConfigPGLookoutMaxFailoverReplicationTimeLag, plan.EngineConfigPGLookoutMaxFailoverReplicationTimeLag),
+		!cmp.Equal(state.EngineConfigSharedBuffersPercentage, plan.EngineConfigSharedBuffersPercentage),
+		!cmp.Equal(state.EngineConfigWorkMem, plan.EngineConfigWorkMem),
+	}
+	for _, changed := range engineConfigFields {
+		if changed {
+			shouldUpdate = true
+
+			engineConfig := plan.GetEngineConfig(resp.Diagnostics)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			updateOpts.EngineConfig = engineConfig
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			break // already handled all updates in one call to GetEngineConfig()
 		}
 	}
 

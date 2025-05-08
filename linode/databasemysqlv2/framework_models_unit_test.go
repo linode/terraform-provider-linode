@@ -65,9 +65,11 @@ var (
 		EngineConfig: linodego.MySQLDatabaseEngineConfig{
 			BinlogRetentionPeriod: linodego.Pointer(600),
 			MySQL: &linodego.MySQLDatabaseEngineConfigMySQL{
-				ConnectTimeout:    linodego.Pointer(10),
-				DefaultTimeZone:   linodego.Pointer("+03:00"),
-				GroupConcatMaxLen: linodego.Pointer(float64(1024)),
+				ConnectTimeout:       linodego.Pointer(10),
+				DefaultTimeZone:      linodego.Pointer("+03:00"),
+				GroupConcatMaxLen:    linodego.Pointer(float64(1024)),
+				SQLMode:              linodego.Pointer("test"),
+				SQLRequirePrimaryKey: linodego.Pointer(true),
 			},
 		},
 	}
@@ -86,8 +88,6 @@ func TestModel_Flatten(t *testing.T) {
 	model.Flatten(context.Background(), &testDB, &testDBSSL, &testDBCreds, false)
 
 	updates := unit.FrameworkObjectAs[databasemysqlv2.ModelUpdates](t, model.Updates)
-
-	engineConfig := unit.FrameworkObjectAs[databasemysqlv2.ModelEngineConfig](t, model.EngineConfig)
 
 	require.Equal(t, "12345", model.ID.ValueString())
 
@@ -141,10 +141,12 @@ func TestModel_Flatten(t *testing.T) {
 	)
 	require.False(t, d.HasError(), d.Errors())
 
-	require.Equal(t, int64(600), engineConfig.BinlogRetentionPeriod.ValueInt64())
-	require.Equal(t, int64(10), engineConfig.MySQL.ConnectTimeout.ValueInt64())
-	require.Equal(t, "+03:00", engineConfig.MySQL.DefaultTimeZone.ValueString())
-	require.Equal(t, float64(1024), engineConfig.MySQL.GroupConcatMaxLen.ValueFloat64())
+	require.Equal(t, "test", model.EngineConfigMySQLSQLMode.ValueString())
+	require.Equal(t, true, model.EngineConfigMySQLSQLRequirePrimaryKey.ValueBool())
+	require.Equal(t, int64(600), model.EngineConfigBinlogRetentionPeriod.ValueInt64())
+	require.Equal(t, int64(10), model.EngineConfigMySQLConnectTimeout.ValueInt64())
+	require.Equal(t, "+03:00", model.EngineConfigMySQLDefaultTimeZone.ValueString())
+	require.Equal(t, float64(1024), model.EngineConfigMySQLGroupConcatMaxLen.ValueFloat64())
 
 	require.True(t, model.PendingUpdates.Elements()[0].Equal(expectedPendingElement))
 }

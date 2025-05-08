@@ -78,7 +78,7 @@ func (r *Resource) Create(
 		ClusterSize:  helper.FrameworkSafeInt64ToInt(data.ClusterSize.ValueInt64(), &resp.Diagnostics),
 		Fork:         data.GetFork(resp.Diagnostics),
 		AllowList:    data.GetAllowList(ctx, resp.Diagnostics),
-		EngineConfig: data.EngineConfig.GetEngineConfig(resp.Diagnostics, req.Plan),
+		EngineConfig: data.GetEngineConfig(resp.Diagnostics),
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -349,17 +349,50 @@ func (r *Resource) Update(
 	}
 
 	// `engine_config` field updates
-	if !cmp.Equal(state.EngineConfig, plan.EngineConfig) {
-		shouldUpdate = true
+	engineConfigFields := []bool{
+		!cmp.Equal(state.EngineConfigBinlogRetentionPeriod, plan.EngineConfigBinlogRetentionPeriod),
+		!cmp.Equal(state.EngineConfigMySQLConnectTimeout, plan.EngineConfigMySQLConnectTimeout),
+		!cmp.Equal(state.EngineConfigMySQLDefaultTimeZone, plan.EngineConfigMySQLDefaultTimeZone),
+		!cmp.Equal(state.EngineConfigMySQLGroupConcatMaxLen, plan.EngineConfigMySQLGroupConcatMaxLen),
+		!cmp.Equal(state.EngineConfigMySQLInformationSchemaStatsExpiry, plan.EngineConfigMySQLInformationSchemaStatsExpiry),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBChangeBufferMaxSize, plan.EngineConfigMySQLInnoDBChangeBufferMaxSize),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBFlushNeighbors, plan.EngineConfigMySQLInnoDBFlushNeighbors),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBFTMinTokenSize, plan.EngineConfigMySQLInnoDBFTMinTokenSize),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBFTServerStopwordTable, plan.EngineConfigMySQLInnoDBFTServerStopwordTable),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBLockWaitTimeout, plan.EngineConfigMySQLInnoDBLockWaitTimeout),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBLogBufferSize, plan.EngineConfigMySQLInnoDBLogBufferSize),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize, plan.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBReadIOThreads, plan.EngineConfigMySQLInnoDBReadIOThreads),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBRollbackOnTimeout, plan.EngineConfigMySQLInnoDBRollbackOnTimeout),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBThreadConcurrency, plan.EngineConfigMySQLInnoDBThreadConcurrency),
+		!cmp.Equal(state.EngineConfigMySQLInnoDBWriteIOThreads, plan.EngineConfigMySQLInnoDBWriteIOThreads),
+		!cmp.Equal(state.EngineConfigMySQLInteractiveTimeout, plan.EngineConfigMySQLInteractiveTimeout),
+		!cmp.Equal(state.EngineConfigMySQLInternalTmpMemStorageEngine, plan.EngineConfigMySQLInternalTmpMemStorageEngine),
+		!cmp.Equal(state.EngineConfigMySQLMaxAllowedPacket, plan.EngineConfigMySQLMaxAllowedPacket),
+		!cmp.Equal(state.EngineConfigMySQLMaxHeapTableSize, plan.EngineConfigMySQLMaxHeapTableSize),
+		!cmp.Equal(state.EngineConfigMySQLNetBufferLength, plan.EngineConfigMySQLNetBufferLength),
+		!cmp.Equal(state.EngineConfigMySQLNetReadTimeout, plan.EngineConfigMySQLNetReadTimeout),
+		!cmp.Equal(state.EngineConfigMySQLNetWriteTimeout, plan.EngineConfigMySQLNetWriteTimeout),
+		!cmp.Equal(state.EngineConfigMySQLSortBufferSize, plan.EngineConfigMySQLSortBufferSize),
+		!cmp.Equal(state.EngineConfigMySQLSQLMode, plan.EngineConfigMySQLSQLMode),
+		!cmp.Equal(state.EngineConfigMySQLSQLRequirePrimaryKey, plan.EngineConfigMySQLSQLRequirePrimaryKey),
+		!cmp.Equal(state.EngineConfigMySQLTmpTableSize, plan.EngineConfigMySQLTmpTableSize),
+		!cmp.Equal(state.EngineConfigMySQLWaitTimeout, plan.EngineConfigMySQLWaitTimeout),
+	}
+	for _, changed := range engineConfigFields {
+		if changed {
+			shouldUpdate = true
 
-		engineConfig := plan.EngineConfig.GetEngineConfig(resp.Diagnostics, req.Plan)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+			engineConfig := plan.GetEngineConfig(resp.Diagnostics)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 
-		updateOpts.EngineConfig = engineConfig
-		if resp.Diagnostics.HasError() {
-			return
+			updateOpts.EngineConfig = engineConfig
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			break // already handled all updates in one call to GetEngineConfig()
 		}
 	}
 
