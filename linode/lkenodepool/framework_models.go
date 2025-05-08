@@ -287,6 +287,10 @@ func (pool *NodePoolModel) shouldUpdateLKENodePoolAutoscaler(
 		// These values are discarded by the API when autoscaling is disabled,
 		// so we can just use the plan's count since it should meet the validation requirements.
 		planNodeCount := helper.FrameworkSafeInt64ToInt(pool.Count.ValueInt64(), diags)
+		if diags.HasError() {
+			return nil, false
+		}
+
 		autoscaler.Min = planNodeCount
 		autoscaler.Max = planNodeCount
 
