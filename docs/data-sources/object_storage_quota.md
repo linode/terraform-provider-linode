@@ -7,7 +7,7 @@ description: |-
 # linode\_object\_storage\_quota
 
 Provides details about Object Storage quota information on your account.
-For more information, see the [Linode APIv4 docs](TBD).
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quota).
 
 ## Example Usage
 
@@ -41,7 +41,7 @@ The Linode Object Storage quota data source exports the following attributes:
 
 * `resource_metric` - The specific Object Storage resource for the quota.
 
-* `quota_usage` - The usage data for a specific Object Storage related quota on your account.
+* `quota_usage` - The usage data for a specific Object Storage related quota on your account. For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quota-usage).
 
   * `quota_limit` - The maximum quantity allowed by the quota.
   
