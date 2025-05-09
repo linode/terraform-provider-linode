@@ -3,6 +3,7 @@ package databasepostgresqlv2
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"time"
 
@@ -393,20 +394,15 @@ func (r *Resource) Update(
 		!helper.FrameworkValuesShallowEqual(state.EngineConfigSharedBuffersPercentage, plan.EngineConfigSharedBuffersPercentage),
 		!helper.FrameworkValuesShallowEqual(state.EngineConfigWorkMem, plan.EngineConfigWorkMem),
 	}
-	for _, changed := range engineConfigFields {
-		if changed {
-			shouldUpdate = true
-
-			engineConfig := plan.GetEngineConfig(resp.Diagnostics)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-
-			updateOpts.EngineConfig = engineConfig
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			break // already handled all updates in one call to GetEngineConfig()
+	if slices.Contains(engineConfigFields, true) {
+		shouldUpdate = true
+		engineConfig := plan.GetEngineConfig(resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateOpts.EngineConfig = engineConfig
+		if resp.Diagnostics.HasError() {
+			return
 		}
 	}
 
