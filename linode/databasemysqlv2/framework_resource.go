@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -350,34 +348,34 @@ func (r *Resource) Update(
 
 	// `engine_config` field updates
 	engineConfigFields := []bool{
-		!cmp.Equal(state.EngineConfigBinlogRetentionPeriod, plan.EngineConfigBinlogRetentionPeriod),
-		!cmp.Equal(state.EngineConfigMySQLConnectTimeout, plan.EngineConfigMySQLConnectTimeout),
-		!cmp.Equal(state.EngineConfigMySQLDefaultTimeZone, plan.EngineConfigMySQLDefaultTimeZone),
-		!cmp.Equal(state.EngineConfigMySQLGroupConcatMaxLen, plan.EngineConfigMySQLGroupConcatMaxLen),
-		!cmp.Equal(state.EngineConfigMySQLInformationSchemaStatsExpiry, plan.EngineConfigMySQLInformationSchemaStatsExpiry),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBChangeBufferMaxSize, plan.EngineConfigMySQLInnoDBChangeBufferMaxSize),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBFlushNeighbors, plan.EngineConfigMySQLInnoDBFlushNeighbors),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBFTMinTokenSize, plan.EngineConfigMySQLInnoDBFTMinTokenSize),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBFTServerStopwordTable, plan.EngineConfigMySQLInnoDBFTServerStopwordTable),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBLockWaitTimeout, plan.EngineConfigMySQLInnoDBLockWaitTimeout),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBLogBufferSize, plan.EngineConfigMySQLInnoDBLogBufferSize),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize, plan.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBReadIOThreads, plan.EngineConfigMySQLInnoDBReadIOThreads),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBRollbackOnTimeout, plan.EngineConfigMySQLInnoDBRollbackOnTimeout),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBThreadConcurrency, plan.EngineConfigMySQLInnoDBThreadConcurrency),
-		!cmp.Equal(state.EngineConfigMySQLInnoDBWriteIOThreads, plan.EngineConfigMySQLInnoDBWriteIOThreads),
-		!cmp.Equal(state.EngineConfigMySQLInteractiveTimeout, plan.EngineConfigMySQLInteractiveTimeout),
-		!cmp.Equal(state.EngineConfigMySQLInternalTmpMemStorageEngine, plan.EngineConfigMySQLInternalTmpMemStorageEngine),
-		!cmp.Equal(state.EngineConfigMySQLMaxAllowedPacket, plan.EngineConfigMySQLMaxAllowedPacket),
-		!cmp.Equal(state.EngineConfigMySQLMaxHeapTableSize, plan.EngineConfigMySQLMaxHeapTableSize),
-		!cmp.Equal(state.EngineConfigMySQLNetBufferLength, plan.EngineConfigMySQLNetBufferLength),
-		!cmp.Equal(state.EngineConfigMySQLNetReadTimeout, plan.EngineConfigMySQLNetReadTimeout),
-		!cmp.Equal(state.EngineConfigMySQLNetWriteTimeout, plan.EngineConfigMySQLNetWriteTimeout),
-		!cmp.Equal(state.EngineConfigMySQLSortBufferSize, plan.EngineConfigMySQLSortBufferSize),
-		!cmp.Equal(state.EngineConfigMySQLSQLMode, plan.EngineConfigMySQLSQLMode),
-		!cmp.Equal(state.EngineConfigMySQLSQLRequirePrimaryKey, plan.EngineConfigMySQLSQLRequirePrimaryKey),
-		!cmp.Equal(state.EngineConfigMySQLTmpTableSize, plan.EngineConfigMySQLTmpTableSize),
-		!cmp.Equal(state.EngineConfigMySQLWaitTimeout, plan.EngineConfigMySQLWaitTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigBinlogRetentionPeriod, plan.EngineConfigBinlogRetentionPeriod),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLConnectTimeout, plan.EngineConfigMySQLConnectTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLDefaultTimeZone, plan.EngineConfigMySQLDefaultTimeZone),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLGroupConcatMaxLen, plan.EngineConfigMySQLGroupConcatMaxLen),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInformationSchemaStatsExpiry, plan.EngineConfigMySQLInformationSchemaStatsExpiry),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBChangeBufferMaxSize, plan.EngineConfigMySQLInnoDBChangeBufferMaxSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBFlushNeighbors, plan.EngineConfigMySQLInnoDBFlushNeighbors),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBFTMinTokenSize, plan.EngineConfigMySQLInnoDBFTMinTokenSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBFTServerStopwordTable, plan.EngineConfigMySQLInnoDBFTServerStopwordTable),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBLockWaitTimeout, plan.EngineConfigMySQLInnoDBLockWaitTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBLogBufferSize, plan.EngineConfigMySQLInnoDBLogBufferSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize, plan.EngineConfigMySQLInnoDBOnlineAlterLogMaxSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBReadIOThreads, plan.EngineConfigMySQLInnoDBReadIOThreads),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBRollbackOnTimeout, plan.EngineConfigMySQLInnoDBRollbackOnTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBThreadConcurrency, plan.EngineConfigMySQLInnoDBThreadConcurrency),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInnoDBWriteIOThreads, plan.EngineConfigMySQLInnoDBWriteIOThreads),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInteractiveTimeout, plan.EngineConfigMySQLInteractiveTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLInternalTmpMemStorageEngine, plan.EngineConfigMySQLInternalTmpMemStorageEngine),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLMaxAllowedPacket, plan.EngineConfigMySQLMaxAllowedPacket),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLMaxHeapTableSize, plan.EngineConfigMySQLMaxHeapTableSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLNetBufferLength, plan.EngineConfigMySQLNetBufferLength),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLNetReadTimeout, plan.EngineConfigMySQLNetReadTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLNetWriteTimeout, plan.EngineConfigMySQLNetWriteTimeout),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLSortBufferSize, plan.EngineConfigMySQLSortBufferSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLSQLMode, plan.EngineConfigMySQLSQLMode),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLSQLRequirePrimaryKey, plan.EngineConfigMySQLSQLRequirePrimaryKey),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLTmpTableSize, plan.EngineConfigMySQLTmpTableSize),
+		!helper.FrameworkValuesShallowEqual(state.EngineConfigMySQLWaitTimeout, plan.EngineConfigMySQLWaitTimeout),
 	}
 	for _, changed := range engineConfigFields {
 		if changed {

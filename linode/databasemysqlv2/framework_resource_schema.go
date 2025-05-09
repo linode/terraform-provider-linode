@@ -320,6 +320,7 @@ var frameworkResourceSchema = schema.Schema{
 				stringvalidator.LengthAtMost(1024),
 				stringvalidator.RegexMatches(regexp.MustCompile(`^.+/.+$`), "must be in the format 'db_name/table_name'"),
 			},
+			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"engine_config_mysql_innodb_lock_wait_timeout": schema.Int64Attribute{
 			Optional:    true,
