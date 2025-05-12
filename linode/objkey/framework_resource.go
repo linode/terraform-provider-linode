@@ -3,9 +3,7 @@ package objkey
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -55,41 +53,11 @@ func (r *Resource) Create(
 	tflog.Debug(ctx, "client.CreateObjectStorageKey(...)", map[string]any{
 		"options": createOpts,
 	})
-	var key *linodego.ObjectStorageKey
-	var err error
-
-	// Retry on "Unable to create keys at this time" 500 errors for up to 5 minutes
-	retryCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
-	defer cancel()
-
-	for {
-		key, err = client.CreateObjectStorageKey(retryCtx, createOpts)
-		if err == nil {
-			break
-		}
-
-		if lerr, ok := err.(*linodego.Error); ok &&
-			lerr.Code == http.StatusInternalServerError &&
-			strings.Contains(lerr.Message, "Unable to create keys at this time") {
-			tflog.Warn(ctx, "Retryable 500 error creating key, retrying...", map[string]any{
-				"error": lerr.Message,
-			})
-			time.Sleep(5 * time.Second)
-			continue
-		}
-
-		// Non-retryable error
+	key, err := client.CreateObjectStorageKey(ctx, createOpts)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Object Storage Key",
 			err.Error(),
-		)
-		return
-	}
-
-	if key == nil {
-		resp.Diagnostics.AddError(
-			"Failed to create Object Storage Key",
-			"API call returned no error but also no key",
 		)
 		return
 	}
@@ -241,32 +209,14 @@ func (r *Resource) Delete(
 
 	client := r.Meta.Client
 	tflog.Debug(ctx, "client.DeleteObjectStorageKey(...)")
-
-	// Retry on "Unable to remove key at this time" 500 errors for up to 5 minutes
-	retryCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
-	defer cancel()
-
-	for {
-		err := client.DeleteObjectStorageKey(retryCtx, id)
-		if err == nil {
-			break
+	err := client.DeleteObjectStorageKey(ctx, id)
+	if err != nil {
+		if lErr, ok := err.(*linodego.Error); (ok && lErr.Code != 404) || !ok {
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Failed to delete the Object Storage Key (%d)", id),
+				err.Error(),
+			)
 		}
-
-		if lerr, ok := err.(*linodego.Error); ok &&
-			lerr.Code == http.StatusInternalServerError &&
-			strings.Contains(lerr.Message, "Unable to remove key at this time") {
-			tflog.Warn(ctx, "Retryable 500 error removing key, retrying...", map[string]any{
-				"error": lerr.Message,
-			})
-			time.Sleep(5 * time.Second)
-			continue
-		}
-
-		// Non-retryable error
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to delete the Object Storage Key (%d)", id),
-			err.Error(),
-		)
 		return
 	}
 
