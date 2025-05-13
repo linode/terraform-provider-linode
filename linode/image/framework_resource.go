@@ -614,6 +614,7 @@ func waitForImageToBeAvailable(
 	)
 	if err != nil {
 		diags.AddError("Failed to Wait for Image to be Available", err.Error())
+		return nil
 	}
 
 	return image

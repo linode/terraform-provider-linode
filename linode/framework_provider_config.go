@@ -288,6 +288,7 @@ func (fp *FrameworkProvider) InitLinodeClient(
 		configPathExpanded, err := helper.ExpandPath(configPath)
 		if err != nil {
 			diags.AddError("Failed to expand config path", err.Error())
+			return nil
 		}
 
 		err = client.LoadConfig(&linodego.LoadConfigOptions{

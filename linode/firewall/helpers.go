@@ -129,6 +129,7 @@ func disableFirewall(
 	firewall, err := client.UpdateFirewall(ctx, firewallID, updateOpts)
 	if err != nil {
 		diags.AddError("Failed to Disable Fireall", err.Error())
+		return nil
 	}
 	return firewall
 }
