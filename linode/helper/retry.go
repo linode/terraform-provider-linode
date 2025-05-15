@@ -35,6 +35,24 @@ func ImageUpload500Retry() func(response *resty.Response, err error) bool {
 	return GenericRetryCondition(500, ImageUpload)
 }
 
+// OBJKeyCreate500Retry for [500] error when creating an Object Storage Key
+func OBJKeyCreate500Retry() func(response *resty.Response, err error) bool {
+	OBJKeyCreate, err := regexp.Compile("object-storage/keys")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return GenericRetryCondition(500, OBJKeyCreate)
+}
+
+// OBJKeyDelete500Retry for [500] error when deleting an Object Storage Key
+func OBJKeyDelete500Retry() func(response *resty.Response, err error) bool {
+	OBJKeyDelete, err := regexp.Compile("object-storage/keys/[0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return GenericRetryCondition(500, OBJKeyDelete)
+}
+
 func GenericRetryCondition(statusCode int, pathPattern *regexp.Regexp) func(response *resty.Response, err error) bool {
 	return func(response *resty.Response, _ error) bool {
 		if response.StatusCode() != statusCode || response.Request == nil {
@@ -56,4 +74,6 @@ func ApplyAllRetryConditions(client *linodego.Client) {
 	client.AddRetryCondition(Database502Retry())
 	client.AddRetryCondition(LinodeInstance500Retry())
 	client.AddRetryCondition(ImageUpload500Retry())
+	client.AddRetryCondition(OBJKeyCreate500Retry())
+	client.AddRetryCondition(OBJKeyDelete500Retry())
 }
