@@ -30,6 +30,7 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
+					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
 					resource.TestCheckResourceAttrSet(resName, "ipv4"),

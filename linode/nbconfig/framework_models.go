@@ -13,24 +13,26 @@ import (
 )
 
 type DataSourceModel struct {
-	ID             types.Int64  `tfsdk:"id"`
-	NodeBalancerID types.Int64  `tfsdk:"nodebalancer_id"`
-	Protocol       types.String `tfsdk:"protocol"`
-	ProxyProtocol  types.String `tfsdk:"proxy_protocol"`
-	Port           types.Int64  `tfsdk:"port"`
-	CheckInterval  types.Int64  `tfsdk:"check_interval"`
-	CheckTimeout   types.Int64  `tfsdk:"check_timeout"`
-	CheckAttempts  types.Int64  `tfsdk:"check_attempts"`
-	Algorithm      types.String `tfsdk:"algorithm"`
-	Stickiness     types.String `tfsdk:"stickiness"`
-	Check          types.String `tfsdk:"check"`
-	CheckPath      types.String `tfsdk:"check_path"`
-	CheckBody      types.String `tfsdk:"check_body"`
-	CheckPassive   types.Bool   `tfsdk:"check_passive"`
-	CipherSuite    types.String `tfsdk:"cipher_suite"`
-	SSLCommonName  types.String `tfsdk:"ssl_commonname"`
-	SSLFingerprint types.String `tfsdk:"ssl_fingerprint"`
-	NodesStatus    types.List   `tfsdk:"node_status"`
+	ID                types.Int64  `tfsdk:"id"`
+	NodeBalancerID    types.Int64  `tfsdk:"nodebalancer_id"`
+	Protocol          types.String `tfsdk:"protocol"`
+	ProxyProtocol     types.String `tfsdk:"proxy_protocol"`
+	Port              types.Int64  `tfsdk:"port"`
+	CheckInterval     types.Int64  `tfsdk:"check_interval"`
+	CheckTimeout      types.Int64  `tfsdk:"check_timeout"`
+	CheckAttempts     types.Int64  `tfsdk:"check_attempts"`
+	Algorithm         types.String `tfsdk:"algorithm"`
+	Stickiness        types.String `tfsdk:"stickiness"`
+	Check             types.String `tfsdk:"check"`
+	CheckPath         types.String `tfsdk:"check_path"`
+	CheckBody         types.String `tfsdk:"check_body"`
+	CheckPassive      types.Bool   `tfsdk:"check_passive"`
+	UDPCheckPort      types.Int64  `tfsdk:"udp_check_port"`
+	UDPSessionTimeout types.Int64  `tfsdk:"udp_session_timeout"`
+	CipherSuite       types.String `tfsdk:"cipher_suite"`
+	SSLCommonName     types.String `tfsdk:"ssl_commonname"`
+	SSLFingerprint    types.String `tfsdk:"ssl_fingerprint"`
+	NodesStatus       types.List   `tfsdk:"node_status"`
 }
 
 func (data *DataSourceModel) ParseNodebalancerConfig(
@@ -46,6 +48,8 @@ func (data *DataSourceModel) ParseNodebalancerConfig(
 	data.CheckInterval = types.Int64Value(int64(config.CheckInterval))
 	data.CheckTimeout = types.Int64Value(int64(config.CheckTimeout))
 	data.CheckPassive = types.BoolValue(config.CheckPassive)
+	data.UDPCheckPort = types.Int64Value(int64(config.UDPCheckPort))
+	data.UDPSessionTimeout = types.Int64Value(int64(config.UDPSessionTimeout))
 	data.CheckPath = types.StringValue(config.CheckPath)
 	data.CipherSuite = types.StringValue(string(config.CipherSuite))
 	data.Port = types.Int64Value(int64(config.Port))
@@ -99,26 +103,28 @@ type ResourceModelV0 struct {
 }
 
 type ResourceModelV1 struct {
-	ID             types.String `tfsdk:"id"`
-	NodeBalancerID types.Int64  `tfsdk:"nodebalancer_id"`
-	Protocol       types.String `tfsdk:"protocol"`
-	ProxyProtocol  types.String `tfsdk:"proxy_protocol"`
-	Port           types.Int64  `tfsdk:"port"`
-	CheckInterval  types.Int64  `tfsdk:"check_interval"`
-	CheckTimeout   types.Int64  `tfsdk:"check_timeout"`
-	CheckAttempts  types.Int64  `tfsdk:"check_attempts"`
-	Algorithm      types.String `tfsdk:"algorithm"`
-	Stickiness     types.String `tfsdk:"stickiness"`
-	Check          types.String `tfsdk:"check"`
-	CheckPath      types.String `tfsdk:"check_path"`
-	CheckBody      types.String `tfsdk:"check_body"`
-	CheckPassive   types.Bool   `tfsdk:"check_passive"`
-	CipherSuite    types.String `tfsdk:"cipher_suite"`
-	SSLCommonName  types.String `tfsdk:"ssl_commonname"`
-	SSLFingerprint types.String `tfsdk:"ssl_fingerprint"`
-	NodesStatus    types.List   `tfsdk:"node_status"`
-	SSLCert        types.String `tfsdk:"ssl_cert"`
-	SSLKey         types.String `tfsdk:"ssl_key"`
+	ID                types.String `tfsdk:"id"`
+	NodeBalancerID    types.Int64  `tfsdk:"nodebalancer_id"`
+	Protocol          types.String `tfsdk:"protocol"`
+	ProxyProtocol     types.String `tfsdk:"proxy_protocol"`
+	Port              types.Int64  `tfsdk:"port"`
+	CheckInterval     types.Int64  `tfsdk:"check_interval"`
+	CheckTimeout      types.Int64  `tfsdk:"check_timeout"`
+	CheckAttempts     types.Int64  `tfsdk:"check_attempts"`
+	Algorithm         types.String `tfsdk:"algorithm"`
+	Stickiness        types.String `tfsdk:"stickiness"`
+	Check             types.String `tfsdk:"check"`
+	CheckPath         types.String `tfsdk:"check_path"`
+	CheckBody         types.String `tfsdk:"check_body"`
+	CheckPassive      types.Bool   `tfsdk:"check_passive"`
+	UDPCheckPort      types.Int64  `tfsdk:"udp_check_port"`
+	UDPSessionTimeout types.Int64  `tfsdk:"udp_session_timeout"`
+	CipherSuite       types.String `tfsdk:"cipher_suite"`
+	SSLCommonName     types.String `tfsdk:"ssl_commonname"`
+	SSLFingerprint    types.String `tfsdk:"ssl_fingerprint"`
+	NodesStatus       types.List   `tfsdk:"node_status"`
+	SSLCert           types.String `tfsdk:"ssl_cert"`
+	SSLKey            types.String `tfsdk:"ssl_key"`
 }
 
 func (data *ResourceModelV1) FlattenNodeBalancerConfig(
@@ -135,6 +141,8 @@ func (data *ResourceModelV1) FlattenNodeBalancerConfig(
 	data.CheckTimeout = helper.KeepOrUpdateInt64(data.CheckTimeout, int64(config.CheckTimeout), preserveKnown)
 	data.CheckPassive = helper.KeepOrUpdateBool(data.CheckPassive, config.CheckPassive, preserveKnown)
 	data.CheckPath = helper.KeepOrUpdateString(data.CheckPath, config.CheckPath, preserveKnown)
+	data.UDPCheckPort = helper.KeepOrUpdateInt64(data.UDPCheckPort, int64(config.UDPCheckPort), preserveKnown)
+	data.UDPSessionTimeout = helper.KeepOrUpdateInt64(data.UDPSessionTimeout, int64(config.UDPSessionTimeout), preserveKnown)
 	data.CipherSuite = helper.KeepOrUpdateString(data.CipherSuite, string(config.CipherSuite), preserveKnown)
 	data.Port = helper.KeepOrUpdateInt64(data.Port, int64(config.Port), preserveKnown)
 	data.Protocol = helper.KeepOrUpdateString(data.Protocol, string(config.Protocol), preserveKnown)
@@ -165,6 +173,8 @@ func (data *ResourceModelV1) CopyFrom(other ResourceModelV1, preserveKnown bool)
 	data.CheckTimeout = helper.KeepOrUpdateValue(data.CheckTimeout, other.CheckTimeout, preserveKnown)
 	data.CheckPassive = helper.KeepOrUpdateValue(data.CheckPassive, other.CheckPassive, preserveKnown)
 	data.CheckPath = helper.KeepOrUpdateValue(data.CheckPath, other.CheckPath, preserveKnown)
+	data.UDPCheckPort = helper.KeepOrUpdateValue(data.UDPCheckPort, other.UDPCheckPort, preserveKnown)
+	data.UDPSessionTimeout = helper.KeepOrUpdateValue(data.UDPSessionTimeout, other.UDPSessionTimeout, preserveKnown)
 	data.CipherSuite = helper.KeepOrUpdateValue(data.CipherSuite, other.CipherSuite, preserveKnown)
 	data.Port = helper.KeepOrUpdateValue(data.Port, other.Port, preserveKnown)
 	data.Protocol = helper.KeepOrUpdateValue(data.Protocol, other.Protocol, preserveKnown)
@@ -252,6 +262,7 @@ func (data *ResourceModelV1) GetNodeBalancerConfigCreateOptions(
 	checkAttempts := helper.FrameworkSafeInt64ToInt(data.CheckAttempts.ValueInt64(), diags)
 	checkInterval := helper.FrameworkSafeInt64ToInt(data.CheckInterval.ValueInt64(), diags)
 	checkTimeout := helper.FrameworkSafeInt64ToInt(data.CheckTimeout.ValueInt64(), diags)
+	udpCheckPort := helper.FrameworkSafeInt64ToInt(data.UDPCheckPort.ValueInt64(), diags)
 	port := helper.FrameworkSafeInt64ToInt(data.Port.ValueInt64(), diags)
 	if diags.HasError() {
 		return nil
@@ -265,6 +276,7 @@ func (data *ResourceModelV1) GetNodeBalancerConfigCreateOptions(
 		CheckInterval: checkInterval,
 		CheckPath:     data.CheckPath.ValueString(),
 		CheckTimeout:  checkTimeout,
+		UDPCheckPort:  &udpCheckPort,
 		Port:          port,
 		Protocol:      linodego.ConfigProtocol(strings.ToLower(data.Protocol.ValueString())),
 		ProxyProtocol: linodego.ConfigProxyProtocol(data.ProxyProtocol.ValueString()),
@@ -285,6 +297,7 @@ func (data *ResourceModelV1) GetNodeBalancerConfigUpdateOptions(
 	checkAttempts := helper.FrameworkSafeInt64ToInt(data.CheckAttempts.ValueInt64(), diags)
 	checkInterval := helper.FrameworkSafeInt64ToInt(data.CheckInterval.ValueInt64(), diags)
 	checkTimeout := helper.FrameworkSafeInt64ToInt(data.CheckTimeout.ValueInt64(), diags)
+	udpCheckPort := helper.FrameworkSafeInt64ToInt(data.UDPCheckPort.ValueInt64(), diags)
 	port := helper.FrameworkSafeInt64ToInt(data.Port.ValueInt64(), diags)
 	if diags.HasError() {
 		return nil
@@ -299,6 +312,7 @@ func (data *ResourceModelV1) GetNodeBalancerConfigUpdateOptions(
 		CheckInterval: checkInterval,
 		CheckPath:     data.CheckPath.ValueString(),
 		CheckTimeout:  checkTimeout,
+		UDPCheckPort:  &udpCheckPort,
 		Port:          port,
 		Protocol:      linodego.ConfigProtocol(strings.ToLower(data.Protocol.ValueString())),
 		ProxyProtocol: linodego.ConfigProxyProtocol(data.ProxyProtocol.ValueString()),

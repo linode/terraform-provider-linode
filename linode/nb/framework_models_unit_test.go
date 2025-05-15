@@ -48,15 +48,16 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	label := "test-nodebalancer"
 
 	nodeBalancer := &linodego.NodeBalancer{
-		ID:                 123,
-		Label:              &label,
-		Region:             "us-east",
-		ClientConnThrottle: 10,
-		Hostname:           &hostname,
-		IPv4:               &IPv4,
-		IPv6:               &IPv6,
-		Created:            &createdTime,
-		Updated:            &updatedTime,
+		ID:                    123,
+		Label:                 &label,
+		Region:                "us-east",
+		ClientConnThrottle:    10,
+		ClientUDPSessThrottle: 5,
+		Hostname:              &hostname,
+		IPv4:                  &IPv4,
+		IPv6:                  &IPv6,
+		Created:               &createdTime,
+		Updated:               &updatedTime,
 		Transfer: linodego.NodeBalancerTransfer{
 			In:    &transferIn,
 			Out:   &transferOut,
@@ -73,6 +74,7 @@ func TestFlattenNodeBalancer(t *testing.T) {
 	assert.Equal(t, types.StringValue("123"), nodeBalancerModel.ID)
 	assert.Equal(t, types.StringValue("us-east"), nodeBalancerModel.Region)
 	assert.Equal(t, types.Int64Value(10), nodeBalancerModel.ClientConnThrottle)
+	assert.Equal(t, types.Int64Value(5), nodeBalancerModel.ClientUDPSessThrottle)
 	assert.Equal(t, types.StringPointerValue(&hostname), nodeBalancerModel.Hostname)
 	assert.Equal(t, types.StringPointerValue(&IPv4), nodeBalancerModel.IPv4)
 	assert.Equal(t, types.StringPointerValue(&IPv6), nodeBalancerModel.IPv6)
