@@ -6,9 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
-
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -48,9 +47,9 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
-	var data Model
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -111,6 +110,31 @@ func (r *Resource) Create(
 
 	createPoller.EntityID = db.ID
 
+	tflog.Debug(ctx, "Waiting for database to finish provisioning")
+
+	if _, err := createPoller.WaitForFinished(ctx, int(createTimeout.Seconds())); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to wait for PostgreSQL database to finish creating",
+			err.Error(),
+		)
+	}
+
+	// Sometimes the creation event finishes before the status becomes `active`
+	tflog.Debug(ctx, "Waiting for database to enter active status", map[string]any{
+		"options": createOpts,
+	})
+
+	if err = client.WaitForDatabaseStatus(
+		ctx,
+		db.ID,
+		linodego.DatabaseEngineTypePostgres,
+		linodego.DatabaseStatusActive,
+		int(createTimeout.Seconds()),
+	); err != nil {
+		resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
+		return
+	}
+
 	// The `updates` field can only be changed using PUT requests
 	updates := data.GetUpdates(ctx, resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -141,28 +165,19 @@ func (r *Resource) Create(
 		}
 	}
 
-	tflog.Debug(ctx, "Waiting for database to finish provisioning")
-
-	if _, err := createPoller.WaitForFinished(ctx, int(createTimeout.Seconds())); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to wait for PostgreSQL database to finish creating",
-			err.Error(),
-		)
-	}
-
-	// Sometimes the creation event finishes before the status becomes `active`
-	tflog.Debug(ctx, "Waiting for database to enter active status", map[string]any{
-		"options": createOpts,
-	})
-
-	if err = client.WaitForDatabaseStatus(
+	if err := helper.ReconcileDatabaseSuspensionSync(
 		ctx,
+		client,
 		db.ID,
 		linodego.DatabaseEngineTypePostgres,
-		linodego.DatabaseStatusActive,
-		int(createTimeout.Seconds()),
+		false,
+		data.Suspended.ValueBool(),
+		createTimeout,
 	); err != nil {
-		resp.Diagnostics.AddError("Failed to wait for PostgreSQL database active", err.Error())
+		resp.Diagnostics.AddError(
+			"Failed to reconcile database suspension",
+			err.Error(),
+		)
 		return
 	}
 
@@ -183,9 +198,9 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
-	var data Model
+	var data ResourceModel
 	client := r.Meta.Client
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -239,14 +254,19 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	client := r.Meta.Client
-	var plan, state Model
+	var plan, state ResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -262,8 +282,27 @@ func (r *Resource) Update(
 
 	ctx = populateLogAttributes(ctx, state)
 
+	// Suspend or resume the database if necessary
+	// NOTE: Other fields cannot be updated if suspended = true
+	if err := helper.ReconcileDatabaseSuspensionSync(
+		ctx,
+		client,
+		id,
+		linodego.DatabaseEngineTypePostgres,
+		state.Suspended.ValueBool(),
+		plan.Suspended.ValueBool(),
+		updateTimeout,
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to reconcile database suspension",
+			err.Error(),
+		)
+		return
+	}
+
 	var updateOpts linodego.PostgresUpdateOptions
 	shouldUpdate := false
+	shouldResize := false
 
 	// `label` field updates
 	if !state.Label.Equal(plan.Label) {
@@ -285,7 +324,7 @@ func (r *Resource) Update(
 
 	// `type` field updates
 	if !state.Type.Equal(plan.Type) {
-		shouldUpdate = true
+		shouldResize = true
 		updateOpts.Type = plan.Type.ValueString()
 	}
 
@@ -325,7 +364,7 @@ func (r *Resource) Update(
 
 	// `cluster_size` field updates
 	if !state.ClusterSize.Equal(plan.ClusterSize) {
-		shouldUpdate = true
+		shouldResize = true
 
 		updateOpts.ClusterSize = helper.FrameworkSafeInt64ToInt(plan.ClusterSize.ValueInt64(), &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
@@ -333,19 +372,30 @@ func (r *Resource) Update(
 		}
 	}
 
-	if shouldUpdate {
-		id := helper.FrameworkSafeStringToInt(plan.ID.ValueString(), &resp.Diagnostics)
-		if resp.Diagnostics.HasError() {
-			return
+	if shouldUpdate || shouldResize {
+		var updatePoller, resizePoller *linodego.EventPoller
+		var err error
+
+		if shouldUpdate {
+			updatePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to create update EventPoller for database",
+					err.Error(),
+				)
+				return
+			}
 		}
 
-		updatePoller, err := client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseUpdate)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to create EventPoller for database",
-				err.Error(),
-			)
-			return
+		if shouldResize {
+			resizePoller, err = client.NewEventPoller(ctx, id, linodego.EntityDatabase, linodego.ActionDatabaseResize)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to create resize EventPoller for database",
+					err.Error(),
+				)
+				return
+			}
 		}
 
 		tflog.Debug(ctx, "client.UpdatePostgresDatabase(...)", map[string]any{
@@ -364,21 +414,33 @@ func (r *Resource) Update(
 			return
 		}
 
-		if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to poll for database update event to finish",
-				err.Error(),
-			)
-			return
+		if updatePoller != nil {
+			if _, err := updatePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to poll for database update event to finish",
+					err.Error(),
+				)
+				return
+			}
 		}
 
-		resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
-		if resp.Diagnostics.HasError() {
-			return
+		if resizePoller != nil {
+			if _, err := resizePoller.WaitForFinished(ctx, timeoutSeconds); err != nil {
+				resp.Diagnostics.AddError(
+					"Failed to poll for database resize event to finish",
+					err.Error(),
+				)
+				return
+			}
 		}
 	}
 
-	plan.CopyFrom(&state, true)
+	resp.Diagnostics.Append(plan.Refresh(ctx, client, id, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	plan.CopyFrom(&state.Model, true)
 
 	// Workaround for Crossplane issue where ID is not
 	// properly populated in plan
@@ -395,10 +457,10 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_database_postgresql_v2")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	client := r.Meta.Client
-	var data Model
+	var data ResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -434,6 +496,6 @@ func (r *Resource) Delete(
 	}
 }
 
-func populateLogAttributes(ctx context.Context, data Model) context.Context {
+func populateLogAttributes(ctx context.Context, data ResourceModel) context.Context {
 	return tflog.SetField(ctx, "id", data.ID)
 }

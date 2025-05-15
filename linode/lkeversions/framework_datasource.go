@@ -2,15 +2,9 @@ package lkeversions
 
 import (
 	"context"
-	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
@@ -29,32 +23,12 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (data *DataSourceModel) parseVersions(ctx context.Context, lkeVersions []linodego.LKEVersion) diag.Diagnostics {
-	versions, diag := flattenVersions(lkeVersions)
-	if diag.HasError() {
-		return diag
-	}
-
-	data.Versions = *versions
-
-	id, _ := json.Marshal(lkeVersions)
-
-	data.ID = types.StringValue(string(id))
-
-	return nil
-}
-
-type DataSourceModel struct {
-	Versions types.List   `tfsdk:"versions"`
-	ID       types.String `tfsdk:"id"`
-}
-
 func (d *DataSource) Read(
 	ctx context.Context,
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read data.linode_lke_versions")
+	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
 	client := d.Meta.Client
 
@@ -65,44 +39,38 @@ func (d *DataSource) Read(
 		return
 	}
 
-	tflog.Trace(ctx, "client.ListLKEVersions(...)")
-	versions, err := client.ListLKEVersions(ctx, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get LKE Versions: %s", err.Error(),
-		)
-		return
-	}
+	// Check if Tier is populated
+	if data.Tier.IsNull() {
+		// If Tier is not populated, use ListLKEVersions
+		tflog.Trace(ctx, "client.ListLKEVersions(...)")
+		versions, err := client.ListLKEVersions(ctx, nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to get LKE Versions: %s", err.Error(),
+			)
+			return
+		}
 
-	resp.Diagnostics.Append(data.parseVersions(ctx, versions)...)
-	if resp.Diagnostics.HasError() {
-		return
+		resp.Diagnostics.Append(data.parseLKEVersions(versions)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		// If Tier is populated, use ListLKETierVersions
+		tflog.Trace(ctx, "client.ListLKETierVersions(...)")
+		versions, err := client.ListLKETierVersions(ctx, data.Tier.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to get LKE Tier Versions", err.Error(),
+			)
+			return
+		}
+
+		resp.Diagnostics.Append(data.parseLKETierVersions(versions)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func flattenVersions(versions []linodego.LKEVersion) (*basetypes.ListValue, diag.Diagnostics) {
-	resultList := make([]attr.Value, len(versions))
-
-	for i, field := range versions {
-		valueMap := make(map[string]attr.Value)
-		valueMap["id"] = types.StringValue(field.ID)
-
-		obj, diag := types.ObjectValue(lkeVersionObjectType.AttrTypes, valueMap)
-		if diag.HasError() {
-			return nil, diag
-		}
-
-		resultList[i] = obj
-	}
-
-	result, diag := basetypes.NewListValue(
-		lkeVersionObjectType,
-		resultList,
-	)
-	if diag.HasError() {
-		return nil, diag
-	}
-	return &result, nil
 }

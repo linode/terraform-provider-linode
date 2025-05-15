@@ -94,6 +94,11 @@ func AutoscalerNoCount(t testing.TB, name, version, region string) string {
 		})
 }
 
+func Enterprise(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
 func DataBasic(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
@@ -126,4 +131,16 @@ func DataTaintsLabels(t testing.TB, name, version, region string, taints []Taint
 			Labels:     labels,
 			Taints:     taints,
 		})
+}
+
+func APLEnabled(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_apl_enabled", TemplateData{Label: name, K8sVersion: version, Region: region})
+}
+
+func ACLDisabledAddressesDisallowed(t testing.TB, name, version, region string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_acl_disabled_addresses_disallowed",
+		TemplateData{Label: name, K8sVersion: version, Region: region},
+	)
 }

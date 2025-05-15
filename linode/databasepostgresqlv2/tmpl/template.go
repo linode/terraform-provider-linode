@@ -18,7 +18,9 @@ type TemplateData struct {
 	Type        string
 	AllowedIP   string
 	ClusterSize int
-	Updates     TemplateDataUpdates
+	Suspended   bool
+
+	Updates TemplateDataUpdates
 }
 
 func Basic(t testing.TB, label, region, engine, nodeType string) string {
@@ -55,5 +57,27 @@ func Fork(t testing.TB, label, region, engine, nodeType string) string {
 			EngineID: engine,
 			Type:     nodeType,
 		},
+	)
+}
+
+func Suspension(
+	t testing.TB,
+	data TemplateData,
+) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_postgresql_v2_suspension",
+		data,
+	)
+}
+
+func Data(
+	t testing.TB,
+	data TemplateData,
+) string {
+	return acceptance.ExecuteTemplate(
+		t,
+		"database_postgresql_v2_data",
+		data,
 	)
 }

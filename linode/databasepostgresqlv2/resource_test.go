@@ -125,9 +125,143 @@ func TestAccResource_basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+			},
+		},
+	})
+}
+
+func TestAccResource_resize(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_database_postgresql_v2.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Complex(
+					t,
+					tmpl.TemplateData{
+						Label:       label,
+						Region:      testRegion,
+						EngineID:    testEngine,
+						Type:        "g6-nanode-1",
+						AllowedIP:   "10.0.0.3/32",
+						ClusterSize: 1,
+						Updates: tmpl.TemplateDataUpdates{
+							HourOfDay: 3,
+							DayOfWeek: 2,
+							Duration:  4,
+							Frequency: "weekly",
+						},
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckPostgresDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
+					resource.TestCheckResourceAttr(resName, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
+					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
+					resource.TestCheckNoResourceAttr(resName, "fork_source"),
+					resource.TestCheckResourceAttrSet(resName, "host_primary"),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttrSet(resName, "members.%"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "platform", "rdbms-default"),
+					resource.TestCheckResourceAttrSet(resName, "port"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
+					resource.TestCheckResourceAttr(resName, "status", "active"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttrSet(resName, "version"),
+
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "10.0.0.3/32"),
+
+					resource.TestCheckResourceAttr(resName, "updates.day_of_week", "2"),
+					resource.TestCheckResourceAttr(resName, "updates.duration", "4"),
+					resource.TestCheckResourceAttr(resName, "updates.frequency", "weekly"),
+					resource.TestCheckResourceAttr(resName, "updates.hour_of_day", "3"),
+
+					resource.TestCheckResourceAttr(resName, "pending_updates.#", "0"),
+				),
+			},
+			{
+				Config: tmpl.Complex(
+					t,
+					tmpl.TemplateData{
+						Label:       label,
+						Region:      testRegion,
+						EngineID:    testEngine,
+						Type:        "g6-standard-1",
+						AllowedIP:   "10.0.0.3/32",
+						ClusterSize: 1,
+						Updates: tmpl.TemplateDataUpdates{
+							HourOfDay: 3,
+							DayOfWeek: 2,
+							Duration:  4,
+							Frequency: "weekly",
+						},
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckPostgresDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttr(resName, "cluster_size", "1"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttr(resName, "encrypted", "true"),
+					resource.TestCheckResourceAttr(resName, "engine", "postgresql"),
+					resource.TestCheckResourceAttr(resName, "engine_id", testEngine),
+					resource.TestCheckNoResourceAttr(resName, "fork_restore_time"),
+					resource.TestCheckNoResourceAttr(resName, "fork_source"),
+					resource.TestCheckResourceAttrSet(resName, "host_primary"),
+					resource.TestCheckResourceAttr(resName, "label", label),
+					resource.TestCheckResourceAttrSet(resName, "members.%"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "platform", "rdbms-default"),
+					resource.TestCheckResourceAttrSet(resName, "port"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
+					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
+					resource.TestCheckResourceAttr(resName, "status", "active"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttrSet(resName, "version"),
+
+					resource.TestCheckResourceAttr(resName, "allow_list.#", "1"),
+					resource.TestCheckResourceAttr(resName, "allow_list.0", "10.0.0.3/32"),
+
+					resource.TestCheckResourceAttr(resName, "updates.day_of_week", "2"),
+					resource.TestCheckResourceAttr(resName, "updates.duration", "4"),
+					resource.TestCheckResourceAttr(resName, "updates.frequency", "weekly"),
+					resource.TestCheckResourceAttr(resName, "updates.hour_of_day", "3"),
+
+					resource.TestCheckResourceAttr(resName, "pending_updates.#", "0"),
+				),
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
@@ -207,7 +341,7 @@ func TestAccResource_complex(t *testing.T) {
 						Label:       label,
 						Region:      testRegion,
 						EngineID:    testEngine,
-						Type:        "g6-standard-1",
+						Type:        "g6-nanode-1",
 						AllowedIP:   "10.0.0.4/32",
 						ClusterSize: 3,
 						Updates: tmpl.TemplateDataUpdates{
@@ -241,7 +375,7 @@ func TestAccResource_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 					resource.TestCheckResourceAttr(resName, "ssl_connection", "true"),
 					resource.TestCheckResourceAttr(resName, "status", "active"),
-					resource.TestCheckResourceAttr(resName, "type", "g6-standard-1"),
+					resource.TestCheckResourceAttr(resName, "type", "g6-nanode-1"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 					resource.TestCheckResourceAttrSet(resName, "version"),
 
@@ -257,9 +391,10 @@ func TestAccResource_complex(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 		},
 	})
@@ -318,6 +453,12 @@ func TestAccResource_fork(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resNameSource, "pending_updates.#", "0"),
 				),
+			},
+			{
+				ResourceName:            resNameSource,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
 			},
 			{
 				PreConfig: func() {
@@ -391,14 +532,106 @@ func TestAccResource_fork(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resNameSource,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resNameFork,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated", "oldest_restore_time"},
+			},
+		},
+	})
+}
+
+func TestAccResource_suspension(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_database_postgresql_v2.foobar"
+	label := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.Suspension(
+					t,
+					tmpl.TemplateData{
+						Label:     label,
+						Region:    testRegion,
+						EngineID:  testEngine,
+						Type:      "g6-nanode-1",
+						Suspended: true,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckPostgresDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckNoResourceAttr(resName, "ca_cert"),
+					resource.TestCheckNoResourceAttr(resName, "root_password"),
+					resource.TestCheckNoResourceAttr(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "suspended"),
+					resource.TestCheckResourceAttr(resName, "suspended", "true"),
+				),
 			},
 			{
-				ResourceName:      resNameFork,
+				Config: tmpl.Suspension(
+					t,
+					tmpl.TemplateData{
+						Label:     label,
+						Region:    testRegion,
+						EngineID:  testEngine,
+						Type:      "g6-nanode-1",
+						Suspended: false,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckPostgresDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "active"),
+					resource.TestCheckResourceAttr(resName, "suspended", "false"),
+				),
+			},
+			{
+				Config: tmpl.Suspension(
+					t,
+					tmpl.TemplateData{
+						Label:     label,
+						Region:    testRegion,
+						EngineID:  testEngine,
+						Type:      "g6-nanode-1",
+						Suspended: true,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckPostgresDatabaseExists(resName, nil),
+
+					resource.TestCheckResourceAttrSet(resName, "id"),
+
+					resource.TestCheckResourceAttrSet(resName, "ca_cert"),
+					resource.TestCheckResourceAttrSet(resName, "root_password"),
+					resource.TestCheckResourceAttrSet(resName, "root_username"),
+					resource.TestCheckResourceAttr(resName, "status", "suspended"),
+					resource.TestCheckResourceAttr(resName, "suspended", "true"),
+				),
+			},
+			{
+				ResourceName:      resName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"updated",
+					"oldest_restore_time",
+
+					// These fields will be populated with null when importing a suspended database
+					"ca_cert", "root_password", "root_username",
+				},
 			},
 		},
 	})

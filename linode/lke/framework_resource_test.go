@@ -23,10 +23,11 @@ import (
 )
 
 var (
-	k8sVersions        []string
-	k8sVersionLatest   string
-	k8sVersionPrevious string
-	testRegion         string
+	k8sVersions          []string
+	k8sVersionLatest     string
+	k8sVersionPrevious   string
+	k8sVersionEnterprise string
+	testRegion           string
 )
 
 const resourceClusterName = "linode_lke_cluster.test"
@@ -74,6 +75,17 @@ func init() {
 	}
 
 	testRegion = region
+
+	enterpriseVersions, err := client.ListLKETierVersions(context.Background(), "enterprise", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(enterpriseVersions) < 1 {
+		log.Print("no enterprise k8s versions found")
+	} else {
+		k8sVersionEnterprise = enterpriseVersions[0].ID
+	}
 }
 
 func sweep(prefix string) error {
@@ -194,6 +206,7 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
 						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "standard"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
@@ -526,20 +539,20 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, true),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "false"),
+						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "true"),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Updated),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6Updated),
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, false),
+					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, true),
 
 					// Expect a 400 response when attempting to disable HA
 					ExpectError: regexp.MustCompile("\\[400]"),
@@ -693,5 +706,81 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 				},
 			},
 		})
+	})
+}
+
+func TestAccResourceLKECluster_enterprise(t *testing.T) {
+	t.Parallel()
+
+	if k8sVersionEnterprise == "" {
+		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
+	}
+
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	if err != nil {
+		log.Fatal(err)
+	}
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_apl(t *testing.T) {
+	t.Parallel()
+	acceptance.RunTestWithRetries(t, 2, func(t *acceptance.WrappedT) {
+		clusterName := acctest.RandomWithPrefix("tf_test")
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.APLEnabled(t, clusterName, k8sVersionLatest, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "apl_enabled", "true"),
+					),
+				},
+			},
+		})
+	})
+}
+
+func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
+	t.Parallel()
+
+	clusterName := acctest.RandomWithPrefix("tf_test")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      tmpl.ACLDisabledAddressesDisallowed(t, clusterName, k8sVersionLatest, testRegion),
+				ExpectError: regexp.MustCompile("addresses are not acceptable when ACL is disabled"),
+			},
+		},
 	})
 }

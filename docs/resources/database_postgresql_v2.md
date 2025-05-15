@@ -33,7 +33,7 @@ resource "linode_database_postgresql_v2" "foobar" {
   region = "us-mia"
   type = "g6-nanode-1"
   
-  allowed_ips = ["0.0.0.0/0"]
+  allow_list = ["0.0.0.0/0"]
 }
 ```
 
@@ -49,11 +49,11 @@ resource "linode_database_postgresql_v2" "foobar" {
   allow_list = ["10.0.0.3/32"]
   cluster_size = 3
 
-  updates {
+  updates = {
     duration = 4
     frequency = "weekly"
     hour_of_day = 22
-    week_of_month = 2
+    day_of_week = 2
   }
 }
 ```
@@ -70,6 +70,8 @@ resource "linode_database_postgresql_v2" "foobar" {
   fork_source = 12345
 }
 ```
+
+> **_NOTE:_** The name of the default database in the returned database cluster is `defaultdb`.
 
 ## Argument Reference
 
@@ -127,6 +129,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `status` - The operating status of the Managed Database.
 
+* `suspended` - Whether this Managed Database should be suspended.
+
 * `updated` - When this Managed Database was last updated.
 
 * `version` - The Managed Database engine version. (e.g. `13.2`)
@@ -149,11 +153,9 @@ The following arguments are supported in the `updates` specification block:
 
 * `duration` - (Required) The maximum maintenance window time in hours. (`1`..`3`)
 
-* `frequency` - (Required) Whether maintenance occurs on a weekly or monthly basis. (`weekly`, `monthly`)
+* `frequency` - (Required) The frequency at which maintenance occurs. (`weekly`)
 
 * `hour_of_day` - (Required) The hour to begin maintenance based in UTC time. (`0`..`23`)
-
-* `week_of_month` - (Optional) The week of the month to perform monthly frequency updates. Required for `monthly` frequency updates. (`1`..`4`)
 
 ## Import
 

@@ -36,13 +36,13 @@ jobs:
       - name: Run smoke tests
         id: smoke_tests
         run: |
-          make smoke-test
+          make test-smoke
         env:
           LINODE_TOKEN: ${{ secrets.DX_LINODE_TOKEN }}
 
       - name: Notify Slack
         if: always() && github.repository == 'linode/terraform-provider-linode'
-        uses: slackapi/slack-github-action@v2.0.0
+        uses: slackapi/slack-github-action@v2.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}

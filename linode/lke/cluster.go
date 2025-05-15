@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -493,21 +495,22 @@ func flattenNodePoolTaints(taints []linodego.LKENodePoolTaint) []map[string]stri
 }
 
 func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane, aclResp *linodego.LKEClusterControlPlaneACLResponse) map[string]interface{} {
-	flattened := make(map[string]interface{})
+	flattened := make(map[string]any)
 	if aclResp != nil {
 		acl := aclResp.ACL
-		flattenACL := func() []map[string]interface{} {
-			flattenedAddresses := make(map[string]interface{})
-			flattenedAddresses["ipv4"] = acl.Addresses.IPv4
-			flattenedAddresses["ipv6"] = acl.Addresses.IPv6
 
-			flattenedACL := make(map[string]interface{})
-			flattenedACL["enabled"] = acl.Enabled
-			flattenedACL["addresses"] = []map[string]interface{}{flattenedAddresses}
+		flattenedACL := make(map[string]any)
+		flattenedACL["enabled"] = acl.Enabled
 
-			return []map[string]interface{}{flattenedACL}
+		if acl.Addresses != nil {
+			flattenedAddresses := map[string]any{
+				"ipv4": acl.Addresses.IPv4,
+				"ipv6": acl.Addresses.IPv6,
+			}
+			flattenedACL["addresses"] = []map[string]any{flattenedAddresses}
 		}
-		flattened["acl"] = flattenACL()
+
+		flattened["acl"] = []map[string]any{flattenedACL}
 	}
 
 	flattened["high_availability"] = controlPlane.HighAvailability
@@ -515,25 +518,33 @@ func flattenLKEClusterControlPlane(controlPlane linodego.LKEClusterControlPlane,
 	return flattened
 }
 
-func expandControlPlaneOptions(controlPlane map[string]interface{}) linodego.LKEClusterControlPlaneOptions {
-	var result linodego.LKEClusterControlPlaneOptions
-
+func expandControlPlaneOptions(controlPlane map[string]interface{}) (
+	result linodego.LKEClusterControlPlaneOptions,
+	diags diag.Diagnostics,
+) {
 	if value, ok := controlPlane["high_availability"]; ok {
 		v := value.(bool)
 		result.HighAvailability = &v
 	}
 
+	// default to disabled
+	enabled := false
+	result.ACL = &linodego.LKEClusterControlPlaneACLOptions{Enabled: &enabled}
+
 	if value, ok := controlPlane["acl"]; ok {
-		v := value.([]interface{})
+		v := value.([]any)
 		if len(v) > 0 {
-			result.ACL = expandACLOptions(v[0].(map[string]interface{}))
+			result.ACL, diags = expandACLOptions(v[0].(map[string]interface{}))
+			if diags.HasError() {
+				return
+			}
 		}
 	}
 
-	return result
+	return
 }
 
-func expandACLOptions(aclOptions map[string]interface{}) *linodego.LKEClusterControlPlaneACLOptions {
+func expandACLOptions(aclOptions map[string]interface{}) (*linodego.LKEClusterControlPlaneACLOptions, diag.Diagnostics) {
 	var result linodego.LKEClusterControlPlaneACLOptions
 
 	if value, ok := aclOptions["enabled"]; ok {
@@ -548,7 +559,14 @@ func expandACLOptions(aclOptions map[string]interface{}) *linodego.LKEClusterCon
 		}
 	}
 
-	return &result
+	if (result.Enabled != nil && !*result.Enabled) &&
+		(result.Addresses != nil &&
+			((result.Addresses.IPv4 != nil && len(*result.Addresses.IPv4) > 0) ||
+				(result.Addresses.IPv6 != nil && len(*result.Addresses.IPv6) > 0))) {
+		return nil, diag.Errorf("addresses are not acceptable when ACL is disabled")
+	}
+
+	return &result, nil
 }
 
 func expandACLAddressOptions(addressOptions map[string]interface{}) *linodego.LKEClusterControlPlaneACLAddressesOptions {
@@ -611,4 +629,27 @@ func expandNodePoolTaints(poolTaints []map[string]any) []linodego.LKENodePoolTai
 		}
 	}
 	return taints
+}
+
+func waitForLKEKubeConfig(ctx context.Context, client linodego.Client, intervalMS int, clusterID int) error {
+	ticker := time.NewTicker(time.Duration(intervalMS) * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			_, err := client.GetLKEClusterKubeconfig(ctx, clusterID)
+			if err != nil {
+				if strings.Contains(err.Error(), "Cluster kubeconfig is not yet available") {
+					continue
+				} else {
+					return fmt.Errorf("failed to get Kubeconfig for LKE cluster %d: %w", clusterID, err)
+				}
+			} else {
+				return nil
+			}
+		case <-ctx.Done():
+			return fmt.Errorf("Error waiting for Cluster %d kubeconfig: %w", clusterID, ctx.Err())
+		}
+	}
 }

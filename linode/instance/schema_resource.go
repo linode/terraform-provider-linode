@@ -114,9 +114,6 @@ var InterfaceSchema = &schema.Resource{
 			Type:        schema.TypeString,
 			Description: "The type of interface.",
 			Required:    true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringInSlice([]string{"public", "vlan", "vpc"}, true),
-			),
 		},
 		"ipam_address": {
 			Type: schema.TypeString,
@@ -320,6 +317,9 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "This Linode's Public IPv4 Address. If there are multiple public IPv4 addresses on this " +
 			"Instance, an arbitrary address will be used for this field.",
 		Computed: true,
+		Deprecated: "The `ip_address` attribute in linode_instance resource is deprecated. " +
+			"Please consider using the `ipv4` set attribute in the same resource or a " +
+			"`linode_instance_networking` data source instead.",
 	},
 	"ipv6": {
 		Type:        schema.TypeString,
@@ -531,6 +531,16 @@ var resourceSchema = map[string]*schema.Schema{
 					Type:        schema.TypeInt,
 					Computed:    true,
 					Description: "The amount of network transfer this Linode is allotted each month.",
+				},
+				"accelerated_devices": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The number of VPUs this Linode has access to.",
+				},
+				"gpus": {
+					Type:        schema.TypeInt,
+					Computed:    true,
+					Description: "The number of GPUs this Linode has access to.",
 				},
 			},
 		},

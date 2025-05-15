@@ -44,7 +44,7 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_rdns")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan ResourceModel
 	client := r.Meta.Client
@@ -114,7 +114,7 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_rdns")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	client := r.Meta.Client
 
@@ -159,7 +159,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_rdns")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	var state, plan ResourceModel
 
@@ -182,16 +182,7 @@ func (r *Resource) Update(
 
 	client := r.Meta.Client
 
-	var updateOpts linodego.IPAddressUpdateOptions
-
-	resourceUpdated := false
-
 	if !state.RDNS.Equal(plan.RDNS) {
-		updateOpts.RDNS = plan.RDNS.ValueStringPointer()
-		resourceUpdated = true
-	}
-
-	if resourceUpdated {
 		ip, err := updateIPAddress(
 			ctx,
 			client,
@@ -226,7 +217,7 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_rdns")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	var data ResourceModel
 

@@ -3,6 +3,8 @@ package linode
 import (
 	"context"
 
+	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -19,6 +21,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/databasebackups"
 	"github.com/linode/terraform-provider-linode/v2/linode/databaseengines"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasemysql"
+	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlv2"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresql"
 	"github.com/linode/terraform-provider-linode/v2/linode/databasepostgresqlv2"
 	"github.com/linode/terraform-provider-linode/v2/linode/databases"
@@ -61,7 +64,10 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/obj"
 	"github.com/linode/terraform-provider-linode/v2/linode/objbucket"
 	"github.com/linode/terraform-provider-linode/v2/linode/objcluster"
+	"github.com/linode/terraform-provider-linode/v2/linode/objendpoints"
 	"github.com/linode/terraform-provider-linode/v2/linode/objkey"
+	"github.com/linode/terraform-provider-linode/v2/linode/objquota"
+	"github.com/linode/terraform-provider-linode/v2/linode/objquotas"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroupassignment"
 	"github.com/linode/terraform-provider-linode/v2/linode/placementgroups"
@@ -241,6 +247,7 @@ func (p *FrameworkProvider) Resources(ctx context.Context) []func() resource.Res
 		networkingip.NewResource,
 		networkingipassignment.NewResource,
 		obj.NewResource,
+		databasemysqlv2.NewResource,
 	}
 }
 
@@ -257,6 +264,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		nb.NewDataSource,
 		networkingip.NewDataSource,
 		networktransferprices.NewDataSource,
+		lkeversion.NewDataSource,
 		lkeversions.NewDataSource,
 		regions.NewDataSource,
 		ipv6range.NewDataSource,
@@ -310,5 +318,10 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		childaccount.NewDataSource,
 		childaccounts.NewDataSource,
 		networkingips.NewDataSource,
+		databasemysqlv2.NewDataSource,
+		databasepostgresqlv2.NewDataSource,
+		objendpoints.NewDataSource,
+		objquota.NewDataSource,
+		objquotas.NewDataSource,
 	}
 }

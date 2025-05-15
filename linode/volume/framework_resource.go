@@ -263,7 +263,7 @@ func (r *Resource) CreateVolume(
 func (r *Resource) Create(
 	ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse,
 ) {
-	tflog.Debug(ctx, "Create linode_volume")
+	tflog.Debug(ctx, "Create "+r.Config.Name)
 
 	var plan VolumeResourceModel
 
@@ -310,7 +310,7 @@ func (r *Resource) Create(
 func (r *Resource) Read(
 	ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse,
 ) {
-	tflog.Debug(ctx, "Read linode_volume")
+	tflog.Debug(ctx, "Read "+r.Config.Name)
 
 	var state VolumeResourceModel
 
@@ -391,7 +391,7 @@ func HandleResize(
 func (r *Resource) Update(
 	ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse,
 ) {
-	tflog.Debug(ctx, "Update linode_volume")
+	tflog.Debug(ctx, "Update "+r.Config.Name)
 
 	var plan, state VolumeResourceModel
 
@@ -586,7 +586,7 @@ func DetachVolumeAndWait(
 func (r *Resource) Delete(
 	ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse,
 ) {
-	tflog.Debug(ctx, "Delete linode_volume")
+	tflog.Debug(ctx, "Delete "+r.Config.Name)
 
 	var state VolumeResourceModel
 

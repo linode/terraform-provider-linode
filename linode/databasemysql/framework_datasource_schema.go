@@ -10,6 +10,8 @@ import (
 )
 
 var frameworkDatasourceSchema = schema.Schema{
+	DeprecationMessage: "This data source has been deprecated. " +
+		"Please use linode_database_mysql_v2 for all future implementations.",
 	Attributes: map[string]schema.Attribute{
 		"database_id": schema.Int64Attribute{
 			DeprecationMessage: "Configure `id` instead. This attribute will be removed " +

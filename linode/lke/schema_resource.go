@@ -22,6 +22,14 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "The desired Kubernetes version for this Kubernetes cluster in the format of <major>.<minor>. " +
 			"The latest supported patch version will be deployed.",
 	},
+	"apl_enabled": {
+		Type: schema.TypeBool,
+		Description: "Enables the App Platform Layer for this cluster. " +
+			"Note: v4beta only and may not currently be available to all users.",
+		Optional: true,
+		Computed: true,
+		ForceNew: true,
+	},
 	"tags": {
 		Type:        schema.TypeSet,
 		Elem:        &schema.Schema{Type: schema.TypeString},
@@ -62,6 +70,13 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The status of the cluster.",
+	},
+	"tier": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The desired Kubernetes tier.",
+		ForceNew:    true,
 	},
 	"pool": {
 		Type: schema.TypeList,

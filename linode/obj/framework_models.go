@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -22,7 +21,7 @@ type BaseModel struct {
 	Cluster            types.String `tfsdk:"cluster"`
 	Region             types.String `tfsdk:"region"`
 	Key                types.String `tfsdk:"key"`
-	SecreteKey         types.String `tfsdk:"secret_key"`
+	SecretKey          types.String `tfsdk:"secret_key"`
 	AccessKey          types.String `tfsdk:"access_key"`
 	Content            types.String `tfsdk:"content"`
 	ContentBase64      types.String `tfsdk:"content_base64"`
@@ -85,7 +84,7 @@ func (data ResourceModel) GetObjectStorageKeys(
 	result := &ObjectKeys{}
 
 	result.AccessKey = data.AccessKey.ValueString()
-	result.SecretKey = data.SecreteKey.ValueString()
+	result.SecretKey = data.SecretKey.ValueString()
 
 	if result.Ok() {
 		return result, nil
@@ -137,9 +136,7 @@ func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client 
 		return
 	}
 
-	plan.Endpoint = types.StringValue(
-		strings.TrimPrefix(bucket.Hostname, fmt.Sprintf("%s.", bucket.Label)),
-	)
+	plan.Endpoint = types.StringValue(bucket.S3Endpoint)
 }
 
 func (data *ResourceModel) GenerateObjectStorageObjectID(apply bool, preserveKnown bool) string {
@@ -189,7 +186,7 @@ func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.Cluster = helper.KeepOrUpdateValue(plan.Cluster, state.Cluster, preserveKnown)
 	plan.Region = helper.KeepOrUpdateValue(plan.Region, state.Region, preserveKnown)
 	plan.Key = helper.KeepOrUpdateValue(plan.Key, state.Key, preserveKnown)
-	plan.SecreteKey = helper.KeepOrUpdateValue(plan.SecreteKey, state.SecreteKey, preserveKnown)
+	plan.SecretKey = helper.KeepOrUpdateValue(plan.SecretKey, state.SecretKey, preserveKnown)
 	plan.AccessKey = helper.KeepOrUpdateValue(plan.AccessKey, state.AccessKey, preserveKnown)
 	plan.Content = helper.KeepOrUpdateValue(plan.Content, state.Content, preserveKnown)
 	plan.ContentBase64 = helper.KeepOrUpdateValue(plan.ContentBase64, state.ContentBase64, preserveKnown)

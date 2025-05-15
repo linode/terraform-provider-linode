@@ -102,6 +102,46 @@ func TestAccResourceInstance_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
 					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
+					resource.TestMatchResourceAttr(resName, "ipv6", regexp.MustCompile(`/128$`)),
+				),
+			},
+
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id", "capabilities"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_vpu(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test_vpu")
+	rootPass := acctest.RandString(64)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.VPU(t, instanceName, acceptance.PublicKeyMaterial, "us-lax", rootPass),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "type", "g1-accelerated-netint-vpu-t1u1-s"),
+					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(resName, "region", "us-lax"),
+					resource.TestCheckResourceAttr(resName, "group", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "swap_size", "256"),
+					resource.TestCheckResourceAttrSet(resName, "host_uuid"),
+					resource.TestCheckResourceAttrSet(resName, "specs.0.accelerated_devices"),
 				),
 			},
 
@@ -2223,34 +2263,36 @@ func TestAccResourceInstance_VPCInterface(t *testing.T) {
 	var instance linodego.Instance
 	instanceName := acctest.RandomWithPrefix("tf-test")
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
-		CheckDestroy:             acceptance.CheckInstanceDestroy,
+	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 func() { acceptance.PreCheck(t) },
+			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			CheckDestroy:             acceptance.CheckInstanceDestroy,
 
-		Steps: []resource.TestStep{
-			{
-				Config: tmpl.VPCInterface(t, instanceName, testRegion),
-				Check: resource.ComposeTestCheckFunc(
-					acceptance.CheckInstanceExists(resName, &instance),
-					resource.TestCheckResourceAttr(resName, "label", instanceName),
-					resource.TestCheckResourceAttr(resName, "region", testRegion),
-					resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vpc"),
+			Steps: []resource.TestStep{
+				{
+					Config: tmpl.VPCInterface(t, instanceName, testRegion),
+					Check: resource.ComposeTestCheckFunc(
+						acceptance.CheckInstanceExists(resName, &instance),
+						resource.TestCheckResourceAttr(resName, "label", instanceName),
+						resource.TestCheckResourceAttr(resName, "region", testRegion),
+						resource.TestCheckResourceAttr(resName, "image", acceptance.TestImageLatest),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.#", "1"),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.0.purpose", "vpc"),
 
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv4.0.vpc", "10.0.4.150"),
-					resource.TestCheckResourceAttr(resName, "config.0.interface.0.ip_ranges.0", "10.0.4.100/32"),
-					resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv4.0.nat_1_1"),
-				),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.0.ipv4.0.vpc", "10.0.4.150"),
+						resource.TestCheckResourceAttr(resName, "config.0.interface.0.ip_ranges.0", "10.0.4.100/32"),
+						resource.TestCheckResourceAttrSet(resName, "config.0.interface.0.ipv4.0.nat_1_1"),
+					),
+				},
+				{
+					ResourceName:            resName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id", "capabilities.#", "capabilities.0", "capabilities.1"},
+				},
 			},
-			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"image", "interface", "resize_disk", "migration_type", "firewall_id"},
-			},
-		},
+		})
 	})
 }
 
