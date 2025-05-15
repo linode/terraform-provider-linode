@@ -34,7 +34,7 @@ require (
 	golang.org/x/sync v0.14.0
 )
 
-replace github.com/linode/linodego => github.com/linode/linodego v0.0.0-20250115202254-23f71617a419
+replace github.com/linode/linodego => github.com/linode/linodego v0.0.0-20250515193307-3c8e57ca44cf
 
 require (
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
@@ -104,7 +104,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.16.2 // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/oauth2 v0.29.0 // indirect
+	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
