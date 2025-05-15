@@ -953,16 +953,12 @@ func flattenPasswordEncryption(val *linodego.PasswordEncryption) (*basetypes.Obj
 	for i, s := range val.Enum {
 		enumVals[i] = types.StringValue(s)
 	}
-	typeVals := make([]attr.Value, len(val.Type))
-	for i, s := range val.Type {
-		typeVals[i] = types.StringValue(s)
-	}
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"enum":             types.ListValueMust(types.StringType, enumVals),
 		"example":          types.StringValue(val.Example),
 		"requires_restart": types.BoolValue(val.RequiresRestart),
-		"type":             types.ListValueMust(types.StringType, typeVals),
+		"type":             types.StringValue(val.Type),
 	}
 	obj, d := types.ObjectValue(PasswordEncryptionObjectType.AttrTypes, result)
 	if d.HasError() {
@@ -1038,15 +1034,11 @@ func flattenPGStatStatementsTrack(val *linodego.PGStatStatementsTrack) (*basetyp
 	for i, s := range val.Enum {
 		enumVals[i] = types.StringValue(s)
 	}
-	typeVals := make([]attr.Value, len(val.Type))
-	for i, s := range val.Type {
-		typeVals[i] = types.StringValue(s)
-	}
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"enum":             types.ListValueMust(types.StringType, enumVals),
 		"requires_restart": types.BoolValue(val.RequiresRestart),
-		"type":             types.ListValueMust(types.StringType, typeVals),
+		"type":             types.StringValue(val.Type),
 	}
 	obj, d := types.ObjectValue(PGStatStatementsTrackObjectType.AttrTypes, result)
 	if d.HasError() {
