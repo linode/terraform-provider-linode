@@ -774,10 +774,7 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("type"),
-						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("string"),
-							knownvalue.StringExact("null"),
-						}),
+						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -847,7 +844,7 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("requires_restart"),
-						knownvalue.Bool(false),
+						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -906,9 +903,7 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("type"),
-						knownvalue.ListExact([]knownvalue.Check{
-							knownvalue.StringExact("string"),
-						}),
+						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,

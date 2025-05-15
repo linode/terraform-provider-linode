@@ -306,7 +306,7 @@ var PasswordEncryptionObjectType = types.ObjectType{
 		"enum":             types.ListType{ElemType: types.StringType},
 		"example":          types.StringType,
 		"requires_restart": types.BoolType,
-		"type":             types.ListType{ElemType: types.StringType},
+		"type":             types.StringType,
 	},
 }
 
@@ -357,7 +357,7 @@ var PGStatStatementsTrackObjectType = types.ObjectType{
 		"description":      types.StringType,
 		"enum":             types.ListType{ElemType: types.StringType},
 		"requires_restart": types.BoolType,
-		"type":             types.ListType{ElemType: types.StringType},
+		"type":             types.StringType,
 	},
 }
 
