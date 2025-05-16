@@ -56,6 +56,7 @@ func (d *DataSource) Read(
 			fmt.Sprintf("Failed to get nodebalancer %d", nodeBalancerID),
 			err.Error(),
 		)
+		return
 	}
 
 	tflog.Trace(ctx, "client.ListNodeBalancerFirewalls(...)")
@@ -66,6 +67,7 @@ func (d *DataSource) Read(
 			fmt.Sprintf("Failed to list firewalls assgiend to nodebalancer %d", nodeBalancerID),
 			err.Error(),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(data.flattenNodeBalancer(ctx, nodeBalancer, firewalls)...)

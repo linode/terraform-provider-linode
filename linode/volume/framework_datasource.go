@@ -54,7 +54,9 @@ func (r *DataSource) Read(
 	volume, err := client.GetVolume(ctx, volumeID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to get the volume.", err.Error())
+		return
 	}
+
 	data.ParseComputedAttributes(ctx, volume)
 	data.ParseNonComputedAttributes(ctx, volume)
 

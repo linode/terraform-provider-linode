@@ -66,6 +66,7 @@ func (data ResourceModel) getObjectBody(diags *diag.Diagnostics) (body *s3manage
 		contentBytes, err = base64.StdEncoding.DecodeString(data.ContentBase64.ValueString())
 		if err != nil {
 			diags.AddError("Failed to Decode the base64 Content", err.Error())
+			return nil
 		}
 	} else if !data.Content.IsNull() && !data.Content.IsUnknown() {
 		contentBytes = []byte(data.Content.ValueString())

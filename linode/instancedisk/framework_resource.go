@@ -132,6 +132,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Failed to Wait for the Disk Creation Event on Linode Disk (%d)", diskID),
 			err.Error(),
 		)
+		return
 	}
 
 	if _, err := client.WaitForInstanceDiskStatus(
@@ -140,6 +141,7 @@ func (r *Resource) Create(
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to Wait for Disk (%d) to be Ready", diskID), err.Error(),
 		)
+		return
 	}
 
 	// get latest status of the disk
@@ -150,6 +152,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Failed to Get Disk %d of Linode Instance %d", diskID, linodeID),
 			err.Error(),
 		)
+		return
 	}
 
 	// IDs should always be overridden during creation (see #1085)
@@ -285,6 +288,7 @@ func (r *Resource) Update(
 			fmt.Sprintf("Failed to Find the Disk (%d)", id),
 			err.Error(),
 		)
+		return
 	}
 
 	plan.FlattenDisk(disk, true)
