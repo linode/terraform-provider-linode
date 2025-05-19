@@ -93,6 +93,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
+					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
@@ -133,6 +134,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
+					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
@@ -144,7 +146,25 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 				),
 			},
+			{
+				Config: tmpl.Updates(t, nodebalancerName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkNodeBalancerExists,
+					resource.TestCheckResourceAttr(resName, "label", nodebalancerName+"_r"),
+					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
+					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "5"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
+					resource.TestCheckResourceAttrSet(resName, "hostname"),
+					resource.TestCheckResourceAttrSet(resName, "ipv4"),
+					resource.TestCheckResourceAttrSet(resName, "ipv6"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
+				),
+			},
 			{
 				ResourceName:            resName,
 				ImportState:             true,

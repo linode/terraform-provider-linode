@@ -111,6 +111,22 @@ func getSchemaAttributes(version int) map[string]schema.Attribute {
 			Optional: true,
 			Computed: true,
 		},
+		"udp_check_port": schema.Int64Attribute{
+			Description: "Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic.",
+			Validators: []validator.Int64{
+				int64validator.Between(1, 65535),
+			},
+			Default:  int64default.StaticInt64(80),
+			Optional: true,
+			Computed: true,
+		},
+		"udp_session_timeout": schema.Int64Attribute{
+			Description: "The read-only idle time in seconds after which a session that hasn’t received packets is destroyed.",
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
+			},
+			Computed: true,
+		},
 		"check_attempts": schema.Int64Attribute{
 			Description: "How many times to attempt a check before considering a backend to be down. (1-30)",
 			Validators: []validator.Int64{
