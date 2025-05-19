@@ -180,9 +180,10 @@ func TestFlattenFirewallRules(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		out, err := FlattenFirewallRules(context.Background(), c.rules, nil, false)
-		if err != nil {
-			t.Fatal(err)
+		var diags diag.Diagnostics
+		out := FlattenFirewallRules(context.Background(), c.rules, nil, false, &diags)
+		if diags.HasError() {
+			t.Fatal(diags.Errors())
 		}
 		for i, rule := range out {
 			if i > len(c.expected) {

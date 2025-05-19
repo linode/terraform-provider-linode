@@ -1,0 +1,6 @@
+{{ define "data_linode_firewall_templates_basic" }}
+
+data "linode_firewall_templates" "test" {
+}
+
+{{ end }}

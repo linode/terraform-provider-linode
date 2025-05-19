@@ -1,7 +1,8 @@
-package firewall
+package firewalltemplate
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -16,7 +17,7 @@ func NewDataSource() datasource.DataSource {
 	return &DataSource{
 		BaseDataSource: helper.NewBaseDataSource(
 			helper.BaseDataSourceConfig{
-				Name:   "linode_firewall",
+				Name:   "linode_firewall_template",
 				Schema: &frameworkDatasourceSchema,
 			},
 		),
@@ -30,7 +31,7 @@ func (d *DataSource) Read(
 ) {
 	tflog.Debug(ctx, "Read data."+d.Config.Name)
 
-	var data FirewallDataSourceModel
+	var data FirewallTemplateDataSourceModel
 	client := d.Meta.Client
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -38,33 +39,22 @@ func (d *DataSource) Read(
 		return
 	}
 
-	firewallID := helper.FrameworkSafeInt64ToInt(data.ID.ValueInt64(), &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	slug := data.Slug.ValueString()
+	ctx = tflog.SetField(ctx, "slug", slug)
 
-	ctx = tflog.SetField(ctx, "firewall_id", firewallID)
-
-	firewall, err := client.GetFirewall(ctx, firewallID)
+	tflog.Trace(ctx, "client.GetFirewallTemplate(...)", map[string]any{
+		"slug": slug,
+	})
+	firewallTemplate, err := client.GetFirewallTemplate(ctx, slug)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Failed to get firewall",
+			fmt.Sprintf("Failed to Get the Firewall Template %q", slug),
 			err.Error(),
 		)
 		return
 	}
 
-	tflog.Trace(ctx, "client.ListFirewallDevices(...)")
-	devices, err := client.ListFirewallDevices(ctx, firewallID, nil)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to get firewall devices",
-			err.Error(),
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(data.flattenFirewallForDataSource(ctx, firewall, devices, firewall.Rules)...)
+	data.parseFirewallTemplate(ctx, *firewallTemplate, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
