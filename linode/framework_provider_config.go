@@ -58,7 +58,7 @@ func (fp *FrameworkProvider) Configure(
 		resp.Diagnostics.AddWarning(
 			"Support for Terraform 0.x is deprecated",
 			"Please upgrade to Terraform 1.x or later. "+
-				"Support for Terraform 0.x will be removed in a future version of the provider.",
+				"Support for Terraform 0.x will be removed in a future version of this provider.",
 		)
 	}
 
