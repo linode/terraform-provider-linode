@@ -144,8 +144,8 @@ github.com/hashicorp/terraform-exec v0.23.0 h1:MUiBM1s0CNlRFsCLJuM5wXZrzA3MnPYEs
 github.com/hashicorp/terraform-exec v0.23.0/go.mod h1:mA+qnx1R8eePycfwKkCRk3Wy65mwInvlpAeOwmA7vlY=
 github.com/hashicorp/terraform-json v0.25.0 h1:rmNqc/CIfcWawGiwXmRuiXJKEiJu1ntGoxseG1hLhoQ=
 github.com/hashicorp/terraform-json v0.25.0/go.mod h1:sMKS8fiRDX4rVlR6EJUMudg1WcanxCMoWwTLkgZP/vc=
-github.com/hashicorp/terraform-plugin-framework v1.14.1 h1:jaT1yvU/kEKEsxnbrn4ZHlgcxyIfjvZ41BLdlLk52fY=
-github.com/hashicorp/terraform-plugin-framework v1.14.1/go.mod h1:xNUKmvTs6ldbwTuId5euAtg37dTxuyj3LHS3uj7BHQ4=
+github.com/hashicorp/terraform-plugin-framework v1.15.0 h1:LQ2rsOfmDLxcn5EeIwdXFtr03FVsNktbbBci8cOKdb4=
+github.com/hashicorp/terraform-plugin-framework v1.15.0/go.mod h1:hxrNI/GY32KPISpWqlCoTLM9JZsGH3CyYlir09bD/fI=
 github.com/hashicorp/terraform-plugin-framework-nettypes v0.2.0 h1:Zap24rkky7SvNGGNYHMKFhAriP6+6riI21BMYOYgLRE=
 github.com/hashicorp/terraform-plugin-framework-nettypes v0.2.0/go.mod h1:CYPq+I5bWsmI8021VJY85hAyOeiEEQpdGW+NapdQn7A=
 github.com/hashicorp/terraform-plugin-framework-timeouts v0.5.0 h1:I/N0g/eLZ1ZkLZXUQ0oRSXa8YG/EF0CEuQP1wXdrzKw=
