@@ -1,10 +1,12 @@
 package accountsettings
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var frameworkResourceSchema = schema.Schema{
@@ -40,7 +42,20 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-
+		"interfaces_for_new_linodes": schema.StringAttribute{
+			Description: "Account-wide backups default.",
+			Computed:    true,
+			Optional:    true,
+			Validators: []validator.String{stringvalidator.OneOf(
+				"legacy_config_only",
+				"legacy_config_default_but_linode_allowed",
+				"linode_default_but_legacy_config_allowed",
+				"linode_only",
+			)},
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"managed": schema.BoolAttribute{
 			Description: "Enables monitoring for connectivity, response, and total request time.",
 			Computed:    true,

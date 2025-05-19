@@ -43,9 +43,7 @@ func (r *Resource) Create(
 	}
 
 	// Update the account
-	resp.Diagnostics.Append(
-		r.updateAccountSettings(ctx, &plan)...,
-	)
+	r.createOrUpdateAccountSettings(ctx, &plan, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -117,9 +115,7 @@ func (r *Resource) Update(
 	}
 
 	// Update the account
-	resp.Diagnostics.Append(
-		r.updateAccountSettings(ctx, &plan)...,
-	)
+	r.createOrUpdateAccountSettings(ctx, &plan, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -145,12 +141,22 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 }
 
-func (r *Resource) updateAccountSettings(
+func (r *Resource) createOrUpdateAccountSettings(
 	ctx context.Context,
 	plan *AccountSettingsModel,
-) diag.Diagnostics {
+	diags *diag.Diagnostics,
+) {
 	client := r.Meta.Client
-	var diagnostics diag.Diagnostics
+
+	account, err := client.GetAccount(ctx)
+	if err != nil {
+		diags.AddError(
+			"Failed to get Linode Account",
+			err.Error(),
+		)
+		return
+	}
+	email := account.Email
 
 	// Longview Plan update functionality has been moved
 	if !plan.LongviewSubscription.IsNull() {
@@ -164,17 +170,26 @@ func (r *Resource) updateAccountSettings(
 
 		_, err := client.UpdateLongviewPlan(ctx, options)
 		if err != nil {
-			diagnostics.AddError(
+			diags.AddError(
 				"Failed to update Linode Longview Plan",
 				err.Error(),
 			)
-			return diagnostics
+			return
 		}
 	}
 
-	updateOpts := linodego.AccountSettingsUpdateOptions{
-		BackupsEnabled: plan.BackupsEnabled.ValueBoolPointer(),
-		NetworkHelper:  plan.NetworkHelper.ValueBoolPointer(),
+	updateOpts := linodego.AccountSettingsUpdateOptions{}
+
+	if !plan.BackupsEnabled.IsUnknown() {
+		updateOpts.BackupsEnabled = plan.BackupsEnabled.ValueBoolPointer()
+	}
+
+	if !plan.NetworkHelper.IsUnknown() {
+		updateOpts.NetworkHelper = plan.NetworkHelper.ValueBoolPointer()
+	}
+
+	if !plan.InterfacesForNewLinodes.IsUnknown() {
+		updateOpts.InterfacesForNewLinodes = (*linodego.InterfacesForNewLinodes)(plan.InterfacesForNewLinodes.ValueStringPointer())
 	}
 
 	tflog.Debug(ctx, "client.UpdateAccountSettings(...)", map[string]any{
@@ -183,10 +198,9 @@ func (r *Resource) updateAccountSettings(
 
 	settings, err := client.UpdateAccountSettings(ctx, updateOpts)
 	if err != nil {
-		diagnostics.AddError("Failed to update Linode Account Settings", err.Error())
-		return diagnostics
+		diags.AddError("Failed to update Linode Account Settings", err.Error())
+		return
 	}
 
-	plan.FlattenAccountSettings(plan.ID.ValueString(), settings, true)
-	return diagnostics
+	plan.FlattenAccountSettings(email, settings, true)
 }
