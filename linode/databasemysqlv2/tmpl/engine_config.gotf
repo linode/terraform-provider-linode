@@ -1,0 +1,39 @@
+{{ define "database_mysql_v2_engine_config" }}
+
+resource "linode_database_mysql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    engine_config_binlog_retention_period               = {{ .EngineConfigBinlogRetentionPeriod }}
+    engine_config_mysql_connect_timeout                 = {{ .EngineConfigMySQLConnectTimeout }}
+    engine_config_mysql_default_time_zone               = "{{ .EngineConfigMySQLDefaultTimeZone }}"
+    engine_config_mysql_group_concat_max_len            = {{ .EngineConfigMySQLGroupConcatMaxLen }}
+    engine_config_mysql_information_schema_stats_expiry = {{ .EngineConfigMySQLInformationSchemaStatsExpiry }}
+    engine_config_mysql_innodb_change_buffer_max_size   = {{ .EngineConfigMySQLInnoDBChangeBufferMaxSize }}
+    engine_config_mysql_innodb_flush_neighbors          = {{ .EngineConfigMySQLInnoDBFlushNeighbors }}
+    engine_config_mysql_innodb_ft_min_token_size        = {{ .EngineConfigMySQLInnoDBFTMinTokenSize }}
+    engine_config_mysql_innodb_ft_server_stopword_table = "{{ .EngineConfigMySQLInnoDBFTServerStopwordTable }}"
+    engine_config_mysql_innodb_lock_wait_timeout        = {{ .EngineConfigMySQLInnoDBLockWaitTimeout }}
+    engine_config_mysql_innodb_log_buffer_size          = {{ .EngineConfigMySQLInnoDBLogBufferSize }}
+    engine_config_mysql_innodb_online_alter_log_max_size = {{ .EngineConfigMySQLInnoDBOnlineAlterLogMaxSize }}
+    engine_config_mysql_innodb_read_io_threads          = {{ .EngineConfigMySQLInnoDBReadIOThreads }}
+    engine_config_mysql_innodb_rollback_on_timeout      = {{ .EngineConfigMySQLInnoDBRollbackOnTimeout }}
+    engine_config_mysql_innodb_thread_concurrency       = {{ .EngineConfigMySQLInnoDBThreadConcurrency }}
+    engine_config_mysql_innodb_write_io_threads         = {{ .EngineConfigMySQLInnoDBWriteIOThreads }}
+    engine_config_mysql_interactive_timeout             = {{ .EngineConfigMySQLInteractiveTimeout }}
+    engine_config_mysql_internal_tmp_mem_storage_engine = "{{ .EngineConfigMySQLInternalTmpMemStorageEngine }}"
+    engine_config_mysql_max_allowed_packet              = {{ .EngineConfigMySQLMaxAllowedPacket }}
+    engine_config_mysql_max_heap_table_size             = {{ .EngineConfigMySQLMaxHeapTableSize }}
+    engine_config_mysql_net_buffer_length               = {{ .EngineConfigMySQLNetBufferLength }}
+    engine_config_mysql_net_read_timeout                = {{ .EngineConfigMySQLNetReadTimeout }}
+    engine_config_mysql_net_write_timeout               = {{ .EngineConfigMySQLNetWriteTimeout }}
+    engine_config_mysql_sort_buffer_size                = {{ .EngineConfigMySQLSortBufferSize }}
+    engine_config_mysql_sql_mode                        = "{{ .EngineConfigMySQLSQLMode }}"
+    engine_config_mysql_sql_require_primary_key         = {{ .EngineConfigMySQLSQLRequirePrimaryKey }}
+    engine_config_mysql_tmp_table_size                  = {{ .EngineConfigMySQLTmpTableSize }}
+    engine_config_mysql_wait_timeout                    = {{ .EngineConfigMySQLWaitTimeout }}
+}
+
+{{ end }}
