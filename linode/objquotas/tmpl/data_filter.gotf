@@ -1,0 +1,12 @@
+{{ define "object_storage_quotas_basic" }}
+
+data "linode_object_storage_quotas" "all" {}
+
+data "linode_object_storage_quotas" "by-endpoint-type" {
+    filter {
+         name = "endpoint_type"
+         values = ["E0"]
+    }
+}
+
+{{ end }}
