@@ -7,7 +7,7 @@ description: |-
 # linode\_object\_storage\_quotas
 
 Provides details about a list of Object Storage quotas information on your account.
-For more information, see the [Linode APIv4 docs](TBD).
+For more information, see the [Linode APIv4 docs](https://techdocs.akamai.com/linode-api/reference/get-object-storage-quotas).
 
 ## Example Usage
 

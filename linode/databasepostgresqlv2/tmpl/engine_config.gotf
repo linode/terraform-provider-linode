@@ -1,0 +1,58 @@
+{{ define "database_postgresql_v2_engine_config" }}
+
+resource "linode_database_postgresql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    engine_config_pg_autovacuum_analyze_scale_factor          = {{ .EngineConfigPGAutovacuumAnalyzeScaleFactor }}
+    engine_config_pg_autovacuum_analyze_threshold             = {{ .EngineConfigPGAutovacuumAnalyzeThreshold }}
+    engine_config_pg_autovacuum_max_workers                   = {{ .EngineConfigPGAutovacuumMaxWorkers }}
+    engine_config_pg_autovacuum_naptime                       = {{ .EngineConfigPGAutovacuumNaptime }}
+    engine_config_pg_autovacuum_vacuum_cost_delay             = {{ .EngineConfigPGAutovacuumVacuumCostDelay }}
+    engine_config_pg_autovacuum_vacuum_cost_limit             = {{ .EngineConfigPGAutovacuumVacuumCostLimit }}
+    engine_config_pg_autovacuum_vacuum_scale_factor           = {{ .EngineConfigPGAutovacuumVacuumScaleFactor }}
+    engine_config_pg_autovacuum_vacuum_threshold              = {{ .EngineConfigPGAutovacuumVacuumThreshold }}
+    engine_config_pg_bgwriter_delay                           = {{ .EngineConfigPGBGWriterDelay }}
+    engine_config_pg_bgwriter_flush_after                     = {{ .EngineConfigPGBGWriterFlushAfter }}
+    engine_config_pg_bgwriter_lru_maxpages                    = {{ .EngineConfigPGBGWriterLRUMaxpages }}
+    engine_config_pg_bgwriter_lru_multiplier                  = {{ .EngineConfigPGBGWriterLRUMultiplier }}
+    engine_config_pg_deadlock_timeout                         = {{ .EngineConfigPGDeadlockTimeout }}
+    engine_config_pg_default_toast_compression                = "{{ .EngineConfigPGDefaultToastCompression }}"
+    engine_config_pg_idle_in_transaction_session_timeout      = {{ .EngineConfigPGIdleInTransactionSessionTimeout }}
+    engine_config_pg_jit                                      = {{ .EngineConfigPGJIT }}
+    engine_config_pg_max_files_per_process                    = {{ .EngineConfigPGMaxFilesPerProcess }}
+    engine_config_pg_max_locks_per_transaction                = {{ .EngineConfigPGMaxLocksPerTransaction }}
+    engine_config_pg_max_logical_replication_workers          = {{ .EngineConfigPGMaxLogicalReplicationWorkers }}
+    engine_config_pg_max_parallel_workers                     = {{ .EngineConfigPGMaxParallelWorkers }}
+    engine_config_pg_max_parallel_workers_per_gather          = {{ .EngineConfigPGMaxParallelWorkersPerGather }}
+    engine_config_pg_max_pred_locks_per_transaction           = {{ .EngineConfigPGMaxPredLocksPerTransaction }}
+    engine_config_pg_max_replication_slots                    = {{ .EngineConfigPGMaxReplicationSlots }}
+    engine_config_pg_max_slot_wal_keep_size                   = {{ .EngineConfigPGMaxSlotWALKeepSize }}
+    engine_config_pg_max_stack_depth                          = {{ .EngineConfigPGMaxStackDepth }}
+    engine_config_pg_max_standby_archive_delay                = {{ .EngineConfigPGMaxStandbyArchiveDelay }}
+    engine_config_pg_max_standby_streaming_delay              = {{ .EngineConfigPGMaxStandbyStreamingDelay }}
+    engine_config_pg_max_wal_senders                          = {{ .EngineConfigPGMaxWALSenders }}
+    engine_config_pg_max_worker_processes                     = {{ .EngineConfigPGMaxWorkerProcesses }}
+    engine_config_pg_password_encryption                      = "{{ .EngineConfigPGPasswordEncryption }}"
+    engine_config_pg_pg_partman_bgw_interval                  = {{ .EngineConfigPGPGPartmanBGWInterval }}
+    engine_config_pg_pg_partman_bgw_role                      = "{{ .EngineConfigPGPGPartmanBGWRole }}"
+    engine_config_pg_pg_stat_monitor_pgsm_enable_query_plan   = {{ .EngineConfigPGPGStatMonitorPGSMEnableQueryPlan }}
+    engine_config_pg_pg_stat_monitor_pgsm_max_buckets         = {{ .EngineConfigPGPGStatMonitorPGSMMaxBuckets }}
+    engine_config_pg_pg_stat_statements_track                 = "{{ .EngineConfigPGPGStatStatementsTrack }}"
+    engine_config_pg_temp_file_limit                          = {{ .EngineConfigPGTempFileLimit }}
+    engine_config_pg_timezone                                 = "{{ .EngineConfigPGTimezone }}"
+    engine_config_pg_track_activity_query_size                = {{ .EngineConfigPGTrackActivityQuerySize }}
+    engine_config_pg_track_commit_timestamp                   = "{{ .EngineConfigPGTrackCommitTimestamp }}"
+    engine_config_pg_track_functions                          = "{{ .EngineConfigPGTrackFunctions }}"
+    engine_config_pg_track_io_timing                          = "{{ .EngineConfigPGTrackIOTiming }}"
+    engine_config_pg_wal_sender_timeout                       = {{ .EngineConfigPGWALSenderTimeout }}
+    engine_config_pg_wal_writer_delay                         = {{ .EngineConfigPGWALWriterDelay }}
+    engine_config_pg_stat_monitor_enable                      = {{ .EngineConfigPGStatMonitorEnable }}
+    engine_config_pglookout_max_failover_replication_time_lag = {{ .EngineConfigPGLookoutMaxFailoverReplicationTimeLag }}
+    engine_config_shared_buffers_percentage                   = {{ .EngineConfigSharedBuffersPercentage }}
+    engine_config_work_mem                                    = {{ .EngineConfigWorkMem }}
+}
+
+{{ end }}

@@ -54,6 +54,7 @@ func ImportStatePassthroughInt64ID(
 			"Invalid Integer Value for Import ID",
 			fmt.Sprintf("\"%s\" is not a valid integer value", req.ID),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, attrPath, intID)...)

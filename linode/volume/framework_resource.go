@@ -255,6 +255,7 @@ func (r *Resource) CreateVolume(
 			diags.AddError(
 				"Failed to Wait for Created Volume be Active", err.Error(),
 			)
+			return nil
 		}
 	}
 	return volume
@@ -284,6 +285,7 @@ func (r *Resource) Create(
 	timeoutSeconds, err := helper.SafeFloat64ToInt(createTimeout.Seconds())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to Convert Timeout to int", err.Error())
+		return
 	}
 
 	var volume *linodego.Volume
@@ -383,6 +385,7 @@ func HandleResize(
 			fmt.Sprintf("Failed to Wait for Volume %d Ready from Resizing", volumeID),
 			err.Error(),
 		)
+		return nil
 	}
 
 	return volume

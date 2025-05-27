@@ -106,6 +106,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", nodebalancer.ID),
 			err.Error(),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodebalancer, firewalls, true)...)
@@ -171,6 +172,7 @@ func (r *Resource) Read(
 			fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
 			err.Error(),
 		)
+		return
 	}
 
 	resp.Diagnostics.Append(data.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, false)...)
@@ -255,6 +257,7 @@ func (r *Resource) Update(
 				fmt.Sprintf("Failed to list firewalls assigned to NodeBalancer %d", id),
 				err.Error(),
 			)
+			return
 		}
 
 		resp.Diagnostics.Append(plan.FlattenNodeBalancer(ctx, nodeBalancer, firewalls, true)...)
