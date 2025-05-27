@@ -942,15 +942,20 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 func customDiffValidateLinodeInterfaceBooted(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	interfaceGeneration := d.Get("interface_generation").(string)
 
+	// TODO (Lena): Add logic to prevent boot when image is specified and interface
+	// generation is `linode`. Is there any case where someone using the convenience
+	// fields would also use an external config?
+
 	// We reference the raw config here because a computed value of true
 	// implies the config was booted elsewhere
-	booted := d.GetRawConfig().GetAttr("booted")
+	booted := d.Get("booted").(bool)
+	// d.GetRawConfig().GetAttr("booted")
 
 	if linodego.InterfaceGeneration(interfaceGeneration) != linodego.GenerationLinode {
 		return nil
 	}
 
-	if booted.IsNull() || booted.False() {
+	if !d.HasChange("booted") || !booted {
 		return nil
 	}
 
