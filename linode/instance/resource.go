@@ -34,6 +34,7 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
+			customDiffValidateLinodeInterfaceBooted,
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -134,6 +135,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("has_user_data", instance.HasUserData)
 	d.Set("lke_cluster_id", instance.LKEClusterID)
 	d.Set("disk_encryption", instance.DiskEncryption)
+	d.Set("interface_generation", instance.InterfaceGeneration)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -232,6 +234,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		for i, ni := range interfaces {
 			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 		}
+	}
+
+	if interfaceGeneration, interfaceGenerationOk := d.GetOk("interface_generation"); interfaceGenerationOk {
+		createOpts.InterfaceGeneration = linodego.InterfaceGeneration(interfaceGeneration.(string))
+	}
+
+	if networkHelper, networkHelperOk := d.GetOk("network_helper"); networkHelperOk {
+		createOpts.NetworkHelper = linodego.Pointer(networkHelper.(bool))
 	}
 
 	if _, metadataOk := d.GetOk("metadata.0"); metadataOk {
@@ -925,6 +935,30 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	d.SetId("")
 	return nil
+}
+
+// customDiffValidateLinodeInterfaceBooted validates that the booted field is not set to true if
+// the interface_generation of an instance is linode.
+func customDiffValidateLinodeInterfaceBooted(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	interfaceGeneration := d.Get("interface_generation").(string)
+
+	// We reference the raw config here because a computed value of true
+	// implies the config was booted elsewhere
+	booted := d.GetRawConfig().GetAttr("booted")
+
+	if linodego.InterfaceGeneration(interfaceGeneration) != linodego.GenerationLinode {
+		return nil
+	}
+
+	if booted.IsNull() || booted.False() {
+		return nil
+	}
+
+	return fmt.Errorf(
+		"booted must explicitly be set to false when interface_generation is set to 'linode'. " +
+			"Consider configuring interfaces using the linode_instance_interfaces resource " +
+			"and booting the instance instance using the linode_instance_config resource. ",
+	)
 }
 
 func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {

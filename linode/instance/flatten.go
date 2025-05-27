@@ -48,6 +48,7 @@ func flattenInstance(
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
+	result["interface_generation"] = instance.InterfaceGeneration
 	result["host_uuid"] = instance.HostUUID
 	result["has_user_data"] = instance.HasUserData
 	result["disk_encryption"] = instance.DiskEncryption
@@ -220,6 +221,7 @@ func flattenInstanceSimple(instance *linodego.Instance) (map[string]interface{},
 	result["tags"] = instance.Tags
 	result["capabilities"] = instance.Capabilities
 	result["image"] = instance.Image
+	result["interface_generation"] = instance.InterfaceGeneration
 	result["host_uuid"] = instance.HostUUID
 	result["backups"] = flattenInstanceBackups(*instance)
 	result["specs"] = flattenInstanceSpecs(*instance)

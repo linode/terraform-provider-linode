@@ -13,6 +13,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -2652,6 +2656,136 @@ func TestAccResourceInstance_diskEncryption(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_interfaceGenerationLegacy(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ExplicitInterfaceGeneration(
+					t,
+					instanceName,
+					testRegion,
+					true,
+					linodego.GenerationLegacyConfig,
+					nil,
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("g6-nanode-1"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("image"),
+						knownvalue.StringExact(acceptance.TestImageLatest),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("interface_generation"),
+						knownvalue.StringExact(string(linodego.GenerationLegacyConfig)),
+					),
+				},
+			},
+
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id"},
+			},
+		},
+	})
+}
+
+func TestAccResourceInstance_interfaceGenerationLinode(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_instance.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.ExplicitInterfaceGeneration(
+					t,
+					instanceName,
+					testRegion,
+					true,
+					linodego.GenerationLinode,
+					linodego.Pointer(true),
+				),
+				ExpectError: regexp.MustCompile(
+					"booted must explicitly be set to false when interface_generation is set to 'linode'",
+				),
+			},
+			{
+				Config: tmpl.ExplicitInterfaceGeneration(
+					t,
+					instanceName,
+					testRegion,
+					false,
+					linodego.GenerationLinode,
+					linodego.Pointer(true),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("type"),
+						knownvalue.StringExact("g6-nanode-1"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("image"),
+						knownvalue.StringExact(acceptance.TestImageLatest),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("region"),
+						knownvalue.StringExact(testRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("interface_generation"),
+						knownvalue.StringExact(string(linodego.GenerationLinode)),
+					),
+				},
+			},
+			{
+				ResourceName:            resName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"root_pass", "authorized_keys", "image", "resize_disk", "migration_type", "firewall_id", "network_helper"},
 			},
 		},
 	})

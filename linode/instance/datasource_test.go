@@ -5,6 +5,12 @@ package instance_test
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+
+	"github.com/linode/linodego"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
@@ -162,6 +168,66 @@ func TestAccDataSourceInstances_multipleInstances(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.status", "running"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceInstances_explicitInterfaceGeneration(t *testing.T) {
+	t.Parallel()
+
+	resName := "data.linode_instances.foobar"
+	instanceName := acctest.RandomWithPrefix("tf_test")
+
+	firstInstancePath := tfjsonpath.New("instances").AtSliceIndex(0)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.DataExplicitInterfaceGeneration(
+					t,
+					instanceName,
+					testRegion,
+					acceptance.TestImageLatest,
+					linodego.GenerationLinode,
+					false,
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						resName,
+						tfjsonpath.New("instances"),
+						knownvalue.ListSizeExact(1),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						firstInstancePath.AtMapKey("label"),
+						knownvalue.StringExact(instanceName),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						firstInstancePath.AtMapKey("type"),
+						knownvalue.StringExact("g6-nanode-1"),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						firstInstancePath.AtMapKey("image"),
+						knownvalue.StringExact(acceptance.TestImageLatest),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						firstInstancePath.AtMapKey("region"),
+						knownvalue.StringExact(testRegion),
+					),
+					statecheck.ExpectKnownValue(
+						resName,
+						firstInstancePath.AtMapKey("interface_generation"),
+						knownvalue.StringExact(string(linodego.GenerationLinode)),
+					),
+				},
 			},
 		},
 	})

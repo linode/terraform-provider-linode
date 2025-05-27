@@ -185,6 +185,12 @@ func flattenIP(network *linodego.InstanceIP) (
 	result["public"] = types.BoolValue(network.Public)
 	result["linode_id"] = types.Int64Value(int64(network.LinodeID))
 
+	if network.InterfaceID != nil {
+		result["interface_id"] = types.Int64Value(int64(*network.InterfaceID))
+	} else {
+		result["interface_id"] = types.Int64Null()
+	}
+
 	obj, d := types.ObjectValue(networkObjectType.AttrTypes, result)
 	if d.HasError() {
 		return nil, d

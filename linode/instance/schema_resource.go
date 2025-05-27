@@ -458,6 +458,11 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "Various fields related to the Linode Metadata service.",
 		Optional:    true,
 	},
+	"network_helper": {
+		Type:        schema.TypeBool,
+		Description: "Whether Network Helper should be enabled for this instance.",
+		Optional:    true,
+	},
 	"placement_group": {
 		Type:        schema.TypeList,
 		Elem:        resourcePlacementGroup(),
@@ -478,6 +483,20 @@ var resourceSchema = map[string]*schema.Schema{
 			return true
 		},
 	},
+	"interface_generation": {
+		Type: schema.TypeString,
+		Description: "Specifies the interface type for the Linode. " +
+			"The default value is determined by the interfaces_for_new_linodes " +
+			"setting in the account settings. " +
+			"If the interface_generation option is set to linode, " +
+			"legacy configuration interfaces can no longer be used on the Linode. " +
+			"NOTE: Linode Interfaces may not currently be available to all users.",
+		Optional: true,
+		Computed: true,
+		ForceNew: true,
+		// TODO (Linode Interfaces): Should updating this field to `linode` trigger an upgrade operation?
+	},
+
 	"has_user_data": {
 		Type:        schema.TypeBool,
 		Description: "Whether or not this Instance was created with user-data.",

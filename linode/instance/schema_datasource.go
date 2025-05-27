@@ -60,6 +60,12 @@ var instanceDataSourceSchema = map[string]*schema.Schema{
 		Description: "The status of the instance, indicating the current readiness state.",
 		Computed:    true,
 	},
+	"interface_generation": {
+		Type: schema.TypeString,
+		Description: "The interface type for the Linode. " +
+			"NOTE: Linode Interfaces may not currently be available to all users.",
+		Computed: true,
+	},
 	"ip_address": {
 		Type: schema.TypeString,
 		Description: "This Linode's Public IPv4 Address. If there are multiple public IPv4 addresses on this " +
