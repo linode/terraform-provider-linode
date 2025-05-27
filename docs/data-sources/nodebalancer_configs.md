@@ -81,7 +81,11 @@ Each Linode NodeBalancer Config will be stored in the `nodebalancer_configs` att
 
 * `udp_check_port` - Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic.
 
+    * **NOTE: This attribute may not be generally available.**
+
 * `udp_session_timeout` - The idle time in seconds after which a session that hasn’t received packets is destroyed.
+
+    * **NOTE: This attribute may not be generally available.**
 
 * `cipher_suite` - What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary. (`recommended`, `legacy`)
 
