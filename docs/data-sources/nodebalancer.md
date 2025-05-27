@@ -33,7 +33,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20).
 
-    * **NOTE: This attribute may not be generally available.**
+  * **NOTE: This attribute may not be generally available.**
 
 * `created` – When this Linode NodeBalancer was created
 

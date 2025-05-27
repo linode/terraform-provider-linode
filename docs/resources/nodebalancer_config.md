@@ -68,7 +68,7 @@ The following arguments are supported:
 
 * `udp_check_port` - (Optional) Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic. Defaults to 80.
 
-    * **NOTE: This argument may not be generally available.**
+  * **NOTE: This argument may not be generally available.**
 
 * `cipher_suite` - (Optional) What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary.
 
@@ -82,7 +82,7 @@ This resource exports the following attributes:
 
 * `udp_session_timeout` - The read-only idle time in seconds after which a session that hasn’t received packets is destroyed.
 
-    * **NOTE: This attribute may not be generally available.**
+  * **NOTE: This attribute may not be generally available.**
 
 * `ssl_commonname` - The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 

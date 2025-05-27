@@ -39,7 +39,7 @@ The following arguments are supported:
 
 * `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20). Set to 0 (default) to disable throttling.
 
-    * **NOTE: This argument may not be generally available.**
+  * **NOTE: This argument may not be generally available.**
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
