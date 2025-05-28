@@ -462,6 +462,7 @@ var resourceSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Whether Network Helper should be enabled for this instance.",
 		Optional:    true,
+		ForceNew:    true,
 	},
 	"placement_group": {
 		Type:        schema.TypeList,
