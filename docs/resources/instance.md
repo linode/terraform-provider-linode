@@ -184,7 +184,11 @@ The following arguments are supported:
 
 * `migration_type` - (Optional) The type of migration to use when updating the type or region of a Linode. (`cold`, `warm`; default `cold`)
 
+* `network_helper` - (Optional) Enables the Network Helper feature. The default value is determined by the network_helper setting in the account settings.
+
 * [`interface`](#interface) - (Optional) A list of network interfaces to be assigned to the Linode on creation. If an explicit config or disk is defined, interfaces must be declared in the [`config` block](#configs).
+
+* `interface_generation` - (Optional) Specifies the interface type for the Linode. If set to `linode`, Linode interfaces must be created using a separate resource before this Linode can be booted. (`linode`, `legacy_config`; default is determined by the account `interfaces_for_new_linodes` setting)
 
 * `firewall_id` - (Optional) The ID of the Firewall to attach to the instance upon creation. *Changing `firewall_id` forces the creation of a new Linode Instance.*
 
