@@ -495,7 +495,6 @@ var resourceSchema = map[string]*schema.Schema{
 		Optional: true,
 		Computed: true,
 		ForceNew: true,
-		// TODO (Linode Interfaces): Should updating this field to `linode` trigger an upgrade operation?
 	},
 
 	"has_user_data": {
