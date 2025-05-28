@@ -107,7 +107,7 @@ Each Linode instance will be stored in the `instances` attribute and will export
 
 * `has_user_data` - Whether this Instance was created with user-data.
 
-* `interface_generation` - The interface type for the Linode. (`linode`, `legacy_config`)
+* `interface_generation` - The interface type for this Instance. (`linode`, `legacy_config`)
 
 * `disk_encryption` - The disk encryption policy for this instance.
 
