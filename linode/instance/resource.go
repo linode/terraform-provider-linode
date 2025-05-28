@@ -34,7 +34,6 @@ func Resource() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			linodediffs.ComputedWithDefault("tags", []string{}),
 			linodediffs.CaseInsensitiveSet("tags"),
-			customDiffValidateLinodeInterfaceBooted,
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -935,35 +934,6 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	d.SetId("")
 	return nil
-}
-
-// customDiffValidateLinodeInterfaceBooted validates that the booted field is not set to true if
-// the interface_generation of an instance is linode.
-func customDiffValidateLinodeInterfaceBooted(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	interfaceGeneration := d.Get("interface_generation").(string)
-
-	// TODO (Lena): Add logic to prevent boot when image is specified and interface
-	// generation is `linode`. Is there any case where someone using the convenience
-	// fields would also use an external config?
-
-	// We reference the raw config here because a computed value of true
-	// implies the config was booted elsewhere
-	booted := d.Get("booted").(bool)
-	// d.GetRawConfig().GetAttr("booted")
-
-	if linodego.InterfaceGeneration(interfaceGeneration) != linodego.GenerationLinode {
-		return nil
-	}
-
-	if !d.HasChange("booted") || !booted {
-		return nil
-	}
-
-	return fmt.Errorf(
-		"booted must explicitly be set to false when interface_generation is set to 'linode'. " +
-			"Consider configuring interfaces using the linode_instance_interfaces resource " +
-			"and booting the instance instance using the linode_instance_config resource. ",
-	)
 }
 
 func populateLogAttributes(ctx context.Context, d *schema.ResourceData) context.Context {

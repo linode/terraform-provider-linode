@@ -2741,7 +2741,7 @@ func TestAccResourceInstance_interfaceGenerationLinode(t *testing.T) {
 					linodego.Pointer(true),
 				),
 				ExpectError: regexp.MustCompile(
-					"booted must explicitly be set to false when interface_generation is set to 'linode'",
+					"The Linode must have at least 1 interface defined to boot",
 				),
 			},
 			{
