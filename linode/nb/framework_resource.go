@@ -55,10 +55,19 @@ func (r *Resource) Create(
 		return
 	}
 
+	clientUDPSessThrottle := helper.FrameworkSafeInt64ToInt(
+		data.ClientUDPSessThrottle.ValueInt64(),
+		&resp.Diagnostics,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	createOpts := linodego.NodeBalancerCreateOptions{
-		Region:             data.Region.ValueString(),
-		Label:              data.Label.ValueStringPointer(),
-		ClientConnThrottle: &clientConnThrottle,
+		Region:                data.Region.ValueString(),
+		Label:                 data.Label.ValueStringPointer(),
+		ClientConnThrottle:    &clientConnThrottle,
+		ClientUDPSessThrottle: &clientUDPSessThrottle,
 	}
 
 	if !data.FirewallID.IsNull() {
@@ -200,7 +209,7 @@ func (r *Resource) Update(
 
 	isEqual := state.Label.Equal(plan.Label) &&
 		state.ClientConnThrottle.Equal(plan.ClientConnThrottle) &&
-		state.Tags.Equal(plan.Tags)
+		state.Tags.Equal(plan.Tags) && state.ClientUDPSessThrottle.Equal(plan.ClientUDPSessThrottle)
 
 	if !isEqual {
 		clientConnThrottle := helper.FrameworkSafeInt64ToInt(
@@ -210,9 +219,17 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
+		clientUDPSessThrottle := helper.FrameworkSafeInt64ToInt(
+			plan.ClientUDPSessThrottle.ValueInt64(),
+			&resp.Diagnostics,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		updateOpts := linodego.NodeBalancerUpdateOptions{
-			Label:              plan.Label.ValueStringPointer(),
-			ClientConnThrottle: &clientConnThrottle,
+			Label:                 plan.Label.ValueStringPointer(),
+			ClientConnThrottle:    &clientConnThrottle,
+			ClientUDPSessThrottle: &clientUDPSessThrottle,
 		}
 		resp.Diagnostics.Append(plan.Tags.ElementsAs(ctx, &updateOpts.Tags, false)...)
 		if resp.Diagnostics.HasError() {

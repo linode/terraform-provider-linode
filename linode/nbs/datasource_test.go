@@ -34,6 +34,7 @@ func TestAccDataSourceNodeBalancers_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.client_conn_throttle"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.client_udp_sess_throttle"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.hostname"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancers.0.ipv4"),
