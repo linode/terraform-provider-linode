@@ -119,6 +119,7 @@ func (r *Resource) Create(
 			"Failed to wait for PostgreSQL database to finish creating",
 			err.Error(),
 		)
+		return
 	}
 
 	// Sometimes the creation event finishes before the status becomes `active`
@@ -419,6 +420,7 @@ func (r *Resource) Update(
 				"Cannot update engine component of engine_id",
 				fmt.Sprintf("%s != %s", engine, state.Engine.ValueString()),
 			)
+			return
 		}
 
 		shouldUpdate = true
