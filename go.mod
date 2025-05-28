@@ -35,7 +35,7 @@ require (
 )
 
 // Point to Linode Interface feature branch
-replace github.com/linode/linodego => /Users/lgarber/Projects/dx-devenv/repos/linodego
+replace github.com/linode/linodego => github.com/lgarber-akamai/linodego ref/instance-create-interfaces-consolidation
 
 require (
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
