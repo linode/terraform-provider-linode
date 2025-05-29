@@ -4,9 +4,9 @@ description: |-
   The Linode provider is used to interact with Linode services. The provider needs to be configured with the proper credentials before it can be used.
 ---
 
-~> **Extended Support Notice:** Terraform Provider Linode v2.x.x is currently under extended support.<br>During this period, only critical bug fixes and security updates will be provided <br>This version will formally reach its end-of-life 6 months after the release of v3.0.0. (DATE TBD)
-
 # Linode Provider
+
+~> **Extended Support Notice:** Terraform Provider Linode v2.x.x is currently under extended support.<br>During this period, only critical bug fixes and security updates will be provided <br>This version will formally reach its end-of-life 6 months after the release of v3.0.0. (DATE TBD)
 
 The Linode provider exposes resources and data sources to interact with [Linode](https://www.linode.com/) services.
 The provider needs to be configured with the proper credentials before it can be used.
