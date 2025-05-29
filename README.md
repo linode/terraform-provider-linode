@@ -1,10 +1,15 @@
-# Terraform Provider for Linode
+# Terraform Provider for Linode v2 (Extended Support)
 
-[![Release](https://img.shields.io/github/v/release/linode/terraform-provider-linode)](https://github.com/linode/terraform-provider-linode/releases/latest)
-[![GoDoc](https://godoc.org/github.com/linode/terraform-provider-linode?status.svg)](https://godoc.org/github.com/linode/terraform-provider-linode)
+[![Release](https://img.shields.io/github/v/release/linode/terraform-provider-linode?filter=v2.*)](https://github.com/linode/terraform-provider-linode/releases?q=tag%3Av2)
+[![GoDoc](https://godoc.org/github.com/linode/terraform-provider-linode/v2?status.svg)](https://pkg.go.dev/github.com/linode/terraform-provider-linode/v2)
 [![Go Report Card](https://goreportcard.com/badge/github.com/linode/terraform-provider-linode)](https://goreportcard.com/report/github.com/linode/terraform-provider-linode)
 [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 
+> [!WARNING]  
+> v2.x.x of the Linode Terraform Provider is currently under extended support. During this period, only critical bug fixes and security
+> updates will be provided.
+> 
+> This version will formally reach its end-of-life (EOL) 6 months after the release of v3.0.0. (DATE TBD)
 
 - Website: <https://www.terraform.io>
 - Documentation: <https://www.terraform.io/docs/providers/linode/index.html>
