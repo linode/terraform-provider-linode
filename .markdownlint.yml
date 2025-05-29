@@ -6,3 +6,6 @@ default: true
 # https://github.com/DavidAnson/markdownlint/blob/master/doc/Rules.md
 line-length: false
 fenced-code-language: false
+no-inline-html:
+  allowed_elements:
+    - br
