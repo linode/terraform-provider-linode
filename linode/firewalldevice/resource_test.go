@@ -56,7 +56,7 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, label, testRegion),
@@ -113,7 +113,7 @@ func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.WithNodeBalancer(t, label, testRegion),

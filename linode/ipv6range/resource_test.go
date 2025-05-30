@@ -30,7 +30,7 @@ func TestAccIPv6Range_basic(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
 
 			Steps: []resource.TestStep{
@@ -68,7 +68,7 @@ func TestAccIPv6Range_routeTarget(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
 
 			Steps: []resource.TestStep{
@@ -101,7 +101,7 @@ func TestAccIPv6Range_noID(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkIPv6RangeDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -127,7 +127,7 @@ func TestAccIPv6Range_reassignment(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
 
 			Steps: []resource.TestStep{
@@ -185,7 +185,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkIPv6RangeDestroy,
 
 			Steps: []resource.TestStep{
@@ -200,7 +200,7 @@ func TestAccIPv6Range_raceCondition(t *testing.T) {
 
 func checkIPv6RangeExists(name string, ipv6Range *linodego.IPv6Range) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -225,7 +225,7 @@ func checkIPv6RangeExists(name string, ipv6Range *linodego.IPv6Range) resource.T
 }
 
 func checkIPv6RangeDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	// We should retry here as there is sometimes a delay between deletion request and
 	// range deletion. This should significantly reduce the number of intermittent cleanup
@@ -274,7 +274,7 @@ func checkIPv6RangeNoDuplicates(s *terraform.State) error {
 }
 
 func validateInstanceIPv6Assignments(t testing.TB, assignedID, unassignedID int) {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	assignedNetworking, err := client.GetInstanceIPAddresses(context.Background(), assignedID)
 	if err != nil {

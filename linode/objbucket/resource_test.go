@@ -205,7 +205,7 @@ func TestAccResourceBucket_basic_legacy_smoke(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -235,7 +235,7 @@ func TestAccResourceBucket_endpoint_type(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -265,7 +265,7 @@ func TestAccResourceBucket_endpoint_url(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -305,7 +305,7 @@ func TestAccResourceBucket_basic_smoke(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -335,7 +335,7 @@ func TestAccResourceBucket_access(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -371,7 +371,7 @@ func TestAccResourceBucket_versioning(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -405,7 +405,7 @@ func TestAccResourceBucket_lifecycle(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -462,7 +462,7 @@ func TestAccResourceBucket_lifecycleNoID(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -508,7 +508,7 @@ func TestAccResourceBucket_cert(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -550,7 +550,7 @@ func TestAccResourceBucket_dataSource(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -579,7 +579,7 @@ func TestAccResourceBucket_update(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -611,7 +611,7 @@ func TestAccResourceBucket_credsConfiged(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -638,7 +638,7 @@ func TestAccResourceBucket_tempKeys(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -665,7 +665,7 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -678,7 +678,7 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 				},
 				{
 					PreConfig: func() {
-						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 						createOpts := linodego.ObjectStorageKeyCreateOptions{
 							Label: fmt.Sprintf("temp_%s_%v", objectStorageBucketName, time.Now().Unix()),
 							BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
@@ -722,7 +722,7 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 }
 
 func checkBucketExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_objbucket" {
@@ -744,7 +744,7 @@ func checkBucketExists(s *terraform.State) error {
 }
 
 func checkBucketDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_bucket" {
 			continue

@@ -55,7 +55,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataBasic(t, tmpl.TemplateData{
@@ -71,7 +71,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.CreateMySQLDatabaseBackup(context.Background(), db.ID, linodego.MySQLBackupCreateOptions{
 						Label:  backupLabel,

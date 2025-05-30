@@ -14,7 +14,7 @@ import (
 
 func CheckInstanceExists(name string, instance *linodego.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -42,7 +42,7 @@ func CheckInstanceExists(name string, instance *linodego.Instance) resource.Test
 }
 
 func CheckInstanceDestroy(s *terraform.State) error {
-	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_instance" {
 			continue
@@ -75,7 +75,7 @@ func AssertInstanceReboot(t testing.TB, shouldRestart bool, instance *linodego.I
 	t.Helper()
 
 	return func() {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(
 			`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))

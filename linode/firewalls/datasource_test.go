@@ -32,7 +32,7 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 3, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				{
 					Config: tmpl.DataAll(t, firewallName, testRegion),

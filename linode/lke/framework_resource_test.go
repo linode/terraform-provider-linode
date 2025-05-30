@@ -112,7 +112,7 @@ func sweep(prefix string) error {
 
 func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[resourceClusterName]
 		if !ok {
@@ -144,7 +144,7 @@ func waitForAllNodesReady(t testing.TB, cluster *linodego.LKECluster, pollInterv
 	t.Helper()
 
 	ctx := context.Background()
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(timeout))
 	defer cancel()
@@ -196,7 +196,7 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -246,7 +246,7 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -350,7 +350,7 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 		newClusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -396,7 +396,7 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -410,7 +410,7 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 				},
 				{
 					PreConfig: func() {
-						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 						if _, err := client.CreateLKENodePool(context.Background(), cluster.ID, linodego.LKENodePoolCreateOptions{
 							Count: 1,
 							Type:  "g6-standard-1",
@@ -443,7 +443,7 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 		// newClusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -522,7 +522,7 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -569,7 +569,7 @@ func TestAccResourceLKECluster_noCount(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -587,7 +587,7 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -623,7 +623,7 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -724,7 +724,7 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -753,7 +753,7 @@ func TestAccResourceLKECluster_apl(t *testing.T) {
 		clusterName := acctest.RandomWithPrefix("tf_test")
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -774,7 +774,7 @@ func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
 	clusterName := acctest.RandomWithPrefix("tf_test")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
