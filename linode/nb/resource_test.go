@@ -83,7 +83,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 
 		Steps: []resource.TestStep{
@@ -124,7 +124,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 
 		Steps: []resource.TestStep{
@@ -183,7 +183,7 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 
 		Steps: []resource.TestStep{

@@ -20,7 +20,7 @@ func TestAccDataSourceNodeBalancer_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 
 		Steps: []resource.TestStep{
@@ -57,7 +57,7 @@ func TestAccDataSourceNodeBalancer_firewalls(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 		Steps: []resource.TestStep{
 			{

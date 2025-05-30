@@ -36,7 +36,7 @@ func TestAccResourceNetworkingIP_ephemeral(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NetworkingIPReservedAssigned(t, label, testRegion, 0, false),
@@ -113,7 +113,7 @@ func TestAccResourceNetworkingIP_reserved(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.NetworkingIPReservedAssigned(t, label, testRegion, 0, true),
@@ -189,7 +189,7 @@ func TestAccResourceNetworkingIP_reservedEphemeralReassignment(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 
 		Steps: []resource.TestStep{
 			// Create an assigned reserved IP
