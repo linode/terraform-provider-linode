@@ -51,7 +51,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 					newSnapshot, err := client.CreateInstanceSnapshot(context.Background(), instance.ID, snapshotName)
 					if err != nil {
 						t.Fatal(err)
@@ -71,7 +71,7 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 					if _, err := client.WaitForSnapshotStatus(context.Background(), instance.ID, snapshot.ID, linodego.SnapshotSuccessful, 1800); err != nil {
 						t.Fatal(err)
 					}

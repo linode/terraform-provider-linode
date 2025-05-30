@@ -533,7 +533,7 @@ func TestAccResourceNodePool_disableAutoscalingExplicitNodeCount(t *testing.T) {
 }
 
 func checkNodePoolExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	clusterID, poolID, err := extractIDs(s)
 	if err != nil {
 		return err
@@ -546,7 +546,7 @@ func checkNodePoolExists(s *terraform.State) error {
 }
 
 func checkNodePoolDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	clusterID, poolID, err := extractIDs(s)
 	if err != nil {
 		return err

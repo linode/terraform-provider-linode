@@ -318,7 +318,7 @@ func TestLinodeNodeBalancer_UpgradeV0Empty(t *testing.T) {
 }
 
 func checkNodeBalancerExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer" {
 			continue
@@ -339,7 +339,7 @@ func checkNodeBalancerExists(s *terraform.State) error {
 }
 
 func checkNodeBalancerDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer" {
 			continue

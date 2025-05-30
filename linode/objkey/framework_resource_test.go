@@ -258,7 +258,7 @@ func checkObjectKeySecretAccessible(s *terraform.State) error {
 }
 
 func checkObjectKeyExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_key" {
@@ -280,7 +280,7 @@ func checkObjectKeyExists(s *terraform.State) error {
 }
 
 func checkObjectKeyDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_key" {
 			continue

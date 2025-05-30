@@ -678,7 +678,7 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 				},
 				{
 					PreConfig: func() {
-						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 						createOpts := linodego.ObjectStorageKeyCreateOptions{
 							Label: fmt.Sprintf("temp_%s_%v", objectStorageBucketName, time.Now().Unix()),
 							BucketAccess: &[]linodego.ObjectStorageKeyBucketAccess{{
@@ -722,7 +722,7 @@ func TestAccResourceBucket_forceDelete(t *testing.T) {
 }
 
 func checkBucketExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_objbucket" {
@@ -744,7 +744,7 @@ func checkBucketExists(s *terraform.State) error {
 }
 
 func checkBucketDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_object_storage_bucket" {
 			continue

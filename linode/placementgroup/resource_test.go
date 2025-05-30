@@ -78,7 +78,7 @@ func TestAccResourcePG_basic(t *testing.T) {
 }
 
 func checkPGExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_placement_group" {
@@ -100,7 +100,7 @@ func checkPGExists(s *terraform.State) error {
 }
 
 func checkPGDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_placement_group" {
 			continue

@@ -354,7 +354,7 @@ func importStateID(s *terraform.State) (string, error) {
 }
 
 func checkDomainRecordExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain_record" {
@@ -379,7 +379,7 @@ func checkDomainRecordExists(s *terraform.State) error {
 }
 
 func checkDomainRecordDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain_record" {
 			continue

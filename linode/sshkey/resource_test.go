@@ -143,7 +143,7 @@ func TestAccResourceSSHKey_update(t *testing.T) {
 }
 
 func checkSSHKeyExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_sshkey" {
@@ -165,7 +165,7 @@ func checkSSHKeyExists(s *terraform.State) error {
 }
 
 func checkSSHKeyDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_sshkey" {
 			continue

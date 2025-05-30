@@ -508,7 +508,7 @@ func TestAccResourceInstance_configInterfacesNoReboot(t *testing.T) {
 
 func testAccAssertReboot(t *testing.T, shouldRestart bool, instance *linodego.Instance) func() {
 	return func() {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
 			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
 
@@ -1921,7 +1921,7 @@ func TestAccResourceInstance_powerStateUpdates(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 					filter := &linodego.Filter{}
 					filter.AddField(linodego.Eq, "action", linodego.ActionLinodeReboot)
@@ -2673,7 +2673,7 @@ func checkInstancePrivateNetworkAttributes(n string) resource.TestCheckFunc {
 			return fmt.Errorf("should have an integer Linode ID: %s", err)
 		}
 
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		instanceIPs, err := client.GetInstanceIPAddresses(context.Background(), id)
 		if err != nil {
@@ -2741,7 +2741,7 @@ func testDiskSize(size int) testDiskFunc {
 
 func checkInstanceDisks(instance *linodego.Instance, disksTests ...testDisksFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -2856,7 +2856,7 @@ func instanceDiskID(disk *linodego.InstanceDisk) string {
 // checkComputeInstanceConfigs verifies any configs exist and runs config specific tests against a target instance
 func checkComputeInstanceConfigs(instance *linodego.Instance, configsTests ...testConfigsFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching configs: invalid Instance argument")
@@ -2883,7 +2883,7 @@ func checkComputeInstanceConfigs(instance *linodego.Instance, configsTests ...te
 
 func checkInstanceDiskExists(instance *linodego.Instance, label string, instanceDisk *linodego.InstanceDisk) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -2911,7 +2911,7 @@ func checkInstanceDiskExists(instance *linodego.Instance, label string, instance
 
 func checkComputeInstanceDisk(instance *linodego.Instance, label string, size int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		if instance == nil || instance.ID == 0 {
 			return fmt.Errorf("Error fetching disks: invalid Instance argument")
@@ -3001,7 +3001,7 @@ func TestAccResourceInstance_deleteWithReservedIP(t *testing.T) {
 				Config: tmpl.OnlyReservedIP(t, testRegion), // This config only includes the reserved IP resource
 				Check: resource.ComposeTestCheckFunc(
 					func(s *terraform.State) error {
-						client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+						client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 						// Check if the instance is deleted
 						_, err := client.GetInstance(context.Background(), instance.ID)

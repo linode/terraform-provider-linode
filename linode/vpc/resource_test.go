@@ -183,7 +183,7 @@ func TestAccResourceLinodeVPC_update_InvalidLabel(t *testing.T) {
 }
 
 func checkVPCExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_vpc" {
@@ -205,7 +205,7 @@ func checkVPCExists(s *terraform.State) error {
 }
 
 func checkVPCDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_vpc" {
 			continue

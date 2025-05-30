@@ -181,7 +181,7 @@ func TestAccResourceStackscript_codeChange(t *testing.T) {
 }
 
 func checkStackscriptExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_stackscript" {
@@ -203,7 +203,7 @@ func checkStackscriptExists(s *terraform.State) error {
 }
 
 func checkStackscriptDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_stackscript" {
 			continue

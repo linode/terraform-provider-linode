@@ -396,7 +396,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 			{
 				PreConfig: func() {
 					// Delete the Firewall external from Terraform
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.DeleteFirewall(context.Background(), firewall.ID); err != nil {
 						t.Fatalf("failed to delete firewall: %s", err)

@@ -123,7 +123,7 @@ func TestAccResourceDatabaseAccessControls_PostgreSQL(t *testing.T) {
 }
 
 func checkMySQLDatabaseExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_database_mysql" {
@@ -145,7 +145,7 @@ func checkMySQLDatabaseExists(s *terraform.State) error {
 }
 
 func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_database_mysql" {
 			continue

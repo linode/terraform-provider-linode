@@ -71,7 +71,7 @@ func TestAccDataSourceMySQLBackups_basic(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.CreateMySQLDatabaseBackup(context.Background(), db.ID, linodego.MySQLBackupCreateOptions{
 						Label:  backupLabel,

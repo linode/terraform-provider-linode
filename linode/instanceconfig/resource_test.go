@@ -525,7 +525,7 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 
 func checkExists(name string, config *linodego.InstanceConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -555,7 +555,7 @@ func checkExists(name string, config *linodego.InstanceConfig) resource.TestChec
 }
 
 func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_instance_config" {
 			continue

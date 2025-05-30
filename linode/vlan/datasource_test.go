@@ -30,7 +30,7 @@ func init() {
 
 func preConfigVLANPoll(t testing.TB, vlanName string) func() {
 	return func() {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 		if _, err := waitForVLANWithLabel(client, vlanName, 30); err != nil {
 			t.Fatal(err)
 		}

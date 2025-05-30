@@ -253,7 +253,7 @@ func TestAccResourceDatabasePostgres_complex(t *testing.T) {
 }
 
 func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_database_postgresql" {
 			continue

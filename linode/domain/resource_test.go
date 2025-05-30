@@ -224,7 +224,7 @@ func TestAccResourceDomain_updateIPs(t *testing.T) {
 }
 
 func checkDomainExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain" {
@@ -246,7 +246,7 @@ func checkDomainExists(s *terraform.State) error {
 }
 
 func checkDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_domain" {
 			continue
