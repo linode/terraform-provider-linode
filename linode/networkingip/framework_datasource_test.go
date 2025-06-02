@@ -61,7 +61,7 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("prefix"), knownvalue.Int64Exact(24)),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("rdns"), knownvalue.StringRegexp(regexp.MustCompile(`.ip.linodeusercontent.com$`))),
 					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("vpc_nat_1_1"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("interface_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("interface_id"), knownvalue.Null()),
 				},
 			},
 		},
