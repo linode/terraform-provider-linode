@@ -40,7 +40,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
@@ -89,7 +89,7 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
@@ -122,7 +122,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
 
 		Steps: []resource.TestStep{
@@ -170,7 +170,7 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
 
 		Steps: []resource.TestStep{
@@ -272,7 +272,7 @@ func TestLinodeNodeBalancerConfig_UpgradeV0Empty(t *testing.T) {
 }
 
 func checkNodeBalancerConfigExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
@@ -298,7 +298,7 @@ func checkNodeBalancerConfigExists(s *terraform.State) error {
 }
 
 func checkNodeBalancerConfigDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
 			continue
