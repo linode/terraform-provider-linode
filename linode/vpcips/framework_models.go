@@ -21,6 +21,14 @@ type VPCIPModel struct {
 	SubnetID     types.Int64  `tfsdk:"subnet_id"`
 	ConfigID     types.Int64  `tfsdk:"config_id"`
 	InterfaceID  types.Int64  `tfsdk:"interface_id"`
+
+	IPv6Range     types.String `tfsdk:"ipv6_range"`
+	IPv6IsPublic  types.Bool   `tfsdk:"ipv6_is_public"`
+	IPv6Addresses types.Set    `tfsdk:"ipv6_addresses"`
+}
+
+type VPCIPv6AddressModel struct {
+	SLAACAddress string `tfsdk:"slaac_address"`
 }
 
 func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
@@ -37,6 +45,12 @@ func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
 	m.SubnetID = helper.KeepOrUpdateInt64(m.SubnetID, int64(vpcIp.SubnetID), preserveKnown)
 	m.ConfigID = helper.KeepOrUpdateInt64(m.ConfigID, int64(vpcIp.ConfigID), preserveKnown)
 	m.InterfaceID = helper.KeepOrUpdateInt64(m.InterfaceID, int64(vpcIp.InterfaceID), preserveKnown)
+
+	m.IPv6Range = helper.KeepOrUpdateStringPointer(m.IPv6Range, vpcIp.IPv6Range, preserveKnown)
+	m.IPv6IsPublic = helper.KeepOrUpdateBoolPointer(m.IPv6IsPublic, vpcIp.IPv6IsPublic, preserveKnown)
+
+	types.SetValueFrom()
+	m.IPv6Addresses = helper.KeepOrUpdateSet(m.IPv6IsPublic, vpcIp.IPv6IsPublic, preserveKnown)
 }
 
 type VPCIPFilterModel struct {
