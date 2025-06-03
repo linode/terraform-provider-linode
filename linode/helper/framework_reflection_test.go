@@ -22,7 +22,7 @@ func TestStructToFrameworkObjectType(t *testing.T) {
 		Field4 types.Set    `tfsdk:"field4"`
 	}
 
-	result, err := helper.StructToFrameworkObjectType[testModel](t.Context())
+	result, err := helper.FrameworkModelToObjectType[testModel](t.Context())
 	require.NoError(t, err)
 
 	assert.NotContains(t, result.AttrTypes, "field2")

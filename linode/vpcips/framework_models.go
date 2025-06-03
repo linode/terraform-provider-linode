@@ -1,6 +1,9 @@
 package vpcips
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -31,7 +34,13 @@ type VPCIPv6AddressModel struct {
 	SLAACAddress string `tfsdk:"slaac_address"`
 }
 
-func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
+var VPCIPv6AddressModelObjectType = helper.Must(
+	helper.FrameworkModelToObjectType[VPCIPv6AddressModel](context.Background()),
+)
+
+func (m *VPCIPModel) FlattenVPCIP(ctx context.Context, vpcIp *linodego.VPCIP, preserveKnown bool) diag.Diagnostics {
+	var rd diag.Diagnostics
+
 	m.Address = helper.KeepOrUpdateStringPointer(m.Address, vpcIp.Address, preserveKnown)
 	m.AddressRange = helper.KeepOrUpdateStringPointer(m.AddressRange, vpcIp.AddressRange, preserveKnown)
 	m.Gateway = helper.KeepOrUpdateString(m.Gateway, vpcIp.Gateway, preserveKnown)
@@ -49,8 +58,19 @@ func (m *VPCIPModel) FlattenVPCIP(vpcIp *linodego.VPCIP, preserveKnown bool) {
 	m.IPv6Range = helper.KeepOrUpdateStringPointer(m.IPv6Range, vpcIp.IPv6Range, preserveKnown)
 	m.IPv6IsPublic = helper.KeepOrUpdateBoolPointer(m.IPv6IsPublic, vpcIp.IPv6IsPublic, preserveKnown)
 
-	types.SetValueFrom()
-	m.IPv6Addresses = helper.KeepOrUpdateSet(m.IPv6IsPublic, vpcIp.IPv6IsPublic, preserveKnown)
+	ipv6AddressesSet, d := types.SetValueFrom(ctx, VPCIPv6AddressModelObjectType, vpcIp.IPv6Addresses)
+	rd.Append(d...)
+	if rd.HasError() {
+		return rd
+	}
+
+	m.IPv6Addresses = helper.KeepOrUpdateValue(
+		m.IPv6Addresses,
+		ipv6AddressesSet,
+		preserveKnown,
+	)
+
+	return rd
 }
 
 type VPCIPFilterModel struct {
@@ -61,16 +81,19 @@ type VPCIPFilterModel struct {
 }
 
 func (model *VPCIPFilterModel) FlattenVPCIPs(
+	ctx context.Context,
 	vpcIps []linodego.VPCIP,
 	preserveKnown bool,
-) {
+) diag.Diagnostics {
+	var rd diag.Diagnostics
 	vpcipModels := make([]VPCIPModel, len(vpcIps))
 
 	for i := range vpcIps {
 		var vpcIp VPCIPModel
-		vpcIp.FlattenVPCIP(&vpcIps[i], preserveKnown)
+		rd.Append(vpcIp.FlattenVPCIP(ctx, &vpcIps[i], preserveKnown)...)
 		vpcipModels[i] = vpcIp
 	}
 
 	model.VPCIPs = vpcipModels
+	return rd
 }

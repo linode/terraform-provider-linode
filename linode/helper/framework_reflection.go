@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func StructToFrameworkObjectType[T any](ctx context.Context) (types.ObjectType, error) {
+func FrameworkModelToObjectType[T any](ctx context.Context) (types.ObjectType, error) {
 	reflectedType := reflect.TypeFor[T]()
 
 	// Deref pointers if necessary
