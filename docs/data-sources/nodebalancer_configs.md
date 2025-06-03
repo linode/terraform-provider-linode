@@ -79,6 +79,14 @@ Each Linode NodeBalancer Config will be stored in the `nodebalancer_configs` att
 
 * `check_passive` - If true, any response from this backend with a 5xx status code will be enough for it to be considered unhealthy and taken out of rotation.
 
+* `udp_check_port` - Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic.
+
+  * **NOTE: This attribute may not be generally available.**
+
+* `udp_session_timeout` - The idle time in seconds after which a session that hasn’t received packets is destroyed.
+
+  * **NOTE: This attribute may not be generally available.**
+
 * `cipher_suite` - What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary. (`recommended`, `legacy`)
 
 * `ssl_commonname` - The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.

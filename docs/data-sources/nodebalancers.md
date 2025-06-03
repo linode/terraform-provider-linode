@@ -57,6 +57,10 @@ Each Linode NodeBalancer will be stored in the `nodebalancers` attribute and wil
 
 * `client_conn_throttle` - Throttle connections per second (0-20)
 
+* `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20).
+
+  * **NOTE: This attribute may not be generally available.**
+
 * `created` – When this Linode NodeBalancer was created
 
 * `linode_id` - The ID of a Linode Instance where the NodeBalancer should be attached
