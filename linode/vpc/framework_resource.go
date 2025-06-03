@@ -51,6 +51,17 @@ func (r *Resource) Create(
 		Description: data.Description.ValueString(),
 	}
 
+	if !data.IPv6.IsNull() {
+		vpcCreateOpts.IPv6 = make([]linodego.VPCCreateOptionsIPv6, 0)
+
+		resp.Diagnostics.Append(
+			data.IPv6.ElementsAs(ctx, &vpcCreateOpts.IPv6, false)...,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	tflog.Debug(ctx, "client.CreateVPC(...)", map[string]any{
 		"options": vpcCreateOpts,
 	})
