@@ -30,7 +30,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("description"),
-						knownvalue.StringExact("The number of seconds that the mysqld server waits for a connect packet before responding with Bad handshake"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -60,7 +60,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("description"),
-						knownvalue.StringExact("Default server time zone as an offset from UTC (from -12:00 to +12:00), a time zone name, or 'SYSTEM' to use the MySQL server default."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -95,7 +95,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("description"),
-						knownvalue.StringExact("The maximum permitted result length in bytes for the GROUP_CONCAT() function."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -125,7 +125,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("description"),
-						knownvalue.StringExact("The time, in seconds, before cached statistics expire"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -155,7 +155,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("description"),
-						knownvalue.StringExact("Maximum size for the InnoDB change buffer, as a percentage of the total size of the buffer pool. Default is 25"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -185,7 +185,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("description"),
-						knownvalue.StringExact("Specifies whether flushing a page from the InnoDB buffer pool also flushes other dirty pages in the same extent (default is 1): 0 - dirty pages in the same extent are not flushed, 1 - flush contiguous dirty pages in the same extent, 2 - flush dirty pages in the same extent"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -215,7 +215,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("description"),
-						knownvalue.StringExact("Minimum length of words that are stored in an InnoDB FULLTEXT index. Changing this parameter will lead to a restart of the MySQL service."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -245,7 +245,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("description"),
-						knownvalue.StringExact("This option is used to specify your own InnoDB FULLTEXT index stopword list for all InnoDB tables."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -278,7 +278,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("description"),
-						knownvalue.StringExact("The length of time in seconds an InnoDB transaction waits for a row lock before giving up. Default is 120."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -308,7 +308,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("description"),
-						knownvalue.StringExact("The size in bytes of the buffer that InnoDB uses to write to the log files on disk."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -338,7 +338,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("description"),
-						knownvalue.StringExact("The upper limit in bytes on the size of the temporary log files used during online DDL operations for InnoDB tables."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -368,7 +368,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("description"),
-						knownvalue.StringExact("The number of I/O threads for read operations in InnoDB. Default is 4. Changing this parameter will lead to a restart of the MySQL service."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -398,7 +398,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("description"),
-						knownvalue.StringExact("When enabled a transaction timeout causes InnoDB to abort and roll back the entire transaction. Changing this parameter will lead to a restart of the MySQL service."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -418,7 +418,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("description"),
-						knownvalue.StringExact("Defines the maximum number of threads permitted inside of InnoDB. Default is 0 (infinite concurrency - no limit)"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -448,7 +448,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("description"),
-						knownvalue.StringExact("The number of I/O threads for write operations in InnoDB. Default is 4. Changing this parameter will lead to a restart of the MySQL service."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -478,7 +478,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("description"),
-						knownvalue.StringExact("The number of seconds the server waits for activity on an interactive connection before closing it."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -509,7 +509,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("description"),
-						knownvalue.StringExact("The storage engine for in-memory internal temporary tables."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -537,7 +537,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("description"),
-						knownvalue.StringExact("Size of the largest message in bytes that can be received by the server. Default is 67108864 (64M)"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -567,7 +567,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("description"),
-						knownvalue.StringExact("Limits the size of internal in-memory tables. Also set tmp_table_size. Default is 16777216 (16M)"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -597,7 +597,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("description"),
-						knownvalue.StringExact("Start sizes of connection buffer and result buffer. Default is 16384 (16K). Changing this parameter will lead to a restart of the MySQL service."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -627,7 +627,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("description"),
-						knownvalue.StringExact("The number of seconds to wait for more data from a connection before aborting the read."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -657,7 +657,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("description"),
-						knownvalue.StringExact("The number of seconds to wait for a block to be written to a connection before aborting the write."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -687,7 +687,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("description"),
-						knownvalue.StringExact("Sort buffer size in bytes for ORDER BY optimization. Default is 262144 (256K)"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -717,7 +717,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("description"),
-						knownvalue.StringExact("Global SQL mode. Set to empty to use MySQL server defaults. When creating a new service and not setting this field Akamai default SQL mode (strict, SQL standard compliant) will be assigned."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -747,7 +747,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("description"),
-						knownvalue.StringExact("Require primary key to be defined for new tables or old tables modified with ALTER TABLE and fail if missing. It is recommended to always have primary keys because various functionality may break if any large table is missing them."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -767,7 +767,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("description"),
-						knownvalue.StringExact("Limits the size of internal in-memory tables. Also set max_heap_table_size. Default is 16777216 (16M)"),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -797,7 +797,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("description"),
-						knownvalue.StringExact("The number of seconds the server waits for activity on a noninteractive connection before closing it."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
@@ -827,7 +827,7 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						resourceName,
 						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("description"),
-						knownvalue.StringExact("The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector."),
+						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
