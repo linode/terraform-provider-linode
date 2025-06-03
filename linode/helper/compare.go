@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 )
 
 func CompareTimeStrings(t1, t2, timeFormat string) bool {
@@ -119,4 +121,11 @@ func CompareSlices(ignoreNil, unordered bool, a, b []any) bool {
 	}
 
 	return reflect.DeepEqual(a, b)
+}
+
+func FrameworkValuesShallowEqual[T attr.Value](a, b T) bool {
+	aNull := a.IsUnknown() || a.IsNull()
+	bNull := b.IsUnknown() || b.IsNull()
+
+	return (aNull && bNull) || a.Equal(b)
 }
