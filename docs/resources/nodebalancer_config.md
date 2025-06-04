@@ -30,6 +30,7 @@ resource "linode_nodebalancer_config" "foofig" {
     check_path = "/foo"
     check_attempts = 3
     check_timeout = 30
+    udp_check_port = 12345
     stickiness = "http_cookie"
     algorithm = "source"
 }
@@ -65,6 +66,10 @@ The following arguments are supported:
 
 * `check_passive` - (Optional) If true, any response from this backend with a 5xx status code will be enough for it to be considered unhealthy and taken out of rotation.
 
+* `udp_check_port` - (Optional) Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic. Defaults to 80.
+
+  * **NOTE: This argument may not be generally available.**
+
 * `cipher_suite` - (Optional) What ciphers to use for SSL connections served by this NodeBalancer. `legacy` is considered insecure and should only be used if necessary.
 
 * `ssl_cert` - (Optional) The certificate this port is serving. This is not returned. If set, this field will come back as `<REDACTED>`. Please use the ssl_commonname and ssl_fingerprint to identify the certificate.
@@ -74,6 +79,10 @@ The following arguments are supported:
 ## Attributes Reference
 
 This resource exports the following attributes:
+
+* `udp_session_timeout` - The read-only idle time in seconds after which a session that hasn’t received packets is destroyed.
+
+  * **NOTE: This attribute may not be generally available.**
 
 * `ssl_commonname` - The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
 

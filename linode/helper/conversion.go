@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/linode/linodego"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
@@ -91,6 +93,22 @@ func FrameworkSafeInt64ToInt(number int64, diags *diag.Diagnostics) int {
 		)
 	}
 	return result
+}
+
+func FrameworkSafeInt64PointerToIntPointer(number *int64, diags *diag.Diagnostics) *int {
+	if number == nil {
+		return nil
+	}
+
+	result, err := SafeInt64ToInt(*number)
+	if err != nil {
+		diags.AddError(
+			"Failed int64 pointer to int pointer conversion",
+			err.Error(),
+		)
+	}
+
+	return linodego.Pointer(result)
 }
 
 func FrameworkSafeFloat64ToInt(number float64, diags *diag.Diagnostics) int {

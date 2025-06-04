@@ -54,6 +54,13 @@ func (fp *FrameworkProvider) Configure(
 			return
 		}
 	}
+	if strings.HasPrefix(req.TerraformVersion, "0.") {
+		resp.Diagnostics.AddWarning(
+			"Support for Terraform 0.x is deprecated",
+			"Please upgrade to Terraform 1.x or later. "+
+				"Support for Terraform 0.x will be removed in a future version of this provider.",
+		)
+	}
 
 	resp.ResourceData = &meta
 	resp.DataSourceData = &meta
@@ -288,6 +295,7 @@ func (fp *FrameworkProvider) InitLinodeClient(
 		configPathExpanded, err := helper.ExpandPath(configPath)
 		if err != nil {
 			diags.AddError("Failed to expand config path", err.Error())
+			return nil
 		}
 
 		err = client.LoadConfig(&linodego.LoadConfigOptions{

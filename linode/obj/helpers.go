@@ -112,6 +112,7 @@ func fwCreateTempKeys(
 	keys, err := client.CreateObjectStorageKey(ctx, createOpts)
 	if err != nil {
 		diags.AddError("Failed to Create Object Storage Key", err.Error())
+		return nil
 	}
 
 	return keys

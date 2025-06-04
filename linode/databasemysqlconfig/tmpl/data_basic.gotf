@@ -1,0 +1,5 @@
+{{ define "database_mysql_config_data_basic" }}
+
+data "linode_database_mysql_config" "foobar" {}
+
+{{ end }}

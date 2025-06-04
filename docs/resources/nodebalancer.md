@@ -20,6 +20,7 @@ resource "linode_nodebalancer" "foobar" {
     label = "mynodebalancer"
     region = "us-east"
     client_conn_throttle = 20
+    client_udp_sess_throttle = 10
     tags = ["foobar"]
 }
 ```
@@ -35,6 +36,10 @@ The following arguments are supported:
 * `label` - (Optional) The label of the Linode NodeBalancer
 
 * `client_conn_throttle` - (Optional) Throttle connections per second (0-20). Set to 0 (default) to disable throttling.
+
+* `client_udp_sess_throttle` - Throttle UDP sessions per second (0-20). Set to 0 (default) to disable throttling.
+
+  * **NOTE: This argument may not be generally available.**
 
 * `tags` - (Optional) A list of tags applied to this object. Tags are case-insensitive and are for organizational purposes only.
 
