@@ -1,0 +1,5 @@
+{{ define "database_postgresql_config_data_basic" }}
+
+data "linode_database_postgresql_config" "foobar" {}
+
+{{ end }}
