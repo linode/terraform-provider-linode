@@ -95,6 +95,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnet"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnets"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewallsettings"
 )
 
 type FrameworkProvider struct {
@@ -329,5 +330,6 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objendpoints.NewDataSource,
 		objquota.NewDataSource,
 		objquotas.NewDataSource,
+		firewallsettings.NewDataSource,
 	}
 }
