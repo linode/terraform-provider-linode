@@ -1,0 +1,10 @@
+{{ define "data_linode_firewall_templates_filter" }}
+
+data "linode_firewall_templates" "test" {
+  filter {
+    name = "slug"
+    values = ["public"]
+  }
+}
+
+{{ end }}
