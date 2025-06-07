@@ -20,7 +20,7 @@ func TestAccDataSourceBucket_basic(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -50,7 +50,7 @@ func TestAccDataSourceBucket_basic_cluster(t *testing.T) {
 	acceptance.RunTestWithRetries(t, 5, func(t *acceptance.WrappedT) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acceptance.PreCheck(t) },
-			ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+			ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 			CheckDestroy:             checkBucketDestroy,
 			Steps: []resource.TestStep{
 				{
