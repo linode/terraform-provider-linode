@@ -36,6 +36,7 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewallsettings"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalltemplate"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
@@ -97,7 +98,6 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcs"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnet"
 	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnets"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewallsettings"
 )
 
 type FrameworkProvider struct {

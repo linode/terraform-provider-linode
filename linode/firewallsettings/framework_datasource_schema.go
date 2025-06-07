@@ -18,8 +18,8 @@ var DefaultFirewallIDs = types.ObjectType{
 var frameworkDatasourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"default_firewall_ids": schema.ObjectAttribute{
-			Description: "The default firewall ID for a linode, nodebalancer, public_interface, or vpc_interface.",
-			Computed:    true,
+			Description:    "The default firewall ID for a linode, nodebalancer, public_interface, or vpc_interface.",
+			Computed:       true,
 			AttributeTypes: DefaultFirewallIDs.AttrTypes,
 		},
 	},
