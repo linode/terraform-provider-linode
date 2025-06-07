@@ -1,0 +1,7 @@
+{{ define "data_linode_firewall_template_basic" }}
+
+data "linode_firewall_template" "test" {
+    slug = "public"
+}
+
+{{ end }}
