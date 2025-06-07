@@ -76,7 +76,7 @@ func TestParseComputedAttributes(t *testing.T) {
 		},
 	}
 
-	firewallRules := &linodego.FirewallRuleSet{
+	firewallRules := linodego.FirewallRuleSet{
 		InboundPolicy:  "ACCEPT",
 		Inbound:        inboundRules,
 		OutboundPolicy: "DROP",
