@@ -80,7 +80,7 @@ func TestAccLinodeFirewall_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
@@ -133,7 +133,7 @@ func TestAccLinodeFirewall_minimum(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Minimum(t, name),
@@ -170,7 +170,7 @@ func TestAccLinodeFirewall_multipleRules(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.MultipleRules(t, name, devicePrefix, testRegion),
@@ -240,7 +240,7 @@ func TestAccLinodeFirewall_no_device(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.NoDevice(t, name),
@@ -280,7 +280,7 @@ func TestAccLinodeFirewall_updates(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
@@ -363,7 +363,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.Basic(t, name, devicePrefix, testRegion),
@@ -398,7 +398,7 @@ func TestAccLinodeFirewall_externalDelete(t *testing.T) {
 			{
 				PreConfig: func() {
 					// Delete the Firewall external from Terraform
-					client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 					if err := client.DeleteFirewall(context.Background(), firewall.ID); err != nil {
 						t.Fatalf("failed to delete firewall: %s", err)
@@ -445,7 +445,7 @@ func TestAccLinodeFirewall_noIPv6(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.NoIPv6(t, name),
@@ -480,7 +480,7 @@ func TestAccLinodeFirewall_noRules(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.NoRules(t, name),

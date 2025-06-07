@@ -11,8 +11,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 )
 
-// FirewallDataSourceModel describes the Terraform resource data model to match the
-// resource schema.
+// FirewallDataSourceModel describes the Terraform data source data model to
+// match the data source schema.
 type FirewallDataSourceModel struct {
 	ID             types.Int64   `tfsdk:"id"`
 	Label          types.String  `tfsdk:"label"`
@@ -218,16 +218,14 @@ func (data *FirewallResourceModel) flattenRules(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	inboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Inbound, data.Inbound, preserveKnown)
-	diags.Append(newDiags...)
+	inboundRules := FlattenFirewallRules(ctx, ruleSet.Inbound, data.Inbound, preserveKnown, diags)
 	if diags.HasError() {
 		return
 	}
 
 	data.Inbound = inboundRules
 
-	outboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Outbound, data.Outbound, preserveKnown)
-	diags.Append(newDiags...)
+	outboundRules := FlattenFirewallRules(ctx, ruleSet.Outbound, data.Outbound, preserveKnown, diags)
 	if diags.HasError() {
 		return
 	}
@@ -261,8 +259,8 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	ctx context.Context,
 	firewall *linodego.Firewall,
 	devices []linodego.FirewallDevice,
-	ruleSet *linodego.FirewallRuleSet,
-) diag.Diagnostics {
+	ruleSet linodego.FirewallRuleSet,
+) (diags diag.Diagnostics) {
 	data.ID = types.Int64Value(int64(firewall.ID))
 	data.Status = types.StringValue(string(firewall.Status))
 	data.Created = types.StringValue(firewall.Created.Format(helper.TIME_FORMAT))
@@ -311,7 +309,7 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	data.Label = types.StringValue(firewall.Label)
 
 	if ruleSet.Inbound != nil {
-		inBound, diags := FlattenFirewallRules(ctx, ruleSet.Inbound, nil, false)
+		inBound := FlattenFirewallRules(ctx, ruleSet.Inbound, nil, false, &diags)
 		if diags.HasError() {
 			return diags
 		}
@@ -319,7 +317,7 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	}
 
 	if ruleSet.Outbound != nil {
-		outBound, diags := FlattenFirewallRules(ctx, ruleSet.Outbound, nil, false)
+		outBound := FlattenFirewallRules(ctx, ruleSet.Outbound, nil, false, &diags)
 		if diags.HasError() {
 			return diags
 		}
@@ -388,9 +386,10 @@ func FlattenFirewallRules(
 	rules []linodego.FirewallRule,
 	knownRules []RuleModel,
 	preserveKnown bool,
-) ([]RuleModel, diag.Diagnostics) {
+	diags *diag.Diagnostics,
+) []RuleModel {
 	if preserveKnown && knownRules == nil {
-		return make([]RuleModel, 0), nil
+		return make([]RuleModel, 0)
 	}
 
 	if !preserveKnown {
@@ -415,19 +414,19 @@ func FlattenFirewallRules(
 
 		ipv4, diags := types.ListValueFrom(ctx, types.StringType, rules[i].Addresses.IPv4)
 		if diags.HasError() {
-			return nil, diags
+			return nil
 		}
 
 		knownRules[i].IPv4 = helper.KeepOrUpdateValue(knownRules[i].IPv4, ipv4, preserveKnown)
 
 		ipv6, diags := types.ListValueFrom(ctx, types.StringType, rules[i].Addresses.IPv6)
 		if diags.HasError() {
-			return nil, diags
+			return nil
 		}
 
 		knownRules[i].IPv6 = helper.KeepOrUpdateValue(knownRules[i].IPv6, ipv6, preserveKnown)
 	}
-	return knownRules, nil
+	return knownRules
 }
 
 func AggregateEntityIDs(devices []linodego.FirewallDevice, entityType linodego.FirewallDeviceType) []int {
