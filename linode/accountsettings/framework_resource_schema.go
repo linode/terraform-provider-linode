@@ -43,7 +43,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"interfaces_for_new_linodes": schema.StringAttribute{
-			Description: "Account-wide backups default.",
+			Description: "Type of interfaces for new Linode instances.",
 			Computed:    true,
 			Optional:    true,
 			Validators: []validator.String{stringvalidator.OneOf(
