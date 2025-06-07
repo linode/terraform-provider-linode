@@ -57,6 +57,8 @@ func sweep(prefix string) error {
 	return nil
 }
 
+// TODO: Add a test case for interfaces when interfaces resource is implemented.
+
 func TestSmokeTests_firewall(t *testing.T) {
 	tests := []struct {
 		name string
