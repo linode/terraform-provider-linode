@@ -36,6 +36,8 @@ import (
 	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalldevice"
 	"github.com/linode/terraform-provider-linode/v2/linode/firewalls"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalltemplate"
+	"github.com/linode/terraform-provider-linode/v2/linode/firewalltemplates"
 	"github.com/linode/terraform-provider-linode/v2/linode/helper"
 	"github.com/linode/terraform-provider-linode/v2/linode/image"
 	"github.com/linode/terraform-provider-linode/v2/linode/images"
@@ -329,5 +331,7 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		objendpoints.NewDataSource,
 		objquota.NewDataSource,
 		objquotas.NewDataSource,
+		firewalltemplate.NewDataSource,
+		firewalltemplates.NewDataSource,
 	}
 }
