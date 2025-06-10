@@ -12,6 +12,7 @@ type TemplateData struct {
 	Swap     bool
 	Region   string
 	RootPass string
+	Image    string
 }
 
 func Basic(t testing.TB, label, region string) string {
@@ -41,14 +42,19 @@ func ComplexUpdates(t testing.TB, label, region string, rootPass string, booted 
 		})
 }
 
-func Booted(t testing.TB, label, region string, booted bool, rootPass string) string {
-	return acceptance.ExecuteTemplate(t,
-		"instance_config_booted", TemplateData{
-			Label:    label,
-			Booted:   booted,
-			Region:   region,
-			RootPass: rootPass,
-		})
+func Booted(t testing.TB, label, region string, booted bool, rootPass string, image ...string) string {
+	data := TemplateData{
+		Label:    label,
+		Booted:   booted,
+		Region:   region,
+		RootPass: rootPass,
+	}
+
+	if len(image) > 0 {
+		data.Image = image[0]
+	}
+
+	return acceptance.ExecuteTemplate(t, "instance_config_booted", data)
 }
 
 func BootedSwap(t testing.TB, label, region string, swap bool, rootPass string) string {
