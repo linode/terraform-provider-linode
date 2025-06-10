@@ -144,6 +144,21 @@ func runDiskOperation(
 		return
 	}
 
+	// Check if instance has disks before booting
+	disks, err := client.ListInstanceDisks(ctx, linodeID, nil)
+	if err != nil {
+		resultDiag.AddError("Failed to list instance disks after operation", err.Error())
+		return
+	}
+
+	if len(disks) == 0 {
+		// Skip reboot if no disks are attached
+		tflog.Info(ctx, "Skipping reboot: instance has no disks attached", map[string]interface{}{
+			"linode_id": linodeID,
+		})
+		return
+	}
+
 	// Boot the instance back up if necessary
 	if originalStatus == linodego.InstanceRunning {
 		// NOTE: A config ID of 0 will boot the instance into its previously booted config
