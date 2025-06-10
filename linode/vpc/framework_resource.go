@@ -51,6 +51,17 @@ func (r *Resource) Create(
 		Description: data.Description.ValueString(),
 	}
 
+	if !data.IPv6.IsNull() {
+		vpcCreateOpts.IPv6 = make([]linodego.VPCCreateOptionsIPv6, 0)
+
+		resp.Diagnostics.Append(
+			data.IPv6.ElementsAs(ctx, &vpcCreateOpts.IPv6, false)...,
+		)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	tflog.Debug(ctx, "client.CreateVPC(...)", map[string]any{
 		"options": vpcCreateOpts,
 	})
@@ -63,7 +74,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	data.FlattenVPC(ctx, vpc, true)
+	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, true)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// IDs should always be overridden during creation (see #1085)
 	// TODO: Remove when Crossplane empty string ID issue is resolved
@@ -118,7 +132,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	data.FlattenVPC(ctx, vpc, false)
+	resp.Diagnostics.Append(data.FlattenVPC(ctx, vpc, false)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -171,7 +185,10 @@ func (r *Resource) Update(
 			)
 			return
 		}
-		plan.FlattenVPC(ctx, vpc, false)
+		resp.Diagnostics.Append(plan.FlattenVPC(ctx, vpc, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 	plan.CopyFrom(ctx, state, true)
 
