@@ -41,7 +41,7 @@ func TestAccResourcePlacementGroupAssignment_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.Basic(t, label, testRegion, true),
