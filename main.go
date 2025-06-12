@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
-	"github.com/linode/terraform-provider-linode/v2/linode"
-	"github.com/linode/terraform-provider-linode/v2/version"
+	"github.com/linode/terraform-provider-linode/v3/linode"
+	"github.com/linode/terraform-provider-linode/v3/version"
 )
 
 func main() {

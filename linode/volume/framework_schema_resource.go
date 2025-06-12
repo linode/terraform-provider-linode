@@ -15,8 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v2/linode/helper/planmodifiers"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodeplanmodifiers "github.com/linode/terraform-provider-linode/v3/linode/helper/planmodifiers"
 )
 
 const RequireReplacementWhenNewSourceVolumeIDIsNotNull = "When source_volume_id is set to a non-null new value, a replacement will be required."

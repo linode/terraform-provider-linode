@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/databasemysqlv2"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlv2"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/unit"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/unit"
 	"github.com/stretchr/testify/require"
 )
 
