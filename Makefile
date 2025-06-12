@@ -3,6 +3,29 @@ SHELL := /bin/bash
 .PHONY: default
 default: build
 
+.PHONY: help
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  build              Build the provider binary after formatting"
+	@echo "  clean              Remove built binary"
+	@echo "  deps               Install/update tools dependencies"
+	@echo "  docs-check         Run markdown linter on documentation files"
+	@echo "  err-check          Run errcheck linter only"
+	@echo "  fmt-check          Run gofumpt check on code"
+	@echo "  format             Auto-format code using gofumpt"
+	@echo "  generate-ip-env    Generate IP environment file for tests"
+	@echo "  help               Show this help message"
+	@echo "  imports-check      Run goimports check only"
+	@echo "  lint               Run all configured linters (Go and Terraform)"
+	@echo "  sweep              Clean test infrastructure (DANGEROUS)"
+	@echo "  test               Run all tests (unit, smoke, integration) with formatting check"
+	@echo "  test-int           Run integration tests (with environment setup)"
+	@echo "  test-smoke         Run smoke tests with IP environment"
+	@echo "  test-unit          Run unit tests (with formatting check)"
+	@echo "  vet                Run govet linter only"
+
 .PHONY: build
 build: format
 	# trying to copy .goreleaser.yaml
