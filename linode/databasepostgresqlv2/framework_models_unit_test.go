@@ -58,6 +58,17 @@ var (
 		},
 		OldestRestoreTime: &currentTime,
 		Platform:          "foobar",
+		EngineConfig: linodego.PostgresDatabaseEngineConfig{
+			PGStatMonitorEnable:     linodego.Pointer(true),
+			SharedBuffersPercentage: linodego.Pointer(20.5),
+			WorkMem:                 linodego.Pointer(1000),
+			PGLookout:               linodego.Pointer(linodego.PostgresDatabaseEngineConfigPGLookout{MaxFailoverReplicationTimeLag: linodego.Pointer(int64(10))}),
+			PG: &linodego.PostgresDatabaseEngineConfigPG{
+				BGWriterDelay: linodego.Pointer(30),
+				JIT:           linodego.Pointer(false),
+				Timezone:      linodego.Pointer("Europe/Helsinki"),
+			},
+		},
 	}
 
 	testDBSSL = linodego.PostgresDatabaseSSL{CACertificate: []byte("Zm9vYmFy")}
@@ -126,6 +137,14 @@ func TestModel_Flatten(t *testing.T) {
 	require.False(t, d.HasError(), d.Errors())
 
 	require.True(t, model.PendingUpdates.Elements()[0].Equal(expectedPendingElement))
+
+	require.Equal(t, true, model.EngineConfigPGStatMonitorEnable.ValueBool())
+	require.Equal(t, 20.5, model.EngineConfigSharedBuffersPercentage.ValueFloat64())
+	require.Equal(t, int64(1000), model.EngineConfigWorkMem.ValueInt64())
+	require.Equal(t, int64(10), model.EngineConfigPGLookoutMaxFailoverReplicationTimeLag.ValueInt64())
+	require.Equal(t, int64(30), model.EngineConfigPGBGWriterDelay.ValueInt64())
+	require.Equal(t, false, model.EngineConfigPGJIT.ValueBool())
+	require.Equal(t, "Europe/Helsinki", model.EngineConfigPGTimezone.ValueString())
 }
 
 func TestModel_Copy(t *testing.T) {

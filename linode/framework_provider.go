@@ -2,13 +2,17 @@ package linode
 
 import (
 	"context"
-
+	"github.com/linode/terraform-provider-linode/v3/linode/databasemysqlconfig"
+	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlconfig"
 	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
+	"github.com/linode/terraform-provider-linode/v3/linode/objquota"
+	"github.com/linode/terraform-provider-linode/v3/linode/objquotas"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+
 	"github.com/linode/terraform-provider-linode/v3/linode/account"
 	"github.com/linode/terraform-provider-linode/v3/linode/accountavailabilities"
 	"github.com/linode/terraform-provider-linode/v3/linode/accountavailability"
@@ -318,6 +322,10 @@ func (p *FrameworkProvider) DataSources(ctx context.Context) []func() datasource
 		networkingips.NewDataSource,
 		databasemysqlv2.NewDataSource,
 		databasepostgresqlv2.NewDataSource,
+		databasemysqlconfig.NewDataSource,
+		databasepostgresqlconfig.NewDataSource,
 		objendpoints.NewDataSource,
+		objquota.NewDataSource,
+		objquotas.NewDataSource,
 	}
 }

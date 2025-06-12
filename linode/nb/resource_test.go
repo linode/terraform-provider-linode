@@ -83,7 +83,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 
 		Steps: []resource.TestStep{
@@ -93,6 +93,7 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
+					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
@@ -123,7 +124,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 
 		Steps: []resource.TestStep{
@@ -133,6 +134,7 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					checkNodeBalancerExists,
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
+					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "10"),
 					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
 					resource.TestCheckResourceAttrSet(resName, "hostname"),
@@ -144,7 +146,25 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
 				),
 			},
+			{
+				Config: tmpl.Updates(t, nodebalancerName, testRegion),
+				Check: resource.ComposeTestCheckFunc(
+					checkNodeBalancerExists,
+					resource.TestCheckResourceAttr(resName, "label", nodebalancerName+"_r"),
+					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
+					resource.TestCheckResourceAttr(resName, "client_udp_sess_throttle", "5"),
+					resource.TestCheckResourceAttr(resName, "region", testRegion),
 
+					resource.TestCheckResourceAttrSet(resName, "hostname"),
+					resource.TestCheckResourceAttrSet(resName, "ipv4"),
+					resource.TestCheckResourceAttrSet(resName, "ipv6"),
+					resource.TestCheckResourceAttrSet(resName, "created"),
+					resource.TestCheckResourceAttrSet(resName, "updated"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
+					resource.TestCheckResourceAttr(resName, "tags.1", "tf_test_2"),
+				),
+			},
 			{
 				ResourceName:            resName,
 				ImportState:             true,
@@ -163,7 +183,7 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerDestroy,
 
 		Steps: []resource.TestStep{
@@ -298,7 +318,7 @@ func TestLinodeNodeBalancer_UpgradeV0Empty(t *testing.T) {
 }
 
 func checkNodeBalancerExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer" {
 			continue
@@ -319,7 +339,7 @@ func checkNodeBalancerExists(s *terraform.State) error {
 }
 
 func checkNodeBalancerDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer" {
 			continue

@@ -116,6 +116,7 @@ func RefreshObject(
 			)
 		}
 		diags.AddError("Failed to Refresh the Object", err.Error())
+		return
 	}
 
 	data.FlattenObject(*headOutput, preserveKnown)

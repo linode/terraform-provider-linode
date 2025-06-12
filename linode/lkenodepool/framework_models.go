@@ -160,8 +160,12 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 	pool.Labels.ElementsAs(ctx, &p.Labels, false)
 
 	if tier == "enterprise" {
-		p.K8sVersion = pool.K8sVersion.ValueStringPointer()
-		p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
+		if !pool.K8sVersion.IsNull() && !pool.K8sVersion.IsUnknown() {
+			p.K8sVersion = pool.K8sVersion.ValueStringPointer()
+		}
+		if !pool.UpdateStrategy.IsNull() && !pool.UpdateStrategy.IsUnknown() {
+			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
+		}
 	}
 }
 
@@ -174,15 +178,16 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 ) bool {
 	var shouldUpdate bool
 
-	if !state.Count.Equal(pool.Count) {
-		p.Count = helper.FrameworkSafeInt64ToInt(
-			pool.Count.ValueInt64(),
-			diags,
-		)
-		if diags.HasError() {
-			return false
-		}
+	plannedCount := helper.FrameworkSafeInt64ToInt(
+		pool.Count.ValueInt64(),
+		diags,
+	)
+	if diags.HasError() {
+		return false
+	}
 
+	if !state.Count.Equal(pool.Count) {
+		p.Count = plannedCount
 		shouldUpdate = true
 	}
 
@@ -197,14 +202,17 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 		shouldUpdate = true
 	}
 
-	autoscaler, asNeedsUpdate := pool.shouldUpdateLKENodePoolAutoscaler(p.Count, state, diags)
+	autoscaler, asNeedsUpdate := pool.shouldUpdateLKENodePoolAutoscaler(state, diags)
 	if diags.HasError() {
 		return false
 	}
 
 	if asNeedsUpdate {
 		p.Autoscaler = autoscaler
-		if p.Autoscaler.Enabled && p.Count == 0 {
+
+		// If autoscaling is enabled and the user hasn't configured a
+		// valid node count, use the autoscaler's minimum.
+		if p.Autoscaler.Enabled && plannedCount == 0 {
 			p.Count = p.Autoscaler.Min
 		}
 	}
@@ -219,6 +227,7 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 	if !state.Labels.Equal(pool.Labels) {
 		pool.Labels.ElementsAs(ctx, &p.Labels, false)
+		shouldUpdate = true
 	}
 
 	if tier == "enterprise" {
@@ -260,7 +269,6 @@ func (pool *NodePoolModel) getLKENodePoolAutoscaler(count int, diags *diag.Diagn
 }
 
 func (pool *NodePoolModel) shouldUpdateLKENodePoolAutoscaler(
-	count int,
 	state *NodePoolModel,
 	diags *diag.Diagnostics,
 ) (*linodego.LKENodePoolAutoscaler, bool) {
@@ -279,8 +287,16 @@ func (pool *NodePoolModel) shouldUpdateLKENodePoolAutoscaler(
 		}
 	} else if len(state.Autoscaler) > 0 {
 		autoscaler.Enabled = false
-		autoscaler.Min = count
-		autoscaler.Max = count
+
+		// These values are discarded by the API when autoscaling is disabled,
+		// so we can just use the plan's count since it should meet the validation requirements.
+		planNodeCount := helper.FrameworkSafeInt64ToInt(pool.Count.ValueInt64(), diags)
+		if diags.HasError() {
+			return nil, false
+		}
+
+		autoscaler.Min = planNodeCount
+		autoscaler.Max = planNodeCount
 
 		shouldUpdate = true
 	}

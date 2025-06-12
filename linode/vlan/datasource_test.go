@@ -30,7 +30,7 @@ func init() {
 
 func preConfigVLANPoll(t testing.TB, vlanName string) func() {
 	return func() {
-		client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 		if _, err := waitForVLANWithLabel(client, vlanName, 30); err != nil {
 			t.Fatal(err)
 		}
@@ -47,7 +47,7 @@ func TestAccDataSourceVLANs_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 
 		Steps: []resource.TestStep{
 			{
@@ -77,7 +77,7 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 
 		Steps: []resource.TestStep{
 			{

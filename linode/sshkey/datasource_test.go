@@ -21,7 +21,7 @@ func TestAccDataSourceSSHKey_basic(t *testing.T) {
 	// TODO(ellisbenjamin) -- This test passes only because of the Destroy: true statement and needs attention.
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{

@@ -62,6 +62,16 @@ var (
 		},
 		OldestRestoreTime: &currentTime,
 		Platform:          "foobar",
+		EngineConfig: linodego.MySQLDatabaseEngineConfig{
+			BinlogRetentionPeriod: linodego.Pointer(600),
+			MySQL: &linodego.MySQLDatabaseEngineConfigMySQL{
+				ConnectTimeout:       linodego.Pointer(10),
+				DefaultTimeZone:      linodego.Pointer("+03:00"),
+				GroupConcatMaxLen:    linodego.Pointer(float64(1024)),
+				SQLMode:              linodego.Pointer("test"),
+				SQLRequirePrimaryKey: linodego.Pointer(true),
+			},
+		},
 	}
 
 	testDBSSL = linodego.MySQLDatabaseSSL{CACertificate: []byte("Zm9vYmFy")}
@@ -130,6 +140,13 @@ func TestModel_Flatten(t *testing.T) {
 		},
 	)
 	require.False(t, d.HasError(), d.Errors())
+
+	require.Equal(t, "test", model.EngineConfigMySQLSQLMode.ValueString())
+	require.Equal(t, true, model.EngineConfigMySQLSQLRequirePrimaryKey.ValueBool())
+	require.Equal(t, int64(600), model.EngineConfigBinlogRetentionPeriod.ValueInt64())
+	require.Equal(t, int64(10), model.EngineConfigMySQLConnectTimeout.ValueInt64())
+	require.Equal(t, "+03:00", model.EngineConfigMySQLDefaultTimeZone.ValueString())
+	require.Equal(t, float64(1024), model.EngineConfigMySQLGroupConcatMaxLen.ValueFloat64())
 
 	require.True(t, model.PendingUpdates.Elements()[0].Equal(expectedPendingElement))
 }

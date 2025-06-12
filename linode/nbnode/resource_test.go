@@ -39,7 +39,7 @@ func TestAccResourceNodeBalancerNode_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:              checkNodeBalancerNodeDestroy,
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
@@ -72,7 +72,7 @@ func TestAccResourceNodeBalancerNode_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerNodeDestroy,
 
 		Steps: []resource.TestStep{

@@ -129,7 +129,7 @@ func TestAccResourceNodePool_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodePoolDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -185,7 +185,7 @@ func TestAccResourceNodePool_disableAutoscaling(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodePoolDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -233,7 +233,7 @@ func TestAccResourceNodePool_enableAutoscaling(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodePoolDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -280,7 +280,7 @@ func TestAccResourceNodePool_update_type(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodePoolDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -348,7 +348,7 @@ func TestAccResourceNodePool_taints_labels(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodePoolDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -451,7 +451,7 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodePoolDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -480,8 +480,60 @@ func TestAccResourceNodePoolEnterprise_basic(t *testing.T) {
 	})
 }
 
+func TestAccResourceNodePool_disableAutoscalingExplicitNodeCount(t *testing.T) {
+	t.Parallel()
+
+	resName := "linode_lke_node_pool.foobar"
+	clusterLabel := acctest.RandomWithPrefix("tf_test_")
+	poolTag := acctest.RandomWithPrefix("tf_test_")
+
+	templateData := createTemplateData()
+	templateData.ClusterLabel = clusterLabel
+	templateData.PoolTag = poolTag
+	templateData.NodeCount = 2
+	templateData.AutoscalerEnabled = true
+	templateData.AutoscalerMin = 1
+	templateData.AutoscalerMax = 4
+
+	createConfig := createResourceConfig(t, &templateData)
+
+	templateData.AutoscalerEnabled = false
+
+	dropAutoscalerConfig := createResourceConfig(t, &templateData)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             checkNodePoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "autoscaler.#", "1"),
+					resource.TestCheckResourceAttr(resName, "autoscaler.0.min", "1"),
+					resource.TestCheckResourceAttr(resName, "autoscaler.0.max", "4"),
+				),
+			},
+			{
+				Config: dropAutoscalerConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkNodePoolExists,
+					resource.TestCheckResourceAttr(resName, "autoscaler.#", "0"),
+				),
+			},
+			{
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: resourceImportStateID,
+			},
+		},
+	})
+}
+
 func checkNodePoolExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	clusterID, poolID, err := extractIDs(s)
 	if err != nil {
 		return err
@@ -494,7 +546,7 @@ func checkNodePoolExists(s *terraform.State) error {
 }
 
 func checkNodePoolDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	clusterID, poolID, err := extractIDs(s)
 	if err != nil {
 		return err

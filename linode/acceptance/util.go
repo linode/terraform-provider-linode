@@ -48,8 +48,8 @@ var (
 	optInTests               map[string]struct{}
 	privateKeyMaterial       string
 	PublicKeyMaterial        string
-	TestAccProviders         map[string]*schema.Provider
-	TestAccProvider          *schema.Provider
+	TestAccSDKv2Providers    map[string]*schema.Provider
+	TestAccSDKv2Provider     *schema.Provider
 	TestAccFrameworkProvider *linode.FrameworkProvider
 	ConfigTemplates          *template.Template
 	TestImageLatest          string
@@ -107,10 +107,10 @@ func init() {
 
 	initOptInTests()
 
-	TestAccProvider = linode.Provider()
+	TestAccSDKv2Provider = linode.Provider()
 	TestAccFrameworkProvider = linode.CreateFrameworkProvider(version.ProviderVersion).(*linode.FrameworkProvider)
-	TestAccProviders = map[string]*schema.Provider{
-		"linode": TestAccProvider,
+	TestAccSDKv2Providers = map[string]*schema.Provider{
+		"linode": TestAccSDKv2Provider,
 	}
 
 	var templateFiles []string
@@ -366,7 +366,7 @@ func CheckListContains(resName, path, value string) resource.TestCheckFunc {
 }
 
 func CheckLKEClusterDestroy(s *terraform.State) error {
-	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_lke_cluster" {
@@ -395,7 +395,7 @@ func CheckLKEClusterDestroy(s *terraform.State) error {
 }
 
 func CheckVolumeDestroy(s *terraform.State) error {
-	client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_volume" {
 			continue
@@ -425,7 +425,7 @@ func CheckVolumeDestroy(s *terraform.State) error {
 
 func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -454,7 +454,7 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 
 func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -483,7 +483,7 @@ func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.Test
 
 func CheckEventAbsent(name string, entityType linodego.EntityType, action linodego.EventAction) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*helper.ProviderMeta).Client
+		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {

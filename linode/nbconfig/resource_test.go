@@ -40,7 +40,7 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
@@ -60,6 +60,8 @@ func TestAccResourceNodeBalancerConfig_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "check_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "check_interval"),
 					resource.TestCheckResourceAttrSet(resName, "check_passive"),
+					resource.TestCheckResourceAttrSet(resName, "udp_check_port"),
+					resource.TestCheckResourceAttrSet(resName, "udp_session_timeout"),
 					resource.TestCheckResourceAttrSet(resName, "cipher_suite"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_common"),
 					resource.TestCheckNoResourceAttr(resName, "ssl_ciphersuite"),
@@ -87,7 +89,7 @@ func TestAccResourceNodeBalancerConfig_ssl(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreventPostDestroyRefresh: true,
 		PreCheck:                  func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories:  acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:              checkNodeBalancerConfigDestroy,
 		ExternalProviders:         acceptance.HttpExternalProviders,
 		Steps: []resource.TestStep{
@@ -120,7 +122,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
 
 		Steps: []resource.TestStep{
@@ -150,6 +152,7 @@ func TestAccResourceNodeBalancerConfig_update(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "check_attempts", "3"),
 					resource.TestCheckResourceAttr(resName, "check_timeout", "30"),
 					resource.TestCheckResourceAttr(resName, "check_interval", "31"),
+					resource.TestCheckResourceAttr(resName, "udp_check_port", "1234"),
 					resource.TestCheckResourceAttr(resName, "check_passive", "false"),
 
 					resource.TestCheckResourceAttr(resName, "stickiness", string(linodego.StickinessHTTPCookie)),
@@ -167,7 +170,7 @@ func TestAccResourceNodeBalancerConfig_proxyProtocol(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		CheckDestroy:             checkNodeBalancerConfigDestroy,
 
 		Steps: []resource.TestStep{
@@ -269,7 +272,7 @@ func TestLinodeNodeBalancerConfig_UpgradeV0Empty(t *testing.T) {
 }
 
 func checkNodeBalancerConfigExists(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
@@ -295,7 +298,7 @@ func checkNodeBalancerConfigExists(s *terraform.State) error {
 }
 
 func checkNodeBalancerConfigDestroy(s *terraform.State) error {
-	client := acceptance.TestAccProvider.Meta().(*helper.ProviderMeta).Client
+	client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "linode_nodebalancer_config" {
 			continue
