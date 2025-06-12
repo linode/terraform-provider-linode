@@ -9,7 +9,7 @@
 > v2.x.x of the Linode Terraform Provider is currently under extended support.
 > During this period, only critical bug fixes and security updates will be provided.
 > 
-> This version will formally reach its end-of-life (EOL) 6 months after the release of v3.0.0. (DATE TBD)
+> This version will formally reach its end-of-life (EOL) 6 months after the release of v3.0.0. (December 11th, 2025)
 
 - Website: <https://www.terraform.io>
 - Documentation: <https://www.terraform.io/docs/providers/linode/index.html>
