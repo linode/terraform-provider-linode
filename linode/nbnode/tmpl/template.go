@@ -3,9 +3,9 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/nb/tmpl"
-	config "github.com/linode/terraform-provider-linode/v2/linode/nbconfig/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/nb/tmpl"
+	config "github.com/linode/terraform-provider-linode/v3/linode/nbconfig/tmpl"
 )
 
 type TemplateData struct {

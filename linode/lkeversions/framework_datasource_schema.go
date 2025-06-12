@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
 )
 
 var lkeVersionSchema = schema.NestedBlockObject{

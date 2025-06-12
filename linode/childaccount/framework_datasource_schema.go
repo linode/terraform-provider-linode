@@ -2,7 +2,7 @@ package childaccount
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v2/linode/account"
+	"github.com/linode/terraform-provider-linode/v3/linode/account"
 )
 
 func dataSourceSchema() *schema.Schema {

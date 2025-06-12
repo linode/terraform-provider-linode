@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkeversion"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkeversion"
 )
 
 type DataSourceModel struct {

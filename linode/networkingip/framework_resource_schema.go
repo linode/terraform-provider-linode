@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 var frameworkResourceSchema = schema.Schema{
