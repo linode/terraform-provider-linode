@@ -48,6 +48,14 @@ var NBConfigAttributes = map[string]schema.Attribute{
 		Description: "How long, in seconds, to wait for a check attempt before considering it failed. (1-30)",
 		Computed:    true,
 	},
+	"udp_check_port": schema.Int64Attribute{
+		Description: "Specifies the port on the backend node used for active health checks, which may differ from the port serving traffic.",
+		Computed:    true,
+	},
+	"udp_session_timeout": schema.Int64Attribute{
+		Description: "The idle time in seconds after which a session that hasn’t received packets is destroyed.",
+		Computed:    true,
+	},
 	"check_attempts": schema.Int64Attribute{
 		Description: "How many times to attempt a check before considering a backend to be down. (1-30)",
 		Computed:    true,

@@ -28,7 +28,7 @@ func TestAccDataSourceNodeBalancerConfigs_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
-		ProtoV5ProviderFactories: acceptance.ProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 
 		Steps: []resource.TestStep{
 			{
@@ -42,6 +42,8 @@ func TestAccDataSourceNodeBalancerConfigs_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancer_configs.0.port"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancer_configs.0.check_interval"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancer_configs.0.check_passive"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancer_configs.0.udp_check_port"),
+					resource.TestCheckResourceAttrSet(resourceName, "nodebalancer_configs.0.udp_session_timeout"),
 					resource.TestCheckResourceAttrSet(resourceName, "nodebalancer_configs.0.cipher_suite"),
 					resource.TestCheckNoResourceAttr(resourceName, "nodebalancer_configs.0.ssl_common"),
 					resource.TestCheckNoResourceAttr(resourceName, "nodebalancer_configs.0.ssl_ciphersuite"),

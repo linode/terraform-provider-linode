@@ -1,0 +1,15 @@
+{{ define "database_mysql_v2_engine_config_nullable_field" }}
+
+resource "linode_database_mysql_v2" "foobar" {
+    label = "{{.Label}}"
+    region = "{{ .Region }}"
+    type = "{{ .Type }}"
+    engine_id = "{{ .EngineID }}"
+
+    engine_config_binlog_retention_period               = {{ .EngineConfigBinlogRetentionPeriod }}
+    {{- if .EngineConfigMySQLInnoDBFTServerStopwordTable }}
+      engine_config_mysql_innodb_ft_server_stopword_table = "{{ .EngineConfigMySQLInnoDBFTServerStopwordTable }}"
+    {{- end }}
+}
+
+{{ end }}
