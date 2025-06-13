@@ -35,7 +35,7 @@ require (
 )
 
 // Point to Linode Interface feature branch
-replace github.com/linode/linodego => github.com/lgarber-akamai/linodego v1.9.4-0.20250527182812-3c25b7cf6678
+replace github.com/linode/linodego => github.com/linode/linodego v1.52.2-0.20250611175057-1cab31f09327
 
 require (
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
