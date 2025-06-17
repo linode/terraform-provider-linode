@@ -158,6 +158,16 @@ var frameworkDataSourceSchema = schema.Schema{
 							"easily select subsets of objects.",
 						ElementType: types.StringType,
 					},
+					"k8s_version": schema.StringAttribute{
+						Computed: true,
+						Description: "The Kubernetes version for this pool in the format of <major>.<minor>. " +
+							"This is only available for Enterprise clusters.",
+					},
+					"update_strategy": schema.StringAttribute{
+						Computed: true,
+						Description: "The strategy for updating the node pool k8s version. " +
+							"For LKE enterprise only and may not currently available to all users.",
+					},
 				},
 				Blocks: map[string]schema.Block{
 					"nodes": schema.ListNestedBlock{

@@ -11,6 +11,8 @@ resource "linode_lke_cluster" "test" {
         type  = "g6-standard-1"
         count = 3
         tags  = ["test"]
+        k8s_version = "{{.K8sVersion}}"
+        update_strategy = "{{.UpdateStrategy}}"
     }
 }
 
