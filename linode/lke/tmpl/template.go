@@ -105,6 +105,11 @@ func DataBasic(t testing.TB, name, version, region string) string {
 		"lke_cluster_data_basic", TemplateData{Label: name, K8sVersion: version, Region: region})
 }
 
+func DataEnterprise(t testing.TB, name, version, region, updateStrategy string) string {
+	return acceptance.ExecuteTemplate(t,
+		"lke_cluster_data_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
+}
+
 func DataAutoscaler(t testing.TB, name, version, region string) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_autoscaler", TemplateData{Label: name, K8sVersion: version, Region: region})
