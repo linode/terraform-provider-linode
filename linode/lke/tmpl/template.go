@@ -15,6 +15,7 @@ type TaintData struct {
 type TemplateData struct {
 	Label            string
 	K8sVersion       string
+	UpdateStrategy   string
 	HighAvailability bool
 	Region           string
 	ACLEnabled       bool
@@ -94,9 +95,9 @@ func AutoscalerNoCount(t testing.TB, name, version, region string) string {
 		})
 }
 
-func Enterprise(t testing.TB, name, version, region string) string {
+func Enterprise(t testing.TB, name, version, region, updateStrategy string) string {
 	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region})
+		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
 }
 
 func DataBasic(t testing.TB, name, version, region string) string {
