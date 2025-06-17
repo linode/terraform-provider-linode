@@ -3,8 +3,8 @@ package regions
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
-	regionResource "github.com/linode/terraform-provider-linode/v2/linode/region"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	regionResource "github.com/linode/terraform-provider-linode/v3/linode/region"
 )
 
 // RegionFilterModel describes the Terraform resource data model to match the

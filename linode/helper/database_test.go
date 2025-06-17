@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 func TestResourceDatabaseMySQL_expandFlatten(t *testing.T) {

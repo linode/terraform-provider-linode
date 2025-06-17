@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v3/linode/helper/customdiffs"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
 )
 
 const (

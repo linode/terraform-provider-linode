@@ -3,8 +3,8 @@ package tmpl
 import (
 	"testing"
 
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	databasemysqltmpl "github.com/linode/terraform-provider-linode/v2/linode/databasemysql/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	databasemysqltmpl "github.com/linode/terraform-provider-linode/v3/linode/databasemysql/tmpl"
 )
 
 type TemplateData struct {

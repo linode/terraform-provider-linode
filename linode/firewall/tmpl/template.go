@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 )
 
 type ResourceTemplateData struct {

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/networktransferprices/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/networktransferprices/tmpl"
 )
 
 func TestAccDataSourceNetworkTransferPrices_basic(t *testing.T) {
