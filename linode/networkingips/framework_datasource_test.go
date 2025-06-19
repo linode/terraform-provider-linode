@@ -10,7 +10,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v2/linode/networkingips/tmpl"
 )
@@ -97,19 +100,20 @@ func TestAccDataSourceNetworkingIP_filterReserved(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmpl.DataFilterReserved(t),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.#"),
-					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.reserved", "true"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.address"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.linode_id"),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.region"),
-					resource.TestMatchResourceAttr(dataResourceName, "ip_addresses.0.gateway", regexp.MustCompile(`\.1$`)),
-					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.type", "ipv4"),
-					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.public", "true"),
-					resource.TestCheckResourceAttr(dataResourceName, "ip_addresses.0.prefix", "24"),
-					resource.TestMatchResourceAttr(dataResourceName, "ip_addresses.0.rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
-					resource.TestCheckResourceAttrSet(dataResourceName, "ip_addresses.0.subnet_mask"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("reserved"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("address"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("linode_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("interface_id"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("region"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("gateway"), knownvalue.StringRegexp(regexp.MustCompile(`\.1$`))),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("ipv4")),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("public"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("prefix"), knownvalue.Int64Exact(24)),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("rdns"), knownvalue.StringRegexp(regexp.MustCompile(`.ip.linodeusercontent.com$`))),
+					statecheck.ExpectKnownValue(dataResourceName, tfjsonpath.New("ip_addresses").AtSliceIndex(0).AtMapKey("subnet_mask"), knownvalue.NotNull()),
+				},
 			},
 		},
 	})
