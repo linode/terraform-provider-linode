@@ -159,6 +159,15 @@ var frameworkResourceSchema = schema.Schema{
 				setplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"interfaces": schema.SetAttribute{
+			Description: "The IDs of Linode interfaces to apply this firewall to.",
+			Optional:    true,
+			Computed:    true,
+			ElementType: types.Int64Type,
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.UseStateForUnknown(),
+			},
+		},
 		"devices": schema.ListAttribute{
 			Description: "The devices associated with this firewall.",
 			Computed:    true,

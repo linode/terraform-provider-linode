@@ -79,6 +79,11 @@ var frameworkDatasourceSchema = schema.Schema{
 			Description: "The IDs of NodeBalancers assigned to this Firewall.",
 			Computed:    true,
 		},
+		"interfaces": schema.SetAttribute{
+			ElementType: types.Int64Type,
+			Description: "The IDs of Linode interfaces to apply this firewall to.",
+			Computed:    true,
+		},
 		"devices": schema.ListAttribute{
 			ElementType: deviceObjectType,
 			Description: "The devices associated with this firewall.",

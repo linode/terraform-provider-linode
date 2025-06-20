@@ -13,6 +13,7 @@ import (
 
 const testFirewallDataName = "data.linode_firewall.test"
 
+// TODO: Add a test case for interfaces when interfaces resource is implemented.
 func TestAccDataSourceFirewall_basic(t *testing.T) {
 	t.Parallel()
 
