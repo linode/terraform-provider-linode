@@ -2,7 +2,7 @@ package firewalltemplate
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewall"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewall"
 )
 
 var frameworkDatasourceSchema = schema.Schema{
