@@ -1,4 +1,4 @@
-module github.com/linode/terraform-provider-linode/v2
+module github.com/linode/terraform-provider-linode/v3
 
 go 1.23.0
 
