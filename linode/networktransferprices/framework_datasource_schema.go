@@ -2,8 +2,8 @@ package networktransferprices
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
 )
 
 var networkTransferPriceSchema = schema.NestedBlockObject{
