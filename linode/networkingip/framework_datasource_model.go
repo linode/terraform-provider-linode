@@ -4,8 +4,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 type DataSourceModel struct {

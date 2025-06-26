@@ -2,8 +2,8 @@ package placementgroups
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v2/linode/placementgroup"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v3/linode/placementgroup"
 )
 
 var filterConfig = frameworkfilter.Config{

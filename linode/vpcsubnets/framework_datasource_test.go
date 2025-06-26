@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/vpcsubnets/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/vpcsubnets/tmpl"
 )
 
 func TestSmokeTests_vpcsubnets(t *testing.T) {
