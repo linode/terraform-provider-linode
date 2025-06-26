@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 const deviceDescription = "Device can be either a Disk or Volume identified by disk_id or " +
@@ -458,6 +458,12 @@ var resourceSchema = map[string]*schema.Schema{
 		Description: "Various fields related to the Linode Metadata service.",
 		Optional:    true,
 	},
+	"network_helper": {
+		Type:        schema.TypeBool,
+		Description: "Whether Network Helper should be enabled for this instance.",
+		Optional:    true,
+		ForceNew:    true,
+	},
 	"placement_group": {
 		Type:        schema.TypeList,
 		Elem:        resourcePlacementGroup(),
@@ -478,6 +484,19 @@ var resourceSchema = map[string]*schema.Schema{
 			return true
 		},
 	},
+	"interface_generation": {
+		Type: schema.TypeString,
+		Description: "Specifies the interface type for the Linode. " +
+			"The default value is determined by the interfaces_for_new_linodes " +
+			"setting in the account settings. " +
+			"If the interface_generation option is set to linode, " +
+			"legacy configuration interfaces can no longer be used on the Linode. " +
+			"NOTE: Linode Interfaces may not currently be available to all users.",
+		Optional: true,
+		Computed: true,
+		ForceNew: true,
+	},
+
 	"has_user_data": {
 		Type:        schema.TypeBool,
 		Description: "Whether or not this Instance was created with user-data.",

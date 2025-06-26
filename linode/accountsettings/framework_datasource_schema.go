@@ -31,7 +31,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"interfaces_for_new_linodes": schema.StringAttribute{
-			Description: "What kind of interfaces are allowed for new Linode instances.",
+			Description: "Type of interfaces for new Linode instances.",
 			Computed:    true,
 		},
 	},

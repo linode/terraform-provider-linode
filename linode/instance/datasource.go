@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
 var filterConfig = helper.FilterConfig{
@@ -19,11 +19,12 @@ var filterConfig = helper.FilterConfig{
 	"lke_cluster_id": {APIFilterable: true, TypeFunc: helper.FilterTypeInt},
 
 	// Tags must be filtered on the client
-	"tags":             {TypeFunc: helper.FilterTypeString},
-	"status":           {TypeFunc: helper.FilterTypeString},
-	"type":             {TypeFunc: helper.FilterTypeString},
-	"watchdog_enabled": {TypeFunc: helper.FilterTypeBool},
-	"disk_encryption":  {TypeFunc: helper.FilterTypeString},
+	"tags":                 {TypeFunc: helper.FilterTypeString},
+	"status":               {TypeFunc: helper.FilterTypeString},
+	"type":                 {TypeFunc: helper.FilterTypeString},
+	"watchdog_enabled":     {TypeFunc: helper.FilterTypeBool},
+	"disk_encryption":      {TypeFunc: helper.FilterTypeString},
+	"interface_generation": {TypeFunc: helper.FilterTypeString},
 }
 
 func dataSourceInstance() *schema.Resource {

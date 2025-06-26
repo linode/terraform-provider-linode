@@ -2,8 +2,8 @@ package networkingips
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper/frameworkfilter"
-	"github.com/linode/terraform-provider-linode/v2/linode/instancenetworking"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper/frameworkfilter"
+	"github.com/linode/terraform-provider-linode/v3/linode/instancenetworking"
 )
 
 var filterConfig = frameworkfilter.Config{
@@ -66,6 +66,10 @@ var frameworkDatasourceSchema = schema.Schema{
 					},
 					"linode_id": schema.Int64Attribute{
 						Description: "The ID of the Linode this address currently belongs to.",
+						Computed:    true,
+					},
+					"interface_id": schema.Int64Attribute{
+						Description: "The ID of the interface this address is assigned to.",
 						Computed:    true,
 					},
 					"region": schema.StringAttribute{
