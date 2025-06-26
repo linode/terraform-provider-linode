@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v3/linode/helper/customdiffs"
 )
 
 // Instance creation with reserved IPv4 is for internal use only : please refer to KB page for more information.
@@ -134,6 +134,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("has_user_data", instance.HasUserData)
 	d.Set("lke_cluster_id", instance.LKEClusterID)
 	d.Set("disk_encryption", instance.DiskEncryption)
+	d.Set("interface_generation", instance.InterfaceGeneration)
 
 	flatSpecs := flattenInstanceSpecs(*instance)
 	flatAlerts := flattenInstanceAlerts(*instance)
@@ -232,6 +233,14 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 		for i, ni := range interfaces {
 			createOpts.Interfaces[i] = helper.ExpandConfigInterface(ni.(map[string]interface{}))
 		}
+	}
+
+	if interfaceGeneration, interfaceGenerationOk := d.GetOk("interface_generation"); interfaceGenerationOk {
+		createOpts.InterfaceGeneration = linodego.InterfaceGeneration(interfaceGeneration.(string))
+	}
+
+	if networkHelper, networkHelperOk := d.GetOk("network_helper"); networkHelperOk {
+		createOpts.NetworkHelper = linodego.Pointer(networkHelper.(bool))
 	}
 
 	if _, metadataOk := d.GetOk("metadata.0"); metadataOk {
