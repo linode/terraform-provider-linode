@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/firewallsettings/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/firewallsettings/tmpl"
 )
 
 const (
@@ -30,7 +30,6 @@ func TestAccDataSourceFirewalls_basic(t *testing.T) {
 				Config: tmpl.Data(t, dataName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataFullName, tfjsonpath.New("default_firewall_ids"), knownvalue.NotNull()),
-
 				},
 			},
 		},
