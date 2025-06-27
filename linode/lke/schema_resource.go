@@ -226,7 +226,7 @@ var resourceSchema = map[string]*schema.Schema{
 				},
 				"k8s_version": {
 					Type: schema.TypeString,
-					Description: "The desired Kubernetes version for this pool in the format of <major>.<minor>. " +
+					Description: "The desired Kubernetes version for this pool. " +
 						"This is only available for Enterprise clusters.",
 					Computed: true,
 					Optional: true,

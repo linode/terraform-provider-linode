@@ -462,6 +462,16 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 			continue
 		}
 
+		var k8sVersionPtr *string
+		if v, ok := specMap["k8s_version"].(string); ok && v != "" {
+			k8sVersionPtr = &v
+		}
+
+		var updateStrategyPtr *string
+		if v, ok := specMap["update_strategy"].(string); ok && v != "" {
+			updateStrategyPtr = &v
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Type:              specMap["type"].(string),
@@ -472,8 +482,8 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 			AutoScalerEnabled: autoscaler.Enabled,
 			AutoScalerMin:     autoscaler.Min,
 			AutoScalerMax:     autoscaler.Max,
-			K8sVersion:        specMap["k8s_version"].(*string),
-			UpdateStrategy:    specMap["update_strategy"].(*string),
+			K8sVersion:        k8sVersionPtr,
+			UpdateStrategy:    updateStrategyPtr,
 		})
 	}
 	return
