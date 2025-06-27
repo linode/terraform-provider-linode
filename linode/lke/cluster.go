@@ -401,13 +401,13 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				continue
 			}
 
-			if declaredUpdateStrategy, ok := declaredPool["update_strategy"].(string); ok {
+			if declaredUpdateStrategy, ok := declaredPool["update_strategy"].(string); ok && declaredUpdateStrategy != "" {
 				if apiPool.UpdateStrategy == nil || declaredUpdateStrategy != string(*apiPool.UpdateStrategy) {
 					continue
 				}
 			}
 
-			if declaredK8sVersion, ok := declaredPool["k8s_version"].(string); ok {
+			if declaredK8sVersion, ok := declaredPool["k8s_version"].(string); ok && declaredK8sVersion != "" {
 				if apiPool.K8sVersion == nil || declaredK8sVersion != *apiPool.K8sVersion {
 					continue
 				}
