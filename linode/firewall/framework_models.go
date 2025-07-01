@@ -24,6 +24,7 @@ type FirewallDataSourceModel struct {
 	OutboundPolicy types.String  `tfsdk:"outbound_policy"`
 	Linodes        types.Set     `tfsdk:"linodes"`
 	NodeBalancers  types.Set     `tfsdk:"nodebalancers"`
+	Interfaces     types.Set     `tfsdk:"interfaces"`
 	Devices        []DeviceModel `tfsdk:"devices"`
 	Status         types.String  `tfsdk:"status"`
 	Created        types.String  `tfsdk:"created"`
@@ -43,6 +44,7 @@ type FirewallResourceModel struct {
 	OutboundPolicy types.String      `tfsdk:"outbound_policy"`
 	Linodes        types.Set         `tfsdk:"linodes"`
 	NodeBalancers  types.Set         `tfsdk:"nodebalancers"`
+	Interfaces     types.Set         `tfsdk:"interfaces"`
 	Devices        types.List        `tfsdk:"devices"`
 	Status         types.String      `tfsdk:"status"`
 	Created        timetypes.RFC3339 `tfsdk:"created"`
@@ -141,6 +143,11 @@ func (data *FirewallResourceModel) getCreateOptions(
 		return
 	}
 
+	createOpts.Devices.Interfaces = helper.ExpandFwInt64Set(data.Interfaces, diags)
+	if diags.HasError() {
+		return
+	}
+
 	createOpts.Rules = data.ExpandFirewallRuleSet(ctx, diags)
 	if diags.HasError() {
 		return
@@ -186,6 +193,11 @@ func (data *FirewallResourceModel) flattenDevices(
 	}
 
 	data.NodeBalancers = helper.KeepOrUpdateIntSet(data.NodeBalancers, AggregateEntityIDs(devices, linodego.FirewallDeviceNodeBalancer), preserveKnown, diags)
+	if diags.HasError() {
+		return
+	}
+
+	data.Interfaces = helper.KeepOrUpdateIntSet(data.Interfaces, AggregateEntityIDs(devices, linodego.FirewallDeviceInterface), preserveKnown, diags)
 	if diags.HasError() {
 		return
 	}
@@ -274,6 +286,16 @@ func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
 	}
 	data.NodeBalancers = nodebalancers
 
+	interfaces, diags := types.SetValueFrom(
+		ctx,
+		types.Int64Type,
+		AggregateEntityIDs(devices, linodego.FirewallDeviceInterface),
+	)
+	if diags.HasError() {
+		return diags
+	}
+	data.Interfaces = interfaces
+
 	data.Devices = FlattenFirewallDevices(devices)
 
 	tags, diags := types.SetValueFrom(ctx, types.StringType, firewall.Tags)
@@ -317,6 +339,8 @@ func (data *FirewallResourceModel) CopyFrom(
 	data.OutboundPolicy = helper.KeepOrUpdateValue(data.OutboundPolicy, other.OutboundPolicy, preserveKnown)
 	data.Linodes = helper.KeepOrUpdateValue(data.Linodes, other.Linodes, preserveKnown)
 	data.NodeBalancers = helper.KeepOrUpdateValue(data.NodeBalancers, other.NodeBalancers, preserveKnown)
+	data.Interfaces = helper.KeepOrUpdateValue(data.Interfaces, other.Interfaces, preserveKnown)
+	data.Devices = helper.KeepOrUpdateValue(data.Devices, other.Devices, preserveKnown)
 	data.Devices = helper.KeepOrUpdateValue(data.Devices, other.Devices, preserveKnown)
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
@@ -351,10 +375,10 @@ func (state *FirewallResourceModel) RulesAndPoliciesHaveChanges(
 		!state.InboundPolicy.Equal(plan.InboundPolicy) || !state.OutboundPolicy.Equal(plan.OutboundPolicy))
 }
 
-func (state *FirewallResourceModel) LinodesOrNodeBalancersHaveChanges(
+func (state *FirewallResourceModel) LinodesOrNodeBalancersOrInterfacesHaveChanges(
 	ctx context.Context, plan FirewallResourceModel,
 ) bool {
-	return !state.Linodes.Equal(plan.Linodes) || !state.NodeBalancers.Equal(plan.NodeBalancers)
+	return !state.Linodes.Equal(plan.Linodes) || !state.NodeBalancers.Equal(plan.NodeBalancers) || !state.Interfaces.Equal(plan.Interfaces)
 }
 
 func FlattenFirewallRules(
