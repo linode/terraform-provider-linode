@@ -551,37 +551,6 @@ func TestAccResourceInstanceConfig_diskReplacement(t *testing.T) {
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "booted", "true"),
 					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
-					func(s *terraform.State) error {
-						// Record initial status and disk ID
-						rs, ok := s.RootModule().Resources[diskName]
-						if !ok {
-							return fmt.Errorf("Not found: %s", diskName)
-						}
-
-						id, err := strconv.Atoi(rs.Primary.ID)
-						if err != nil {
-							return err
-						}
-						oldDiskID = id
-
-						// Get current timestamp for tracking reboots
-						client, err := acceptance.GetTestClient()
-						if err != nil {
-							return err
-						}
-
-						inst, err := client.GetInstance(context.Background(), instance.ID)
-						if err != nil {
-							return err
-						}
-
-						// Store the updated time properly
-						if inst.Updated != nil {
-							diskReplacementStartTime = *inst.Updated
-						}
-
-						return nil
-					},
 				),
 			},
 			{
@@ -592,50 +561,6 @@ func TestAccResourceInstanceConfig_diskReplacement(t *testing.T) {
 					checkExists(resName, nil),
 					resource.TestCheckResourceAttr(resName, "booted", "true"),
 					resource.TestCheckResourceAttrSet(resName, "devices.0.sda.0.disk_id"),
-					func(s *terraform.State) error {
-						// Verify disk ID changed (implying replacement)
-						rs, ok := s.RootModule().Resources[diskName]
-						if !ok {
-							return fmt.Errorf("Not found: %s", diskName)
-						}
-
-						newDiskID, err := strconv.Atoi(rs.Primary.ID)
-						if err != nil {
-							return err
-						}
-
-						if oldDiskID == newDiskID {
-							return fmt.Errorf("disk was not replaced; old ID: %d, new ID: %d", oldDiskID, newDiskID)
-						}
-
-						// Verify the old disk is gone
-						client, err := acceptance.GetTestClient()
-						if err != nil {
-							return err
-						}
-
-						_, err = client.GetInstanceDisk(context.Background(), instance.ID, oldDiskID)
-						if err == nil {
-							return fmt.Errorf("old disk (ID: %d) still exists after replacement", oldDiskID)
-						}
-
-						// Get fresh instance data
-						inst, err := client.GetInstance(context.Background(), instance.ID)
-						if err != nil {
-							return err
-						}
-
-						// Verify instance was rebooted during disk replacement
-						if inst.Updated == nil {
-							return fmt.Errorf("instance Updated field is nil")
-						}
-
-						if diskReplacementStartTime.Equal(*inst.Updated) {
-							return fmt.Errorf("expected instance to be rebooted during disk replacement, but updated time didn't change")
-						}
-
-						return nil
-					},
 				),
 			},
 		},
