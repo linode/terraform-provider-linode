@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
 )
 
 // LKEDataModel describes the Terraform resource data model to match the
@@ -66,6 +66,8 @@ type LKENodePool struct {
 	Nodes          []LKENodePoolNode                `tfsdk:"nodes"`
 	Autoscaler     []LKENodePoolAutoscaler          `tfsdk:"autoscaler"`
 	Taints         []lkenodepool.NodePoolTaintModel `tfsdk:"taints"`
+	K8sVersion     types.String                     `tfsdk:"k8s_version"`
+	UpdateStrategy types.String                     `tfsdk:"update_strategy"`
 }
 
 type LKENodePoolDisk struct {
@@ -125,6 +127,10 @@ func (data *LKEDataModel) parseLKEAttributes(
 			pool.Count = types.Int64Value(int64(p.Count))
 			pool.Type = types.StringValue(p.Type)
 			pool.DiskEncryption = types.StringValue(string(p.DiskEncryption))
+			pool.K8sVersion = types.StringPointerValue(p.K8sVersion)
+			if p.UpdateStrategy != nil {
+				pool.UpdateStrategy = types.StringValue(string(*p.UpdateStrategy))
+			}
 
 			tags, diags := types.ListValueFrom(ctx, types.StringType, p.Tags)
 			if diags != nil {

@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
 	k8scondition "github.com/linode/linodego/k8s/pkg/condition"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	linodediffs "github.com/linode/terraform-provider-linode/v2/linode/helper/customdiffs"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	linodediffs "github.com/linode/terraform-provider-linode/v3/linode/helper/customdiffs"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
 )
 
 const (
@@ -321,10 +321,27 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	oldPools, newPools := d.GetChange("pool")
 
+	var enterprise bool
+
+	cluster, err := client.GetLKECluster(ctx, id)
+	if err != nil {
+		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
+			log.Printf("[WARN] removing LKE Cluster ID %q from state because it no longer exists", d.Id())
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf("failed to get LKE cluster %d: %s", id, err)
+	}
+
+	if cluster.Tier == TierEnterprise {
+		enterprise = true
+	}
+
 	updates, err := ReconcileLKENodePoolSpecs(
 		ctx,
 		expandLinodeLKENodePoolSpecs(oldPools.([]any), false),
 		expandLinodeLKENodePoolSpecs(newPools.([]any), true),
+		enterprise,
 	)
 	if err != nil {
 		return diag.Errorf("Failed to reconcile LKE cluster node pools: %s", err)

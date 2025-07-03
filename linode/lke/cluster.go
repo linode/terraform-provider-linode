@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/lkenodepool"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool"
 )
 
 type NodePoolSpec struct {
@@ -25,6 +25,8 @@ type NodePoolSpec struct {
 	AutoScalerEnabled bool
 	AutoScalerMin     int
 	AutoScalerMax     int
+	K8sVersion        *string
+	UpdateStrategy    *string
 }
 
 type NodePoolUpdates struct {
@@ -34,7 +36,7 @@ type NodePoolUpdates struct {
 }
 
 func ReconcileLKENodePoolSpecs(
-	ctx context.Context, oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec,
+	ctx context.Context, oldSpecs []NodePoolSpec, newSpecs []NodePoolSpec, enterprise bool,
 ) (NodePoolUpdates, error) {
 	result := NodePoolUpdates{
 		ToCreate: make([]linodego.LKENodePoolCreateOptions, 0),
@@ -43,11 +45,19 @@ func ReconcileLKENodePoolSpecs(
 	}
 
 	createPool := func(spec NodePoolSpec) error {
+		var updateStrategy *linodego.LKENodePoolUpdateStrategy
+		if spec.UpdateStrategy != nil {
+			v := linodego.LKENodePoolUpdateStrategy(*spec.UpdateStrategy)
+			updateStrategy = &v
+		}
+
 		createOpts := linodego.LKENodePoolCreateOptions{
-			Count:  spec.Count,
-			Type:   spec.Type,
-			Tags:   spec.Tags,
-			Labels: linodego.LKENodePoolLabels(spec.Labels),
+			Count:          spec.Count,
+			Type:           spec.Type,
+			Tags:           spec.Tags,
+			Labels:         linodego.LKENodePoolLabels(spec.Labels),
+			K8sVersion:     spec.K8sVersion,
+			UpdateStrategy: updateStrategy,
 		}
 
 		if spec.Taints != nil {
@@ -122,6 +132,20 @@ func ReconcileLKENodePoolSpecs(
 		updateOpts := linodego.LKENodePoolUpdateOptions{
 			Count: newSpec.Count,
 			Tags:  &newSpecs[i].Tags,
+		}
+
+		if enterprise {
+			if newSpec.K8sVersion != nil && oldSpec.K8sVersion != nil &&
+				*newSpec.K8sVersion != *oldSpec.K8sVersion {
+
+				updateOpts.K8sVersion = linodego.Pointer(*newSpec.K8sVersion)
+			}
+
+			if newSpec.UpdateStrategy != nil && oldSpec.UpdateStrategy != nil &&
+				*newSpec.UpdateStrategy != *oldSpec.UpdateStrategy {
+
+				updateOpts.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(*newSpec.UpdateStrategy))
+			}
 		}
 
 		if !helper.CompareSets(helper.TypedSliceToAny(newSpec.Taints), helper.TypedSliceToAny(oldSpec.Taints)) {
@@ -377,6 +401,18 @@ func matchPoolsWithSchema(ctx context.Context, pools []linodego.LKENodePool, dec
 				continue
 			}
 
+			if declaredUpdateStrategy, ok := declaredPool["update_strategy"].(string); ok && declaredUpdateStrategy != "" {
+				if apiPool.UpdateStrategy == nil || declaredUpdateStrategy != string(*apiPool.UpdateStrategy) {
+					continue
+				}
+			}
+
+			if declaredK8sVersion, ok := declaredPool["k8s_version"].(string); ok && declaredK8sVersion != "" {
+				if apiPool.K8sVersion == nil || declaredK8sVersion != *apiPool.K8sVersion {
+					continue
+				}
+			}
+
 			// Pair the API pool with the declared pool
 			result[i] = apiPool
 			delete(apiPools, apiPool.ID)
@@ -426,6 +462,16 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 			continue
 		}
 
+		var k8sVersionPtr *string
+		if v, ok := specMap["k8s_version"].(string); ok && v != "" {
+			k8sVersionPtr = &v
+		}
+
+		var updateStrategyPtr *string
+		if v, ok := specMap["update_strategy"].(string); ok && v != "" {
+			updateStrategyPtr = &v
+		}
+
 		poolSpecs = append(poolSpecs, NodePoolSpec{
 			ID:                specMap["id"].(int),
 			Type:              specMap["type"].(string),
@@ -436,6 +482,8 @@ func expandLinodeLKENodePoolSpecs(pool []interface{}, preserveNoTarget bool) (po
 			AutoScalerEnabled: autoscaler.Enabled,
 			AutoScalerMin:     autoscaler.Min,
 			AutoScalerMax:     autoscaler.Max,
+			K8sVersion:        k8sVersionPtr,
+			UpdateStrategy:    updateStrategyPtr,
 		})
 	}
 	return
@@ -475,6 +523,8 @@ func flattenLKENodePools(pools []linodego.LKENodePool) []map[string]interface{} 
 			"labels":          pool.Labels,
 			"nodes":           nodes,
 			"autoscaler":      autoscaler,
+			"k8s_version":     pool.K8sVersion,
+			"update_strategy": pool.UpdateStrategy,
 		}
 	}
 	return flattened

@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
-	"github.com/linode/terraform-provider-linode/v2/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v2/linode/helper"
-	"github.com/linode/terraform-provider-linode/v2/linode/lke/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/lke/tmpl"
 )
 
 var (
@@ -728,7 +728,7 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion),
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle"),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
@@ -739,6 +739,25 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "on_recycle"),
+						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
+					),
+				},
+				{
+					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "rolling_update"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
+						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
+						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
+						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "rolling_update"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 					),
 				},
