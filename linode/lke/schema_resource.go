@@ -224,6 +224,24 @@ var resourceSchema = map[string]*schema.Schema{
 					Description: "When specified, the number of nodes autoscales within " +
 						"the defined minimum and maximum values.",
 				},
+				"k8s_version": {
+					Type: schema.TypeString,
+					Description: "The desired Kubernetes version for this pool. " +
+						"This is only available for Enterprise clusters.",
+					Computed: true,
+					Optional: true,
+				},
+				"update_strategy": {
+					Type: schema.TypeString,
+					Description: "The strategy for updating the node pool k8s version. " +
+						"For LKE enterprise only and may not currently available to all users.",
+					Computed: true,
+					Optional: true,
+					ValidateFunc: validation.StringInSlice([]string{
+						string(linodego.LKENodePoolOnRecycle),
+						string(linodego.LKENodePoolRollingUpdate),
+					}, false),
+				},
 			},
 		},
 		MinItems:    1,
