@@ -30,6 +30,8 @@ The following arguments are supported:
 
 * `longview_subscription` - (Optional) The Longview Pro tier you are currently subscribed to. The value must be a [Longview Subscription](https://techdocs.akamai.com/linode-api/reference/get-longview-subscriptions) ID or null for Longview Free.
 
+* `maintenance_policy` - (Optional) The maintenance policy for this account.
+
 ## Additional Results
 
 * `managed` - Enables monitoring for connectivity, response, and total request time.

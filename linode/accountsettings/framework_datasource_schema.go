@@ -30,5 +30,9 @@ var frameworkDataSourceSchema = schema.Schema{
 			Description: "A string describing the status of this account's Object Storage service enrollment.",
 			Computed:    true,
 		},
+		"maintenance_policy": schema.StringAttribute{
+			Description: "The Maintenance Policy for this account.",
+			Computed:    true,
+		},
 	},
 }

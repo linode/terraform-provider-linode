@@ -51,13 +51,19 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 	currLongviewPlan := longviewSettings.ID
 	currBackupsEnabled := accountSettings.BackupsEnabled
 	currNetworkHelper := accountSettings.NetworkHelper
+	currMaintenancePolicy := accountSettings.MaintenancePolicy
 
 	updatedLongviewPlan := "longview-10"
 	updatedBackupsEnabled := !currBackupsEnabled
 	updatedNetworkHelper := !currNetworkHelper
+	updatedMaintenancePolicy := "linode/power_on_off"
 
 	if currLongviewPlan == "" || currLongviewPlan == "longview-10" {
 		updatedLongviewPlan = "longview-3"
+	}
+
+	if currMaintenancePolicy == "" || currMaintenancePolicy == "linode/power_on_off" {
+		updatedLongviewPlan = "linode/migrate"
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -65,19 +71,21 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Updates(t, updatedLongviewPlan, updatedBackupsEnabled, updatedNetworkHelper),
+				Config: tmpl.Updates(t, updatedLongviewPlan, updatedBackupsEnabled, updatedNetworkHelper, updatedMaintenancePolicy),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "longview_subscription", updatedLongviewPlan),
 					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(updatedBackupsEnabled)),
 					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(updatedNetworkHelper)),
+					resource.TestCheckResourceAttr(resourceName, "maintenance_policy", updatedMaintenancePolicy),
 				),
 			},
 			{
-				Config: tmpl.Updates(t, currLongviewPlan, currBackupsEnabled, currNetworkHelper),
+				Config: tmpl.Updates(t, currLongviewPlan, currBackupsEnabled, currNetworkHelper, currMaintenancePolicy),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "longview_subscription", currLongviewPlan),
 					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(currBackupsEnabled)),
 					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(currNetworkHelper)),
+					resource.TestCheckResourceAttr(resourceName, "maintenance_policy", currMaintenancePolicy),
 				),
 			},
 		},

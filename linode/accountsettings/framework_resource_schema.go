@@ -55,5 +55,13 @@ var frameworkResourceSchema = schema.Schema{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
+		"maintenance_policy": schema.StringAttribute{
+			Description: "The Maintenance Policy for this account.",
+			Computed:    true,
+			Optional:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
 	},
 }
