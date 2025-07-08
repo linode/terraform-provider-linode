@@ -1,40 +1,41 @@
 version: "2"
 run:
-  tests: false
+  tests: true
+
 linters:
+  default: standard
   settings:
     dupl:
       threshold: 100
     errcheck:
       exclude-functions:
         - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
-        - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).SetNewComputed
     gomoddirectives:
       replace-allow-list:
         - github.com/linode/linodego
-    govet:
-      disable:
-        - shadow
-    revive:
-      rules:
-        - name: unused-parameter
-          severity: warning
-          disabled: true
   exclusions:
-    generated: lax
+    generated: strict
     presets:
       - comments
       - common-false-positives
       - legacy
       - std-error-handling
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+    rules:
+      # disable deprecation checks
+      - linters:
+          - staticcheck
+        text: "SA1019:"
+
+      # disable error message checks
+      - linters:
+          - staticcheck
+        text: "ST1005:"
 formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
   exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+    generated: strict
