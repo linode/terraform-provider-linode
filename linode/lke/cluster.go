@@ -161,7 +161,7 @@ func ReconcileLKENodePoolSpecs(
 		}
 
 		if !reflect.DeepEqual(newSpec.Labels, oldSpec.Labels) &&
-			!(len(newSpec.Labels) == 0 && len(oldSpec.Labels) == 0) {
+			(len(newSpec.Labels) != 0 || len(oldSpec.Labels) != 0) {
 			labels := linodego.LKENodePoolLabels(newSpecs[i].Labels)
 			updateOpts.Labels = &labels
 		}
@@ -429,7 +429,7 @@ func matchPoolsWithSchema(
 			// - Length comparison is for handling the case of nil vs empty slice
 			// - Converting `apiPool.Labels` back to original (non-alias) type to make `reflect.DeepEqual` to really compare them
 			if !reflect.DeepEqual(declaredLabels, map[string]string(apiPool.Labels)) &&
-				!(len(declaredLabels) == 0 && len(apiPool.Labels) == 0) {
+				(len(declaredLabels) != 0 || len(apiPool.Labels) != 0) {
 				continue
 			}
 

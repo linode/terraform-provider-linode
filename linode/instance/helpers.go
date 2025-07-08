@@ -1303,7 +1303,7 @@ func validateBooted(ctx context.Context, d *schema.ResourceData) error {
 	_, disksOk := d.GetOk("disk")
 	_, configsOk := d.GetOk("config")
 
-	if !bootedNull && booted && !imageOk && !(disksOk && configsOk) {
+	if !bootedNull && booted && !imageOk && (!disksOk || !configsOk) {
 		return fmt.Errorf("booted requires an image or disk/config be defined")
 	}
 

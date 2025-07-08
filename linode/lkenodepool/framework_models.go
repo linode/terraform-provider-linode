@@ -236,7 +236,7 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 
 	shouldUpdate = shouldUpdate || asNeedsUpdate
 
-	if !(len(state.Taints) == 0 && len(pool.Taints) == 0) {
+	if len(state.Taints) != 0 || len(pool.Taints) != 0 {
 		taints := pool.getLKENodePoolTaints()
 		p.Taints = &taints
 		shouldUpdate = true
