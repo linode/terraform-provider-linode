@@ -39,7 +39,11 @@ func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "images.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.label", imageName),
-					resource.TestCheckResourceAttr(resourceName, "images.0.description", "descriptive text"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"images.0.description",
+						"descriptive text",
+					),
 					resource.TestCheckResourceAttr(resourceName, "images.0.is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.type", "manual"),
 					acceptance.CheckListContains(resourceName, "images.0.tags", "test"),
@@ -51,7 +55,11 @@ func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.total_size"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.replications.#"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.label", imageName),
-					resource.TestCheckResourceAttr(resourceName, "images.1.description", "descriptive text"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"images.1.description",
+						"descriptive text",
+					),
 					resource.TestCheckResourceAttr(resourceName, "images.1.is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "images.1.type", "manual"),
 					acceptance.CheckListContains(resourceName, "images.1.tags", "test"),
@@ -71,7 +79,11 @@ func TestAccDataSourceImages_basic_smoke(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "images.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.label", imageName),
-					resource.TestCheckResourceAttr(resourceName, "images.0.description", "descriptive text"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"images.0.description",
+						"descriptive text",
+					),
 					resource.TestCheckResourceAttr(resourceName, "images.0.is_public", "false"),
 					resource.TestCheckResourceAttr(resourceName, "images.0.type", "manual"),
 					resource.TestCheckResourceAttrSet(resourceName, "images.0.created"),

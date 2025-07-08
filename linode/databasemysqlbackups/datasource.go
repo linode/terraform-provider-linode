@@ -17,7 +17,11 @@ func DataSource() *schema.Resource {
 	}
 }
 
-func readDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readDataSource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	results, err := filterConfig.FilterDataSource(ctx, d, meta, listBackups, flattenBackup)
 	if err != nil {
 		return nil

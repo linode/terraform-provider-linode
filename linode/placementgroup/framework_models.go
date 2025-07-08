@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
@@ -80,7 +79,9 @@ func (m *PlacementGroupMemberModel) FlattenMember(member linodego.PlacementGroup
 	m.IsCompliant = types.BoolValue(member.IsCompliant)
 }
 
-func (m *PlacementGroupMigrationModel) FlattenMigrations(migrations linodego.PlacementGroupMigrations) {
+func (m *PlacementGroupMigrationModel) FlattenMigrations(
+	migrations linodego.PlacementGroupMigrations,
+) {
 	inbound := make([]PlacementGroupMigrationInstanceModel, len(migrations.Inbound))
 	outbound := make([]PlacementGroupMigrationInstanceModel, len(migrations.Outbound))
 
@@ -100,7 +101,9 @@ func (m *PlacementGroupMigrationModel) FlattenMigrations(migrations linodego.Pla
 	m.Outbound = outbound
 }
 
-func (m *PlacementGroupMigrationInstanceModel) FlattenMigrationInstance(migrationInstance linodego.PlacementGroupMigrationInstance) {
+func (m *PlacementGroupMigrationInstanceModel) FlattenMigrationInstance(
+	migrationInstance linodego.PlacementGroupMigrationInstance,
+) {
 	m.LinodeID = types.Int64Value(int64(migrationInstance.LinodeID))
 }
 
@@ -113,8 +116,16 @@ func (m *PlacementGroupResourceModel) FlattenPlacementGroup(
 
 	m.Label = helper.KeepOrUpdateString(m.Label, pg.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateString(m.Region, pg.Region, preserveKnown)
-	m.PlacementGroupType = helper.KeepOrUpdateString(m.PlacementGroupType, string(pg.PlacementGroupType), preserveKnown)
-	m.PlacementGroupPolicy = helper.KeepOrUpdateString(m.PlacementGroupPolicy, string(pg.PlacementGroupPolicy), preserveKnown)
+	m.PlacementGroupType = helper.KeepOrUpdateString(
+		m.PlacementGroupType,
+		string(pg.PlacementGroupType),
+		preserveKnown,
+	)
+	m.PlacementGroupPolicy = helper.KeepOrUpdateString(
+		m.PlacementGroupPolicy,
+		string(pg.PlacementGroupPolicy),
+		preserveKnown,
+	)
 	m.IsCompliant = helper.KeepOrUpdateBool(m.IsCompliant, pg.IsCompliant, preserveKnown)
 
 	members := make([]PlacementGroupMemberModel, len(pg.Members))
@@ -134,13 +145,24 @@ func (m *PlacementGroupResourceModel) FlattenPlacementGroup(
 	return
 }
 
-func (m *PlacementGroupResourceModel) CopyFrom(other PlacementGroupResourceModel, preserveKnown bool) {
+func (m *PlacementGroupResourceModel) CopyFrom(
+	other PlacementGroupResourceModel,
+	preserveKnown bool,
+) {
 	m.ID = helper.KeepOrUpdateValue(m.ID, other.ID, preserveKnown)
 
 	m.Label = helper.KeepOrUpdateValue(m.Label, other.Label, preserveKnown)
 	m.Region = helper.KeepOrUpdateValue(m.Region, other.Region, preserveKnown)
-	m.PlacementGroupType = helper.KeepOrUpdateValue(m.PlacementGroupType, other.PlacementGroupType, preserveKnown)
-	m.PlacementGroupPolicy = helper.KeepOrUpdateValue(m.PlacementGroupPolicy, other.PlacementGroupPolicy, preserveKnown)
+	m.PlacementGroupType = helper.KeepOrUpdateValue(
+		m.PlacementGroupType,
+		other.PlacementGroupType,
+		preserveKnown,
+	)
+	m.PlacementGroupPolicy = helper.KeepOrUpdateValue(
+		m.PlacementGroupPolicy,
+		other.PlacementGroupPolicy,
+		preserveKnown,
+	)
 	m.IsCompliant = helper.KeepOrUpdateValue(m.IsCompliant, other.IsCompliant, preserveKnown)
 
 	m.Members = other.Members

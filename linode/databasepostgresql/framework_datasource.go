@@ -69,7 +69,11 @@ func (d *DataSource) Read(
 	cert, err := client.GetPostgresDatabaseSSL(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get cert for the specified PostgreSQL database with ID %d: ", id), err.Error(),
+			fmt.Sprintf(
+				"Failed to get cert for the specified PostgreSQL database with ID %d: ",
+				id,
+			),
+			err.Error(),
 		)
 		return
 	}
@@ -77,7 +81,11 @@ func (d *DataSource) Read(
 	cred, err := client.GetPostgresDatabaseCredentials(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to get credentials for PostgreSQL database with ID %d: ", id), err.Error(),
+			fmt.Sprintf(
+				"Failed to get credentials for PostgreSQL database with ID %d: ",
+				id,
+			),
+			err.Error(),
 		)
 		return
 	}

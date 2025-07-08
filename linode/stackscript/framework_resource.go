@@ -38,7 +38,11 @@ func (r *Resource) UpgradeState(context.Context) map[int64]resource.StateUpgrade
 	}
 }
 
-func upgradeStackScriptStateV0toV1(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+func upgradeStackScriptStateV0toV1(
+	ctx context.Context,
+	req resource.UpgradeStateRequest,
+	resp *resource.UpgradeStateResponse,
+) {
 	var stateV0 StackScriptModelV0
 	var stateV1 StackScriptModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &stateV0)...)

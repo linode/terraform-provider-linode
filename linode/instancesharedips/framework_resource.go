@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -210,7 +209,11 @@ func (r *Resource) Delete(
 	}
 }
 
-func GetSharedIPsForLinode(ctx context.Context, client *linodego.Client, linodeID int) ([]string, error) {
+func GetSharedIPsForLinode(
+	ctx context.Context,
+	client *linodego.Client,
+	linodeID int,
+) ([]string, error) {
 	tflog.Debug(ctx, "Enter GetSharedIPsForLinode")
 
 	networking, err := client.GetInstanceIPAddresses(ctx, linodeID)

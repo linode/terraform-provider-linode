@@ -34,8 +34,14 @@ func TestAccDataSourceInstanceTypes_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.accelerated_devices"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(resourceName, "types.0.price.0.monthly"),
-					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.hourly"),
-					resource.TestCheckResourceAttrSet(resourceName, "types.0.addons.0.backups.0.price.0.monthly"),
+					resource.TestCheckResourceAttrSet(
+						resourceName,
+						"types.0.addons.0.backups.0.price.0.hourly",
+					),
+					resource.TestCheckResourceAttrSet(
+						resourceName,
+						"types.0.addons.0.backups.0.price.0.monthly",
+					),
 				),
 			},
 		},
@@ -75,7 +81,11 @@ func TestAccDataSourceInstanceTypes_regex(t *testing.T) {
 				Config: tmpl.DataRegex(t),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "types.#", 1),
-					acceptance.CheckResourceAttrContains(resourceName, "types.0.label", "Dedicated"),
+					acceptance.CheckResourceAttrContains(
+						resourceName,
+						"types.0.label",
+						"Dedicated",
+					),
 				),
 			},
 		},

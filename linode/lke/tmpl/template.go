@@ -55,13 +55,19 @@ func Autoscaler(t testing.TB, name, version, region string) string {
 }
 
 func AutoscalerUpdates(t testing.TB, name, version, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_autoscaler_updates", TemplateData{Label: name, K8sVersion: version, Region: region})
+	return acceptance.ExecuteTemplate(
+		t,
+		"lke_cluster_autoscaler_updates",
+		TemplateData{Label: name, K8sVersion: version, Region: region},
+	)
 }
 
 func AutoscalerManyPools(t testing.TB, name, version, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_autoscaler_many_pools", TemplateData{Label: name, K8sVersion: version, Region: region})
+	return acceptance.ExecuteTemplate(
+		t,
+		"lke_cluster_autoscaler_many_pools",
+		TemplateData{Label: name, K8sVersion: version, Region: region},
+	)
 }
 
 func ControlPlane(t testing.TB, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
@@ -96,8 +102,16 @@ func AutoscalerNoCount(t testing.TB, name, version, region string) string {
 }
 
 func Enterprise(t testing.TB, name, version, region, updateStrategy string) string {
-	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
+	return acceptance.ExecuteTemplate(
+		t,
+		"lke_cluster_enterprise",
+		TemplateData{
+			Label:          name,
+			K8sVersion:     version,
+			Region:         region,
+			UpdateStrategy: updateStrategy,
+		},
+	)
 }
 
 func DataBasic(t testing.TB, name, version, region string) string {
@@ -106,16 +120,31 @@ func DataBasic(t testing.TB, name, version, region string) string {
 }
 
 func DataEnterprise(t testing.TB, name, version, region, updateStrategy string) string {
-	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_data_enterprise", TemplateData{Label: name, K8sVersion: version, Region: region, UpdateStrategy: updateStrategy})
+	return acceptance.ExecuteTemplate(
+		t,
+		"lke_cluster_data_enterprise",
+		TemplateData{
+			Label:          name,
+			K8sVersion:     version,
+			Region:         region,
+			UpdateStrategy: updateStrategy,
+		},
+	)
 }
 
 func DataAutoscaler(t testing.TB, name, version, region string) string {
-	return acceptance.ExecuteTemplate(t,
-		"lke_cluster_data_autoscaler", TemplateData{Label: name, K8sVersion: version, Region: region})
+	return acceptance.ExecuteTemplate(
+		t,
+		"lke_cluster_data_autoscaler",
+		TemplateData{Label: name, K8sVersion: version, Region: region},
+	)
 }
 
-func DataControlPlane(t testing.TB, name, version, region, ipv4, ipv6 string, ha, enabled bool) string {
+func DataControlPlane(
+	t testing.TB,
+	name, version, region, ipv4, ipv6 string,
+	ha, enabled bool,
+) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_control_plane", TemplateData{
 			Label:            name,
@@ -128,7 +157,12 @@ func DataControlPlane(t testing.TB, name, version, region, ipv4, ipv6 string, ha
 		})
 }
 
-func DataTaintsLabels(t testing.TB, name, version, region string, taints []TaintData, labels map[string]string) string {
+func DataTaintsLabels(
+	t testing.TB,
+	name, version, region string,
+	taints []TaintData,
+	labels map[string]string,
+) string {
 	return acceptance.ExecuteTemplate(t,
 		"lke_cluster_data_taints_labels", TemplateData{
 			Label:      name,

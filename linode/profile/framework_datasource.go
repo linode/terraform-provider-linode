@@ -29,7 +29,10 @@ type DataSource struct {
 	helper.BaseDataSource
 }
 
-func (data *DataSourceModel) parseProfile(ctx context.Context, profile *linodego.Profile) diag.Diagnostics {
+func (data *DataSourceModel) parseProfile(
+	ctx context.Context,
+	profile *linodego.Profile,
+) diag.Diagnostics {
 	data.Email = types.StringValue(profile.Email)
 	data.Timezone = types.StringValue(profile.Timezone)
 	data.EmailNotifications = types.BoolValue(profile.EmailNotifications)

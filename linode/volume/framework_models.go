@@ -81,7 +81,10 @@ type VolumeResourceModel struct {
 	Encryption     types.String   `tfsdk:"encryption"`
 }
 
-func (data *VolumeResourceModel) FlattenVolume(volume *linodego.Volume, preserveKnown bool) diag.Diagnostics {
+func (data *VolumeResourceModel) FlattenVolume(
+	volume *linodego.Volume,
+	preserveKnown bool,
+) diag.Diagnostics {
 	var diags diag.Diagnostics
 	if volume == nil {
 		diags.AddError(
@@ -102,7 +105,11 @@ func (data *VolumeResourceModel) FlattenVolume(volume *linodego.Volume, preserve
 		data.LinodeID, helper.IntPointerValueWithDefault(volume.LinodeID), preserveKnown,
 	)
 
-	data.FilesystemPath = helper.KeepOrUpdateString(data.FilesystemPath, volume.FilesystemPath, preserveKnown)
+	data.FilesystemPath = helper.KeepOrUpdateString(
+		data.FilesystemPath,
+		volume.FilesystemPath,
+		preserveKnown,
+	)
 
 	tagValues := make([]attr.Value, len(volume.Tags))
 	for i, tag := range volume.Tags {
@@ -123,14 +130,22 @@ func (data *VolumeResourceModel) FlattenVolume(volume *linodego.Volume, preserve
 }
 
 func (data *VolumeResourceModel) CopyFrom(other VolumeResourceModel, preserveKnown bool) {
-	data.SourceVolumeID = helper.KeepOrUpdateValue(data.SourceVolumeID, other.SourceVolumeID, preserveKnown)
+	data.SourceVolumeID = helper.KeepOrUpdateValue(
+		data.SourceVolumeID,
+		other.SourceVolumeID,
+		preserveKnown,
+	)
 	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
 	data.Region = helper.KeepOrUpdateValue(data.Region, other.Region, preserveKnown)
 	data.Encryption = helper.KeepOrUpdateValue(data.Encryption, other.Encryption, preserveKnown)
 	data.Size = helper.KeepOrUpdateValue(data.Size, other.Size, preserveKnown)
 	data.LinodeID = helper.KeepOrUpdateValue(data.LinodeID, other.LinodeID, preserveKnown)
-	data.FilesystemPath = helper.KeepOrUpdateValue(data.FilesystemPath, other.FilesystemPath, preserveKnown)
+	data.FilesystemPath = helper.KeepOrUpdateValue(
+		data.FilesystemPath,
+		other.FilesystemPath,
+		preserveKnown,
+	)
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
 	data.Timeouts = helper.KeepOrUpdateValue(data.Timeouts, other.Timeouts, preserveKnown)

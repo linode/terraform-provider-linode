@@ -23,19 +23,25 @@ const (
 		"an equivalent region or from a region to an equivalent cluster"
 )
 
-func requireReplacementIfClusterOrRegionSemanticallyChanged(ctx context.Context, sr planmodifier.StringRequest, rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+func requireReplacementIfClusterOrRegionSemanticallyChanged(
+	ctx context.Context,
+	sr planmodifier.StringRequest,
+	rrifr *stringplanmodifier.RequiresReplaceIfFuncResponse,
+) {
 	var regionPlan, clusterPlan, regionState, clusterState types.String
 	sr.Plan.GetAttribute(ctx, path.Root("cluster"), &clusterPlan)
 	sr.Plan.GetAttribute(ctx, path.Root("region"), &regionPlan)
 	sr.State.GetAttribute(ctx, path.Root("cluster"), &clusterState)
 	sr.State.GetAttribute(ctx, path.Root("region"), &regionState)
 
-	if !regionState.IsNull() && regionPlan.IsNull() && !clusterPlan.IsNull() && strings.HasPrefix(clusterPlan.ValueString(), regionState.ValueString()) {
+	if !regionState.IsNull() && regionPlan.IsNull() && !clusterPlan.IsNull() &&
+		strings.HasPrefix(clusterPlan.ValueString(), regionState.ValueString()) {
 		// the region changed to an equivalent cluster
 		return
 	}
 
-	if !clusterState.IsNull() && clusterPlan.IsNull() && !regionPlan.IsNull() && strings.HasPrefix(clusterState.ValueString(), regionPlan.ValueString()) {
+	if !clusterState.IsNull() && clusterPlan.IsNull() && !regionPlan.IsNull() &&
+		strings.HasPrefix(clusterState.ValueString(), regionPlan.ValueString()) {
 		// the cluster changed to an equivalent region
 		return
 	}

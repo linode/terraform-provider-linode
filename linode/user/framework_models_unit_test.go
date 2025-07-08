@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 )
@@ -146,14 +145,38 @@ func TestParseUserGrants(t *testing.T) {
 	diags := dataModel.ParseUserGrants(context.Background(), &userGrantsData)
 
 	assert.False(t, diags.HasError())
-	assert.Contains(t, dataModel.DatabaseGrant.String(), strconv.Itoa(userGrantsData.Database[0].ID))
-	assert.Contains(t, dataModel.FirewallGrant.String(), strconv.Itoa(userGrantsData.Firewall[0].ID))
+	assert.Contains(
+		t,
+		dataModel.DatabaseGrant.String(),
+		strconv.Itoa(userGrantsData.Database[0].ID),
+	)
+	assert.Contains(
+		t,
+		dataModel.FirewallGrant.String(),
+		strconv.Itoa(userGrantsData.Firewall[0].ID),
+	)
 	assert.Contains(t, dataModel.ImageGrant.String(), strconv.Itoa(userGrantsData.Image[0].ID))
 	assert.Contains(t, dataModel.LinodeGrant.String(), strconv.Itoa(userGrantsData.Linode[0].ID))
-	assert.Contains(t, dataModel.LongviewGrant.String(), strconv.Itoa(userGrantsData.Longview[0].ID))
-	assert.Contains(t, dataModel.NodebalancerGrant.String(), strconv.Itoa(userGrantsData.NodeBalancer[0].ID))
-	assert.Contains(t, dataModel.PlacementGroupGrant.String(), strconv.Itoa(userGrantsData.PlacementGroup[0].ID))
-	assert.Contains(t, dataModel.StackscriptGrant.String(), strconv.Itoa(userGrantsData.StackScript[0].ID))
+	assert.Contains(
+		t,
+		dataModel.LongviewGrant.String(),
+		strconv.Itoa(userGrantsData.Longview[0].ID),
+	)
+	assert.Contains(
+		t,
+		dataModel.NodebalancerGrant.String(),
+		strconv.Itoa(userGrantsData.NodeBalancer[0].ID),
+	)
+	assert.Contains(
+		t,
+		dataModel.PlacementGroupGrant.String(),
+		strconv.Itoa(userGrantsData.PlacementGroup[0].ID),
+	)
+	assert.Contains(
+		t,
+		dataModel.StackscriptGrant.String(),
+		strconv.Itoa(userGrantsData.StackScript[0].ID),
+	)
 	assert.Contains(t, dataModel.VolumeGrant.String(), strconv.Itoa(userGrantsData.Volume[0].ID))
 	assert.Contains(t, dataModel.VPCGrant.String(), strconv.Itoa(userGrantsData.VPC[0].ID))
 

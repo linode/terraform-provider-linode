@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -23,7 +22,12 @@ func main() {
 
 	var debug bool
 
-	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	flag.BoolVar(
+		&debug,
+		"debug",
+		false,
+		"set to true to run the provider with support for debuggers like delve",
+	)
 	flag.Parse()
 
 	upgradedSDKProvider, err := tf5to6server.UpgradeServer(

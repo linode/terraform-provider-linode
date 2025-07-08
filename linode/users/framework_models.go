@@ -38,7 +38,10 @@ func (data *UserFilterModel) parseUsers(
 			grants, err := client.GetUserGrants(ctx, userModel.Username.ValueString())
 			if err != nil {
 				diags.AddError(
-					fmt.Sprintf("Failed to get User Grants (%s): ", userModel.Username.ValueString()),
+					fmt.Sprintf(
+						"Failed to get User Grants (%s): ",
+						userModel.Username.ValueString(),
+					),
 					err.Error(),
 				)
 				return diags

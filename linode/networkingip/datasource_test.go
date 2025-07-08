@@ -43,15 +43,38 @@ func TestAccDataSourceNetworkingIP_basic(t *testing.T) {
 			{
 				Config: tmpl.DataBasic(t, label, testRegion),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(dataResourceName, "address", resourceName, "ip_address"),
-					resource.TestCheckResourceAttrPair(dataResourceName, "linode_id", resourceName, "id"),
-					resource.TestCheckResourceAttrPair(dataResourceName, "region", resourceName, "region"),
-					resource.TestMatchResourceAttr(dataResourceName, "gateway", regexp.MustCompile(`\.1$`)),
+					resource.TestCheckResourceAttrPair(
+						dataResourceName,
+						"address",
+						resourceName,
+						"ip_address",
+					),
+					resource.TestCheckResourceAttrPair(
+						dataResourceName,
+						"linode_id",
+						resourceName,
+						"id",
+					),
+					resource.TestCheckResourceAttrPair(
+						dataResourceName,
+						"region",
+						resourceName,
+						"region",
+					),
+					resource.TestMatchResourceAttr(
+						dataResourceName,
+						"gateway",
+						regexp.MustCompile(`\.1$`),
+					),
 					resource.TestCheckResourceAttr(dataResourceName, "type", "ipv4"),
 					resource.TestCheckResourceAttr(dataResourceName, "public", "true"),
 					resource.TestCheckResourceAttrSet(dataResourceName, "reserved"),
 					resource.TestCheckResourceAttr(dataResourceName, "prefix", "24"),
-					resource.TestMatchResourceAttr(dataResourceName, "rdns", regexp.MustCompile(`.ip.linodeusercontent.com$`)),
+					resource.TestMatchResourceAttr(
+						dataResourceName,
+						"rdns",
+						regexp.MustCompile(`.ip.linodeusercontent.com$`),
+					),
 					resource.TestCheckNoResourceAttr(resourceName, "vpc_nat_1_1"),
 				),
 			},

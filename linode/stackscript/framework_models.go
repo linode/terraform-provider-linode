@@ -114,13 +114,29 @@ func (data *StackScriptModel) CopyFrom(other StackScriptModel, preserveKnown boo
 	data.RevNote = helper.KeepOrUpdateValue(data.RevNote, other.RevNote, preserveKnown)
 	data.IsPublic = helper.KeepOrUpdateValue(data.IsPublic, other.IsPublic, preserveKnown)
 	data.Images = helper.KeepOrUpdateValue(data.Images, other.Images, preserveKnown)
-	data.DeploymentsActive = helper.KeepOrUpdateValue(data.DeploymentsActive, other.DeploymentsActive, preserveKnown)
-	data.UserGravatarID = helper.KeepOrUpdateValue(data.UserGravatarID, other.UserGravatarID, preserveKnown)
-	data.DeploymentsTotal = helper.KeepOrUpdateValue(data.DeploymentsTotal, other.DeploymentsTotal, preserveKnown)
+	data.DeploymentsActive = helper.KeepOrUpdateValue(
+		data.DeploymentsActive,
+		other.DeploymentsActive,
+		preserveKnown,
+	)
+	data.UserGravatarID = helper.KeepOrUpdateValue(
+		data.UserGravatarID,
+		other.UserGravatarID,
+		preserveKnown,
+	)
+	data.DeploymentsTotal = helper.KeepOrUpdateValue(
+		data.DeploymentsTotal,
+		other.DeploymentsTotal,
+		preserveKnown,
+	)
 	data.Username = helper.KeepOrUpdateValue(data.Username, other.Username, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
 	data.Updated = helper.KeepOrUpdateValue(data.Updated, other.Updated, preserveKnown)
-	data.UserDefinedFields = helper.KeepOrUpdateValue(data.UserDefinedFields, other.UserDefinedFields, preserveKnown)
+	data.UserDefinedFields = helper.KeepOrUpdateValue(
+		data.UserDefinedFields,
+		other.UserDefinedFields,
+		preserveKnown,
+	)
 }
 
 // flattenUserDefinedFields flattens a list of linodego UDF objects into a types.List

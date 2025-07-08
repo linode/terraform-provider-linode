@@ -24,7 +24,11 @@ func TestAccDataSourceLKETypes_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "types.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "types.0.id", "lke-sa"),
-					resource.TestCheckResourceAttr(dataSourceName, "types.0.label", "LKE Standard Availability"),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"types.0.label",
+						"LKE Standard Availability",
+					),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.transfer"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.hourly"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "types.0.price.0.monthly"),

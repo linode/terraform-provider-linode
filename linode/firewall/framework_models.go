@@ -67,7 +67,10 @@ type DeviceModel struct {
 	URL      types.String `tfsdk:"url"`
 }
 
-func (data *RuleModel) Expands(ctx context.Context, diags *diag.Diagnostics) (rule linodego.FirewallRule) {
+func (data *RuleModel) Expands(
+	ctx context.Context,
+	diags *diag.Diagnostics,
+) (rule linodego.FirewallRule) {
 	rule.Action = data.Action.ValueString()
 	rule.Label = data.Label.ValueString()
 	rule.Ports = data.Ports.ValueString()
@@ -89,7 +92,11 @@ func (data *RuleModel) Expands(ctx context.Context, diags *diag.Diagnostics) (ru
 	return
 }
 
-func ExpandFirewallRules(ctx context.Context, rulesList []RuleModel, diags *diag.Diagnostics) []linodego.FirewallRule {
+func ExpandFirewallRules(
+	ctx context.Context,
+	rulesList []RuleModel,
+	diags *diag.Diagnostics,
+) []linodego.FirewallRule {
 	result := make([]linodego.FirewallRule, len(rulesList))
 	for i, v := range rulesList {
 		result[i] = v.Expands(ctx, diags)
@@ -180,12 +187,22 @@ func (data *FirewallResourceModel) flattenDevices(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	data.Linodes = helper.KeepOrUpdateIntSet(data.Linodes, AggregateEntityIDs(devices, linodego.FirewallDeviceLinode), preserveKnown, diags)
+	data.Linodes = helper.KeepOrUpdateIntSet(
+		data.Linodes,
+		AggregateEntityIDs(devices, linodego.FirewallDeviceLinode),
+		preserveKnown,
+		diags,
+	)
 	if diags.HasError() {
 		return
 	}
 
-	data.NodeBalancers = helper.KeepOrUpdateIntSet(data.NodeBalancers, AggregateEntityIDs(devices, linodego.FirewallDeviceNodeBalancer), preserveKnown, diags)
+	data.NodeBalancers = helper.KeepOrUpdateIntSet(
+		data.NodeBalancers,
+		AggregateEntityIDs(devices, linodego.FirewallDeviceNodeBalancer),
+		preserveKnown,
+		diags,
+	)
 	if diags.HasError() {
 		return
 	}
@@ -206,7 +223,12 @@ func (data *FirewallResourceModel) flattenRules(
 	preserveKnown bool,
 	diags *diag.Diagnostics,
 ) {
-	inboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Inbound, data.Inbound, preserveKnown)
+	inboundRules, newDiags := FlattenFirewallRules(
+		ctx,
+		ruleSet.Inbound,
+		data.Inbound,
+		preserveKnown,
+	)
 	diags.Append(newDiags...)
 	if diags.HasError() {
 		return
@@ -214,7 +236,12 @@ func (data *FirewallResourceModel) flattenRules(
 
 	data.Inbound = inboundRules
 
-	outboundRules, newDiags := FlattenFirewallRules(ctx, ruleSet.Outbound, data.Outbound, preserveKnown)
+	outboundRules, newDiags := FlattenFirewallRules(
+		ctx,
+		ruleSet.Outbound,
+		data.Outbound,
+		preserveKnown,
+	)
 	diags.Append(newDiags...)
 	if diags.HasError() {
 		return
@@ -237,12 +264,28 @@ func (data *FirewallResourceModel) flattenFirewallForResource(
 
 	data.Disabled = helper.KeepOrUpdateBool(data.Disabled, isDisabled(*firewall), preserveKnown)
 
-	data.InboundPolicy = helper.KeepOrUpdateString(data.InboundPolicy, firewall.Rules.InboundPolicy, preserveKnown)
-	data.OutboundPolicy = helper.KeepOrUpdateString(data.OutboundPolicy, firewall.Rules.OutboundPolicy, preserveKnown)
+	data.InboundPolicy = helper.KeepOrUpdateString(
+		data.InboundPolicy,
+		firewall.Rules.InboundPolicy,
+		preserveKnown,
+	)
+	data.OutboundPolicy = helper.KeepOrUpdateString(
+		data.OutboundPolicy,
+		firewall.Rules.OutboundPolicy,
+		preserveKnown,
+	)
 
 	data.Status = helper.KeepOrUpdateString(data.Status, string(firewall.Status), preserveKnown)
-	data.Created = helper.KeepOrUpdateValue(data.Created, timetypes.NewRFC3339TimePointerValue(firewall.Created), preserveKnown)
-	data.Updated = helper.KeepOrUpdateValue(data.Updated, timetypes.NewRFC3339TimePointerValue(firewall.Updated), preserveKnown)
+	data.Created = helper.KeepOrUpdateValue(
+		data.Created,
+		timetypes.NewRFC3339TimePointerValue(firewall.Created),
+		preserveKnown,
+	)
+	data.Updated = helper.KeepOrUpdateValue(
+		data.Updated,
+		timetypes.NewRFC3339TimePointerValue(firewall.Updated),
+		preserveKnown,
+	)
 }
 
 func (data *FirewallDataSourceModel) flattenFirewallForDataSource(
@@ -315,10 +358,22 @@ func (data *FirewallResourceModel) CopyFrom(
 	data.Label = helper.KeepOrUpdateValue(data.Label, other.Label, preserveKnown)
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.Disabled = helper.KeepOrUpdateValue(data.Disabled, other.Disabled, preserveKnown)
-	data.InboundPolicy = helper.KeepOrUpdateValue(data.InboundPolicy, other.InboundPolicy, preserveKnown)
-	data.OutboundPolicy = helper.KeepOrUpdateValue(data.OutboundPolicy, other.OutboundPolicy, preserveKnown)
+	data.InboundPolicy = helper.KeepOrUpdateValue(
+		data.InboundPolicy,
+		other.InboundPolicy,
+		preserveKnown,
+	)
+	data.OutboundPolicy = helper.KeepOrUpdateValue(
+		data.OutboundPolicy,
+		other.OutboundPolicy,
+		preserveKnown,
+	)
 	data.Linodes = helper.KeepOrUpdateValue(data.Linodes, other.Linodes, preserveKnown)
-	data.NodeBalancers = helper.KeepOrUpdateValue(data.NodeBalancers, other.NodeBalancers, preserveKnown)
+	data.NodeBalancers = helper.KeepOrUpdateValue(
+		data.NodeBalancers,
+		other.NodeBalancers,
+		preserveKnown,
+	)
 	data.Devices = helper.KeepOrUpdateValue(data.Devices, other.Devices, preserveKnown)
 	data.Status = helper.KeepOrUpdateValue(data.Status, other.Status, preserveKnown)
 	data.Created = helper.KeepOrUpdateValue(data.Created, other.Created, preserveKnown)
@@ -378,13 +433,33 @@ func FlattenFirewallRules(
 			break
 		}
 
-		knownRules[i].Action = helper.KeepOrUpdateString(knownRules[i].Action, rules[i].Action, preserveKnown)
-		knownRules[i].Label = helper.KeepOrUpdateString(knownRules[i].Label, rules[i].Label, preserveKnown)
-		knownRules[i].Protocol = helper.KeepOrUpdateString(knownRules[i].Protocol, string(rules[i].Protocol), preserveKnown)
-		knownRules[i].Description = helper.KeepOrUpdateString(knownRules[i].Description, rules[i].Description, preserveKnown)
+		knownRules[i].Action = helper.KeepOrUpdateString(
+			knownRules[i].Action,
+			rules[i].Action,
+			preserveKnown,
+		)
+		knownRules[i].Label = helper.KeepOrUpdateString(
+			knownRules[i].Label,
+			rules[i].Label,
+			preserveKnown,
+		)
+		knownRules[i].Protocol = helper.KeepOrUpdateString(
+			knownRules[i].Protocol,
+			string(rules[i].Protocol),
+			preserveKnown,
+		)
+		knownRules[i].Description = helper.KeepOrUpdateString(
+			knownRules[i].Description,
+			rules[i].Description,
+			preserveKnown,
+		)
 
 		if rules[i].Ports == "" {
-			knownRules[i].Ports = helper.KeepOrUpdateValue(knownRules[i].Ports, types.StringNull(), preserveKnown)
+			knownRules[i].Ports = helper.KeepOrUpdateValue(
+				knownRules[i].Ports,
+				types.StringNull(),
+				preserveKnown,
+			)
 		} else {
 			knownRules[i].Ports = helper.KeepOrUpdateString(knownRules[i].Ports, rules[i].Ports, preserveKnown)
 		}
@@ -406,7 +481,10 @@ func FlattenFirewallRules(
 	return knownRules, nil
 }
 
-func AggregateEntityIDs(devices []linodego.FirewallDevice, entityType linodego.FirewallDeviceType) []int {
+func AggregateEntityIDs(
+	devices []linodego.FirewallDevice,
+	entityType linodego.FirewallDeviceType,
+) []int {
 	results := make([]int, 0, len(devices))
 	for _, device := range devices {
 		if device.Entity.Type == entityType {

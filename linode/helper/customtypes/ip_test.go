@@ -44,12 +44,20 @@ func TestIPAddr_semanticEquals(t *testing.T) {
 func TestIPAddr_validation(t *testing.T) {
 	ipType := IPAddrStringType{}
 
-	d := ipType.Validate(context.Background(), tftypes.NewValue(tftypes.String, "192.168.0.1"), path.Empty())
+	d := ipType.Validate(
+		context.Background(),
+		tftypes.NewValue(tftypes.String, "192.168.0.1"),
+		path.Empty(),
+	)
 	if d.HasError() {
 		t.Fatal("Expected no error; got some")
 	}
 
-	d = ipType.Validate(context.Background(), tftypes.NewValue(tftypes.String, "192.1c8.0.1"), path.Empty())
+	d = ipType.Validate(
+		context.Background(),
+		tftypes.NewValue(tftypes.String, "192.1c8.0.1"),
+		path.Empty(),
+	)
 	if !d.HasError() {
 		t.Fatal("Expected error; got none")
 	}

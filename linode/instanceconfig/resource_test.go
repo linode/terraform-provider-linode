@@ -169,7 +169,11 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", "my-config-updated"),
 					resource.TestCheckResourceAttr(resName, "comments", "cool-updated"),
 
-					resource.TestCheckResourceAttr(resName, "helpers.0.devtmpfs_automount", "false"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"helpers.0.devtmpfs_automount",
+						"false",
+					),
 					resource.TestCheckResourceAttr(resName, "helpers.0.distro", "false"),
 					resource.TestCheckResourceAttr(resName, "helpers.0.modules_dep", "false"),
 					resource.TestCheckResourceAttr(resName, "helpers.0.network", "false"),
@@ -177,7 +181,11 @@ func TestAccResourceInstanceConfig_complex(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "vlan"),
 					resource.TestCheckResourceAttr(resName, "interface.0.label", "cooler"),
-					resource.TestCheckResourceAttr(resName, "interface.0.ipam_address", "10.0.0.3/24"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"interface.0.ipam_address",
+						"10.0.0.3/24",
+					),
 
 					resource.TestCheckResourceAttr(resName, "kernel", "linode/latest-32bit"),
 					resource.TestCheckResourceAttr(resName, "memory_limit", "513"),
@@ -372,12 +380,26 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "public"),
 					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.250"),
-					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.101/32"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"interface.1.ip_ranges.0",
+						"10.0.4.101/32",
+					),
 					resource.TestCheckResourceAttrSet(resName, "interface.1.ipv4.0.nat_1_1"),
 
-					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.address", "10.0.4.250"),
-					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.vpc_id"),
-					resource.TestCheckResourceAttrSet(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.subnet_id"),
+					resource.TestCheckResourceAttr(
+						networkDSName,
+						"ipv4.0.public.0.vpc_nat_1_1.address",
+						"10.0.4.250",
+					),
+					resource.TestCheckResourceAttrSet(
+						networkDSName,
+						"ipv4.0.public.0.vpc_nat_1_1.vpc_id",
+					),
+					resource.TestCheckResourceAttrSet(
+						networkDSName,
+						"ipv4.0.public.0.vpc_nat_1_1.subnet_id",
+					),
 				),
 			},
 			{
@@ -388,9 +410,17 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.1.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.1.ipv4.0.vpc", "10.0.4.249"),
 					resource.TestCheckResourceAttr(resName, "interface.1.active", "false"),
-					resource.TestCheckResourceAttr(resName, "interface.1.ip_ranges.0", "10.0.4.100/32"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"interface.1.ip_ranges.0",
+						"10.0.4.100/32",
+					),
 
-					resource.TestCheckResourceAttr(networkDSName, "ipv4.0.public.0.vpc_nat_1_1.#", "0"),
+					resource.TestCheckResourceAttr(
+						networkDSName,
+						"ipv4.0.public.0.vpc_nat_1_1.#",
+						"0",
+					),
 				),
 			},
 			{
@@ -402,7 +432,11 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.0.ipv4.0.vpc", "10.0.4.249"),
 					resource.TestCheckResourceAttr(resName, "interface.0.active", "false"),
-					resource.TestCheckResourceAttr(resName, "interface.0.ip_ranges.0", "10.0.4.100/32"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"interface.0.ip_ranges.0",
+						"10.0.4.100/32",
+					),
 				),
 			},
 			{
@@ -419,7 +453,11 @@ func TestAccResourceInstanceConfig_vpcInterface(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "interface.0.purpose", "vpc"),
 					resource.TestCheckResourceAttr(resName, "interface.0.ipv4.0.vpc", "10.0.4.249"),
 					resource.TestCheckResourceAttr(resName, "interface.0.active", "false"),
-					resource.TestCheckResourceAttr(resName, "interface.0.ip_ranges.0", "10.0.4.100/32"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"interface.0.ip_ranges.0",
+						"10.0.4.100/32",
+					),
 				),
 			},
 			{
@@ -478,7 +516,12 @@ func TestAccResourceInstanceConfig_rescueBooted(t *testing.T) {
 						t.Fatal(err)
 					}
 
-					poller, err := client.NewEventPoller(context.Background(), instance.ID, linodego.EntityLinode, linodego.ActionLinodeReboot)
+					poller, err := client.NewEventPoller(
+						context.Background(),
+						instance.ID,
+						linodego.EntityLinode,
+						linodego.ActionLinodeReboot,
+					)
 					if err != nil {
 						t.Fatalf("failed to create event poller: %v", err)
 					}
@@ -543,7 +586,11 @@ func checkExists(name string, config *linodego.InstanceConfig) resource.TestChec
 
 		found, err := client.GetInstanceConfig(context.Background(), linodeID, id)
 		if err != nil {
-			return fmt.Errorf("error retrieving state of config %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"error retrieving state of config %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 
 		if config != nil {

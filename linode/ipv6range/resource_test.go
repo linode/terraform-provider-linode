@@ -105,8 +105,10 @@ func TestAccIPv6Range_noID(t *testing.T) {
 		CheckDestroy:             checkIPv6RangeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.NoID(t),
-				ExpectError: regexp.MustCompile("Either linode_id or route_target must be specified."),
+				Config: tmpl.NoID(t),
+				ExpectError: regexp.MustCompile(
+					"Either linode_id or route_target must be specified.",
+				),
 			},
 		},
 	})
@@ -213,7 +215,11 @@ func checkIPv6RangeExists(name string, ipv6Range *linodego.IPv6Range) resource.T
 
 		found, err := client.GetIPv6Range(context.Background(), rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("failed to retrieve state of ipv6 range %s: %s", rs.Primary.Attributes["range"], err)
+			return fmt.Errorf(
+				"failed to retrieve state of ipv6 range %s: %s",
+				rs.Primary.Attributes["range"],
+				err,
+			)
 		}
 
 		if ipv6Range != nil {
@@ -287,10 +293,16 @@ func validateInstanceIPv6Assignments(t testing.TB, assignedID, unassignedID int)
 	}
 
 	if len(unassignedNetworking.IPv6.Global) > 0 {
-		t.Fatalf("expected instance to have no attached ipv6 ranged, got %d", len(unassignedNetworking.IPv6.Global))
+		t.Fatalf(
+			"expected instance to have no attached ipv6 ranged, got %d",
+			len(unassignedNetworking.IPv6.Global),
+		)
 	}
 
 	if len(assignedNetworking.IPv6.Global) < 1 {
-		t.Fatalf("expected instance to have one attached ipv6 ranged, got %d", len(assignedNetworking.IPv6.Global))
+		t.Fatalf(
+			"expected instance to have one attached ipv6 ranged, got %d",
+			len(assignedNetworking.IPv6.Global),
+		)
 	}
 }

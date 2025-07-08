@@ -100,7 +100,8 @@ type NodeBalancerTypeFilterModel struct {
 	Types   []DataSourceModel                `tfsdk:"types"`
 }
 
-func (model *NodeBalancerTypeFilterModel) parseNodeBalancerTypes(nbTypes []linodego.NodeBalancerType,
+func (model *NodeBalancerTypeFilterModel) parseNodeBalancerTypes(
+	nbTypes []linodego.NodeBalancerType,
 ) diag.Diagnostics {
 	result := make([]DataSourceModel, len(nbTypes))
 

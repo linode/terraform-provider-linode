@@ -55,12 +55,20 @@ func TestParseMySQLBackups(t *testing.T) {
 	assert.Len(t, model.Backups, len(mockBackups))
 
 	assert.Equal(t, types.Int64Value(1), model.Backups[0].ID)
-	assert.Equal(t, types.StringValue("Scheduled - 02/07/22 11:18 UTC-XcCRmI"), model.Backups[0].Label)
+	assert.Equal(
+		t,
+		types.StringValue("Scheduled - 02/07/22 11:18 UTC-XcCRmI"),
+		model.Backups[0].Label,
+	)
 	assert.Equal(t, types.StringValue("manual"), model.Backups[0].Type)
 	assert.NotNil(t, model.Backups[0].Created)
 
 	assert.Equal(t, types.Int64Value(2), model.Backups[1].ID)
-	assert.Equal(t, types.StringValue("Scheduled - 02/07/22 11:18 UTC-XcCRmI"), model.Backups[1].Label)
+	assert.Equal(
+		t,
+		types.StringValue("Scheduled - 02/07/22 11:18 UTC-XcCRmI"),
+		model.Backups[1].Label,
+	)
 	assert.Equal(t, types.StringValue("auto"), model.Backups[1].Type)
 	assert.NotNil(t, model.Backups[1].Created)
 }

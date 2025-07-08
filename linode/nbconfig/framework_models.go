@@ -131,24 +131,76 @@ func (data *ResourceModelV1) FlattenNodeBalancerConfig(
 	config *linodego.NodeBalancerConfig, preserveKnown bool,
 ) diag.Diagnostics {
 	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(config.ID), preserveKnown)
-	data.NodeBalancerID = helper.KeepOrUpdateInt64(data.NodeBalancerID, int64(config.NodeBalancerID), preserveKnown)
-	data.Algorithm = helper.KeepOrUpdateString(data.Algorithm, string(config.Algorithm), preserveKnown)
-	data.Stickiness = helper.KeepOrUpdateString(data.Stickiness, string(config.Stickiness), preserveKnown)
+	data.NodeBalancerID = helper.KeepOrUpdateInt64(
+		data.NodeBalancerID,
+		int64(config.NodeBalancerID),
+		preserveKnown,
+	)
+	data.Algorithm = helper.KeepOrUpdateString(
+		data.Algorithm,
+		string(config.Algorithm),
+		preserveKnown,
+	)
+	data.Stickiness = helper.KeepOrUpdateString(
+		data.Stickiness,
+		string(config.Stickiness),
+		preserveKnown,
+	)
 	data.Check = helper.KeepOrUpdateString(data.Check, string(config.Check), preserveKnown)
-	data.CheckAttempts = helper.KeepOrUpdateInt64(data.CheckAttempts, int64(config.CheckAttempts), preserveKnown)
+	data.CheckAttempts = helper.KeepOrUpdateInt64(
+		data.CheckAttempts,
+		int64(config.CheckAttempts),
+		preserveKnown,
+	)
 	data.CheckBody = helper.KeepOrUpdateString(data.CheckBody, config.CheckBody, preserveKnown)
-	data.CheckInterval = helper.KeepOrUpdateInt64(data.CheckInterval, int64(config.CheckInterval), preserveKnown)
-	data.CheckTimeout = helper.KeepOrUpdateInt64(data.CheckTimeout, int64(config.CheckTimeout), preserveKnown)
-	data.CheckPassive = helper.KeepOrUpdateBool(data.CheckPassive, config.CheckPassive, preserveKnown)
+	data.CheckInterval = helper.KeepOrUpdateInt64(
+		data.CheckInterval,
+		int64(config.CheckInterval),
+		preserveKnown,
+	)
+	data.CheckTimeout = helper.KeepOrUpdateInt64(
+		data.CheckTimeout,
+		int64(config.CheckTimeout),
+		preserveKnown,
+	)
+	data.CheckPassive = helper.KeepOrUpdateBool(
+		data.CheckPassive,
+		config.CheckPassive,
+		preserveKnown,
+	)
 	data.CheckPath = helper.KeepOrUpdateString(data.CheckPath, config.CheckPath, preserveKnown)
-	data.UDPCheckPort = helper.KeepOrUpdateInt64(data.UDPCheckPort, int64(config.UDPCheckPort), preserveKnown)
-	data.UDPSessionTimeout = helper.KeepOrUpdateInt64(data.UDPSessionTimeout, int64(config.UDPSessionTimeout), preserveKnown)
-	data.CipherSuite = helper.KeepOrUpdateString(data.CipherSuite, string(config.CipherSuite), preserveKnown)
+	data.UDPCheckPort = helper.KeepOrUpdateInt64(
+		data.UDPCheckPort,
+		int64(config.UDPCheckPort),
+		preserveKnown,
+	)
+	data.UDPSessionTimeout = helper.KeepOrUpdateInt64(
+		data.UDPSessionTimeout,
+		int64(config.UDPSessionTimeout),
+		preserveKnown,
+	)
+	data.CipherSuite = helper.KeepOrUpdateString(
+		data.CipherSuite,
+		string(config.CipherSuite),
+		preserveKnown,
+	)
 	data.Port = helper.KeepOrUpdateInt64(data.Port, int64(config.Port), preserveKnown)
 	data.Protocol = helper.KeepOrUpdateString(data.Protocol, string(config.Protocol), preserveKnown)
-	data.ProxyProtocol = helper.KeepOrUpdateString(data.ProxyProtocol, string(config.ProxyProtocol), preserveKnown)
-	data.SSLFingerprint = helper.KeepOrUpdateString(data.SSLFingerprint, config.SSLFingerprint, preserveKnown)
-	data.SSLCommonName = helper.KeepOrUpdateString(data.SSLCommonName, config.SSLCommonName, preserveKnown)
+	data.ProxyProtocol = helper.KeepOrUpdateString(
+		data.ProxyProtocol,
+		string(config.ProxyProtocol),
+		preserveKnown,
+	)
+	data.SSLFingerprint = helper.KeepOrUpdateString(
+		data.SSLFingerprint,
+		config.SSLFingerprint,
+		preserveKnown,
+	)
+	data.SSLCommonName = helper.KeepOrUpdateString(
+		data.SSLCommonName,
+		config.SSLCommonName,
+		preserveKnown,
+	)
 	// SSLCert and SSLKey are not included because they are
 	// neither computed nor returned from the GET API call.
 
@@ -163,24 +215,64 @@ func (data *ResourceModelV1) FlattenNodeBalancerConfig(
 
 func (data *ResourceModelV1) CopyFrom(other ResourceModelV1, preserveKnown bool) {
 	data.ID = helper.KeepOrUpdateValue(data.ID, other.ID, preserveKnown)
-	data.NodeBalancerID = helper.KeepOrUpdateValue(data.NodeBalancerID, other.NodeBalancerID, preserveKnown)
+	data.NodeBalancerID = helper.KeepOrUpdateValue(
+		data.NodeBalancerID,
+		other.NodeBalancerID,
+		preserveKnown,
+	)
 	data.Algorithm = helper.KeepOrUpdateValue(data.Algorithm, other.Algorithm, preserveKnown)
 	data.Stickiness = helper.KeepOrUpdateValue(data.Stickiness, other.Stickiness, preserveKnown)
 	data.Check = helper.KeepOrUpdateValue(data.Check, other.Check, preserveKnown)
-	data.CheckAttempts = helper.KeepOrUpdateValue(data.CheckAttempts, other.CheckAttempts, preserveKnown)
+	data.CheckAttempts = helper.KeepOrUpdateValue(
+		data.CheckAttempts,
+		other.CheckAttempts,
+		preserveKnown,
+	)
 	data.CheckBody = helper.KeepOrUpdateValue(data.CheckBody, other.CheckBody, preserveKnown)
-	data.CheckInterval = helper.KeepOrUpdateValue(data.CheckInterval, other.CheckInterval, preserveKnown)
-	data.CheckTimeout = helper.KeepOrUpdateValue(data.CheckTimeout, other.CheckTimeout, preserveKnown)
-	data.CheckPassive = helper.KeepOrUpdateValue(data.CheckPassive, other.CheckPassive, preserveKnown)
+	data.CheckInterval = helper.KeepOrUpdateValue(
+		data.CheckInterval,
+		other.CheckInterval,
+		preserveKnown,
+	)
+	data.CheckTimeout = helper.KeepOrUpdateValue(
+		data.CheckTimeout,
+		other.CheckTimeout,
+		preserveKnown,
+	)
+	data.CheckPassive = helper.KeepOrUpdateValue(
+		data.CheckPassive,
+		other.CheckPassive,
+		preserveKnown,
+	)
 	data.CheckPath = helper.KeepOrUpdateValue(data.CheckPath, other.CheckPath, preserveKnown)
-	data.UDPCheckPort = helper.KeepOrUpdateValue(data.UDPCheckPort, other.UDPCheckPort, preserveKnown)
-	data.UDPSessionTimeout = helper.KeepOrUpdateValue(data.UDPSessionTimeout, other.UDPSessionTimeout, preserveKnown)
+	data.UDPCheckPort = helper.KeepOrUpdateValue(
+		data.UDPCheckPort,
+		other.UDPCheckPort,
+		preserveKnown,
+	)
+	data.UDPSessionTimeout = helper.KeepOrUpdateValue(
+		data.UDPSessionTimeout,
+		other.UDPSessionTimeout,
+		preserveKnown,
+	)
 	data.CipherSuite = helper.KeepOrUpdateValue(data.CipherSuite, other.CipherSuite, preserveKnown)
 	data.Port = helper.KeepOrUpdateValue(data.Port, other.Port, preserveKnown)
 	data.Protocol = helper.KeepOrUpdateValue(data.Protocol, other.Protocol, preserveKnown)
-	data.ProxyProtocol = helper.KeepOrUpdateValue(data.ProxyProtocol, other.ProxyProtocol, preserveKnown)
-	data.SSLFingerprint = helper.KeepOrUpdateValue(data.SSLFingerprint, other.SSLFingerprint, preserveKnown)
-	data.SSLCommonName = helper.KeepOrUpdateValue(data.SSLCommonName, other.SSLCommonName, preserveKnown)
+	data.ProxyProtocol = helper.KeepOrUpdateValue(
+		data.ProxyProtocol,
+		other.ProxyProtocol,
+		preserveKnown,
+	)
+	data.SSLFingerprint = helper.KeepOrUpdateValue(
+		data.SSLFingerprint,
+		other.SSLFingerprint,
+		preserveKnown,
+	)
+	data.SSLCommonName = helper.KeepOrUpdateValue(
+		data.SSLCommonName,
+		other.SSLCommonName,
+		preserveKnown,
+	)
 	data.SSLCert = helper.KeepOrUpdateValue(data.SSLCert, other.SSLCert, preserveKnown)
 	data.SSLKey = helper.KeepOrUpdateValue(data.SSLKey, other.SSLKey, preserveKnown)
 	data.NodesStatus = helper.KeepOrUpdateValue(data.NodesStatus, other.NodesStatus, preserveKnown)

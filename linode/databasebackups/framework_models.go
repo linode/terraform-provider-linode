@@ -50,7 +50,9 @@ func (m *DatabaseBackupModel) ParsePostgresSQLBackup(backup linodego.PostgresDat
 	m.Created = types.StringValue(backup.Created.Format(time.RFC3339))
 }
 
-func (model *DatabaseBackupFilterModel) parsePostgresSQLBackups(backups []linodego.PostgresDatabaseBackup) {
+func (model *DatabaseBackupFilterModel) parsePostgresSQLBackups(
+	backups []linodego.PostgresDatabaseBackup,
+) {
 	result := make([]DatabaseBackupModel, len(backups))
 
 	for i, backup := range backups {

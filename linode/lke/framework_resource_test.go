@@ -130,7 +130,11 @@ func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 
 		found, err := client.GetLKECluster(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of Instance %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 
 		*cluster = *found
@@ -140,7 +144,11 @@ func checkLKEExists(cluster *linodego.LKECluster) resource.TestCheckFunc {
 
 // waitForAllNodesReady waits for every Node in every NodePool of the LKE Cluster to be in
 // a ready state.
-func waitForAllNodesReady(t testing.TB, cluster *linodego.LKECluster, pollInterval, timeout time.Duration) {
+func waitForAllNodesReady(
+	t testing.TB,
+	cluster *linodego.LKECluster,
+	pollInterval, timeout time.Duration,
+) {
 	t.Helper()
 
 	ctx := context.Background()
@@ -204,19 +212,38 @@ func TestAccResourceLKECluster_basic_smoke(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
-						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"k8s_version",
+							k8sVersionLatest,
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "standard"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.type",
+							"g6-standard-1",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.disk_encryption"),
+						resource.TestCheckResourceAttrSet(
+							resourceClusterName,
+							"pool.0.disk_encryption",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "3"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.tags.0",
+							"test",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.high_availability",
+							"false",
+						),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "pool.0.id"),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
@@ -255,7 +282,11 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 						checkLKEExists(&cluster),
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
-						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionPrevious),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"k8s_version",
+							k8sVersionPrevious,
+						),
 					),
 				},
 				{
@@ -269,7 +300,11 @@ func TestAccResourceLKECluster_k8sUpgrade(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "region", testRegion),
-						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionLatest),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"k8s_version",
+							k8sVersionLatest,
+						),
 					),
 				},
 			},
@@ -322,18 +357,34 @@ func TestAccResourceLKECluster_basicUpdates(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.tags.0",
+							"test",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
 					),
 				},
 				{
 					Config: tmpl.Updates(t, newClusterName, k8sVersionLatest, testRegion),
 					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"label",
+							newClusterName,
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "2"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.#", "2"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.0", "test"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.tags.1", "test-2"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.tags.0",
+							"test",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.tags.1",
+							"test-2",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "4"),
 					),
 				},
@@ -365,7 +416,11 @@ func TestAccResourceLKECluster_poolUpdates(t *testing.T) {
 				{
 					Config: tmpl.ComplexPools(t, newClusterName, k8sVersionLatest, testRegion),
 					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(resourceClusterName, "label", newClusterName),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"label",
+							newClusterName,
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.2.count", "2"),
@@ -415,7 +470,11 @@ func TestAccResourceLKECluster_removeUnmanagedPool(t *testing.T) {
 							Count: 1,
 							Type:  "g6-standard-1",
 						}); err != nil {
-							t.Errorf("failed to create unmanaged pool for cluster %d: %s", cluster.ID, err)
+							t.Errorf(
+								"failed to create unmanaged pool for cluster %d: %s",
+								cluster.ID,
+								err,
+							)
 						}
 
 						pools, err := client.ListLKENodePools(context.Background(), cluster.ID, nil)
@@ -452,7 +511,11 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.#",
+							"0",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 					),
 				},
@@ -462,9 +525,21 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "5"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.0.min",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.0.max",
+							"5",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 					),
 				},
@@ -474,9 +549,21 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.0.min",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.0.max",
+							"8",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 					),
 				},
@@ -486,13 +573,37 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "2"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "5"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "8"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.0.min",
+							"3",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.0.max",
+							"8",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.count", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.min", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.1.autoscaler.0.max", "8"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.1.autoscaler.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.1.autoscaler.0.min",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.1.autoscaler.0.max",
+							"8",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 					),
 				},
@@ -502,7 +613,11 @@ func TestAccResourceLKECluster_autoScaler(t *testing.T) {
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.#",
+							"0",
+						),
 					),
 				},
 			},
@@ -526,33 +641,100 @@ func TestAccResourceLKECluster_controlPlane(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4, testIPv6, false, true),
+					Config: tmpl.ControlPlane(
+						t,
+						clusterName,
+						k8sVersionLatest,
+						testRegion,
+						testIPv4,
+						testIPv6,
+						false,
+						true,
+					),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "false"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "true"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.#",
+							"0",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.high_availability",
+							"false",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.acl.0.enabled",
+							"true",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.acl.0.addresses.0.ipv4.0",
+							testIPv4,
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.acl.0.addresses.0.ipv6.0",
+							testIPv6,
+						),
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, true, true),
+					Config: tmpl.ControlPlane(
+						t,
+						clusterName,
+						k8sVersionLatest,
+						testRegion,
+						testIPv4Updated,
+						testIPv6Updated,
+						true,
+						true,
+					),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "0"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.high_availability", "true"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.enabled", "true"),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv4.0", testIPv4Updated),
-						resource.TestCheckResourceAttr(resourceClusterName, "control_plane.0.acl.0.addresses.0.ipv6.0", testIPv6Updated),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.autoscaler.#",
+							"0",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.high_availability",
+							"true",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.acl.0.enabled",
+							"true",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.acl.0.addresses.0.ipv4.0",
+							testIPv4Updated,
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"control_plane.0.acl.0.addresses.0.ipv6.0",
+							testIPv6Updated,
+						),
 					),
 				},
 				{
-					Config: tmpl.ControlPlane(t, clusterName, k8sVersionLatest, testRegion, testIPv4Updated, testIPv6Updated, false, true),
+					Config: tmpl.ControlPlane(
+						t,
+						clusterName,
+						k8sVersionLatest,
+						testRegion,
+						testIPv4Updated,
+						testIPv6Updated,
+						false,
+						true,
+					),
 
 					// Expect a 400 response when attempting to disable HA
 					ExpectError: regexp.MustCompile("\\[400]"),
@@ -573,8 +755,10 @@ func TestAccResourceLKECluster_noCount(t *testing.T) {
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.NoCount(t, clusterName, k8sVersionLatest, testRegion),
-				ExpectError: regexp.MustCompile("pool.*: `count` must be defined when no autoscaler is defined"),
+				Config: tmpl.NoCount(t, clusterName, k8sVersionLatest, testRegion),
+				ExpectError: regexp.MustCompile(
+					"pool.*: `count` must be defined when no autoscaler is defined",
+				),
 			},
 		},
 	})
@@ -597,8 +781,16 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "4"),
+					resource.TestCheckResourceAttr(
+						resourceClusterName,
+						"pool.0.autoscaler.0.min",
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						resourceClusterName,
+						"pool.0.autoscaler.0.max",
+						"4",
+					),
 				),
 			},
 			{
@@ -608,8 +800,16 @@ func TestAccResourceLKECluster_implicitCount(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "2"),
 					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.#", "1"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.min", "2"),
-					resource.TestCheckResourceAttr(resourceClusterName, "pool.0.autoscaler.0.max", "4"),
+					resource.TestCheckResourceAttr(
+						resourceClusterName,
+						"pool.0.autoscaler.0.min",
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						resourceClusterName,
+						"pool.0.autoscaler.0.max",
+						"4",
+					),
 				),
 			},
 		},
@@ -641,10 +841,26 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.effect", "PreferNoSchedule"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.key", "foo"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.value", "bar"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.labels.foo", "bar"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.effect",
+							"PreferNoSchedule",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.key",
+							"foo",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.value",
+							"bar",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.labels.foo",
+							"bar",
+						),
 					),
 				},
 				{
@@ -662,15 +878,38 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.effect", "PreferNoSchedule"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.key", "baz"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.value", "qux"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.labels.baz", "qux"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.effect",
+							"PreferNoSchedule",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.key",
+							"baz",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.value",
+							"qux",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.labels.baz",
+							"qux",
+						),
 					),
 				},
 				{
 					// remove taints and labels
-					Config: tmpl.DataTaintsLabels(t, clusterName, k8sVersionLatest, testRegion, nil, nil),
+					Config: tmpl.DataTaintsLabels(
+						t,
+						clusterName,
+						k8sVersionLatest,
+						testRegion,
+						nil,
+						nil,
+					),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "0"),
@@ -692,10 +931,26 @@ func TestAccResourceLKEClusterNodePoolTaintsLabels(t *testing.T) {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.nodes.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.effect", "PreferNoSchedule"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.key", "foo"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.taint.0.value", "bar"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.labels.foo", "bar"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.effect",
+							"PreferNoSchedule",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.key",
+							"foo",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.taint.0.value",
+							"bar",
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.labels.foo",
+							"bar",
+						),
 					),
 				},
 				{
@@ -716,7 +971,10 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 		t.Skip("No available k8s version for LKE Enterprise test. Skipping now...")
 	}
 
-	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps([]string{"Kubernetes Enterprise"}, "core")
+	enterpriseRegion, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Kubernetes Enterprise"},
+		"core",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -728,36 +986,88 @@ func TestAccResourceLKECluster_enterprise(t *testing.T) {
 			CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 			Steps: []resource.TestStep{
 				{
-					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "on_recycle"),
+					Config: tmpl.Enterprise(
+						t,
+						clusterName,
+						k8sVersionEnterprise,
+						enterpriseRegion,
+						"on_recycle",
+					),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
-						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"region",
+							enterpriseRegion,
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"k8s_version",
+							k8sVersionEnterprise,
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.type",
+							"g6-standard-1",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "on_recycle"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.k8s_version",
+							k8sVersionEnterprise,
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.update_strategy",
+							"on_recycle",
+						),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 					),
 				},
 				{
-					Config: tmpl.Enterprise(t, clusterName, k8sVersionEnterprise, enterpriseRegion, "rolling_update"),
+					Config: tmpl.Enterprise(
+						t,
+						clusterName,
+						k8sVersionEnterprise,
+						enterpriseRegion,
+						"rolling_update",
+					),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceClusterName, "label", clusterName),
-						resource.TestCheckResourceAttr(resourceClusterName, "region", enterpriseRegion),
-						resource.TestCheckResourceAttr(resourceClusterName, "k8s_version", k8sVersionEnterprise),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"region",
+							enterpriseRegion,
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"k8s_version",
+							k8sVersionEnterprise,
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "status", "ready"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tier", "enterprise"),
 						resource.TestCheckResourceAttr(resourceClusterName, "tags.#", "1"),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.#", "1"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.type", "g6-standard-1"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.type",
+							"g6-standard-1",
+						),
 						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.count", "3"),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.k8s_version", k8sVersionEnterprise),
-						resource.TestCheckResourceAttr(resourceClusterName, "pool.0.update_strategy", "rolling_update"),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.k8s_version",
+							k8sVersionEnterprise,
+						),
+						resource.TestCheckResourceAttr(
+							resourceClusterName,
+							"pool.0.update_strategy",
+							"rolling_update",
+						),
 						resource.TestCheckResourceAttrSet(resourceClusterName, "kubeconfig"),
 					),
 				},
@@ -797,8 +1107,15 @@ func TestAccResourceLKECluster_acl_disabled_addresses(t *testing.T) {
 		CheckDestroy:             acceptance.CheckLKEClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.ACLDisabledAddressesDisallowed(t, clusterName, k8sVersionLatest, testRegion),
-				ExpectError: regexp.MustCompile("addresses are not acceptable when ACL is disabled"),
+				Config: tmpl.ACLDisabledAddressesDisallowed(
+					t,
+					clusterName,
+					k8sVersionLatest,
+					testRegion,
+				),
+				ExpectError: regexp.MustCompile(
+					"addresses are not acceptable when ACL is disabled",
+				),
 			},
 		},
 	})

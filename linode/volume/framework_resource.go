@@ -70,7 +70,8 @@ func cloneCheck(data *VolumeResourceModel, sourceVolume *linodego.Volume, diags 
 				"Insufficient Size",
 				fmt.Sprintf(
 					"`size` must be greater than or equal to the size of the source volume: %d < %d",
-					data.Size.ValueInt64(), sourceVolume.Size,
+					data.Size.ValueInt64(),
+					sourceVolume.Size,
 				),
 			)
 			return
@@ -161,7 +162,14 @@ func (r *Resource) CreateVolumeFromSource(
 			return clonedVolume
 		}
 		if newSize != clonedVolume.Size {
-			resizedVolume := HandleResize(ctx, client, clonedVolume.ID, newSize, timeoutSeconds, diags)
+			resizedVolume := HandleResize(
+				ctx,
+				client,
+				clonedVolume.ID,
+				newSize,
+				timeoutSeconds,
+				diags,
+			)
 			if resizedVolume != nil {
 				clonedVolume = resizedVolume
 			}
@@ -502,7 +510,10 @@ func (r *Resource) Update(
 		if !plan.LinodeID.IsNull() && !plan.LinodeID.IsUnknown() {
 			// we need to attach this volume to another linode if linode_id presents in plan
 
-			linodeID := helper.FrameworkSafeInt64ToInt(plan.LinodeID.ValueInt64(), &resp.Diagnostics)
+			linodeID := helper.FrameworkSafeInt64ToInt(
+				plan.LinodeID.ValueInt64(),
+				&resp.Diagnostics,
+			)
 			if resp.Diagnostics.HasError() {
 				return
 			}

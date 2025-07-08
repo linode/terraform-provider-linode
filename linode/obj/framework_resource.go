@@ -6,12 +6,10 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -155,7 +153,11 @@ func (r *Resource) Read(
 	}
 
 	if resp.Diagnostics.HasError() {
-		if newDiags := deleteBucketNotFound(resp.Diagnostics); len(newDiags) < len(resp.Diagnostics) {
+		if newDiags := deleteBucketNotFound(resp.Diagnostics); len(
+			newDiags,
+		) < len(
+			resp.Diagnostics,
+		) {
 			resp.Diagnostics = newDiags
 
 			resp.Diagnostics.AddWarning(
@@ -274,9 +276,19 @@ func (r *Resource) Delete(
 	key := state.Key.ValueString()
 
 	if !state.VersionID.IsNull() {
-		tflog.Debug(ctx, "versioning was enabled for this object, deleting all versions and delete markers")
+		tflog.Debug(
+			ctx,
+			"versioning was enabled for this object, deleting all versions and delete markers",
+		)
 
-		err := helper.DeleteAllObjectVersionsAndDeleteMarkers(ctx, s3client, bucket, key, force, true)
+		err := helper.DeleteAllObjectVersionsAndDeleteMarkers(
+			ctx,
+			s3client,
+			bucket,
+			key,
+			force,
+			true,
+		)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to Delete All Object Versions and Deletion Markers in the Versioned Bucket",

@@ -51,7 +51,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	db, err := client.GetMySQLDatabase(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing MySQL database ID %q from state because it no longer exists", d.Id())
+			log.Printf(
+				"[WARN] removing MySQL database ID %q from state because it no longer exists",
+				d.Id(),
+			)
 			d.SetId("")
 			return nil
 		}
@@ -93,10 +96,17 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
-	p, err := client.NewEventPollerWithoutEntity(linodego.EntityDatabase, linodego.ActionDatabaseCreate)
+	p, err := client.NewEventPollerWithoutEntity(
+		linodego.EntityDatabase,
+		linodego.ActionDatabaseCreate,
+	)
 	if err != nil {
 		return diag.Errorf("failed to initialize event poller: %s", err)
 	}
@@ -171,7 +181,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 
 	id, err := strconv.Atoi(d.Id())
@@ -199,7 +213,9 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 		updatesRaw := d.Get("updates")
 		if updatesRaw != nil && len(updatesRaw.([]interface{})) > 0 {
-			expanded, err := helper.ExpandMaintenanceWindow(updatesRaw.([]interface{})[0].(map[string]interface{}))
+			expanded, err := helper.ExpandMaintenanceWindow(
+				updatesRaw.([]interface{})[0].(map[string]interface{}),
+			)
 			if err != nil {
 				return diag.Errorf("failed to update maintenance window: %s", err)
 			}
@@ -238,7 +254,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	client := meta.(*helper.ProviderMeta).Client
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -246,16 +266,20 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	// We should retry on intermittent deletion errors
-	return diag.FromErr(retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
-		err := client.DeleteMySQLDatabase(ctx, id)
-		if err != nil {
-			if lerr, ok := err.(*linodego.Error); ok &&
-				lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to delete instance") {
-				return retry.RetryableError(err)
+	return diag.FromErr(
+		retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+			err := client.DeleteMySQLDatabase(ctx, id)
+			if err != nil {
+				if lerr, ok := err.(*linodego.Error); ok &&
+					lerr.Code == 500 && strings.Contains(lerr.Message, "Unable to delete instance") {
+					return retry.RetryableError(err)
+				}
+				return retry.NonRetryableError(
+					fmt.Errorf("failed to delete mysql database %d: %s", id, err),
+				)
 			}
-			return retry.NonRetryableError(fmt.Errorf("failed to delete mysql database %d: %s", id, err))
-		}
 
-		return nil
-	}))
+			return nil
+		}),
+	)
 }

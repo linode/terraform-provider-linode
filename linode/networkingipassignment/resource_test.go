@@ -68,7 +68,10 @@ func checkNetworkingIPsAssignExists(s *terraform.State) error {
 		}
 
 		filter := fmt.Sprintf("{\"region\": \"%s\"}", rs.Primary.Attributes["region"])
-		ips, err := client.ListIPAddresses(context.Background(), &linodego.ListOptions{Filter: filter})
+		ips, err := client.ListIPAddresses(
+			context.Background(),
+			&linodego.ListOptions{Filter: filter},
+		)
 		if err != nil {
 			return fmt.Errorf("Error listing IP addresses: %s", err)
 		}

@@ -83,7 +83,9 @@ func (data *DataSourceModel) parsePostgresDatabaseSSL(db *linodego.PostgresDatab
 	data.CACert = types.StringValue(string(db.CACertificate))
 }
 
-func (data *DataSourceModel) parsePostgresDatabaseCredentials(db *linodego.PostgresDatabaseCredential) {
+func (data *DataSourceModel) parsePostgresDatabaseCredentials(
+	db *linodego.PostgresDatabaseCredential,
+) {
 	data.RootUsername = types.StringValue(db.Username)
 	data.RootPassword = types.StringValue(db.Password)
 }

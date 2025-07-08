@@ -33,7 +33,11 @@ func TestAccDataSourceSSHKeys_basic(t *testing.T) {
 				Config: tmpl.DataFilter(t, keyLabel, keySSH),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testSSHKeyDataName, "sshkeys.#", "1"),
-					resource.TestCheckResourceAttr(testSSHKeyDataName, "sshkeys.0.label", keyLabel+"-0"),
+					resource.TestCheckResourceAttr(
+						testSSHKeyDataName,
+						"sshkeys.0.label",
+						keyLabel+"-0",
+					),
 					resource.TestCheckResourceAttr(testSSHKeyDataName, "sshkeys.0.ssh_key", keySSH),
 					resource.TestCheckResourceAttrSet(testSSHKeyDataName, "sshkeys.0.id"),
 					resource.TestCheckResourceAttrSet(testSSHKeyDataName, "sshkeys.0.created"),
@@ -43,7 +47,11 @@ func TestAccDataSourceSSHKeys_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t, keyLabel, keySSH),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(testSSHKeyDataName, "sshkeys.#", "1"),
-					resource.TestCheckResourceAttr(testSSHKeyDataName, "sshkeys.0.label", keyLabel+"-0"),
+					resource.TestCheckResourceAttr(
+						testSSHKeyDataName,
+						"sshkeys.0.label",
+						keyLabel+"-0",
+					),
 					resource.TestCheckResourceAttr(testSSHKeyDataName, "sshkeys.0.ssh_key", keySSH),
 					resource.TestCheckResourceAttrSet(testSSHKeyDataName, "sshkeys.0.id"),
 					resource.TestCheckResourceAttrSet(testSSHKeyDataName, "sshkeys.0.created"),

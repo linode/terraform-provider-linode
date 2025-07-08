@@ -27,7 +27,11 @@ func Resource() *schema.Resource {
 	}
 }
 
-func importResource(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func importResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) ([]*schema.ResourceData, error) {
 	if !strings.Contains(d.Id(), ",") {
 		return nil, fmt.Errorf("failed to parse argument: %v", d.Id())
 	}
@@ -75,7 +79,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	record, err := client.GetDomainRecord(ctx, domainID, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Linode Domain Record ID %q from state because it no longer exists", d.Id())
+			log.Printf(
+				"[WARN] removing Linode Domain Record ID %q from state because it no longer exists",
+				d.Id(),
+			)
 			d.SetId("")
 			return nil
 		}
@@ -135,7 +142,11 @@ func domainRecordFromResourceData(d *schema.ResourceData) *linodego.DomainRecord
 	}
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_domain_record")
 
 	client := meta.(*helper.ProviderMeta).Client
@@ -171,7 +182,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_domain_record")
 
@@ -208,7 +223,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_domain_record")
 
@@ -237,7 +256,12 @@ func domainRecordTargetSuppressor(k, provisioned, declared string, d *schema.Res
 
 // reconcileName handles cases where the user has specified their FQDN as a part of their
 // planned record name but the API trims the FQDN from the returned record name.
-func reconcileName(ctx context.Context, client linodego.Client, d *schema.ResourceData, apiName string) (string, error) {
+func reconcileName(
+	ctx context.Context,
+	client linodego.Client,
+	d *schema.ResourceData,
+	apiName string,
+) (string, error) {
 	tflog.Trace(ctx, "Reconcile record name")
 
 	plannedName, ok := d.GetOk("name")
@@ -252,7 +276,10 @@ func reconcileName(ctx context.Context, client linodego.Client, d *schema.Resour
 		return "", fmt.Errorf("failed to get parent domain: %w", err)
 	}
 
-	simplifiedPlanName := strings.TrimSuffix(strings.TrimSuffix(plannedName.(string), domain.Domain), ".")
+	simplifiedPlanName := strings.TrimSuffix(
+		strings.TrimSuffix(plannedName.(string), domain.Domain),
+		".",
+	)
 
 	// If the API response matches the planned name with the FQDN removed,
 	// return the planned value.

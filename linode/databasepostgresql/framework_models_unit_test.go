@@ -58,8 +58,16 @@ func TestParsePostgresDatabase(t *testing.T) {
 	assert.Contains(t, data.AllowList.String(), "203.0.113.1/32")
 	assert.Contains(t, data.AllowList.String(), "192.0.1.0/24")
 
-	assert.Equal(t, types.StringValue("lin-0000-000-pgsql-primary.servers.linodedb.net"), data.HostPrimary)
-	assert.Equal(t, types.StringValue("lin-0000-000-pgsql-primary-private.servers.linodedb.net"), data.HostSecondary)
+	assert.Equal(
+		t,
+		types.StringValue("lin-0000-000-pgsql-primary.servers.linodedb.net"),
+		data.HostPrimary,
+	)
+	assert.Equal(
+		t,
+		types.StringValue("lin-0000-000-pgsql-primary-private.servers.linodedb.net"),
+		data.HostSecondary,
+	)
 
 	assert.Contains(t, data.Updates.String(), "monday")
 	assert.Contains(t, data.Updates.String(), "3")
@@ -69,13 +77,21 @@ func TestParsePostgresDatabase(t *testing.T) {
 
 func TestParsePostgresDatabaseSSL(t *testing.T) {
 	mockSSL := linodego.PostgresDatabaseSSL{
-		CACertificate: []byte("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"),
+		CACertificate: []byte(
+			"-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----",
+		),
 	}
 
 	data := &DataSourceModel{}
 	data.parsePostgresDatabaseSSL(&mockSSL)
 
-	assert.Equal(t, types.StringValue("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"), data.CACert)
+	assert.Equal(
+		t,
+		types.StringValue(
+			"-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----",
+		),
+		data.CACert,
+	)
 }
 
 func TestParsePostgresDatabaseCredentials(t *testing.T) {

@@ -45,7 +45,11 @@ func (data *ResourceModel) FlattenNodeBalancerNode(
 	nbnode *linodego.NodeBalancerNode, preserveKnown bool,
 ) {
 	data.ID = helper.KeepOrUpdateString(data.ID, strconv.Itoa(nbnode.ID), preserveKnown)
-	data.NodeBalancerID = helper.KeepOrUpdateInt64(data.NodeBalancerID, int64(nbnode.NodeBalancerID), preserveKnown)
+	data.NodeBalancerID = helper.KeepOrUpdateInt64(
+		data.NodeBalancerID,
+		int64(nbnode.NodeBalancerID),
+		preserveKnown,
+	)
 	data.ConfigID = helper.KeepOrUpdateInt64(data.ConfigID, int64(nbnode.ConfigID), preserveKnown)
 	data.Label = helper.KeepOrUpdateString(data.Label, nbnode.Label, preserveKnown)
 	data.Weight = helper.KeepOrUpdateInt64(data.Weight, int64(nbnode.Weight), preserveKnown)
@@ -62,13 +66,17 @@ func (data *ResourceModel) GetIDs(diags *diag.Diagnostics) (int, int, int) {
 	return id, nodeBalancerID, configID
 }
 
-func (data *ResourceModel) GetCreateParameters(diags *diag.Diagnostics) (int, int, linodego.NodeBalancerNodeCreateOptions) {
+func (data *ResourceModel) GetCreateParameters(
+	diags *diag.Diagnostics,
+) (int, int, linodego.NodeBalancerNodeCreateOptions) {
 	nodeBalancerID := helper.FrameworkSafeInt64ToInt(data.NodeBalancerID.ValueInt64(), diags)
 	configID := helper.FrameworkSafeInt64ToInt(data.ConfigID.ValueInt64(), diags)
 	return nodeBalancerID, configID, data.GetCreateOptions(diags)
 }
 
-func (plan *ResourceModel) GetCreateOptions(diags *diag.Diagnostics) linodego.NodeBalancerNodeCreateOptions {
+func (plan *ResourceModel) GetCreateOptions(
+	diags *diag.Diagnostics,
+) linodego.NodeBalancerNodeCreateOptions {
 	weight := helper.FrameworkSafeInt64ToInt(plan.Weight.ValueInt64(), diags)
 	return linodego.NodeBalancerNodeCreateOptions{
 		Address: plan.Address.ValueString(),
@@ -106,7 +114,11 @@ func (plan *ResourceModel) GetUpdateOptions(
 
 func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.ID = helper.KeepOrUpdateValue(plan.ID, state.ID, preserveKnown)
-	plan.NodeBalancerID = helper.KeepOrUpdateValue(plan.NodeBalancerID, state.NodeBalancerID, preserveKnown)
+	plan.NodeBalancerID = helper.KeepOrUpdateValue(
+		plan.NodeBalancerID,
+		state.NodeBalancerID,
+		preserveKnown,
+	)
 	plan.ConfigID = helper.KeepOrUpdateValue(plan.ConfigID, state.ConfigID, preserveKnown)
 	plan.Label = helper.KeepOrUpdateValue(plan.Label, state.Label, preserveKnown)
 	plan.Weight = helper.KeepOrUpdateValue(plan.Weight, state.Weight, preserveKnown)

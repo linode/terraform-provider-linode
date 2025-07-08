@@ -89,7 +89,13 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 	var updateOpts linodego.LKENodePoolUpdateOptions
 	var diags diag.Diagnostics
 
-	shouldUpdate := nodePoolModel.SetNodePoolUpdateOptions(context.Background(), &updateOpts, &diags, &state, "enterprise")
+	shouldUpdate := nodePoolModel.SetNodePoolUpdateOptions(
+		context.Background(),
+		&updateOpts,
+		&diags,
+		&state,
+		"enterprise",
+	)
 
 	assert.False(t, diags.HasError())
 	assert.True(t, shouldUpdate)
@@ -106,7 +112,11 @@ func TestSetNodePoolUpdateOptions(t *testing.T) {
 }
 
 func createNodePoolModel() *NodePoolModel {
-	tags, _ := types.SetValueFrom(context.Background(), types.StringType, []string{"production", "web-server"})
+	tags, _ := types.SetValueFrom(
+		context.Background(),
+		types.StringType,
+		[]string{"production", "web-server"},
+	)
 	nodes, _ := flattenLKENodePoolLinodeList([]linodego.LKENodePoolLinode{
 		{InstanceID: 1, ID: "linode123", Status: "running"},
 		{InstanceID: 2, ID: "linode124", Status: "running"},

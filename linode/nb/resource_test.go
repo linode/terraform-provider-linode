@@ -107,10 +107,14 @@ func TestAccResourceNodeBalancer_basic_smoke(t *testing.T) {
 			},
 
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"created",
+					"updated",
+					"firewall_id",
+				}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
@@ -166,10 +170,14 @@ func TestAccResourceNodeBalancer_update(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            resName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"created", "updated", "firewall_id"}, // Ignore strict comparison for these attributes
+				ResourceName:      resName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"created",
+					"updated",
+					"firewall_id",
+				}, // Ignore strict comparison for these attributes
 			},
 		},
 	})
@@ -194,24 +202,52 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "label", nodebalancerName),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "20"),
 					acceptance.CheckResourceAttrGreaterThan(resName, "firewalls.#", 0),
-					resource.TestCheckResourceAttr(resName, "firewalls.0.label", fmt.Sprintf("%v-fw", nodebalancerName)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"firewalls.0.label",
+						fmt.Sprintf("%v-fw", nodebalancerName),
+					),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound_policy", "DROP"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.#", "1"),
-					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.0.action", "ACCEPT"),
-					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"firewalls.0.inbound.0.action",
+						"ACCEPT",
+					),
+					resource.TestCheckResourceAttr(
+						resName,
+						"firewalls.0.inbound.0.protocol",
+						"TCP",
+					),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.0.ipv4.#", "1"),
-					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"firewalls.0.inbound.0.ipv4.0",
+						"0.0.0.0/0",
+					),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.0.ipv6.#", "1"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.inbound.0.ipv6.0", "::/0"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound_policy", "DROP"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.#", "1"),
-					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"firewalls.0.outbound.0.protocol",
+						"TCP",
+					),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ports", "80"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ipv4.#", "1"),
-					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ipv4.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"firewalls.0.outbound.0.ipv4.0",
+						"0.0.0.0/0",
+					),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ipv6.#", "1"),
-					resource.TestCheckResourceAttr(resName, "firewalls.0.outbound.0.ipv6.0", "2001:db8::/32"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"firewalls.0.outbound.0.ipv6.0",
+						"2001:db8::/32",
+					),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.#", "1"),
 					resource.TestCheckResourceAttr(resName, "firewalls.0.tags.0", "test"),
 				),
@@ -220,7 +256,11 @@ func TestAccResourceNodeBalancer_firewall(t *testing.T) {
 				Config: tmpl.FirewallUpdate(t, nodebalancerName, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkNodeBalancerExists,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_r", nodebalancerName)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"label",
+						fmt.Sprintf("%s_r", nodebalancerName),
+					),
 					resource.TestCheckResourceAttr(resName, "client_conn_throttle", "0"),
 					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resName, "tags.0", "tf_test"),
@@ -331,7 +371,11 @@ func checkNodeBalancerExists(s *terraform.State) error {
 
 		_, err = client.GetNodeBalancer(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of NodeBalancer %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of NodeBalancer %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 	}
 

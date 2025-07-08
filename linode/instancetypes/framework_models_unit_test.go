@@ -75,22 +75,82 @@ func TestParseInstanceTypes(t *testing.T) {
 	// Assertions for each mock instance type
 	for i, mockType := range mockTypes {
 		assert.Equal(t, model.Types[i].ID, types.StringValue(mockType.ID), "ID doesn't match")
-		assert.Equal(t, model.Types[i].Disk, types.Int64Value(int64(mockType.Disk)), "Disk size doesn't match")
-		assert.Equal(t, model.Types[i].Class, types.StringValue(string(mockType.Class)), "Class doesn't match")
-		assert.Equal(t, model.Types[i].Label, types.StringValue(mockType.Label), "Label doesn't match")
-		assert.Equal(t, model.Types[i].NetworkOut, types.Int64Value(int64(mockType.NetworkOut)), "NetworkOut doesn't match")
-		assert.Equal(t, model.Types[i].Memory, types.Int64Value(int64(mockType.Memory)), "Memory size doesn't match")
-		assert.Equal(t, model.Types[i].Transfer, types.Int64Value(int64(mockType.Transfer)), "Transfer size doesn't match")
-		assert.Equal(t, model.Types[i].VCPUs, types.Int64Value(int64(mockType.VCPUs)), "VCPUs count doesn't match")
-		assert.Equal(t, model.Types[i].AcceleratedDevices, types.Int64Value(int64(mockType.AcceleratedDevices)), "Accelerated devices count doesn't match")
+		assert.Equal(
+			t,
+			model.Types[i].Disk,
+			types.Int64Value(int64(mockType.Disk)),
+			"Disk size doesn't match",
+		)
+		assert.Equal(
+			t,
+			model.Types[i].Class,
+			types.StringValue(string(mockType.Class)),
+			"Class doesn't match",
+		)
+		assert.Equal(
+			t,
+			model.Types[i].Label,
+			types.StringValue(mockType.Label),
+			"Label doesn't match",
+		)
+		assert.Equal(
+			t,
+			model.Types[i].NetworkOut,
+			types.Int64Value(int64(mockType.NetworkOut)),
+			"NetworkOut doesn't match",
+		)
+		assert.Equal(
+			t,
+			model.Types[i].Memory,
+			types.Int64Value(int64(mockType.Memory)),
+			"Memory size doesn't match",
+		)
+		assert.Equal(
+			t,
+			model.Types[i].Transfer,
+			types.Int64Value(int64(mockType.Transfer)),
+			"Transfer size doesn't match",
+		)
+		assert.Equal(
+			t,
+			model.Types[i].VCPUs,
+			types.Int64Value(int64(mockType.VCPUs)),
+			"VCPUs count doesn't match",
+		)
+		assert.Equal(
+			t,
+			model.Types[i].AcceleratedDevices,
+			types.Int64Value(int64(mockType.AcceleratedDevices)),
+			"Accelerated devices count doesn't match",
+		)
 
 		// Assertions for Price
 		assert.NotNil(t, model.Types[i].Price, "Price should not be nil")
-		assert.Contains(t, model.Types[i].Price.String(), strconv.FormatFloat(float64(mockType.Price.Hourly), 'f', -1, 32), "Hourly price doesn't match")
-		assert.Contains(t, model.Types[i].Price.String(), strconv.FormatFloat(float64(mockType.Price.Monthly), 'f', -1, 32), "Monthly price doesn't match")
+		assert.Contains(
+			t,
+			model.Types[i].Price.String(),
+			strconv.FormatFloat(float64(mockType.Price.Hourly), 'f', -1, 32),
+			"Hourly price doesn't match",
+		)
+		assert.Contains(
+			t,
+			model.Types[i].Price.String(),
+			strconv.FormatFloat(float64(mockType.Price.Monthly), 'f', -1, 32),
+			"Monthly price doesn't match",
+		)
 
 		// Assertions for Addons
-		assert.Contains(t, model.Types[i].Addons.String(), strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Hourly), 'f', -1, 32), "Backups hourly price doesn't match")
-		assert.Contains(t, model.Types[i].Addons.String(), strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Monthly), 'f', -1, 32), "Backups monthly price doesn't match")
+		assert.Contains(
+			t,
+			model.Types[i].Addons.String(),
+			strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Hourly), 'f', -1, 32),
+			"Backups hourly price doesn't match",
+		)
+		assert.Contains(
+			t,
+			model.Types[i].Addons.String(),
+			strconv.FormatFloat(float64(mockType.Addons.Backups.Price.Monthly), 'f', -1, 32),
+			"Backups monthly price doesn't match",
+		)
 	}
 }

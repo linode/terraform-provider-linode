@@ -57,7 +57,8 @@ func sweep(prefix string) error {
 		return fmt.Errorf("Error getting object storage keys: %s", err)
 	}
 	for _, objectStorageKey := range objectStorageKeys {
-		if !acceptance.ShouldSweep(prefix, objectStorageKey.Label) || !strings.HasPrefix(objectStorageKey.Label, prefix) {
+		if !acceptance.ShouldSweep(prefix, objectStorageKey.Label) ||
+			!strings.HasPrefix(objectStorageKey.Label, prefix) {
 			continue
 		}
 		err := client.DeleteObjectStorageKey(context.Background(), objectStorageKey.ID)
@@ -146,7 +147,11 @@ func TestAccResourceObjectKey_limited_cluster(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_key", objectStorageKeyLabel)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"label",
+						fmt.Sprintf("%s_key", objectStorageKeyLabel),
+					),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 					resource.TestCheckResourceAttrSet(resName, "secret_key"),
 					resource.TestCheckResourceAttr(resName, "limited", "true"),
@@ -157,8 +162,16 @@ func TestAccResourceObjectKey_limited_cluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"bucket_access.0.permissions",
+						"read_only",
+					),
+					resource.TestCheckResourceAttr(
+						resName,
+						"bucket_access.1.permissions",
+						"read_write",
+					),
 					resource.TestCheckResourceAttr(resName, "regions.#", "1"),
 					resource.TestCheckResourceAttr(resName, "regions.0", testRegion),
 				),
@@ -183,7 +196,11 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_key", objectStorageKeyLabel)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"label",
+						fmt.Sprintf("%s_key", objectStorageKeyLabel),
+					),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 					resource.TestCheckResourceAttrSet(resName, "secret_key"),
 					resource.TestCheckResourceAttr(resName, "limited", "true"),
@@ -194,8 +211,16 @@ func TestAccResourceObjectKey_limited(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.cluster", testCluster),
 					resource.TestCheckResourceAttr(resName, "bucket_access.0.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "bucket_access.1.region", testRegion),
-					resource.TestCheckResourceAttr(resName, "bucket_access.0.permissions", "read_only"),
-					resource.TestCheckResourceAttr(resName, "bucket_access.1.permissions", "read_write"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"bucket_access.0.permissions",
+						"read_only",
+					),
+					resource.TestCheckResourceAttr(
+						resName,
+						"bucket_access.1.permissions",
+						"read_write",
+					),
 					resource.TestCheckResourceAttr(resName, "regions.#", "1"),
 					resource.TestCheckResourceAttr(resName, "regions.0", testRegion),
 				),
@@ -228,7 +253,11 @@ func TestAccResourceObjectKey_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkObjectKeyExists,
 					checkObjectKeySecretAccessible, // should be preserved in state
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", objectStorageKeyLabel)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"label",
+						fmt.Sprintf("%s_renamed", objectStorageKeyLabel),
+					),
 					resource.TestCheckResourceAttrSet(resName, "access_key"),
 				),
 			},
@@ -272,7 +301,11 @@ func checkObjectKeyExists(s *terraform.State) error {
 
 		_, err = client.GetObjectStorageKey(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Object Storage Key %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of Object Storage Key %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 	}
 

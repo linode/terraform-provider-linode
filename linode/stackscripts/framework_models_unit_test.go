@@ -52,7 +52,11 @@ func TestParseStackscripts(t *testing.T) {
 	for i, stackscript := range stackscriptsData {
 		// Non computed attrs assertions
 		assert.Contains(t, model.Stackscripts[i].ID.String(), strconv.Itoa(stackscript.ID))
-		assert.Equal(t, types.StringValue(stackscript.Description), model.Stackscripts[i].Description)
+		assert.Equal(
+			t,
+			types.StringValue(stackscript.Description),
+			model.Stackscripts[i].Description,
+		)
 		assert.Equal(t, types.StringValue(stackscript.Script), model.Stackscripts[i].Script)
 		assert.Equal(t, types.StringValue(stackscript.RevNote), model.Stackscripts[i].RevNote)
 		assert.Equal(t, types.BoolValue(stackscript.IsPublic), model.Stackscripts[i].IsPublic)
@@ -62,9 +66,21 @@ func TestParseStackscripts(t *testing.T) {
 		}
 
 		// Computed attr assertions
-		assert.Equal(t, types.Int64Value(int64(stackscript.DeploymentsActive)), model.Stackscripts[i].DeploymentsActive)
-		assert.Equal(t, types.Int64Value(int64(stackscript.DeploymentsTotal)), model.Stackscripts[i].DeploymentsTotal)
-		assert.Equal(t, types.StringValue(stackscript.UserGravatarID), model.Stackscripts[i].UserGravatarID)
+		assert.Equal(
+			t,
+			types.Int64Value(int64(stackscript.DeploymentsActive)),
+			model.Stackscripts[i].DeploymentsActive,
+		)
+		assert.Equal(
+			t,
+			types.Int64Value(int64(stackscript.DeploymentsTotal)),
+			model.Stackscripts[i].DeploymentsTotal,
+		)
+		assert.Equal(
+			t,
+			types.StringValue(stackscript.UserGravatarID),
+			model.Stackscripts[i].UserGravatarID,
+		)
 		assert.Equal(t, types.StringValue(stackscript.Username), model.Stackscripts[i].Username)
 	}
 }

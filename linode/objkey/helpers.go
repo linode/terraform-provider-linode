@@ -19,7 +19,11 @@ func getRegionFromCluster(cluster string) (string, error) {
 	return strings.Join(s[:2], "-"), nil
 }
 
-func validateRegionsAgainstBucketAccesses(ctx context.Context, plan ResourceModel, diags *diag.Diagnostics) {
+func validateRegionsAgainstBucketAccesses(
+	ctx context.Context,
+	plan ResourceModel,
+	diags *diag.Diagnostics,
+) {
 	// regions will be computed if not configured, so it's okay to be null or unknown.
 	if plan.BucketAccess == nil || plan.Regions.IsNull() || plan.Regions.IsUnknown() {
 		return
@@ -54,8 +58,14 @@ func validateRegionsAgainstBucketAccesses(ctx context.Context, plan ResourceMode
 			path.Root("regions"),
 			"Incomplete Regions",
 			"All regions of the buckets defined in `bucket_access` blocks are expected in the `regions` set attribute.\n"+
-				fmt.Sprintf("Regions in the `regions` set attribute: %v\n", regions)+
-				fmt.Sprintf("Regions in the `bucket_access` blocks: %v\n", bucketRegions),
+				fmt.Sprintf(
+					"Regions in the `regions` set attribute: %v\n",
+					regions,
+				)+
+				fmt.Sprintf(
+					"Regions in the `bucket_access` blocks: %v\n",
+					bucketRegions,
+				),
 		)
 	}
 }

@@ -29,7 +29,9 @@ func SafeFwValueEchoConverter() SafeFwValueConverter[attr.Value, attr.Value] {
 
 // Returns a converter that cast the result of the passed in converter
 // to be base framework value (aka attr.Value)
-func GetBaseFwValueConverter[T any, U attr.Value](c FwValueConverter[T, U]) FwValueConverter[T, attr.Value] {
+func GetBaseFwValueConverter[T any, U attr.Value](
+	c FwValueConverter[T, U],
+) FwValueConverter[T, attr.Value] {
 	return func(v T) (attr.Value, diag.Diagnostics) {
 		return c(v)
 	}
@@ -37,7 +39,9 @@ func GetBaseFwValueConverter[T any, U attr.Value](c FwValueConverter[T, U]) FwVa
 
 // Returns a converter that cast the result of the passed in converter to
 // be base framework value (aka attr.Value) without diags.Diagnostics support
-func GetBaseSafeFwValueConverter[T any, U attr.Value](c SafeFwValueConverter[T, U]) SafeFwValueConverter[T, attr.Value] {
+func GetBaseSafeFwValueConverter[T any, U attr.Value](
+	c SafeFwValueConverter[T, U],
+) SafeFwValueConverter[T, attr.Value] {
 	return func(v T) attr.Value {
 		return c(v)
 	}

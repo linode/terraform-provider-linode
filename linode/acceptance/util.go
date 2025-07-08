@@ -85,7 +85,10 @@ func initTestImages() {
 		log.Fatalf("failed to create image filter json: %s", err)
 	}
 
-	images, err := client.ListImages(context.Background(), &linodego.ListOptions{Filter: string(filterJSON)})
+	images, err := client.ListImages(
+		context.Background(),
+		&linodego.ListOptions{Filter: string(filterJSON)},
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,7 +103,9 @@ func initTestImages() {
 
 func init() {
 	var err error
-	PublicKeyMaterial, privateKeyMaterial, err = acctest.RandSSHKeyPair("linode@ssh-acceptance-test")
+	PublicKeyMaterial, privateKeyMaterial, err = acctest.RandSSHKeyPair(
+		"linode@ssh-acceptance-test",
+	)
 	if err != nil {
 		log.Fatalf("Failed to generate random SSH key pair for testing: %s", err)
 	}
@@ -161,7 +166,10 @@ func OptInTest(t testing.TB) {
 	t.Helper()
 
 	if _, ok := optInTests[t.Name()]; !ok {
-		t.Skipf("skipping opt-in test; specify test in environment variable %q to run", optInTestsEnvVar)
+		t.Skipf(
+			"skipping opt-in test; specify test in environment variable %q to run",
+			optInTestsEnvVar,
+		)
 	}
 }
 
@@ -239,7 +247,10 @@ func CheckResourceAttrContains(resName string, path, desiredValue string) resour
 	}
 }
 
-func ValidateResourceAttr(resName, path string, comparisonFunc AttrValidateFunc) resource.TestCheckFunc {
+func ValidateResourceAttr(
+	resName, path string,
+	comparisonFunc AttrValidateFunc,
+) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resName]
 		if !ok {
@@ -314,7 +325,10 @@ func CheckResourceAttrListContains(resName, path, desiredValue string) resource.
 	}
 }
 
-func LoopThroughStringList(resName, path string, listValidateFunc ListAttrValidateFunc) resource.TestCheckFunc {
+func LoopThroughStringList(
+	resName, path string,
+	listValidateFunc ListAttrValidateFunc,
+) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resName]
 		if !ok {
@@ -443,7 +457,11 @@ func CheckVolumeExists(name string, volume *linodego.Volume) resource.TestCheckF
 
 		found, err := client.GetVolume(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Volume %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of Volume %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 
 		*volume = *found
@@ -472,7 +490,11 @@ func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.Test
 
 		found, err := client.GetFirewall(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Firewall %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of Firewall %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 
 		*firewall = *found
@@ -481,7 +503,11 @@ func CheckFirewallExists(name string, firewall *linodego.Firewall) resource.Test
 	}
 }
 
-func CheckEventAbsent(name string, entityType linodego.EntityType, action linodego.EventAction) resource.TestCheckFunc {
+func CheckEventAbsent(
+	name string,
+	entityType linodego.EntityType,
+	action linodego.EventAction,
+) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 
@@ -648,7 +674,11 @@ func GetRandomObjectStorageEndpoint() (*linodego.ObjectStorageEndpoint, error) {
 // - capabilities: Required capabilities that the regions must support.
 // - siteType: The site type to filter by ("core" or "distributed" or "any").
 // - filters: Optional custom filters for additional criteria.
-func GetRegionsWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) ([]string, error) {
+func GetRegionsWithCaps(
+	capabilities []string,
+	regionType string,
+	filters ...RegionFilterFunc,
+) ([]string, error) {
 	client, err := GetTestClient()
 	if err != nil {
 		return nil, err
@@ -663,7 +693,8 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 	regionsWithCaps := slices.DeleteFunc(regions, func(region linodego.Region) bool {
 		// Check if the site type matches
 		// Skip site type check if "any" is passed
-		if !strings.EqualFold(regionType, "any") && !strings.EqualFold(region.SiteType, regionType) {
+		if !strings.EqualFold(regionType, "any") &&
+			!strings.EqualFold(region.SiteType, regionType) {
 			return true
 		}
 
@@ -703,7 +734,11 @@ func GetRegionsWithCaps(capabilities []string, regionType string, filters ...Reg
 }
 
 // GetRandomRegionWithCaps gets a random region given a list of region capabilities.
-func GetRandomRegionWithCaps(capabilities []string, regionType string, filters ...RegionFilterFunc) (string, error) {
+func GetRandomRegionWithCaps(
+	capabilities []string,
+	regionType string,
+	filters ...RegionFilterFunc,
+) (string, error) {
 	regions, err := GetRegionsWithCaps(capabilities, regionType, filters...)
 	if err != nil {
 		return "", err

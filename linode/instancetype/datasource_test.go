@@ -88,32 +88,62 @@ func TestAccDataSourceLinodeInstanceType_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"addons.0.backups.0.price.0.hourly",
-						strconv.FormatFloat(float64(targetType.Addons.Backups.Price.Hourly), 'f', -1, 64),
+						strconv.FormatFloat(
+							float64(targetType.Addons.Backups.Price.Hourly),
+							'f',
+							-1,
+							64,
+						),
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"addons.0.backups.0.price.0.monthly",
-						strconv.FormatFloat(float64(targetType.Addons.Backups.Price.Monthly), 'f', -1, 64),
+						strconv.FormatFloat(
+							float64(targetType.Addons.Backups.Price.Monthly),
+							'f',
+							-1,
+							64,
+						),
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"region_prices.0.monthly",
-						strconv.FormatFloat(float64(targetType.RegionPrices[0].Monthly), 'f', -1, 64),
+						strconv.FormatFloat(
+							float64(targetType.RegionPrices[0].Monthly),
+							'f',
+							-1,
+							64,
+						),
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"region_prices.0.hourly",
-						strconv.FormatFloat(float64(targetType.RegionPrices[0].Hourly), 'f', -1, 64),
+						strconv.FormatFloat(
+							float64(targetType.RegionPrices[0].Hourly),
+							'f',
+							-1,
+							64,
+						),
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"addons.0.backups.0.region_prices.0.monthly",
-						strconv.FormatFloat(float64(targetType.Addons.Backups.RegionPrices[0].Monthly), 'f', -1, 64),
+						strconv.FormatFloat(
+							float64(targetType.Addons.Backups.RegionPrices[0].Monthly),
+							'f',
+							-1,
+							64,
+						),
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"addons.0.backups.0.region_prices.0.hourly",
-						strconv.FormatFloat(float64(targetType.Addons.Backups.RegionPrices[0].Hourly), 'f', -1, 64),
+						strconv.FormatFloat(
+							float64(targetType.Addons.Backups.RegionPrices[0].Hourly),
+							'f',
+							-1,
+							64,
+						),
 					),
 				),
 			},

@@ -8,20 +8,22 @@ import (
 	"strconv"
 	"testing"
 
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
 	"github.com/linode/terraform-provider-linode/v3/linode/firewalldevice/tmpl"
 )
 
 var testRegion string
 
 func init() {
-	region, err := acceptance.GetRandomRegionWithCaps([]string{"Cloud Firewall", "NodeBalancers"}, "core")
+	region, err := acceptance.GetRandomRegionWithCaps(
+		[]string{"Cloud Firewall", "NodeBalancers"},
+		"core",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,7 +73,12 @@ func TestAccResourceFirewallDevice_basic_smoke(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
-					resource.TestCheckResourceAttrPair(firewallName, "linodes.0", instanceName, "id"),
+					resource.TestCheckResourceAttrPair(
+						firewallName,
+						"linodes.0",
+						instanceName,
+						"id",
+					),
 				),
 			},
 			{
@@ -116,7 +123,13 @@ func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
 		ProtoV6ProviderFactories:  acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.WithNodeBalancer(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(
+					t,
+				) + tmpl.WithNodeBalancer(
+					t,
+					label,
+					testRegion,
+				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttrSet(deviceName, "created"),
@@ -124,11 +137,22 @@ func TestAccResourceFirewallDevice_withNodeBalancer(t *testing.T) {
 			},
 			// Refresh the state and verify the attachment
 			{
-				Config: acceptanceTmpl.ProviderNoPoll(t) + tmpl.WithNodeBalancer(t, label, testRegion),
+				Config: acceptanceTmpl.ProviderNoPoll(
+					t,
+				) + tmpl.WithNodeBalancer(
+					t,
+					label,
+					testRegion,
+				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					acceptance.CheckFirewallExists(firewallName, &firewall),
 					resource.TestCheckResourceAttr(firewallName, "devices.#", "1"),
-					resource.TestCheckResourceAttrPair(firewallName, "nodebalancers.0", nodebalancerName, "id"),
+					resource.TestCheckResourceAttrPair(
+						firewallName,
+						"nodebalancers.0",
+						nodebalancerName,
+						"id",
+					),
 				),
 			},
 			{
@@ -169,7 +193,10 @@ func resourceImportStateID(s *terraform.State) (string, error) {
 
 		firewallID, err := strconv.Atoi(rs.Primary.Attributes["firewall_id"])
 		if err != nil {
-			return "", fmt.Errorf("Error parsing firewall_id %v to int", rs.Primary.Attributes["firewall_id"])
+			return "", fmt.Errorf(
+				"Error parsing firewall_id %v to int",
+				rs.Primary.Attributes["firewall_id"],
+			)
 		}
 		return fmt.Sprintf("%d,%d", firewallID, id), nil
 	}

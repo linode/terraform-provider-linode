@@ -86,11 +86,31 @@ func validateStackscript(resourceName, stackScriptName string) resource.TestChec
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.script", basicStackScript),
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.images.#", "2"),
 		acceptance.CheckListContains(resourceName, "stackscripts.0.images", "linode/ubuntu18.04"),
-		acceptance.CheckListContains(resourceName, "stackscripts.0.images", "linode/ubuntu16.04lts"),
+		acceptance.CheckListContains(
+			resourceName,
+			"stackscripts.0.images",
+			"linode/ubuntu16.04lts",
+		),
 		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.#", "1"),
-		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.0.name", "name"),
-		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.0.label", "Your name"),
-		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.0.default", "user"),
-		resource.TestCheckResourceAttr(resourceName, "stackscripts.0.user_defined_fields.0.example", "Linus Torvalds"),
+		resource.TestCheckResourceAttr(
+			resourceName,
+			"stackscripts.0.user_defined_fields.0.name",
+			"name",
+		),
+		resource.TestCheckResourceAttr(
+			resourceName,
+			"stackscripts.0.user_defined_fields.0.label",
+			"Your name",
+		),
+		resource.TestCheckResourceAttr(
+			resourceName,
+			"stackscripts.0.user_defined_fields.0.default",
+			"user",
+		),
+		resource.TestCheckResourceAttr(
+			resourceName,
+			"stackscripts.0.user_defined_fields.0.example",
+			"Linus Torvalds",
+		),
 	)
 }

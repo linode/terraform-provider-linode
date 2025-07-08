@@ -78,8 +78,10 @@ func (f FilterConfig) FilterSchema() *schema.Schema {
 					Description: "The type of comparison to use for this filter.",
 					Optional:    true,
 					Default:     "exact",
-					ValidateFunc: validation.StringInSlice([]string{"exact", "substring", "sub", "re", "regex"},
-						false),
+					ValidateFunc: validation.StringInSlice(
+						[]string{"exact", "substring", "sub", "re", "regex"},
+						false,
+					),
 				},
 			},
 		},
@@ -307,7 +309,10 @@ func (f FilterConfig) GetFilterID(d *schema.ResourceData) (string, error) {
 }
 
 // FilterLatest returns only the latest element in the given slice only if `latest` == true.
-func (f FilterConfig) FilterLatest(d *schema.ResourceData, items []map[string]interface{}) []map[string]interface{} {
+func (f FilterConfig) FilterLatest(
+	d *schema.ResourceData,
+	items []map[string]interface{},
+) []map[string]interface{} {
 	if !d.Get("latest").(bool) {
 		return items
 	}
@@ -367,7 +372,9 @@ func (f FilterConfig) FilterLatestVersion(d *schema.ResourceData,
 }
 
 // GetLatestVersion returns only the latest version string (e.g. `8.0.26`) in the given slice.
-func (f FilterConfig) GetLatestVersion(data []map[string]interface{}) (map[string]interface{}, error) {
+func (f FilterConfig) GetLatestVersion(
+	data []map[string]interface{},
+) (map[string]interface{}, error) {
 	var latestVersion []int
 
 	var latestEntity map[string]interface{}
@@ -530,8 +537,11 @@ func validateFilterExact(values []interface{}, result interface{}) (bool, error)
 func validateFilterSubstring(name string, values []interface{}, result interface{}) (bool, error) {
 	itemValueStr, ok := result.(string)
 	if !ok {
-		return false, fmt.Errorf("\"%s\" is not a string (type %s) and cannot be filtered on substring",
-			name, reflect.TypeOf(result))
+		return false, fmt.Errorf(
+			"\"%s\" is not a string (type %s) and cannot be filtered on substring",
+			name,
+			reflect.TypeOf(result),
+		)
 	}
 
 	for _, value := range values {

@@ -43,7 +43,11 @@ func TestFlattenPGModel(t *testing.T) {
 	require.Equal(t, "123", model.ID.ValueString())
 	require.Equal(t, label, model.Label.ValueString())
 	require.Equal(t, "us-mia", model.Region.ValueString())
-	require.Equal(t, string(linodego.PlacementGroupTypeAntiAffinityLocal), model.PlacementGroupType.ValueString())
+	require.Equal(
+		t,
+		string(linodego.PlacementGroupTypeAntiAffinityLocal),
+		model.PlacementGroupType.ValueString(),
+	)
 	require.Equal(t, "flexible", model.PlacementGroupPolicy.ValueString())
 
 	require.Equal(t, false, model.IsCompliant.ValueBool())

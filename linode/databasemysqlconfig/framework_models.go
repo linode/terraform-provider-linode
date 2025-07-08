@@ -46,7 +46,10 @@ func (data *DataSourceModel) ParseMySQLConfig(
 	data.ID = types.StringValue(id)
 }
 
-func flattenBinlogRetentionPeriod(binlogRetentionPeriod *linodego.MySQLDatabaseConfigInfoBinlogRetentionPeriod, diags *diag.Diagnostics) *basetypes.ListValue {
+func flattenBinlogRetentionPeriod(
+	binlogRetentionPeriod *linodego.MySQLDatabaseConfigInfoBinlogRetentionPeriod,
+	diags *diag.Diagnostics,
+) *basetypes.ListValue {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(binlogRetentionPeriod.Description),
 		"example":          types.Int64Value(int64(binlogRetentionPeriod.Example)),
@@ -72,7 +75,10 @@ func flattenBinlogRetentionPeriod(binlogRetentionPeriod *linodego.MySQLDatabaseC
 	return &resultList
 }
 
-func flattenMySQL(mysql *linodego.MySQLDatabaseConfigInfoMySQL, diags *diag.Diagnostics) *basetypes.ListValue {
+func flattenMySQL(
+	mysql *linodego.MySQLDatabaseConfigInfoMySQL,
+	diags *diag.Diagnostics,
+) *basetypes.ListValue {
 	result := make(map[string]attr.Value)
 
 	connectTimeout, d := flattenConnectTimeout(&mysql.ConnectTimeout)
@@ -93,13 +99,17 @@ func flattenMySQL(mysql *linodego.MySQLDatabaseConfigInfoMySQL, diags *diag.Diag
 		return nil
 	}
 
-	informationSchemaStatsExpiry, d := flattenInformationSchemaStatsExpiry(&mysql.InformationSchemaStatsExpiry)
+	informationSchemaStatsExpiry, d := flattenInformationSchemaStatsExpiry(
+		&mysql.InformationSchemaStatsExpiry,
+	)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
 	}
 
-	innoDBChangeBufferMaxSize, d := flattenInnoDBChangeBufferMaxSize(&mysql.InnoDBChangeBufferMaxSize)
+	innoDBChangeBufferMaxSize, d := flattenInnoDBChangeBufferMaxSize(
+		&mysql.InnoDBChangeBufferMaxSize,
+	)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -117,7 +127,9 @@ func flattenMySQL(mysql *linodego.MySQLDatabaseConfigInfoMySQL, diags *diag.Diag
 		return nil
 	}
 
-	innoDBFTServerStopwordTable, d := flattenInnoDBFTServerStopwordTable(&mysql.InnoDBFTServerStopwordTable)
+	innoDBFTServerStopwordTable, d := flattenInnoDBFTServerStopwordTable(
+		&mysql.InnoDBFTServerStopwordTable,
+	)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -135,7 +147,9 @@ func flattenMySQL(mysql *linodego.MySQLDatabaseConfigInfoMySQL, diags *diag.Diag
 		return nil
 	}
 
-	innoDBOnlineAlterLogMaxSize, d := flattenInnoDBOnlineAlterLogMaxSize(&mysql.InnoDBOnlineAlterLogMaxSize)
+	innoDBOnlineAlterLogMaxSize, d := flattenInnoDBOnlineAlterLogMaxSize(
+		&mysql.InnoDBOnlineAlterLogMaxSize,
+	)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -171,7 +185,9 @@ func flattenMySQL(mysql *linodego.MySQLDatabaseConfigInfoMySQL, diags *diag.Diag
 		return nil
 	}
 
-	internalTmpMemStorageEngine, d := flattenInternalTmpMemStorageEngine(&mysql.InternalTmpMemStorageEngine)
+	internalTmpMemStorageEngine, d := flattenInternalTmpMemStorageEngine(
+		&mysql.InternalTmpMemStorageEngine,
+	)
 	if d.HasError() {
 		diags.Append(d...)
 		return nil
@@ -301,7 +317,9 @@ func flattenConnectTimeout(val *linodego.ConnectTimeout) (
 	return &obj, nil
 }
 
-func flattenDefaultTimeZone(val *linodego.DefaultTimeZone) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenDefaultTimeZone(
+	val *linodego.DefaultTimeZone,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.StringValue(val.Example),
@@ -318,7 +336,9 @@ func flattenDefaultTimeZone(val *linodego.DefaultTimeZone) (*basetypes.ObjectVal
 	return &obj, nil
 }
 
-func flattenGroupConcatMaxLen(val *linodego.GroupConcatMaxLen) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenGroupConcatMaxLen(
+	val *linodego.GroupConcatMaxLen,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Float64Value(val.Example),
@@ -334,7 +354,9 @@ func flattenGroupConcatMaxLen(val *linodego.GroupConcatMaxLen) (*basetypes.Objec
 	return &obj, nil
 }
 
-func flattenInformationSchemaStatsExpiry(val *linodego.InformationSchemaStatsExpiry) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInformationSchemaStatsExpiry(
+	val *linodego.InformationSchemaStatsExpiry,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -350,7 +372,9 @@ func flattenInformationSchemaStatsExpiry(val *linodego.InformationSchemaStatsExp
 	return &obj, nil
 }
 
-func flattenInnoDBChangeBufferMaxSize(val *linodego.InnoDBChangeBufferMaxSize) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBChangeBufferMaxSize(
+	val *linodego.InnoDBChangeBufferMaxSize,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -366,7 +390,9 @@ func flattenInnoDBChangeBufferMaxSize(val *linodego.InnoDBChangeBufferMaxSize) (
 	return &obj, nil
 }
 
-func flattenInnoDBFlushNeighbors(val *linodego.InnoDBFlushNeighbors) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBFlushNeighbors(
+	val *linodego.InnoDBFlushNeighbors,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -382,7 +408,9 @@ func flattenInnoDBFlushNeighbors(val *linodego.InnoDBFlushNeighbors) (*basetypes
 	return &obj, nil
 }
 
-func flattenInnoDBFTMinTokenSize(val *linodego.InnoDBFTMinTokenSize) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBFTMinTokenSize(
+	val *linodego.InnoDBFTMinTokenSize,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -398,7 +426,9 @@ func flattenInnoDBFTMinTokenSize(val *linodego.InnoDBFTMinTokenSize) (*basetypes
 	return &obj, nil
 }
 
-func flattenInnoDBFTServerStopwordTable(val *linodego.InnoDBFTServerStopwordTable) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBFTServerStopwordTable(
+	val *linodego.InnoDBFTServerStopwordTable,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	typeVals := make([]attr.Value, len(val.Type))
 	for i, s := range val.Type {
 		typeVals[i] = types.StringValue(s)
@@ -418,7 +448,9 @@ func flattenInnoDBFTServerStopwordTable(val *linodego.InnoDBFTServerStopwordTabl
 	return &obj, nil
 }
 
-func flattenInnoDBLockWaitTimeout(val *linodego.InnoDBLockWaitTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBLockWaitTimeout(
+	val *linodego.InnoDBLockWaitTimeout,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -434,7 +466,9 @@ func flattenInnoDBLockWaitTimeout(val *linodego.InnoDBLockWaitTimeout) (*basetyp
 	return &obj, nil
 }
 
-func flattenInnoDBLogBufferSize(val *linodego.InnoDBLogBufferSize) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBLogBufferSize(
+	val *linodego.InnoDBLogBufferSize,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -450,7 +484,9 @@ func flattenInnoDBLogBufferSize(val *linodego.InnoDBLogBufferSize) (*basetypes.O
 	return &obj, nil
 }
 
-func flattenInnoDBOnlineAlterLogMaxSize(val *linodego.InnoDBOnlineAlterLogMaxSize) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBOnlineAlterLogMaxSize(
+	val *linodego.InnoDBOnlineAlterLogMaxSize,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -466,7 +502,9 @@ func flattenInnoDBOnlineAlterLogMaxSize(val *linodego.InnoDBOnlineAlterLogMaxSiz
 	return &obj, nil
 }
 
-func flattenInnoDBReadIOThreads(val *linodego.InnoDBReadIOThreads) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBReadIOThreads(
+	val *linodego.InnoDBReadIOThreads,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -482,7 +520,9 @@ func flattenInnoDBReadIOThreads(val *linodego.InnoDBReadIOThreads) (*basetypes.O
 	return &obj, nil
 }
 
-func flattenInnoDBRollbackOnTimeout(val *linodego.InnoDBRollbackOnTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBRollbackOnTimeout(
+	val *linodego.InnoDBRollbackOnTimeout,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.BoolValue(val.Example),
@@ -496,7 +536,9 @@ func flattenInnoDBRollbackOnTimeout(val *linodego.InnoDBRollbackOnTimeout) (*bas
 	return &obj, nil
 }
 
-func flattenInnoDBThreadConcurrency(val *linodego.InnoDBThreadConcurrency) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBThreadConcurrency(
+	val *linodego.InnoDBThreadConcurrency,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -512,7 +554,9 @@ func flattenInnoDBThreadConcurrency(val *linodego.InnoDBThreadConcurrency) (*bas
 	return &obj, nil
 }
 
-func flattenInnoDBWriteIOThreads(val *linodego.InnoDBWriteIOThreads) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInnoDBWriteIOThreads(
+	val *linodego.InnoDBWriteIOThreads,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -528,7 +572,9 @@ func flattenInnoDBWriteIOThreads(val *linodego.InnoDBWriteIOThreads) (*basetypes
 	return &obj, nil
 }
 
-func flattenInteractiveTimeout(val *linodego.InteractiveTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInteractiveTimeout(
+	val *linodego.InteractiveTimeout,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -544,7 +590,9 @@ func flattenInteractiveTimeout(val *linodego.InteractiveTimeout) (*basetypes.Obj
 	return &obj, nil
 }
 
-func flattenInternalTmpMemStorageEngine(val *linodego.InternalTmpMemStorageEngine) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenInternalTmpMemStorageEngine(
+	val *linodego.InternalTmpMemStorageEngine,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	enumVals := make([]attr.Value, len(val.Enum))
 	for i, v := range val.Enum {
 		enumVals[i] = types.StringValue(v)
@@ -563,7 +611,9 @@ func flattenInternalTmpMemStorageEngine(val *linodego.InternalTmpMemStorageEngin
 	return &obj, nil
 }
 
-func flattenMaxAllowedPacket(val *linodego.MaxAllowedPacket) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxAllowedPacket(
+	val *linodego.MaxAllowedPacket,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -579,7 +629,9 @@ func flattenMaxAllowedPacket(val *linodego.MaxAllowedPacket) (*basetypes.ObjectV
 	return &obj, nil
 }
 
-func flattenMaxHeapTableSize(val *linodego.MaxHeapTableSize) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenMaxHeapTableSize(
+	val *linodego.MaxHeapTableSize,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -595,7 +647,9 @@ func flattenMaxHeapTableSize(val *linodego.MaxHeapTableSize) (*basetypes.ObjectV
 	return &obj, nil
 }
 
-func flattenNetBufferLength(val *linodego.NetBufferLength) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenNetBufferLength(
+	val *linodego.NetBufferLength,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -611,7 +665,9 @@ func flattenNetBufferLength(val *linodego.NetBufferLength) (*basetypes.ObjectVal
 	return &obj, nil
 }
 
-func flattenNetReadTimeout(val *linodego.NetReadTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenNetReadTimeout(
+	val *linodego.NetReadTimeout,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -627,7 +683,9 @@ func flattenNetReadTimeout(val *linodego.NetReadTimeout) (*basetypes.ObjectValue
 	return &obj, nil
 }
 
-func flattenNetWriteTimeout(val *linodego.NetWriteTimeout) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenNetWriteTimeout(
+	val *linodego.NetWriteTimeout,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -643,7 +701,9 @@ func flattenNetWriteTimeout(val *linodego.NetWriteTimeout) (*basetypes.ObjectVal
 	return &obj, nil
 }
 
-func flattenSortBufferSize(val *linodego.SortBufferSize) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenSortBufferSize(
+	val *linodego.SortBufferSize,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.Int64Value(int64(val.Example)),
@@ -675,7 +735,9 @@ func flattenSQLMode(val *linodego.SQLMode) (*basetypes.ObjectValue, diag.Diagnos
 	return &obj, nil
 }
 
-func flattenSQLRequirePrimaryKey(val *linodego.SQLRequirePrimaryKey) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenSQLRequirePrimaryKey(
+	val *linodego.SQLRequirePrimaryKey,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := map[string]attr.Value{
 		"description":      types.StringValue(val.Description),
 		"example":          types.BoolValue(val.Example),

@@ -51,8 +51,15 @@ func TestAccDataSourceVPCSubnets_basic_smoke(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.updated"),
 
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.linodes.0.id"),
-					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.linodes.0.interfaces.0.id"),
-					resource.TestCheckResourceAttr(resourceName, "vpc_subnets.0.linodes.0.interfaces.0.active", "false"),
+					resource.TestCheckResourceAttrSet(
+						resourceName,
+						"vpc_subnets.0.linodes.0.interfaces.0.id",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"vpc_subnets.0.linodes.0.interfaces.0.active",
+						"false",
+					),
 				),
 			},
 		},
@@ -77,7 +84,11 @@ func TestAccDataSourceVPCSubnets_filterByLabel(t *testing.T) {
 				Config: tmpl.DataFilterLabel(t, vpcLabel, testRegion, "10.0.0.0/24"),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckResourceAttrGreaterThan(resourceName, "vpc_subnets.#", 0),
-					acceptance.CheckResourceAttrContains(resourceName, "vpc_subnets.0.label", "tf-test"),
+					acceptance.CheckResourceAttrContains(
+						resourceName,
+						"vpc_subnets.0.label",
+						"tf-test",
+					),
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.ipv4"),
 					resource.TestCheckResourceAttrSet(resourceName, "vpc_subnets.0.created"),

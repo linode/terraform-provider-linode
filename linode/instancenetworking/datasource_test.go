@@ -44,12 +44,30 @@ func TestAccDataSourceInstanceNetworking_basic(t *testing.T) {
 				Config: tmpl.DataBasic(t, name, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.private.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.public.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.reserved.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.shared.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.global.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.link_local.%"),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.private.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.public.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.reserved.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.shared.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv6.0.global.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv6.0.link_local.%",
+					),
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.slaac.%"),
 				),
 			},
@@ -74,7 +92,11 @@ func TestAccDataSourceInstanceNetworking_vpc(t *testing.T) {
 				Config: tmpl.DataVPC(t, name, testRegion, "10.0.0.0/24", instanceVPCIP),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.vpc.#"),
-					resource.TestCheckResourceAttr(testInstanceNetworkResName, "ipv4.0.vpc.0.address", instanceVPCIP),
+					resource.TestCheckResourceAttr(
+						testInstanceNetworkResName,
+						"ipv4.0.vpc.0.address",
+						instanceVPCIP,
+					),
 				),
 			},
 		},
@@ -99,12 +121,30 @@ func TestAccDataSourceInstanceNetworking_basicwithReseved(t *testing.T) {
 				Config: tmpl.DataBasic_withReservedField(t, name, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					acceptance.CheckInstanceExists("linode_instance.foobar", &instance),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.private.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.public.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.reserved.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv4.0.shared.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.global.#"),
-					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.link_local.%"),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.private.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.public.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.reserved.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv4.0.shared.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv6.0.global.#",
+					),
+					resource.TestCheckResourceAttrSet(
+						testInstanceNetworkResName,
+						"ipv6.0.link_local.%",
+					),
 					resource.TestCheckResourceAttrSet(testInstanceNetworkResName, "ipv6.0.slaac.%"),
 				),
 			},

@@ -69,7 +69,12 @@ func flattenInstance(
 
 	instanceConfigs, err := client.ListInstanceConfigs(ctx, id, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get the config for Linode instance %d (%s): %s", id, instance.Label, err)
+		return nil, fmt.Errorf(
+			"failed to get the config for Linode instance %d (%s): %s",
+			id,
+			instance.Label,
+			err,
+		)
 	}
 
 	diskLabelIDMap := make(map[int]string, len(instanceDisks))
@@ -108,7 +113,9 @@ func flattenInstanceBackups(instance linodego.Instance) []map[string]interface{}
 	}}
 }
 
-func flattenInstanceDisks(instanceDisks []linodego.InstanceDisk) (disks []map[string]interface{}, swapSize int) {
+func flattenInstanceDisks(
+	instanceDisks []linodego.InstanceDisk,
+) (disks []map[string]interface{}, swapSize int) {
 	for _, disk := range instanceDisks {
 		// Determine if swap exists and the size.  If it does not exist, swap_size=0
 		if disk.Filesystem == "swap" {

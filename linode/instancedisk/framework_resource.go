@@ -6,13 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -87,9 +85,12 @@ func (r *Resource) Create(
 		StackscriptID: stackScriptID,
 	}
 
-	resp.Diagnostics.Append(plan.AuthorizedKeys.ElementsAs(ctx, &createOpts.AuthorizedKeys, false)...)
-	resp.Diagnostics.Append(plan.AuthorizedUsers.ElementsAs(ctx, &createOpts.AuthorizedUsers, false)...)
-	resp.Diagnostics.Append(plan.StackScriptData.ElementsAs(ctx, &createOpts.StackscriptData, false)...)
+	resp.Diagnostics.Append(
+		plan.AuthorizedKeys.ElementsAs(ctx, &createOpts.AuthorizedKeys, false)...)
+	resp.Diagnostics.Append(
+		plan.AuthorizedUsers.ElementsAs(ctx, &createOpts.AuthorizedUsers, false)...)
+	resp.Diagnostics.Append(
+		plan.StackScriptData.ElementsAs(ctx, &createOpts.StackscriptData, false)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -196,7 +197,9 @@ func (r *Resource) Read(
 				"Disk Not Found",
 				fmt.Sprintf(
 					"%s\nRemoving Disk (%d) of Linode instance (%d) from state because it no longer exists",
-					err.Error(), id, linodeID,
+					err.Error(),
+					id,
+					linodeID,
 				),
 			)
 			resp.State.RemoveResource(ctx)

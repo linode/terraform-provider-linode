@@ -49,8 +49,16 @@ func TestParseMySQLDatabase(t *testing.T) {
 	assert.Equal(t, types.Int64Value(123), data.DatabaseID)
 	assert.Equal(t, types.StringValue("active"), data.Status)
 	assert.Equal(t, types.StringValue("example-db"), data.Label)
-	assert.Equal(t, types.StringValue("lin-123-456-mysql-mysql-primary.servers.linodedb.net"), data.HostPrimary)
-	assert.Equal(t, types.StringValue("lin-123-456-mysql-primary-private.servers.linodedb.net"), data.HostSecondary)
+	assert.Equal(
+		t,
+		types.StringValue("lin-123-456-mysql-mysql-primary.servers.linodedb.net"),
+		data.HostPrimary,
+	)
+	assert.Equal(
+		t,
+		types.StringValue("lin-123-456-mysql-primary-private.servers.linodedb.net"),
+		data.HostSecondary,
+	)
 	assert.Equal(t, types.StringValue("us-east"), data.Region)
 	assert.Equal(t, types.StringValue("g6-dedicated-2"), data.Type)
 
@@ -73,13 +81,21 @@ func TestParseMySQLDatabase(t *testing.T) {
 
 func TestParseMySQLDatabaseSSL(t *testing.T) {
 	mockDBSSL := &linodego.MySQLDatabaseSSL{
-		CACertificate: []byte("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"),
+		CACertificate: []byte(
+			"-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----",
+		),
 	}
 
 	data := &DataSourceModel{}
 	data.parseMySQLDatabaseSSL(mockDBSSL)
 
-	assert.Equal(t, types.StringValue("-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----"), data.CACert)
+	assert.Equal(
+		t,
+		types.StringValue(
+			"-----BEGIN CERTIFICATE-----\nMIIDdTCCAl2gAwIBAgIUT01...\n...u4QIDAQABo1MwUTAdBgNV...\n-----END CERTIFICATE-----",
+		),
+		data.CACert,
+	)
 }
 
 func TestParseMySQLDatabaseCredentials(t *testing.T) {

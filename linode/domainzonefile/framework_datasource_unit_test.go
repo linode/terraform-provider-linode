@@ -32,7 +32,12 @@ func TestParseDomainZoneFile(t *testing.T) {
 
 	assert.Empty(t, data.DomainID, "DomainID should be 0/nil")
 	for _, line := range mockZoneFileData.ZoneFile {
-		assert.Contains(t, data.ZoneFile.String(), line, "ZoneFile content doesn't contain expected line")
+		assert.Contains(
+			t,
+			data.ZoneFile.String(),
+			line,
+			"ZoneFile content doesn't contain expected line",
+		)
 	}
 
 	idJSON, _ := json.Marshal(&mockZoneFileData)

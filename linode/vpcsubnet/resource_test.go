@@ -83,7 +83,11 @@ func TestAccResourceVPCSubnet_update(t *testing.T) {
 				Config: tmpl.Updates(t, subnetLabel, "192.168.0.0/26", testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					checkVPCSubnetExists,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s-renamed", subnetLabel)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"label",
+						fmt.Sprintf("%s-renamed", subnetLabel),
+					),
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttrSet(resName, "updated"),
 				),
@@ -111,8 +115,10 @@ func TestAccResourceVPCSubnet_create_InvalidLabel_basic(t *testing.T) {
 		CheckDestroy:             checkVPCSubnetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				Config: tmpl.Basic(t, subnetLabel, "172.16.0.0/24", testRegion),
+				ExpectError: regexp.MustCompile(
+					"Label must include only ASCII letters, numbers, and dashes",
+				),
 			},
 		},
 	})
@@ -140,8 +146,10 @@ func TestAccResourceVPCSubnet_update_invalidLabel(t *testing.T) {
 				),
 			},
 			{
-				Config:      tmpl.Updates(t, invalidLabel, "192.168.0.0/26", testRegion),
-				ExpectError: regexp.MustCompile("Label must include only ASCII letters, numbers, and dashes"),
+				Config: tmpl.Updates(t, invalidLabel, "192.168.0.0/26", testRegion),
+				ExpectError: regexp.MustCompile(
+					"Label must include only ASCII letters, numbers, and dashes",
+				),
 			},
 		},
 	})
@@ -175,7 +183,11 @@ func TestAccResourceVPCSubnet_attached(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "linodes.0.id"),
 					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "linodes.0.interfaces.0.id"),
-					resource.TestCheckResourceAttr(resName, "linodes.0.interfaces.0.active", "false"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"linodes.0.interfaces.0.active",
+						"false",
+					),
 				),
 			},
 			{
@@ -208,7 +220,11 @@ func checkVPCSubnetExists(s *terraform.State) error {
 
 		_, err = client.GetVPCSubnet(context.Background(), vpcID, id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of VPC subnet %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of VPC subnet %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 	}
 

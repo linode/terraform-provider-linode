@@ -65,19 +65,48 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.Updates(t, updatedLongviewPlan, updatedBackupsEnabled, updatedNetworkHelper),
+				Config: tmpl.Updates(
+					t,
+					updatedLongviewPlan,
+					updatedBackupsEnabled,
+					updatedNetworkHelper,
+				),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "longview_subscription", updatedLongviewPlan),
-					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(updatedBackupsEnabled)),
-					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(updatedNetworkHelper)),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"longview_subscription",
+						updatedLongviewPlan,
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"backups_enabled",
+						strconv.FormatBool(updatedBackupsEnabled),
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"network_helper",
+						strconv.FormatBool(updatedNetworkHelper),
+					),
 				),
 			},
 			{
 				Config: tmpl.Updates(t, currLongviewPlan, currBackupsEnabled, currNetworkHelper),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "longview_subscription", currLongviewPlan),
-					resource.TestCheckResourceAttr(resourceName, "backups_enabled", strconv.FormatBool(currBackupsEnabled)),
-					resource.TestCheckResourceAttr(resourceName, "network_helper", strconv.FormatBool(currNetworkHelper)),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"longview_subscription",
+						currLongviewPlan,
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"backups_enabled",
+						strconv.FormatBool(currBackupsEnabled),
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"network_helper",
+						strconv.FormatBool(currNetworkHelper),
+					),
 				),
 			},
 		},

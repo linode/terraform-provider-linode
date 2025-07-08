@@ -3,9 +3,8 @@ package networkingips
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -54,7 +53,8 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseIPAddresses(helper.AnySliceToTyped[linodego.InstanceIP](result))...)
+	resp.Diagnostics.Append(
+		data.parseIPAddresses(helper.AnySliceToTyped[linodego.InstanceIP](result))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

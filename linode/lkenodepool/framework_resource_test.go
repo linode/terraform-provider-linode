@@ -13,16 +13,14 @@ import (
 	"strings"
 	"testing"
 
-	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
-	"github.com/linode/terraform-provider-linode/v3/linode/helper"
-	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool/tmpl"
-
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/linode/linodego"
+	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
+	acceptanceTmpl "github.com/linode/terraform-provider-linode/v3/linode/acceptance/tmpl"
+	"github.com/linode/terraform-provider-linode/v3/linode/helper"
+	"github.com/linode/terraform-provider-linode/v3/linode/lkenodepool/tmpl"
 )
 
 var (
@@ -87,7 +85,10 @@ func sweep(prefix string) error {
 	for _, cluster := range clusters {
 		if acceptance.ShouldSweep(prefix, cluster.Label) {
 			if err := client.DeleteLKECluster(context.Background(), cluster.ID); err != nil {
-				manyErrors = append(manyErrors, fmt.Errorf("Error destroying LKE cluster %d during sweep: %s", cluster.ID, err))
+				manyErrors = append(
+					manyErrors,
+					fmt.Errorf("Error destroying LKE cluster %d during sweep: %s", cluster.ID, err),
+				)
 			}
 		} else {
 			pools, err := client.ListLKENodePools(context.Background(), clusterID, nil)
@@ -602,7 +603,10 @@ func extractIDs(s *terraform.State) (int, int, error) {
 
 		clusterID, err := strconv.Atoi(rs.Primary.Attributes["cluster_id"])
 		if err != nil {
-			return 0, 0, fmt.Errorf("Error parsing cluster_id %v to int", rs.Primary.Attributes["cluster_id"])
+			return 0, 0, fmt.Errorf(
+				"Error parsing cluster_id %v to int",
+				rs.Primary.Attributes["cluster_id"],
+			)
 		}
 		return clusterID, id, nil
 	}

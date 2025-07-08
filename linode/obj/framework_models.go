@@ -46,7 +46,9 @@ type ResourceModel struct {
 	BaseModel
 }
 
-func (data ResourceModel) getObjectBody(diags *diag.Diagnostics) (body *s3manager.ReaderSeekerCloser) {
+func (data ResourceModel) getObjectBody(
+	diags *diag.Diagnostics,
+) (body *s3manager.ReaderSeekerCloser) {
 	if !data.Source.IsNull() && !data.Source.IsUnknown() {
 		sourcePath := data.Source.ValueString()
 
@@ -99,7 +101,14 @@ func (data ResourceModel) GetObjectStorageKeys(
 	}
 
 	if config.ObjUseTempKeys.ValueBool() {
-		objKey := fwCreateTempKeys(ctx, client, data.Bucket.ValueString(), data.GetRegionOrCluster(ctx), permissions, diags)
+		objKey := fwCreateTempKeys(
+			ctx,
+			client,
+			data.Bucket.ValueString(),
+			data.GetRegionOrCluster(ctx),
+			permissions,
+			diags,
+		)
 		if diags.HasError() {
 			return nil, nil
 		}
@@ -120,7 +129,11 @@ func (data ResourceModel) GetObjectStorageKeys(
 	return nil, nil
 }
 
-func (plan *ResourceModel) ComputeEndpointIfUnknown(ctx context.Context, client *linodego.Client, diags *diag.Diagnostics) {
+func (plan *ResourceModel) ComputeEndpointIfUnknown(
+	ctx context.Context,
+	client *linodego.Client,
+	diags *diag.Diagnostics,
+) {
 	if !plan.Endpoint.IsUnknown() {
 		return
 	}
@@ -161,16 +174,52 @@ func (data ResourceModel) GetRegionOrCluster(ctx context.Context) string {
 func (data *ResourceModel) FlattenObject(
 	obj s3.HeadObjectOutput, preserveKnown bool,
 ) {
-	data.CacheControl = helper.KeepOrUpdateStringPointer(data.CacheControl, obj.CacheControl, preserveKnown)
-	data.ContentDisposition = helper.KeepOrUpdateStringPointer(data.ContentDisposition, obj.ContentDisposition, preserveKnown)
-	data.ContentEncoding = helper.KeepOrUpdateStringPointer(data.ContentEncoding, obj.ContentEncoding, preserveKnown)
-	data.ContentLanguage = helper.KeepOrUpdateStringPointer(data.ContentLanguage, obj.ContentLanguage, preserveKnown)
-	data.ContentType = helper.KeepOrUpdateStringPointer(data.ContentType, obj.ContentType, preserveKnown)
-	data.ETag = helper.KeepOrUpdateStringPointer(data.ETag, getQuotesTrimmedETag(obj), preserveKnown)
-	data.WebsiteRedirect = helper.KeepOrUpdateStringPointer(data.WebsiteRedirect, obj.WebsiteRedirectLocation, preserveKnown)
+	data.CacheControl = helper.KeepOrUpdateStringPointer(
+		data.CacheControl,
+		obj.CacheControl,
+		preserveKnown,
+	)
+	data.ContentDisposition = helper.KeepOrUpdateStringPointer(
+		data.ContentDisposition,
+		obj.ContentDisposition,
+		preserveKnown,
+	)
+	data.ContentEncoding = helper.KeepOrUpdateStringPointer(
+		data.ContentEncoding,
+		obj.ContentEncoding,
+		preserveKnown,
+	)
+	data.ContentLanguage = helper.KeepOrUpdateStringPointer(
+		data.ContentLanguage,
+		obj.ContentLanguage,
+		preserveKnown,
+	)
+	data.ContentType = helper.KeepOrUpdateStringPointer(
+		data.ContentType,
+		obj.ContentType,
+		preserveKnown,
+	)
+	data.ETag = helper.KeepOrUpdateStringPointer(
+		data.ETag,
+		getQuotesTrimmedETag(obj),
+		preserveKnown,
+	)
+	data.WebsiteRedirect = helper.KeepOrUpdateStringPointer(
+		data.WebsiteRedirect,
+		obj.WebsiteRedirectLocation,
+		preserveKnown,
+	)
 	data.VersionID = helper.KeepOrUpdateStringPointer(data.VersionID, obj.VersionId, preserveKnown)
-	data.Metadata = helper.KeepOrUpdateValue(data.Metadata, types.MapValueMust(types.StringType, flattenObjectMetadata(obj.Metadata)), preserveKnown)
-	data.ContentDisposition = helper.KeepOrUpdateStringPointer(data.ContentDisposition, obj.ContentDisposition, preserveKnown)
+	data.Metadata = helper.KeepOrUpdateValue(
+		data.Metadata,
+		types.MapValueMust(types.StringType, flattenObjectMetadata(obj.Metadata)),
+		preserveKnown,
+	)
+	data.ContentDisposition = helper.KeepOrUpdateStringPointer(
+		data.ContentDisposition,
+		obj.ContentDisposition,
+		preserveKnown,
+	)
 
 	data.GenerateObjectStorageObjectID(true, preserveKnown)
 }
@@ -190,18 +239,46 @@ func (plan *ResourceModel) CopyFrom(state ResourceModel, preserveKnown bool) {
 	plan.SecretKey = helper.KeepOrUpdateValue(plan.SecretKey, state.SecretKey, preserveKnown)
 	plan.AccessKey = helper.KeepOrUpdateValue(plan.AccessKey, state.AccessKey, preserveKnown)
 	plan.Content = helper.KeepOrUpdateValue(plan.Content, state.Content, preserveKnown)
-	plan.ContentBase64 = helper.KeepOrUpdateValue(plan.ContentBase64, state.ContentBase64, preserveKnown)
+	plan.ContentBase64 = helper.KeepOrUpdateValue(
+		plan.ContentBase64,
+		state.ContentBase64,
+		preserveKnown,
+	)
 	plan.Source = helper.KeepOrUpdateValue(plan.Source, state.Source, preserveKnown)
 	plan.ACL = helper.KeepOrUpdateValue(plan.ACL, state.ACL, preserveKnown)
-	plan.CacheControl = helper.KeepOrUpdateValue(plan.CacheControl, state.CacheControl, preserveKnown)
-	plan.ContentDisposition = helper.KeepOrUpdateValue(plan.ContentDisposition, state.ContentDisposition, preserveKnown)
-	plan.ContentEncoding = helper.KeepOrUpdateValue(plan.ContentEncoding, state.ContentEncoding, preserveKnown)
-	plan.ContentLanguage = helper.KeepOrUpdateValue(plan.ContentLanguage, state.ContentLanguage, preserveKnown)
+	plan.CacheControl = helper.KeepOrUpdateValue(
+		plan.CacheControl,
+		state.CacheControl,
+		preserveKnown,
+	)
+	plan.ContentDisposition = helper.KeepOrUpdateValue(
+		plan.ContentDisposition,
+		state.ContentDisposition,
+		preserveKnown,
+	)
+	plan.ContentEncoding = helper.KeepOrUpdateValue(
+		plan.ContentEncoding,
+		state.ContentEncoding,
+		preserveKnown,
+	)
+	plan.ContentLanguage = helper.KeepOrUpdateValue(
+		plan.ContentLanguage,
+		state.ContentLanguage,
+		preserveKnown,
+	)
 	plan.ContentType = helper.KeepOrUpdateValue(plan.ContentType, state.ContentType, preserveKnown)
 	plan.Endpoint = helper.KeepOrUpdateValue(plan.Endpoint, state.Endpoint, preserveKnown)
 	plan.ETag = helper.KeepOrUpdateValue(plan.ETag, state.ETag, preserveKnown)
-	plan.ForceDestroy = helper.KeepOrUpdateValue(plan.ForceDestroy, state.ForceDestroy, preserveKnown)
+	plan.ForceDestroy = helper.KeepOrUpdateValue(
+		plan.ForceDestroy,
+		state.ForceDestroy,
+		preserveKnown,
+	)
 	plan.Metadata = helper.KeepOrUpdateValue(plan.Metadata, state.Metadata, preserveKnown)
 	plan.VersionID = helper.KeepOrUpdateValue(plan.VersionID, state.VersionID, preserveKnown)
-	plan.WebsiteRedirect = helper.KeepOrUpdateValue(plan.WebsiteRedirect, state.WebsiteRedirect, preserveKnown)
+	plan.WebsiteRedirect = helper.KeepOrUpdateValue(
+		plan.WebsiteRedirect,
+		state.WebsiteRedirect,
+		preserveKnown,
+	)
 }

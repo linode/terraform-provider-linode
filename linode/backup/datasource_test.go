@@ -52,7 +52,11 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acceptance.TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
-					newSnapshot, err := client.CreateInstanceSnapshot(context.Background(), instance.ID, snapshotName)
+					newSnapshot, err := client.CreateInstanceSnapshot(
+						context.Background(),
+						instance.ID,
+						snapshotName,
+					)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -62,7 +66,11 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 				Config: dataSourceConfigBasic(instanceName, testRegion, rootPass),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.id"),
-					resource.TestCheckResourceAttr(resourceName, "in_progress.0.label", snapshotName),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"in_progress.0.label",
+						snapshotName,
+					),
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.status"),
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.type"),
 					resource.TestCheckResourceAttrSet(resourceName, "in_progress.0.created"),
@@ -82,7 +90,11 @@ func TestAccDataSourceInstanceBackups_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "current.0.label", snapshotName),
 					resource.TestCheckResourceAttr(resourceName, "current.0.status", "successful"),
 					resource.TestCheckResourceAttr(resourceName, "current.0.available", "true"),
-					resource.TestCheckResourceAttr("linode_instance.foobar", "backups.0.available", "true"),
+					resource.TestCheckResourceAttr(
+						"linode_instance.foobar",
+						"backups.0.available",
+						"true",
+					),
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.type"),
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.created"),
 					resource.TestCheckResourceAttrSet(resourceName, "current.0.updated"),

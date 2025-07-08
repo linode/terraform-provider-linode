@@ -27,7 +27,11 @@ func GetRegionOrCluster(d *schema.ResourceData) (regionOrCluster string) {
 	return
 }
 
-func FwS3Connection(ctx context.Context, endpoint, accessKey, secretKey string, diags *diag.Diagnostics) *s3.Client {
+func FwS3Connection(
+	ctx context.Context,
+	endpoint, accessKey, secretKey string,
+	diags *diag.Diagnostics,
+) *s3.Client {
 	s3client, err := S3Connection(ctx, endpoint, accessKey, secretKey)
 	if err != nil {
 		diags.AddError("Failed to Create S3 Connection", err.Error())
@@ -77,7 +81,11 @@ func S3ConnectionFromData(
 	return S3Connection(ctx, endpoint, accessKey, secretKey)
 }
 
-func ComputeS3Endpoint(ctx context.Context, d *schema.ResourceData, meta interface{}) (string, error) {
+func ComputeS3Endpoint(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) (string, error) {
 	tflog.Debug(ctx, "Getting Object Storage bucket from resource data")
 	regionOrCluster := GetRegionOrCluster(d)
 	bucketLabel := d.Get("label").(string)
@@ -102,14 +110,18 @@ func IsObjNotFoundErr(err error) bool {
 	)
 	var apiErr smithy.APIError
 	// Error code is 'Forbidden' when the bucket has been removed
-	return errors.As(err, &apiErr) && (apiErr.ErrorCode() == "NotFound" || apiErr.ErrorCode() == "Forbidden")
+	return errors.As(err, &apiErr) &&
+		(apiErr.ErrorCode() == "NotFound" || apiErr.ErrorCode() == "Forbidden")
 }
 
 // isBucketNotFoundError checks if the error is due to the bucket not being found.
 func IsBucketNotFoundErrorMsg(errMsg string) bool {
 	tflog.Debug(
 		context.Background(),
-		fmt.Sprintf("received an error: %s, checking whether it's a bucket not found error", errMsg),
+		fmt.Sprintf(
+			"received an error: %s, checking whether it's a bucket not found error",
+			errMsg,
+		),
 	)
 	return strings.Contains(errMsg, "Bucket not found")
 }
@@ -125,9 +137,12 @@ func PurgeAllObjects(
 	tflog.Debug(ctx, fmt.Sprintf("Purge all objects in bucket: %s", bucket))
 
 	tflog.Debug(ctx, fmt.Sprintf("Getting versioning config of bucket: %s", bucket))
-	versioning, err := s3client.GetBucketVersioning(context.Background(), &s3.GetBucketVersioningInput{
-		Bucket: aws.String(bucket),
-	})
+	versioning, err := s3client.GetBucketVersioning(
+		context.Background(),
+		&s3.GetBucketVersioningInput{
+			Bucket: aws.String(bucket),
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -193,8 +208,16 @@ func DeleteAllObjects(
 }
 
 // deleteAllObjectVersions deletes all versions of a given object
-func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Client, bucket, prefix string, bypassRetention, ignoreNotFound bool) error {
-	tflog.Debug(ctx, fmt.Sprintf("Deleting all versions and deletion marker in bucket '%s'", bucket))
+func DeleteAllObjectVersionsAndDeleteMarkers(
+	ctx context.Context,
+	client *s3.Client,
+	bucket, prefix string,
+	bypassRetention, ignoreNotFound bool,
+) error {
+	tflog.Debug(
+		ctx,
+		fmt.Sprintf("Deleting all versions and deletion marker in bucket '%s'", bucket),
+	)
 	paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
 		Bucket: aws.String(bucket),
 		Prefix: aws.String(prefix),
@@ -204,7 +227,10 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 	for paginator.HasMorePages() {
 		tflog.Debug(
 			ctx,
-			fmt.Sprintf("Getting next page of the list of versions and delete markers in bucket '%s'", bucket),
+			fmt.Sprintf(
+				"Getting next page of the list of versions and delete markers in bucket '%s'",
+				bucket,
+			),
 		)
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
@@ -215,7 +241,14 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 		}
 
 		for _, version := range page.Versions {
-			tflog.Debug(ctx, fmt.Sprintf("Adding version '%v' of object key '%v' into delete list", version.VersionId, version.Key))
+			tflog.Debug(
+				ctx,
+				fmt.Sprintf(
+					"Adding version '%v' of object key '%v' into delete list",
+					version.VersionId,
+					version.Key,
+				),
+			)
 			objectsToDelete = append(
 				objectsToDelete,
 				s3types.ObjectIdentifier{
@@ -225,7 +258,14 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 			)
 		}
 		for _, marker := range page.DeleteMarkers {
-			tflog.Debug(ctx, fmt.Sprintf("Adding delete marker '%v' of object key '%v' into delete list", marker.VersionId, marker.Key))
+			tflog.Debug(
+				ctx,
+				fmt.Sprintf(
+					"Adding delete marker '%v' of object key '%v' into delete list",
+					marker.VersionId,
+					marker.Key,
+				),
+			)
 			objectsToDelete = append(
 				objectsToDelete,
 				s3types.ObjectIdentifier{
@@ -240,7 +280,10 @@ func DeleteAllObjectVersionsAndDeleteMarkers(ctx context.Context, client *s3.Cli
 		return nil
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Delete all versions and delete markers in the list: %v", objectsToDelete))
+	tflog.Debug(
+		ctx,
+		fmt.Sprintf("Delete all versions and delete markers in the list: %v", objectsToDelete),
+	)
 	_, err := client.DeleteObjects(
 		context.Background(),
 		&s3.DeleteObjectsInput{

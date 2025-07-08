@@ -227,11 +227,17 @@ func importResourceStateID(s *terraform.State) (string, error) {
 		}
 		nodebalancerID, err := strconv.Atoi(rs.Primary.Attributes["nodebalancer_id"])
 		if err != nil {
-			return "", fmt.Errorf("Error parsing nodebalancer_id %v to int", rs.Primary.Attributes["nodebalancer_id"])
+			return "", fmt.Errorf(
+				"Error parsing nodebalancer_id %v to int",
+				rs.Primary.Attributes["nodebalancer_id"],
+			)
 		}
 		configID, err := strconv.Atoi(rs.Primary.Attributes["config_id"])
 		if err != nil {
-			return "", fmt.Errorf("Error parsing config_id %v to int", rs.Primary.Attributes["config_id"])
+			return "", fmt.Errorf(
+				"Error parsing config_id %v to int",
+				rs.Primary.Attributes["config_id"],
+			)
 		}
 		return fmt.Sprintf("%d,%d,%d", nodebalancerID, configID, id), nil
 	}

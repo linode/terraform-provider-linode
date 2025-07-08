@@ -67,7 +67,11 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listObjectStorageQuotas(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+func listObjectStorageQuotas(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
 	quotas, err := client.ListObjectStorageQuotas(ctx, nil)
 	if err != nil {
 		return nil, err

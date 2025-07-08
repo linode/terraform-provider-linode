@@ -29,7 +29,11 @@ func TestAccDataSourceNodeBalancerConfig_basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkNodeBalancerConfigExists,
 					resource.TestCheckResourceAttr(resName, "port", "8080"),
-					resource.TestCheckResourceAttr(resName, "protocol", string(linodego.ProtocolHTTP)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"protocol",
+						string(linodego.ProtocolHTTP),
+					),
 					resource.TestCheckResourceAttr(resName, "check", string(linodego.CheckHTTP)),
 					resource.TestCheckResourceAttr(resName, "check_path", "/"),
 

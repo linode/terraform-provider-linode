@@ -29,247 +29,396 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("connect_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("connect_timeout").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("connect_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(3600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("connect_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(2),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("connect_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("connect_timeout").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("connect_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("default_time_zone").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("default_time_zone").
+							AtMapKey("example"),
 						knownvalue.StringExact("+03:00"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("maxLength"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("default_time_zone").
+							AtMapKey("maxLength"),
 						knownvalue.Int64Exact(100),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("minLength"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("default_time_zone").
+							AtMapKey("minLength"),
 						knownvalue.Int64Exact(2),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("pattern"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("default_time_zone").
+							AtMapKey("pattern"),
 						knownvalue.StringExact("^([-+][\\d:]*|[\\w/]*)$"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("default_time_zone").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("default_time_zone").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("default_time_zone").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("group_concat_max_len").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("group_concat_max_len").
+							AtMapKey("example"),
 						knownvalue.Float64Exact(1024),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("maximum"),
-						knownvalue.Float64Func(float64WithToleranceCheck(18446744073709551600, 5000)),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("group_concat_max_len").
+							AtMapKey("maximum"),
+						knownvalue.Float64Func(
+							float64WithToleranceCheck(18446744073709551600, 5000),
+						),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("group_concat_max_len").
+							AtMapKey("minimum"),
 						knownvalue.Float64Exact(4),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("group_concat_max_len").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("group_concat_max_len").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("group_concat_max_len").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("information_schema_stats_expiry").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("information_schema_stats_expiry").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(86400),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("information_schema_stats_expiry").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(31536000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("information_schema_stats_expiry").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(900),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("information_schema_stats_expiry").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("information_schema_stats_expiry").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("information_schema_stats_expiry").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_change_buffer_max_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_change_buffer_max_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(30),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_change_buffer_max_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(50),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_change_buffer_max_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_change_buffer_max_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_change_buffer_max_size").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_change_buffer_max_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_flush_neighbors").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_flush_neighbors").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_flush_neighbors").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(2),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_flush_neighbors").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_flush_neighbors").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_flush_neighbors").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_flush_neighbors").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_min_token_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_min_token_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(3),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_min_token_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(16),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_min_token_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_min_token_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_min_token_size").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_min_token_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_server_stopword_table").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_server_stopword_table").
+							AtMapKey("example"),
 						knownvalue.StringExact("db_name/table_name"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("maxLength"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_server_stopword_table").
+							AtMapKey("maxLength"),
 						knownvalue.Int64Exact(1024),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("pattern"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_server_stopword_table").
+							AtMapKey("pattern"),
 						knownvalue.StringExact("^.+/.+$"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_server_stopword_table").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_ft_server_stopword_table").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_ft_server_stopword_table").
+							AtMapKey("type"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("null"),
 							knownvalue.StringExact("string"),
@@ -277,243 +426,387 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_lock_wait_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_lock_wait_timeout").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(50),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_lock_wait_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(3600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_lock_wait_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_lock_wait_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_lock_wait_timeout").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_lock_wait_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_log_buffer_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_log_buffer_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(16777216),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_log_buffer_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(4294967295),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_log_buffer_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1048576),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_log_buffer_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_log_buffer_size").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_log_buffer_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_online_alter_log_max_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_online_alter_log_max_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(134217728),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_online_alter_log_max_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1099511627776),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_online_alter_log_max_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(65536),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_online_alter_log_max_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_online_alter_log_max_size").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_online_alter_log_max_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_read_io_threads").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_read_io_threads").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_read_io_threads").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_read_io_threads").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_read_io_threads").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_read_io_threads").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_read_io_threads").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_rollback_on_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_rollback_on_timeout").
+							AtMapKey("example"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_rollback_on_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_rollback_on_timeout").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_rollback_on_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("boolean"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_thread_concurrency").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_thread_concurrency").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_thread_concurrency").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_thread_concurrency").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_thread_concurrency").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_thread_concurrency").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_thread_concurrency").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_write_io_threads").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_write_io_threads").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_write_io_threads").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_write_io_threads").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_write_io_threads").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("innodb_write_io_threads").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("innodb_write_io_threads").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("interactive_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("interactive_timeout").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(3600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("interactive_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(604800),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("interactive_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(30),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("interactive_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("interactive_timeout").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("interactive_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("internal_tmp_mem_storage_engine").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("enum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("internal_tmp_mem_storage_engine").
+							AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("TempTable"),
 							knownvalue.StringExact("MEMORY"),
@@ -521,332 +814,525 @@ func TestAccDataSourceDatabaseMySQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("internal_tmp_mem_storage_engine").
+							AtMapKey("example"),
 						knownvalue.StringExact("TempTable"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("internal_tmp_mem_storage_engine").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("internal_tmp_mem_storage_engine").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("internal_tmp_mem_storage_engine").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_allowed_packet").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_allowed_packet").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(67108864),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_allowed_packet").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1073741824),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_allowed_packet").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(102400),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_allowed_packet").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_allowed_packet").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_allowed_packet").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_heap_table_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_heap_table_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(16777216),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_heap_table_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1073741824),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_heap_table_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1048576),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_heap_table_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("max_heap_table_size").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("max_heap_table_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_buffer_length").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_buffer_length").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(16384),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_buffer_length").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1048576),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_buffer_length").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1024),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_buffer_length").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_buffer_length").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_buffer_length").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_read_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_read_timeout").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(30),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_read_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(3600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_read_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_read_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_read_timeout").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_read_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_write_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_write_timeout").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(30),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_write_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(3600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_write_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_write_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("net_write_timeout").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("net_write_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sort_buffer_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sort_buffer_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(262144),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sort_buffer_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1073741824),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sort_buffer_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(32768),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sort_buffer_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sort_buffer_size").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sort_buffer_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_mode").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_mode").
+							AtMapKey("example"),
 						knownvalue.StringExact("ANSI,TRADITIONAL"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("maxLength"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_mode").
+							AtMapKey("maxLength"),
 						knownvalue.Int64Exact(1024),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("pattern"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_mode").
+							AtMapKey("pattern"),
 						knownvalue.StringExact("^[A-Z_]*(,[A-Z_]+)*$"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_mode").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_mode").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_mode").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_require_primary_key").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_require_primary_key").
+							AtMapKey("example"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_require_primary_key").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("sql_require_primary_key").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("sql_require_primary_key").
+							AtMapKey("type"),
 						knownvalue.StringExact("boolean"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("tmp_table_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("tmp_table_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(16777216),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("tmp_table_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1073741824),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("tmp_table_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1048576),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("tmp_table_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("tmp_table_size").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("tmp_table_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("description"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("wait_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("example"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("wait_timeout").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(28800),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("wait_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(2147483),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("wait_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("wait_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("mysql").AtSliceIndex(0).AtMapKey("wait_timeout").AtMapKey("type"),
+						tfjsonpath.New("mysql").
+							AtSliceIndex(0).
+							AtMapKey("wait_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("description"),
+						tfjsonpath.New("binlog_retention_period").
+							AtSliceIndex(0).
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("example"),
+						tfjsonpath.New("binlog_retention_period").
+							AtSliceIndex(0).
+							AtMapKey("example"),
 						knownvalue.Int64Exact(600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("maximum"),
+						tfjsonpath.New("binlog_retention_period").
+							AtSliceIndex(0).
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(86400),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("minimum"),
+						tfjsonpath.New("binlog_retention_period").
+							AtSliceIndex(0).
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("binlog_retention_period").AtSliceIndex(0).AtMapKey("requires_restart"),
+						tfjsonpath.New("binlog_retention_period").
+							AtSliceIndex(0).
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
@@ -864,7 +1350,11 @@ func float64WithToleranceCheck(expected float64, tolerance float64) func(v float
 	return func(v float64) error {
 		diff := math.Abs(expected - v)
 		if diff > tolerance {
-			return fmt.Errorf("values differ by %v, which exceeds the tolerance of %v", diff, tolerance)
+			return fmt.Errorf(
+				"values differ by %v, which exceeds the tolerance of %v",
+				diff,
+				tolerance,
+			)
 		}
 		return nil
 	}

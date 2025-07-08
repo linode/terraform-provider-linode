@@ -29,7 +29,8 @@ func ShouldSweep(prefix, name string) bool {
 		return false
 	}
 
-	if !strings.HasPrefix(loweredName, prefix) && !strings.HasPrefix(loweredName, "renamed-"+prefix) {
+	if !strings.HasPrefix(loweredName, prefix) &&
+		!strings.HasPrefix(loweredName, "renamed-"+prefix) {
 		log.Printf("Ignoring Resource %q as it doesn't start with `(renamed-)?%s`", name, prefix)
 		return false
 	}

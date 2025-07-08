@@ -194,7 +194,11 @@ func TestFlattenFirewallRules(t *testing.T) {
 				!rule.IPv6.Equal(c.expected[i].IPv6) ||
 				!rule.Ports.Equal(c.expected[i].Ports) ||
 				!rule.Protocol.Equal(c.expected[i].Protocol) {
-				t.Errorf("flatten result mismatches expected values, expected: %v, rule: %v", c.expected[i], rule)
+				t.Errorf(
+					"flatten result mismatches expected values, expected: %v, rule: %v",
+					c.expected[i],
+					rule,
+				)
 			}
 		}
 	}
@@ -269,7 +273,11 @@ func TestFlattenFirewallDevices(t *testing.T) {
 			!r.Type.Equal(expected[i].Type) ||
 			!r.Label.Equal(expected[i].Label) ||
 			!r.URL.Equal(expected[i].URL) {
-			t.Errorf("flatten result mismatches expected values, expected: %v, result: %v", expected, result)
+			t.Errorf(
+				"flatten result mismatches expected values, expected: %v, result: %v",
+				expected,
+				result,
+			)
 		}
 	}
 }

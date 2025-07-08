@@ -84,7 +84,12 @@ func WithType(t testing.TB, label, pubKey, typ, region string, rootPass string) 
 		})
 }
 
-func WithSwapSize(t testing.TB, label, pubKey, region string, swapSize int, rootPass string) string {
+func WithSwapSize(
+	t testing.TB,
+	label, pubKey, region string,
+	swapSize int,
+	rootPass string,
+) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_with_swap_size", TemplateData{
 			Label:    label,
@@ -96,7 +101,12 @@ func WithSwapSize(t testing.TB, label, pubKey, region string, swapSize int, root
 		})
 }
 
-func FullDisk(t testing.TB, label, pubKey, stackScriptName, region string, swapSize int, rootPass string) string {
+func FullDisk(
+	t testing.TB,
+	label, pubKey, stackScriptName, region string,
+	swapSize int,
+	rootPass string,
+) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_full_disk", TemplateData{
 			Label:           label,
@@ -524,7 +534,11 @@ func TypeChangeDisk(t testing.TB, label, instanceType, region string, resizeDisk
 		})
 }
 
-func TypeChangeDiskExplicit(t testing.TB, label, instanceType, region string, resizeDisk bool) string {
+func TypeChangeDiskExplicit(
+	t testing.TB,
+	label, instanceType, region string,
+	resizeDisk bool,
+) string {
 	return acceptance.ExecuteTemplate(t,
 		"instance_type_change_disk_explicit", TemplateData{
 			Label:      label,

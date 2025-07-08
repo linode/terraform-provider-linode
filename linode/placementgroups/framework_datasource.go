@@ -3,9 +3,8 @@ package placementgroups
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -67,7 +66,11 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listPlacementGroups(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+func listPlacementGroups(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
 	pgs, err := client.ListPlacementGroups(ctx, &linodego.ListOptions{
 		Filter: filter,
 	})

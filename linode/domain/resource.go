@@ -45,7 +45,10 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	domain, err := client.GetDomain(ctx, id)
 	if err != nil {
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
-			log.Printf("[WARN] removing Linode Domain ID %q from state because it no longer exists", d.Id())
+			log.Printf(
+				"[WARN] removing Linode Domain ID %q from state because it no longer exists",
+				d.Id(),
+			)
 			d.SetId("")
 			return nil
 		}
@@ -71,7 +74,11 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func createResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	tflog.Debug(ctx, "Create linode_domain")
 
 	client := meta.(*helper.ProviderMeta).Client
@@ -127,7 +134,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func updateResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Update linode_domain")
 
@@ -184,7 +195,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	return readResource(ctx, d, meta)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteResource(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	ctx = populateLogAttributes(ctx, d)
 	tflog.Debug(ctx, "Delete linode_domain")
 

@@ -78,7 +78,11 @@ func TestAccResourceToken_basic(t *testing.T) {
 				Config: tmpl.Updates(t, tokenName),
 				Check: resource.ComposeTestCheckFunc(
 					checkTokenExists,
-					resource.TestCheckResourceAttr(resName, "label", fmt.Sprintf("%s_renamed", tokenName)),
+					resource.TestCheckResourceAttr(
+						resName,
+						"label",
+						fmt.Sprintf("%s_renamed", tokenName),
+					),
 				),
 			},
 		},
@@ -145,7 +149,11 @@ func TestAccResourceToken_recreative_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkTokenExists,
 					tokenRecreatedCheck,
-					resource.TestCheckResourceAttr(resName, "scopes", "linodes:read_only lke:read_only"),
+					resource.TestCheckResourceAttr(
+						resName,
+						"scopes",
+						"linodes:read_only lke:read_only",
+					),
 				),
 			},
 		},
@@ -167,7 +175,11 @@ func checkTokenExists(s *terraform.State) error {
 
 		_, err = client.GetToken(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Token %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of Token %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 	}
 

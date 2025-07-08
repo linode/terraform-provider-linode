@@ -31,7 +31,11 @@ func TestAccDataSourceInstances_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
 					resource.TestCheckResourceAttr(resName, "instances.0.type", "g6-nanode-1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.tags.#", "2"),
-					resource.TestCheckResourceAttr(resName, "instances.0.image", acceptance.TestImageLatest),
+					resource.TestCheckResourceAttr(
+						resName,
+						"instances.0.image",
+						acceptance.TestImageLatest,
+					),
 					resource.TestCheckResourceAttr(resName, "instances.0.region", testRegion),
 					resource.TestCheckResourceAttr(resName, "instances.0.group", "tf_test"),
 					resource.TestCheckResourceAttr(resName, "instances.0.swap_size", "256"),
@@ -74,11 +78,20 @@ func TestAccDataSourceInstances_withBlockStorageEncryption(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: tmpl.DataWithBlockStorageEncryption(t, instanceName, targetRegion, rootPass),
+				Config: tmpl.DataWithBlockStorageEncryption(
+					t,
+					instanceName,
+					targetRegion,
+					rootPass,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.id"),
-					resource.TestCheckTypeSetElemAttr(resName, "instances.0.capabilities.*", "Block Storage Encryption"),
+					resource.TestCheckTypeSetElemAttr(
+						resName,
+						"instances.0.capabilities.*",
+						"Block Storage Encryption",
+					),
 				),
 			},
 		},
@@ -114,8 +127,14 @@ func TestAccDataSourceInstances_withPG(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "instances.#", "1"),
 					resource.TestCheckResourceAttr(resName, "instances.0.placement_group.#", "1"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.placement_group.0.id"),
-					resource.TestCheckResourceAttrSet(resName, "instances.0.placement_group.0.placement_group_type"),
-					resource.TestCheckResourceAttrSet(resName, "instances.0.placement_group.0.placement_group_policy"),
+					resource.TestCheckResourceAttrSet(
+						resName,
+						"instances.0.placement_group.0.placement_group_type",
+					),
+					resource.TestCheckResourceAttrSet(
+						resName,
+						"instances.0.placement_group.0.placement_group_policy",
+					),
 				),
 			},
 		},

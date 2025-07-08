@@ -48,7 +48,11 @@ func TestFlattenStackScript(t *testing.T) {
 
 	assert.Equal(t, types.StringValue("a-stackscript"), model.Label)
 	assert.Equal(t, types.StringValue("\"#!/bin/bash\"\n"), model.Script)
-	assert.Equal(t, types.StringValue("This StackScript installs and configures MySQL\n"), model.Description)
+	assert.Equal(
+		t,
+		types.StringValue("This StackScript installs and configures MySQL\n"),
+		model.Description,
+	)
 	assert.Equal(t, types.StringValue("Set up MySQL"), model.RevNote)
 	assert.Equal(t, types.BoolValue(true), model.IsPublic)
 
@@ -96,6 +100,9 @@ func TestFlattenStackScriptPreservingKnown(t *testing.T) {
 	diags := model.FlattenStackScript(stackscriptData, true)
 	assert.False(t, diags.HasError())
 
-	assert.True(t, model.DeploymentsActive.Equal(types.Int64Value(int64(stackscriptData.DeploymentsActive))))
+	assert.True(
+		t,
+		model.DeploymentsActive.Equal(types.Int64Value(int64(stackscriptData.DeploymentsActive))),
+	)
 	assert.False(t, model.RevNote.Equal(types.StringValue(stackscriptData.RevNote)))
 }

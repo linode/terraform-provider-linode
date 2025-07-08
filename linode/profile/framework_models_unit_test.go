@@ -52,10 +52,34 @@ func TestParseProfile(t *testing.T) {
 	assert.Equal(t, types.BoolValue(true), profileModel.TwoFactorAuth)
 	assert.Equal(t, types.BoolValue(false), profileModel.Restricted)
 
-	assert.Equal(t, "SECRETREFCODEOMG", profileModel.Referrals.Elements()[0].(types.Object).Attributes()["code"].(types.String).ValueString())
-	assert.Equal(t, 50.000000, profileModel.Referrals.Elements()[0].(types.Object).Attributes()["credit"].(types.Float64).ValueFloat64())
-	assert.Equal(t, int64(10), profileModel.Referrals.Elements()[0].(types.Object).Attributes()["total"].(types.Int64).ValueInt64())
-	assert.Equal(t, int64(5), profileModel.Referrals.Elements()[0].(types.Object).Attributes()["pending"].(types.Int64).ValueInt64())
-	assert.Equal(t, int64(5), profileModel.Referrals.Elements()[0].(types.Object).Attributes()["completed"].(types.Int64).ValueInt64())
-	assert.Equal(t, "https://example.com/referral", profileModel.Referrals.Elements()[0].(types.Object).Attributes()["url"].(types.String).ValueString())
+	assert.Equal(
+		t,
+		"SECRETREFCODEOMG",
+		profileModel.Referrals.Elements()[0].(types.Object).Attributes()["code"].(types.String).ValueString(),
+	)
+	assert.Equal(
+		t,
+		50.000000,
+		profileModel.Referrals.Elements()[0].(types.Object).Attributes()["credit"].(types.Float64).ValueFloat64(),
+	)
+	assert.Equal(
+		t,
+		int64(10),
+		profileModel.Referrals.Elements()[0].(types.Object).Attributes()["total"].(types.Int64).ValueInt64(),
+	)
+	assert.Equal(
+		t,
+		int64(5),
+		profileModel.Referrals.Elements()[0].(types.Object).Attributes()["pending"].(types.Int64).ValueInt64(),
+	)
+	assert.Equal(
+		t,
+		int64(5),
+		profileModel.Referrals.Elements()[0].(types.Object).Attributes()["completed"].(types.Int64).ValueInt64(),
+	)
+	assert.Equal(
+		t,
+		"https://example.com/referral",
+		profileModel.Referrals.Elements()[0].(types.Object).Attributes()["url"].(types.String).ValueString(),
+	)
 }

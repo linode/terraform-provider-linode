@@ -27,7 +27,11 @@ type Resource struct {
 	helper.BaseResource
 }
 
-func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *Resource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	tflog.Debug(ctx, "Create "+r.Config.Name)
 	var plan NetworkingIPModel
 
@@ -61,12 +65,18 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	// Generate a unique ID for this resource
-	plan.ID = types.StringValue(fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)))
+	plan.ID = types.StringValue(
+		fmt.Sprintf("%s-%d", plan.Region.ValueString(), len(plan.Assignments)),
+	)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
-func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *Resource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	tflog.Debug(ctx, "Read "+r.Config.Name)
 	var state NetworkingIPModel
 
@@ -87,7 +97,11 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 			}
 			resp.Diagnostics.AddError(
 				"Error reading IP Address",
-				fmt.Sprintf("Could not read IP address %s: %s", assignment.Address.ValueString(), err),
+				fmt.Sprintf(
+					"Could not read IP address %s: %s",
+					assignment.Address.ValueString(),
+					err,
+				),
 			)
 			return
 		}
@@ -101,10 +115,18 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 }
 
-func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *Resource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	tflog.Debug(ctx, "Delete "+r.Config.Name)
 	var state NetworkingIPModel
 
@@ -117,7 +139,10 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	// Iterate through all assignments and unassign each IP
 	for _, assignment := range state.Assignments {
-		linodeID := helper.FrameworkSafeInt64ToInt(assignment.LinodeID.ValueInt64(), &resp.Diagnostics)
+		linodeID := helper.FrameworkSafeInt64ToInt(
+			assignment.LinodeID.ValueInt64(),
+			&resp.Diagnostics,
+		)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -137,12 +162,20 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 			// Log and continue with the next IP address if an error occurs
 			resp.Diagnostics.AddError(
 				"Failed to Unassign IP Address",
-				fmt.Sprintf("Error unassigning IP address %s from Linode %d: %s", ipAddress, linodeID, err),
+				fmt.Sprintf(
+					"Error unassigning IP address %s from Linode %d: %s",
+					ipAddress,
+					linodeID,
+					err,
+				),
 			)
 			continue
 		}
 
-		tflog.Debug(ctx, fmt.Sprintf("Successfully unassigned IP %s from Linode %d", ipAddress, linodeID))
+		tflog.Debug(
+			ctx,
+			fmt.Sprintf("Successfully unassigned IP %s from Linode %d", ipAddress, linodeID),
+		)
 	}
 
 	resp.State.RemoveResource(ctx)

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/linode/terraform-provider-linode/v3/linode/acceptance"
 	"github.com/linode/terraform-provider-linode/v3/linode/databasepostgresqlv2/tmpl"
@@ -72,9 +71,21 @@ func TestAccDataSource_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(dataSourceName, "pending_updates.#", "0"),
 
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_password_encryption", "md5"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_stat_monitor_enable", "false"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pglookout_max_failover_replication_time_lag", "60"),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_password_encryption",
+						"md5",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_stat_monitor_enable",
+						"false",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pglookout_max_failover_replication_time_lag",
+						"60",
+					),
 				),
 			},
 		},
@@ -149,52 +160,232 @@ func TestAccDataSource_engineConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dataSourceName, "id"),
 
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_analyze_scale_factor", "0.1"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_analyze_threshold", "50"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_max_workers", "3"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_naptime", "100"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_vacuum_cost_delay", "20"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_vacuum_cost_limit", "200"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_vacuum_scale_factor", "0.2"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_autovacuum_vacuum_threshold", "100"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_bgwriter_delay", "1000"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_bgwriter_flush_after", "512"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_bgwriter_lru_maxpages", "100"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_bgwriter_lru_multiplier", "2.5"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_deadlock_timeout", "1000"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_default_toast_compression", "pglz"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_idle_in_transaction_session_timeout", "60000"),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_analyze_scale_factor",
+						"0.1",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_analyze_threshold",
+						"50",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_max_workers",
+						"3",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_naptime",
+						"100",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_vacuum_cost_delay",
+						"20",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_vacuum_cost_limit",
+						"200",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_vacuum_scale_factor",
+						"0.2",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_autovacuum_vacuum_threshold",
+						"100",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_bgwriter_delay",
+						"1000",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_bgwriter_flush_after",
+						"512",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_bgwriter_lru_maxpages",
+						"100",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_bgwriter_lru_multiplier",
+						"2.5",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_deadlock_timeout",
+						"1000",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_default_toast_compression",
+						"pglz",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_idle_in_transaction_session_timeout",
+						"60000",
+					),
 					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_jit", "true"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_files_per_process", "1000"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_locks_per_transaction", "64"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_logical_replication_workers", "4"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_parallel_workers", "8"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_parallel_workers_per_gather", "2"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_pred_locks_per_transaction", "128"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_replication_slots", "8"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_slot_wal_keep_size", "128"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_stack_depth", "2097152"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_standby_archive_delay", "60000"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_standby_streaming_delay", "60000"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_wal_senders", "20"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_max_worker_processes", "8"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_password_encryption", "scram-sha-256"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_pg_partman_bgw_interval", "3600"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_pg_partman_bgw_role", "myrolename"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_pg_stat_monitor_pgsm_enable_query_plan", "true"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_pg_stat_monitor_pgsm_max_buckets", "5"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_pg_stat_statements_track", "all"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_temp_file_limit", "100"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_timezone", "Europe/Helsinki"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_track_activity_query_size", "2048"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_track_commit_timestamp", "on"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_track_functions", "all"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_track_io_timing", "on"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_wal_sender_timeout", "60000"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_wal_writer_delay", "200"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pg_stat_monitor_enable", "true"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_pglookout_max_failover_replication_time_lag", "10000"),
-					resource.TestCheckResourceAttr(dataSourceName, "engine_config_shared_buffers_percentage", "25.5"),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_files_per_process",
+						"1000",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_locks_per_transaction",
+						"64",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_logical_replication_workers",
+						"4",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_parallel_workers",
+						"8",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_parallel_workers_per_gather",
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_pred_locks_per_transaction",
+						"128",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_replication_slots",
+						"8",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_slot_wal_keep_size",
+						"128",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_stack_depth",
+						"2097152",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_standby_archive_delay",
+						"60000",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_standby_streaming_delay",
+						"60000",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_wal_senders",
+						"20",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_max_worker_processes",
+						"8",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_password_encryption",
+						"scram-sha-256",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_pg_partman_bgw_interval",
+						"3600",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_pg_partman_bgw_role",
+						"myrolename",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_pg_stat_monitor_pgsm_enable_query_plan",
+						"true",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_pg_stat_monitor_pgsm_max_buckets",
+						"5",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_pg_stat_statements_track",
+						"all",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_temp_file_limit",
+						"100",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_timezone",
+						"Europe/Helsinki",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_track_activity_query_size",
+						"2048",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_track_commit_timestamp",
+						"on",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_track_functions",
+						"all",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_track_io_timing",
+						"on",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_wal_sender_timeout",
+						"60000",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_wal_writer_delay",
+						"200",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pg_stat_monitor_enable",
+						"true",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_pglookout_max_failover_replication_time_lag",
+						"10000",
+					),
+					resource.TestCheckResourceAttr(
+						dataSourceName,
+						"engine_config_shared_buffers_percentage",
+						"25.5",
+					),
 					resource.TestCheckResourceAttr(dataSourceName, "engine_config_work_mem", "400"),
 				),
 			},

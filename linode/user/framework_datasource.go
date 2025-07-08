@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
 
@@ -48,7 +47,11 @@ func (d *DataSource) Read(
 	user, err := client.GetUser(ctx, username)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Linode User with username %s was not found", data.Username.ValueString()), err.Error(),
+			fmt.Sprintf(
+				"Linode User with username %s was not found",
+				data.Username.ValueString(),
+			),
+			err.Error(),
 		)
 		return
 	}
@@ -62,7 +65,11 @@ func (d *DataSource) Read(
 		grants, err := client.GetUserGrants(ctx, data.Username.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
-				fmt.Sprintf("Failed to get User Grants (%s): ", data.Username.ValueString()), err.Error(),
+				fmt.Sprintf(
+					"Failed to get User Grants (%s): ",
+					data.Username.ValueString(),
+				),
+				err.Error(),
 			)
 			return
 		}

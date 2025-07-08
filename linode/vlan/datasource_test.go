@@ -101,8 +101,15 @@ func TestAccDataSourceVLANs_regex(t *testing.T) {
 // waitForVLANWithLabel polls for a VLAN with the given label to exist
 // This is necessary in this context because it is not guaranteed that a VLAN will
 // be created immediately after the instance is created.
-func waitForVLANWithLabel(client linodego.Client, label string, timeoutSeconds int) (*linodego.VLAN, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeoutSeconds))
+func waitForVLANWithLabel(
+	client linodego.Client,
+	label string,
+	timeoutSeconds int,
+) (*linodego.VLAN, error) {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		time.Second*time.Duration(timeoutSeconds),
+	)
 	defer cancel()
 
 	ticker := time.NewTicker(time.Second)

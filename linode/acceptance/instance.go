@@ -32,7 +32,11 @@ func CheckInstanceExists(name string, instance *linodego.Instance) resource.Test
 
 		found, err := client.GetInstance(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error retrieving state of Instance %s: %s", rs.Primary.Attributes["label"], err)
+			return fmt.Errorf(
+				"Error retrieving state of Instance %s: %s",
+				rs.Primary.Attributes["label"],
+				err,
+			)
 		}
 
 		*instance = *found
@@ -78,9 +82,14 @@ func AssertInstanceReboot(t testing.TB, shouldRestart bool, instance *linodego.I
 		client := TestAccSDKv2Provider.Meta().(*helper.ProviderMeta).Client
 		eventFilter := fmt.Sprintf(
 			`{"entity.type": "linode", "entity.id": %d, "action": "linode_reboot", "created": { "+gte": "%s" }}`,
-			instance.ID, instance.Created.Format("2006-01-02T15:04:05"))
+			instance.ID,
+			instance.Created.Format("2006-01-02T15:04:05"),
+		)
 
-		events, err := client.ListEvents(context.Background(), &linodego.ListOptions{Filter: eventFilter})
+		events, err := client.ListEvents(
+			context.Background(),
+			&linodego.ListOptions{Filter: eventFilter},
+		)
 		if err != nil {
 			t.Fail()
 		}

@@ -204,20 +204,33 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 				return fmt.Errorf("failed to wait for instance running: %s", err)
 			}
 
-			p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeReboot)
+			p, err := client.NewEventPoller(
+				ctx,
+				instance.ID,
+				linodego.EntityLinode,
+				linodego.ActionLinodeReboot,
+			)
 			if err != nil {
 				return fmt.Errorf("failed to poll for events: %s", err)
 			}
 
 			if currentConfig != configID {
-				tflog.Info(ctx, "Wrong config booted; rebooting into correct config", map[string]any{
-					"current_config_id": currentConfig,
-				})
+				tflog.Info(
+					ctx,
+					"Wrong config booted; rebooting into correct config",
+					map[string]any{
+						"current_config_id": currentConfig,
+					},
+				)
 			}
 			if reboot {
-				tflog.Info(ctx, "Current config updated; rebooting to adopt changes", map[string]any{
-					"current_config_id": currentConfig,
-				})
+				tflog.Info(
+					ctx,
+					"Current config updated; rebooting to adopt changes",
+					map[string]any{
+						"current_config_id": currentConfig,
+					},
+				)
 			}
 
 			if err := client.RebootInstance(ctx, instance.ID, configID); err != nil {
@@ -242,7 +255,12 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 		if !isBooted {
 			tflog.Info(ctx, "Instance is not booted; booting into config")
 
-			p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeBoot)
+			p, err := client.NewEventPoller(
+				ctx,
+				instance.ID,
+				linodego.EntityLinode,
+				linodego.ActionLinodeBoot,
+			)
 			if err != nil {
 				return fmt.Errorf("failed to poll for events: %s", err)
 			}
@@ -278,7 +296,12 @@ func applyBootStatus(ctx context.Context, client *linodego.Client, linodeID int,
 			return fmt.Errorf("failed to wait for instance running: %s", err)
 		}
 
-		p, err := client.NewEventPoller(ctx, instance.ID, linodego.EntityLinode, linodego.ActionLinodeShutdown)
+		p, err := client.NewEventPoller(
+			ctx,
+			instance.ID,
+			linodego.EntityLinode,
+			linodego.ActionLinodeShutdown,
+		)
 		if err != nil {
 			return fmt.Errorf("failed to poll for events: %s", err)
 		}

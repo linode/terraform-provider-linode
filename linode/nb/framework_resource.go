@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -152,7 +151,10 @@ func (r *Resource) Read(
 		if lerr, ok := err.(*linodego.Error); ok && lerr.Code == 404 {
 			resp.Diagnostics.AddWarning(
 				"NodeBalancer No Longer Exists",
-				fmt.Sprintf("Removing Linode NodeBalancer ID %v from state because it no longer exists", id),
+				fmt.Sprintf(
+					"Removing Linode NodeBalancer ID %v from state because it no longer exists",
+					id,
+				),
 			)
 			resp.State.RemoveResource(ctx)
 			return

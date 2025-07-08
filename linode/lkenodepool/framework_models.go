@@ -5,10 +5,9 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -39,7 +38,9 @@ type NodePoolTaintModel struct {
 	Value  types.String `tfsdk:"value"`
 }
 
-func flattenLKENodePoolLinode(node linodego.LKENodePoolLinode) (*basetypes.ObjectValue, diag.Diagnostics) {
+func flattenLKENodePoolLinode(
+	node linodego.LKENodePoolLinode,
+) (*basetypes.ObjectValue, diag.Diagnostics) {
 	result := make(map[string]attr.Value)
 
 	result["id"] = types.StringValue(node.ID)
@@ -75,13 +76,19 @@ func flattenLKENodePoolLinodeList(nodes []linodego.LKENodePoolLinode,
 	return &result, nil
 }
 
-func (taint *NodePoolTaintModel) FlattenLKENodePoolTaint(t linodego.LKENodePoolTaint, preserveKnown bool) {
+func (taint *NodePoolTaintModel) FlattenLKENodePoolTaint(
+	t linodego.LKENodePoolTaint,
+	preserveKnown bool,
+) {
 	taint.Effect = helper.KeepOrUpdateString(taint.Effect, string(t.Effect), preserveKnown)
 	taint.Key = helper.KeepOrUpdateString(taint.Key, t.Key, preserveKnown)
 	taint.Value = helper.KeepOrUpdateString(taint.Value, t.Value, preserveKnown)
 }
 
-func (pool *NodePoolModel) FlattenLKENodePoolTaints(taints []linodego.LKENodePoolTaint, preserveKnown bool) {
+func (pool *NodePoolModel) FlattenLKENodePoolTaints(
+	taints []linodego.LKENodePoolTaint,
+	preserveKnown bool,
+) {
 	// taints block can't be computed and can't be modified if known values are preserved.
 	if preserveKnown {
 		return
@@ -99,7 +106,11 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 	pool.ID = helper.KeepOrUpdateString(pool.ID, strconv.Itoa(p.ID), preserveKnown)
 	pool.Count = helper.KeepOrUpdateInt64(pool.Count, int64(p.Count), preserveKnown)
 	pool.Type = helper.KeepOrUpdateString(pool.Type, p.Type, preserveKnown)
-	pool.DiskEncryption = helper.KeepOrUpdateString(pool.DiskEncryption, string(p.DiskEncryption), preserveKnown)
+	pool.DiskEncryption = helper.KeepOrUpdateString(
+		pool.DiskEncryption,
+		string(p.DiskEncryption),
+		preserveKnown,
+	)
 	pool.Tags = helper.KeepOrUpdateStringSet(pool.Tags, p.Tags, preserveKnown, diags)
 	if diags.HasError() {
 		return
@@ -128,7 +139,11 @@ func (pool *NodePoolModel) FlattenLKENodePool(
 	pool.K8sVersion = helper.KeepOrUpdateStringPointer(pool.K8sVersion, p.K8sVersion, preserveKnown)
 
 	if p.UpdateStrategy != nil {
-		pool.UpdateStrategy = helper.KeepOrUpdateString(pool.UpdateStrategy, string(*p.UpdateStrategy), preserveKnown)
+		pool.UpdateStrategy = helper.KeepOrUpdateString(
+			pool.UpdateStrategy,
+			string(*p.UpdateStrategy),
+			preserveKnown,
+		)
 	} else {
 		pool.UpdateStrategy = helper.KeepOrUpdateString(pool.UpdateStrategy, "", preserveKnown)
 	}
@@ -164,7 +179,9 @@ func (pool *NodePoolModel) SetNodePoolCreateOptions(
 			p.K8sVersion = pool.K8sVersion.ValueStringPointer()
 		}
 		if !pool.UpdateStrategy.IsNull() && !pool.UpdateStrategy.IsUnknown() {
-			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
+			p.UpdateStrategy = linodego.Pointer(
+				linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()),
+			)
 		}
 	}
 }
@@ -237,7 +254,9 @@ func (pool *NodePoolModel) SetNodePoolUpdateOptions(
 		}
 
 		if !state.UpdateStrategy.Equal(pool.UpdateStrategy) {
-			p.UpdateStrategy = linodego.Pointer(linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()))
+			p.UpdateStrategy = linodego.Pointer(
+				linodego.LKENodePoolUpdateStrategy(pool.UpdateStrategy.ValueString()),
+			)
 			shouldUpdate = true
 		}
 	}
@@ -254,7 +273,10 @@ func (pool *NodePoolModel) ExtractClusterAndNodePoolIDs(diags *diag.Diagnostics)
 	return clusterID, poolID
 }
 
-func (pool *NodePoolModel) getLKENodePoolAutoscaler(count int, diags *diag.Diagnostics) *linodego.LKENodePoolAutoscaler {
+func (pool *NodePoolModel) getLKENodePoolAutoscaler(
+	count int,
+	diags *diag.Diagnostics,
+) *linodego.LKENodePoolAutoscaler {
 	var autoscaler linodego.LKENodePoolAutoscaler
 	if len(pool.Autoscaler) > 0 {
 		autoscaler.Enabled = true
@@ -280,8 +302,14 @@ func (pool *NodePoolModel) shouldUpdateLKENodePoolAutoscaler(
 			(len(state.Autoscaler) > 0 && (!state.Autoscaler[0].Min.Equal(pool.Autoscaler[0].Min) ||
 				!state.Autoscaler[0].Max.Equal(pool.Autoscaler[0].Max))) {
 			autoscaler.Enabled = true
-			autoscaler.Min = helper.FrameworkSafeInt64ToInt(pool.Autoscaler[0].Min.ValueInt64(), diags)
-			autoscaler.Max = helper.FrameworkSafeInt64ToInt(pool.Autoscaler[0].Max.ValueInt64(), diags)
+			autoscaler.Min = helper.FrameworkSafeInt64ToInt(
+				pool.Autoscaler[0].Min.ValueInt64(),
+				diags,
+			)
+			autoscaler.Max = helper.FrameworkSafeInt64ToInt(
+				pool.Autoscaler[0].Max.ValueInt64(),
+				diags,
+			)
 
 			shouldUpdate = true
 		}
@@ -327,12 +355,20 @@ func (data *NodePoolModel) CopyFrom(other NodePoolModel, preserveKnown bool) {
 	data.ClusterID = helper.KeepOrUpdateValue(data.ClusterID, other.ClusterID, preserveKnown)
 	data.Count = helper.KeepOrUpdateValue(data.Count, other.Count, preserveKnown)
 	data.Type = helper.KeepOrUpdateValue(data.Type, other.Type, preserveKnown)
-	data.DiskEncryption = helper.KeepOrUpdateValue(data.DiskEncryption, other.DiskEncryption, preserveKnown)
+	data.DiskEncryption = helper.KeepOrUpdateValue(
+		data.DiskEncryption,
+		other.DiskEncryption,
+		preserveKnown,
+	)
 	data.Tags = helper.KeepOrUpdateValue(data.Tags, other.Tags, preserveKnown)
 	data.Nodes = helper.KeepOrUpdateValue(data.Nodes, other.Nodes, preserveKnown)
 	data.Labels = helper.KeepOrUpdateValue(data.Labels, other.Labels, preserveKnown)
 	data.K8sVersion = helper.KeepOrUpdateValue(data.K8sVersion, other.K8sVersion, preserveKnown)
-	data.UpdateStrategy = helper.KeepOrUpdateValue(data.UpdateStrategy, other.UpdateStrategy, preserveKnown)
+	data.UpdateStrategy = helper.KeepOrUpdateValue(
+		data.UpdateStrategy,
+		other.UpdateStrategy,
+		preserveKnown,
+	)
 
 	if !preserveKnown {
 		data.Autoscaler = other.Autoscaler

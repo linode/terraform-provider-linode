@@ -3,9 +3,8 @@ package users
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/linode/linodego"
 	"github.com/linode/terraform-provider-linode/v3/linode/helper"
 )
@@ -51,7 +50,8 @@ func (d *DataSource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(data.parseUsers(ctx, d.Meta.Client, helper.AnySliceToTyped[linodego.User](result))...)
+	resp.Diagnostics.Append(
+		data.parseUsers(ctx, d.Meta.Client, helper.AnySliceToTyped[linodego.User](result))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

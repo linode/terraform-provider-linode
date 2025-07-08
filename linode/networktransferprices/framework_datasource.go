@@ -57,7 +57,11 @@ func (r *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func listNetworkTransferPrices(ctx context.Context, client *linodego.Client, filter string) ([]any, error) {
+func listNetworkTransferPrices(
+	ctx context.Context,
+	client *linodego.Client,
+	filter string,
+) ([]any, error) {
 	tflog.Debug(ctx, "Listing Network Transfer Prices", map[string]any{
 		"filter_header": filter,
 	})

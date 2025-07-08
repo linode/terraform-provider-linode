@@ -62,7 +62,11 @@ func TestAccDataSourceImage_replicate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkImageExists(resourceName, nil),
 					resource.TestCheckResourceAttr(resourceName, "label", imageName),
-					resource.TestCheckResourceAttr(resourceName, "description", "really descriptive text"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"description",
+						"really descriptive text",
+					),
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "size"),

@@ -27,337 +27,538 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_scale_factor").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_scale_factor").
+							AtMapKey("minimum"),
 						knownvalue.Float64Exact(0.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_scale_factor").
+							AtMapKey("maximum"),
 						knownvalue.Float64Exact(1.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_scale_factor").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_scale_factor").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_scale_factor").
+							AtMapKey("type"),
 						knownvalue.StringExact("number"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_threshold").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_threshold").
+							AtMapKey("minimum"),
 						knownvalue.Int32Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_threshold").
+							AtMapKey("maximum"),
 						knownvalue.Int32Exact(2147483647),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_threshold").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_analyze_threshold").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_analyze_threshold").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_max_workers").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_max_workers").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_max_workers").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(20),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_max_workers").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_max_workers").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_max_workers").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_naptime").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_naptime").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_naptime").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(86400),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_naptime").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_naptime").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_naptime").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_delay").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_delay").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(-1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_delay").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(100),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_delay").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_delay").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_delay").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_limit").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_limit").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(-1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_limit").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(10000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_limit").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_cost_limit").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_cost_limit").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_scale_factor").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_scale_factor").
+							AtMapKey("minimum"),
 						knownvalue.Float64Exact(0.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_scale_factor").
+							AtMapKey("maximum"),
 						knownvalue.Float64Exact(1.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_scale_factor").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_scale_factor").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_scale_factor").
+							AtMapKey("type"),
 						knownvalue.StringExact("number"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_threshold").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_threshold").
+							AtMapKey("minimum"),
 						knownvalue.Int32Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_threshold").
+							AtMapKey("maximum"),
 						knownvalue.Int32Exact(2147483647),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_threshold").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("autovacuum_vacuum_threshold").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("autovacuum_vacuum_threshold").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_delay").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_delay").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_delay").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(10000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_delay").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_delay").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_delay").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_flush_after").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_flush_after").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_flush_after").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(2048),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_flush_after").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_flush_after").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_flush_after").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_maxpages").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_maxpages").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_maxpages").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1073741823),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_maxpages").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_maxpages").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_maxpages").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_multiplier").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_multiplier").
+							AtMapKey("minimum"),
 						knownvalue.Float64Exact(0.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_multiplier").
+							AtMapKey("maximum"),
 						knownvalue.Float64Exact(10.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_multiplier").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("bgwriter_lru_multiplier").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("bgwriter_lru_multiplier").
+							AtMapKey("type"),
 						knownvalue.StringExact("number"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("deadlock_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("deadlock_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(500),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("deadlock_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(1800000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("deadlock_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("deadlock_timeout").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("deadlock_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("default_toast_compression").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("enum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("default_toast_compression").
+							AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("lz4"),
 							knownvalue.StringExact("pglz"),
@@ -365,47 +566,74 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("default_toast_compression").
+							AtMapKey("example"),
 						knownvalue.StringExact("lz4"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("default_toast_compression").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("default_toast_compression").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("default_toast_compression").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("idle_in_transaction_session_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("idle_in_transaction_session_timeout").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("idle_in_transaction_session_timeout").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(604800000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("idle_in_transaction_session_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("idle_in_transaction_session_timeout").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("idle_in_transaction_session_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("jit").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("jit").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
@@ -415,7 +643,10 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("jit").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("jit").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
@@ -425,337 +656,538 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_files_per_process").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_files_per_process").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_files_per_process").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(4096),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_files_per_process").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_files_per_process").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_files_per_process").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_locks_per_transaction").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_locks_per_transaction").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_locks_per_transaction").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(6400),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_locks_per_transaction").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_locks_per_transaction").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_locks_per_transaction").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_logical_replication_workers").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_logical_replication_workers").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(4),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_logical_replication_workers").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_logical_replication_workers").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_logical_replication_workers").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_logical_replication_workers").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(96),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers_per_gather").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers_per_gather").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers_per_gather").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(96),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers_per_gather").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_parallel_workers_per_gather").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_parallel_workers_per_gather").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_pred_locks_per_transaction").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_pred_locks_per_transaction").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_pred_locks_per_transaction").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(5120),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_pred_locks_per_transaction").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_pred_locks_per_transaction").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_pred_locks_per_transaction").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_replication_slots").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_replication_slots").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(8),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_replication_slots").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_replication_slots").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_replication_slots").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_replication_slots").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_slot_wal_keep_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_slot_wal_keep_size").
+							AtMapKey("minimum"),
 						knownvalue.Int32Exact(-1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_slot_wal_keep_size").
+							AtMapKey("maximum"),
 						knownvalue.Int32Exact(2147483647),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_slot_wal_keep_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_slot_wal_keep_size").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_slot_wal_keep_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_stack_depth").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_stack_depth").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(2097152),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_stack_depth").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(6291456),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_stack_depth").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_stack_depth").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_stack_depth").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_archive_delay").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_archive_delay").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_archive_delay").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(43200000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_archive_delay").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_archive_delay").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_archive_delay").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_streaming_delay").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_streaming_delay").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_streaming_delay").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(43200000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_streaming_delay").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_standby_streaming_delay").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_standby_streaming_delay").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_wal_senders").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_wal_senders").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(20),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_wal_senders").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_wal_senders").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_wal_senders").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_wal_senders").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_worker_processes").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_worker_processes").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(8),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_worker_processes").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(96),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_worker_processes").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("max_worker_processes").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("max_worker_processes").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("password_encryption").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("enum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("password_encryption").
+							AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("md5"),
 							knownvalue.StringExact("scram-sha-256"),
@@ -763,132 +1195,210 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("password_encryption").
+							AtMapKey("example"),
 						knownvalue.StringExact("scram-sha-256"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("password_encryption").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("password_encryption").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("password_encryption").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.interval").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.interval").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(3600),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.interval").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(604800),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.interval").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.interval").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.interval").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.role").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("maxLength"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.role").
+							AtMapKey("maxLength"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("pattern"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.role").
+							AtMapKey("pattern"),
 						knownvalue.StringExact("^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.role").
+							AtMapKey("example"),
 						knownvalue.StringExact("myrolename"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.role").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_partman_bgw.role").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_partman_bgw.role").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").
+							AtMapKey("example"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_enable_query_plan").
+							AtMapKey("type"),
 						knownvalue.StringExact("boolean"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_max_buckets").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_max_buckets").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_max_buckets").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_max_buckets").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_max_buckets").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_monitor.pgsm_max_buckets").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_monitor.pgsm_max_buckets").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_statements.track").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("enum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_statements.track").
+							AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("all"),
 							knownvalue.StringExact("top"),
@@ -897,67 +1407,106 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_statements.track").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("pg_stat_statements.track").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("pg_stat_statements.track").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("temp_file_limit").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("temp_file_limit").
+							AtMapKey("maximum"),
 						knownvalue.Int32Exact(2147483647),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("temp_file_limit").
+							AtMapKey("minimum"),
 						knownvalue.Int32Exact(-1),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("temp_file_limit").
+							AtMapKey("example"),
 						knownvalue.Int32Exact(5000000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("temp_file_limit").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("temp_file_limit").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("temp_file_limit").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("timezone").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("timezone").
+							AtMapKey("example"),
 						knownvalue.StringExact("Europe/Helsinki"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("maxLength"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("timezone").
+							AtMapKey("maxLength"),
 						knownvalue.Int64Exact(64),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("pattern"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("timezone").
+							AtMapKey("pattern"),
 						knownvalue.StringExact("^[\\w/]*$"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("timezone").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("timezone").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
@@ -967,42 +1516,66 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_activity_query_size").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_activity_query_size").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(10240),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_activity_query_size").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(1024),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_activity_query_size").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(1024),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_activity_query_size").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_activity_query_size").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_activity_query_size").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_commit_timestamp").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("enum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_commit_timestamp").
+							AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("off"),
 							knownvalue.StringExact("on"),
@@ -1010,27 +1583,42 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_commit_timestamp").
+							AtMapKey("example"),
 						knownvalue.StringExact("off"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_commit_timestamp").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_commit_timestamp").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_commit_timestamp").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_functions").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_functions").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_functions").AtMapKey("enum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_functions").
+							AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("all"),
 							knownvalue.StringExact("pl"),
@@ -1039,22 +1627,34 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_functions").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_functions").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_functions").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_functions").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_io_timing").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("enum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_io_timing").
+							AtMapKey("enum"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("off"),
 							knownvalue.StringExact("on"),
@@ -1062,77 +1662,120 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_io_timing").
+							AtMapKey("example"),
 						knownvalue.StringExact("off"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_io_timing").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("track_io_timing").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("track_io_timing").
+							AtMapKey("type"),
 						knownvalue.StringExact("string"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_sender_timeout").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_sender_timeout").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_sender_timeout").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_sender_timeout").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(60000),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_sender_timeout").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_sender_timeout").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_sender_timeout").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_sender_timeout").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("description"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_writer_delay").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("example"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_writer_delay").
+							AtMapKey("example"),
 						knownvalue.Int64Exact(50),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("maximum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_writer_delay").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(200),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("minimum"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_writer_delay").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("requires_restart"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_writer_delay").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg").AtSliceIndex(0).AtMapKey("wal_writer_delay").AtMapKey("type"),
+						tfjsonpath.New("pg").
+							AtSliceIndex(0).
+							AtMapKey("wal_writer_delay").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg_stat_monitor_enable").AtSliceIndex(0).AtMapKey("description"),
+						tfjsonpath.New("pg_stat_monitor_enable").
+							AtSliceIndex(0).
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pg_stat_monitor_enable").AtSliceIndex(0).AtMapKey("requires_restart"),
+						tfjsonpath.New("pg_stat_monitor_enable").
+							AtSliceIndex(0).
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
@@ -1142,52 +1785,77 @@ func TestAccDataSourceDatabasePostgreSQLConfig_basic(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("description"),
+						tfjsonpath.New("pglookout").
+							AtSliceIndex(0).
+							AtMapKey("max_failover_replication_time_lag").
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("maximum"),
+						tfjsonpath.New("pglookout").
+							AtSliceIndex(0).
+							AtMapKey("max_failover_replication_time_lag").
+							AtMapKey("maximum"),
 						knownvalue.Int64Exact(999999),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("minimum"),
+						tfjsonpath.New("pglookout").
+							AtSliceIndex(0).
+							AtMapKey("max_failover_replication_time_lag").
+							AtMapKey("minimum"),
 						knownvalue.Int64Exact(10),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("requires_restart"),
+						tfjsonpath.New("pglookout").
+							AtSliceIndex(0).
+							AtMapKey("max_failover_replication_time_lag").
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("pglookout").AtSliceIndex(0).AtMapKey("max_failover_replication_time_lag").AtMapKey("type"),
+						tfjsonpath.New("pglookout").
+							AtSliceIndex(0).
+							AtMapKey("max_failover_replication_time_lag").
+							AtMapKey("type"),
 						knownvalue.StringExact("integer"),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("description"),
+						tfjsonpath.New("shared_buffers_percentage").
+							AtSliceIndex(0).
+							AtMapKey("description"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("maximum"),
+						tfjsonpath.New("shared_buffers_percentage").
+							AtSliceIndex(0).
+							AtMapKey("maximum"),
 						knownvalue.Float64Exact(60.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("minimum"),
+						tfjsonpath.New("shared_buffers_percentage").
+							AtSliceIndex(0).
+							AtMapKey("minimum"),
 						knownvalue.Float64Exact(20.0),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("requires_restart"),
+						tfjsonpath.New("shared_buffers_percentage").
+							AtSliceIndex(0).
+							AtMapKey("requires_restart"),
 						knownvalue.Bool(true),
 					),
 					statecheck.ExpectKnownValue(
 						resourceName,
-						tfjsonpath.New("shared_buffers_percentage").AtSliceIndex(0).AtMapKey("type"),
+						tfjsonpath.New("shared_buffers_percentage").
+							AtSliceIndex(0).
+							AtMapKey("type"),
 						knownvalue.StringExact("number"),
 					),
 					statecheck.ExpectKnownValue(

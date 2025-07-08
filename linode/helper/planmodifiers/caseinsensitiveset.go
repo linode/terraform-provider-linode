@@ -28,7 +28,11 @@ func (d *caseInsensitiveSetPlanModifier) MarkdownDescription(ctx context.Context
 	return d.Description(ctx)
 }
 
-func (d *caseInsensitiveSetPlanModifier) PlanModifySet(ctx context.Context, req planmodifier.SetRequest, resp *planmodifier.SetResponse) {
+func (d *caseInsensitiveSetPlanModifier) PlanModifySet(
+	ctx context.Context,
+	req planmodifier.SetRequest,
+	resp *planmodifier.SetResponse,
+) {
 	oldEntryMap := make(map[string]string)
 	resultList := make([]attr.Value, 0) // Use attr.Value to store both known and unknown values
 

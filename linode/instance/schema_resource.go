@@ -807,11 +807,14 @@ var resourceSchema = map[string]*schema.Schema{
 						"(examples: linode/latest-64bit, linode/grub2, linode/direct-disk)",
 				},
 				"run_level": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "Defines the state of your Linode after booting. Defaults to default.",
-					Default:      "default",
-					ValidateFunc: validation.StringInSlice([]string{"default", "single", "binbash"}, false),
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Defines the state of your Linode after booting. Defaults to default.",
+					Default:     "default",
+					ValidateFunc: validation.StringInSlice(
+						[]string{"default", "single", "binbash"},
+						false,
+					),
 				},
 				"virt_mode": {
 					Type:         schema.TypeString,
@@ -869,12 +872,15 @@ var resourceSchema = map[string]*schema.Schema{
 					Computed:    true,
 				},
 				"filesystem": {
-					Type:         schema.TypeString,
-					Description:  "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
-					Optional:     true,
-					ForceNew:     true,
-					Computed:     true,
-					ValidateFunc: validation.StringInSlice([]string{"raw", "swap", "ext3", "ext4", "initrd"}, false),
+					Type:        schema.TypeString,
+					Description: "The Disk filesystem can be one of: raw, swap, ext3, ext4, initrd (max 32mb)",
+					Optional:    true,
+					ForceNew:    true,
+					Computed:    true,
+					ValidateFunc: validation.StringInSlice(
+						[]string{"raw", "swap", "ext3", "ext4", "initrd"},
+						false,
+					),
 				},
 				"read_only": {
 					Type:        schema.TypeBool,
