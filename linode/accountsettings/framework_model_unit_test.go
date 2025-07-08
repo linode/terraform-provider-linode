@@ -26,7 +26,7 @@ func TestFlattenAccountSettings(t *testing.T) {
 		NetworkHelper:        networkHelperValue,
 		LongviewSubscription: &longviewSubscriptionValue,
 		ObjectStorage:        &objectStorageValue,
-		MaintenancePolicy:    &maintenancePolicy,
+		MaintenancePolicy:    maintenancePolicy,
 	}
 
 	// Create a mock AccountSettingsModel instance
