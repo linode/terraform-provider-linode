@@ -125,6 +125,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("status", instance.Status)
 	d.Set("type", instance.Type)
 	d.Set("region", instance.Region)
+	d.Set("maintenance_policy", instance.MaintenancePolicy)
 	d.Set("watchdog_enabled", instance.WatchdogEnabled)
 	d.Set("group", instance.Group)
 	d.Set("tags", instance.Tags)
@@ -222,6 +223,11 @@ func createResource(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	if firewallID, ok := d.GetOk("firewall_id"); ok {
 		createOpts.FirewallID = firewallID.(int)
+	}
+
+	if maintenancePolicyRaw, ok := d.GetOk("maintenance_policy"); ok {
+		maintenancePolicyStr := maintenancePolicyRaw.(string)
+		createOpts.MaintenancePolicy = &maintenancePolicyStr
 	}
 
 	if interfaces, interfacesOk := d.GetOk("interface"); interfacesOk {
@@ -585,6 +591,11 @@ func updateResource(ctx context.Context, d *schema.ResourceData, meta interface{
 	if d.HasChange("group") {
 		newGroup := d.Get("group").(string)
 		updateOpts.Group = &newGroup
+		simpleUpdate = true
+	}
+	if d.HasChange("maintenance_policy") {
+		newMaintenancePolicy := d.Get("maintenance_policy").(string)
+		updateOpts.MaintenancePolicy = linodego.Pointer(newMaintenancePolicy)
 		simpleUpdate = true
 	}
 	if d.HasChange("tags") {

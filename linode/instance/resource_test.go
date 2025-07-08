@@ -894,6 +894,41 @@ func TestAccResourceInstance_updateSimple(t *testing.T) {
 	})
 }
 
+func TestAccResourceInstance_updateMaintenancePolicy(t *testing.T) {
+	t.Parallel()
+	var instance linodego.Instance
+	instanceName := acctest.RandomWithPrefix("tf_test")
+	resName := "linode_instance.foobar"
+	rootPass := acctest.RandString(64)
+	maintenancePolicyMigrate := "linode/migrate"
+	maintenancePolicyPowerOnOff := "linode/power_off_on"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		CheckDestroy:             acceptance.CheckInstanceDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass, maintenancePolicyMigrate),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "maintenance_policy", maintenancePolicyMigrate),
+				),
+			},
+			{
+				Config: tmpl.MaintenancePolicy(t, instanceName, acceptance.PublicKeyMaterial, testRegion, rootPass, maintenancePolicyPowerOnOff),
+				Check: resource.ComposeTestCheckFunc(
+					acceptance.CheckInstanceExists(resName, &instance),
+					resource.TestCheckResourceAttr(resName, "label", instanceName),
+					resource.TestCheckResourceAttr(resName, "maintenance_policy", maintenancePolicyPowerOnOff),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceInstance_configUpdate(t *testing.T) {
 	t.Parallel()
 	var instance linodego.Instance

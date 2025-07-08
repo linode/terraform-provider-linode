@@ -56,13 +56,13 @@ func TestAccResourceAccountSettings_update(t *testing.T) {
 	updatedLongviewPlan := "longview-10"
 	updatedBackupsEnabled := !currBackupsEnabled
 	updatedNetworkHelper := !currNetworkHelper
-	updatedMaintenancePolicy := "linode/power_on_off"
+	updatedMaintenancePolicy := "linode/power_off_on"
 
 	if currLongviewPlan == "" || currLongviewPlan == "longview-10" {
 		updatedLongviewPlan = "longview-3"
 	}
 
-	if currMaintenancePolicy == "" || currMaintenancePolicy == "linode/power_on_off" {
+	if currMaintenancePolicy == "" || currMaintenancePolicy == "linode/power_off_on" {
 		updatedLongviewPlan = "linode/migrate"
 	}
 

@@ -56,7 +56,7 @@ var frameworkResourceSchema = schema.Schema{
 			},
 		},
 		"maintenance_policy": schema.StringAttribute{
-			Description: "The Maintenance Policy for this account.",
+			Description: "The default Maintenance Policy for this account. If not provided, the default policy (linode/migrate) will be applied.",
 			Computed:    true,
 			Optional:    true,
 			PlanModifiers: []planmodifier.String{

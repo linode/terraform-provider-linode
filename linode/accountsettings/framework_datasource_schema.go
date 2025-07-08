@@ -31,7 +31,7 @@ var frameworkDataSourceSchema = schema.Schema{
 			Computed:    true,
 		},
 		"maintenance_policy": schema.StringAttribute{
-			Description: "The Maintenance Policy for this account.",
+			Description: "The default Maintenance Policy for this account.",
 			Computed:    true,
 		},
 	},
